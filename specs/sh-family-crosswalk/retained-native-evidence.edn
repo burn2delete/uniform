@@ -1,0 +1,1295 @@
+{:original-source "a1b991be499d50579a8b4366976c519ae8949224",
+ :receipt-accounting-qualification
+ "Old prepay/cell fee and consumer charge statements are historical receipt context only. Current BOOT2 observation laws and source-specific accounting-removal authority govern; no cost quota or replacement accounting is revived. Semantic/native/class/shape, physical host and external limits remain separate.",
+ :integrity-receipt-sha256
+ "2bced4a04da18cb1625433f181461d6caf311d73346057bc2dc3f91d3d0296cd",
+ :audit-tree "6bd416fe5faf8f8ad40c965440c853374ff8b0c5",
+ :review-state :reviewed,
+ :authority :retained-owner-evidence-not-new-acceptance,
+ :source-entailment :independently-supported,
+ :current-acceptance :unassessed,
+ :last-native-integration "dc0a3c15dec6b42832381e1c4ff1daea49157312",
+ :audit-commit "d43252bcf5c9992848f134f445db706e9c231a70",
+ :artifact-sha256
+ "9af3836e7d687dbe4ac29bbfb3e17021fc1d4f25b4daa385e15c8c69696ba2b1",
+ :unit-assessments
+ [{:test-evidence
+   [{:path
+     "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+     :current
+     {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :path
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+      :blob "10f6598ccde774c716de58d50d063ca846c57329",
+      :sha256
+      "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1"},
+     :test-case-locations
+     [{:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 31,
+       :end-line 54,
+       :span-sha256
+       "6e927211b10a8a97850eed73d614771e763bac507a17ac01eecf2a56dfb217e8",
+       :test-name "native-header-observes-required-native-families"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 55,
+       :end-line 73,
+       :span-sha256
+       "dea57a2cd56c4359398eb11b5d6fdac8fbb4e27930bfeaca686ee9ea3feada8e",
+       :test-name
+       "native-header-array-map-physical-shape-precedes-observation"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 74,
+       :end-line 90,
+       :span-sha256
+       "5cabaeb39b9ec7b820988e8a11af5265ab720a1804de5555e6146dbf605bff6b",
+       :test-name
+       "native-header-symbol-name-presence-distinguishes-null-from-empty"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 91,
+       :end-line 111,
+       :span-sha256
+       "548d5dfe40b88c049920bc22b3f4e1a7eb06b9bf6ce84127c28a5fd567fb39d8",
+       :test-name
+       "native-header-scalar-metrics-do-not-render-or-normalize"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 112,
+       :end-line 134,
+       :span-sha256
+       "5b6f797e6183892a6ee1217b1bc1a707e0e3af8e5db7ad33de2759e735c6a24e",
+       :test-name
+       "native-header-does-not-inspect-foreign-values-or-native-metadata"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 135,
+       :end-line 151,
+       :span-sha256
+       "ca8deb9fd367b8d531a7fc92bbd8e63a9704f71137f200875b2917e5273fde37",
+       :test-name
+       "native-header-bigint-metrics-preserve-existing-options-domain"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 152,
+       :end-line 176,
+       :span-sha256
+       "a3051976c0c25455eaee82c6e7555cebf978151c00e21f972527b20a03b9b150",
+       :test-name
+       "native-header-cursors-and-subvector-backing-remain-unforced"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 177,
+       :end-line 187,
+       :span-sha256
+       "a52f470a9c50e083bed78a8f8ab4c019f65c181e571c09b825c942e79aa1d86d",
+       :test-name "native-header-does-not-call-tree-comparators"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 188,
+       :end-line 214,
+       :span-sha256
+       "c167d0f9355462cdca7fb024ce257fdd6082bac193dfa7e98ab42115af6020f8",
+       :test-name
+       "native-header-hashset-field-is-closed-and-access-denial-is-sticky"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 215,
+       :end-line 241,
+       :span-sha256
+       "29f0bf5e22c09ac263436c1e20e7a44052339e4c6647cebc70e83d1174949e56",
+       :test-name
+       "native-header-array-map-field-is-closed-and-denial-is-sticky"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 242,
+       :end-line 261,
+       :span-sha256
+       "a5630ff457d103eec79e4f3a8c90778b5e05cf8dbf7525a803a8aa19553bc734",
+       :test-name
+       "native-header-array-map-backed-hashset-shares-physical-guard"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 262,
+       :end-line 282,
+       :span-sha256
+       "4d1ce0662c61d58cf7791159b6e09ac0f066816f5dc4ca2e196d1b29b14c5e86",
+       :test-name "native-header-indirect-scalar-receivers-are-closed"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 283,
+       :end-line 306,
+       :span-sha256
+       "6050721766e69464371e7bd169a5318490f7d8a553eff8ccc4d3905fac41e865",
+       :test-name
+       "native-header-context-arity-and-operand-order-remain-closed"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_carrier_header_test.clj",
+       :blob "10f6598ccde774c716de58d50d063ca846c57329",
+       :sha256
+       "51695c7b548e38373bfc0e365b05c5731bf291dd01172d856ba6869c4b9ff8e1",
+       :start-line 307,
+       :end-line 328,
+       :span-sha256
+       "5444ed2518f7a34d44c17040654d7dcda6ad74fc6c1e32accc2b8e6a153e6a3e",
+       :test-name
+       "native-header-compiler-artifact-fixtures-execute-both-spellings"}]}
+    {:path
+     "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+     :current
+     {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :path
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+      :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+      :sha256
+      "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269"},
+     :test-case-locations
+     [{:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 27,
+       :end-line 35,
+       :span-sha256
+       "02f3fd6d0c7c39e8265181cb5d30e87f75605048deb80d0d613ceba37bc93474",
+       :test-name "native-numeric-header-byte-and-short-magnitudes"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 36,
+       :end-line 55,
+       :span-sha256
+       "43d2e0905d9b9c4adab764bd70b07df0ec0e69b19c67468d9b70ec51acf95db9",
+       :test-name
+       "native-numeric-header-float-width-does-not-classify-or-canonicalize"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 56,
+       :end-line 70,
+       :span-sha256
+       "51d6ac164ddb4d491dfce5112ec093937811a87750bc471ebcf26b130b9af3ae",
+       :test-name
+       "native-numeric-header-decimal-magnitude-and-signed-scale"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 71,
+       :end-line 91,
+       :span-sha256
+       "de5ee26cb24e291bb67408faf227ab259f0ce607b3b76db83c73b0f01715204a",
+       :test-name
+       "native-numeric-header-refuses-foreign-receivers-before-methods"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 92,
+       :end-line 119,
+       :span-sha256
+       "d59f0b13e36460af9898f3c50d0ede3b939e107632ef8d6a7a006c9c1d9635a5",
+       :test-name
+       "native-numeric-header-decimal-nested-guard-and-constructor-sanitization"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 120,
+       :end-line 142,
+       :span-sha256
+       "3306411e7c8ac716d2a601546619a40ba7617392394761516be43435a90e773d",
+       :test-name
+       "native-numeric-header-retains-context-arity-and-no-rendering"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_numeric_header_test.clj",
+       :blob "c87da932f3e6e64e6f51cd003d8d9e185aebf3e9",
+       :sha256
+       "758fd84a5089c5096b3a65397bfdb1ebaaf46fb3a50c28a7e88fb8fc6fd36269",
+       :start-line 143,
+       :end-line 160,
+       :span-sha256
+       "0d2b0a0d374fb0def0ed75e3974c34c24b9fa71e99279f0a2d61fa4a104e7b65",
+       :test-name
+       "native-numeric-header-real-fixtures-execute-both-spellings"}]}],
+   :historical-merge-validation-receipts
+   [{"merge_commit" "8ee78280272622c870a9d336cd777114ede447b5",
+     "url" "https://github.com/burn2delete/uniform/pull/329",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "649bf625bf02a66453cbfe7d1ac16fbff19aba30456e8542e559ad240b66ea40",
+     "updated_at" "2026-10-25T08:56:28Z",
+     "number" 329N,
+     "head" "49c3a18fe155c33d60f817df125c7976181e5496",
+     "title"
+     "Add bounded bootstrap native carrier header observations",
+     "merged_at" "2026-10-25T08:55:43Z",
+     "merged" true}
+    {"merge_commit" "3d2b1909e0e9ee35b9dbbfdfd230bb356b2f77f4",
+     "url" "https://github.com/burn2delete/uniform/pull/335",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "d24d1739df28a0b484312367016c324fa5965dfc9669bc6fabf1594b4dab068b",
+     "updated_at" "2026-10-25T09:57:34Z",
+     "number" 335N,
+     "head" "4a0fd1697b4a052b5a0f5bdbc05b74dedcb56115",
+     "title"
+     "Describe remaining native Number carriers without granting DATA legality",
+     "merged_at" "2026-10-25T09:56:31Z",
+     "merged" true}
+    {"merge_commit" "de6ae56534a906464f7d74652e54918eb660b0c9",
+     "url" "https://github.com/burn2delete/uniform/pull/347",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "1a5965667026f7805db3f2ab4edf84950372491ba69fe7b34669ed8436960da6",
+     "updated_at" "2026-10-25T12:32:46Z",
+     "number" 347N,
+     "head" "bbd16b1ba46439c754de93ba068d5fd51636fbd3",
+     "title" "Expose native Symbol name presence without rendering",
+     "merged_at" "2026-10-25T12:30:38Z",
+     "merged" true}
+    {"merge_commit" "2b1371aaa60e5bd10734f3962741585f9b52c884",
+     "url" "https://github.com/burn2delete/uniform/pull/350",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "2b9fd34a6030429de7ed658a695958c2bf077e585bdebe1c7f657b3598ea1947",
+     "updated_at" "2026-10-25T13:15:59Z",
+     "number" 350N,
+     "head" "819bf5c98b56b39014cc6f720dd5d338b62990fb",
+     "title"
+     "Refuse malformed native ArrayMap backings before observation",
+     "merged_at" "2026-10-25T13:15:08Z",
+     "merged" true}],
+   :qualification-boundary
+   "Native provider/backing-field and consumed-closure applicability remains explicit. Denied field access is an allowed unsupported observation, not permission to retry. Source authentication and general DATA validity are separate consumer outcomes.",
+   :current-acceptance :unassessed,
+   :id "bootstrap/native-carrier-header",
+   :finite-open-evidence
+   ["Bind the existing accepted execution/review receipts to the actual current consumed definition/provider envelope if root needs a current acceptance upgrade; this audit neither requires replay of valid immutable evidence nor fabricates raw receipt authentication."
+    "Recorded runtime provider/receipt details do not establish every applying host/JDK/Clojure build, module access state or cold reflection boundary. Existing field-denial tests are scoped historical evidence; access denial remains unsupported and is not retried here."
+    "Any actual changed relevant caller/argument-dispatch/plan-construction definition shown in the closure table requires specific applicability disposition. Changed unrelated paths do not reset the ABI producer."
+    "Broader source-authentication, downstream complete DATA/cycle/geometry/proof guards, retained complete-seed fingerprints, migration and final seed retirement are separate unproven/owner-scoped outcomes; C12 remains prohibited."],
+   :independent-review
+   {:receipt-sha256
+    "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+    :checker-sha256
+    "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+    :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+    :scope :bounded-native-producers-and-selected-consumer-support,
+    :implementation-acceptance :not-conferred},
+   :current-applicability :qualified,
+   :historical-completion :preserved-at-original-scope,
+   :facet-assessments
+   [{:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-43",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/fa24e749635317fc62b9ddc8f02504d8e2d27e0985124717bd094b4713e7dd26"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 84,
+      :raw-sha256
+      "fd48e94908255421062813b646c30cb2f4085d35aa9e0b820da6160cd9123f62",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 51,
+      :document-id "BOOT2",
+      :end-byte 4632,
+      :end-line 91,
+      :start-column-byte 1,
+      :start-byte 4099},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-44",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/906d63d0d65d206562f3f2d5debafdebdb5043b285e570bd1ff839bc8cd8b586"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 93,
+      :raw-sha256
+      "db4a5c7247031dfc60dfeac3748b80400532aac68db771a0c07d32ae02e2c78c",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 81,
+      :document-id "BOOT2",
+      :end-byte 5102,
+      :end-line 98,
+      :start-column-byte 1,
+      :start-byte 4633},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-45",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/906d63d0d65d206562f3f2d5debafdebdb5043b285e570bd1ff839bc8cd8b586"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 99,
+      :raw-sha256
+      "5db6c8edd8673b3dac1d22b76f2472fa47d515d3f33cd1fde6f459fc6d534fe2",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 67,
+      :document-id "BOOT2",
+      :end-byte 5694,
+      :end-line 106,
+      :start-column-byte 1,
+      :start-byte 5102},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-46",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/906d63d0d65d206562f3f2d5debafdebdb5043b285e570bd1ff839bc8cd8b586"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 107,
+      :raw-sha256
+      "b9ab3a39e03ee4bdffd2b4d1fa01afb68d399f48fd8d0adc45bc876048d536b3",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 37,
+      :document-id "BOOT2",
+      :end-byte 6156,
+      :end-line 113,
+      :start-column-byte 1,
+      :start-byte 5694},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-47",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/5f7dedc8008aa8979598bc205e4fb6e60ffb224025cb363e609e508d7cee7350"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 115,
+      :raw-sha256
+      "dff4ce0dc3f552d072cb35f84dbdbe392983dfceac00ba612a2e679b7e50c9e6",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 67,
+      :document-id "BOOT2",
+      :end-byte 6907,
+      :end-line 124,
+      :start-column-byte 1,
+      :start-byte 6157},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-48",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/be3b8c905a1ee646acf1fbe36e947934c5b67519abd8da1f43ff0ec8b8c706b5"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 126,
+      :raw-sha256
+      "98373ff6617e4323aa74d1ebc0ac1e395eb276726921425507eb7bc4eec387d2",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 61,
+      :document-id "BOOT2",
+      :end-byte 7720,
+      :end-line 136,
+      :start-column-byte 1,
+      :start-byte 6908},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-49",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/be3b8c905a1ee646acf1fbe36e947934c5b67519abd8da1f43ff0ec8b8c706b5"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 136,
+      :raw-sha256
+      "0fdf51e36f7421098ae3bb858f0acdf0fbbe752d2944eba26e5bf45cc5098934",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 40,
+      :document-id "BOOT2",
+      :end-byte 8139,
+      :end-line 142,
+      :start-column-byte 1,
+      :start-byte 7660},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment
+     {:state
+      :scoped-current-consumer-guards-and-separate-pr368-evidence,
+      :source
+      "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+      :observed
+      "SH22 ancestor checks use actual reference identity; SubVector preflight checks backing kinds, nonnegative bounds/extent, nested ancestry and containment; TreeMap preflight rejects a foreign comparator before vec traversal.",
+      :retained-consumer-progress
+      "PR368 independently reports retained exact-candidate actual acceptance of the unmetered Stdlib slice, including native guards, callback refusal, cycles versus aliases, fresh verifier and tamper checks. Current selected caller/test bytes are bound separately below.",
+      :finite-gap
+      "Do not turn these bounded SH22 guard/test cases into complete general geometry/member/native-node/semantic validation or authenticated-source admission for every consumer. Any broader owning proof must retain its exact admissible-input scope; no hypothetical defect or extra requirement is asserted, and descriptive ABI completion is preserved."},
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-50",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/0c906c590deb694090472f16a480cf45f05fa49516ac07154800f8dead9fa69a"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 144,
+      :raw-sha256
+      "f19cb8398e5d47ea8f21d4e74ff8bde1a78d1ae491bd5955030bde6d1fa524f4",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 33,
+      :document-id "BOOT2",
+      :end-byte 9015,
+      :end-line 155,
+      :start-column-byte 1,
+      :start-byte 8140},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification
+     "Fixed-field/sticky-denial source and hostile/denial tests are concrete evidence; the separate unstubbed cold-to-warm run is reported by PR350. Its full original process/provider receipt is not independently established here and current field access is not attempted.",
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-carrier-header/facet-51",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/916df9e0d0b4d0a470f382d2260dc44765fef3a102167c1d5a233fa51880935e"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 157,
+      :raw-sha256
+      "ff7964256a88d495600d68798acd2d8e4340132870b1a02e41f06e8c9c0616cf",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 80,
+      :document-id "BOOT2",
+      :end-byte 9283,
+      :end-line 161,
+      :start-column-byte 1,
+      :start-byte 9016},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment
+     {:state
+      :scoped-current-consumer-guards-and-separate-pr368-evidence,
+      :source
+      "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+      :observed
+      "SH22 ancestor checks use actual reference identity; SubVector preflight checks backing kinds, nonnegative bounds/extent, nested ancestry and containment; TreeMap preflight rejects a foreign comparator before vec traversal.",
+      :retained-consumer-progress
+      "PR368 independently reports retained exact-candidate actual acceptance of the unmetered Stdlib slice, including native guards, callback refusal, cycles versus aliases, fresh verifier and tamper checks. Current selected caller/test bytes are bound separately below.",
+      :finite-gap
+      "Do not turn these bounded SH22 guard/test cases into complete general geometry/member/native-node/semantic validation or authenticated-source admission for every consumer. Any broader owning proof must retain its exact admissible-input scope; no hypothetical defect or extra requirement is asserted, and descriptive ABI completion is preserved."},
+     :producer-definition-refs
+     ["p15-s23-stage2-native-integer-magnitude-bits"
+      "p15-s23-stage2-native-unsupported-header"
+      "p15-s23-stage2-native-big-integer-magnitude-bits"
+      "p15-s23-stage2-native-hashset-field"
+      "p15-s23-stage2-native-hashset-field-once"
+      "p15-s23-stage2-native-hashset-backing"
+      "p15-s23-stage2-native-arraymap-field"
+      "p15-s23-stage2-native-arraymap-field-once"
+      "p15-s23-stage2-native-arraymap-extent"
+      "p15-s23-stage2-native-map-extent"
+      "p15-s23-stage2-native-meta-present?"
+      "p15-s23-stage2-native-carrier-header"]}],
+   :historical-completed-scope
+   "Exact six-slot descriptive native headers: closed scalar/numeric classes, nested BigInteger/Symbol guards, metadata-presence only, cached/physical container extents, raw list/Cons/SubVector children, noninvoked comparator identity, fixed read-only field access with sticky denial and malformed ArrayMap rejection before observation."}
+  {:test-evidence
+   [{:path
+     "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+     :current
+     {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :path
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+      :blob "8f33bcf57ceccf4a1b8b82924931e733eaaa528c",
+      :sha256
+      "43eab62666904a3f406d1f89b66100fa5810636350ecdb4250b727c0b5ed6788"},
+     :test-case-locations
+     [{:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+       :blob "8f33bcf57ceccf4a1b8b82924931e733eaaa528c",
+       :sha256
+       "43eab62666904a3f406d1f89b66100fa5810636350ecdb4250b727c0b5ed6788",
+       :start-line 19,
+       :end-line 27,
+       :span-sha256
+       "f4e918bdbb91206f82d33767596463c117501fdc3c4a4fca3e5bcfeff2194d09",
+       :test-name
+       "native-identity-distinguishes-reference-aliases-from-equal-values"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+       :blob "8f33bcf57ceccf4a1b8b82924931e733eaaa528c",
+       :sha256
+       "43eab62666904a3f406d1f89b66100fa5810636350ecdb4250b727c0b5ed6788",
+       :start-line 28,
+       :end-line 47,
+       :span-sha256
+       "08bfd7d542634a4f32fc69f2e7da1cf7ad85f36885125050d53f08939ac21005",
+       :test-name "native-identity-does-not-inspect-operands"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+       :blob "8f33bcf57ceccf4a1b8b82924931e733eaaa528c",
+       :sha256
+       "43eab62666904a3f406d1f89b66100fa5810636350ecdb4250b727c0b5ed6788",
+       :start-line 48,
+       :end-line 73,
+       :span-sha256
+       "d4fef8484f4afe2095160816f3a8b3cce6aa506ca5faf6778977233fbd839725",
+       :test-name
+       "native-identity-requires-exact-arity-and-compiler-artifact-context"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_native_identity_test.clj",
+       :blob "8f33bcf57ceccf4a1b8b82924931e733eaaa528c",
+       :sha256
+       "43eab62666904a3f406d1f89b66100fa5810636350ecdb4250b727c0b5ed6788",
+       :start-line 74,
+       :end-line 88,
+       :span-sha256
+       "6852e821b8ced596ea3ec72ce082a673bce1c405c5b5ac98e264d17a3a1eaba7",
+       :test-name
+       "native-identity-compiler-artifact-fixtures-execute-both-spellings"}]}],
+   :historical-merge-validation-receipts
+   [{"merge_commit" "dc0a3c15dec6b42832381e1c4ff1daea49157312",
+     "url" "https://github.com/burn2delete/uniform/pull/354",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "9452bdd3d09dc3b5aa62cf1e8dca145b15c46b0bacf097faf9f70fe74be1fb9f",
+     "updated_at" "2026-10-25T18:08:37Z",
+     "number" 354N,
+     "head" "0c25b4bd713390784c335881d2d8c3d13df67348",
+     "title" "Add internal callback-free native identity observation",
+     "merged_at" "2026-10-25T17:49:53Z",
+     "merged" true}],
+   :qualification-boundary
+   "Retain the native identity/Symbol provider and applicable consumed-closure qualifications. Header-specific cold reflection/backing-field conditions do not apply to these intrinsics. Source authentication, public export and release remain separate outcomes.",
+   :current-acceptance :unassessed,
+   :id "bootstrap/native-reference-identity",
+   :finite-open-evidence
+   ["Bind the existing accepted execution/review receipts to the actual current consumed definition/provider envelope if root needs a current acceptance upgrade; this audit neither requires replay of valid immutable evidence nor fabricates raw receipt authentication."
+    "Recorded runtime provider/receipt details do not establish every applying host/JDK/Clojure build, module access state or cold reflection boundary. Existing field-denial tests are scoped historical evidence; access denial remains unsupported and is not retried here."
+    "Any actual changed relevant caller/argument-dispatch/plan-construction definition shown in the closure table requires specific applicability disposition. Changed unrelated paths do not reset the ABI producer."
+    "Broader source-authentication, downstream complete DATA/cycle/geometry/proof guards, retained complete-seed fingerprints, migration and final seed retirement are separate unproven/owner-scoped outcomes; C12 remains prohibited."],
+   :independent-review
+   {:receipt-sha256
+    "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+    :checker-sha256
+    "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+    :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+    :scope :bounded-native-producers-and-selected-consumer-support,
+    :implementation-acceptance :not-conferred},
+   :current-applicability :qualified,
+   :historical-completion :preserved-at-original-scope,
+   :facet-assessments
+   [{:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-reference-identity/facet-36",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/045dac9b602c2ddc3d480f6bc1fa187be36a2fef17b0e0fd3c2ea484b4a4c6c0"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 38,
+      :raw-sha256
+      "6d4b7741c6fb73b72deee78a04248bda94f8bd81898b8b27f9e2a53826744c18",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 77,
+      :document-id "BOOT2",
+      :end-byte 1689,
+      :end-line 43,
+      :start-column-byte 1,
+      :start-byte 1238},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-bootstrap-native-identical?"
+      "p15-s23-stage2-runtime-invoke-builtin"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-reference-identity/facet-37",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/6f01f41981b5ce60664d6734596f1f7659f88d5878f7b120611a6b9b844a8883"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 45,
+      :raw-sha256
+      "7554ce8d0fba34b42bb18b1affc80867b3e5f1acec186076d3d36aa08a966f08",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 79,
+      :document-id "BOOT2",
+      :end-byte 2222,
+      :end-line 51,
+      :start-column-byte 1,
+      :start-byte 1690},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment
+     {:state
+      :scoped-current-consumer-guards-and-separate-pr368-evidence,
+      :source
+      "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+      :observed
+      "SH22 ancestor checks use actual reference identity; SubVector preflight checks backing kinds, nonnegative bounds/extent, nested ancestry and containment; TreeMap preflight rejects a foreign comparator before vec traversal.",
+      :retained-consumer-progress
+      "PR368 independently reports retained exact-candidate actual acceptance of the unmetered Stdlib slice, including native guards, callback refusal, cycles versus aliases, fresh verifier and tamper checks. Current selected caller/test bytes are bound separately below.",
+      :finite-gap
+      "Do not turn these bounded SH22 guard/test cases into complete general geometry/member/native-node/semantic validation or authenticated-source admission for every consumer. Any broader owning proof must retain its exact admissible-input scope; no hypothetical defect or extra requirement is asserted, and descriptive ABI completion is preserved."},
+     :producer-definition-refs
+     ["p15-s23-stage2-bootstrap-native-identical?"
+      "p15-s23-stage2-runtime-invoke-builtin"]}],
+   :historical-completed-scope
+   "Binary true/false native JVM reference identity, including nil/nil, without operand methods/address/token; exact arity/context and ordinary once-before-check evaluation through generic/interpreted/genuine compiler-artifact fixture paths."}
+  {:test-evidence
+   [{:path
+     "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+     :current
+     {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :path
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+      :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+      :sha256
+      "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8"},
+     :test-case-locations
+     [{:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+       :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+       :sha256
+       "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8",
+       :start-line 28,
+       :end-line 37,
+       :span-sha256
+       "239b3496dbf31a3a1959d3b421d9a93cb10dadbb6787b25a43e8835bd72583f3",
+       :test-name
+       "bootstrap-symbol-native-spelling-units-match-seed-rendering"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+       :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+       :sha256
+       "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8",
+       :start-line 38,
+       :end-line 58,
+       :span-sha256
+       "b5a0862e0cc4e8732df53f47a4d8e03cc228483b61fc6fd6406e6df4c3b98068",
+       :test-name
+       "bootstrap-symbol-abi-rejects-wrong-arity-type-and-context"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+       :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+       :sha256
+       "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8",
+       :start-line 59,
+       :end-line 76,
+       :span-sha256
+       "1c0bdb84c1dcf52cadd79be609239476632dd004bb12bc72d075c33875c261cf",
+       :test-name
+       "bootstrap-symbol-abi-never-inspects-foreign-values-or-metadata"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+       :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+       :sha256
+       "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8",
+       :start-line 77,
+       :end-line 98,
+       :span-sha256
+       "0b751e690353011be3d8b41b4b4651889b22425881fe65a93116c8863f0d4ed3",
+       :test-name
+       "bootstrap-symbol-compiler-artifact-augmentation-is-usable-and-contained"}
+      {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+       :path
+       "bootstrap/clojure/test/gravity/self_hosting/sh01_bootstrap_symbol_utf16_unit_count_test.clj",
+       :blob "f291a60c6e783e03b9636ac0f074fe2701a83db8",
+       :sha256
+       "229c165822a709482a0bbab56609746a8aa72a5b23466eeba6552259cae062d8",
+       :start-line 99,
+       :end-line 110,
+       :span-sha256
+       "4148d9e6dc452319b55bc506587d59ad62fda02881143db2cb075c6a4eeb176d",
+       :test-name
+       "bootstrap-symbol-operand-evaluation-precedes-abi-check-once"}]}],
+   :historical-merge-validation-receipts
+   [{"merge_commit" "c4faaccb1467115b362c0f6ea9100e63a990a4f5",
+     "url" "https://github.com/burn2delete/uniform/pull/318",
+     "record-class"
+     "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+     "original-body-sha256"
+     "ff167bfbde0cd3326444bbdcfa6c259bace5e4fe68a271c9a936ebce9c6d35d9",
+     "updated_at" "2026-10-25T06:18:51Z",
+     "number" 318N,
+     "head" "7c1c813b85751cc6af4e345c0c7b734ac0a90dfd",
+     "title"
+     "Observe native Symbol spelling lengths before compiler resource work",
+     "merged_at" "2026-10-25T06:18:46Z",
+     "merged" true}],
+   :qualification-boundary
+   "Retain the native identity/Symbol provider and applicable consumed-closure qualifications. Header-specific cold reflection/backing-field conditions do not apply to these intrinsics. Source authentication, public export and release remain separate outcomes.",
+   :current-acceptance :unassessed,
+   :id "bootstrap/native-symbol-units",
+   :finite-open-evidence
+   ["Bind the existing accepted execution/review receipts to the actual current consumed definition/provider envelope if root needs a current acceptance upgrade; this audit neither requires replay of valid immutable evidence nor fabricates raw receipt authentication."
+    "Recorded runtime provider/receipt details do not establish every applying host/JDK/Clojure build, module access state or cold reflection boundary. Existing field-denial tests are scoped historical evidence; access denial remains unsupported and is not retried here."
+    "Any actual changed relevant caller/argument-dispatch/plan-construction definition shown in the closure table requires specific applicability disposition. Changed unrelated paths do not reset the ABI producer."
+    "Broader source-authentication, downstream complete DATA/cycle/geometry/proof guards, retained complete-seed fingerprints, migration and final seed retirement are separate unproven/owner-scoped outcomes; C12 remains prohibited."],
+   :independent-review
+   {:receipt-sha256
+    "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+    :checker-sha256
+    "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+    :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+    :scope :bounded-native-producers-and-selected-consumer-support,
+    :implementation-acceptance :not-conferred},
+   :current-applicability :qualified,
+   :historical-completion :preserved-at-original-scope,
+   :facet-assessments
+   [{:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-symbol-units/facet-39",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/e4533e1da0fb1456f9f1cef2929bd06c51f19aa24b547a5fc2bfc7fd28c2824b"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 57,
+      :raw-sha256
+      "5ff986cbc757bdb21f6c00b130f93aae67fd9f9004b5be357abd35b48f4b3ddd",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 82,
+      :document-id "BOOT2",
+      :end-byte 2790,
+      :end-line 61,
+      :start-column-byte 1,
+      :start-byte 2404},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-bootstrap-symbol-utf16-unit-count"
+      "p15-s23-stage2-runtime-invoke-builtin"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-symbol-units/facet-40",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/aab84a753c03c06538b3dfce283777acebf8bf1fb25664314a7024b292a64f78"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 63,
+      :raw-sha256
+      "c88e25de3a5b9a066e63d3e197242876e47c715b78cb4e468d2bfa2c3d63ca26",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 77,
+      :document-id "BOOT2",
+      :end-byte 3478,
+      :end-line 71,
+      :start-column-byte 1,
+      :start-byte 2791},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-bootstrap-symbol-utf16-unit-count"
+      "p15-s23-stage2-runtime-invoke-builtin"]}
+    {:source-entailment :independently-supported,
+     :current-acceptance :unassessed,
+     :original-facet-id "bootstrap/native-symbol-units/facet-41",
+     :source
+     {:source-occurrence-ids
+      ["BOOT2/source/f4b854a579cd2845baf41a016f77dd7e68c4f69fd76636eeb6c362889fa02d89"],
+      :path
+      "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      :start-line 73,
+      :raw-sha256
+      "642ddd7034da3d042f5da66a0a11627fb54fff24df442ebde3aeb525bc5c1d32",
+      :source-sha256
+      "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+      :end-column-byte 78,
+      :document-id "BOOT2",
+      :end-byte 3858,
+      :end-line 77,
+      :start-column-byte 1,
+      :start-byte 3479},
+     :assessment
+     :native-abi-code-and-historical-test-support-with-current-qualifications,
+     :producer-scope-entailment
+     :supported-by-reviewed-current-code-and-merged-scoped-execution-reports,
+     :independent-review
+     {:receipt-sha256
+      "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+      :checker-sha256
+      "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+      :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+      :scope :bounded-native-producers-and-selected-consumer-support,
+      :implementation-acceptance :not-conferred},
+     :current-applicability :qualified,
+     :provider-qualification nil,
+     :historical-completion :preserved-at-original-scope,
+     :consumer-guard-entailment nil,
+     :producer-definition-refs
+     ["p15-s23-stage2-bootstrap-symbol-utf16-unit-count"
+      "p15-s23-stage2-runtime-invoke-builtin"]}],
+   :historical-completed-scope
+   "Exact native Symbol getName/getNamespace UTF16 length with nullable/empty fields, slash, surrogate units and widened arithmetic; no rendering/interning/metadata/foreign Named callbacks; exact arity/type/context and once-only argument evaluation."}],
+ :owner-snapshot-sha256
+ "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954",
+ :consumer-evidence
+ {:public-receipt
+  {"merge_commit" "6e4c64bb6093702e4ce931bdf6bca8880e34317c",
+   "url" "https://github.com/burn2delete/uniform/pull/368",
+   "record-class"
+   "public-merge-metadata-and-reported-scoped-validation-not-a-fresh-run",
+   "original-body-sha256"
+   "bda585e21d936753395ccc131fb512cd196b302c3a66595e84ee4c51d95d7a23",
+   "number" 368N,
+   "head" "670c230c31898d23147a3b01cad8d840449eb6ab",
+   "title"
+   "Remove Stdlib project accounting while retaining semantic and native safeguards",
+   "merged_at" "2026-10-25T18:31:38Z",
+   "merged" true},
+  :source-scope :bounded-stdlib-carrier-guards-and-unmetered-adoption,
+  :current-vs-integrated-identity
+  [{:path
+    "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+    :current
+    {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+     :path
+     "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+     :blob "4541a269e7b040c8ce48a2f988eed5b525b0eb4d",
+     :sha256
+     "4521f6f94bc4ab72b0fff377070a31af91c8eb2da80499f3a43df589be31c096"},
+    :integrated
+    {:source-commit "6e4c64bb6093702e4ce931bdf6bca8880e34317c",
+     :path
+     "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity",
+     :blob "4541a269e7b040c8ce48a2f988eed5b525b0eb4d",
+     :sha256
+     "4521f6f94bc4ab72b0fff377070a31af91c8eb2da80499f3a43df589be31c096"},
+    :unchanged true}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh22_result_carrier_test.clj",
+    :current
+    {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+     :path
+     "bootstrap/clojure/test/gravity/self_hosting/sh22_result_carrier_test.clj",
+     :blob "b996be99c82f07102e4de9e7bebbcb9160612dcd",
+     :sha256
+     "865f2cce7060a45af7ba1b06c5af38147cb318946b831ffe5806ba21cee496cf"},
+    :integrated
+    {:source-commit "6e4c64bb6093702e4ce931bdf6bca8880e34317c",
+     :path
+     "bootstrap/clojure/test/gravity/self_hosting/sh22_result_carrier_test.clj",
+     :blob "b996be99c82f07102e4de9e7bebbcb9160612dcd",
+     :sha256
+     "865f2cce7060a45af7ba1b06c5af38147cb318946b831ffe5806ba21cee496cf"},
+    :unchanged true}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh22_textual_carrier_test.clj",
+    :current
+    {:source-commit "ea92ccad4e62172de10a86dc199e94048b837b43",
+     :path
+     "bootstrap/clojure/test/gravity/self_hosting/sh22_textual_carrier_test.clj",
+     :blob "e88a148438d3e1d5ccb9779f8e6e0178c0ee1f26",
+     :sha256
+     "7156f42f57d3dd2881d4aeec892398a74c676e75ff898e9c976bda1e2571a95d"},
+    :integrated
+    {:source-commit "6e4c64bb6093702e4ce931bdf6bca8880e34317c",
+     :path
+     "bootstrap/clojure/test/gravity/self_hosting/sh22_textual_carrier_test.clj",
+     :blob "e88a148438d3e1d5ccb9779f8e6e0178c0ee1f26",
+     :sha256
+     "7156f42f57d3dd2881d4aeec892398a74c676e75ff898e9c976bda1e2571a95d"},
+    :unchanged true}],
+  :qualification
+  "Retained scoped actual evidence is not retagged as a fresh run on the current pin. It neither certifies C12 nor all source authentication, project accounting removal, self-hosting or release."},
+ :independent-review
+ {:receipt-sha256
+  "dbfcaf235fa080643615c52d3b23d8a155580d7aa2ddb0b4613f42d869413345",
+  :checker-sha256
+  "035321d47300e28878c6104891cc9a012d55cd8292dc074d2c117983c4182cfc",
+  :source-pin "ea92ccad4e62172de10a86dc199e94048b837b43",
+  :scope :bounded-native-producers-and-selected-consumer-support,
+  :implementation-acceptance :not-conferred},
+ :applying-source "ea92ccad4e62172de10a86dc199e94048b837b43",
+ :qualification
+ "Preserves bounded native implementation, fixture and consumer progress. Current host/provider and changed consumed-closure applicability require independent review; no whole-unit, C12, self-hosting or release acceptance is conferred.",
+ :current-applicability :qualified,
+ :historical-completion :preserved-at-original-scope}
