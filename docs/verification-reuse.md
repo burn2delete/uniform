@@ -1102,8 +1102,17 @@ selections, either order and mixed with a supported leaf execute the supplied
 operation with zero lookup/basis/snapshot observations; success and error
 outcomes and thrown errors survive; the three supported leaves still reach
 their existing runtime observer. These injected controls do not construct a
-Bootstrap product. Source, retained-result and integration review remain
-required for this successor.
+Bootstrap product.
+
+The new control passed 1 test / 67 assertions at exact source
+`c6a94ef46acb39fab135729a3dfb1735ce0d2aca`, tree
+`015d41040b90166aa23e2cc7da9c7926342ddc42`. The complete wiring regression
+namespace passed 51 / 633. Both processes exited naturally 0 at 256 MiB,
+with identical clean source bookends and Bootstrap absent. Boundary controls
+passed 6 / 11 and documents passed 240 / 19. The first invocation used the
+repository runner alias with a script argument and failed before tests; that
+nonpass is retained. Source, retained-result and integration review remain
+required for this successor; no compiler/provider acceptance follows.
 
 Closing unsupported admission does not close original RV2's redundancy
 criterion. Complete compatibility read/effect closure and a reviewed reusable
