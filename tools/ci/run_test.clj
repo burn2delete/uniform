@@ -8,6 +8,7 @@
 (require '[ci.run :as ci])
 (binding [*command-line-args* nil] (load-file "tools/ci/lint.clj"))
 (require '[ci.lint :as lint])
+(require '[ci.lint-context :as context])
 
 (defn fixture-tool! [directory argv input allowed-exits]
   (let [log (java.io.File/createTempFile "tool-" ".log" directory)
@@ -175,6 +176,87 @@
     (is (= :timeout (:status result)))
     (is (not (alive? (:pid result)))))
   (is (= 124 (:exit-code (read-string (slurp "target/ci/negative-timeout.edn"))))))
+
+(deftest resource-context-preserves-real-bindings-and-diagnostic-identity
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-context-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        holder "bootstrap/clojure/src/gravity/bootstrap_impl/holder.clj"
+        foreign "bootstrap/clojure/src/gravity/bootstrap_impl/foreign.clj"
+        selected "bootstrap/clojure/src/gravity/bootstrap_impl/selected.clj"
+        header "(ns gravity.bootstrap (:require [clojure.string :as str]) (:import [java.io File]))\n"
+        body "(let [token (nth captured 0)]\n(defn selected [] [token (str/join [] [\"ok\"]) (File. \".\")]))\n"
+        observe (fn [holder-text selected-text]
+                  (let [view (context/assemble!
+                              directory
+                              {:paths [context/bootstrap holder foreign selected]
+                               :inputs (into {} (map (fn [[path text]] [path (.getBytes ^String text "UTF-8")])
+                                                     {context/bootstrap header holder holder-text
+                                                      foreign "(ns separate.context)\n(def unrelated 1)\n"
+                                                      selected selected-text}))})
+                        raw (edn/read-string
+                             (fixture-tool! directory
+                                            ["clj-kondo" "--repro" "--cache" "false" "--config"
+                                             "{:output {:format :edn}}" "--lint" "-"] (slurp (:file view)) #{0 2 3}))]
+                    {:view view :findings (mapv #(context/remap! view %) (:findings raw))}))]
+    (try
+      (let [positive (observe "(def captured [1])\n" body)]
+        (is (empty? (:findings positive)) (pr-str positive))
+        (is (= 4 (count (get-in positive [:view :inputs]))))
+        (let [crlf (observe "(def captured [1])\r\n" (str/replace body "\n" "\r\n"))
+              bad-alias (observe "(def captured [1])\r\n"
+                                 (-> body (str/replace "str/join" "missing-alias/join")
+                                     (str/replace "\n" "\r\n")))
+              finding (first (filter #(= :unresolved-namespace (:type %)) (:findings bad-alias)))]
+          (is (empty? (:findings crlf)) (pr-str crlf))
+          (is (= [selected 2 2] ((juxt :filename :row :end-row) finding))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (observe "(def captured [1])\r" (str/replace body "\n" "\r"))))
+        (doseq [[holder-text source expected]
+                [["(def wrong-name [1])\n" body :unresolved-symbol]
+                 ["(def captured [1])\n" (str/replace body "str/join" "missing-alias/join") :unresolved-namespace]
+                 ["(def captured [1])\n" (str/replace body "token (nth" "unused 1 token (nth") :unused-binding]
+                 ["(def captured [1])\n" (str/replace body "(File. \".\")" "(missing-function)") :unresolved-symbol]]]
+          (let [findings (:findings (observe holder-text source))
+                finding (first (filter #(= expected (:type %)) findings))]
+            (is (= selected (:filename finding)) (pr-str findings))
+            (is (<= 1 (:row finding) (:end-row finding) 2))))
+        (let [view (:view positive)
+              gap (dec (:start (last (:spans view))))]
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (context/remap! view {:row gap :end-row gap :col 1 :end-col 2})))
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (context/remap! view {:row 1 :end-row 1000 :col 1 :end-col 2})))))
+      (is (thrown? clojure.lang.ExceptionInfo (context/resource-path! "gravity/bootstrap_impl/../outside.clj")))
+      (is (thrown? clojure.lang.ExceptionInfo (context/plan! (constantly (.getBytes "changed loader" "UTF-8")))))
+      (finally
+        (doseq [file (reverse (file-seq directory))] (.delete file))))))
+
+(deftest context-recipe-and-resource-boundaries-fail-closed
+  (let [bytes #(.getBytes ^String % "UTF-8")
+        entry "(ns gravity.bootstrap)\n(clojure.core/require 'gravity.bootstrap-impl.loader)\n(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")\n"
+        inputs {context/bootstrap (bytes entry)
+                context/loader (context/local-bytes! context/loader)
+                context/manifest (bytes "[{:resource \"gravity/bootstrap_impl/a.clj\"} {:resource \"gravity/bootstrap_impl/b.clj\"}]")
+                (str context/source-root "gravity/bootstrap_impl/a.clj") (bytes "(def captured [1])\n")
+                (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured))\n")}
+        read-bytes (fn [inputs] (fn [path] (or (get inputs path) (throw (ex-info "Missing fixture" {:path path})))))]
+    (is (= 3 (count (:paths (context/plan! (read-bytes inputs))))))
+    (doseq [changed [(str/replace entry "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")" "")
+                     (str/replace entry "load_order.edn" "different.edn")
+                     (str "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")\n" entry)]]
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (context/plan! (read-bytes (assoc inputs context/bootstrap (bytes changed)))))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (context/plan! (read-bytes (update inputs context/manifest
+                                                    #(bytes (str (String. ^bytes % "UTF-8") " []")))))))
+    ;; The concatenation is balanced, but each Compiler/load input is invalid.
+    (is (= 1 (count (context/source-forms! "combined" (bytes "(do (def captured [1])\n(def value (first captured)))\n")))))
+    (is (thrown? Exception
+                 (context/plan! (read-bytes (assoc inputs
+                                                   (str context/source-root "gravity/bootstrap_impl/a.clj") (bytes "(do (def captured [1])\n")
+                                                   (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured)))\n"))))))
+    (is (thrown? Exception (context/source-forms! "reader-eval" (bytes "#=(+ 1 2)"))))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
