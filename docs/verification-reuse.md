@@ -935,7 +935,10 @@ This finite implementation targets repeated Bootstrap initialization for the
 two original compatibility selections, not narrower result-cache authority.
 `sh01_parallel_test_runner.clj` gives the two named normal jobs a common batch
 affinity when their policies match and neither supplies a narrowed closure.
-The actual test bodies and separate namespace results remain unchanged.
+In that original candidate, the actual test bodies and separate namespace
+results remained unchanged. The explicit test-only successor below changes
+the C11 facade test's construction-dependent assertion, not either production
+facade or its authentication contract.
 Different policies, narrowed closures, foreign namespaces, other resource
 classes, batch-size limits, standalone selection and fail-fast skips retain
 their existing boundaries. A heterogeneous batch does not inherit one
@@ -968,8 +971,9 @@ under `bootstrap/clojure/src/gravity/bootstrap_impl/`. It binds an authenticated
 Reader source identity, not a work allowance to increase for this test. The
 current accepted Reader source and the legacy C11 facade route disagree.
 The existing MIR owner is asked to identify the intended current invocation
-or required source-owner handoff. No pin, test body or compiler source is changed
-here; no unchanged retry is authorized by this result.
+or required source-owner handoff. That original attempt changed no pin, test
+body or compiler source; the later handoff below is distinct. No unchanged
+retry is authorized by the original result.
 
 Supervisor receipt SHA-256:
 `1829423660404107fed5e394c2f8dd4faf73d91add813d049183ba57271981ba`.
@@ -1018,5 +1022,20 @@ This amendment tests the namespace's stated wrapper/interposition contract.
 It deliberately replaces the previous accidental hosted-product construction
 with that explicit oracle. The old `C2-HASH` failure remains a real failure of
 the hosted chain; current-source/Reader/C11 product acceptance stays separately
-owned and unproven by PR494. No upstream authenticated input or report is
-stubbed to obtain source acceptance, and no pin is changed.
+owned and unproven by PR494. The original test was introduced as
+`c11-mir-compatibility-wrappers-preserve-interposition`; its operation, public
+arity and interposed-configuration assertions define that forwarding property.
+The engine contract also explicitly declares partial operation overrides,
+compatibility-only status and no source-authentication or canonical-verifier
+authority. Those facts support this facade-only oracle, not removal of a
+product-conformance requirement.
+
+Actual verifier/product obligations remain open in the canonical
+[MIR tasks](../specs/mir-workflow/tasks.md), particularly `mir/3` and `mir/5`;
+none of their task states is changed here. The specific legacy hosted file
+constructor's `C2-HASH` failure above also remains unresolved with the MIR and
+upstream owners. New checked-Core/C11 public-v2 evidence does not repair or
+accept that different legacy route. A supported source-policy interface or
+properly reviewed authenticated source revision is a separate owner decision.
+No upstream authenticated input or report is stubbed to obtain source
+acceptance, and no pin is changed.
