@@ -52,15 +52,19 @@ jobs:
       - name: Run checks in fresh child processes
         env:
           CI_MODE: ${{ matrix.mode }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
+      - name: Reject tracked source mutation
+        if: always()
+        run: git diff --exit-code HEAD
       - name: Preserve logs, command receipts and provenance
         if: always()
         run: |
           mkdir -p target/ci
           git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
           git status --porcelain > target/ci/worktree.txt
-          java -version > target/ci/java.txt 2>&1
-          clojure -Sdescribe > target/ci/clojure.txt 2>&1
+          java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
+          clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
           find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -106,10 +110,14 @@ jobs:
         run: |
           mkdir -p target/ci
           git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
-          clojure -Sdescribe > target/ci/clojure.txt 2>&1
-          java -version > target/ci/java.txt 2>&1
+          git diff HEAD > target/ci/source-mutation.diff
+          clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
+          java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
           find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
+      - name: Reject tracked source mutation
+        if: always()
+        run: git diff --exit-code HEAD
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -124,8 +132,78 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Report unavailable genuine integration gate
         run: |
+          mkdir -p target/ci
+          git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
+          printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
+          echo 'unavailable/nonpassing: C6-VERIFY/:actual-selected-current-reader-products; no genuine execution attempted' > target/ci/core-readiness.txt
           echo '::error::Genuine current-source Core construction and independent fresh verification are unavailable on main. Native owner is repairing the C3 Reader-provenance join (C6-VERIFY/:actual-selected-current-reader-products). No modeled test substitutes for this gate.'
           echo 'Source-to-Core gate: unavailable/nonpassing; no genuine compiler execution claimed.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: ci-core-readiness-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/ci/
+          retention-days: 14
+
+  snapshot:
+    name: experimental-source-snapshot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/clojure
+      - name: Package exact source twice and compare
+        run: clojure -J-Xmx256m -Srepro -M tools/ci/snapshot.clj
+      - name: Reject tracked source mutation
+        if: always()
+        run: git diff --exit-code HEAD
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: experimental-source-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            target/experimental/
+            target/ci/
+          retention-days: 14
+          if-no-files-found: error
+
+  publish:
+    name: experimental-prerelease
+    needs: [checks, leaves, snapshot]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: experimental-source-${{ github.sha }}-${{ github.run_attempt }}
+          path: snapshot
+      - name: Verify and publish experimental source prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cd snapshot/experimental
+          sha256sum --check SHA256SUMS
+          gh release create "experimental-source-$GITHUB_SHA" \
+            --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Experimental source snapshot $GITHUB_SHA" \
+            --notes-file CAPABILITIES.md \
+            ./*.tar.gz provenance.edn CAPABILITIES.md SHA256SUMS 2>&1 | tee ../publication.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: publication-${{ github.sha }}-${{ github.run_attempt }}
+          path: snapshot/
+          retention-days: 14

@@ -6,7 +6,7 @@ runs:
     - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
         distribution: temurin
-        java-version: 21.0.8+9
+        java-version: 21.0.8+9.0.LTS
     - uses: DeLaGuardo/setup-clojure@3fe9b3ae632c6758d0b7757b0838606ef4287b08 # 13.4
       with:
         cli: 1.12.5.1654
