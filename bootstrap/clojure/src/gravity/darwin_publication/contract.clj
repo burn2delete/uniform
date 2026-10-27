@@ -1,16 +1,6 @@
 (ns gravity.darwin-publication.contract
   "Internal Darwin publication contract operations."
-  (:require [clojure.string :as str])
-  (:import [java.lang.foreign Arena FunctionDescriptor Linker
-            Linker$Option MemoryLayout MemoryLayout$PathElement MemorySegment
-            ValueLayout]
-           [java.lang.invoke VarHandle$AccessMode]
-           [java.nio ByteBuffer]
-           [java.nio.charset CharacterCodingException CodingErrorAction
-            StandardCharsets]
-           [java.nio.file InvalidPathException Paths]
-           [java.security MessageDigest SecureRandom]
-           [java.util Collections WeakHashMap]))
+  (:require [clojure.string]))
 
 (def namespace-contract
   {:namespace 'gravity.darwin-publication
@@ -53,7 +43,7 @@
 (def unique-file-read-flags 0x21003000)
 
 (def at-removedir 0x0080)
-(def relative-unique-stat-flags 0xa800)
+(def relative-unique-stat-flags 0x2800)
 (def relative-bounded-stat-flags 0x2800)
 (def relative-cleanup-file-flags 0)
 (def relative-cleanup-directory-flags at-removedir)

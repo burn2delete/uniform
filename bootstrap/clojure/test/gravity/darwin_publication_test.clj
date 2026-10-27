@@ -2,16 +2,25 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.darwin-publication :as publication])
+            [gravity.darwin-publication :as publication]
+            [gravity.darwin-publication.contract :as contract])
   (:import [java.nio.file Files LinkOption OpenOption Path Paths
             StandardCopyOption StandardOpenOption]
            [java.nio.file.attribute FileAttribute PosixFilePermission]
-           [java.nio.charset StandardCharsets]
-           [java.util UUID]))
+           [java.nio.charset StandardCharsets]))
 
 (def ^:private file-names
   ["program.c" "program.h" "program.o" "program"
    "manifest.edn" "provenance.edn" "conformance.edn"])
+
+(deftest descriptor-stat-flags-preserve-supported-resolution-protection
+  ;; Independent ABI boundary: Apple XNU f6217f89 fstatat/fstatat64 allow only
+  ;; these public AT_* bits. Unknown bits return EINVAL before path resolution.
+  (let [allowed (bit-or 0x20 0x200 0x400 0x800 0x2000)
+        required (bit-or 0x800 0x2000)
+        flags contract/relative-unique-stat-flags]
+    (is (zero? (bit-and flags (bit-not allowed))))
+    (is (= required (bit-and flags required)))))
 
 (def ^:private owner-only-permissions
   #{PosixFilePermission/OWNER_READ
@@ -303,8 +312,8 @@
                    StandardOpenOption/WRITE]))
               assoc-failure
               (try
-                (assoc staged :file-specs {} :file-records {})
-                ::unexpected-success
+                (let [_ (assoc staged :file-specs {} :file-records {})]
+                  ::unexpected-success)
                 (catch ClassCastException _ :rejected))
               data
               (failure-data
