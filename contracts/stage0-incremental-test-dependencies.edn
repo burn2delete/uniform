@@ -178,7 +178,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? false}}]}]
  :standalone-tests
- [{:test-id "module-census"
+ [{:test-id "resolution-parent-mutation"
+   :path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
+   :namespace gravity.self-hosting.resolution-parent-mutation-test
+   :jvm-group "resolution-parent-mutation"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "module-census"
    :path "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
    :namespace gravity.self-hosting.module-census-test
    :jvm-group "module-census"
