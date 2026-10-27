@@ -9,7 +9,7 @@
             (try
               (let [ingress (authenticate-checked-core-ingress!
                              checked-core context :contained-checked-core-ingress)]
-                (p15-s23-c11-mir-v2-source-family! checked-core version)
+                (p15-s23-c11-mir-v2-source-family! (:source-path context) checked-core version)
                 (binding [*p15-s23-c11-mir-diagnostic-context*
                           (p15-s23-c11-mir-diagnostic-context checked-core context {})]
                   (construct-authenticated-c11-mir!
@@ -41,7 +41,7 @@
                  p15-s23-c11-mir-max-final-artifact-carrier-nodes p15-s23-c11-mir-max-carrier-depth)
                 (let [ingress (authenticate-checked-core-ingress!
                                checked-core context :contained-public-checked-core-verifier)]
-                  (p15-s23-c11-mir-v2-source-family! checked-core version)
+                  (p15-s23-c11-mir-v2-source-family! source-path checked-core version)
                   (binding [*p15-s23-c11-mir-diagnostic-context*
                             (p15-s23-c11-mir-diagnostic-context checked-core context artifact)]
                     (p15-s23-c11-mir-validate-final-artifact! artifact checked-core context version)

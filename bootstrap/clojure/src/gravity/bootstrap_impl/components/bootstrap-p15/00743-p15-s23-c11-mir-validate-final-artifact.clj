@@ -15,7 +15,7 @@
      source-path :checked-core checked-core checked-core-sorted-policy)
     (p15-s23-c11-mir-require-trusted-carrier!
      source-path :checked-core-context context checked-core-sorted-policy)
-    (p15-s23-c11-mir-v2-source-family! checked-core version)
+    (p15-s23-c11-mir-v2-source-family! source-path checked-core version)
     (p15-s23-c11-mir-bounded-value!
      source-path :authenticated-c11-mir-artifact artifact
      p15-s23-c11-mir-max-final-artifact-carrier-nodes
