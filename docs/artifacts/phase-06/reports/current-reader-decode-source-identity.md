@@ -91,8 +91,21 @@ documentation/tooling changes are also preserved. The full emitter source and
 binding hashes nevertheless change. The A/B receipts remain attributed to
 their original tuple. A scoped host path/reference/language/LOC composition
 attempt stopped at normal broker capacity admission before any tests or
-Bootstrap construction; it is not a composition pass. Integration remains
-held pending that proportionate composed-tree check.
+Bootstrap construction; it remains a nonexecution receipt, not a composition
+pass. After the original process exited and new capacity evidence was obtained,
+normal guarded acquisition admitted the pending check.
+
+Main `e5d0bacd` adds only development planner, metadata, tests and documentation;
+those changes are preserved by normal reconciliation. The composed-tree check
+executed `07e5a32d3f63b236fbd92a1f33b0c7a2995df66d`, tree
+`00a615153be30711ded496277ffa4af89b910702`: natural exit 0, 15 tests / 51
+assertions, 8.314 seconds, actual 2 GiB with the unchanged 120-second watchdog.
+Reference, language and LOC tests ran before Bootstrap; the final selector
+checked only host path/binding guards. Zero source constructors were selected.
+Clean bookends matched and both output streams were empty. The receipt SHA-256
+is `667efe1b6dbe04faae6a21108624a9293be7fc112ab19fe51a6ef3cdd7056f30`.
+This closes composition validation without reissuing the A/B source evidence
+under a different emitter identity.
 
 Semantic identity is independent of the working directory. Physical provenance
 is deliberately separate: the descriptor records the real invocation root,
