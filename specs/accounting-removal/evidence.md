@@ -2,6 +2,24 @@
 
 ## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
 
+Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
+`2c2ac4199c7bc57fca8717324f1f282e368f36b4`, passed its current-main candidate
+batch: 21 tests / 1,644 assertions, zero failures/errors, natural exit zero in
+22.062 s, actual 2 GiB heap, complete 2,595-byte stdout and empty stderr.
+Exact clean bookends and complete cleanup were recorded. Seven new normalized
+three-owner tests, eight actual Effects kernels and six language-boundary
+tests were selected explicitly. Independent exact-source and retained-result
+review accepted the finite removal and private alias routing. Full descriptor
+and nested proof equality, rebuilt stale-field rows/facts, source/type/ledger
+tampering, public fallback, late opaque validation, Never and construction
+effects all remain effective. The receipt SHA-256 is
+`0ab80bbdb1dcbd70de3e0f69a081f0fbfaa9c68d570cb2d180d715f4ebbce53d`.
+This is a fresh batch, not reuse of historical PR359 tests. Final repository
+gates, exact public readback and normal integration remain separate steps.
+
+The read-only current-main baseline receipt SHA-256 is
+`fd4d88595fee341f403ff1b3cb49d381a10243f61b12585a37d8cd4b3373e42e`.
+
 The original draft is preserved at `6a4f87f013d0076b81aba9e0667650e70d28e635`,
 tree `f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. Its common base with current
 main is `cfb499405450d479955fa70daa0f14dfa3233ee8`. The authored delta has
