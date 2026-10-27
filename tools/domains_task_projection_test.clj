@@ -53,6 +53,15 @@
                  (str "<!-- " marker ":end -->\n<!-- " marker ":start -->")]]
       (is (rejects? #(domains-task-projection/project tasks bad))))))
 
+(deftest status-replacement-preserves-literal-dollars
+  (doseq [status ["Partial; receipt $1 pending"
+                  "Partial; [receipt](https://example.com/review?value=$1)"]]
+    (let [changed (str/replace-first tasks "Status: Open" (str "Status: " status))
+          projected (domains-task-projection/project changed roadmap)]
+      (is (= 7 (count (domains-task-projection/records changed))))
+      (is (str/includes? projected (str "implementation status: " status)))
+      (is (= projected (domains-task-projection/project changed projected))))))
+
 (deftest relative-math-link-and-strict-markdown
   (let [rows (domains-task-projection/records tasks)]
     (is (= 1 (count (mapcat #(re-seq domains-task-projection/link-pattern (:projection %)) rows))))

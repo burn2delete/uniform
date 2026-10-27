@@ -45,7 +45,7 @@
                     (task-projection/region text (str "domains-task-projection/" id))
                     block (if (= "Open" status) projection
                             (str/replace-first projection open-tasks-pattern
-                              (str "Remaining tasks (implementation status: " status "):")))]
+                              (fn [_] (str "Remaining tasks (implementation status: " status "):"))))]
                 (str prefix "\n" (rebase-links block task-path roadmap-path) "\n" suffix)))
             roadmap-text outcome-order)))
 

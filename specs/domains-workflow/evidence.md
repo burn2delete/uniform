@@ -45,6 +45,12 @@ grant, target adoption or compiler/release completion is inferred.
 The first focused invocation stopped before tests because of a test-only
 premature local-binding closure. After correction, focused tests passed
 5 tests / 97 assertions with zero failures/errors; projection check passed.
+Independent review then reproduced a valid dollar-containing status crashing
+the regex replacement. A replacement callback fixes literal status rendering;
+new plain-text and HTTPS-query dollar controls pass with idempotence. Regression
+fixture development also had a test-only binding nonrun and a missing status
+label error; those are not passing evidence. The corrected focused suite passes
+6 tests / 103 assertions with zero failures/errors.
 Baseline comparison passed all seven literal keys/headings/Open statuses and
 complete outcome/task/acceptance/integration/decision blocks, Math/Schema
 paragraph boundaries, Math's actual contract-index target, entire historical
