@@ -1128,6 +1128,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00713-p15-s23-c6c10-project-front-end.clj", :reader-line 113369, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-project-front-end"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00714-p15-s23-c6c10-normalize-deferred-ratio-instruction.clj", :reader-line 113544, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-normalize-deferred-ratio-instruction"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00715-p15-s23-c6c10-instruction-numeric-occurrences.clj", :reader-line 113687, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-instruction-numeric-occurrences"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00716a-p15-s23-c6c10-private-stage2-plan.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-private-stage2-plan"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00716-p15-s23-c6c10-normalize-deferred-ratios-in-plan.clj", :reader-line 113929, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-normalize-deferred-ratios-in-plan"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00717-p15-s23-c6c10-function-merkle-manifest.clj", :reader-line 114134, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-function-merkle-manifest"}
  {:resource "gravity/bootstrap_impl/components/foundation/00718-p15-s23-c6c10-compiled-binding-metrics.clj", :reader-line 114209, :owner :foundation, :first-form "*p15-s23-c6c10-compiled-binding-metrics*"}
@@ -1135,10 +1136,12 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720-p15-s23-c6c10-compiled-binding-cache-key.clj", :reader-line 114439, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-compiled-binding-cache-key"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720a-p15-s23-c6c10-compiled-binding-cache.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "let"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720b-p15-s23-c6c10-current-reader-program.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720c-p15-s23-c6c10-current-reader-envelope.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00721-p15-s23-c6c10-digest-ref-shape.clj", :reader-line 114677, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-digest-ref-shape?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00722-p15-s23-c6c10-validate-digest-request-graph.clj", :reader-line 114890, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-validate-digest-request-graph!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00723-p15-s23-c6c10-seal-digest-request-result.clj", :reader-line 115079, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-seal-digest-request-result!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj", :reader-line 115307, :owner :bootstrap-p15, :first-form "p15-s23-stage2-gravity-checked-core-context"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00724a-p15-s23-c6c10-fresh-construction.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "require"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00725-p15-s23-c6c10-exact-digest-ref-present.clj", :reader-line 115542, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-exact-digest-ref-present?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00726-p15-s23-c6c10-gravity-candidate-verification.clj", :reader-line 115772, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-gravity-candidate-verification!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00727-p15-s23-c11-mir-required-functions.clj", :reader-line 115944, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-required-functions"}
@@ -1152,7 +1155,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00734-p15-s23-c11-mir-runtime-check-fact-record.clj", :reader-line 117200, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-runtime-check-fact-record"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735b-p15-s23-c11-mir-parameter-facts.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-parameter-facts-valid?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735a-p15-s23-c11-mir-entry-parameter.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-parameter-position?"}
- {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735c-p15-s23-c11-mir-v2-source-family.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-v2-source-family!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735c-p15-s23-c11-mir-v2-source-family.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "require"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735-p15-s23-c11-mir-downstream-ids.clj", :reader-line 117424, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-downstream-ids"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00736-p15-s23-c11-mir-block-keys.clj", :reader-line 117659, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-block-keys"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00737-p15-s23-c11-mir-validate-fact-tables.clj", :reader-line 117868, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-fact-tables!"}
