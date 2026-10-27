@@ -573,3 +573,13 @@ collection traversal/stringification does not itself demonstrate native-class
 or identity-cycle validation. Dropping its depth/size refusals alone would not
 establish termination or representation safety. No new permanent quota or
 runtime-certification prerequisite is introduced by that observation.
+
+Subsequent normal reconciliation `f1f93901b5192381fa57c56dc4a8b50aba3df52f`,
+tree `5a9f09059249e97b47ce944dd5198a02f559634a`, preserves main `6a453ea4`'s
+seven lossless C3 projection/fixture/test/report paths. Independent route review
+confirmed that SH08 compiler-plan construction still uses host-oracle records
+and the unchanged hosted syntax-object-stream; canonical C3 literal projection
+is not invoked. The 11/197 semantic receipt retains `01836005` provenance with
+all actual consumed inputs unchanged. Fresh composed repository gates and an
+exact-base preflight cover the new repository tree; no Reader/C3 or genuine
+authenticated-source acceptance is inferred.
