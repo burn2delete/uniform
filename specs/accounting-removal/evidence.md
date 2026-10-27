@@ -583,3 +583,113 @@ is not invoked. The 11/197 semantic receipt retains `01836005` provenance with
 all actual consumed inputs unchanged. Fresh composed repository gates and an
 exact-base preflight cover the new repository tree; no Reader/C3 or genuine
 authenticated-source acceptance is inferred.
+
+## ACC-13 source-proof ancestry admission
+
+The finite ancestry family changes only C7 and its existing SH08 test namespace.
+Both ancestry producers and both proof consumers migrate together. Explicit
+visited IDs replace the depth cutoff; canonical node records and unique path
+IDs precede complete edge checks. Missing/disconnected paths and cycles fail.
+The existing loop/function crossing exclusion, source joins, incoming-transfer
+census, guard and numeric/index premises, exact proof reconstruction and retained
+runtime checks remain. Keyword/String IDs are supported; this is not an
+arbitrary identifier-class or foreign-container admission claim. Vector-origin
+recursion and binding-link caps, extent checks, inference/work pools and generic
+carrier admission are unchanged and remain separate open accounting.
+
+Initial current-main baseline `8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa`, tree
+`d0e0d650e67c13de5f71c8a12dd356a2f1fda30f`, exited naturally 1 after 7,472 ms
+before any test or observation: Bootstrap could not resolve the
+`macro-run-storage` namespace alias during load. Its receipt remains NONPASS,
+SHA `d1b1cded91173a3924269e244e643edd5932f3dcf801090cb8cfbd7bc5f5e1de`.
+No unrelated source was repaired in this increment.
+
+The separately identified baseline at last verified main
+`f3c74ffeac5ccd5c9047d6c436a4886796282d03`, tree
+`0415d991c9b59ab1c9098f67693faa8cf8827438`, passed 12 persisted observations
+in 15,254 ms, natural exit 0, actual 2 GiB heap. Depth 2 is accepted; depth 140
+is refused by both ancestry producers and the direct path validator. Actual
+successor derivation is refused, and the nth derivation is downstream of its
+rejected invariant, not independent attribution to nth's own cap. C7 and SH08
+are identical between the two baseline revisions. Receipt SHA:
+`003d29525d01b12b306d3485be3c116f965b71de85d02bfb52e34229956b931e`.
+
+Candidate `d3e17c27e5a2f62a5da4d26a677f251fe1f0f70e`, tree
+`2ff4aa2ba69d36c022945d469951aae2b74e1eaf`, passed **12 tests / 294 assertions**,
+zero failures/errors, natural exit 0 in **15,088 ms**, actual 2 GiB heap under
+the existing two brokers, canonical lock and 120-second watchdog. The complete
+1,675-byte stdout and empty stderr, identical clean bookends and complete
+cleanup were independently inspected. Receipt SHA:
+`2eec3aff0f1fac63e4a3f8c4dfd8aa5a55a681a02808190d4be125acf1aa41c0`.
+
+Selected scope: three new ancestry vars, the existing successor, vector-nth
+and vector-get kernels, and six language-boundary vars. Actual Gravity helpers
+check paths at depths 2/140/260; the derived successor proof has 141 entries,
+and nth/get guard paths have 142. Fresh proof validators accept the complete
+results and reject late edge/source/guard changes and duplicated entries.
+Cycle, absent parent/node, disconnected root and loop/function crossing controls
+remain rejecting. These are normalized source graphs, with no supplied safety
+proof or inference result; genuine authenticated-source/public authority is
+unrun. Runtime execution, C12 and release are also unrun. No semantic rerun was
+performed by the independent reviewer.
+
+| Accepted input | SHA-256 |
+| --- | --- |
+| C7 engine | `503dd647feddf376e1a0380be4cdc6a87bcb444b180433d4f55fae74fbd10ad0` |
+| Existing SH08 test namespace | `efbc7f069f39bcfe6ed93eb3d068a05a5e9032cd39c2784c419f883767d5f31d` |
+
+Compiler-free fixture/test-form controls passed without loading Bootstrap.
+An initial private driver-generation delimiter error and a cheap boundary
+invocation missing the test classpath both stopped before semantic tests; their
+corrected controls are preparation evidence only. The corrected boundary control
+passed 6 tests / 11 assertions. None changes the current-main load NONPASS.
+
+This finite implementation/result is independently accepted, but current-main
+semantic acceptance and integration remain blocked by the distinct namespace-load
+failure. Standalone acceptance must not be promoted to current-main acceptance.
+All full original ACC rows, including ACC-13, remain open.
+
+Normal reconciliation `848a4812b4d5360dd1eb4242a9b9d804cb13b33d`, tree
+`6e63108c2b30f776c331a311b3f8e828af3b916f`, preserves all seven current-main
+Macro/storage/metadata paths. The two accepted C7/SH08 blobs remain identical
+to `d3e17c27`. The Bootstrap dependency is changed and is known to fail loading;
+therefore the 12/294 receipt is retained only at its standalone provenance,
+not reused as composed-main semantic acceptance. Lightweight repository gates
+at the preceding documentation successor passed 11 tests / 23 assertions,
+actual LOC validation (2,033 files), 240 documents / 19 phase indexes and the
+full-language roadmap. Those checks do not execute or accept Bootstrap.
+
+### Repaired-main ancestry composition
+
+PR483 merged the alias-order repair at
+`c0c7f9c363c709827e95f166e922fe9d1c07caf2`, tree
+`f7f8a02c73e4b69e3032e97789560a09d3e12a9c`. It moves the existing require to
+its first semantic consumer; verifier/storage behavior is unchanged. The
+owner's independently reviewed cold-load evidence covers namespace loading,
+not C7 semantics or initialization-effect closure. The original `8cebb933`
+NONPASS remains historical failure evidence.
+
+Normal composition `3e80fc8460309591b1019aae97f763a37354fbc0`, tree
+`52e342188a6003679850a59f18c28cec4f36065d`, preserves all Reader/repair paths.
+C7 and the owning SH08 test namespace are byte-identical to tested `d3e17c27`.
+The hosted seed route uses host-oracle records and macro construction without
+invoking the changed SH05 storage verifier. Reader's `form-kind` is consumed;
+its added BigDecimal case does not alter the top-level definition forms used by
+this route. Canonical C3 expansion-lineage construction is not consumed here.
+This is a source-specific dependency assessment, not a blanket unchanged-Reader
+or effect-closure claim.
+
+Actual focused composition passed **9 tests / 63 assertions**, zero
+failures/errors, natural exit 0 in **14,686 ms**, actual 2 GiB heap under the
+unchanged guarded route. The three new ancestry vars and six boundary vars were
+selected. Complete stdout is 1,371 bytes; stderr is empty. Exact clean
+bookends and complete cleanup/root termination were retained. Receipt SHA:
+`f281c9d8c69684a854cc22bc367e774d00dc95ea7c4d1de8b076f0c288cf08f3`.
+Driver SHA:
+`382b266e67d8b067dbd20c5a326b1a4a3bcae7ee73a4650d4d0646f3a73bec91`.
+
+The original three unchanged regression vars (successor, vector-nth and
+vector-get kernels) retain `d3e17c27` provenance. The original 12/294 and fresh
+9/63 are not summed and are not described as a fresh full 12-var run. Genuine
+authenticated-source/public acceptance, arbitrary foreign containers, runtime,
+C12, release and every full original accounting row remain open.
