@@ -104,6 +104,8 @@ fresh proof validators. Runtime guards remain retained and check elision remains
 unauthorized. This closes implementation and focused validation of this finite
 ancestry family, not full ACC-13. Vector-origin recursion/binding-link limits,
 collection extents, carrier limits, work pools and other original criteria stay
-open. Current-main acceptance and integration are pending an unrelated Bootstrap
-namespace-load failure; the accepted source is based on the last verified main
-tree, and its result does not establish acceptance of the failing main revision.
+open. PR483 repaired the distinct Bootstrap load failure. Fresh composition on
+that merged main passed 9 tests / 63 assertions, preserving the original
+standalone and failed receipts separately. Repository gates, independent final
+review and normal integration complete this finite ancestry increment; no full
+original ACC row is closed by it.

@@ -658,3 +658,38 @@ not reused as composed-main semantic acceptance. Lightweight repository gates
 at the preceding documentation successor passed 11 tests / 23 assertions,
 actual LOC validation (2,033 files), 240 documents / 19 phase indexes and the
 full-language roadmap. Those checks do not execute or accept Bootstrap.
+
+### Repaired-main ancestry composition
+
+PR483 merged the alias-order repair at
+`c0c7f9c363c709827e95f166e922fe9d1c07caf2`, tree
+`f7f8a02c73e4b69e3032e97789560a09d3e12a9c`. It moves the existing require to
+its first semantic consumer; verifier/storage behavior is unchanged. The
+owner's independently reviewed cold-load evidence covers namespace loading,
+not C7 semantics or initialization-effect closure. The original `8cebb933`
+NONPASS remains historical failure evidence.
+
+Normal composition `3e80fc8460309591b1019aae97f763a37354fbc0`, tree
+`52e342188a6003679850a59f18c28cec4f36065d`, preserves all Reader/repair paths.
+C7 and the owning SH08 test namespace are byte-identical to tested `d3e17c27`.
+The hosted seed route uses host-oracle records and macro construction without
+invoking the changed SH05 storage verifier. Reader's `form-kind` is consumed;
+its added BigDecimal case does not alter the top-level definition forms used by
+this route. Canonical C3 expansion-lineage construction is not consumed here.
+This is a source-specific dependency assessment, not a blanket unchanged-Reader
+or effect-closure claim.
+
+Actual focused composition passed **9 tests / 63 assertions**, zero
+failures/errors, natural exit 0 in **14,686 ms**, actual 2 GiB heap under the
+unchanged guarded route. The three new ancestry vars and six boundary vars were
+selected. Complete stdout is 1,371 bytes; stderr is empty. Exact clean
+bookends and complete cleanup/root termination were retained. Receipt SHA:
+`f281c9d8c69684a854cc22bc367e774d00dc95ea7c4d1de8b076f0c288cf08f3`.
+Driver SHA:
+`382b266e67d8b067dbd20c5a326b1a4a3bcae7ee73a4650d4d0646f3a73bec91`.
+
+The original three unchanged regression vars (successor, vector-nth and
+vector-get kernels) retain `d3e17c27` provenance. The original 12/294 and fresh
+9/63 are not summed and are not described as a fresh full 12-var run. Genuine
+authenticated-source/public acceptance, arbitrary foreign containers, runtime,
+C12, release and every full original accounting row remain open.
