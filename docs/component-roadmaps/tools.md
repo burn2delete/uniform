@@ -7,6 +7,10 @@ Owner role: developer-tooling maintainer, with service specialists named below.
 Current owners are not assigned by this proposal; Deus confirms existing
 reservations or assigns unowned service work before implementation.
 
+Implementation task authority: [Spec Kit service ledger](../../specs/tools-workflow/tasks.md#implementation-tasks).
+Edit the ledger and run `clojure -M tools/tools_task_projection.clj --write`;
+the twelve service rows below are generated.
+
 ## Purpose and scope
 
 Implement actual developer services over compiler and runtime facts. [CLI](cli.md)
@@ -59,6 +63,7 @@ session or compiler test was executed for this roadmap.
 
 ## Finite service outcomes and remaining work
 
+<!-- tools-task-projection:start -->
 Every row is open. The concrete implementation tasks in each row close only
 with actual service execution and the listed yes/no evidence, not record flags.
 Specialist roles are accountability recommendations, not ownership transfers.
@@ -77,6 +82,7 @@ Specialist roles are accountability recommendations, not ownership transfers.
 | Registry View / package-tool maintainer | Implement structured package search/detail and update diffs; expose signatures, SBOM and revocation; enforce private visibility | CLI/API package facts agree? Capability changes visible before install? Unauthorized package existence not disclosed? [Registry UX](../phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md) |
 | Safety Explorer / safety-tool maintainer | Expose unsafe/grant/taint/FFI/proof graphs from actual evidence; implement source navigation and structured export | Requested/granted/denied/used authority distinguished? Missing evidence visible? Certificate/checker identities retained? [Safety audit](../phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md) |
 | AI Development / AI-tool maintainer | Use declared AI artifacts to propose schema-validated patches/tests; compile-check generated source; enforce human-review policy before write and retain provenance | Repository/tool-output instructions remain untrusted data? Unreviewed writes rejected? Applied change has model/prompt/tool/reviewer identity? [AI tooling](../phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md) |
+<!-- tools-task-projection:end -->
 
 ## Acceptance and integration
 
