@@ -39,6 +39,7 @@
   (let [path (source-path extension) input (source-bytes path)
         before (aclone input) text (reference/strict-text input)
         positions (reference/positions text)
+        _ (is (java.util.Arrays/equals input (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)))
         products (b/c2-reader-products path text options project (reader-path))
         raw (:sh03-reader-raw-result products)
         result (:sh03-reader-result products)
@@ -61,6 +62,8 @@
            (get-in products [:sh03-reader-plan-binding :artifact])))
     (is (= (reference/sha256 (source-bytes (reader-path)))
            (get-in products [:sh03-reader-plan-binding :source-content-hash])))
+    (is (= (reference/sha256 (source-bytes (absolute "bootstrap/gravity/p15_s23/emitter.gravity")))
+           (:source-content-hash b/*p15-s23-stage2-compiler-artifact-binding*)))
     (is (= path (:path unit)))
     (is (= extension (:extension unit)))
     (is (= (case extension ".gravity" :gravity-branded-source ".qst" :qst-theory-source)
@@ -95,12 +98,17 @@
       (do (is (= text (apply str (map :raw (:token-stream products)))))
           (is (some :trivia? (:token-stream products))))
       (is (not-any? :trivia? (:token-stream products))))
+    (*progress* {:case label :event :returned :source-id (:source-id unit)
+                 :reader-status (:status result) :verification-status (:status verification)
+                 :envelope-status actual-envelope-verification})
     {:source-unit unit
      :reader-identities (:incremental-reader-hashes result)
      :adapter-summary (:sh03-reader-adapter-descriptor products)
      :reader-binding (select-keys (:sh03-reader-plan-binding products)
                        [:artifact :source-content-hash :source-byte-count
                         :plan-semantic-hash :functions-semantic-hash])
+     :emitter-binding (select-keys b/*p15-s23-stage2-compiler-artifact-binding*
+                       [:source-path :source-content-hash :semantic-hash :artifact-hash])
      :envelope (select-keys envelope [:semantic-envelope-id :provenance-binding-id
                                       :actual-path-provenance])}))
 
@@ -131,7 +139,9 @@
         (is (= line (get-in diagnostic [:facts :line])))
         (is (= path (get-in raised [:source-span :source])))
         (is (empty? (:token-stream result)))
-        (is (empty? (:form-tree result)))))))
+        (is (empty? (:form-tree result)))
+        (*progress* {:case label :event :returned :reader-status (:status result)
+                     :verification-status (:status verification)})))))
 
 (deftest selected-current-decoding-and-source-identity
   (binding [b/*p15-s23-stage2-compiler-artifact-binding*
@@ -168,6 +178,7 @@
                 (is (= (:reader-identities original) (:reader-identities current)))
                 (is (= (:adapter-summary original) (:adapter-summary current)))
                 (is (= (:reader-binding original) (:reader-binding current)))
+                (is (= (:emitter-binding original) (:emitter-binding current)))
                 (is (= (get-in original [:envelope :semantic-envelope-id])
                        (get-in current [:envelope :semantic-envelope-id]))))))
         (throw (ex-info "Unknown decode child phase" {:phase *phase*})))
