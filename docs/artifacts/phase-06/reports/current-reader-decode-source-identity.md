@@ -83,6 +83,17 @@ independent reference unit passed 3 tests / 17 assertions in the same context.
 The corrected launcher SHA-256 is
 `bf8daecace55a6fb6014b21145803293c31958bc0acaf4d0ce05448cdb11e97e`.
 
+Normal reconciliation with main `a33e0eef` produced `f63d6f82` / tree `7cf322ea`.
+All seven implementation/test/fixture blobs are unchanged from the genuine
+executions. Incoming emitter edits remove accounting fields from Map/List
+parameter-erasure headers, outside this Reader route; C7/Effects and
+documentation/tooling changes are also preserved. The full emitter source and
+binding hashes nevertheless change. The A/B receipts remain attributed to
+their original tuple. A scoped host path/reference/language/LOC composition
+attempt stopped at normal broker capacity admission before any tests or
+Bootstrap construction; it is not a composition pass. Integration remains
+held pending that proportionate composed-tree check.
+
 Semantic identity is independent of the working directory. Physical provenance
 is deliberately separate: the descriptor records the real invocation root,
 so its provenance-binding ID differs between these two processes. It also
