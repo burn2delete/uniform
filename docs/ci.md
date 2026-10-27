@@ -28,9 +28,23 @@ and static tool versions. It does not modify
 compiler dependencies or source authentication pins. Hosted runner images can
 change; record the run environment and do not claim hermetic reproduction.
 
-The Darwin source contract requires ARM macOS and JDK 26.0.1; it is not a
-portable Linux mock. Standard `macos-15` provides the supported ARM hosted
-runner. Cache tests retain their owner and permission checks: Java temporary
+The Darwin source contract declares ARM macOS and JDK 26.0.1. The current
+`macos-15` hosted run is nonpassing: descriptor-relative stat returns EINVAL
+with the required confinement flags. The declared host contract does not yet
+establish which kernel provides those capabilities. CI records the actual
+OS, kernel, SDK, FFM symbol and invalid-descriptor flag probes before running
+the complete publication tests. These read-only probes diagnose ABI acceptance;
+they do not prove path confinement, hardlink refusal or race handling. A newer
+host must pass the full positive and hostile cases before it supplies acceptance.
+No kernel flag or hostile case is removed to obtain a green check.
+
+PR static checks verify that the checkout has exactly two parents and that its
+second parent matches the event's PR head. They compare against the first
+parent of that tested merge, so stale event-base metadata cannot lint incoming
+main changes as PR changes. Main pushes compare against the push's `before`
+SHA and test the exact integrated commit.
+
+Cache tests retain their owner and permission checks: Java temporary
 files use a runner-owned private directory, rather than Linux's root-owned
 shared `/tmp`. No source security or runtime pin is relaxed for CI.
 
