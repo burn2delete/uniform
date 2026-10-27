@@ -74,6 +74,25 @@ remain closed; the other eleven original criteria, including full ACC-07/13,
 remain open. Genuine authentication, language-runtime execution, C12 and product
 release are unrun. Physical broker, heap, watchdog and platform limits survive.
 
+Fresh composed validation on `0453a469` / tree `44dd1637` passed cold Bootstrap
+loading followed by 11 tests / 23 assertions, actual LOC validation for 2,035
+files, 240 documents / 19 indexes and roadmap. Exact-base preflight passed on
+main `bf7893da`; natural exit 0 / 9,162 ms / actual 2 GiB, complete 637-byte
+stdout, empty stderr, exact clean bookends and cleanup. Receipt SHA-256:
+`df6d900ace441d843551d2523940d376213855e290736a3272528f091b1418b1`.
+
+The initial [PR499 CI static job](https://github.com/burn2delete/uniform/actions/runs/40546272191/job/122337633073)
+is NONPASS: changed-file clj-kondo returned zero errors / 76 warnings. One new
+unused test binding was removed in `fb02ad96` without changing an initializer,
+assertion or production code. Independent review accepted original semantic
+evidence reuse for that correction. The remaining 75 pre-existing warnings
+comprise 64 unused bindings, seven private helpers consumed dynamically by
+other tests, two redundant lets, one unused import and one runtime-only
+namespace require. Removing those helpers merely to quiet static analysis would
+break actual consumers. The existing CI owner retains its policy; no accounting
+worker suppresses or bypasses the check. The failed run remains failed, and
+the draft cannot be integrated until the normal check has a reviewed resolution.
+
 ## Vector-origin binding-chain admission
 
 The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree

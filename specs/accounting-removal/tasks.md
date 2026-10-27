@@ -63,6 +63,15 @@ at their recorded heads. No uncertain source operation was repeated. The
 original row disposition remains ACC-02/03 closed and eleven criteria open;
 the legacy 50% estimate remains unmeasured and is not recalculated from counts.
 
+[PR499](https://github.com/burn2delete/uniform/pull/499) remains draft despite
+passing local semantic and composed gates. Its first normal CI static job
+reported zero errors and 76 warnings in the two changed legacy test files.
+The one newly introduced unused binding is corrected in test-only `fb02ad96`;
+independent review confirmed unchanged assertions and production. The other
+75 warnings predate this patch, including seven helpers with dynamic callers.
+Their coordinated lint disposition remains an integration gate; no helper is
+deleted, warning suppressed or CI policy changed to obtain a merge.
+
 ## ACC-13 vector-origin binding chains - 2026-10-27 00:12:53 MDT
 
 Assessment source is accepted candidate `903e330ed28dd0fc5e56380d144d48bc67138944`,
