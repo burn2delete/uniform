@@ -67,6 +67,13 @@ Finite merge checklist:
 - [ ] Finish independent current-head integration review, routine CI,
   publication and normal merge/readback.
 
+Draft PR506 is published. Initial run `40595990230` passed six routine jobs
+and failed static CI on nine test-only lint warnings. Independently reviewed
+correction `bbfcd9f3` preserves production inputs and all assertions/cases;
+structural controls pass 1/6 and fresh boundary/LOC gates pass 11/23 with
+docs/roadmap passing. Corrected-head CI and ordinary integration remain open.
+The failed CI record and all original semantic receipt identities are retained.
+
 Evidence and original NONPASS attempts are recorded in `evidence.md`; passing
 selectors retain their exact original provenance. There is no summed or
 globally fresh suite claim. The two original rows ACC-02/03 remain closed;

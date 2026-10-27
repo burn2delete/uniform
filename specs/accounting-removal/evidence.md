@@ -107,6 +107,35 @@ validation reads its own roadmap. None consumes these accounting records, so
 their passing evidence retains its original head rather than being rerun or
 relabeled fresh. Final source, CI and integration review/readback remain open.
 
+### Published CI and test-only correction
+
+Draft PR506 published `e4d3c80c6664ef00a6a05ddc53a37902f67ab024`, tree
+`0b6aaca6fb61cd2ed1fe5b4bee359ee5e996236d`, against `637d5f07`. Its automatic
+run `40595990230` completed with six routine jobs passing and static CI failing.
+The actual changed-file lint report contains nine blocking warnings: five
+redundant nested lets, three redundant dos and one unused visit-count binding.
+The 223 unchanged baseline warnings were separately recognized by the existing
+lint policy. No lint configuration or policy change is made.
+
+Test-only correction `bbfcd9f3d1841d5ba62c470d6b07319878d51877`, tree
+`8e6b2d4362c439895cfa3fea2611ccc7b12671b8`, changes exactly the three existing
+test namespaces, 25 insertions and 25 deletions. The redundant wrappers are
+removed with binding order, assertion order and all five Vector-first cases
+preserved. Independent exact-diff review accepted the correction. Structural
+reader/normalized-form controls pass 1 test / 6 assertions. Production source,
+shared runtime implementation, contracts and dependencies are unchanged, so
+the original semantic receipts above retain their original provenance; no
+compiler rerun or globally fresh semantic pass is claimed.
+
+Fresh bounded non-Bootstrap gates at `bbfcd9f3` passed boundary/LOC 11 tests /
+23 assertions, source census 2,035, docs 240/19 and roadmap. The child exited
+naturally with zero in 2,399 ms; complete stdout was 456 bytes, stderr empty,
+exact bookends clean and equal, cleanup complete and root terminated. Receipt
+SHA-256: `bef34fb6ad4febfd3ddbfb86b8bbc7c63dadccd5a5698f19bf3d2b572c16cf7f`.
+The first published CI failure remains a failure. Fresh corrected-head CI,
+exact readback and normal integration remain required; no original ACC row
+closes from this test correction.
+
 ## ACC-06 finite intrinsic-limit acceptance - 2026-10-27 13:59 MDT
 
 Source candidate `cedbfd3b785d9f50676c9eb40a3fe1a9da8e0334`, tree
