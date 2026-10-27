@@ -845,6 +845,30 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- supported-resource-loaders?
+  "Observe only the reviewed resource-delegation domain, not in-memory class identity."
+  []
+  (try
+    (let [system (ClassLoader/getSystemClassLoader)
+          delegates?
+          (fn [loader]
+            (loop [current loader seen #{}]
+              (cond
+                (identical? current system) true
+                (not= clojure.lang.DynamicClassLoader (class current)) false
+                (contains? seen current) false
+                (seq (.getURLs ^clojure.lang.DynamicClassLoader current)) false
+                :else (recur (.getParent ^ClassLoader current) (conj seen current)))))]
+      (and (= "jdk.internal.loader.ClassLoaders$AppClassLoader" (.getName (class system)))
+           (nil? (.getClassLoader (class system)))
+           (identical? system (.getClassLoader clojure.lang.Compiler))
+           (delegates? (.getContextClassLoader (Thread/currentThread)))
+           (delegates? (clojure.lang.RT/baseLoader))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- archive-loader-inputs-contained?
   "Listed archive bytes cover manifest loading only when no Class-Path is declared.
   Unknown archives are outside the reviewed reuse domain. No referenced URL is opened."
@@ -882,7 +906,8 @@
              (mapv #(str (.relativize repository-root ^Path %))))
         external-paths
         (remove #(.startsWith ^Path % repository-root) paths)]
-    (when (and (= 2 (count internal-roots))
+    (when (and (supported-resource-loaders?)
+               (= 2 (count internal-roots))
                (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                   (set internal-roots))
                (every? archive-loader-inputs-contained? external-paths))
@@ -1491,7 +1516,8 @@
 (defn- effective-child-runtime
   [working-directory arguments]
   (try
-    (let [current (basis/current-basis)
+    (when (supported-resource-loaders?)
+      (let [current (basis/current-basis)
           config (:basis-config current)
           root (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
           jvm-arguments (jvm-input-arguments)
@@ -1545,7 +1571,7 @@
                                  material)]
           {:id :actual-child-runtime-v1
            :sha256 (sha256-id (pr-str fingerprints))
-           :fingerprints fingerprints})))
+           :fingerprints fingerprints}))))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
@@ -1560,7 +1586,8 @@
   not inspect processes or acquire a nested lease. Unknown launches and test
   policies execute fresh; no parent assertion can supply a child identity."
   [namespaces {:keys [arguments fail-fast?] :as options} operation]
-  (let [index (component-dependencies/dependency-index)
+  (let [resource-loaders-supported? (supported-resource-loaders?)
+        index (component-dependencies/dependency-index)
         by-namespace (into {} (map (juxt :namespace identity)
                                   (vals (:by-test-path index))))
         jobs (mapv (fn [namespace]
@@ -1586,8 +1613,9 @@
                                                      :freshness-required?]))))
                           jobs)
         working-directory (System/getProperty "user.dir")
-        startup-absent? (and reviewed? (child-startup-resources-absent? working-directory))
-        runtime (when (and reviewed? startup-absent?)
+        startup-absent? (and resource-loaders-supported? reviewed?
+                             (child-startup-resources-absent? working-directory))
+        runtime (when (and resource-loaders-supported? reviewed? startup-absent?)
                   (effective-child-runtime working-directory arguments))]
     (if-not runtime
       (assoc (operation)
@@ -1598,6 +1626,7 @@
              {:decision :fresh :cacheable? false :stored? false
               :producer-executed? true
               :reason (cond
+                        (not resource-loaders-supported?) :unreviewed-resource-loaders
                         (not reviewed?) :unreviewed-or-fresh-test-policy
                         (not startup-absent?) :unreviewed-startup-resources
                         :else :unknown-child-configuration)})
