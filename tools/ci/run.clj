@@ -82,9 +82,29 @@
   (if (and base (re-matches #"[0-9a-f]{40}" base)
            (not= base (apply str (repeat 40 "0")))) base "HEAD^"))
 
-(defn changed-clojure-paths []
-  (let [base (base-ref (System/getenv "CI_BASE_SHA"))
-        result (execute! "changed-path-discovery" 30
+(defn comparison-base [event before pr-head parents]
+  (if (= event "pull_request")
+    (do
+      (when-not (and (= 2 (count parents))
+                     (re-matches #"[0-9a-f]{40}" (or pr-head ""))
+                     (= pr-head (second parents)))
+        (throw (ex-info "PR checkout must be the tested merge of the event head"
+                        {:pr-head pr-head :parents parents})))
+      (first parents))
+    (base-ref before)))
+
+(defn checkout-base []
+  (let [result (execute! "checkout-parents" 30
+                         ["git" "show" "-s" "--format=%P" "HEAD"])]
+    (when-not (= :passed (:status result))
+      (throw (ex-info "Cannot verify checkout parents" result)))
+    (comparison-base (System/getenv "GITHUB_EVENT_NAME")
+                     (System/getenv "CI_BASE_SHA")
+                     (System/getenv "CI_PR_HEAD_SHA")
+                     (str/split (str/trim (slurp (io/file output "checkout-parents.log"))) #"\s+"))))
+
+(defn changed-clojure-paths [base]
+  (let [result (execute! "changed-path-discovery" 30
                          ["git" "diff" "--name-only" "--diff-filter=ACMR" "-z" base "HEAD"])]
     (when-not (= :passed (:status result))
       (throw (ex-info "Cannot determine changed files; selection failed closed" result)))
@@ -122,8 +142,8 @@
 
 (defn commands [mode]
   (case mode
-    "static" (let [paths (changed-clojure-paths)
-                   base (base-ref (System/getenv "CI_BASE_SHA"))]
+    "static" (let [base (checkout-base)
+                   paths (changed-clojure-paths base)]
                (concat [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]
                         ["workflow-lint" 30 ["actionlint" "-color"]]
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]

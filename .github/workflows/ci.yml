@@ -52,7 +52,8 @@ jobs:
       - name: Run checks in fresh child processes
         env:
           CI_MODE: ${{ matrix.mode }}
-          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_BASE_SHA: ${{ github.event.before }}
+          CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
       - name: Reject tracked source mutation
         if: always()

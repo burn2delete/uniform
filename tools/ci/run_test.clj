@@ -14,6 +14,20 @@
   (let [sha (apply str (repeat 40 "a"))]
     (is (= sha (ci/base-ref sha)))))
 
+(deftest pr-comparison-uses-the-tested-merge-parent
+  (let [stale-base (apply str (repeat 40 "a"))
+        current-main (apply str (repeat 40 "b"))
+        pr-head (apply str (repeat 40 "c"))]
+    (is (= current-main (ci/comparison-base "pull_request" stale-base pr-head
+                                            [current-main pr-head])))
+    (is (= stale-base (ci/comparison-base "push" stale-base nil
+                                          [current-main pr-head])))
+    (doseq [parents [[] [pr-head] [current-main stale-base]
+                     [current-main pr-head stale-base]]]
+      (is (thrown? Exception (ci/comparison-base "pull_request" stale-base pr-head parents))))
+    (is (thrown? Exception (ci/comparison-base "pull_request" stale-base nil
+                                               [current-main pr-head])))))
+
 (deftest platform-leaves-partition-the-entire-strict-catalog
   (binding [*command-line-args* nil]
     (load-file "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"))
