@@ -239,3 +239,22 @@ ordering discrepancy remain explicit open acceptance qualifications on the
 pipeline, binding-identity and Core-lowering records. This proposed join invents
 no fused pass, intermediate product or second pipeline and grants no
 implementation acceptance. It awaits independent source/equivalence review.
+
+## Independent preservation corrections
+
+Independent exact-candidate review confirmed the selected imports and residual
+category controls, but found a malformed projected task heading could be ignored
+when an ordinary boundary followed it. Every projected heading must now parse;
+projected and ordinary boundaries cannot compete. The regression rejects rather
+than silently discarding the original boundary. Twenty focused tests / 111
+assertions pass.
+
+The same review identified omitted advice metadata. The manifest now explicitly
+retains all four runtime source questions, 13 runtime relationship proposals,
+18 Language relationship proposals and four pinned Compiler discovery-artifact
+pointers. Their original normalized input identities remain attached. No alias
+is applied. Three runtime questions are proposed acceptance qualifications inside
+known scope; exact mixed accounting removal remains a source-identity question.
+Every proposed category names its affected existing owners and rationale. This
+repair changes no requirement, source disposition, facet, historical receipt or
+implementation task status.

@@ -2394,6 +2394,26 @@
    "39e3726d739456ebe15110b3d8d0a5ddf21ad16f44143948ff82b421fd4c9a4b",
    :state :proposed,
    :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+   :historical-discovery-index
+   {:source-artifacts
+    [{:path "proposals/compiler-family/historical-index.edn",
+      :commit "4e62e307274801a296c217b5d758f4ad935b594f",
+      :sha256
+      "2afbb58e6a45082297c222b1f55c37c21d68b16f330ddfd9df58005a6f23bc67"}
+     {:path "proposals/compiler-family/historical-context.edn",
+      :commit "4e62e307274801a296c217b5d758f4ad935b594f",
+      :sha256
+      "3b27a05993e24cf4e07b46aded3688de85ce03e6720fdceeb5742848046aeb6f"}
+     {:path "proposals/compiler-family/validation.edn",
+      :commit "4e62e307274801a296c217b5d758f4ad935b594f",
+      :sha256
+      "7fcc1206d5db9385a2aba25f068f547ab0f4d949304f215cec0fe9f213187bd5"}
+     {:path "proposals/compiler-family/checks.edn",
+      :commit "4e62e307274801a296c217b5d758f4ad935b594f",
+      :sha256
+      "ff204bf73ed065ee10aea8d7b23aac2c17c935937199f7a69e07ac7da5330d1a"}],
+    :qualification
+    "This preserves original engineering progress and failures without projecting supplied flags or historical checkmarks into current implementation acceptance."},
    :input-sha256
    "cc4d82fe10662c080e6999017f1ccfb4bc9e904049fa92537cc55f434801a954",
    :id "compiler",
@@ -2562,11 +2582,350 @@
     "S7"
     "S8"
     "S9"],
-   :source-decisions {},
+   :source-decisions
+   {:scope-decisions
+    [{:id
+      "scope/ai-project-accounting-versus-external-provider-policy",
+      :state :unresolved,
+      :documents ["R8" "DOM18"],
+      :question
+      "Source-bind removed project accounting separately from any actual external provider billing/account constraint; unqualified budget/cost/token clauses cannot be blanket accepted, reinstated or superseded."}
+     {:id "scope/target-and-runtime-family-matrices",
+      :state :unresolved,
+      :documents
+      ["R1"
+       "R2"
+       "R3"
+       "R4"
+       "R5"
+       "R6"
+       "DOM1"
+       "DOM2"
+       "DOM3"
+       "DOM4"
+       "DOM13"],
+      :question
+      "Adopt explicit target/ABI/provider/service matrices. Selected compiler runtime closure, target conformance and full platform product remain distinct declared scopes."}
+     {:id "scope/domain-replacement-surface-boundaries",
+      :state :unresolved,
+      :documents
+      ["DOM1"
+       "DOM2"
+       "DOM3"
+       "DOM4"
+       "DOM5"
+       "DOM6"
+       "DOM7"
+       "DOM8"
+       "DOM9"
+       "DOM10"
+       "DOM11"
+       "DOM12"
+       "DOM13"
+       "DOM14"
+       "DOM15"
+       "DOM16"
+       "DOM17"
+       "DOM18"
+       "DOM19"
+       "DOM20"
+       "DOM21"],
+      :question
+      "Preserve every declared support family beyond the minimum slice, with explicit grammar/API/target/provider and positive-negative acceptance boundaries; vague replacement/product surfaces cannot silently leave the denominator."}
+     {:id "scope/specialist-primary-task-authority",
+      :state :unresolved,
+      :documents ["DOM9" "DOM10" "DOM15" "DOM16" "DOM19"],
+      :question
+      "Assign actual specialist acceptance tasks for CRDT/local-first, physical storage/WAL, crypto/passkeys/protected compute, chain/account/order protocols and formal/ZK proof domains; no generic Workflow/Math/Auth link is a substitute."}],
+    :proposed-equivalence-review
+    [{:behavior "runtime/check-proof-preservation",
+      :owner-families ["SAFE" "PERF" "Opt"],
+      :proposed-relation :consumer-refinement,
+      :decision :root}
+     {:behavior "runtime/service-policy-enforcement",
+      :owner-families ["SAFE" "Auth" "Legality"],
+      :proposed-relation :runtime-hook-consumer,
+      :decision :root}
+     {:behavior "runtime/foreign-boundary-preservation",
+      :owner-families ["SAFE" "S7" "R10"],
+      :proposed-relation :boundary-consumer,
+      :decision :root}
+     {:behavior "runtime/static-service-elimination",
+      :owner-families ["Lower" "Legality"],
+      :proposed-relation :static-producer-runtime-rejection-interface,
+      :decision :root}
+     {:behavior "runtime/foreign-boundary-preservation",
+      :target "runtime/foreign-call-adaptation",
+      :proposed-relation :metadata-consumer-refinement,
+      :decision :root}
+     {:behavior "runtime/metadata-preservation",
+      :owner-families ["Build" "Emit" "Diag" "S9"],
+      :proposed-relation :common-provenance-with-specific-producers,
+      :decision :root}
+     {:behavior "schema/boundary-validation",
+      :owner-families ["SAFE" "Types" "AI" "Query"],
+      :proposed-relation
+      :shared-source-validator-with-sink-consumer-refinements,
+      :decision :root}
+     {:behavior "schema/compatibility-diff",
+      :owner-families ["Build" "Workflow" "Query" "AI" "Runtime"],
+      :proposed-relation
+      :schema-diff-producer-versus-stateful-upgrade-consumers,
+      :decision :root}
+     {:behavior "domain/proof-applicability",
+      :owner-families ["SAFE" "PERF" "Math" "Opt"],
+      :proposed-relation :shared-proof-consumed-closure-validity,
+      :decision :root}
+     {:behavior "domain/crypto-side-channel-validation",
+      :owner-families ["SAFE" "PERF"],
+      :proposed-relation
+      :specific-cryptographic-timing-property-not-generic-performance-budget,
+      :decision :root}
+     {:behavior "domain/crdt-convergence",
+      :owner-families ["Workflow" "Runtime"],
+      :proposed-relation :distinct-from-replay-idempotency,
+      :decision :root}
+     {:behavior "domain/transaction-order-safety",
+      :owner-families ["Auth" "Effects" "Runtime"],
+      :proposed-relation :specific-chain-ordering-and-trust-contract,
+      :decision :root}
+     {:behavior "runtime/static-service-elimination",
+      :target "runtime/forbidden-service-rejection",
+      :proposed-relation
+      :conditional-static-lowering-alternative-not-automatically-an-extra-mandatory-feature,
+      :decision :root,
+      :note
+      "R2 permits lowering away a runtime dependency with evidence or rejecting it. It does not independently require every optional elimination implementation; preserve the conditional scope."}]},
    :normalized-input-sha256
    "6e3201062011415298fad8b16444cf240fa94f07ead0aab9f99b0c027a6c026f",
    :state :proposed,
    :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+   :issue-adjudications
+   [{:issue-id
+     "scope/ai-project-accounting-versus-external-provider-policy",
+     :category :scope-identity,
+     :reason
+     "Exact mixed source fragments still require removal/retention adjudication under the accounting policy.",
+     :unit-ids
+     ["domain/support-agent-integration"
+      "runtime/ai-memory-policy"
+      "runtime/durable-effect-replay"
+      "runtime/model-provider-execution"
+      "runtime/nondeterminism-recording"
+      "runtime/service-policy-enforcement"
+      "runtime/tool-provider-execution"
+      "schema/boundary-validation"],
+     :state :proposed-for-independent-review}
+    {:issue-id "scope/target-and-runtime-family-matrices",
+     :category :acceptance-qualification,
+     :reason
+     "The declared target/runtime families remain in scope; missing provider, ABI and conformance matrices qualify implementation acceptance, not removal of those families.",
+     :unit-ids
+     ["domain/device-adaptation"
+      "domain/device-dma"
+      "domain/device-uart-integration"
+      "domain/firmware-image-production"
+      "domain/firmware-sensor-integration"
+      "domain/gpu-dispatch"
+      "domain/gpu-kernel-validation"
+      "domain/gpu-reduction-integration"
+      "domain/hardware-cdc"
+      "domain/hardware-fifo-integration"
+      "domain/hardware-hdl-emission"
+      "domain/hardware-shape-lowering"
+      "domain/interrupt-context"
+      "domain/kernel-artifact-production"
+      "domain/kernel-syscall-integration"
+      "domain/kernel-user-boundary"
+      "domain/typed-mmio"
+      "runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/device-memory-transfer"
+      "runtime/durable-effect-replay"
+      "runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/region-lifetime"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/static-service-elimination"
+      "runtime/task-lifecycle"
+      "runtime/typed-host-delegation"
+      "runtime/typed-message-delivery"],
+     :state :proposed-for-independent-review}
+    {:issue-id "scope/domain-replacement-surface-boundaries",
+     :category :acceptance-qualification,
+     :reason
+     "Declared domain outcomes and future support families remain in scope. Missing detailed grammar, provider or executable boundary is retained as specification/implementation debt; independent overlap decisions remain separate.",
+     :unit-ids
+     ["domain/account-session-delegation"
+      "domain/analytic-plan-lowering"
+      "domain/automation-plan-audit"
+      "domain/blockchain-token-transfer-integration"
+      "domain/chain-state-transition"
+      "domain/compiler-plugin-boundary"
+      "domain/coordination-classification"
+      "domain/crdt-convergence"
+      "domain/credential-lifecycle"
+      "domain/crypto-provider-binding"
+      "domain/crypto-side-channel-validation"
+      "domain/database-query-integration"
+      "domain/device-adaptation"
+      "domain/device-dma"
+      "domain/device-uart-integration"
+      "domain/distributed-checkout-integration"
+      "domain/eip7702-delegation"
+      "domain/encrypted-aggregation-integration"
+      "domain/erc4337-operation-processing"
+      "domain/erc7579-module-lifecycle"
+      "domain/file-transform-integration"
+      "domain/firmware-image-production"
+      "domain/firmware-sensor-integration"
+      "domain/fixed-step-simulation-integration"
+      "domain/formal-bounds-integration"
+      "domain/gpu-dispatch"
+      "domain/gpu-kernel-validation"
+      "domain/gpu-reduction-integration"
+      "domain/hardware-cdc"
+      "domain/hardware-fifo-integration"
+      "domain/hardware-hdl-emission"
+      "domain/hardware-shape-lowering"
+      "domain/interrupt-context"
+      "domain/kernel-artifact-production"
+      "domain/kernel-syscall-integration"
+      "domain/kernel-user-boundary"
+      "domain/local-first-cart-integration"
+      "domain/local-first-sync"
+      "domain/mir-pass-integration"
+      "domain/mobile-background-lifecycle"
+      "domain/mobile-offline-storage"
+      "domain/mobile-platform-adaptation"
+      "domain/mobile-secret-provider"
+      "domain/mobile-ticket-integration"
+      "domain/native-saxpy-integration"
+      "domain/numeric-provider-binding"
+      "domain/parameterized-query-execution"
+      "domain/passkey-assertion"
+      "domain/passkey-registration"
+      "domain/paymaster-enforcement"
+      "domain/proof-applicability"
+      "domain/proof-checking"
+      "domain/protected-disclosure-boundary"
+      "domain/protected-provider-execution"
+      "domain/protected-value-typing"
+      "domain/recursive-proof-chain"
+      "domain/revenue-aggregate-integration"
+      "domain/scientific-sine-integration"
+      "domain/service-crud-integration"
+      "domain/storage-engine-durability"
+      "domain/streaming-materialization"
+      "domain/support-agent-integration"
+      "domain/token-signing-integration"
+      "domain/transaction-order-safety"
+      "domain/typed-command-execution"
+      "domain/typed-mmio"
+      "domain/typed-service-handling"
+      "domain/ui-rendering"
+      "domain/visual-review-flow-integration"
+      "domain/visual-workflow-lowering"
+      "domain/wal-recovery-integration"
+      "domain/web-ticket-integration"
+      "domain/zk-relation-integration"
+      "domain/zk-relation-verification"
+      "integration/build-input-capture"
+      "runtime/ai-memory-policy"
+      "runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/device-memory-transfer"
+      "runtime/durable-effect-replay"
+      "runtime/durable-failure-recovery"
+      "runtime/forbidden-service-rejection"
+      "runtime/freestanding-layout"
+      "runtime/metadata-preservation"
+      "runtime/model-provider-execution"
+      "runtime/nondeterminism-recording"
+      "runtime/policy-safe-observation"
+      "runtime/replay-compatible-upgrade"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/task-lifecycle"
+      "runtime/tool-provider-execution"
+      "runtime/typed-host-delegation"
+      "runtime/typed-message-delivery"
+      "schema/api-client-generation"
+      "schema/binary-layout-and-bindings"
+      "schema/boundary-validation"
+      "schema/compatibility-diff"
+      "schema/configuration-loading"
+      "schema/database-migration"
+      "schema/openapi-generation"],
+     :state :proposed-for-independent-review}
+    {:issue-id "scope/specialist-primary-task-authority",
+     :category :acceptance-qualification,
+     :reason
+     "Missing specialist task/evidence authority cannot remove a known domain obligation or force it onto an unrelated component.",
+     :unit-ids
+     ["domain/account-session-delegation"
+      "domain/blockchain-token-transfer-integration"
+      "domain/chain-state-transition"
+      "domain/coordination-classification"
+      "domain/crdt-convergence"
+      "domain/credential-lifecycle"
+      "domain/crypto-provider-binding"
+      "domain/crypto-side-channel-validation"
+      "domain/database-query-integration"
+      "domain/distributed-checkout-integration"
+      "domain/eip7702-delegation"
+      "domain/encrypted-aggregation-integration"
+      "domain/erc4337-operation-processing"
+      "domain/erc7579-module-lifecycle"
+      "domain/formal-bounds-integration"
+      "domain/local-first-cart-integration"
+      "domain/local-first-sync"
+      "domain/parameterized-query-execution"
+      "domain/passkey-assertion"
+      "domain/passkey-registration"
+      "domain/paymaster-enforcement"
+      "domain/proof-applicability"
+      "domain/proof-checking"
+      "domain/protected-disclosure-boundary"
+      "domain/protected-provider-execution"
+      "domain/protected-value-typing"
+      "domain/recursive-proof-chain"
+      "domain/storage-engine-durability"
+      "domain/token-signing-integration"
+      "domain/transaction-order-safety"
+      "domain/wal-recovery-integration"
+      "domain/zk-relation-integration"
+      "domain/zk-relation-verification"
+      "runtime/durable-effect-replay"
+      "runtime/durable-failure-recovery"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/policy-safe-observation"
+      "runtime/replay-compatible-upgrade"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-message-delivery"
+      "schema/binary-layout-and-bindings"
+      "schema/boundary-validation"
+      "schema/database-migration"],
+     :state :proposed-for-independent-review}],
    :input-sha256
    "b2ced73ecd7b5d3c7ae8e419b3ebfec0da70522f1b6597ac8152cc85c73115e1",
    :id "runtime-domains-schema",
@@ -2891,7 +3250,129 @@
     "L7"
     "L8"
     "L9"],
-   :equivalence-proposals nil,
+   :equivalence-proposals
+   [{:relationship :contextual-refinement,
+     :ids
+     ["reader/source/form-stream"
+      "reader/annotation/declaration-preservation"],
+     :target :syntax-and-macro-interface,
+     :reason
+     "Output schema/source annotations are facets of Reader output and transformation preservation; do not duplicate field counts or the existing path/identity semantics."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["reader/abbreviation/explicit-syntax"
+      "reader/metadata/data-preservation"],
+     :reason
+     "Metadata shorthand invokes the metadata attachment contract; retain abbreviation provenance and key/policy checks without counting attachment twice."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids ["reader/extension/registered-effect-authority"],
+     :target :effects-auth-provider-taxonomy,
+     :reason
+     "Tagged-literal registration/policy and no hidden effects specialize common build/provider authority; they do not redefine canonical source filename extensions."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids
+     ["reader/namespace/clause-shape"
+      "reader/stage/semantic-illegality-preservation"],
+     :target :L3-C2-Resolve-Legality,
+     :reason
+     "Reader owns only admitted shape and provenance; later stages own names/profile/effect/grant decisions and public embedded diagnostic mapping."}
+    {:relationship :shared-governance-workflow-candidate,
+     :ids ["language/syntax/change-adoption-fixtures"],
+     :target :parent-change-control-taxonomy,
+     :reason
+     "Read/print/format/macro/diagnostic adoption fixtures refine the common language change workflow; no duplicate governance denominator is accepted."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["language/macro/authorize-build-execution"
+      "language/effects/authorize-and-record-build-effect"],
+     :reason
+     "Macro build authorization is the macro entrypoint specialization of the shared build-effect policy; parent may unify their core operation while retaining context facets."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["language/core/enforce-profile-semantics"
+      "language/macro/check-generated-caller-program"],
+     :reason
+     "Generated programs obey the same caller legality checker; generation adds provenance and unsafe visibility premises, not a second copy of profile legality."}
+    {:relationship :cross-family-alias-candidate,
+     :id "language/core/classify-execution-outcome",
+     :other-families ["D8" "SAFE1" "SAFE6"],
+     :reason
+     "Four-outcome safe-code/no-undefined-behavior invariant belongs to central safety taxonomy; L2 supplies source evaluation premises."}
+    {:relationship :cross-family-refinement-candidate,
+     :id "language/types/check-memory-sensitive-type-use",
+     :other-families ["L10" "SAFE2" "SAFE3"],
+     :reason
+     "L5 records and checks typed memory premises; deeper ownership analysis is not reimplemented or counted here."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids
+     ["language/effects/check-continuation-lifecycle"
+      "language/effects/record-or-replay-nondeterminism"],
+     :other-families ["L11" "RUNTIME" "WORKFLOW" "AI"],
+     :reason
+     "Handler-specific type/affinity and record matching qualify shared continuation/replay behavior; runtime/provider acceptance is separately required."}
+    {:relationship :shared-governance-workflow-candidate,
+     :ids
+     ["language/core/version-semantic-change"
+      "language/module/review-compatibility-change"
+      "language/macro/version-semantics-change"
+      "language/types/version-type-form"
+      "language/effects/register-stable-semantic-extension"],
+     :reason
+     "These are domain-specific triggers and products of change governance; parent should join common workflow authority without dropping distinct affected consumer/update premises."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids
+     ["language/library/access-persistent-list"
+      "language/library/access-ordered-vector"
+      "language/library/traverse-map-associations"
+      "language/library/maintain-set-uniqueness"
+      "language/library/validate-and-slice-string"
+      "language/library/execute-declared-numeric-mode"],
+     :target :parent-standard-library-and-math-taxonomy,
+     :reason
+     "L13 declares runtime data/numeric semantics also refined by downstream collection/string/math contracts. These source obligations must join the existing runtime operation units; do not count the language charter or each metadata field again."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids
+     ["language/safety/check-safe-wrapper"
+      "language/provider/authorize-scoped-operation"
+      "language/provider/check-trust-and-isolation"],
+     :target :parent-safety-and-authority-taxonomy,
+     :reason
+     "Wrapper proof/audit and provider authority boundaries recur across SAFE, runtime, build, FFI and package contracts. Preserve contextual prerequisites while resolving shared invariant ownership centrally."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["language/macro/check-generated-caller-program"
+      "language/compiletime/check-generated-program"
+      "language/facet/lower-checked-domain-form"],
+     :reason
+     "Generated-program checking is the same ordinary legality path across macro/derivation/facet producer entrypoints. Domain IR validation remains the declared domain checker behavior rather than being silently treated as ordinary core."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["language/types/derive-schema-type"
+      "language/interop/generate-schema-binding"],
+     :reason
+     "Binding generation includes the shared schema type/validator facts and adds generated ABI/schema codecs, drift and foreign provenance. Parent decides producer/refinement boundaries; these are not automatically additive counts."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids
+     ["language/memory/allocate-provider-storage"
+      "language/memory/release-provider-storage"
+      "language/memory/transfer-device-storage"
+      "language/concurrency/check-gpu-parallel-access"],
+     :target :parent-runtime-memory-gpu-taxonomy,
+     :reason
+     "Compiler declarations and facts do not accept runtime allocation/release/transfer. Join actual selected-provider runtime operations and device synchronization while preserving missing task/acceptance boundaries."}
+    {:relationship :cross-family-refinement-candidate,
+     :ids ["language/facet/preserve-disclosure-boundary"],
+     :target :parent-privacy-schema-security-formal-taxonomy,
+     :reason
+     "L14 explicitly carries private/public split, witness/credential custody, reveal reason, trust and verifier shape through composition; these belong to shared privacy/disclosure behaviors with context facets."}
+    {:relationship :contextual-refinement,
+     :ids
+     ["language/types/consume-valid-refinement-proof"
+      "language/memory/preserve-proofs-through-transform"
+      "language/core/classify-execution-outcome"],
+     :target :parent-proof-survival-and-safe-code-taxonomy,
+     :reason
+     "Proof production, proof-consuming transforms and safe execution classification are related pipeline behaviors; no schema-only duplicate of the governing proof/check-retain/reject invariant should survive central equivalence review."}],
    :qualification
    "Source and historical discovery proposal only; no equivalence is accepted and no implementation status changes."}
   {:id "foundation",

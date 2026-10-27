@@ -242,7 +242,10 @@
                             "backends-implementation-tasks" "backend-conformance")))
     (is (thrown? Exception (requirement-evidence/task-record
                             (str/replace text "Status: Open" "Status: Open\nClosing evidence: Unrelated boundary")
-                            "backends-implementation-tasks" "backend-conformance")))))
+                            "backends-implementation-tasks" "backend-conformance")))
+    (is (thrown? Exception (requirement-evidence/task-record
+                            "<!-- m:start -->\n- [ ] `t` Test\nStatus: Open\nProjected task block:\nMalformed remaining boundary\nClosing evidence: Competing replacement\n<!-- m:end -->"
+                            "m" "t")))))
 
 (deftest explicit-unresolved-source-is-not-nonnormative-or-ready
   (let [[m sources] (complete-fixture)
