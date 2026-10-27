@@ -27,15 +27,15 @@ Current evidence/status: Open; source leaves above and the two governing contrac
 
 Done when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete.
 
-- [ ] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure
+- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure
 
-Current evidence/status: Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.
+Current evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.
 
 Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity.
 
-- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
+- [x] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
 
-Current evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
+Current evidence/status: Accepted; the [finite current lexical/origin reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-lexical-origin-closure-20261027/docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md) records the complete enabled collection/literal/abbreviation/metadata population, exact/deferred facts, trivia filtering, graph/origin joins and malformed numeric rejection. Exact `8a0d6a90` / tree `79ed93ab` passed seven genuine Reader calls in two tests / 6,241 assertions with fresh Reader/envelope checks; pure source-identity controls passed 9 tests / 146 assertions. Separate compiler-free composed-tree controls passed 20 tests / 169 assertions on `3b7c1280`. The earlier escape-offset baseline remains a nonpass. PR478/482/492 retain their original complementary evidence. New suffix grammars, extension authorization/effects, quota/authentication closure, release and downstream acceptance remain open.
 
 Done when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified.
 

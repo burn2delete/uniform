@@ -1,5 +1,270 @@
 # Accounting removal evidence
 
+## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
+
+Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
+`2c2ac4199c7bc57fca8717324f1f282e368f36b4`, passed its current-main candidate
+batch: 21 tests / 1,644 assertions, zero failures/errors, natural exit zero in
+22.062 s, actual 2 GiB heap, complete 2,595-byte stdout and empty stderr.
+Exact clean bookends and complete cleanup were recorded. Seven new normalized
+three-owner tests, eight actual Effects kernels and six language-boundary
+tests were selected explicitly. Independent exact-source and retained-result
+review accepted the finite removal and private alias routing. Full descriptor
+and nested proof equality, rebuilt stale-field rows/facts, source/type/ledger
+tampering, public fallback, late opaque validation, Never and construction
+effects all remain effective. The receipt SHA-256 is
+`0ab80bbdb1dcbd70de3e0f69a081f0fbfaa9c68d570cb2d180d715f4ebbce53d`.
+This is a fresh batch, not reuse of historical PR359 tests. Final repository
+gates, exact public readback and normal integration remain separate steps.
+
+The read-only current-main baseline receipt SHA-256 is
+`fd4d88595fee341f403ff1b3cb49d381a10243f61b12585a37d8cd4b3373e42e`.
+
+| Tested input | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `aee721506668fbada2af2d77617117550fc50228bb3d694419b73ad05823d0e7` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `de7090d503549239c27ef22d7f21c0c71e06f5036de49d3f47dcdfae9d1d6729` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `1583132ef8fefcdcec67687699f6b986db806cb062e1160a9ecdad96a402a863` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `f21a1e57354e9e9c0a4fff556041769d1f7083c12616357276ffe103be07efd8` |
+
+Repository gates at documentation successor `7647b2f7` passed 11 tests / 23
+assertions, the actual 2,035-file LOC census, all 240 docs / 19 phase indexes
+and the full-language roadmap. This 256 MiB child exited naturally in 2.399 s
+with complete 456-byte stdout, empty stderr, clean bookends and cleanup.
+Independent review then accepted normal reconciliation `b6ece097`, tree
+`16f2d7da`, with new main `490b7b57`. The fourteen incoming paths are crosswalk
+and dependency documentation/tools; all Bootstrap, compiler/runtime, test,
+broker/runner, contracts and `deps.edn` inputs consumed by the semantic batch
+are unchanged. Thus the 21/1644 receipt retains its original `0c64757d`
+provenance without another semantic run. Fresh final repository-scanning gates,
+exact preflight, public readback and routine CI still precede normal integration.
+
+The original draft is preserved at `6a4f87f013d0076b81aba9e0667650e70d28e635`,
+tree `f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. Its common base with current
+main is `cfb499405450d479955fa70daa0f14dfa3233ee8`. The authored delta has
+29 paths; a direct comparison to current main includes unrelated incoming work
+and is not a safe patch. Normal reconciliation starts with main `bffefedf`,
+tree `ec9e272e`, preserving the original draft in ancestry and retaining its
+branch. Independent inspection confirmed that the prepared index and worktree
+exactly matched main before selected edits. No current-main source was lost.
+
+The finite selected outcome is exported ANE/BKA/PMK and four-variant PL
+descriptor accounting removal across all three owners, plus exact private Map
+constraint/call-fact alias routing. It is not the whole accounting-removal
+backlog. Current main already contains the separately integrated ACC-02 guard
+and Map/List repair and ACC-03 LR migration; they are not replayed for credit.
+
+Every original authored path has the following disposition. All unselected work
+remains **preserved and unintegrated**, not accepted, discarded or made optional.
+Accounting retains responsibility under the existing ACC IDs and normal actual
+owner acceptance. Historical passing and failed receipts keep their old source
+identities; none accepts this new current-main composition.
+
+| Original authored paths | Finite disposition and residual obligation |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`, `bootstrap/gravity/src/gravity/effects.gravity`, `bootstrap/gravity/p15_s23/emitter.gravity` | Start from current main and port only selected descriptor fields and private aliases. Preserve other unique DSE, private entry/source proof, predicate/query/construction, verifier, quoted-data, inference and recursive-validator changes at the original head. Those remain original ACC-01/04/05/06/07/08/12/13 work with complete source/type/effect/proof and actual consumer acceptance required. DSE is a full absent feature, not a two-field edit. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Retain all current-main tests. Port selected normalized ANE/BKA/PMK/PL regressions with prefixed helpers. Other unique old tests remain preserved; old unmetered depth expectations are not imported into still-metered current-main helpers. |
+| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj`, `prepend_premise_test.clj`, `private_map_route_contract_test.clj` | Selected complete descriptor/proof, alias, typed-call and stale-field controls move into existing SH08 ownership. DSE and any remaining old-only assertions stay preserved; no new orphan test namespace or metadata writer is introduced. |
+| `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj`, `list_return_premise_test.clj` | ACC-02/03 have separate current-main closure. Preserve remaining old test differences until exact equivalence/disposition is established; do not replay old fixtures as current acceptance. |
+| `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj`, `list_query_contract_test.clj`, `predicate_descriptor_family_test.clj` | Preserved-unintegrated schema/source-family work under ACC-04/05/06/12; requires coherent actual owners and their positive/negative acceptance before integration. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj`, `sh01_list_set_mixed_ledger_test.clj`, `sh01_map_keys_mixed_ledger_test.clj`, `sh01_stage2_runtime_iteration_test.clj`, `sh09_body_effect_test.clj` | Preserve old-only DSE, conversion/query and mixed-ledger feature acceptance. Current-main versions remain authoritative; all corresponding source/runtime/type/effect joins must reconcile together under ACC-04/09/12. |
+| Ten files under `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/`: the `.gravity` and `.qst` pairs named `compact-source-proof-interval`, `compact-source-proof-minimum`, `function-verifier-qualified-map-get`, `function-verifier-work-ledger`, `local-runtime-bare-set-equality` | Preserve all five pairs unintegrated with their original source/verifier/DSE obligations. No fixtures are claimed consumed or accepted by this finite descriptor change. |
+| `specs/accounting-removal/tasks.md`, `specs/accounting-removal/evidence.md` | Use current main as sole task truth and record this reconciliation, finite PR checklists, source-pinned evidence and residual work here. Historical old records remain accessible at the original head. |
+
+The read-only baseline on clean `bffefedf` used unchanged guarded 2 GiB / 120 s
+execution and completed naturally in 21.177 s, with 159 stdout bytes, empty
+stderr, exact clean before/after identities and complete cleanup. Actual heap
+was 2,147,483,648 bytes. Five ANE/BKA and sixteen PL cases produced matching
+complete three-owner descriptors with the exported cost fields still present.
+Thus this current-main batch removes bookkeeping, not a newly demonstrated
+descriptor-parity defect. Earlier defect evidence remains historical. PMK,
+the selected removal and current consumer negatives still require candidate
+acceptance. Genuine source authentication, public B47, C12 and release were
+not executed.
+
+## Private-return path admission after recovery
+
+Accepted implementation: `3e94a6318bc1d598a109cb174d0fdf02944538b7` / tree
+`ff3335194403ec54972babed997cb4fe616fc027`, based on main `12407ca1` / tree
+`2ac12a3b`. The three actual return-witness owners had identical 128-node
+admission. One coordinated change removes that branch, validates queued
+keyword/nonempty-string IDs before lookup/hash and canonical stored IDs before
+equality, and propagates per-path ancestor sets through both branch and
+sequence enqueue paths. The diagnostic `:private-self-return-cycle` represents
+a repeated canonical ID, not a replacement size allowance. Shared DAG leaves
+retain both witnesses. Conditions, normal prefixes, Never, pending positions,
+return conflicts, full paths/control records and all work formulas remain.
+
+The old-source baseline completed 9 observations: every owner accepted full
+1/128-node paths, then refused 129 with `:private-self-return-path-bound` at
+33,925 work units, below the existing 65,536 allowance. Natural exit 0 /
+18,457 ms / actual 2 GiB; complete 1,170-byte stdout, empty stderr, exact clean
+bookends and complete cleanup. Receipt SHA-256:
+`0636eb04b24f41a7b0b24115c3ccf6d753fd98d78db9c54d7b44b0c175595cdd`.
+
+Actual candidate validation selected four new kernels, six affected regressions
+and six boundary vars: 16 tests / 494 assertions, zero failures/errors, natural
+exit 0 / 30,574 ms / actual 2 GiB. Complete capture was 2,129-byte stdout and
+empty stderr, exact clean source bookends, child gone and cleanup complete.
+Receipt SHA-256:
+`49cd136f1e521b3cb01d487e8124b396be552882a1269594226032544141d512`.
+
+The new cases exercise all three actual functions at path lengths 1/128/129/130,
+self/two-node cycles, missing/mismatched canonical nodes and malformed queued
+IDs with zero opaque hash/equality callbacks. Shared-leaf paths remain distinct;
+unknown/Never/prefix/conflicting returns preserve their outcomes. The old
+integer-ID 131-node refusal fixture is replaced with a complete normalized-ID
+positive and equally deep malformed endpoint negative. Existing small cases
+remain. Effects and both emitter context constructors accept their ordinary
+private proofs, then reject altered witness paths or control records with
+unchanged return types and coherently rebuilt proof-bearing ledger rows.
+No arbitrary foreign-container or new source-authentication theorem is claimed.
+
+| Accepted path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `6bf0eb72e0efe43593a9fea32a751bae5e820f6335cb0649dd7636395f1d3c86` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `bfccf21c8ce5bbb2214a0af627dfb9372bb2f6843b7eb8c89891073090a706ce` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `19dce9a30020688bc4b83327113dc36ddc7b05e24038be75fa54e2ad73e42d0f` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `0e8ff033eeb1c4ea485da0b762b73aa7cd5c7e6c75ac94cb62b70c358c282009` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj` | `2d8bc000ff5cb28c8fb564d28081eb5a8ccf96a3bdf6212965114a0994fcf0fd` |
+
+Independent review inspected source, driver, actual counts/capture/receipts and
+their hashes; the reviewer did not execute a duplicate batch. Cheap checks
+included seven compiler-free fixture assertions and reading all five changed
+source/test files without loading Bootstrap. An initial inline fixture-control
+command ended with a command-reader EOF; the corrected saved control passed.
+It is not semantic execution or a candidate acceptance failure.
+
+Normal reconciliation `66d2422b` / tree `fabe1027` preserves all 16 incoming CI
+PR488 paths from main `bf7893da`. All Gravity, selected semantic tests and
+dependency configuration are identical to accepted `3e94a631`. Darwin native
+publication changes are a namespace-load dependency but their native probes
+execute only when opening publication targets, outside this selected route.
+CI/catalog/ownership additions do not replace explicit test selection.
+Independent consumed-input review accepts retention of the original semantic
+receipt, subject to fresh cold Bootstrap load and current-tree repository gates.
+That reconciliation is not fresh execution of 16/494; repository-scanning
+boundary tests are renewed separately. Current PR checks retain their ordinary
+authority; no CI policy is changed by this accounting increment.
+
+The recovery history showed the prior turn completed after PR497 and no
+intervening admitted accounting command. All preserved accounting checkouts
+matched recorded clean heads; the process snapshot found no JVM. No uncertain
+operation was repeated and no held Native/Set registration or publication was
+retried. Final gates and integration belong to the associated PR. ACC-02/03
+remain closed; the other eleven original criteria, including full ACC-07/13,
+remain open. Genuine authentication, language-runtime execution, C12 and product
+release are unrun. Physical broker, heap, watchdog and platform limits survive.
+
+Fresh composed validation on `0453a469` / tree `44dd1637` passed cold Bootstrap
+loading followed by 11 tests / 23 assertions, actual LOC validation for 2,035
+files, 240 documents / 19 indexes and roadmap. Exact-base preflight passed on
+main `bf7893da`; natural exit 0 / 9,162 ms / actual 2 GiB, complete 637-byte
+stdout, empty stderr, exact clean bookends and cleanup. Receipt SHA-256:
+`df6d900ace441d843551d2523940d376213855e290736a3272528f091b1418b1`.
+
+The initial [PR499 CI static job](https://github.com/burn2delete/uniform/actions/runs/40546272191/job/122337633073)
+is NONPASS: changed-file clj-kondo returned zero errors / 76 warnings. One new
+unused test binding was removed in `fb02ad96` without changing an initializer,
+assertion or production code. Independent review accepted original semantic
+evidence reuse for that correction. The remaining 75 pre-existing warnings
+comprise 64 unused bindings, seven private helpers consumed dynamically by
+other tests, two redundant lets, one unused import and one runtime-only
+namespace require. Removing those helpers merely to quiet static analysis would
+break actual consumers. The existing CI owner retains its policy; no accounting
+worker suppresses or bypasses the check. The failed run remains failed, and
+the draft cannot be integrated until the normal check has a reviewed resolution.
+
+CI-owner PR500 supplies that separate reviewed resolution at main `a43facc7` /
+tree `981e6b38`. The exact first-parent baseline `bf7893da` and tested merge
+`764fe0f8` both produce 75 warnings / zero errors; all warnings match unchanged
+mapped spans under the same pinned clj-kondo. The historical pre-fix `0453a469`
+still blocks exactly its new unused binding (76 current / 75 baseline). New
+warnings and every current error block; changed or incomplete spans fail closed.
+The CI owner reports independently reviewed 9 tests / 70 assertions and seven
+routine main jobs passing; this is attributed CI evidence, not accounting,
+source-Core or reviewer execution credit. Explicit unavailable Core readiness
+remains nonpassing on main.
+
+Normal reconciliation `0ed0d800` / tree `3bea5fd9` preserves exactly four
+incoming paths: `docs/ci.md` and `tools/ci/{lint,run,run_test}.clj`. Independent
+consumed-input review confirms no change to the selected compiler, Bootstrap
+load or manual guarded runner routes. Original semantic 16/494 remains at
+`3e94a631`; cold-load/composed 11/23 remains at `0453a469`. No semantic or cold
+load repetition is implied by this CI-only merge. Fresh repository gates,
+exact preflight and automatic current-head CI precede normal integration.
+
+## Vector-origin binding-chain admission
+
+The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree
+`54c49d1c97803493a3f942aabb5016b94bbfb99d`, based on main `4fa8575b` / tree
+`d85107f9f443ee60fd87c8863c200bf68a3670c1`. Exactly two implementation/test paths
+change. No Native, Reader, MIR, runner or catalog source is changed.
+
+The old-source diagnostic completed naturally with exit 0 in 14,128 ms at
+actual 2 GiB: full canonical 1/128-link origins passed their closed consumer;
+the producer refused a valid 129-link chain, and actual successor derivation
+rejected it with `:bounded-successor-range-proof-required`. The rejected producer
+does not supply independent 129-link consumer evidence. Capture was complete
+(346-byte stdout, empty stderr), exact clean bookends and cleanup passed.
+Receipt SHA-256:
+`3fea56edede016d7d81373e994ca0bc22c6617e1476aceee723d5c226a7ff685`.
+
+The candidate replaces producer recursion with an iterative canonical-ID walk,
+rejects repeated IDs, and reverses collected links at constructor termination
+to preserve inner-to-outer proof order. The consumer walks that exact sequence
+independently, rejects repeated reference IDs and reconstructs the constructor
+endpoint with canonical immutable-record and type equality. Both production
+callers and the direct test migrate to the depth-free arity. Source-form
+validation remains the producer's existing responsibility; the consumer is not
+claimed to establish a new source-authentication theorem.
+
+Actual candidate execution selected three new chain kernels, seven affected
+regressions and six language-boundary vars: 16 tests / 460 assertions, zero
+failures/errors, natural exit 0 / 15,700 ms / actual 2 GiB. All 1/128/129/130-link
+origins retain complete ordered records; actual 129-link successor and nth/get
+derivations and fresh proof consumers pass. Late source/mutability/type/node
+changes, missing/duplicate bindings, cycles, wrong endpoints, reordered/missing/
+orphan witnesses and malformed entry IDs reject. The malformed-ID control
+observes zero hash callbacks; this is not arbitrary-container ingress authority.
+Capture was complete (2,019-byte stdout, empty stderr), source bookends were
+exact and clean, and cleanup completed with the child gone. Receipt SHA-256:
+`27b2c8088719d005788712af3528d6c883b6e8bfcf071982b55ca467f1d9344a`.
+
+Independent review inspected the exact source, driver and retained records;
+it did not execute a second semantic batch. Source hashes are:
+
+| Path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `a89c885244593d2359e8e93825a31951cf4aa2a6234e2a548f91f15c75286bad` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `12894ec7b266330c9fc3c0892067e41227d9ee4320244db59ddc1369a1d13923` |
+
+Extent 1,024 and `:maximum-vector-extent`, the remaining type/collection/work
+policies, structural projections and other ACC-13 mechanisms remain open.
+Runtime checks and the prohibition on check elision are retained. Genuine
+authenticated-source admission, language-runtime execution, C12 and product
+release were unrun. The failed first form-reader command had an extra command
+delimiter after reading all 1,085 source forms; the corrected form-reader
+completed without Bootstrap execution. It is not semantic evidence or a
+candidate failure. Final gates and normal integration are recorded by the
+associated pull request; whole ACC-13 and accounting completion remain open.
+
+Repository gates on documentation successor `82292a36` passed 11 tests / 23
+assertions, actual LOC validation for 2,035 files, 240 documents / 19 indexes and
+the roadmap; natural exit 0 / 2,573 ms, complete 456-byte stdout, empty stderr,
+clean bookends and cleanup. Receipt SHA-256:
+`19ecf603062138bfd52b1915f19a516a9e79cef616fd2429b47f3f461c60bab7`.
+
+The initial integration preflight detected main advancing to Reader PR496 and
+failed with `WORKTREE-CANDIDATE-BASE-MISMATCH`; that record is retained as
+nonpassing. Normal reconciliation at `4ed9939b` / tree `5466a877` preserves all
+six incoming paths from main `2766511b`. Its sole production delta changes C2
+literal escape offsets. The selected compiler-plan route uses the unchanged
+host-oracle form reader with authenticated records unbound; it does not invoke
+that C2 literal-record producer. All Gravity source, the selected SH08 test and
+dependency configuration are identical to tested `903e330e`. Original semantic
+receipt provenance is retained; reconciliation is not a fresh semantic run.
+
 ## Observed baseline
 
 2026-10-26 GitHub fetch: main
@@ -693,3 +958,258 @@ vector-get kernels) retain `d3e17c27` provenance. The original 12/294 and fresh
 9/63 are not summed and are not described as a fresh full 12-var run. Genuine
 authenticated-source/public acceptance, arbitrary foreign containers, runtime,
 C12, release and every full original accounting row remain open.
+
+## Current original-criteria reconciliation
+
+Assessment time: **2026-10-26 22:28:21 MDT (America/Edmonton)**, equivalent to
+2026-10-27 04:28:21 UTC. Exact assessed main is
+`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. The original-ID disposition table
+in `tasks.md` is the current assessment; no dashboard or separate status ledger
+was written. The old 50% is retained only as an unmeasured provisional estimate,
+not silently promoted to measured current coverage or recomputed from counts.
+
+The ancestry increment PR481 is now integrated by normal squash at that exact
+main/tree, identical to reviewed candidate
+`95d67b76c423d2856a3eba513af3698baf37a6f0`. Fresh remote merged state, exact
+head/body, full-tree equality, main ancestry and retained branch were verified;
+independent review accepted the identical merged tree. This resolves the earlier
+ancestry integration hold. Original standalone 12/294, fresh composed 9/63,
+final repository gates 11/23 and the initial load NONPASS remain separate
+provenance. No fresh semantic rerun was needed for the identical merge tree.
+
+Fresh GitHub states at assessment time establish the following exact merged
+increments. Their individual earlier evidence scopes remain authoritative; this
+table does not turn PR state into semantic acceptance or whole-row completion.
+
+| Finite increment | Merge commit | Original rows advanced |
+| --- | --- | --- |
+| PR433 module reads | `cfb499405450d479955fa70daa0f14dfa3233ee8` | ACC-09 |
+| PR444 module census | `6b2e63b32f215b0c5f963fadfc018624837685b0` | ACC-09 |
+| PR467 imported-module aggregate | `3727e0c9e297374c9fed4a0fa28efa8251893dc9` | ACC-08 |
+| PR474 Core/binding shapes | `029e0bd2b93542e62854b57eb7d8146e5354cb19` | ACC-08/13 |
+| PR479 Record/Union cardinality | `f3c74ffeac5ccd5c9047d6c436a4886796282d03` | ACC-13 |
+| PR481 source-proof ancestry | `15a5499e97798621d270c36dd2546ce98ddd62a9` | ACC-13 |
+| PR378 MIR guard restoration | `96cec79c0ec1f658d62e96027d4a570e48bff7c7` | ACC-10 finite owner slice |
+| PR421 guarded MIR/Native composition | `06a256fdb97f49b5fedea36a6803483302631bbc` | ACC-10 finite owner slice |
+
+Separately held work was read fresh as draft/unmerged: PR359
+`6a4f87f013d0076b81aba9e0667650e70d28e635`, PR450
+`99b84629bc9b4cb1c30c5f59777ae64f02cf65b0`, PR454
+`93efcde35fce442d9e3ee289331ad421ee8dbe45`, PR462
+`0cd2f29427ca67ae6127c7983eb51896b564f977`, and PR370
+`516f5f6ca77aede73fc7a6d7ec56d5a6da606ee6`. PR383 is closed **unmerged** at
+`356ba311afa4ec80afae4188db87d1511b5dc6ce`; imported evidence belongs to the
+actual reviewed composition, not an invented separate merge. No new owner
+acceptance is inferred for PR370 from its presence in this list.
+
+The precise residual gates and status of every original ACC-01 through ACC-13
+are in the dated table. Full closure still requires exhaustive dispositions,
+coherent removal in each remaining family, actual permitted producer/consumer
+acceptance, independent review and current-main integration. Genuine runtime,
+type, source, authentication, representation, cycle and physical host controls
+remain. No whole-language completion or restricted C12 run has been added as a
+new requirement for accounting closure.
+
+## ACC-02 complete guard and parameter-premise closure
+
+Assessment update: **2026-10-26 23:04:48 MDT (America/Edmonton)**,
+2026-10-27 05:04:48 UTC. This current-main successor is independent of the held
+Native/Set chain and does not import the broad PR359 implementation. Explicit
+source ownership release was received earlier; `release` in that handoff does
+not mean product release. The complete original ACC-02 acceptance is eligible
+for closure only on normal reviewed main integration and exact readback.
+
+### Actual source contract and baseline
+
+Main `c637326dcf026cfd1697420a3b9b383439cb804a`, tree
+`a7a6219b17db67cbd50fa3c10062ad97f3bd7fff`, has six accounting fields:
+`operand-type-work` in both `mp-compatibility` and `lp-compatibility` for C7,
+Effects and the emitter. The earlier four-consumer-field description assumed
+those two producer fields were already absent. Removing all six coherently on
+this source preserves the same original producer/consumer obligation.
+
+The accepted baseline passed 20 persisted observations in **25,934 ms**, natural
+exit 0, actual 2 GiB. All three owners produced equal full premises and exported
+the accounting field; adapted Map/bare List/homogeneous List and identity cases
+reached actual typed emission. A bounded opaque object demonstrated that the
+old C7 ordering classifier called its hash method before rejecting the type.
+Complete 1,996-byte stdout, empty stderr and identical clean bookends/cleanup
+were retained. Receipt SHA:
+`7d7ed186b73b173678b04b833f2f8a6405eea50fe9feffcc716ea58a96cc3ad1`.
+The first launch used digits in a letters-only harness label and failed its
+assertion before any child, bookend or lease; the valid-label launch changed no
+harness guard, resource limit or baseline source. That preparation failure is
+not semantic acceptance.
+
+### Implementation and preserved semantics
+
+Source `d346b9312ab7797e34f0abc66ff6ef45482a22fc`, tree
+`0a58737e200d1ba53e46d8d696b6422992eac155`, changes exactly the six premise
+fields and guards integral set membership with `keyword?`. Semantic family and
+identity domains stay unchanged: full source-bound reconstruction/equality
+rejects stale or extra fields; there is no old-wire acceptance or field
+stripping. Helper work results, supplied budgets and real full validation are
+unchanged and remain explicitly open in their other original criteria.
+
+Three-owner controls preserve Map member-refinement forgetting, bare List
+position forgetting and homogeneous List every-element checking. Checked
+element count/type, Never/not-applicable, ordinary identity, all preserved
+value/provenance/schema/ownership/region/profile/memory properties and actual
+Effects context/local checks and typed emission remain effective. Positives
+include 1,024-member types. Late unknown/opaque members at position 1,023 lie
+within the existing admissible extent and reject without opaque callbacks.
+Stale work values (zero and the prior actual value), extra fields, extent/type,
+source/declaration, callee, duplicate ledger and argument forgeries reject.
+These are actual Gravity owners over normalized declaration/source fixtures,
+not genuine authenticated-source/public authority or runtime execution.
+
+### Failed batch and bounded correction
+
+The first source batch is **NONPASS**: 13 tests, 662 passing assertions, zero
+failures and **9 errors**, natural exit 1 in **29,367 ms**. All errors are two
+existing tests calling `sh08-ft-loop-kernel-transfer-types` with six arguments;
+production already required seven in baseline `c637326d`. Complete 36,133-byte
+stdout, empty stderr and exact clean bookends/cleanup were retained. Receipt:
+`57b92da4518746dff7343947d0e858b2ed1cc254159cd590fd858fc7637a25de`.
+This failed batch is not relabeled or summed into a passing result.
+
+Test-only correction `26768f8ec3c9bab87864f5beb371463893ac7407`, tree
+`340c05407cfd782f8226ecd6ce1a6adccce7ed86`, adds the empty invariants argument
+to all three stale direct test callers. Expected semantic results and all
+production sources are unchanged. The changed homogeneous List, bare List and
+Map recur controls plus six boundary vars passed **9 tests / 142 assertions**,
+zero failures/errors, natural exit 0 in **16,636 ms**, actual 2 GiB. Complete
+1,325-byte stdout, empty stderr, identical clean bookends and complete cleanup
+were independently inspected. Receipt SHA:
+`2e84466ebd6fc010ba1384447ee3ea0741226e0f1e7ef26f7802806e55dd5912`.
+
+Five unchanged successful non-boundary selectors retain original `d346b931`
+provenance: the opaque ordering guard, complete three-owner premise/typed-call
+control, invalid-member/declaration control, bare Map kernel and mixed Map/List
+kernel. Their bodies, shared helpers and consumed production inputs are
+unchanged. Boundary acceptance is fresh at `26768f8e`. There is no fresh full
+13-var or summed passing count. Independent source and actual-record review
+accepted this composed ACC-02 scope and found no further required affected-owner
+path in the governing row. No reviewer semantic execution was performed.
+
+| Accepted implementation input | SHA-256 |
+| --- | --- |
+| C7 engine | `3ceabc93ceaa8899d7274c1eec32838828862a1c9be1109c1b639d45ca4823ee` |
+| Effects | `e0e261df37c4af1103b1d73bd9b26008ed232a98f39ff42631fff43fee078578` |
+| Emitter | `1c9c242002fbdf8174356974bf4b29c9bdc34f81c27bfc386abefa39a246e7be` |
+| Existing SH08 test namespace after correction | `b2c0dd7f07918dcee4b3aa9fba8d853ebd0eb8317ef3f2262abf0a23e46cbd55` |
+
+Full helper/native-cycle/view validation and construction admission remain open
+ACC-06 work; a native header by itself is not an unbounded traversal proof.
+Inference work/round allowances remain open ACC-07 accounting; finite node IDs
+alone do not prove finite-height evolving structured types. These findings do
+not reclassify artificial limits as permanent safety guards or require a
+replacement budget. Other original rows remain open, as listed in the current
+`tasks.md` assessment. Genuine authenticated-source/public admission, arbitrary
+foreign-container safety, runtime execution, C12 and product release are unrun.
+No percentage or whole-accounting closure follows from this row.
+
+Normal reconciliation `40566675b774fa2e5d185c8955d6cd2a0679ea24`, tree
+`474cbc8ab74b7aefa4ed776d83ae0efa7c2925cc`, preserves current main
+`254a5b50ea5e2825c424248c9216802cc866c0fd` and its ten compiler-API/release
+documentation, projection-tool and task-lineage paths. All bootstrap sources,
+own implementation/test bodies, `deps.edn` and contracts remain byte-identical
+to accepted `26768f8e`. Those incoming tools are not consumed by the selected
+C7/Effects/emitter execution route. Semantic receipts retain their original
+provenance; fresh repository gates and exact-base preflight cover the composed
+candidate. No compiler-API/release implementation acceptance is inferred here.
+
+## ACC-03 complete LR premise/schema closure
+
+Assessed **2026-10-26 23:45:48 MDT (America/Edmonton)**, equivalent to
+2026-10-27 05:45:48 UTC. The original criterion is coherent LR premise/schema
+alignment and invalidation, full equality, semantic extents, every-member
+controls and typed definitions. The original ACC-06 separately owns recursive
+`lc/pl/lr-type-work` admission. This record does not redefine that helper work
+away or credit the broader held PR359. Closure is effective only after normal
+reviewed current-main integration and exact readback.
+
+### Actual baseline and coordinated migration
+
+Baseline main `a33e0eef2561ec0f522d05763cbdd33b5b01f418`, tree
+`790f03c22a3f515551cab108c6e4b8b9dd0c9d31`, passed **30 persisted observations**
+in **21,210 ms**, natural exit 0, actual 2 GiB. Empty, singleton, 1,024-member,
+homogeneous identity and Never cases reached actual C7/Effects/emitter derivation,
+equal full premises, both contexts and actual typed definitions. All owners
+exported the two work fields and v1 schema. Complete 3,628-byte stdout, empty
+stderr, identical clean bookends and cleanup were independently inspected.
+Receipt SHA:
+`82e4f1edaca06339b7157ad5d208223cb1731b43ce9d39984a911b8b4f485aac`.
+
+Candidate `01e9ec5f8ae8e39dbc2d0b9a3f52d13db26ab0d0`, tree
+`6a21f1aad49a7152c725cfa0c5dd18cee055b8b1`, removes six exported fields and
+migrates the three premise versions, producer tags and constraint identity
+domains together to v2. Helper `checked-member-count` and exported semantic
+`checked-element-count`/type remain; every-member validation, source and binding
+joins, actual/declared types, relation and completion/effect/allocation semantics
+are unchanged. The helper work results and budgets remain open ACC-06 work.
+All existing test expectations referring to the current LR schema migrate.
+Tracked-source reference inspection found old v1 literals only in rejecting
+census guards and explicit negative tests, not an acceptance fallback.
+
+Before any candidate run, source inspection found that a reserved LR identity
+domain could escape a producer/kind-only filter if both labels were changed.
+Both context filters now include reserved current and legacy producers **or
+identity domains**, as well as the return kind, solely for complete rejecting
+census/equality checks. The actual controls append legacy and domain-only rows
+with foreign/missing kinds or foreign producers, both with active declarations
+and with no LR declaration. They require exact census rejection; empty ordinary
+contexts remain accepted. This is schema-invalidation work within ACC-03, not
+new authority, field normalization or legacy wire acceptance.
+
+### Actual acceptance
+
+The bounded candidate passed **16 tests / 1,093 assertions**, zero failures or
+errors, natural exit 0 in **33,628 ms**, actual 2 GiB under the unchanged brokers,
+canonical lock and 120-second watchdog. Complete 2,188-byte stdout, empty stderr,
+exact clean bookends and complete cleanup/root termination were independently
+inspected. Receipt SHA:
+`b01444416478393ccf3cc36c89e2deb4ff8c99e072c0c962af6288c5a4a4bf50`.
+Driver SHA:
+`673a12b452d45503c3287fdaee29fa249deab44fec544a4cc3dc0fd503d9e956`.
+
+Selected scope: five new LR owner/census vars, the existing C7 LR kernel, two
+Effects LR kernels, emitter typed-definition and consumer kernels, and six
+boundary vars. Actual three-owner rows match completely. Effective controls
+cover positional adaptation, homogeneous identity, Never, checked extents and
+types, late invalid/opaque members, coherent stale/extra fields, old/mixed tags
+and domains, duplicate/reordered/missing/orphan rows, source/callee bindings and
+typed definitions. Opaque callbacks remain zero. This is one fresh complete
+selected batch, not a sum or promotion of old PR359 evidence. No reviewer
+compiler/semantic execution was performed.
+
+| Accepted input | SHA-256 |
+| --- | --- |
+| C7 engine | `e81f55f444d5a0e3a131eba719c1a57973c2a84fb227b1a0ee1479088f14c239` |
+| Effects | `155e9c3912f3f88d22376ab22efa7fcd4569234966b8b5e57772c6fde1dfe137` |
+| Emitter | `4dee31fd3fcec487157a8f3c2432b145f097974f2ac237e50ed682c97e1b9454` |
+| Existing SH08 namespace | `aa1ad4e111a2321c2b5de9e58666d19f3619791647529fb76ea6964632523c7f` |
+| Existing runtime-iteration namespace | `dd08c863c1cc2ff8b33c6c4c50564c00fc21ec7dea010ae03c937d0b4b419ebe` |
+
+Higher authenticated-source/language-runtime test families whose only changes
+are current-tag expectations remain unrun. Their static migration is not claimed
+as source authentication, language-runtime execution, C12 or release acceptance.
+All helper/recursive budgets and the eleven other original criteria remain open.
+
+### Current-main dependency reconciliation
+
+Normal composition `02a2292defe923a563f8b06dd735094caa9cb66f`, tree
+`7bbc7d53a900d737750a09e7f8b047e09c2d2eea`, preserves main
+`4325a9f46292472a7f984c5adfef81209874bb5c` and its 17 Reader/Resolve-test,
+planner/contract and documentation paths. All five accepted owner/test bodies,
+Gravity source and `deps.edn` remain unchanged. The sole incoming Bootstrap
+implementation delta fixes the canonical Reader decode invocation path. The
+selected compiler construction uses host-oracle records; the H6 route explicitly
+binds authenticated source records to nil. It does not invoke that changed Reader
+constructor. Planner policy changes concern the unselected Resolve-parent test;
+the established explicit-command wrapper and its process APIs/guards are unchanged.
+Independent dependency review accepted reuse of the 16/1,093 receipt at `01e9`
+provenance with fresh composed repository gates/preflight. No broader Reader,
+Resolve or planner acceptance is inferred, and no unchanged semantic run is
+repeated merely because main advanced.

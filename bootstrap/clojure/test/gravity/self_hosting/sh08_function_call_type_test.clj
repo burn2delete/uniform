@@ -6196,7 +6196,7 @@
             derive #(invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms %])
             result (derive 65536) premise (:premise result) row (invoke-c7 'sh08-lr-row [premise])]
         (is (= :accepted (:status result)) (pr-str result))
-        (is (= :sh08-homogeneous-list-return-v1 (:version premise)))
+        (is (= :sh08-homogeneous-list-return-v2 (:version premise)))
         (is (= :all-positional-elements-match (:relation premise)))
         (is (= [(positional members) declared-type (count members)]
                [(:actual-body-type premise) (:declared-return-type premise) (:checked-element-count premise)]))
@@ -6236,7 +6236,7 @@
           (is (= type (:return returned)))
           (is (= (positional [s]) (:return-actual-type returned)))
           (is (nil? (:return-conflict returned)))
-          (is (= :sh08-homogeneous-list-return-v1 (get-in returned [:return-compatibility :version])))
+          (is (= :sh08-homogeneous-list-return-v2 (get-in returned [:return-compatibility :version])))
           (is (= 1 (count (:constraints result))))
           (is (= result (update (:work-count result))))
           (is (= :list-return-work-limit (get-in (update (dec (:work-count result))) [:diagnostics 0 :reason])))))
@@ -6318,7 +6318,7 @@
         (is (= (if (= operation 'rest) type :gravity.type/bool) (:type result)))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'first [type])))))
     (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:items]}
-          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] 65536])]
+          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] {} 65536])]
       (is (= :accepted (:status (check type))))
       (doseq [wrong [:gravity.type/list (positional [s]) (assoc type :element-type :gravity.type/keyword)]]
         (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))))
@@ -6469,7 +6469,7 @@
 
 (deftest sh08-map-parameter-recur-development-kernel
   (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:packet]}
-        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] 65536])]
+        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] {} 65536])]
     (is (= :accepted (:status (check :gravity.type/map))))
     (is (= :accepted (:status (check :gravity.type/never))))
     (doseq [wrong [{:kind :gravity.type/map :shape :literal :member-types []} :gravity.type/list :gravity.type/string]]
@@ -6553,7 +6553,7 @@
           target {:target-kind :function :binding-ids [:items :marks]}
           check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types
                     [transfer target {} {:next % :marks :gravity.type/string}
-                     [:gravity.type/list :gravity.type/string] 65536])]
+                     [:gravity.type/list :gravity.type/string] {} 65536])]
       (is (= :accepted (:status (check :gravity.type/list))))
       (is (= :accepted (:status (check :gravity.type/never))))
       (doseq [wrong [actual :gravity.type/vector :gravity.type/string]]
@@ -13123,7 +13123,7 @@
                           working (assoc core :binding-table (vec (vals bindings)))
                           prepared (invoke-c7 'sh08-ft-loop-kernel-prepare [working 65536])]
                       {:result result :loop (invoke-c7 'sh08-ft-loop-type-step [working types {} 65536])
-                       :origin (invoke-c7 'sh08-si-vector-origin [:values-ref :loop (get types :values-ref) core nodes types bindings forms (:parents prepared) #{} 0])
+                       :origin (invoke-c7 'sh08-si-vector-origin [:values-ref :loop (get types :values-ref) core nodes types bindings forms (:parents prepared) #{}])
                        :count (invoke-c7 'sh08-cq-source [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types (:module core)])
                        :guard (invoke-c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
                        :call-forms (mapv #(invoke-c7 'sh08-si-call-forms? [(nodes %) nodes forms]) [:guard :count-query :increment])
@@ -21136,3 +21136,921 @@
                        (update-in descriptor [:bounds-proof :guard-path] conj (first (:guard-path proof)))
                        (assoc-in descriptor [:bounds-proof :slot-binding-id] :forged)]]
         (is (false? (valid changed)))))))
+
+(defn- acc02-typed-call-context [base c7 input actual]
+  (let [declaration (:declaration input) type (get-in input [:callee :parameters 0 :type])
+        signature (assoc (get-in base [:records 'identity :signature]) :parameters [declaration])
+        record (assoc (get-in base [:records 'identity]) :signature signature)
+        function (assoc (get-in base [:functions 'identity]) :signature signature :parameters [{:binding-id :parameter :type type}])
+        raw-type (if (= :homogeneous (:shape type)) '(List String) (:type-symbol declaration))
+        raw-fn (list 'fn (vector 'problem :- raw-type) :- 'String "done") raw-def (list 'def 'identity raw-fn)
+        type-id (:type-form-id declaration) marker-id (:marker-form-id declaration)
+        context (-> base
+                    (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+                    (assoc-in [:functions 'identity] function) (assoc-in [:types :operator] function)
+                    (assoc-in [:types :function] function) (assoc-in [:types :definition] function)
+                    (assoc-in [:types :argument] actual) (assoc-in [:parameter-types :caller-parameter] actual)
+                    (assoc-in [:nodes :function :attributes :signature] signature)
+                    (assoc-in [:nodes :reference :core-form] :literal)
+                    (assoc-in [:nodes :reference :attributes] {:literal-kind :string :value "done"})
+                    (assoc-in [:raw-roots :definition-form] raw-def) (assoc-in [:forms :definition-form :value] raw-def)
+                    (assoc-in [:forms :function-form :value] raw-fn) (assoc-in [:forms :body-form :value] "done")
+                    (assoc-in [:forms :parameter-form :value] (vector 'problem :- raw-type))
+                    (assoc-in [:forms :parameter-form :child-form-ids] [:parameter-name marker-id type-id])
+                    (assoc-in [:forms marker-id] {:form-id marker-id :syntax-id (:marker-syntax-id declaration) :value :- :parent-form-id :parameter-form})
+                    (assoc-in [:forms type-id] {:form-id type-id :syntax-id (:type-syntax-id declaration) :kind :symbol :value raw-type
+                                              :parent-form-id :parameter-form :child-form-ids []})
+                    (update :bindings merge (select-keys (:bindings input) [(:type-binding-id declaration) (:element-binding-id declaration)])))
+        context (if (= :homogeneous (:shape type))
+                  (let [ctor (:constructor-form-id declaration) member (:element-form-id declaration)]
+                    (-> context (assoc-in [:forms type-id :kind] :list) (assoc-in [:forms type-id :child-form-ids] [ctor member])
+                        (assoc-in [:forms ctor] {:form-id ctor :syntax-id (:constructor-syntax-id declaration) :kind :symbol :value 'List :parent-form-id type-id})
+                        (assoc-in [:forms member] {:form-id member :syntax-id (:element-syntax-id declaration) :kind :symbol :value 'String :parent-form-id type-id}))) context)
+        call (get-in context [:calls :call]) edge (get-in context [:edges :call])
+        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+        pair (cond-> {:parameter :parameter :argument actual :chosen type} (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
+        row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
+        fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
+        context (assoc context :ledger [row] :call-facts {:call fact})]
+    context))
+
+(defn- acc02-environment []
+  (require 'gravity.self-hosting.sh09-body-effect-test
+           'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
+  (let [up 'gravity.self-hosting.sh08-function-call-type-test
+        stage 'gravity.self-hosting.sh01-stage2-runtime-iteration-test
+        runtime (var-get (ns-resolve stage 'runtime))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        emit (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} ((ns-resolve stage 'typed-lowering-kernel-data))]
+    {:helper #(ns-resolve up %) :c7 (ns-resolve up 'invoke-c7)
+     :body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) :emit emit
+     :base ((ns-resolve stage 'typed-direct-call-kernel-context) (:value (emit 'p15-s23-typed-context module input observation)))}))
+
+(defn- acc02-positional [members] {:kind :gravity.type/list :shape :literal :element-types members})
+(defn- acc02-finite-map [members] {:kind :gravity.type/map :shape :literal :member-types members})
+(def ^:private acc02-homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string})
+(defn- acc02-parameter-input [helper family actual]
+  ((helper (case family :map 'bare-map-parameter-input :bare 'bare-list-parameter-input :hom 'homogeneous-list-parameter-input)) actual))
+(defn- acc02-facts-and-context [body input rows]
+  (let [facts {:constraint-ledger (vec rows) :type-table (:types input) :function-type-table [(:callee input)]}
+        context (body 'body-lp-context {:canonical-core-artifact (:core input)} facts (:bindings input) 65536)]
+    {:facts facts :context context :checked (assoc facts :list-parameter-context (:context context))}))
+(defn- acc02-local-valid? [body input checked actual]
+  (body 'body-local-arguments-valid? (:core input) checked (:bindings input) (:edge input) (:call input)
+        {:argument-types [actual]} (:callee input)))
+
+(deftest sh08-parameter-premise-owner-composition-development-kernel
+  (let [{:keys [helper c7 body emit base]} (acc02-environment)]
+    (doseq [[family actual adapted?]
+            [[:map (acc02-finite-map []) true]
+             [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/bool :gravity.type/string :gravity.type/nil]) true]
+             [:map (acc02-finite-map [:gravity.type/symbol :gravity.type/string]) true]
+             [:map (acc02-finite-map (vec (mapcat identity (repeat 512 [:gravity.type/keyword :gravity.type/string])))) true]
+             [:bare (acc02-positional []) true] [:bare (acc02-positional [:gravity.type/string :gravity.type/bool]) true]
+             [:hom (acc02-positional []) true] [:hom (acc02-positional [:gravity.type/string :gravity.type/string]) true]
+             [:hom (acc02-positional (vec (repeat 1024 :gravity.type/string))) true]
+             [:map :gravity.type/map false] [:bare :gravity.type/list false] [:hom acc02-homogeneous false]]]
+      (testing (str family " adaptation=" adapted?)
+        (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
+              a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+              b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              produced ((helper 'bare-list-parameter-constraints) input) row (first (:constraints produced))
+              {:keys [context checked facts]} (acc02-facts-and-context body input (:constraints produced))
+              typed (acc02-typed-call-context base c7 input actual)
+              compile #(emit 'p15-s23-typed-compile-node % :call 65536)
+              lowered (compile typed)]
+          (is (= (repeat 3 (if adapted? :accepted :not-applicable)) (map :status [a b c])))
+          (is (empty? (:diagnostics produced)))
+          (is (= :accepted (:status context)))
+          (is (true? (acc02-local-valid? body input checked actual)))
+          (is (= :complete (:status lowered)))
+          (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value lowered)))
+          (when adapted?
+            (is (= (:premise a) (:premise b) (:premise c)))
+            (is (every? #(not (contains? (:premise %) :operand-type-work)) [a b c]))
+            (is (= (case family :map [:key-value-member-types :static-entry-count]
+                                :bare [:positional-element-types :static-length]
+                                :hom [:static-length]) (get-in a [:premise :forgets])))
+            (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
+                   (get-in a [:premise :preserves])))
+            (when (= family :map)
+              (is (= (:premise a) (:premise (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings 65536])))))
+            (when (= family :hom)
+              (is (= (count (:element-types actual)) (get-in a [:premise :checked-element-count]))))
+            (doseq [[key value] [[:operand-type-work 0]
+                                [:operand-type-work (:work-count (body 'body-lc-type-work [actual] 65536))]
+                                [::unknown-field true]]]
+              (let [changed-row (assoc-in row [:rhs 0 :compatibility key] value)
+                    rejected (acc02-facts-and-context body input [changed-row])
+                    changed-typed (assoc-in typed [:ledger 0 :rhs 0 :compatibility key] value)]
+                (is (= :rejected (get-in rejected [:context :status])))
+                (is (false? (acc02-local-valid? body input (:checked rejected) actual)))
+                (is (= :rejected (:status (compile changed-typed))))))
+            (when (= family :hom)
+              (doseq [[key value] [[:checked-element-count (inc (count (:element-types actual))) ]
+                                  [:checked-element-type :gravity.type/keyword]]]
+                (let [changed-row (assoc-in row [:rhs 0 :compatibility key] value)
+                      rejected (acc02-facts-and-context body input [changed-row])]
+                  (is (= :rejected (get-in rejected [:context :status])))
+                  (is (false? (acc02-local-valid? body input (:checked rejected) actual)))
+                  (is (= :rejected (:status (compile (assoc-in typed [:ledger 0 :rhs 0 :compatibility key] value)))))))))
+          (doseq [changed [(assoc-in typed [:forms (get-in input [:declaration :type-form-id]) :syntax-id] :forged)
+                           (assoc-in typed [:edges :call :callee-function-syntax-id] :orphan)
+                           (update typed :ledger into (:ledger typed))
+                           (assoc-in typed [:calls :call :argument-node-ids] [])]]
+            (is (= :rejected (:status (compile changed))))))))
+    (let [input (acc02-parameter-input helper :hom :gravity.type/never)
+          {:keys [core call edge callee nodes bindings]} input
+          produced ((helper 'bare-list-parameter-constraints) input)
+          {:keys [context checked]} (acc02-facts-and-context body input (:constraints produced))]
+      (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings 65536]))))
+      (is (= :not-applicable (:status (body 'body-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :not-applicable (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :accepted (:status context)))
+      (is (true? (acc02-local-valid? body input checked :gravity.type/never))))))
+
+(deftest sh08-parameter-premise-invalid-controls-development-kernel
+  (let [{:keys [helper c7 body emit base]} (acc02-environment)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [[family actual] [[:map (acc02-finite-map [:gravity.type/keyword])]
+                             [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/unknown])]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/unknown))]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:bare (acc02-positional [:gravity.type/string :gravity.type/unknown])]
+                             [:bare (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:hom (acc02-positional [:gravity.type/string :gravity.type/string :gravity.type/keyword])]
+                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/keyword))]
+                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:hom (acc02-positional '())]
+                             [:hom (acc02-positional [:gravity.type/never])]
+                             [:hom (acc02-positional [:gravity.type/string opaque])]]]
+      (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
+            a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+            b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            produced ((helper 'bare-list-parameter-constraints) input)
+            {:keys [checked]} (acc02-facts-and-context body input (:constraints produced))
+            lowered (emit 'p15-s23-typed-compile-node (acc02-typed-call-context base c7 input actual) :call 65536)]
+        (is (= [:rejected :rejected :rejected] (mapv :status [a b c])))
+        (is (seq (:diagnostics produced)))
+        (is (false? (acc02-local-valid? body input checked actual)))
+        (is (= :rejected (:status lowered)))
+        (is (empty? @callbacks))))
+    (doseq [family [:map :bare :hom]]
+      (let [actual (case family :map (acc02-finite-map []) (acc02-positional []))
+            {:keys [core call edge callee nodes bindings declaration] :as input} (acc02-parameter-input helper family actual)
+            bid (if (= family :hom) (:element-binding-id declaration) (:type-binding-id declaration))]
+        (doseq [changed-bindings [(assoc-in bindings [bid :kind] :var) (assoc-in bindings [bid :namespace] 'other)]]
+          (is (= :rejected (:status (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings 65536]))))
+          (is (= :rejected (:status (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (emit 'p15-s23-typed-compile-node
+                                         (assoc-in (acc02-typed-call-context base c7 input actual) [:bindings bid]
+                                                   (get changed-bindings bid)) :call 65536)))))
+        (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 1 actual nodes bindings 65536]))))))
+    (is (empty? @callbacks))))
+
+
+(deftest sh08-nonintrinsic-opaque-ordering-classification-development-kernel
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))
+        actual {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string opaque]}
+        input (homogeneous-list-parameter-input actual)
+        result (bare-list-parameter-constraints input)]
+    (is (nil? (integral-ordering-descriptor (assoc input :module (get-in input [:core :module])))))
+    (is (= :call-argument-type-mismatch (get-in result [:diagnostics 0 :reason])))
+    (is (empty? (:constraints result)))
+    (doseq [type [opaque actual]]
+      (is (nil? (integral-ordering-descriptor (integral-ordering-input '< [type type])))))
+    (is (empty? @callbacks))))
+
+(defn- return-premise-helper [name]
+  (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
+(defn- return-premise-c7 [name & args] ((return-premise-helper 'invoke-c7) name (vec args)))
+(defn- return-premise-effects [name & args]
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+(def ^:private return-premise-emitter-plan
+  (delay
+    (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
+(defn- return-premise-emit [name & args]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :list-return-premise-test} @return-premise-emitter-plan name (vec args)))
+(defn- return-premise-positional [members] {:kind :gravity.type/list :shape :literal :element-types members})
+(def ^:private return-premise-homogeneous
+  {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string})
+(defn- return-premise-derives [input]
+  (let [{:keys [core record function nodes types bindings forms]} input
+        args [core record function nodes types bindings forms 65536]]
+    [(apply return-premise-c7 'sh08-lr-derive args)
+     (apply return-premise-effects 'body-lr-derive args) (apply return-premise-emit 'p15-s23-lr-derive args)]))
+(defn- return-premise-contexts [products facts]
+  (let [args [(:core products) facts (:bindings products) (:forms products) 65536]]
+    [(apply return-premise-effects 'body-lr-context args) (apply return-premise-emit 'p15-s23-lr-context args)]))
+(defn- return-premise? [value]
+  (and (map? value) (= :sh08-homogeneous-list-return-v2 (:version value))))
+(defn- return-premise-change [facts transform]
+  (walk/postwalk #(if (return-premise? %) (transform %) %) facts))
+
+(deftest sh08-list-return-premises-and-consumers-development-kernel
+  (doseq [actual [(return-premise-positional []) (return-premise-positional [:gravity.type/string])
+                  (return-premise-positional [:gravity.type/string :gravity.type/string])
+                  (return-premise-positional (vec (repeat 1024 :gravity.type/string)))
+                  return-premise-homogeneous :gravity.type/never]]
+    (let [input ((return-premise-helper 'homogeneous-list-return-input) actual :gravity.type/string 0)
+          results (return-premise-derives input) premises (mapv :premise results) premise (first premises)
+          expected-count (when (= :literal (:shape actual)) (count (:element-types actual)))
+          products ((return-premise-helper 'homogeneous-list-return-products) [actual] :gravity.type/string)
+          joins (return-premise-contexts products (:facts products))
+          definition ((return-premise-helper 'homogeneous-list-return-definition-input) actual)
+          returns (second (return-premise-contexts definition (:facts definition)))
+          joined (return-premise-emit 'p15-s23-typed-definition
+                       (assoc (:context definition) :return-context (:context returns))
+                       (:definition-name definition))]
+      (is (every? #(= :accepted (:status %)) results))
+      (is (apply = premises))
+      (is (= :sh08-homogeneous-list-return-v2 (:version premise)))
+      (is (not-any? #(contains? premise %) [:type-work :member-work]))
+      (is (= expected-count (:checked-element-count premise)))
+      (is (= :gravity.type/string (:checked-element-type premise)))
+      (is (= (not= :gravity.type/never actual) (:normal-completion? premise)))
+      (is (every? #(= :accepted (:status %)) joins))
+      (is (= (:context (first joins)) (:context (second joins))))
+      (is (= (return-premise-c7 'sh08-lr-row premise) (return-premise-effects 'body-lr-row premise) (return-premise-emit 'p15-s23-lr-row premise)))
+      (is (= :gravity/sh08-homogeneous-list-return-constraint-v2
+             (get-in (return-premise-c7 'sh08-lr-row premise) [:constraint-id-request :domain])))
+      (is (= :accepted (:status returns)))
+      (is (= :complete (:status joined)))
+      (is (= (get-in definition [:function :return-compatibility])
+             (get-in joined [:value :function :return-compatibility]))))))
+
+(deftest sh08-list-return-context-invalidation-development-kernel
+  (let [products ((return-premise-helper 'homogeneous-list-return-products)
+                  [(return-premise-positional [:gravity.type/string :gravity.type/string]) (return-premise-positional [])]
+                  :gravity.type/string)
+        facts (:facts products) rows (:constraint-ledger facts)
+        bad-facts
+        [(return-premise-change facts #(assoc % :checked-element-count 99))
+         (return-premise-change facts #(assoc % :checked-element-type :gravity.type/keyword))
+         (return-premise-change facts #(assoc % :relation :homogeneous-list-identity))
+         (return-premise-change facts #(assoc % :type-work 0))
+         (return-premise-change facts #(assoc % :member-work 2))
+         (return-premise-change facts #(assoc % :extra true))
+         (return-premise-change facts #(assoc % :version :sh08-homogeneous-list-return-v1))
+         (assoc facts :constraint-ledger (conj rows (first rows)))
+         (assoc facts :constraint-ledger (vec (reverse rows)))
+         (assoc-in facts [:constraint-ledger 0 :lhs :function-id] :orphan)
+         (assoc-in facts [:constraint-ledger 0 :producer-rule] :sh08-homogeneous-list-return-v1)
+         (assoc-in facts [:constraint-ledger 0 :constraint-id-request :domain]
+                   :gravity/sh08-homogeneous-list-return-constraint-v1)
+         (update facts :constraint-ledger subvec 1)
+         (walk/postwalk
+          #(cond
+             (return-premise? %) (assoc % :version :sh08-homogeneous-list-return-v1 :type-work 0 :member-work 0)
+             (and (map? %) (= :sh08-homogeneous-list-return-v2 (:producer-rule %)))
+             (assoc % :producer-rule :sh08-homogeneous-list-return-v1)
+             (and (map? %) (= :gravity/sh08-homogeneous-list-return-constraint-v2 (:domain %)))
+             (assoc % :domain :gravity/sh08-homogeneous-list-return-constraint-v1)
+             :else %) facts)]]
+    (is (every? #(= :accepted (:status %)) (return-premise-contexts products facts)))
+    (doseq [[index changed] (map-indexed vector bad-facts)]
+      (is (every? #(= :rejected (:status %)) (return-premise-contexts products changed))
+          (str "Coherent or mixed stale evidence mutation " index " must reject")))))
+
+(deftest sh08-list-return-validation-source-development-kernel
+  (let [callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [actual [(return-premise-positional [:gravity.type/string :gravity.type/keyword])
+                    (return-premise-positional [:gravity.type/string :gravity.type/unknown])
+                    (return-premise-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/keyword))
+                    (return-premise-positional [:gravity.type/string opaque])
+                    (return-premise-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))
+                    (return-premise-positional '()) (return-premise-positional [return-premise-homogeneous])]]
+      (let [args [return-premise-homogeneous actual 65536]
+            results [(apply return-premise-c7 'sh08-lr-type-work args)
+                     (apply return-premise-effects 'body-lr-type-work args) (apply return-premise-emit 'p15-s23-lr-type-work args)]]
+        (is (every? #(= :rejected (:status %)) results))))
+    (is (= 0 @callbacks)))
+  (let [input ((return-premise-helper 'homogeneous-list-return-input) (return-premise-positional [:gravity.type/string]) :gravity.type/string 0)
+        declaration (:declaration input) record (:record input)
+        changes [#(assoc-in % [:record :signature :return :element-binding-id] :forged)
+                 #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)
+                 #(assoc-in % [:forms (:element-form-id declaration) :value] 'Keyword)
+                 #(assoc-in % [:forms (:type-form-id declaration) :child-form-ids] [])
+                 #(assoc-in % [:forms (:constructor-form-id declaration) :scope-id] :sibling)
+                 #(assoc-in % [:nodes (:body-core-node-id record) :source :form-id] :sibling)]]
+    (is (every? #(= :accepted (:status %)) (return-premise-derives input)))
+    (doseq [change changes]
+      (is (every? #(= :rejected (:status %)) (return-premise-derives (change input)))))))
+
+(deftest sh08-list-return-legacy-census-development-kernel
+  (let [products ((return-premise-helper 'homogeneous-list-return-products)
+                  [(return-premise-positional [:gravity.type/string])] :gravity.type/string)
+        facts (:facts products)
+        legacy (walk/postwalk
+                #(cond
+                   (return-premise? %) (assoc % :version :sh08-homogeneous-list-return-v1 :type-work 0 :member-work 1)
+                   (and (map? %) (= :sh08-homogeneous-list-return-v2 (:producer-rule %)))
+                   (assoc % :producer-rule :sh08-homogeneous-list-return-v1)
+                   (and (map? %) (= :gravity/sh08-homogeneous-list-return-constraint-v2 (:domain %)))
+                   (assoc % :domain :gravity/sh08-homogeneous-list-return-constraint-v1)
+                   :else %) (first (:constraint-ledger facts)))]
+    (is (every? #(= :accepted (:status %)) (return-premise-contexts products facts)))
+    (doseq [row [legacy (assoc legacy :kind :equality)
+                 (assoc legacy :kind :unrecognized)
+                 (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                 (assoc-in (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                           [:constraint-id-request :domain] :gravity/sh08-homogeneous-list-return-constraint-v2)
+                 (dissoc legacy :kind)]]
+      (let [results (return-premise-contexts products (update facts :constraint-ledger conj row))]
+        (is (every? #(= :rejected (:status %)) results))
+        (is (every? #(= :list-return-constraint-census (:reason %)) results))))))
+
+(deftest sh08-list-return-inactive-legacy-census-development-kernel
+  (let [products ((return-premise-helper 'homogeneous-list-return-products)
+                  [(return-premise-positional [:gravity.type/string])] :gravity.type/string)
+        facts (:facts products)
+        legacy (walk/postwalk
+                #(cond
+                   (return-premise? %) (assoc % :version :sh08-homogeneous-list-return-v1 :type-work 0 :member-work 1)
+                   (and (map? %) (= :sh08-homogeneous-list-return-v2 (:producer-rule %)))
+                   (assoc % :producer-rule :sh08-homogeneous-list-return-v1)
+                   (and (map? %) (= :gravity/sh08-homogeneous-list-return-constraint-v2 (:domain %)))
+                   (assoc % :domain :gravity/sh08-homogeneous-list-return-constraint-v1)
+                   :else %) (first (:constraint-ledger facts)))
+        inactive (assoc-in products [:core :function-records] [])
+        inactive-facts (assoc facts :function-type-table [] :constraint-ledger [])]
+    (is (every? #(= :accepted (:status %)) (return-premise-contexts inactive inactive-facts)))
+    (doseq [row [legacy (assoc legacy :kind :equality)
+                 (assoc legacy :kind :unrecognized)
+                 (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                 (assoc-in (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                           [:constraint-id-request :domain] :gravity/sh08-homogeneous-list-return-constraint-v2)
+                 (dissoc legacy :kind)]]
+      (let [results (return-premise-contexts inactive (assoc inactive-facts :constraint-ledger [row]))]
+        (is (every? #(= :rejected (:status %)) results))
+        (is (every? #(= :list-return-constraint-census (:reason %)) results))))))
+
+(defn- vector-origin-chain
+  ([aliases] (vector-origin-chain (bounded-successor-input 3) aliases))
+  ([base aliases]
+  (reduce
+    (fn [input index]
+      (let [id (keyword (str "origin-init-" index))
+            name-id (keyword (str "origin-name-" index))
+            bid (keyword (str "origin-binding-" index))
+            name-value (symbol (str "origin-value-" index))
+            ordinal (count (get-in input [:core :lexical-bindings]))
+            source {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil}
+            initializer (-> (get-in input [:nodes :values-ref])
+                            (assoc :node-id id :source source :binding-context :outer))
+            reference (-> (get-in input [:nodes :values-ref])
+                          (assoc :resolved-binding-ids [bid])
+                          (assoc-in [:attributes :binding-id] bid))
+            children (conj (conj (vec (butlast (get-in input [:nodes :let :children]))) id) :loop)
+            owner (-> (get-in input [:nodes :let]) (assoc :children children)
+                      (update :resolved-binding-ids conj bid)
+                      (assoc-in [:evaluation :order]
+                                (mapv (fn [i child] {:index i :core-node-id child}) (range) children)))
+            record (-> (first (get-in input [:core :lexical-bindings]))
+                       (assoc :ordinal ordinal :name name-value :binding-id bid
+                              :definition-form-id name-id :definition-syntax-id name-id
+                              :initializer-node-id id :initializer-form-id id :initializer-syntax-id id))
+            nodes (assoc (:nodes input) id initializer :values-ref reference :let owner)
+            previous-name (get-in input [:forms :values-ref :value])]
+        (-> input (assoc :nodes nodes)
+            (assoc-in [:core :nodes]
+                      (conj (mapv #(get nodes (:node-id %)) (get-in input [:core :nodes])) initializer))
+            (update-in [:core :lexical-bindings] conj record)
+            (assoc-in [:bindings bid] {:binding-id bid :name name-value :binding-class :lexical
+                                      :scope-id :outer :definition-syntax-id name-id})
+            (assoc-in [:types id] (get-in input [:types :values]))
+            (assoc-in [:forms :values-ref :value] name-value)
+            (update-in [:forms :let-bindings :child-form-ids] into [name-id id])
+            (assoc-in [:forms name-id] {:form-id name-id :syntax-id name-id :kind :symbol
+                                       :value name-value :scope-id :outer :parent-form-id :let-bindings})
+            (assoc-in [:forms id] {:form-id id :syntax-id id :source-span nil :origin-chain []
+                                  :generated-origin nil :kind :symbol :value previous-name :scope-id :outer
+                                  :parent-form-id :let-bindings :child-form-ids []}))))
+    base (range aliases))))
+
+(defn- vector-origin-derived [{:keys [core nodes types bindings forms]}]
+  (invoke-c7 'sh08-si-vector-origin
+             [:values-ref :loop (types :values-ref) core nodes types bindings forms {} #{}]))
+
+(defn- vector-origin-closed? [{:keys [core nodes types]} origin]
+  (invoke-c7 'sh08-si-origin-closed? [origin :values-ref (types :values-ref) core nodes types]))
+
+(deftest sh08-vector-origin-complete-chain-development-kernel
+  (doseq [aliases [0 127 128 129]]
+    (let [input (vector-origin-chain aliases) origin (vector-origin-derived input)]
+      (is (map? origin) (str "aliases=" aliases))
+      (is (= (inc aliases) (count (:binding-links origin))))
+      (is (= (get-in input [:core :lexical-bindings]) (:binding-links origin)))
+      (is (= (get-in input [:nodes :values]) (:node origin)))
+      (is (= (get-in input [:forms :values]) (:source-form origin)))
+      (is (= (get-in input [:types :values]) (:type origin)))
+      (is (= 3 (:extent origin)))
+      (is (true? (vector-origin-closed? input origin)))))
+  (let [input (vector-origin-chain 128) result (bounded-successor-derived input 65536)
+        descriptor (:descriptor result) proof (:range-proof descriptor)
+        {:keys [core nodes bindings types]} input]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= (vector-origin-derived input) (:vector-origin proof)))
+    (is (= :retained (:runtime-guards proof)))
+    (is (= :not-authorized (:check-elision proof)))
+    (is (= :not-claimed (:termination proof)))
+    (is (true? (invoke-c7 'sh08-si-inferred-call-valid?
+                         [core (nodes :increment) (last (:calls core)) (last (:call-edges core)) nodes bindings
+                          (assoc types :inc-op descriptor)])))
+    (doseq [changed [(assoc-in descriptor [:range-proof :vector-origin :extent] 4)
+                     (update-in descriptor [:range-proof :vector-origin :binding-links] pop)
+                     (update-in descriptor [:range-proof :vector-origin :binding-links] #(vec (reverse %)))]]
+      (is (false? (invoke-c7 'sh08-si-inferred-call-valid?
+                            [core (nodes :increment) (last (:calls core)) (last (:call-edges core)) nodes bindings
+                             (assoc types :inc-op changed)]))))))
+
+(deftest sh08-vector-origin-invalid-chain-development-kernel
+  (let [input (vector-origin-chain 128) origin (vector-origin-derived input)
+        links (:binding-links origin)
+        cycle (-> input
+                  (assoc-in [:core :lexical-bindings 0 :initializer-node-id] :origin-init-127)
+                  (assoc-in [:core :lexical-bindings 0 :initializer-form-id] :origin-init-127)
+                  (assoc-in [:core :lexical-bindings 0 :initializer-syntax-id] :origin-init-127)
+                  (assoc-in [:nodes :let :children 0] :origin-init-127)
+                  (assoc-in [:forms :let-bindings :child-form-ids 1] :origin-init-127))]
+    (is (map? origin))
+    (doseq [[label changed]
+            [[:late-source (assoc-in input [:forms :values-name :value] 'other-name)]
+             [:late-mutability (assoc-in input [:core :lexical-bindings 0 :mutability] :mutable)]
+             [:late-type (assoc-in input [:types :origin-init-0] :gravity.type/integer)]
+             [:late-canonical-node (assoc-in input [:nodes :origin-init-0 :node-id] :other-node)]
+             [:missing-constructor (update input :nodes dissoc :values)]
+             [:duplicate-binding (update-in input [:core :lexical-bindings] conj (first links))]
+             [:cycle cycle]]]
+      (is (nil? (vector-origin-derived changed)) (name label)))
+    (is (false? (vector-origin-closed? cycle (assoc origin :binding-links (get-in cycle [:core :lexical-bindings])))))
+    (doseq [[label changed]
+            [[:reordered (assoc origin :binding-links (vec (reverse links)))]
+             [:duplicate (update origin :binding-links conj (last links))]
+             [:missing (update origin :binding-links pop)]
+             [:orphan (update origin :binding-links conj (assoc (last links) :binding-id :orphan))]
+             [:constructor (assoc origin :node (get-in input [:nodes :zero]))]
+             [:source (assoc-in origin [:source-form :syntax-id] :other-source)]
+             [:type (assoc origin :type :gravity.type/integer)]
+             [:extent (assoc origin :extent 4)]]]
+      (is (false? (vector-origin-closed? input changed)) (name label)))
+    (let [calls (atom 0)
+          opaque (proxy [Object] [] (hashCode [] (swap! calls inc) 7))
+          {:keys [core nodes types bindings forms]} input]
+      (is (nil? (invoke-c7 'sh08-si-vector-origin
+                          [opaque :loop (types :values-ref) core nodes types bindings forms {} #{}])))
+      (is (false? (invoke-c7 'sh08-si-origin-closed?
+                            [origin opaque (types :values-ref) core nodes types])))
+      (is (zero? @calls)))))
+
+(deftest sh08-vector-origin-loop-consumers-development-kernel
+  (doseq [get? [false true]]
+    (let [base (if get? (vector-loop-get-input 3) (vector-loop-nth-input 3 false))
+          chained (vector-origin-chain base 128)
+          reference (-> (get-in chained [:nodes :nth-vector])
+                        (assoc :resolved-binding-ids (get-in chained [:nodes :values-ref :resolved-binding-ids]))
+                        (assoc :attributes (get-in chained [:nodes :values-ref :attributes])))
+          nodes (assoc (:nodes chained) :nth-vector reference)
+          input (vector-loop-nth-completed
+                  (-> chained (assoc :nodes nodes)
+                      (update-in [:core :nodes] #(mapv (comp nodes :node-id) %))
+                      (assoc-in [:forms :nth-vector :value] (get-in chained [:forms :values-ref :value]))))
+          result (vector-loop-nth-derived input 65536)
+          descriptor (:descriptor result)
+          {:keys [core nodes bindings types]} input
+          valid #(invoke-c7 (if get? 'sh08-mg-inferred-call-valid? 'sh08-vn-inferred-call-valid?)
+                            [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2)
+                             nodes bindings (assoc types :nth-op %)])]
+      (is (= :accepted (get-in input [:invariant-result :status])) (pr-str (:invariant-result input)))
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= 129 (count (get-in descriptor [:bounds-proof :vector-origin :binding-links]))))
+      (is (= (if get? :gravity.type/keyword :gravity.type/bool) (:type result)))
+      (is (= :retained (get-in descriptor [:bounds-proof :runtime-guards])))
+      (is (= :not-authorized (get-in descriptor [:bounds-proof :check-elision])))
+      (is (true? (valid descriptor)))
+      (is (false? (valid (update-in descriptor [:bounds-proof :vector-origin :binding-links] pop)))))))
+
+(defn- private-return-path-input [length]
+  (let [wrappers (mapv #(if (zero? %) :body (keyword (str "return-frame-" %))) (range (dec length)))
+        path (conj wrappers :tail)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        leaf {:node-id :tail :core-form :literal :children []
+              :attributes {:literal-kind :string :value "answer"} :source (source :tail)}]
+    {:record {:body-core-node-id (first path)}
+     :nodes (into {:tail leaf}
+                  (map-indexed (fn [i id]
+                                 [id {:node-id id :core-form :do :children [(get path (inc i))]
+                                      :attributes {} :source (source id)}]) wrappers))
+     :types {:tail :gravity.type/string} :path path}))
+
+(def ^:private private-return-path-owners
+  [[return-premise-c7 'sh08-is-return-witness]
+   [return-premise-effects 'body-is-return-witness]
+   [return-premise-emit 'p15-s23-is-return-witness]])
+
+(defn- private-return-path-results [{:keys [record nodes types]}]
+  (mapv (fn [[invoke name]] (invoke name record nodes types 65536)) private-return-path-owners))
+
+(deftest sh08-private-return-complete-path-development-kernel
+  (doseq [length [1 128 129 130]]
+    (let [{:keys [path] :as input} (private-return-path-input length)
+          results (private-return-path-results input)]
+      (is (apply = results))
+      (doseq [result results]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/string (:return-type result)))
+        (is (= 1 (count (:witnesses result))))
+        (is (= path (get-in result [:witnesses 0 :path])))
+        (is (= (dec length) (count (get-in result [:witnesses 0 :control-records]))))
+        (is (every? #(= :independent-normal-prefix (:rule %)) (get-in result [:witnesses 0 :control-records])))
+        (is (empty? (:pending-return-node-ids result)))))))
+
+(deftest sh08-private-return-path-source-cycle-development-kernel
+  (let [input (private-return-path-input 130)
+        self-cycle (assoc-in input [:nodes :body :children] [:body])
+        two-cycle (assoc-in input [:nodes :return-frame-1 :children] [:body])]
+    (doseq [changed [self-cycle two-cycle]]
+      (doseq [result (private-return-path-results changed)]
+        (is (= [:rejected :private-self-return-cycle] ((juxt :status :reason) result)))))
+    (doseq [changed [(update input :nodes dissoc :tail)
+                     (assoc-in input [:nodes :tail :node-id] :other-node)
+                     (assoc-in input [:nodes :return-frame-128 :children] [""])
+                     (assoc-in input [:record :body-core-node-id] "")]]
+      (doseq [result (private-return-path-results changed)]
+        (is (= [:rejected :private-self-return-source-required] ((juxt :status :reason) result)))))
+    (let [calls (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! calls inc) (throw (AssertionError. "opaque path hash")))
+                   (equals [_] (swap! calls inc) (throw (AssertionError. "opaque path equality"))))]
+      (doseq [changed [(assoc-in input [:record :body-core-node-id] opaque)
+                       (assoc-in input [:nodes :body :children] [opaque])
+                       (assoc-in input [:nodes :tail :node-id] opaque)]]
+        (doseq [result (private-return-path-results changed)]
+          (is (= [:rejected :private-self-return-source-required] ((juxt :status :reason) result)))
+          (is (zero? @calls)))))))
+
+(deftest sh08-private-return-shared-path-semantics-development-kernel
+  (let [make-node (fn [id kind children] {:node-id id :core-form kind :children children :attributes {}
+                                        :source {:form-id id :syntax-id id}})
+        nodes {:body (make-node :body :if [:guard :left :right])
+               :guard (make-node :guard :reference [])
+               :left (make-node :left :do [:tail])
+               :right (make-node :right :let [:tail])
+               :tail (make-node :tail :literal [])}
+        input {:record {:body-core-node-id :body} :nodes nodes
+               :types {:guard :gravity.type/bool :tail :gravity.type/string}}]
+    (doseq [result (private-return-path-results input)]
+      (is (= :accepted (:status result)))
+      (is (= [[:body :left :tail] [:body :right :tail]] (mapv :path (:witnesses result))))
+      (is (= [[:independent-normal-condition :independent-normal-prefix]
+              [:independent-normal-condition :independent-normal-prefix]]
+             (mapv #(mapv :rule (:control-records %)) (:witnesses result)))))
+    (doseq [result (private-return-path-results (assoc-in input [:types :tail] :gravity.type/unknown))]
+      (is (= :private-self-independent-return-required (:reason result)))
+      (is (= [:tail :tail] (:pending-return-node-ids result))))
+    (doseq [result (private-return-path-results (assoc-in input [:types :tail] :gravity.type/never))]
+      (is (= :private-self-independent-return-required (:reason result))))
+    (let [other (-> input (assoc-in [:nodes :right :children] [:other])
+                         (assoc-in [:nodes :other] (make-node :other :literal []))
+                         (assoc-in [:types :other] :gravity.type/bool))]
+      (doseq [result (private-return-path-results other)]
+        (is (= :private-self-return-type-conflict (:reason result)))))
+    (doseq [type [:gravity.type/unknown :gravity.type/never]
+            :let [prefix (-> input (assoc-in [:nodes :left :children] [:prefix :tail])
+                                   (assoc-in [:nodes :right :children] [:prefix :tail])
+                                   (assoc-in [:nodes :prefix] (make-node :prefix :reference []))
+                                   (assoc-in [:types :prefix] type))]]
+      (doseq [result (private-return-path-results prefix)]
+        (is (= :private-self-independent-return-required (:reason result)))))))
+
+(defn- private-return-path-coherent-facts [facts proof]
+  (-> facts (assoc :recursive-proof proof)
+      (update :constraint-ledger
+              #(mapv (fn [row]
+                       (if (= :sh08-private-self-value-v1 (:producer-rule row))
+                         (-> row (assoc :dependencies proof) (assoc-in [:constraint-id-request :premise] proof))
+                         row)) %))))
+
+(deftest sh08-private-return-witness-context-tamper-development-kernel
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (let [data ((ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data) :string)
+        {:keys [core facts bindings forms]} data
+        facts (assoc facts :scope :private-inferred-monomorphic-named-self-value)
+        proof (:recursive-proof facts)
+        contexts [[return-premise-effects 'body-is-context]
+                  [return-premise-emit 'p15-s23-is-context]
+                  [return-premise-emit 'p15-s23-ix-context]]]
+    (is (= :accepted (:status (:proof data))))
+    (is (seq (get-in proof [:return-witness :witnesses 0 :path])))
+    (is (seq (get-in proof [:return-witness :witnesses 0 :control-records])))
+    (doseq [[invoke name] contexts]
+      (is (= :accepted (:status (invoke name core facts bindings forms 65536))) (str name))
+      (doseq [changed [(assoc-in proof [:return-witness :witnesses 0 :path] [:forged-return-path])
+                       (assoc-in proof [:return-witness :witnesses 0 :control-records] [])]
+              :let [coherent (private-return-path-coherent-facts facts changed)]]
+        (is (= (:inferred-return-type proof) (:inferred-return-type changed)))
+        (is (= changed (:recursive-proof coherent)))
+        (is (= changed (->> (:constraint-ledger coherent)
+                                           (filter #(= :sh08-private-self-value-v1 (:producer-rule %)))
+                                           first :dependencies)))
+        (is (= [:rejected :private-self-source-value-premise-mismatch]
+               ((juxt :status :reason) (invoke name core coherent bindings forms 65536))) (str name))))))
+
+
+; PR359 finite descriptor reconciliation: normalized owner acceptance.
+(defn- pr359-descriptor-helper [name]
+  (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
+(defn- pr359-descriptor-c7 [name & args] ((pr359-descriptor-helper 'invoke-c7) name (vec args)))
+(defn- pr359-descriptor-body [name & args]
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+(def ^:private pr359-descriptor-emitter-plan
+  (delay
+    (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
+(defn- pr359-descriptor-emit [name & args]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :descriptor-reconstruction-test} @pr359-descriptor-emitter-plan name (vec args)))
+(defn- pr359-descriptor-finite [members] {:kind :gravity.type/set :shape :literal :element-types members})
+(def ^:private pr359-descriptor-cases
+  [[:ane [:gravity.type/nil :gravity.type/bool]]
+   [:ane [:gravity.type/keyword :gravity.type/string]]
+   [:ane [{:kind :gravity.type/nil-or :value-type :gravity.type/string}
+          {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]]
+   [:bka [:gravity.type/set (pr359-descriptor-finite [:gravity.type/keyword])]]
+   [:bka [(pr359-descriptor-finite [:gravity.type/keyword :gravity.type/keyword]) :gravity.type/set]]])
+
+(defn- pr359-descriptor-case-data [family arguments]
+  (let [stem (name family)
+        input ((pr359-descriptor-helper (if (= family :ane) 'atomic-inequality-input 'atomic-equality-input)) arguments)
+        {:keys [core node call edge nodes bindings types forms module]} input
+        derived (pr359-descriptor-c7 (symbol (str "sh08-" stem "-derive")) core node call edge nodes bindings types forms 65536)
+        descriptor (:descriptor derived)
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :call (:type derived))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (pr359-descriptor-c7 (symbol (str "sh08-" stem "-call-fact")) descriptor module)}
+                 :ledger [(pr359-descriptor-c7 (symbol (str "sh08-" stem "-constraint")) descriptor)]
+                 :locals {:arg0 'left :arg1 'right} :parameter-types types}]
+    {:input input :derived derived :descriptor descriptor :context context :stem stem}))
+
+(defn- pr359-descriptor-consumer-descriptors [family arguments input]
+  (let [{:keys [core node call edge nodes bindings types module]} input
+        args [core node call edge nodes bindings types module]]
+    (if (= family :ane)
+      [(pr359-descriptor-body 'body-ane-finish
+             (apply pr359-descriptor-body 'body-ane-source (conj args (pr359-descriptor-body 'body-ane-type-work arguments 65536))))
+       (pr359-descriptor-emit 'p15-s23-ane-finish
+             (apply pr359-descriptor-emit 'p15-s23-ane-source (conj args (pr359-descriptor-emit 'p15-s23-ane-type-work arguments 65536))))]
+      [(:descriptor (apply pr359-descriptor-body (symbol (str "body-" (name family) "-header")) (conj args 65536)))
+       (:descriptor (apply pr359-descriptor-emit (symbol (str "p15-s23-" (name family) "-header")) (conj args 65536)))])))
+
+(deftest pr359-descriptor-complete-descriptors-and-typed-consumers-agree
+  (doseq [[family arguments] pr359-descriptor-cases]
+    (testing (str family " " arguments)
+      (let [{:keys [input derived descriptor context]} (pr359-descriptor-case-data family arguments)
+            consumers (pr359-descriptor-consumer-descriptors family arguments input)
+            lowered (pr359-descriptor-emit 'p15-s23-typed-compile-node context :call 65536)]
+        (is (= :accepted (:status derived)))
+        (is (every? #(= descriptor %) consumers))
+        (is (every? #(not (contains? % :operand-type-work)) (cons descriptor consumers)))
+        (is (= :complete (:status lowered)))
+        (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))))))
+
+(deftest pr359-descriptor-coherent-stale-fields-and-source-tampering-reject
+  (doseq [[family arguments] pr359-descriptor-cases]
+    (let [{:keys [input descriptor context stem]} (pr359-descriptor-case-data family arguments)
+          compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :call 65536)
+          coherent (fn [changed]
+                     (-> context
+                         (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (pr359-descriptor-c7 (symbol (str "sh08-" stem "-call-fact")) changed (:module input))}
+                                :ledger [(pr359-descriptor-c7 (symbol (str "sh08-" stem "-constraint")) changed)])))]
+      (is (= :complete (:status (compile context))))
+      (doseq [changed [(assoc descriptor :operand-type-work 0)
+                       (assoc descriptor :extra true)
+                       (assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc descriptor :profile :hosted)]]
+        (is (= :rejected (:status (compile (coherent changed))))))
+      (doseq [change [#(assoc % :ledger [])
+                      #(update % :ledger into (:ledger %))
+                      #(assoc % :call-facts {})
+                      #(assoc-in % [:nodes :call :evaluation :order] [])
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
+                      #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
+        (is (= :rejected (:status (compile (change context)))))))))
+
+(deftest pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor
+  (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
+        ((pr359-descriptor-helper 'private-map-keys-typed-input))
+        source-args [core node call edge nodes bindings types (:module core) 65536]
+        sources [(apply pr359-descriptor-c7 'sh08-pmk-source source-args)
+                 (apply pr359-descriptor-body 'body-pmk-source source-args) (apply pr359-descriptor-emit 'p15-s23-pmk-source source-args)]
+        complete-args [core node call edge nodes bindings types forms 65536]
+        headers [(apply pr359-descriptor-c7 'sh08-pmk-header complete-args)
+                 (apply pr359-descriptor-body 'body-pmk-header complete-args) (apply pr359-descriptor-emit 'p15-s23-pmk-header complete-args)]
+        request {:canonical-core-artifact core
+                 :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        parameters (pr359-descriptor-body 'body-lp-context request facts bindings 65536)
+        facts (assoc facts :list-parameter-context (:context parameters))
+        prepare #(pr359-descriptor-body 'body-lq-context request % bindings 65536)
+        prepared (prepare facts)
+        context {:core core :nodes nodes :forms forms :bindings bindings :types types
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :call-facts (:call-type-facts facts) :ledger (:constraint-ledger facts)
+                 :current-function (first (:function-records core))
+                 :locals {:span-binding 'span} :parameter-types {:span-binding :gravity.type/map}}
+        compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :present-get 65536)]
+    (is (= :accepted (:status type-result) (:status parameters) (:status prepared)))
+    (is (= [] (:diagnostics join-result)))
+    (is (= :gravity.type/applied-private-map-keys (:kind descriptor)))
+    (is (every? #(= :accepted (:status %)) sources))
+    (is (apply = (map :descriptor sources)))
+    (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (every? #(= :accepted (:status %)) headers))
+    (is (every? #(= descriptor (:descriptor %)) headers))
+    (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
+    (is (not-any? #(contains? (:descriptor %) :entry-proof-work) headers))
+    (is (= (pr359-descriptor-c7 'sh08-pmk-constraint descriptor)
+           (pr359-descriptor-c7 'sh08-lq-constraint descriptor)
+           (pr359-descriptor-body 'body-mkeys-constraint descriptor)
+           (pr359-descriptor-body 'body-lq-constraint descriptor)
+           (pr359-descriptor-emit 'p15-s23-mkeys-constraint descriptor)
+           (pr359-descriptor-emit 'p15-s23-lq-constraint descriptor)))
+    (is (= (pr359-descriptor-c7 'sh08-pmk-call-fact descriptor (:module core))
+           (pr359-descriptor-c7 'sh08-lq-call-fact descriptor (:module core))
+           (pr359-descriptor-body 'body-mkeys-call-fact descriptor (:module core))
+           (pr359-descriptor-body 'body-lq-call-fact descriptor (:module core))
+           (pr359-descriptor-emit 'p15-s23-mkeys-call-fact descriptor (:module core))
+           (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor (:module core))))
+    (is (true? (pr359-descriptor-body 'body-lq-call-valid? core (assoc facts :list-query-context (:context prepared))
+                    bindings node call edge nodes)))
+    (is (= :complete (:status (compile context))))
+    (doseq [changed [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :operand-type-work 0 :entry-proof-work 2875)
+                     (assoc descriptor :extra true)
+                     (assoc descriptor :kind :gravity.type/applied-map-keys)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (assoc-in descriptor [:key-domain-proof :entries] [])
+                     (assoc-in descriptor [:source :syntax-id] :forged)
+                     ((pr359-descriptor-helper 'private-map-keys-cross-family-descriptor) descriptor)]]
+      (let [changed-row (pr359-descriptor-c7 'sh08-mkeys-constraint changed)
+            changed-call (pr359-descriptor-c7 'sh08-mkeys-call-fact changed (:module core))
+            changed-facts (-> facts (assoc-in [:type-table :operator] changed)
+                              (assoc-in [:constraint-ledger 0] changed-row)
+                              (assoc-in [:call-type-facts 0] changed-call))
+            changed-context (-> context (assoc-in [:types :operator] changed)
+                                (assoc-in [:ledger 0] changed-row) (assoc-in [:call-facts 0] changed-call))]
+        (is (= :rejected (:status (prepare changed-facts))))
+        (is (= :rejected (:status (compile changed-context))))))))
+
+(deftest pr359-descriptor-public-map-query-aliases-keep-the-existing-family
+  (doseq [members [[] [:gravity.type/keyword :gravity.type/bool]]]
+    (let [input ((pr359-descriptor-helper 'map-keys-input) {:kind :gravity.type/map :shape :literal :member-types members})
+          {:keys [core node call edge nodes bindings types forms module]} input
+          result (pr359-descriptor-c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536)
+          descriptor (:descriptor result)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/applied-map-keys (:kind descriptor)))
+      (is (= (pr359-descriptor-c7 'sh08-mkeys-constraint descriptor) (pr359-descriptor-body 'body-mkeys-constraint descriptor)
+             (pr359-descriptor-emit 'p15-s23-mkeys-constraint descriptor) (pr359-descriptor-emit 'p15-s23-lq-constraint descriptor)))
+      (is (= (pr359-descriptor-c7 'sh08-mkeys-call-fact descriptor module) (pr359-descriptor-body 'body-mkeys-call-fact descriptor module)
+             (pr359-descriptor-emit 'p15-s23-mkeys-call-fact descriptor module) (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor module)))
+      (is (= :direct-map-keys (:dispatch (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor module))))))
+  (let [{:keys [core node call edge nodes bindings types forms]}
+        ((pr359-descriptor-helper 'map-keys-input) :gravity.type/map)]
+    (is (not= :accepted (:status (pr359-descriptor-c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536))))))
+
+(defn- pr359-prepend-helper [name] (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
+(defn- pr359-prepend-c7 [name & args] ((pr359-prepend-helper 'invoke-c7) name (vec args)))
+(defn- pr359-prepend-body [name & args]
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+(def ^:private pr359-prepend-emitter-plan
+  (delay
+    (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
+(defn- pr359-prepend-emit [name & args]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :prepend-premise-test} @pr359-prepend-emitter-plan name (vec args)))
+(defn- pr359-prepend-literal [kind members] {:kind kind :shape :literal :element-types members})
+(defn- pr359-prepend-homogeneous [kind element] {:kind kind :shape :homogeneous :element-type element})
+(def ^:private pr359-prepend-cases
+  (concat
+   [[(pr359-prepend-literal :gravity.type/list []) :gravity.type/nil]
+    [(pr359-prepend-literal :gravity.type/list [:gravity.type/bool :gravity.type/string]) :gravity.type/keyword]
+    [:gravity.type/list :gravity.type/string]
+    [(pr359-prepend-homogeneous :gravity.type/list :gravity.type/string) :gravity.type/string]
+    [(pr359-prepend-homogeneous :gravity.type/list :gravity.type/string) :gravity.type/never]]
+   (for [element [:gravity.type/string :gravity.type/keyword :gravity.type/symbol]
+         [receiver value] [[(pr359-prepend-literal :gravity.type/set []) element]
+                           [(pr359-prepend-literal :gravity.type/set [element]) element]
+                           [(pr359-prepend-literal :gravity.type/set [element]) :gravity.type/never]]]
+     [receiver value])
+   (for [element [:gravity.type/string :gravity.type/symbol]]
+     [(pr359-prepend-homogeneous :gravity.type/set element) element])))
+(def ^:private pr359-prepend-obsolete [:operand-type-work :result-type-work :type-construction-work])
+
+(defn- pr359-prepend-case-data [receiver value]
+  (let [{:keys [core node call edge nodes bindings types forms module] :as input}
+        ((pr359-prepend-helper 'list-prepend-input) receiver value)
+        derived ((pr359-prepend-helper 'list-prepend-derived) input)
+        descriptor (:descriptor derived)
+        args [core node call edge nodes bindings types module]
+        consumers [(pr359-prepend-body 'body-pl-finish
+                         (apply pr359-prepend-body 'body-pl-source (conj args (pr359-prepend-body 'body-pl-type-work [receiver value] 65536))))
+                   (pr359-prepend-emit 'p15-s23-pl-finish
+                         (apply pr359-prepend-emit 'p15-s23-pl-source (conj args (pr359-prepend-emit 'p15-s23-pl-type-work [receiver value] 65536))))]
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :call (:type derived))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (pr359-prepend-c7 'sh08-pl-call-fact descriptor module)}
+                 :ledger [(pr359-prepend-c7 'sh08-pl-constraint descriptor)]
+                 :locals {:arg0 'items :arg1 'value} :parameter-types types}]
+    {:input input :derived derived :descriptor descriptor :consumers consumers :context context}))
+
+(deftest pr359-prepend-complete-descriptors-and-typed-consumers
+  (doseq [[receiver value] pr359-prepend-cases]
+    (testing (str receiver " " value)
+      (let [{:keys [derived descriptor consumers context]} (pr359-prepend-case-data receiver value)]
+        (is (= :accepted (:status derived)))
+        (is (every? #(= descriptor %) consumers))
+        (is (every? #(not-any? (partial contains? %) pr359-prepend-obsolete) (cons descriptor consumers)))
+        (is (= :complete (:status (pr359-prepend-emit 'p15-s23-typed-compile-node context :call 65536))))
+        (is (= (:type derived) (:return descriptor) (:result-type descriptor)))
+        (if (= value :gravity.type/never)
+          (do (is (= :not-invoked (:application descriptor)))
+              (is (= [] (:direct-effects descriptor)))
+              (is (nil? (:result-extent descriptor))))
+          (is (= [:memory/allocate] (:direct-effects descriptor))))))))
+
+(deftest pr359-prepend-coherent-old-costs-and-forgeries-reject
+  (doseq [[receiver value] pr359-prepend-cases]
+    (let [{:keys [input descriptor context]} (pr359-prepend-case-data receiver value)
+          compile #(pr359-prepend-emit 'p15-s23-typed-compile-node % :call 65536)
+          coherent (fn [changed]
+                     (-> context
+                         (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (pr359-prepend-c7 'sh08-pl-call-fact changed (:module input))}
+                                :ledger [(pr359-prepend-c7 'sh08-pl-constraint changed)])))]
+      (is (= :complete (:status (compile context))))
+      (doseq [changed (concat (map #(assoc descriptor % 0) pr359-prepend-obsolete)
+                             [(merge descriptor (zipmap pr359-prepend-obsolete [0 0 0]))
+                              (assoc-in descriptor [:source :syntax-id] :forged)
+                              (assoc descriptor :result-type :gravity.type/unknown)
+                              (assoc descriptor :direct-effects [:io/write])])]
+        (is (= :rejected (:status (compile (coherent changed))))))
+      (doseq [change [#(assoc % :ledger [])
+                      #(update % :ledger into (:ledger %))
+                      #(assoc % :call-facts {})
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
+                      #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
+        (is (= :rejected (:status (compile (change context)))))))))
+
+(deftest pr359-prepend-late-invalid-and-opaque-types-reject-without-callbacks
+  (let [callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [[kind width index] [[:gravity.type/list 1023 1022] [:gravity.type/set 1024 1023]]
+            invalid [:gravity.type/unknown opaque]]
+      (let [receiver (pr359-prepend-literal kind (assoc (vec (repeat width :gravity.type/string)) index invalid))]
+        (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]]
+          (is (= :rejected (:status (invoke (symbol (str prefix "pl-type-work"))
+                                          [receiver :gravity.type/string] 65536)))))))
+    (doseq [receiver [:gravity.type/set
+                      (pr359-prepend-homogeneous :gravity.type/set :gravity.type/keyword)
+                      (pr359-prepend-literal :gravity.type/vector [])]]
+      (is (= :rejected (:status ((pr359-prepend-helper 'list-prepend-derived)
+                                 ((pr359-prepend-helper 'list-prepend-input) receiver :gravity.type/string))))))
+    (is (zero? @callbacks))))

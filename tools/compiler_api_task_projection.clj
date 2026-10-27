@@ -1,18 +1,19 @@
 (ns compiler-api-task-projection
-  "Project three existing Compiler API outcome task blocks from one ledger."
+  "Project Compiler API outcomes and the owner-reviewed SH01 authority addition."
   (:require [clojure.string :as str]))
 
 (load-file "tools/task_projection.clj")
 
 (def task-path "specs/compiler-api-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/compiler-api.md")
-(def outcome-order ["pipeline" "plugins" "pass-evidence"])
+(def outcome-order ["pipeline" "plugins" "pass-evidence" "development-boundaries"])
 (def outcome-headings
   {"pipeline" "Built-in compiler pipeline outcome"
    "plugins" "Plugin Host: finite remaining tasks"
-   "pass-evidence" "Pass Evidence: finite remaining tasks"})
+   "pass-evidence" "Pass Evidence: finite remaining tasks"
+   "development-boundaries" "Compiler development ownership and verification boundaries"})
 (def record-pattern
-  #"(?s)^- \[([ x])\] `(pipeline|plugins|pass-evidence)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Owner role: .+)$")
+  #"(?s)^- \[([ x])\] `(pipeline|plugins|pass-evidence|development-boundaries)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Owner role: .+)$")
 (defn fail [message] (task-projection/fail message))
 (defn records [text]
   (let [rows (task-projection/records
@@ -22,13 +23,14 @@
     (doseq [{:keys [id title projection]} rows]
       (when-not (= (get outcome-headings id) title)
         (fail "Compiler API outcome key and original heading disagree"))
-      (when-not (and (= 1 (count (re-seq #"All tasks open" projection)))
+      (when-not (and (= 1 (count (re-seq (if (= id "development-boundaries")
+                                          #"Current acceptance unassessed" #"All tasks open") projection)))
                      (= 1 (count (re-seq #"(?m)^Yes/no acceptance: " projection)))
                      (str/includes? projection "\n| Task | Concrete closing evidence |\n| --- | --- |\n")
-                     (= 5 (count (re-seq #"(?m)^\| [^|\n]+ \| [^|\n]+ \|$"
+                     (= (if (= id "development-boundaries") 6 5) (count (re-seq #"(?m)^\| [^|\n]+ \| [^|\n]+ \|$"
                                          (str/replace projection
                                            "| Task | Concrete closing evidence |\n| --- | --- |\n" "")))))
-        (fail "Compiler API outcome requires its five task rows and acceptance block")))
+        (fail "Compiler API outcome requires its exact original rows and acceptance block")))
     rows))
 
 (defn project [task-text roadmap-text]
@@ -38,7 +40,7 @@
                     {:keys [prefix suffix]}
                     (task-projection/region text (str "compiler-api-task-projection/" id))
                     block (if (= "Open" status) projection
-                            (str/replace-first projection "All tasks open"
+                            (str/replace-first projection (if (= id "development-boundaries") "Current acceptance unassessed" "All tasks open")
                               (str "Implementation task status: " status)))]
                 (str prefix "\n" block "\n" suffix)))
             roadmap-text outcome-order)))

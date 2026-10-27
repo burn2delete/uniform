@@ -3,8 +3,7 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.test :as test]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :as test :refer [deftest is testing]]
             [gravity.self-hosting-test-runner :as runner]))
 
 (import '(java.nio.file Files LinkOption Paths)
@@ -134,15 +133,18 @@
         actual-gravity-modules (gravity-module-paths)
         all-direct-stage0-sources (stage0-source-paths)
         all-direct-stage0-tests (all-direct-stage0-test-paths)
+        auxiliary (:auxiliary-test-associations record)
+        auxiliary-paths (into (set (keys auxiliary)) (map :source-path (vals auxiliary)))
+        helper-paths (set (keys (:production-helper-associations record)))
         support-paths (coordinator-support-paths record)
         support-test-paths
         (set (filter #(str/starts-with?
                       % "bootstrap/clojure/test/gravity/")
                      support-paths))
         actual-stage0-sources
-        (set/difference all-direct-stage0-sources support-paths)
+        (set/difference all-direct-stage0-sources support-paths auxiliary-paths)
         actual-stage0-tests
-        (set/difference all-direct-stage0-tests support-paths)
+        (set/difference all-direct-stage0-tests support-paths auxiliary-paths)
         actual-stage0-paths (set/union actual-stage0-sources actual-stage0-tests)
         declared-modules (set (keys module-owners))
         slice-ids (set (keys (:slice-owners record)))
@@ -166,14 +168,14 @@
       (is (= expected-slice-ids slice-ids))
       (is (= actual-gravity-modules declared-gravity-modules))
       (is (= 69 (count actual-gravity-modules)))
-      (is (= (set/difference (stage0-test-paths) support-paths)
+      (is (= (set/difference (stage0-test-paths) support-paths auxiliary-paths)
              actual-stage0-tests))
       (is (= all-direct-stage0-tests
-             (set/union actual-stage0-tests support-test-paths)))
+             (set/union actual-stage0-tests support-test-paths (set (keys auxiliary)))))
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
-      (is (= 108 (count actual-stage0-paths)))
+      (is (= (+ 108 (count helper-paths)) (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= 202 (count module-owners)))
+      (is (= (+ 202 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= 17 (count support-paths)))
@@ -190,7 +192,7 @@
     (testing "all exact module-owner paths exist and source/test owners are paired"
       (doseq [relative declared-modules]
         (is (.isFile (path relative)) relative))
-      (doseq [source actual-stage0-sources
+      (doseq [source (set/difference actual-stage0-sources helper-paths)
               :let [test (paired-stage0-path source)]]
         (is (some? test) source)
         (is (= (get module-owners source)
@@ -209,14 +211,85 @@
         (is (= :master-coordinator (get module-owners module)) module)))
     (testing "reserved Stage0 ids cover exactly the 54 source components"
       (let [reserved (:reserved-leaf-modules record)
-            expected-ids (set (map stage0-component-id actual-stage0-sources))]
+            primary-sources (set/difference actual-stage0-sources helper-paths)
+            expected-ids (set (map stage0-component-id primary-sources))]
         (is (= 54 (count reserved)))
         (is (= expected-ids (set (keys reserved))))
-        (doseq [source actual-stage0-sources
+        (doseq [source primary-sources
                 :let [id (stage0-component-id source)
                       owner (get module-owners source)]]
           (is (some? id) source)
           (is (= owner (get reserved id)) [id source]))))))
+
+(def ^:private macro-helper-path "bootstrap/clojure/src/gravity/macro_run_storage.clj")
+(def ^:private macro-helper-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj")
+(def ^:private macro-helper-test
+  "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj")
+
+(defn- production-helper-registration-valid? [record contract]
+  (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
+                  :consumer-path macro-helper-consumer :test-path macro-helper-test}]
+    (and (= {macro-helper-path expected} (:production-helper-associations record))
+         (= :sh-macro (get-in record [:module-owners macro-helper-path]))
+         (= {:namespace 'gravity.self-hosting.macro-run-storage-test
+             :slice "SH-05" :owner :sh-macro}
+            (get-in record [:standalone-test-owners macro-helper-test]))
+         (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
+              "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
+              "consumer" {"path" macro-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "test" {"path" macro-helper-test "namespace" "gravity.self-hosting.macro-run-storage-test"
+                      "registration" "standalone"}}]
+            (get contract "production_helpers")))))
+
+(deftest production-helper-joins-real-source-consumer-and-existing-standalone-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (is (.isFile (path macro-helper-path)))
+    (is (.isFile (path macro-helper-test)))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-path)))]
+        (is (= 'gravity.macro-run-storage (second (read reader)))))
+      (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-consumer)))]
+        (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) (read reader)))))
+    (is (str/includes? (slurp (path macro-helper-consumer)) "(macro-run-storage/exact? runs)"))
+    (is (not (.exists (path "bootstrap/clojure/test/gravity/macro_run_storage_test.clj"))))
+    (doseq [bad [(assoc-in record [:module-owners macro-helper-path] :master-coordinator)
+                 (assoc-in record [:production-helper-associations macro-helper-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations macro-helper-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations macro-helper-path :test-path]
+                           "bootstrap/clojure/test/gravity/macro_run_storage_test.clj")
+                 (update record :standalone-test-owners dissoc macro-helper-test)
+                 (assoc-in record [:production-helper-associations "unreviewed.clj"]
+                           (get-in record [:production-helper-associations macro-helper-path]))]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" 0 "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" 0 "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" 0 "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest auxiliary-helper-associations-are-explicit-and-owned
+  (let [associations (:auxiliary-test-associations (ownership-record))
+        expected {"c2_reader_scalar_spans" [:sh-reader "c2_reader_product_projection/scalar_spans.clj"]
+                  "c3_literal_indexes" [:sh-syntax "c3_literal_projection/indexes.clj"]
+                  "c3_reader_expansions" [:sh-syntax "c3_reader_expansions.clj"]
+                  "c3_reader_lossless_span" [:sh-syntax "c3_literal_projection/spans.clj"]}]
+    (is (= (set (map #(str "bootstrap/clojure/test/gravity/" % "_test.clj") (keys expected)))
+           (set (keys associations))))
+    (doseq [[stem [owner source]] expected
+            :let [test-path (str "bootstrap/clojure/test/gravity/" stem "_test.clj")
+                  record (get associations test-path)]]
+      (is (= #{:owner :source-path :source-namespace} (set (keys record))))
+      (is (= owner (:owner record)))
+      (is (= (str "bootstrap/clojure/src/gravity/" source) (:source-path record)))
+      (is (.isFile (path test-path)))
+      (is (.isFile (path (:source-path record))))
+      (is (= (:source-namespace record)
+             (binding [*read-eval* false]
+               (with-open [reader (java.io.PushbackReader. (io/reader (path (:source-path record))))]
+                 (second (read reader)))))))))
 
 (deftest coordinator-reservations-and-leaf-conventions-are-explicit
   (let [record (ownership-record)
@@ -283,7 +356,7 @@
                          (var-get
                           (ns-resolve runner-ns
                                       'excluded-top-level-test-files)))))]
-          (is (= 48 (count catalog)))
+          (is (= 52 (count catalog)))
           (is (= expected (set (map :test-path catalog))))
           (is (true? (validate!)))
           (is (every? symbol? (map :namespace catalog)))

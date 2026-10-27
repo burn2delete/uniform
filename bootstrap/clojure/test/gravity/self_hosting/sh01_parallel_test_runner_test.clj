@@ -131,6 +131,110 @@
            (get-in schedule
                    [:parallel-phase :normal-batches 1 :batch-namespaces])))))
 
+(defn- bootstrap-compatibility-jobs []
+  (let [policy {:deterministic? true :performance? false
+                :proof? false :freshness-required? false}]
+    [(assoc (shard "gravity.bootstrap-compatibility.c11-test" "SH-12" :normal)
+            :component-id "c11-mir" :batch-key "component/c11-mir/compatibility"
+            :test-policy policy)
+     (assoc (shard "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"
+                   "SH-01" :normal)
+            :component-id "compiler-pass-manifest"
+            :batch-key "component/compiler-pass-manifest/compatibility"
+            :test-policy policy)]))
+
+(deftest compatibility-facades-share-only-bootstrap-initialization
+  (let [jobs (bootstrap-compatibility-jobs)
+        schedule (runner/schedule-plan (plan jobs))
+        batches (get-in schedule [:parallel-phase :normal-batches])
+        launches (atom [])
+        report (runner/execute-plan
+                 (plan jobs)
+                 {:normal-batch-worker
+                  (fn [batch]
+                    (swap! launches conj batch)
+                    (batch-result batch (repeat (count batch) :passed) [] false))})]
+    (is (= 1 (:planned-jvms schedule)))
+    (is (= 1 (count batches) (count @launches)))
+    (is (= jobs (:batch-jobs (first batches)) (first @launches)))
+    (is (= (mapv :namespace jobs) (:batch-namespaces (first batches))))
+    (is (not (contains? (first batches) :component-id)))
+    (is (= (:test-policy (first jobs)) (:test-policy (first batches))))
+    (is (= :passed (:status report)))
+    (is (= (set (map :namespace jobs)) (set (map :namespace (:results report)))))
+    (doseq [job jobs]
+      (is (= 1 (:planned-jvms (runner/schedule-plan (plan [job]))))))))
+
+(deftest compatibility-sharing-preserves-policy-resource-and-closure-boundaries
+  (let [[first-job second-job :as jobs] (bootstrap-compatibility-jobs)]
+    (doseq [changed [(assoc second-job :cache-closure {})
+                     (assoc second-job :cache-closure-authorized? true)
+                     (assoc-in second-job [:test-policy :freshness-required?] true)
+                     (assoc second-job :test-policy {:unknown true})
+                     (assoc second-job :test-policy :unknown)
+                     (assoc second-job :resource-class :memory-heavy)
+                     (assoc second-job :resource-class :exclusive)]]
+      (is (= 2 (:planned-jvms (runner/schedule-plan (plan [first-job changed]))))))
+    (is (= 2 (:planned-jvms (runner/schedule-plan (plan jobs) {:normal-batch-size 1}))))
+    (let [foreign (assoc (shard "gravity.self-hosting.unrelated-test" "SH-01" :normal)
+                         :batch-key "bootstrap-facade/compatibility")
+          batches (get-in (runner/schedule-plan (plan (conj jobs foreign)))
+                          [:parallel-phase :normal-batches])]
+      (is (= 2 (count batches)))
+      (is (= [(:namespace foreign)] (:batch-namespaces (second batches)))))))
+
+(deftest shared-compatibility-failure-retains-the-unattempted-namespace
+  (let [jobs (bootstrap-compatibility-jobs)
+        report (runner/execute-plan
+                 (plan jobs)
+                 {:fail-fast true
+                  :normal-batch-worker
+                  (fn [batch]
+                    (batch-result batch [:failed] [(:namespace (second batch))] true))})]
+    (is (= :failed (:status report)))
+    (is (= 1 (:exit-code report)))
+    (is (= [(:namespace (first jobs))] (mapv :namespace (:results report))))
+    (is (= [(:namespace (second jobs))] (:skipped-namespaces report)))
+    (is (true? (:fail-fast-triggered? report)))))
+
+(deftest shared-compatibility-error-does-not-hide-the-other-result
+  (let [jobs (bootstrap-compatibility-jobs)
+        calls (atom 0)
+        report
+        (runner/execute-plan
+          (plan jobs)
+          {:normal-batch-worker
+           (fn [batch]
+             (swap! calls inc)
+             (-> (batch-result batch [:failed :passed] [] false)
+                 (assoc :fail 0 :error 1
+                        :summary {:test 2 :pass 1 :fail 0 :error 1})
+                 (assoc-in [:namespace-results 0 :status] :error)
+                 (assoc-in [:namespace-results 0 :fail] 0)
+                 (assoc-in [:namespace-results 0 :error] 1)
+                 (assoc-in [:namespace-results 0 :summary]
+                           {:test 1 :pass 0 :fail 0 :error 1})))})]
+    (is (= 1 @calls))
+    (is (= :failed (:status report)))
+    (is (= 1 (:exit-code report)))
+    (is (= (mapv :namespace jobs) (mapv :namespace (:results report))))
+    (is (= [:error :passed] (mapv :status (:results report))))
+    (is (= [1 0] (mapv :error (:results report))))
+    (is (empty? (:skipped-namespaces report)))))
+
+(deftest shared-compatibility-affinity-preserves-job-identity-and-freshness
+  (let [jobs (bootstrap-compatibility-jobs)
+        fresh (mapv #(-> % (update :namespace str)
+                         (assoc-in [:test-policy :freshness-required?] true)) jobs)
+        batches (get-in (runner/schedule-plan (plan fresh))
+                        [:parallel-phase :normal-batches])]
+    (is (= 1 (count batches)))
+    (is (= (mapv :namespace fresh) (:batch-namespaces (first batches))))
+    (is (true? (get-in batches [0 :test-policy :freshness-required?])))
+    (doseq [unknown [{:unknown true} :unknown]]
+      (let [bad (mapv #(assoc % :test-policy unknown) jobs)]
+        (is (= 2 (:planned-jvms (runner/schedule-plan (plan bad)))))))))
+
 (deftest warm-batch-fail-fast-preserves-attempted-prefix-and-skipped-tail
   (let [first-job (shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
         second-job (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)
@@ -866,6 +970,29 @@
             (is (= :unsupported (:execution data)))
             (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
                    (:required-guards data)))))))
+    (is (zero? @starts))))
+
+(deftest parent-mutation-generic-entrypoints-never-launch
+  (let [starts (atom 0)
+        options {:working-directory "/tmp"
+                 :worker (fn [_] (swap! starts inc) {:exit-code 0})
+                 :process-launcher (fn [& _] (swap! starts inc) {:exit-code 0})}]
+    (doseq [namespace ['gravity.self-hosting.resolution-parent-mutation-test
+                      "gravity.self-hosting.resolution-parent-mutation-test"]
+            marker [nil :supported]]
+      (let [job (cond-> {:namespace namespace :slice "SH-19" :owner :sh-runtime
+                        :resource-class :normal}
+                  marker (assoc :execution marker))]
+        (doseq [operation [#(runner/run-namespace-process job options)
+                           #(runner/run-normal-batch-process
+                              [{:namespace 'gravity.self-hosting.ordinary-test
+                                :slice "SH-01" :resource-class :normal} job] options)
+                           #(runner/execute-plan {:namespaces [namespace] :shards [job]} options)]]
+          (let [data (exception-data operation)]
+            (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+            (is (= :unsupported (:execution data)))
+            (is (= "SH-06" (:slice data)))
+            (is (= :sh-resolution (:owner data)))))))
     (is (zero? @starts))))
 
 (deftest malformed-and-empty-plans-fail-closed

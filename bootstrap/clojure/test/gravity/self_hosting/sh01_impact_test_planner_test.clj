@@ -507,6 +507,27 @@
           (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
                  (:required-guards data))))))))
 
+(deftest resolution-parent-mutation-is-discovered-but-needs-the-owner-wrapper
+  (let [path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
+        namespace 'gravity.self-hosting.resolution-parent-mutation-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])]
+    (is (= {:namespace namespace :slice "SH-06" :owner :sh-resolution}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (true? (get-in entry [:test-policy :freshness-required?])))
+    (is (nil? (:cache-closure entry)))
+    (doseq [request [#(planner/build-namespace-plan [namespace])
+                     #(planner/build-plan {:changed-paths [path]})
+                     #(planner/build-plan {:direct-slices ["SH-06"]})
+                     #(planner/build-plan {:iteration-slices ["SH-06"]})]]
+      (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= "SH-06" (:slice data)))
+        (is (= :sh-resolution (:owner data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
