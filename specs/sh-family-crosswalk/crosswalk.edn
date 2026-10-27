@@ -12663,7 +12663,7 @@
   :review-text-sha256
   "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
   :input-fingerprint
-  "cbde3bf9b753bdf01aae1ea9abc79f1e26bc2209c53fef2f11c1ce4821bb414c"},
+  "cec36e0478078819ec5e588939c2d7f1fbe5232906459932633cc68becd7f88a"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",

@@ -2,6 +2,7 @@
   "Source-bound SH routing projection. Task status is read only from component ledgers."
   (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp] [clojure.java.io :as io]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
+(require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
   {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
@@ -477,7 +478,7 @@
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
-   :input-fingerprint "cbde3bf9b753bdf01aae1ea9abc79f1e26bc2209c53fef2f11c1ce4821bb414c"
+   :input-fingerprint "cec36e0478078819ec5e588939c2d7f1fbe5232906459932633cc68becd7f88a"
    :source-version-review
    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"

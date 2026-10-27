@@ -373,7 +373,7 @@
               (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
                         "SH07 sequence metadata differs from original source")))
         sequence-nodes (into {} (for [r sequence] [(:id r) {:state :unassessed :scope :original-implementation-sequence}]))
-        composition-nodes (into {} (for [[id row] task-map]
+        composition-nodes (into {} (for [[id _] task-map]
                                       [(str "task:" id "/composition")
                                        {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
         shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)

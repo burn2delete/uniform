@@ -1,6 +1,6 @@
 (ns sh-inventory
   "Read-only extraction of the original SH acceptance population; no task credit."
-  (:require [clojure.string :as str] [clojure.pprint :as pp]))
+  (:require [clojure.pprint :as pp]))
 
 (def plan-path "docs/self-hosting-milestone-completion-plan.md")
 (def original-plan-sha256 "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188")

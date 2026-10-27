@@ -1,6 +1,7 @@
 (ns sh-crosswalk-test
   (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str] [clojure.edn :as edn]))
 (binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
+(require '[sh-inventory] '[sh-crosswalk])
 
 (deftest exact-original-inventory-and-negative-population-controls
   (let [source (slurp sh-inventory/plan-path) rows (sh-inventory/inventory source)
