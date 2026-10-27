@@ -9,10 +9,20 @@
 (def p15-s23-c11-core-policy-receipt-keys
   #{:source-interface :admission-status :verification-scope :reader-plan-binding
     :reader-source-revision :reader-result-identity :authenticated-envelope
-    :envelope-verification :self-hosted? :expression-binding})
+    :envelope-verification :self-hosted? :expression-binding
+    :owner-metadata-content-id :projection-contract})
 (def p15-s23-c11-core-program-projection-keys
   [:source-contract-version :source-byte-count :source-content-hash
    :plan-semantic-hash :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash])
+
+(def p15-s23-c11-core-projection-contract
+  {:artifact :gravity/c6-reader-owner-metadata-projection :schema-version 1
+   :encoding :owner-canonical-semantic-v1
+   :sorted-metadata-policy :default-only :core-carrier-policy :reject})
+
+(defn- p15-s23-c11-core-policy-content-id? [value]
+  (and (identical? String (class value))
+       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
 
 (defn p15-s23-c11-mir-require-core-policy-data!
   [checked-core context policy]
@@ -41,6 +51,19 @@
           (= :selected-current-source-host-seed (:verification-scope policy) (:verification-scope receipt))
           (= :passed (:envelope-verification receipt))
           (false? (:self-hosted? receipt))
+          (= p15-s23-c11-core-projection-contract (:projection-contract receipt))
+          (identical? Long (class (get-in receipt [:projection-contract :schema-version])))
+          (every? p15-s23-c11-core-policy-content-id?
+            [(:owner-metadata-content-id receipt)
+             (get-in receipt [:reader-plan-binding :instruction-summary-content-id])
+             (get-in receipt [:reader-source-revision :function-shapes-content-id])
+             (get-in envelope [:source-rule :function-shapes-content-id])
+             (get-in envelope [:source-rule :owner-source-rule-content-id])
+             (get-in envelope [:gravity-template-replay :checks-content-id])
+             (get-in envelope [:gravity-template-replay :diagnostics-content-id])
+             (:functions-content-id expression)
+             (:declared-plan-compiler-labels-content-id expression)
+             (:owner-binding-content-id expression)])
           (= expected-program compiler)
           (= :accepted (:status envelope)) (= :c2-reader (:stage envelope))
           (= #{:actual-sh03-reader-result-id :actual-sh03-semantic-product-binding :actual-c2-artifact-id

@@ -55,3 +55,24 @@ Genuine Core construction and independent fresh verification, followed by the
 C11 constructor and public fresh report with source, context, policy and report
 substitution controls, remain necessary. No final admission follows from these
 unit controls or the existing compiler-program identity observations.
+
+## Owner-projection schema successor
+
+The Core owner now exports an explicit semantic metadata projection contract and
+a content ID for its full verified owner witness. C11 requires both fields and
+every nested Reader, revision, source-rule, template and expression commitment.
+Missing or malformed commitments and encoding, carrier-policy or schema-class
+substitution reject even when the untrusted Core policy binding hash is
+coherently regenerated. The entire receipt remains in the contextual policy
+hash and final artifact inputs; no commitment is silently discarded.
+
+The constructor-only Core operation on cb3701556e9082ae8387c18fa1f6396a9d284617
+returned naturally with strict transport and clean bookends. This is predecessor
+Core evidence, not a rerun on this C11 schema successor. Its independent public
+fresh report remains a separate operation and no C11 constructor or public
+report acceptance follows from it.
+
+The schema successor's compiler-free oracle controls pass 4/24. The accepted
+compiled 1/17 and boundary/LOC 11/23 receipts retain their exact 33f19694 source
+identity; they are not relabeled as schema-successor execution. Exact independent
+review and the affected compiled selector remain pending.

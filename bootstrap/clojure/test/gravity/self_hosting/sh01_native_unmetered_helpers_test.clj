@@ -937,6 +937,19 @@
          :expression-binding (assoc (select-keys c6-contract/current-expression-program
                                      [:source-content-hash :semantic-hash :functions-semantic-hash :artifact-hash :function-count])
                                    :source-contract-version 2)}
+        commitment (str "sha256:" (digest/sha256-hex "relative-policy-commitment-fixture"))
+        receipt (-> receipt
+                    (assoc :projection-contract b/p15-s23-c11-core-projection-contract
+                           :owner-metadata-content-id commitment)
+                    (assoc-in [:reader-plan-binding :instruction-summary-content-id] commitment)
+                    (assoc-in [:reader-source-revision :function-shapes-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :source-rule :function-shapes-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :source-rule :owner-source-rule-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :gravity-template-replay :checks-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :gravity-template-replay :diagnostics-content-id] commitment)
+                    (assoc-in [:expression-binding :functions-content-id] commitment)
+                    (assoc-in [:expression-binding :declared-plan-compiler-labels-content-id] commitment)
+                    (assoc-in [:expression-binding :owner-binding-content-id] commitment))
         bind-data (fn [policy]
                     (assoc policy :source-policy-binding-id
                       (b/p15-s23-c6c10-canonical-digest path
@@ -965,6 +978,10 @@
     (doseq [bad [(dissoc policy :source-policy-binding-id)
                 (assoc policy :extra true)
                 (assoc policy :admission-status :admitted)
+                (bind-data (update policy :source-policy-receipt dissoc :owner-metadata-content-id))
+                (bind-data (assoc-in policy [:source-policy-receipt :projection-contract :core-carrier-policy] :default-only))
+                (bind-data (assoc-in policy [:source-policy-receipt :projection-contract :schema-version] (int 1)))
+                (bind-data (assoc-in policy [:source-policy-receipt :expression-binding :owner-binding-content-id] "not-a-digest"))
                 (assoc-in policy [:source-interface :version] (int 2))
                 (assoc-in policy [:source-policy-receipt :source-interface :version] (int 2))
                 (assoc-in policy [:compiler-program :source-content-hash] "wrong")
