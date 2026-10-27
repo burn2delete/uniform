@@ -2,7 +2,7 @@
 
 ## Purpose
 
-GitHub-hosted Ubuntu checks replace routine laptop verification for pull
+GitHub-hosted checks replace routine laptop verification for pull
 requests and the exact clean integrated main commit. They do not confer
 compiler migration or release acceptance.
 
@@ -13,7 +13,7 @@ compiler migration or release acceptance.
 | static | Always | Always | actionlint 1.7.7 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | projections | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
-| fresh-leaf-regressions | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | Existing reviewed bootstrap-free catalog, each namespace in its own JVM. Unknown paths fall back to the full catalog; no unproven affected-test graph or cross-run result cache. This is not the full compiler suite. |
+| fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | 51 portable namespaces on Ubuntu and the Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every namespace gets a fresh JVM; the partition is exhaustive and disjoint. Unknown paths fall back to all 52; no cross-run result cache. This is not the full compiler suite. |
 | source-Core-readiness | Omitted | Explicitly failing unavailable gate | Genuine selected-current-Reader construction plus independent verification is not yet available on main. Never treated as a pass or simulated using mocks. |
 | experimental-source-snapshot | Preview artifact | Preview artifact | Exact SHA source tarball, independently repeated Git archive hash, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Main push only, after all four routine checks and packaging pass | Separate contents-write job publishes the source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
@@ -23,9 +23,16 @@ compiler migration or release acceptance.
 The audited baseline has no checked-in Actions workflow, dependency lockfile,
 formatter configuration or CODEOWNERS. `deps.edn` has test aliases and only
 Clojure's standard library dependency. CI pins CLI/runtime 1.12.5.1654/1.12.5,
-Temurin 21.0.8+9.0.LTS, action revisions, and static tool versions. It does not modify
+Temurin 21.0.8+9.0.LTS (portable checks) and 26.0.1+8 (Darwin), action revisions,
+and static tool versions. It does not modify
 compiler dependencies or source authentication pins. Hosted runner images can
 change; record the run environment and do not claim hermetic reproduction.
+
+The Darwin source contract requires ARM macOS and JDK 26.0.1; it is not a
+portable Linux mock. Standard `macos-15` provides the supported ARM hosted
+runner. Cache tests retain their owner and permission checks: Java temporary
+files use a runner-owned private directory, rather than Linux's root-owned
+shared `/tmp`. No source security or runtime pin is relaxed for CI.
 
 No self-hosted runners, secrets, paid infrastructure, branch protection or
 access settings are created. Fork PR code receives a read-only token, no
@@ -58,10 +65,14 @@ requires include the native C3 fixture dependency and remain compiler-free.
 Unknown files, metadata drift and missing ownership still fail closed. These
 hosted helper tests grant no Reader authentication or compiler execution credit.
 
-At main `a33e0eef`, the broader ownership inventory also detects the existing
-unregistered `bootstrap/clojure/src/gravity/macro_run_storage.clj` helper.
-CI runs that check and retains its failure; adding the four Reader associations
-does not waive or reclassify the Macro ownership gap.
+The broader ownership inventory exposed the existing unregistered
+`bootstrap/clojure/src/gravity/macro_run_storage.clj` production helper. Its
+explicit SH-05 registration joins the real early consumer and existing
+standalone test. All original 202 owner bindings remain, with one added helper
+binding. The original 54 paired components still account for 108 direct paths;
+the separate production helper makes 109. No helper exclusion, fabricated
+top-level test or 55th primary component is used. CI runs the strict complete
+inventory and its negative controls.
 
 The Native owner's reported genuine A baseline failed naturally at
 `C6-VERIFY/:actual-selected-current-reader-products`. The corrected C3
@@ -71,8 +82,9 @@ helper loading; PR482 covers Reader decimal/history semantics. Cold require
 and existing Reader positive/negative tests retain those regressions.
 
 Before enabling required checks, observe stable real GitHub runs. Proposed
-initial names are `static`, `projections`, `bootstrap`, and
-`fresh-leaf-regressions`. Keep `source-Core-readiness` non-required until the
+initial names are `static`, `projections`, `bootstrap`,
+`fresh-leaf-regressions / portable`, and `fresh-leaf-regressions / darwin`.
+Keep `source-Core-readiness` non-required until the
 real public route is reviewed and passing. Main tests check the push SHA,
 not a cherry-picked candidate or synthetic source fixture.
 

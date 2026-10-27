@@ -14,6 +14,19 @@
   (let [sha (apply str (repeat 40 "a"))]
     (is (= sha (ci/base-ref sha)))))
 
+(deftest platform-leaves-partition-the-entire-strict-catalog
+  (binding [*command-line-args* nil]
+    (load-file "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"))
+  (let [catalog (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog))
+        portable (ci/leaf-selection "portable" catalog)
+        darwin (ci/leaf-selection "darwin" catalog)]
+    (is (= 51 (count portable)))
+    (is (= ["darwin-publication"] (mapv :id darwin)))
+    (is (= (set catalog) (set (concat portable darwin))))
+    (is (= (count catalog) (count (concat portable darwin))))
+    (is (thrown? Exception (ci/leaf-selection "unknown" catalog)))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
         expression (str "(let [p (.start (ProcessBuilder. " (pr-str child) "))] "

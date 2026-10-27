@@ -94,6 +94,12 @@
   :completion-state-paths
   ["docs/self-hosting-slice-backlog.md"]}
 
+ :production-helper-associations
+ {"bootstrap/clojure/src/gravity/macro_run_storage.clj"
+  {:namespace gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"
+   :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}}
+
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
@@ -209,6 +215,7 @@
   "bootstrap/clojure/src/gravity/diagnostics.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/digest.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental

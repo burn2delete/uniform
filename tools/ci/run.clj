@@ -106,6 +106,20 @@
                                 (str/ends-with? file "_task_projection_test.clj"))]
        (script (str "test-" file) (str "tools/" file))))))
 
+(defn leaf-selection [platform catalog]
+  (when-not (#{"portable" "darwin"} platform)
+    (throw (ex-info "Unknown leaf platform" {:platform platform})))
+  (filterv #(= (= platform "darwin") (= "darwin-publication" (:id %))) catalog))
+
+(defn leaf-command [platform]
+  (binding [*command-line-args* nil]
+    (load-file "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"))
+  (let [catalog (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog))
+        selected (leaf-selection platform catalog)]
+    (when (empty? selected) (throw (ex-info "Empty platform leaf selection" {:platform platform})))
+    (apply command "512m" "-M:leaf-test"
+           (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected))))
+
 (defn commands [mode]
   (case mode
     "static" (let [paths (changed-clojure-paths)
@@ -134,7 +148,8 @@
                  ["ownership-inventory" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-ownership-test")]]
-    "leaves" [["fresh-leaf-catalog" 900 (command "512m" "-M:leaf-test")]]
+    "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable")]]
+    "leaves-darwin" [["fresh-darwin-leaf-catalog" 180 (leaf-command "darwin")]]
     (throw (ex-info "Unknown CI mode" {:mode mode}))))
 
 (defn run! [mode]

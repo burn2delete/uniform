@@ -66,7 +66,7 @@ jobs:
           java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
           clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
-          find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
+          (cd target/ci && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + | sort > SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -76,15 +76,27 @@ jobs:
           if-no-files-found: error
 
   leaves:
-    name: fresh-leaf-regressions
-    runs-on: ubuntu-24.04
+    name: fresh-leaf-regressions / ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: portable
+            runner: ubuntu-24.04
+            java: 21.0.8+9.0.LTS
+          - platform: darwin
+            runner: macos-15
+            java: 26.0.1+8
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        with:
+          java-version: ${{ matrix.java }}
       - name: Conservative selection
         id: selection
         env:
@@ -104,7 +116,9 @@ jobs:
           echo "Full fresh leaf fallback selected: $selected. Markdown-only PRs retain projection and bootstrap checks." | tee target/ci/selection.txt
       - name: Fresh catalog fallback
         if: steps.selection.outputs.selected == 'true'
-        run: clojure -Srepro -M tools/ci/run.clj leaves
+        env:
+          LEAF_PLATFORM: ${{ matrix.platform }}
+        run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
       - name: Preserve failure receipts
         if: always()
         run: |
@@ -114,14 +128,14 @@ jobs:
           clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
           java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
-          find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
+          (cd target/ci && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + | sort > SHA256SUMS)
       - name: Reject tracked source mutation
         if: always()
         run: git diff --exit-code HEAD
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: ci-leaves-${{ github.sha }}-${{ github.run_attempt }}
+          name: ci-leaves-${{ matrix.platform }}-${{ github.sha }}-${{ github.run_attempt }}
           path: target/ci/
           retention-days: 14
           if-no-files-found: error
@@ -141,7 +155,7 @@ jobs:
           git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
           echo 'unavailable/nonpassing: C6-VERIFY/:actual-selected-current-reader-products; no genuine execution attempted' > target/ci/core-readiness.txt
-          sha256sum target/ci/*.txt > target/ci/SHA256SUMS
+          (cd target/ci && shasum -a 256 ./*.txt > SHA256SUMS)
           echo '::error::Genuine current-source Core construction and independent fresh verification are unavailable on main. Native owner is repairing the C3 Reader-provenance join (C6-VERIFY/:actual-selected-current-reader-products). No modeled test substitutes for this gate.'
           echo 'Source-to-Core gate: unavailable/nonpassing; no genuine compiler execution claimed.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
@@ -176,7 +190,7 @@ jobs:
           java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
           clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
-          find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
+          (cd target/ci && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + | sort > SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
