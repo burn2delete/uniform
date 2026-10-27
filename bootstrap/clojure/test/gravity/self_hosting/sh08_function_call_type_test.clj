@@ -20788,3 +20788,228 @@
       (is (= (:semantic-span large-source) (get-in result [:type-facts 0 :source-span])))
       (is (= (:origin-chain large-source) (get-in result [:type-facts 0 :origin-chain])))
       (is (= (:syntax-id large-source) (get-in result [:type-facts 0 :syntax-id]))))))
+
+
+;; Record/Union descriptor cardinality; normalized authentication only.
+(defn- ru-cardinality-family [n]
+  (let [types [:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/string :gravity.type/keyword]
+        values [nil true 7 "text" :value]
+        fields (mapv #(hash-map :name (keyword (str "field-" %)) :type (types (mod % 5))) (range n))
+        entries (mapv #(hash-map :name (:name %) :value (values (mod %2 5))) fields (range n))
+        variants (mapv #(hash-map :tag (keyword (str "variant-" %)) :payload-type (types (mod % 5))) (range n))]
+    {:record-type {:name :record :fields fields}
+     :record-construction {:type :record :fields entries}
+     :record-access {:record-type :record :field (:name (last fields))}
+     :union-type {:name :union :variants variants}
+     :union-construction {:type :union :variant (:tag (last variants)) :payload (values (mod (dec n) 5))}
+     :union-match {:union-type :union :branches (mapv #(hash-map :variant (:tag %) :result 1) variants)}}))
+
+(defn- ru-cardinality-fixture [n]
+  (let [family (ru-cardinality-family n)
+        branch-names (mapv #(symbol (str "branch-" %)) (range n))
+        rows (into [['descriptor family]
+                    ['program {:record-construction-definition 'record :record-access-definition 'access
+                               :union-construction-definition 'union :union-match-definition 'match}]
+                    ['record (:record-construction family)]
+                    ['access {:record-definition 'record :field (get-in family [:record-access :field])}]
+                    ['union (:union-construction family)]
+                    ['match {:union-type :union :scrutinee-definition 'union :branch-definitions branch-names}]]
+                   (mapv (fn [i variant name]
+                           [name {:variant (:tag variant) :binding (keyword (str "payload-" i))
+                                  :pattern-payload-type (:payload-type variant) :result 1}])
+                         (range n) (get-in family [:union-type :variants]) branch-names))
+        nodes (mapv (fn [i [_ value]]
+                      (assoc (core-shape-node i) :core-form :collection-literal
+                             :attributes {:literal-kind :map :source-value value}
+                             :source {:syntax-id (core-shape-sha (+ 10000 i)) :form-id (core-shape-sha (+ 20000 i))
+                                      :semantic-span {:form-index i} :origin-chain [] :generated-origin []})) (range) rows)
+        definitions (mapv (fn [i [name _]]
+                            {:name name :binding-id (core-shape-sha (+ 30000 i))
+                             :core-node-id (core-shape-sha (+ 40000 i)) :value-node-id (:node-id (nodes i))}) (range) rows)
+        core {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (core-shape-sha 50)
+              :module core-shape-module :nodes nodes :definitions definitions
+              :provenance {:source-path "normalized-record-union.gravity"}}
+        request {:canonical-core-artifact core
+                 :b47-context {:canonical-core-artifact core :provenance (:provenance core)}
+                 :coordinator-verification {:verified-source-extension ".gravity"}}]
+    {:family family :core core :request request :branch-names branch-names}))
+
+(defn- ru-cardinality-operation [fixture operation]
+  ;; Only authentication is supplied at this normalized test seam. All source
+  ;; joins, semantic checks, fact production and fresh verification are Gravity.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) selected-plan @c7-plan
+        request (:request fixture) calls (atom 0)
+        value (with-redefs-fn
+                {scoped (fn [runtime plan callee args scope]
+                          (if (and (identical? owner (Thread/currentThread)) (identical? plan selected-plan)
+                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                   (= 'sh08-ft-authenticated-core callee) (= 1 (count args))
+                                   (identical? request (first args)))
+                            (do (swap! calls inc)
+                                (:resolution fixture {:status :accepted :core (:core fixture) :binding-table []}))
+                            (original runtime plan callee args scope)))} operation)]
+    {:value value :authentication-seam-calls @calls}))
+
+(defn- ru-cardinality-alter [fixture name change]
+  (let [index (.indexOf (mapv :name (get-in fixture [:core :definitions])) name)]
+    (assert (<= 0 index))
+    (let [core (update-in (:core fixture) [:nodes index :attributes :source-value] change)]
+      (-> fixture (assoc :core core)
+          (assoc-in [:request :canonical-core-artifact] core)
+          (assoc-in [:request :b47-context :canonical-core-artifact] core)))))
+
+(defn- ru-cardinality-opaque [callbacks]
+  (reify Object
+    (equals [_ _] (swap! callbacks inc) (throw (ex-info "unreachable equality" {})))
+    (hashCode [_] (swap! callbacks inc) (throw (ex-info "unreachable hash" {})))
+    (toString [_] (swap! callbacks inc) (throw (ex-info "unreachable printing" {})))))
+
+(deftest sh08-record-union-cardinality-producers-development-kernel
+  ;; Only authentication is supplied. Both producers and both fresh verifiers
+  ;; execute actual Gravity joins, checking, complete facts and strict equality.
+  (doseq [n [65 129]]
+    (let [fixture (ru-cardinality-fixture n)
+          request (:request fixture)
+          observed (ru-cardinality-operation fixture
+                     #(let [descriptor (invoke-c7 'sh08-record-union-type-core-artifact [request 'descriptor])
+                            typed (invoke-c7 'sh08-record-access-match-typed-core-artifact [request 'descriptor 'program descriptor])
+                            dv (invoke-c7 'sh08-verify-record-union-type-result [request 'descriptor descriptor])
+                            tv (invoke-c7 'sh08-verify-record-access-match-typing-result [request 'descriptor 'program descriptor typed])]
+                        {:descriptor descriptor :typed typed :dv dv :tv tv}))
+          {:keys [descriptor typed dv tv]} (:value observed)]
+      (is (pos? (:authentication-seam-calls observed)))
+      (is (= :accepted (:status descriptor) (:status typed)))
+      (is (= :passed (:status dv) (:status tv)))
+      (is (= (:family fixture) (:descriptor descriptor) (get-in descriptor [:identity-input :descriptor])))
+      (is (some #{:closed-descriptor-schema-valid} (:checks dv)))
+      (is (not-any? #{:closed-descriptor-schema-bounded} (:checks dv)))
+      (is (false? (:roadmap-credit? descriptor)))
+      (is (false? (:executable-record-union-language-behavior? descriptor)))
+      (is (false? (:roadmap-credit? typed)))
+      (is (= n (count (:record-construction-type-facts typed))
+             (count (:union-match-narrowing-facts typed)) (count (:pattern-binding-environments typed))))
+      (is (= (+ n 4) (count (get-in typed [:typed-core :types]))))
+      (is (= (+ (* 2 n) 3) (count (get-in typed [:constraint-ledger :constraints]))))
+      (is (= :solved (get-in typed [:constraint-ledger :status])))
+      (is (= [] (get-in typed [:constraint-ledger :unsolved])))
+      (is (= (:name (last (get-in fixture [:family :record-type :fields])))
+             (get-in typed [:record-access-type-fact :field])))
+      (is (= (:type (last (get-in fixture [:family :record-type :fields])))
+             (get-in typed [:record-access-type-fact :result-type])))
+      (is (= n (get-in typed [:match-expression-type-fact :branch-count])))
+      (is (= :closed-total (get-in typed [:match-expression-type-fact :exhaustiveness])))
+      (is (= 1 (count (filter :selected? (:union-match-narrowing-facts typed)))))
+      (is (= (:tag (last (get-in fixture [:family :union-type :variants])))
+             (:variant (last (:union-match-narrowing-facts typed)))))
+      (is (= (:branch-names fixture) (mapv :branch-definition (:union-match-narrowing-facts typed))))
+      (is (= (mapv :payload-type (get-in fixture [:family :union-type :variants]))
+             (mapv :narrowed-payload-type (:union-match-narrowing-facts typed))))
+      (doseq [candidate [(assoc-in descriptor [:descriptor :record-access :field] :forged)
+                         (assoc-in descriptor [:provenance :source-path] "forged.gravity")]]
+        (is (= :rejected
+               (get-in (ru-cardinality-operation fixture
+                         #(invoke-c7 'sh08-verify-record-union-type-result [request 'descriptor candidate])) [:value :status]))))
+      (doseq [candidate [(assoc-in typed [:record-access-type-fact :value] :forged)
+                         (assoc-in typed [:union-match-narrowing-facts (dec n) :narrowed-payload-type] :gravity.type/unknown)
+                         (assoc typed :actual-source-path "forged.gravity")]]
+        (is (= :rejected
+               (get-in (ru-cardinality-operation fixture
+                         #(invoke-c7 'sh08-verify-record-access-match-typing-result
+                                     [request 'descriptor 'program descriptor candidate])) [:value :status])))))))
+
+(deftest sh08-record-union-cardinality-invalid-members-development-kernel
+  (let [fixture (ru-cardinality-fixture 65)]
+    (doseq [[change reason]
+            [[#(assoc-in % [:record-type :fields 64 :name] (get-in % [:record-type :fields 0 :name])) :malformed-record-union-family]
+             [#(assoc-in % [:record-construction :fields 64 :name] (get-in % [:record-construction :fields 0 :name])) :malformed-record-union-family]
+             [#(assoc-in % [:union-type :variants 64 :tag] (get-in % [:union-type :variants 0 :tag])) :malformed-record-union-family]
+             [#(assoc-in % [:union-match :branches 64 :variant] (get-in % [:union-match :branches 0 :variant])) :malformed-record-union-family]
+             [#(update-in % [:record-type :fields 64] assoc :extra true) :malformed-record-union-family]
+             [#(assoc-in % [:record-type :fields 64 :type] :gravity.type/unknown) :malformed-record-union-family]
+             [#(update-in % [:record-construction :fields] pop) :record-missing-field]
+             [#(update-in % [:record-construction :fields] conj {:name :extra :value 7}) :record-field-set-mismatch]
+             [#(assoc-in % [:record-construction :fields 64 :value] 9) :record-field-type-mismatch]
+             [#(assoc-in % [:record-access :field] :missing) :record-access-invalid-field]
+             [#(update-in % [:union-match :branches] pop) :union-match-nonexhaustive]
+             [#(update-in % [:union-match :branches] conj {:variant :extra :result 1}) :union-match-invalid-variant]
+             [#(assoc-in % [:union-match :branches 64 :result] "wrong") :union-match-branch-type-mismatch]]]
+      (let [changed (ru-cardinality-alter fixture 'descriptor change)
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request changed) 'descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))))
+    (doseq [[path reason]
+            [[[:record-type :fields 64 :name] :malformed-record-union-family]
+             [[:record-construction :fields 64 :name] :malformed-record-union-family]
+             [[:union-type :variants 64 :tag] :malformed-record-union-family]
+             [[:union-match :branches 64 :variant] :malformed-record-union-family]
+             [[:record-type :fields 64 :type] :malformed-record-union-family]
+             [[:union-type :variants 64 :payload-type] :malformed-record-union-family]
+             [[:record-construction :fields 64 :value] :record-field-type-mismatch]
+             [[:union-construction :payload] :union-payload-type-mismatch]
+             [[:union-match :branches 64 :result] :union-match-branch-type-mismatch]]]
+      (let [callbacks (atom 0) opaque (ru-cardinality-opaque callbacks)
+            changed (ru-cardinality-alter fixture 'descriptor #(assoc-in % path opaque))
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request changed) 'descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))
+        (is (zero? @callbacks))))
+    (doseq [function '[sh08-ru-all-field-schemas-valid? sh08-ru-all-field-values-valid?
+                      sh08-ru-all-variant-schemas-valid? sh08-ru-all-match-branches-valid?]]
+      (is (true? (invoke-c7 function [[]]))))
+    (is (false? (invoke-c7 'sh08-ram-symbol-vector? [[]])))))
+
+(deftest sh08-record-union-cardinality-source-controls-development-kernel
+  (let [fixture (ru-cardinality-fixture 65)
+        descriptor (:value (ru-cardinality-operation fixture
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request fixture) 'descriptor])))]
+    (doseq [[name change reason]
+            [['match #(assoc-in % [:branch-definitions 64] 'branch-0) :union-match-shape-invalid]
+             ['match #(assoc-in % [:branch-definitions 64] 'absent) :match-branch-definition-required]
+             ['match #(assoc % :branch-definitions []) :union-match-shape-invalid]
+             ['record #(assoc-in % [:fields 64 :value] 9) :record-field-type-mismatch]
+             ['access #(assoc % :record-definition 'forged) :record-access-definition-substitution]
+             ['match #(assoc % :scrutinee-definition 'forged) :union-match-scrutinee-substitution]
+             ['branch-64 #(assoc % :variant :variant-0) :union-match-unreachable-duplicate-variant]
+             ['branch-64 #(assoc % :pattern-payload-type :gravity.type/integer) :union-match-contradictory-narrowing]
+             ['branch-64 #(assoc % :result "wrong") :union-match-branch-type-mismatch]]]
+      (let [changed (ru-cardinality-alter fixture name change)
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                         [(:request changed) 'descriptor 'program descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))))
+    (doseq [[name path reason]
+            [['match [:branch-definitions 64] :union-match-shape-invalid]
+             ['record [:fields 64 :name] :record-construction-shape-invalid]
+             ['record [:fields 64 :value] :record-field-type-mismatch]
+             ['union [:payload] :union-construction-shape-invalid]
+             ['branch-64 [:pattern-payload-type] :union-match-branch-shape-invalid]
+             ['branch-64 [:result] :union-match-branch-shape-invalid]]]
+      (let [callbacks (atom 0) opaque (ru-cardinality-opaque callbacks)
+            changed (ru-cardinality-alter fixture name #(assoc-in % path opaque))
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                         [(:request changed) 'descriptor 'program descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))
+        (is (zero? @callbacks))))
+    (doseq [candidate [(assoc-in descriptor [:descriptor :record-access :field] :forged)
+                       (assoc-in descriptor [:provenance :source-path] "forged.gravity")]]
+      (is (= :rejected
+             (get-in (ru-cardinality-operation fixture
+                       #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                   [(:request fixture) 'descriptor 'program candidate])) [:value :status]))))
+    (let [rejected (assoc fixture :resolution {:status :rejected :reason :normalized-authentication-rejection})
+          wrong-path (assoc-in fixture [:request :coordinator-verification :verified-source-extension] ".qst")]
+      (is (= :normalized-authentication-rejection
+             (get-in (ru-cardinality-operation rejected
+                       #(invoke-c7 'sh08-record-union-type-core-artifact [(:request rejected) 'descriptor]))
+                     [:value :diagnostics 0 :reason])))
+      (is (= :source-extension-path-mismatch
+             (get-in (ru-cardinality-operation wrong-path
+                       #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                   [(:request wrong-path) 'descriptor 'program descriptor]))
+                     [:value :diagnostics 0 :reason]))))))
