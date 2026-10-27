@@ -4,6 +4,10 @@ Working name: **Runtime** (proposed). Semantic key: `runtime`.
 Owner role: runtime maintainer; current implementation owner not assigned by this
 proposal. Source baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
+Implementation task authority: [Spec Kit ledger](../../specs/runtime-workflow/tasks.md#implementation-tasks).
+Edit the ledger and run `clojure -M tools/runtime_task_projection.clj --write`;
+the remaining-task table below is generated.
+
 ## Purpose and scope
 
 Execute accepted artifacts through explicit service families, never a hidden
@@ -34,6 +38,7 @@ of Build or seed retirement is not required to implement runtime services.
 
 ## Remaining tasks and evidence
 
+<!-- runtime-task-projection:start -->
 All tasks are open; source evidence is a starting point, not acceptance.
 
 | Task | Existing evidence | Required closing evidence |
@@ -43,6 +48,7 @@ All tasks are open; source evidence is a starting point, not acceptance.
 | Implement memory, concurrency and typed FFI boundaries | [Runtime contracts](../phase-08-runtime-architecture/README.md) | Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers |
 | Connect distributed/AI replay and interactive execution | [Runtime contracts](../phase-08-runtime-architecture/README.md) | Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial |
 | Close enforcement and observability integration | [Capability runtime contract](../phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md) | Denial at actual service hook, redacted diagnostics and source-map preservation |
+<!-- runtime-task-projection:end -->
 
 The Gravity evaluator explicitly describes a development control representation,
 not a target error ABI. It does not establish seedless execution or all runtime
