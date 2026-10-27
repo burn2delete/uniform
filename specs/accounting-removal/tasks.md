@@ -55,9 +55,13 @@ actual depth/width and native/foreign/cycle controls, actual LC/PL/LR consumer
 composition, and manual guarded large-family acceptance for each owner. Large
 cases are an ordinary helper, not registered tests or an automatic CI request;
 the existing guarded owner route supplies the heap/watchdog/broker limits.
-Repository gates, independent retained-result review, current-main reconciliation
-and normal publication/integration remain required. Candidate semantic execution
-has not yet occurred. ACC-06 remains open; original ACC-02/03 are closed and
+Independent source and retained-result review accepted the finite three-owner
+unit at `b3172528`, tree `72989337`: the corrected small selector and each
+owner's separate manual large-family receipt pass. The first 29-selector batch
+remains NONPASS; its unchanged semantic selectors retain their original source
+provenance. Normal current-main composition `bef14d55`, tree `d6130be1`, preserves
+all accepted semantic inputs. Repository gates, final integration review and
+normal publication/merge readback remain required. ACC-06 remains open; original ACC-02/03 are closed and
 eleven original criteria remain open or partial.
 
 PR359's finite descriptor/alias scope is integrated at `00cdaf55`, tree
