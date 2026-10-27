@@ -290,7 +290,24 @@ runtime semantic execution or a combined test count. The document gate passed
 240 documents/19 indexes and the full-language roadmap gate passed. Independent
 source/import and actual retained-result review accepted the composition.
 
-Finite integration still requires final exact-head preflight and public readback.
+The finite composition subsequently completed exact-head preflight, public
+readback and normal integration in [PR444](https://github.com/burn2delete/uniform/pull/444).
+The final reviewed head was `6dcb4f64f82f8ffdab95fd5ef37ba92171122a97`, tree
+`68609de1259c27a1f461abd8cd2d86ce1de0f949`. The merge commit is
+`6b2e63b32f215b0c5f963fadfc018624837685b0`, with that exact full tree.
+Fresh GitHub readback confirms merged state and the merge identity; ancestry
+checking confirms the merge is included in current main. The remote branch is
+retained. Census allowance/shared-pool removal, semantic uniqueness preservation
+and the accompanying fresh/no-cache/generic-denial metadata are therefore
+integrated finite acceptance, not pending integration.
+
+The failed `2e602ac8` receipt remains NONPASS. Corrected runtime 12/599 evidence
+retains its original `db2e925b` identity, and metadata 69/671 evidence retains
+`452c05ed`; this status correction performs no semantic rerun and sums no counts.
+It does not close all ACC-09. Initializer-specific allowances, Set construction/
+conversion/domain/contains/insertion/equality policies, Vector/List policies,
+runtime-shape allowances and exhaustive dispositions remain open at this merged
+scope. Separate unmerged successors do not receive main acceptance here.
 Authenticated/public runtime, C12, release and broader accounting boundaries
 remain unchanged and open.
 
