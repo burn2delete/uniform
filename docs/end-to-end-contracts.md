@@ -9,7 +9,60 @@ This is the sole detailed backlog for ownership cleanup, using OWN-01 through
 OWN-06. The [component index](component-roadmaps/README.md) supplies navigation;
 component implementation tasks remain in their existing linked ledgers. These
 records describe joins between components, not replacement component checklists.
-All six joins remain open beyond the explicitly accepted scoped increments below.
+OWN-04 is complete for its declared supported development adapter; the other
+five joins retain the residual acceptance gates below.
+
+## Current cleanup assessment
+
+Assessed 2026-10-26 22:28 MDT (2026-10-27 04:28 UTC) against main
+`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. This updates the original
+OWN-01 through OWN-06 criteria, not their scope or the component task ledgers.
+The original inspection baseline above remains historical provenance.
+
+| Original ID | Current disposition | Accepted merged progress | Exact remaining acceptance |
+| --- | --- | --- | --- |
+| OWN-01 | Partial | Full-C11 C2 construction/authentication/replay receipt recorded through PR436; Unicode scalar coordinates through PR471; fresh Reader-to-Syntax decimal and expansion-lineage handoff through PR482. | Complete the original supported source/diagnostic and identity rows with actual paired source paths, origins and tamper diagnostics. PR482 leaves other Reader rows and canonical generated-node coverage open; full-C11 C3/C5 consumption is not accepted. |
+| OWN-02 | Partial | Paired-source authenticated source-to-Core pilot PR388 at `001ab9edbe84ca0132f3ebc7e6117792ec8d3e13`, with its original receipt. | Establish the required compiler-owner source population through real immediate parents and current module inputs into authenticated canonical Core. The pilot and a passing C2 receipt do not fill this population; full-C11 C5 attempts remain nonpasses. |
+| OWN-03 | Partial | PR421 composes genuine Core/MIR construction, verifier and Native consumers for the exercised Bool development joins. | Populate every claimed type/effect/profile/grant/ownership/safety/origin fact from its actual owner and exercise substitutions at the actual MIR consumer. Fixture declarations and the finite Bool paths do not establish the full required fact population. C12 remains restricted where actually consumed. |
+| OWN-04 | Closed for the declared supported Bool development adapter | PR421 zero-arity and Bool-parameter joins, PR438 parameter consumer integration, PR465 missing Bool `.qst` original/fresh join, and PR476 independently reviewed supported-family disposition satisfy the criteria enumerated below. | No additional run is identified inside this adapter. Current-source final admission is OWN-06. General nil/unit and other unsupported product families retain their MIR ledger obligations and receive no acceptance credit. |
+| OWN-05 | Open | Existing scoped MIR acceptance is available as input; verified unoptimized MIR is explicitly allowed into Lower. | Demonstrate the same actual accepted MIR through the selected Opt/Lower path, with post-pass verification, fact invalidation/regeneration and target/ABI/provider identities plus stale-input and proofless-elision negatives. PR370 and contextual PR374 remain drafts; no contextual C14 acceptance is inferred. |
+| OWN-06 | Partial | Existing final-validator APIs and the accepted development source joins are identified; their structural/report and source-authentication responsibilities are separated below. | Complete genuine current-source public Core construction/fresh report parity, then version propagation into the actual C11 final artifact/public report consumer with source/context/policy/report/artifact negatives. Bind actual target/emitted artifact/execution inputs where this path consumes them. Historical source pins and development acceptance cannot substitute for final admission. |
+
+Merged join identities are PR421 `06a256fdb97f49b5fedea36a6803483302631bbc`,
+PR438 `164a28c203ffd61b51ab35830fa950165da0095f`, PR465
+`82f7e8d62c71b4e5bd895f8b62c2c76363e15d3b`, and the last merged OWN
+criterion disposition, PR476 `5e84b5acb59f605d8f71cc2d5cf21cc24d15a662`.
+Their original source, tree and execution receipts remain in OWN-04 below;
+none is relabeled as a run on the assessment main. Reader PR482 merged at
+`6c3d9e448be2caa290cf0af0a8c2b211c162d723`. Its genuine owner observations
+were independently accepted within a combined exit-1 batch; the separate
+correct-context composition passed 19/106. This is scoped evidence, not a
+blanket passing-batch or complete OWN-01 claim. See its
+[existing handoff report](artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md).
+
+The next original OWN-06 increment belongs to the existing Native public Core
+writer and MIR private integration writer. The current frozen candidate is
+`f7f86a042a14885489aca5a3a885474a6070626c`, tree
+`0f4c6d319fb18573b5b4bed38de772430600beb9`. Independent source/harness review
+has accepted preparation for one genuine public Core constructor observation;
+there is no accepted original/fresh Core result at this assessment. The prior
+expression-owner observation is an accepted prerequisite, not Core admission.
+Public PR453 at `10a03c3dcc247bbb2286e92e8edd3c0b24e1aa8a` and PR475 at
+`edc0009c4190b8c6fbfb15cb8960dee6fc687f79` remain drafts and are not the
+unpublished candidate's result. Fresh Reader-result/SourceRule and expression
+binding authentication, typed semantic/target/physical/root parity and actual
+final C11 consumer rejection gates remain open. Existing writers and their
+guarded process route are preserved; this assessment starts no execution.
+
+The dashboard's 55% from 2026-10-26 04:11 is a historical provisional estimate,
+not measured coverage. This assessment supplies completed and remaining
+milestones instead of a replacement percentage: the original IDs have unequal
+scope and no agreed numerical weights. PR, test and assertion counts are not
+a completion denominator. Recent Reader handoffs advance OWN-01; the necessary
+PR483 Bootstrap load-order repair restores a shared entry dependency, but does
+not itself close another OWN criterion. Full cleanup remains open until the
+remaining original joins meet their own positive and negative acceptance gates.
 
 ## Governing boundary
 
