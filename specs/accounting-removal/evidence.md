@@ -290,9 +290,296 @@ runtime semantic execution or a combined test count. The document gate passed
 240 documents/19 indexes and the full-language roadmap gate passed. Independent
 source/import and actual retained-result review accepted the composition.
 
-Finite integration still requires final exact-head preflight and public readback.
+The finite composition subsequently completed exact-head preflight, public
+readback and normal integration in [PR444](https://github.com/burn2delete/uniform/pull/444).
+The final reviewed head was `6dcb4f64f82f8ffdab95fd5ef37ba92171122a97`, tree
+`68609de1259c27a1f461abd8cd2d86ce1de0f949`. The merge commit is
+`6b2e63b32f215b0c5f963fadfc018624837685b0`, with that exact full tree.
+Fresh GitHub readback confirms merged state and the merge identity; ancestry
+checking confirms the merge is included in current main. The remote branch is
+retained. Census allowance/shared-pool removal, semantic uniqueness preservation
+and the accompanying fresh/no-cache/generic-denial metadata are therefore
+integrated finite acceptance, not pending integration.
+
+The failed `2e602ac8` receipt remains NONPASS. Corrected runtime 12/599 evidence
+retains its original `db2e925b` identity, and metadata 69/671 evidence retains
+`452c05ed`; this status correction performs no semantic rerun and sums no counts.
+It does not close all ACC-09. Initializer-specific allowances, Set construction/
+conversion/domain/contains/insertion/equality policies, Vector/List policies,
+runtime-shape allowances and exhaustive dispositions remain open at this merged
+scope. Separate unmerged successors do not receive main acceptance here.
 Authenticated/public runtime, C12, release and broader accounting boundaries
 remain unchanged and open.
 
 Composition receipt SHA-256:
 `be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.
+
+## ACC-08 imported-module aggregate removal
+
+This independent finite increment starts at main
+`dcc9849df582ebb177560b41d702071e3481669a`, tree
+`f5362aacb21cf4fcb9f6e4cedd5e74c5ac087db3`. Accounting owns the C7 engine and
+its SH08 test file through the previously recorded explicit handoff. No held
+runtime, Native, metadata or other owner's source is changed. L3's acyclic
+module requirement, L5's signature/effect requirements and C7's fresh typed
+artifact validation remain the semantic contracts.
+
+The original C7 `sh08-im-work-check` sums invocation-local memo/active usage
+against fixed producer, dependency-depth, node and scalar allowances. Its only
+production callers are the two checks in `sh08-im-derive-with-allowance`;
+`sh08-im-usage` serves only this aggregate. Both checks, both helpers and the
+request-vector count cap are removed coherently. Memo entries now retain only
+request/result, and active entries retain ID presence for cycle rejection.
+This does not remove per-Core carrier limits or ordinary inference allowance.
+The actual carrier preflight's accepted/rejected control dependency remains;
+it is not a native-class validator or authentication authority.
+
+The source-pinned baseline on `dcc9849d` completed 10 tests / 252 assertions,
+natural exit 0 in 15.056 seconds, with actual 2 GiB heap, 1,285 complete stdout
+bytes and empty stderr. Source and worktree bookends matched. Receipt SHA-256:
+`3775b11a49109f058e8b2d0782398f7a55772d6f2810080ff9ce6220782244f6`.
+
+Production was frozen at `3c71eb01563a3613bb130c5d48337008a73eccb7`, tree
+`f95ccb66258d2d06ad10f93e9d45d40d2ae321d7`. Independent pre-run review caught
+and corrected a test-only memo expectation before execution. The resulting
+`e384b03008fe2f2c8e4a61798ecfeb150aa7ac87`, tree
+`275421e2a7021e71868ea6190983d1b2aefa76f6`, is NONPASS: 11 tests, 256 passing
+assertions, three failures, no errors, natural exit 1 in 14.133 seconds. Its
+Object fixture was accepted by the unchanged carrier preflight, invalidating
+the test's rejection premise. Failure diagnostics produced 70,276 observed
+stdout bytes, of which 65,536 were captured; stdout is truncated, stderr empty.
+The durable counts, source bookends and cleanup are retained. Receipt SHA-256:
+`9fae91922eaf5a838f9ebf03ed22e26e2f943d5ba81c934a8c666c85cbbf9860`.
+
+The test-only successor uses a native depth-129 vector to reach the retained
+carrier-depth rejection, asserts its exact diagnostic payload, checks the
+original Core operand and restricts diagnostic observations. Independent review
+corrected the payload key before the next execution. Production is unchanged.
+At `f803d9344590bdadfd6238458fcf92932837773a`, tree
+`55d1d99878661fd6c23225b2d9fe4c0a8e232e34`, the changed routing var plus six
+boundary vars passed: 7 tests / 26 assertions, natural exit 0 in 14.417 seconds,
+actual 2 GiB heap, 977 complete stdout bytes, empty stderr, exact clean bookends
+and completed cleanup. Receipt SHA-256:
+`ef1e522066d18576b4e6376c260c5260b3754b3a1362b6bb0a0e6096e769f38d`.
+
+Four unchanged SH08 selectors retain original `e384b030` provenance: imported
+function joins, inferred signatures, scalar catalog and module validation. They
+ran before the first failing routing assertion; no failed selector is promoted.
+This is not a fresh combined 11-test pass and counts are not summed. Their
+source/test inputs and production are unchanged in the test-only correction.
+The routing test explicitly supplies normalized authentication and inference
+results; actual Gravity derive, carrier/input checks, producer traversal and
+memo updates execute, but genuine fresh authenticated-source derivation is
+unrun. Source/provenance/signature forgeries, memo substitution, active cycles,
+duplicate/undeclared producers and malformed containers remain covered by the
+actual normalized owner helpers.
+
+| Tested input | SHA-256 at corrected source |
+| --- | --- |
+| C7 engine | `fe71a3e26f89927439237817d7eaae08770c6ef0487e93d8aae3651b83144f87` |
+| SH08 test source | `66d70f7446dc2c7aef6131934b6b8ef367f4bb19fdb1b0857e3e15731ed49cc2` |
+
+Independent source and retained-result review accepted the finite scope and
+the exact correction/reuse boundary without executing another compiler child.
+Independent public-payload and finite integration review accepted the four-path
+candidate `0e4133842d1af0e8a368c555519532c296d252ec`, tree
+`80c14a1f4b70a65ef622b2248b62685a4c394ce1`, against unchanged main `dcc9849d`.
+Exact integration preflight passed with matching base/head/tree, clean state and
+base ancestry. Boundary/LOC gates passed 11 tests / 23 assertions, actual
+repository LOC passed for 2,031 source files, and canonical docs (240 documents /
+19 indexes) and roadmap validation passed. That gate receipt SHA-256 is
+`2f7f97ca0d87a5051b33fa5d2814a9dbacf91d2f8751160a23c955c6dac20259`.
+The subsequent ledger-only successor preserves all tested implementation and
+test bodies. [PR467](https://github.com/burn2delete/uniform/pull/467) records the
+normal integration outcome of this accepted finite removal.
+Per-Core admission limits, ordinary inference, Effects/emitter pools, full ACC-08,
+authenticated/public C7, C12 and release remain open or unrun. No source-auth,
+Native registration, runtime Set or whole-cleanup acceptance is inferred.
+
+## ACC-08 / ACC-13 Core envelope and binding shape cardinality
+
+This independent increment starts at merged main
+`3727e0c9e297374c9fed4a0fa28efa8251893dc9`, tree
+`6664054d63707c15948d525ccd669636a816916c`. Accounting retains the previously
+released C7 engine and SH08 test ownership. The held Native/runtime/metadata
+paths and their requests are untouched. L3, L5 and C7 still require coherent
+module identities, source origins, graph structure and type facts.
+
+The finite implementation removes `sh08-bounded-vector?`, migrates every live
+keyword/hash vector caller to semantic arity-one helpers, and removes field
+cardinality checks in the origin/source/module/node/root/Core-envelope/binding
+shape family. Package version and span/map sizes are admission quotas here;
+SHA-256's 71-character representation and every actual type/schema predicate
+remain. Binding profile/target/effect/capability fields retain their original
+vector-only policy; no new member policy is invented. Roots still require
+nonempty complete valid IDs, uniqueness and table membership. Node validation
+still checks child-before-parent ordering, duplicates, reachable nodes,
+declaration equality and source/module matches. The root uniqueness algorithm
+is unchanged. The legacy invalid-vector diagnostic name is retained for
+compatibility; no Core vector count check remains behind it.
+
+Six descriptor fields have no remaining production consumer and are removed:
+root nodes, origin entries, metadata entries, effects, capabilities and exports.
+The two inherited import tests now use their same explicit historical fixture
+extent 1,025 instead of reading the deleted root allowance. Remaining Core/
+child values still serve quote/collection policies; carrier node/depth/width/
+scalar limits and ordinary inference allowances remain open accounting.
+Those residual limits are not reclassified as semantic or native safety.
+
+The old-source baseline at `3727e0c9` completed 14 diagnostic observations:
+small actual Core validation, primitive typing and binding validation succeeded,
+while eleven larger field cases reached their old refusals. Natural exit 0,
+16.644 seconds, actual 2 GiB heap, complete 987-byte stdout, empty stderr and
+clean exact bookends. Receipt SHA-256:
+`b54b620096825e34fa2ac5be10a6a684ab4a223f926acac59f3f85583dbb76e1`.
+
+The first candidate `e8b7c18d8b85a98a4bd80baa2ebadd8dfdfc9306`, tree
+`045962eaa0025055060d099b70a3fdfd309fc323`, passed 13 tests / 177 assertions,
+natural exit 0 in 17.296 seconds, actual 2 GiB heap, 1,721 complete stdout bytes,
+empty stderr and clean exact bookends/cleanup. Actual owner-path tests cover
+beyond-former-limit fields, late invalid/opaque IDs with zero callbacks,
+malformed origins, duplicate/unresolved roots, forward/missing children,
+duplicate/orphan nodes, declaration mismatch, binding scope and actual primitive
+typing with preserved enlarged source facts. Receipt SHA-256:
+`c43b00abe912e468c1d9f828d2d4529dd7f59ebbdd22ec92f052f14a5179d686`.
+
+The stale root descriptor was found after that completed run. Successor
+`b93ee3193796dcaa1341947d9f86cd7285e1fce5`, tree
+`0dd9552e33330dc8c71d47ccb3d6e36a58e8e40f`, removes it, migrates the two fixture
+consumers and checks the exact six remaining policy fields. The three changed
+selectors plus six boundary vars passed: 9 tests / 63 assertions, natural exit
+0 in 15.377 seconds, actual 2 GiB heap, 1,308 complete stdout bytes, empty stderr,
+clean exact bookends and completed cleanup. Receipt SHA-256:
+`9ccae734fab692c17ab64f5c92a3714f5f47c61fd26f261f43300cb517440e98`.
+Four unchanged binding, graph/typing and imported-signature selectors retain
+their original `e8b7c18d` passing provenance. No fresh combined 13-test pass or
+summed assertion total is claimed. Independent source and actual retained-result
+review accepted both scopes and their exact reuse boundary without rerunning.
+
+Normal reconciliation `42c9a57215b38e842bfd7a8b53aa88fae1767844`, tree
+`24206bc60ce2b7491f743c21c80a01110b0f931d`, imports main `82f7e8d`'s unselected
+C6 test and two documents. All consumed implementation, SH08, dependency and
+contract inputs are unchanged from the actual tested source; independent review
+confirmed this closure. No semantic replay is inferred from reconciliation.
+
+| Tested input | SHA-256 at `b93ee319` |
+| --- | --- |
+| C7 engine | `f5fc78c14db347ba92cac438d98060940f5c83e490b0c37477e177e64e29a02c` |
+| SH08 test source | `d2b675634d1a105e4d44f0ee8a4534ab759657d6bcadd612827617dca48317ad` |
+
+This is normalized shape/primitive-typing acceptance. The separate carrier
+width still masks admission above 65,536 Core nodes; that behavior is not claimed.
+Historical B28/B47 coverage records describe frozen source identities, already
+different from current main, and are not rewritten to manufacture migration
+acceptance. Authenticated/public source, frozen migration, inference allowance
+removal, C12, release and whole ACC-08/ACC-13 remain open or unrun.
+
+The ledger-only `b97115b9` gate run passed boundary/LOC 11/23, actual repository
+LOC and docs/roadmap validation, with receipt SHA-256
+`3ea8f418c7d6b3feb71ac568d19c035fe08b30a778d55560d0ee229fbb2c4d7c`.
+Its exact-base preflight subsequently rejected a concurrent main advance from
+`82f7e8d` to `bca9ea29`; that is a retained base-mismatch result, not a semantic
+test failure. Normal merge `31001319ad764f53b92cd412b5d5c7af1cae9399`, tree
+`3e32dcc58c579e4059985535cd8521eccd341875`, preserves the Reader/Syntax change.
+Independent consumed-route review confirmed that SH08's compiler-plan seed path
+uses the unchanged host-oracle records and hosted syntax-object-stream wrapper;
+the changed C2 product/scalar projection is not invoked. All actual C7/SH08
+implementation and semantic-test bodies remain identical to the accepted inputs.
+Semantic receipts retain their original identities; composition requires fresh
+repository gates and an exact-base preflight rather than an unchanged semantic
+replay. No Reader/Syntax or authenticated-source acceptance is inferred.
+
+## ACC-13 Record/Union descriptor and branch cardinality
+
+This finite increment starts at main
+`5e84b5acb59f605d8f71cc2d5cf21cc24d15a662`, tree
+`05c048d435b15b7b46972daac8a2d265284279b4`. Accounting retains the released C7
+engine and SH08 function-test ownership. No Native, registration, held runtime,
+Reader or other writer's source is changed. L5's type facts and C7's complete
+descriptor/source/equality checks remain the owning semantic requirements.
+
+`sh08-ru-all-record-shapes?` imposes one 64-entry cap on field schemas, field
+values, variants and descriptor match branches. `sh08-ram-symbol-vector?`
+independently caps typed match branch references at 64. Both are removed
+together, preserving vector requirements, symbol-reference nonemptiness and
+uniqueness, complete closed entry schemas, supported scalar/pattern types,
+constructor/access consistency and exhaustive branch semantics.
+
+Four RU validators previously hashed names/tags for uniqueness before checking
+their types. They now finish the complete key/type scan before the unchanged
+shared uniqueness helper. Supported declared types are checked as Keywords
+before set membership; value classification uses constant-first nil comparison
+and the existing Boolean primitive rather than hashing an untyped value.
+Native nil/Boolean/Integer/String/Keyword classifications are unchanged. These
+local preconditions let newly reached invalid/opaque members reject without
+callbacks. They do not establish safety for arbitrary foreign containers.
+
+The verifier's descriptive check changes from
+`:closed-descriptor-schema-bounded` to `:closed-descriptor-schema-valid`; no
+external consumer was found. Existing preparatory/typed-core scope flags remain
+closed-family limitations, not a 64-entry guarantee. Descriptor v1 and typed
+result v2 semantic families, complete identity inputs, source/provenance joins,
+fresh reconstruction, pending runtime/language features and authentication
+requirements remain unchanged. No exported budget or old-policy fallback exists.
+
+The old-source baseline completed 15 observations at `5e84b5ac`: both actual
+producers and their fresh verifiers accepted a small family, while 65/129-entry
+families and branch references reached the old refusals. The verifiers also
+recomputed those rejected results. Authentication was supplied at an explicit
+test-only seam; no genuine B47 receipt was produced. Natural exit 0, 13.839
+seconds, actual 2 GiB heap, 1,161 complete stdout bytes, empty stderr and clean
+exact bookends/cleanup. Receipt SHA-256:
+`92c34e3ef15623612d47aeaeea9461a346ba4c77b932dc24d45b9d404a1e0a8b`.
+
+Compiler-free fixture construction and compilation of the new Clojure test
+forms passed for extents 2/65/129 with Bootstrap unloaded; that control ran no
+semantic tests or Gravity compiler. Boundary/LOC 11/23 plus actual repository LOC
+passed before the semantic batch, receipt SHA-256:
+`75196e64aab7234dc4287cb0de8e9761f322e5ca8d58cf0179235e23d662fcd7`.
+
+At `0183600583ab43ac9ea169879609f0137ce53f8b`, tree
+`d296577c7c3f7c10fab89abcbd8df3f9bd432dbb`, actual validation passed 11 tests /
+197 assertions, no failures/errors, natural exit 0 in 17.992 seconds, actual
+2 GiB heap, 1,637 complete stdout bytes, empty stderr and exact clean bookends/
+completed cleanup. Both producers and both recomputing verifiers accept 65/129
+members and retain complete descriptor identity, record/branch facts, pattern
+environments, solved constraints and the last members' actual types. Controls
+reject late malformed/duplicate/missing/extra members, type conflicts, fact and
+provenance substitutions, source-definition changes, path/extension mismatch
+and supplied authentication rejection. Opaque names, tags, declared types,
+field values, payloads and branch results reject with zero callbacks.
+Receipt SHA-256:
+`ef695d71167451ebea2c5cebfedb1720eb589404d77089f8846899b57d796aef`.
+
+The sole substituted operation is authentication, restricted to the exact test
+thread, engine, selected source plan, request identity and authentication
+callee. All descriptor derivation, source joins, semantic checks, fact production
+and verifier recomputation execute in Gravity. Independent source and actual
+retained-result review accepted this finite boundary without another execution.
+
+| Tested input | SHA-256 |
+| --- | --- |
+| C7 engine | `6fc9a3f4d06374e898c5ad460b6e69ebfc76b2da4b5438913576526c8b2bb0b3` |
+| SH08 test source | `718fa973023217ef13034ae2d382355e20df84a4b8ac6a53c143178783b521e5` |
+
+Main `ea92ccad` adds only a verification-reuse document; normal reconciliation
+preserves it with all consumed semantic inputs unchanged. This does not imply
+a fresh semantic replay. Genuine authenticated-source/public acceptance,
+foreign-container safety, carrier/inference allowance removal, runtime, C12,
+release and whole ACC-13 remain open or unrun.
+
+Carrier accounting remains a separate open disposition: its current generic
+collection traversal/stringification does not itself demonstrate native-class
+or identity-cycle validation. Dropping its depth/size refusals alone would not
+establish termination or representation safety. No new permanent quota or
+runtime-certification prerequisite is introduced by that observation.
+
+Subsequent normal reconciliation `f1f93901b5192381fa57c56dc4a8b50aba3df52f`,
+tree `5a9f09059249e97b47ce944dd5198a02f559634a`, preserves main `6a453ea4`'s
+seven lossless C3 projection/fixture/test/report paths. Independent route review
+confirmed that SH08 compiler-plan construction still uses host-oracle records
+and the unchanged hosted syntax-object-stream; canonical C3 literal projection
+is not invoked. The 11/197 semantic receipt retains `01836005` provenance with
+all actual consumed inputs unchanged. Fresh composed repository gates and an
+exact-base preflight cover the new repository tree; no Reader/C3 or genuine
+authenticated-source acceptance is inferred.

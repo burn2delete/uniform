@@ -8,6 +8,10 @@ verification specialists. Current owners are unassigned by this proposal;
 Deus confirms existing reservations or assigns unowned work. No code ownership
 is transferred by this page.
 
+Implementation task authority: [Spec Kit ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+Edit that ledger and run `clojure -M tools/compiler_api_task_projection.clj --write`;
+the three task blocks below are generated views.
+
 ## Purpose and scope
 
 Provide the public compiler artifact/context interface and the executable host
@@ -109,6 +113,7 @@ requires the complete extension host or final backend before demonstrating
 that endpoint. Final selected-target composition consumes its complete
 source-to-artifact path and the applicable Pass Evidence below.
 
+<!-- compiler-api-task-projection/pipeline:start -->
 Owner role: compiler API/pipeline maintainer. All tasks open; source evidence
 above is partial implementation evidence, not closure.
 
@@ -124,9 +129,11 @@ Yes/no acceptance: are passes actually invoked? Are all required stage facts
 verified and retained? Are clean and reused results semantically equivalent?
 Are stale inputs and invalid stage orders rejected? Does public API behavior
 remain independent of ambient mutable compiler state? All must be yes.
+<!-- compiler-api-task-projection/pipeline:end -->
 
 ## Plugin Host: finite remaining tasks
 
+<!-- compiler-api-task-projection/plugins:start -->
 Owner role: compiler extension-host maintainer. All tasks open.
 
 | Task | Concrete closing evidence |
@@ -141,9 +148,11 @@ Yes/no acceptance: can incompatible plugin initialization run? Can a plugin
 perform ungranted effects or mutate hidden state? Can an invalid output enter
 the pipeline? All must be no. Are allowed sandboxed/trusted invocations real,
 traceable and reproducible under their declared replay policy? Must be yes.
+<!-- compiler-api-task-projection/plugins:end -->
 
 ## Pass Evidence: finite remaining tasks
 
+<!-- compiler-api-task-projection/pass-evidence:start -->
 Owner role: compiler verification maintainer. All tasks open.
 
 | Task | Concrete closing evidence |
@@ -158,6 +167,7 @@ Yes/no acceptance: do reports derive from actual checks on exact artifacts?
 Are plugin and backend passes included when used? Are absent evidence and
 counterexamples visible? Do failures block the affected claimed release path?
 All must be yes. No claim of a fully mechanized compiler is implied.
+<!-- compiler-api-task-projection/pass-evidence:end -->
 
 ## Integration milestones and decision gate
 
