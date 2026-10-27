@@ -645,6 +645,16 @@ corrected controls are preparation evidence only. The corrected boundary control
 passed 6 tests / 11 assertions. None changes the current-main load NONPASS.
 
 This finite implementation/result is independently accepted, but current-main
-composition and integration remain blocked by the distinct namespace-load
+semantic acceptance and integration remain blocked by the distinct namespace-load
 failure. Standalone acceptance must not be promoted to current-main acceptance.
 All full original ACC rows, including ACC-13, remain open.
+
+Normal reconciliation `848a4812b4d5360dd1eb4242a9b9d804cb13b33d`, tree
+`6e63108c2b30f776c331a311b3f8e828af3b916f`, preserves all seven current-main
+Macro/storage/metadata paths. The two accepted C7/SH08 blobs remain identical
+to `d3e17c27`. The Bootstrap dependency is changed and is known to fail loading;
+therefore the 12/294 receipt is retained only at its standalone provenance,
+not reused as composed-main semantic acceptance. Lightweight repository gates
+at the preceding documentation successor passed 11 tests / 23 assertions,
+actual LOC validation (2,033 files), 240 documents / 19 phase indexes and the
+full-language roadmap. Those checks do not execute or accept Bootstrap.
