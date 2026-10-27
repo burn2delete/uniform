@@ -381,7 +381,17 @@ actual normalized owner helpers.
 
 Independent source and retained-result review accepted the finite scope and
 the exact correction/reuse boundary without executing another compiler child.
-Current-main integration remains pending.
+Independent public-payload and finite integration review accepted the four-path
+candidate `0e4133842d1af0e8a368c555519532c296d252ec`, tree
+`80c14a1f4b70a65ef622b2248b62685a4c394ce1`, against unchanged main `dcc9849d`.
+Exact integration preflight passed with matching base/head/tree, clean state and
+base ancestry. Boundary/LOC gates passed 11 tests / 23 assertions, actual
+repository LOC passed for 2,031 source files, and canonical docs (240 documents /
+19 indexes) and roadmap validation passed. That gate receipt SHA-256 is
+`2f7f97ca0d87a5051b33fa5d2814a9dbacf91d2f8751160a23c955c6dac20259`.
+The subsequent ledger-only successor preserves all tested implementation and
+test bodies. [PR467](https://github.com/burn2delete/uniform/pull/467) records the
+normal integration outcome of this accepted finite removal.
 Per-Core admission limits, ordinary inference, Effects/emitter pools, full ACC-08,
 authenticated/public C7, C12 and release remain open or unrun. No source-auth,
 Native registration, runtime Set or whole-cleanup acceptance is inferred.

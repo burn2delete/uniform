@@ -47,7 +47,8 @@ not reclassified as native safety.
 
 Normalized joins and actual Gravity derive control routing are tested, with
 explicit authentication/inference seams in the routing test. Independent source
-and retained-result review accepted this finite scope; current-main integration
-is pending. This increment has no Native
+and retained-result review accepted this finite scope. Its normal integration
+outcome is tracked in [PR467](https://github.com/burn2delete/uniform/pull/467).
+This increment has no Native
 registration dependency. Other C7/Effects/emitter module pools, recursive
 validation, inference allowances and full ACC-08 acceptance remain open.
