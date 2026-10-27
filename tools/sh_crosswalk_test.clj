@@ -39,10 +39,13 @@
     (is (thrown? Exception (sh-crosswalk/validate-pinned-sources! record (fn [_ _] "changed source"))))))
 
 (deftest review-adoption-is-mapping-only-and-bound-to-unchanged-inputs
-  (let [source (sh-crosswalk/source-view) view (sh-crosswalk/build)]
+  (let [source (sh-crosswalk/source-view)
+        view (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :accepted-mapping-only))
+        pending (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :pending-source-version-review))]
     (is (= :accepted-mapping-only (get-in view [:mapping-review :status])))
     (is (every? #(= :owner-and-independent-reviewed (:coverage %)) (:requirements view)))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (is (every? #(= :mapped-owner-review-pending (:coverage %)) (:requirements pending)))
     (is (thrown? Exception (sh-crosswalk/adopt-review
                             (assoc-in source [:requirements 0 :task-references] []) sh-crosswalk/mapping-review)))
     (is (thrown? Exception (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :pending))))))

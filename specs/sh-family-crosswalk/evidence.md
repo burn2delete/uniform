@@ -54,7 +54,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 7 tests / 40 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 7 tests / 41 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
@@ -121,18 +121,30 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   any output write; it was fixed and covered by a real-view regression. Final
   regeneration and 7-test/40-assertion crosswalk checks pass. Exported-tree
   read-only `--check` remains independent of local Git; only regeneration needs
-  the declared history. Final bounded guard/adoption review is pending.
+  the declared history. Independent guard/adoption review passed at `641346a7`
+  / tree `625e90a379d8c97c2ad93e05c52e3b2d6e71209c`, receipt SHA256
+  `4a3734f269e33467d5757ff54c44f1ad4515c92def2784237211fc27bb3b7355`.
+  Independent checks passed 20 tests / 435 assertions.
+- Newer main `4325a9f4` landed PR491/493/492. The explicit source-version bridge
+  retains all predecessor pins and adopts only four changed file versions:
+  Reader task/roadmap, Resolution ownership record and the C7 test-source locator.
+  Reader's same decode/source-identity task now has its owner's accepted status;
+  its predicate, other six raw task blocks and historical suffix are unchanged.
+  The new report and original implementation/composition/final candidate commits
+  are pinned separately. All 180 SH whole-criterion states remain unassessed;
+  no compiler proof was replayed. The bounded source-version review is pending,
+  so mapping-ready is temporarily false rather than inheriting an old review.
 
 ## Remaining finite publication gates
 
-1. Bounded review of the final source-pin guard and adoption of the already
-   accepted exact mapping receipt. The full 180-route/18-step review is complete.
+1. Bounded newer-main source-version bridge review. The full 180-route/18-step
+   and final source-pin guard reviews are complete.
 2. Exact graph/source/links/projection checks on the final reviewed candidate,
    followed by normal publication/integration. Draft work earns no closure.
 3. Accepted graph-input handoff to the existing dashboard collector after
    integration; no direct store/Site write or duplicate graph is introduced.
 
 Exact final integration and dashboard handoff receipts will be recorded only
-when those operations complete. The full mapping is reviewed; final successor
+when those operations complete. The full mapping is reviewed; newer-main source
 review and normal integration remain. No accepted dashboard input has been
 handed off yet.

@@ -1,8 +1,8 @@
 # All-SH acceptance crosswalk
 
-Status: source-bound routing and dependency mapping independently reviewed;
-owner task-boundary integration is complete. Final guard/adoption review and
-normal integration remain pending. This is an acceptance view,
+Status: source-bound routing, dependency mapping and source-pin guard reviewed;
+owner task-boundary integration is complete. A bounded newer-main source-version
+bridge and normal integration remain pending. This is an acceptance view,
 not an editable implementation task ledger or project denominator.
 
 ## Purpose and finite population
@@ -57,6 +57,9 @@ Regeneration checks each stamped task/evidence file against its actual local
 Git commit before writing either view. The accepted mapping receipt is bound
 to an input fingerprint; changed source/routing inputs require a successor
 review disposition, rather than inheriting the old mapping-ready state.
+The [source-version bridge](source-version-bridge.edn) preserves the four actual
+newer-main file changes and one new Reader receipt with explicit per-file pins.
+All other original source pins remain; no global baseline is reset.
 
 The dependency helper derives the single typed graph, SH/task incidence,
 conditional adjacency and advisory frontier. Graph facets are evidence views,

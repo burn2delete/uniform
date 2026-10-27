@@ -3,6 +3,12 @@
   (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp] [clojure.java.io :as io]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
+(def applying-source-pins
+  (zipmap ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+           "docs/component-roadmaps/reader.md" "docs/self-hosting-slice-ownership.edn"
+           "specs/reader-workflow/tasks.md" "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"]
+          (repeat "4325a9f46292472a7f984c5adfef81209874bb5c")))
+(defn source-pin [path] (get applying-source-pins path baseline))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -223,7 +229,7 @@
             (let [stop (or (:start next-row) end) raw (str/trimr (subs text (:start row) stop))]
               {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
-               :source-commit baseline :file-sha256 (sh-inventory/sha256 text)
+               :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 text)
                :source (sh-inventory/source-span path text (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}))
           positions (concat (rest positions) [nil]))))
@@ -239,13 +245,14 @@
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def mapping-review
-  {:status :accepted-mapping-only
+  {:status :pending-source-version-review
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36"
    :reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55"
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
-   :input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
+   :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
+   :input-fingerprint "ae42fea9b309c421343b6cfa1da81ceeecc197f9aeb4f9ffb1ff517eb915ecf7"
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."})
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -260,7 +267,7 @@
               (throw (ex-info "Task identity population changed; preserve source/ownership routing before amendment" {:component c}))))
         test-files (group-by #(.getName %) (filter #(.isFile %) (file-seq (io/file "bootstrap/clojure/test"))))
         locator (memoize (fn [path] {:path path :sha256 (sh-inventory/sha256 (slurp path))
-                                    :source-commit baseline :kind :source-inspection-not-execution
+                                    :source-commit (source-pin path) :kind :source-inspection-not-execution
                                     :current-applicability :unassessed}))
         sh-graph (acceptance-dependencies/milestone-graph (slurp sh-inventory/plan-path))
         historical (into {} (map (fn [r] [(first (:groups r)) r])
@@ -272,6 +279,7 @@
                                     "docs/phase-15-bootstrap-and-self-hosting/IMPLEMENTATION-ROADMAP.md"
                                     "docs/artifacts/phase-18/self-hosted/p18-t03-self-hosted-release-artifact-proof.edn"
                                     "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
+                                    "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
                                     "docs/self-hosting-slice-backlog.md" "docs/self-hosting-current-migration-cohort.md"
                                     "docs/self-hosting-slice-ownership.edn" "docs/document-inventory.json"
                                     "docs/acceptance-dependencies.md" "docs/component-roadmaps/README.md"
@@ -330,6 +338,9 @@
       (throw (ex-info "Incomplete original routing population" {})))
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
+     :applying-source-pins applying-source-pins
+     :source-version-bridge {:path "specs/sh-family-crosswalk/source-version-bridge.edn"
+                             :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/source-version-bridge.edn"))}
      :task-authority-lineage {:path "specs/sh-family-crosswalk/task-authority-lineage.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/task-authority-lineage.edn"))}
      :shared-completion-rule
@@ -360,7 +371,15 @@
        :implementation-commit "bcf9c72ed9445e0b8bf259dc5d025c3192ddacc6"
        :receipt (locator "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md")
        :relation :retained-explicit-accepted-task-record
-       :qualification "Selected-current development-unadmitted fresh Reader/Syntax handoff only; original reported mixed-suite failure retained. No full SH03, canonical Syntax, C5/C14 or release closure."}]
+       :qualification "Selected-current development-unadmitted fresh Reader/Syntax handoff only; original reported mixed-suite failure retained. No full SH03, canonical Syntax, C5/C14 or release closure."}
+      {:task-id "reader/finite-remaining-work/decode-and-source-identity-closure"
+       :implementation-commit "1d6c26812ce3f32edefb36b82a54317e2f739586"
+       :composition-commit "07e5a32d3f63b236fbd92a1f33b0c7a2995df66d"
+       :reviewed-final-head "dd044747cfa25ca58d35d1aed91387d9cf60ff34"
+       :integrated-main "4325a9f46292472a7f984c5adfef81209874bb5c"
+       :receipt (locator "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md")
+       :relation :retained-explicit-accepted-task-record
+       :qualification "Existing Reader owner closed only the original selected-current development-unadmitted decode/source-identity row in PR492. Earlier foreign-directory failure and broker nonexecution remain preserved. No full Reader/C3/C5/C14 or public admission; no SH whole-criterion promotion."}]
      :source-conflicts
      [{:id :p15-whole-gate-vs-final-seed-retirement
        :whole-gate-source (locator p15-whole-gate)
@@ -418,20 +437,23 @@
                         :denial "Restricted C12 work remains with its existing owner; no execution or transfer authorized by this mapping."}}))
 
 (defn adopt-review [result review]
-  (when-not (and (= :accepted-mapping-only (:status review))
+  (when-not (and (#{:accepted-mapping-only :pending-source-version-review} (:status review))
                  (= (:input-fingerprint review) (review-fingerprint result)))
     (throw (ex-info "Source/routing inputs differ from accepted review; preserve the old receipt and obtain an explicit successor disposition" {})))
-  (-> result
+  (if (= :pending-source-version-review (:status review))
+    (assoc result :mapping-review review)
+    (-> result
       (assoc :mapping-review review)
       (update :requirements (fn [rows] (mapv #(assoc % :coverage :owner-and-independent-reviewed
                                                      :mapping-review :independently-reviewed) rows)))
       (assoc-in [:scope-boundaries :missing-coverage]
-                "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed.")))
+                "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed."))))
 (defn build [] (adopt-review (source-view) mapping-review))
 
 (defn rollup [result]
   (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Mapping/graph reviewed at c6c80530; implementation and\ncurrent whole-criterion acceptance remain separate and unassessed.\n\n"
        "Original source: " original-baseline ". Task authority amendment: " baseline ".\n\n"
+       "Source-version adoption: " (name (get-in result [:mapping-review :status])) ". The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.\n\n"
        "Every requirement retains its complete acceptance/context text, source bytes,\nlines and SHA256 in original-inventory.edn and crosswalk.edn. Current acceptance\nis unassessed unless an exact scoped task receipt explicitly establishes it.\n\n"
        "SH03-SH29 additionally retain the original [shared completion rule](../../docs/self-hosting-milestone-completion-plan.md#three-boundaries-and-one-shared-completion-rule): actual owning execution, rejection/preservation/composition and applicable independently accepted migration evidence. SH00-SH02 keep their historical baseline/process scope.\n\n"
        (apply str
@@ -492,5 +514,5 @@
       ["--check"] (when-not (and (= result (edn/read-string (slurp output-path))) (= (rollup result) (slurp rollup-path)))
                     (throw (ex-info "Stale SH projection" {})))
       (throw (ex-info "Usage: clojure -M tools/sh_crosswalk.clj --write|--check" {})))
-    (println "SH projection:180 criteria,18 sequence rows; mapping reviewed, implementation acceptance unchanged.")))
+    (println "SH projection:180 criteria,18 sequence rows; review state" (get-in result [:mapping-review :status]) "; implementation acceptance unchanged.")))
 (when (seq *command-line-args*) (run *command-line-args*))
