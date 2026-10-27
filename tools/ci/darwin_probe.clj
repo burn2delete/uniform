@@ -32,12 +32,14 @@
   (with-open [arena (Arena/ofConfined)]
     (let [name (.allocateFrom arena ^String ".")
           opened (call/int-call-result runtime arena :open [name (int 0) (int 0)])]
-      (prn {:read-only-directory "." :open-flags 0 :open-result opened})
-      (flush)
       (when (neg? (:value opened))
+        (prn {:read-only-directory "." :open-flags 0 :open-result opened})
+        (flush)
         (throw (ex-info "Read-only diagnostic directory open failed" opened)))
       (let [fd (:value opened)]
         (try
+          (prn {:read-only-directory "." :open-flags 0 :open-result opened})
+          (flush)
           (doseq [flags [0 0x800 0x2000 0x2800 0xa800]]
             (prn {:fd fd :leaf "uniform-ci-abi-probe" :flags (int flags)
                   :result (stat/fstatat-result runtime fd "uniform-ci-abi-probe" flags)})
