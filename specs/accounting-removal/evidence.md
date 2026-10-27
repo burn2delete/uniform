@@ -93,6 +93,20 @@ unrun. PL/Set construction, LR member/source allowances and existing PE-part /
 PC-link ceilings remain unresolved accounting, not relabeled safety guards.
 ACC-02/03 remain the only closed original rows; eleven remain open or partial.
 
+Fresh repository gates at documentation head
+`666efaa5ca25a71e4d19260e700fe8d6b3b27b3e`, tree
+`1cff8823ed82832b01d91401efd6082a52229f96`, passed LOC 5 tests / 12 assertions,
+the actual 2,035-file source census, docs 240/19 and the full-language roadmap.
+The non-Bootstrap 256 MiB child ended naturally in 2,218 ms, complete 396-byte
+stdout and empty stderr, exact clean bookends and complete cleanup. Receipt
+SHA-256: `88d86de0db0f7afae0c7edb5d0ade7ac46929582f12a008e124e2c000fa0f517`.
+Exact integration preflight against `637d5f07` is all-pass with no diagnostics.
+This follow-up changes only these two accounting records. LOC validation reads
+Clojure sources; document validation reads normative docs/tooling; roadmap
+validation reads its own roadmap. None consumes these accounting records, so
+their passing evidence retains its original head rather than being rerun or
+relabeled fresh. Final source, CI and integration review/readback remain open.
+
 ## ACC-06 finite intrinsic-limit acceptance - 2026-10-27 13:59 MDT
 
 Source candidate `cedbfd3b785d9f50676c9eb40a3fe1a9da8e0334`, tree

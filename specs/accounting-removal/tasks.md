@@ -62,8 +62,10 @@ Finite merge checklist:
   coherent stale-field/row/fact controls and late-invalid/opaque types.
 - [x] Accept one separately guarded current C7 large-owner run and exact
   three-owner walk parity. Effects/emitter large executions remain unrun.
-- [ ] Finish current-head repository gates, independent integration review,
-  routine CI, publication and normal merge/readback.
+- [x] Pass repository gates at `666efaa5`: LOC 5/12, source census 2,035,
+  docs 240/19 and roadmap; exact integration preflight is clean/all-pass.
+- [ ] Finish independent current-head integration review, routine CI,
+  publication and normal merge/readback.
 
 Evidence and original NONPASS attempts are recorded in `evidence.md`; passing
 selectors retain their exact original provenance. There is no summed or
