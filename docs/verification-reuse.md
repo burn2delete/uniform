@@ -778,3 +778,11 @@ allocation result only; they are not compiler speedup or verification-elision
 evidence. Bootstrap was not loaded. The accepted supported-leaf and callback
 evidence is unchanged; whole RV1, RV2 compatibility closure and whole RV4 remain
 open pending their original acceptance requirements.
+
+On exact implementation `7e7da6deaf810a85412d372dddd1578c3fd2d83c`, tree
+`880eb72fdb4fadce3a8bec047f8eaff20727a65d`, the combined fresh helper/adapter,
+planner and language-boundary controls passed 78 tests / 718 assertions; docs
+passed 240 / 19. The helper contributed 12 / 151, the planner 60 / 556 and the
+boundary 6 / 11. The brokered 256 MiB process exited zero with identical clean
+source/hash bookends and no Bootstrap load. No compiler/provider acceptance
+or public artifact replay follows from that scope.
