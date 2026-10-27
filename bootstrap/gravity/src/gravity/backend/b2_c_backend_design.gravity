@@ -570,9 +570,7 @@
    :integer-carrier :i64
    :process-result :i32
    :process-result-range [0 255]
-   :maximum-operation-count 128
    :maximum-conditional-count 1
-   :maximum-data-flow-edge-count 256
    :runtime-helpers []
    :root-contextual-b1-verification-required? true
    :raw-structural-validator-is-seal-verifier? false
@@ -585,6 +583,7 @@
    :public? false
    :release? false
    :self-hosted? false})
+
 
 (defn b2-c-target-valid?
   [target]
@@ -714,49 +713,53 @@
       (get provenance :b1-source)])
     false))
 
-(defn b2-c11-independent-verifier-valid?
-  [verifier]
+(defn b2-c11-independent-verifier-valid? [verifier]
   (if (b2-exact-keys?
-       verifier
-       #{:status :module-shape-valid? :block-count :operation-count
-         :conditional-count :dominance-valid? :type-facts-valid?
-         :direct-effects-valid? :safety-facts-valid?
-         :origin-closure-valid? :runtime-checks-valid? :runtime-checks
-         :target-independent? :data-flow})
-    (if (= [(get verifier :status)
-            (get verifier :module-shape-valid?)
-            (get verifier :dominance-valid?)
-            (get verifier :type-facts-valid?)
-            (get verifier :direct-effects-valid?)
-            (get verifier :safety-facts-valid?)
-            (get verifier :origin-closure-valid?)
-            (get verifier :runtime-checks-valid?)
-            (get verifier :target-independent?)]
-           [:passed true true true true true true true true])
+        verifier
+        #{:direct-effects-valid?
+          :block-count
+          :module-shape-valid?
+          :safety-facts-valid?
+          :runtime-checks
+          :type-facts-valid?
+          :operation-count
+          :conditional-count
+          :status
+          :data-flow
+          :runtime-checks-valid?
+          :target-independent?
+          :dominance-valid?
+          :origin-closure-valid?})
+    (if (=
+          [(get verifier :status)
+           (get verifier :module-shape-valid?)
+           (get verifier :dominance-valid?)
+           (get verifier :type-facts-valid?)
+           (get verifier :direct-effects-valid?)
+           (get verifier :safety-facts-valid?)
+           (get verifier :origin-closure-valid?)
+           (get verifier :runtime-checks-valid?)
+           (get verifier :target-independent?)]
+          [:passed true true true true true true true true])
       (let [blocks (get verifier :block-count)
             operations (get verifier :operation-count)
             conditionals (get verifier :conditional-count)
             runtime (get verifier :runtime-checks)
             data-flow (get verifier :data-flow)]
         (if (b2-nonnegative-integer? blocks)
-          (if (if (b2-nonnegative-integer? operations)
-                (if (> operations 0) (<= operations 128) false)
-                false)
+          (if (if (b2-nonnegative-integer? operations) (if (> operations 0) true false) false)
             (if (contains? #{0 1} conditionals)
               (if (= blocks (if (= conditionals 0) 1 4))
-                (if (= runtime
-                       {:runtime-check-count 0 :runtime-check-ids []})
+                (if (= runtime {:runtime-check-count 0, :runtime-check-ids []})
                   (if (b2-exact-keys?
-                       data-flow
-                       #{:edge-count :terminator-use-count
-                         :definition-count :value-count})
-                    (if (= [(get data-flow :definition-count)
-                            (get data-flow :value-count)
-                            (get data-flow :terminator-use-count)]
-                           [operations operations
-                            (if (= conditionals 0) 1 4)])
-                      (b2-nonnegative-integer?
-                       (get data-flow :edge-count))
+                        data-flow
+                        #{:value-count :edge-count :terminator-use-count :definition-count})
+                    (if (=
+                          [(get data-flow :definition-count)
+                           (get data-flow :value-count)
+                           (get data-flow :terminator-use-count)]
+                          [operations operations (if (= conditionals 0) 1 4)])
+                      (b2-nonnegative-integer? (get data-flow :edge-count))
                       false)
                     false)
                   false)
@@ -766,6 +769,7 @@
           false))
       false)
     false))
+
 
 (defn b2-c11-b1-preflight-valid?
   [preflight]
@@ -997,28 +1001,29 @@
       false)
     false))
 
-(defn b2-b1-c-payload-valid?
-  [payload input bindings]
+(defn b2-b1-c-payload-valid? [payload input bindings]
   (if (b2-exact-keys?
-       payload
-       #{:artifact :c11-artifact-id :c13-artifact-id
-         :c13-semantic-id :mir :operation-order :fact-bindings})
-    (if (= (get payload :artifact)
-           :gravity/c14-bounded-c-lowering-payload)
-      (if (= [(get payload :c11-artifact-id)
-              (get payload :c13-artifact-id)
-              (get payload :c13-semantic-id)]
-             [(get input :c11-artifact-id)
-              (get input :artifact-id) (get input :id)])
+        payload
+        #{:c13-artifact-id
+          :c11-artifact-id
+          :mir
+          :artifact
+          :operation-order
+          :fact-bindings
+          :c13-semantic-id})
+    (if (= (get payload :artifact) :gravity/c14-bounded-c-lowering-payload)
+      (if (=
+            [(get payload :c11-artifact-id)
+             (get payload :c13-artifact-id)
+             (get payload :c13-semantic-id)]
+            [(get input :c11-artifact-id) (get input :artifact-id) (get input :id)])
         (if (map? (get payload :mir))
           (if (vector? (get payload :operation-order))
             (if (> (count (get payload :operation-order)) 0)
-              (if (<= (count (get payload :operation-order)) 128)
-                (if (= (count (get payload :operation-order))
-                       (count (set (get payload :operation-order))))
-                  (b2-b1-c-fact-bindings-valid?
-                   (get payload :fact-bindings) bindings)
-                  false)
+              (if (=
+                    (count (get payload :operation-order))
+                    (count (set (get payload :operation-order))))
+                (b2-b1-c-fact-bindings-valid? (get payload :fact-bindings) bindings)
                 false)
               false)
             false)
@@ -1026,6 +1031,7 @@
         false)
       false)
     false))
+
 
 (defn b2-c14-eligibility-valid?
   [eligibility target providers]
@@ -1267,8 +1273,7 @@
         (if (map? (get function :blocks))
           (if (contains? #{1 4} (count (get function :blocks)))
             (if (string? (get function :entry))
-              (if (<= (count (get function :entry)) 256)
-                (if (contains? (get function :blocks)
+              (if (contains? (get function :blocks)
                                (get function :entry))
                   (if (map? (get function :source))
                     (if (map? (get function :facts))
@@ -1276,7 +1281,6 @@
                       false)
                     false)
                   false)
-                false)
               false)
             false)
           false)
@@ -1607,8 +1611,7 @@
       (if (b2-sha256-id? (get source :origin-id))
         (if (b2-sha256-id? (get source :enclosing-syntax-origin-id))
           (if (vector? (get source :generated-origin))
-            (if (<= (count (get source :generated-origin)) 16)
-              (if (b2-generated-origins-valid?
+            (if (b2-generated-origins-valid?
                    (get source :generated-origin))
                 (if (= (get source :generated?) true)
                   (> (count (get source :generated-origin)) 0)
@@ -1616,7 +1619,6 @@
                     (= (get source :generated-origin) [])
                     false))
                 false)
-              false)
             false)
           false)
         false)
@@ -1639,8 +1641,7 @@
            [:gravity/mir-operation (get operation :op-id)
             #{} #{} :none :hosted nil :passed])
       (if (string? (get operation :op-id))
-        (if (<= (count (get operation :op-id)) 256)
-          (if (string? (get operation :block-id))
+        (if (string? (get operation :block-id))
             (if (vector? (get operation :operands))
               (if (b2-operation-source-record-valid?
                    (get operation :source))
@@ -1652,7 +1653,6 @@
                 false)
               false)
             false)
-          false)
         false)
       false)
     false))
@@ -1676,8 +1676,7 @@
            [:gravity/mir-block block-id []
             {:module-data-flow-graph-reference true}])
       (if (string? block-id)
-        (if (<= (count block-id) 256)
-          (if (vector? (get block :instructions))
+        (if (vector? (get block :instructions))
             (if (vector? (get block :predecessors))
               (if (vector? (get block :successors))
                 (if (vector? (get block :dominators))
@@ -1689,7 +1688,6 @@
                 false)
               false)
             false)
-          false)
         false)
       false)
     false))
@@ -2051,7 +2049,7 @@
     (= (count operands) 1)
     (if (= opcode :local-binding)
       (= (count operands) 1)
-      (if (> (count operands) 0) (<= (count operands) 128) false))))
+      (> (count operands) 0))))
 
 (defn b2-operation-reason
   [operation operations operation-index block-order]
@@ -2363,17 +2361,13 @@
               (b2-collect-operations blocks block-order [])
               operation-index (b2-index-operations operations 0 {})]
           (if (if (> (count operations) 0)
-                (if (<= (count operations) 128)
-                  (= (count operations) (count operation-index))
-                  false)
+                (= (count operations) (count operation-index))
                 false)
             (if (= operation-order (b2-operation-ids operations []))
               (if (b2-operations-envelope-valid? operations)
                 (if (b2-fact-table-closure-valid? mir operations)
                   (if (b2-cfg-valid? mir function block-order operations)
-                    (if (<= (count (get (get mir :data-flow-graph) :edges))
-                            256)
-                      (if (b2-data-flow-valid?
+                    (if (b2-data-flow-valid?
                            mir function block-order operations)
                         (if (b2-return-valid?
                              function block-order operations)
@@ -2384,8 +2378,6 @@
                            :reason :return-type-or-dominance-closure})
                         {:status :rejected :kind :input
                          :reason :data-flow-value-closure})
-                      {:status :rejected :kind :unsupported
-                       :reason :bounded-data-flow-edge-count})
                     {:status :rejected :kind :input
                      :reason :control-flow-closure})
                   {:status :rejected :kind :input
@@ -2400,6 +2392,7 @@
          :reason :exact-main-function-envelope}))
     {:status :rejected :kind :input
      :reason :exact-c-target-mir-envelope}))
+
 
 (defn b2-verifier-mir-cross-links-valid?
   [packet mir validation]

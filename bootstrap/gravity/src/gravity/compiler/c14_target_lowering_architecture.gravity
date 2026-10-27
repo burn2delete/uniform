@@ -913,8 +913,7 @@
      (c14-operation-ids
       (get (get blocks (first block-order)) :instructions) result))))
 
-(defn c14-bounded-operation-count?
-  [mir]
+(defn c14-bounded-operation-count? [mir]
   (let [source-core (get mir :source-core)
         entry-id (str source-core ":mir:entry")
         then-id (str source-core ":mir:then")
@@ -923,16 +922,15 @@
         functions (get mir :functions)
         function (get functions (first (keys functions)))
         blocks (get function :blocks)
-        operation-count
-        (if (contains? blocks join-id)
-          (+ (count (get (get blocks entry-id) :instructions))
-             (count (get (get blocks then-id) :instructions))
-             (count (get (get blocks else-id) :instructions))
-             (count (get (get blocks join-id) :instructions)))
-          (count (get (get blocks entry-id) :instructions)))]
-    (if (> operation-count 0)
-      (<= operation-count 256)
-      false)))
+        operation-count (if (contains? blocks join-id)
+                          (+
+                            (count (get (get blocks entry-id) :instructions))
+                            (count (get (get blocks then-id) :instructions))
+                            (count (get (get blocks else-id) :instructions))
+                            (count (get (get blocks join-id) :instructions)))
+                          (count (get (get blocks entry-id) :instructions)))]
+    (if (> operation-count 0) true false)))
+
 
 (defn c14-bounded-operation-order
   [mir]
@@ -1152,11 +1150,11 @@
     (if (= index (count checks)) true
       (if (= true (get checks index)) (recur (+ index 1)) false))))
 
-(defn c14-equality-id? [value]
-  (if (string? value) (if (> (count value) 0) (<= (count value) 256) false) false))
+(defn c14-equality-id? [value] (if (string? value) (if (> (count value) 0) true false) false))
+
 
 (defn c14-equality-index? [value]
-  (if (integer? value) (if (>= value 0) (<= value 65535) false) false))
+  (if (integer? value) (>= value 0) false))
 
 (defn c14-equality-edge [operation index]
   {:from (get (get operation :operands) index) :consumer-kind :operation
@@ -1208,25 +1206,23 @@
 (defn c14-equality-bounded? [mir]
   (if (map? (get mir :functions))
     (if (= 1 (count (get mir :functions)))
-      (let [function (get (get mir :functions) (first (keys (get mir :functions)))) blocks (get function :blocks)
-            graph (get mir :data-flow-graph) values (get graph :values) edges (get graph :edges)]
+      (let [function (get (get mir :functions) (first (keys (get mir :functions))))
+            blocks (get function :blocks) graph (get mir :data-flow-graph)
+            values (get graph :values) edges (get graph :edges)]
         (if (map? blocks)
           (if (if (= 1 (count blocks)) true (= 4 (count blocks)))
             (if (c14-equality-all? [(map? values) (map? (get graph :definitions))
-                                   (vector? edges) (vector? (get graph :terminator-uses))])
-              (if (c14-equality-all? [(<= (count values) 256) (<= (count (get graph :definitions)) 256)
-                                     (<= (count edges) 65536) (<= (count (get graph :terminator-uses)) 256)])
-                (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
-                  (if (loop [index 0 total 0]
-                        (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
-                          (let [rows (get (get blocks (get block-ids index)) :instructions)]
-                            (if (vector? rows)
-                              (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
-                    (loop [index 0 total 0]
-                      (if (= index (count value-ids)) true
-                        (let [uses (get (get values (get value-ids index)) :uses)]
-                          (if (vector? uses)
-                            (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false) false)) false) false))
+                                       (vector? edges) (vector? (get graph :terminator-uses))])
+              (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
+                (if (loop [index 0 nonempty? false]
+                      (if (= index (count block-ids)) nonempty?
+                        (let [rows (get (get blocks (get block-ids index)) :instructions)]
+                          (if (vector? rows)
+                            (recur (+ index 1) (if (> (count rows) 0) true nonempty?)) false))))
+                  (loop [index 0]
+                    (if (= index (count value-ids)) true
+                      (let [uses (get (get values (get value-ids index)) :uses)]
+                        (if (vector? uses) (recur (+ index 1)) false)))) false)) false) false) false)) false) false))
 
 (defn c14-equality-operations [mir]
   (let [function (get (get mir :functions) (first (keys (get mir :functions))))
@@ -1302,23 +1298,45 @@
 (defn c14-equality-selection-bounded [mir]
   (if (map? (get mir :functions))
     (if (= 1 (count (get mir :functions)))
-      (let [function-id (first (keys (get mir :functions))) function (get (get mir :functions) function-id)
-            entry (get (get mir :control-flow-graph) :entry) rows (get (get (get function :blocks) entry) :instructions)]
-        (if (c14-equality-all? [(= :hosted (get mir :profile)) (= :llvm-x86_64-linux (get mir :target-request))
-                               (= true (get mir :target-independent?)) (= {} (get mir :globals))
-                               (= {} (get mir :domain-anchors)) (= {} (get mir :runtime-check-table))
-                               (= [] (get function :params)) (= #{} (get function :latent-effects))
-                               (= #{} (get function :capabilities)) (vector? rows)])
+      (let [function-id (first (keys (get mir :functions)))
+            function (get (get mir :functions) function-id)
+            entry (get (get mir :control-flow-graph) :entry)
+            rows (get (get (get function :blocks) entry) :instructions)]
+        (if (c14-equality-all?
+              [(= :hosted (get mir :profile))
+               (= :llvm-x86_64-linux (get mir :target-request))
+               (= true (get mir :target-independent?))
+               (= {} (get mir :globals))
+               (= {} (get mir :domain-anchors))
+               (= {} (get mir :runtime-check-table))
+               (= [] (get function :params))
+               (= #{} (get function :latent-effects))
+               (= #{} (get function :capabilities))
+               (vector? rows)])
           (let [operations (c14-equality-operations mir)]
             (if (vector? operations)
-              (if (c14-equality-all? [(> (count operations) 0) (<= (count operations) 256)])
+              (if (c14-equality-all? [(> (count operations) 0) true])
                 (let [candidates (c14-equality-census operations)]
                   (if (= 1 (count candidates))
                     (loop [index 0]
-                      (if (= index (count rows)) nil
+                      (if (= index (count rows))
+                        nil
                         (if (= (get rows index) (first candidates))
-                          (c14-equality-selected-at mir function-id entry rows index (first candidates))
-                          (recur (+ index 1))))) nil)) nil) nil)) nil)) nil) nil))
+                          (c14-equality-selected-at
+                            mir
+                            function-id
+                            entry
+                            rows
+                            index
+                            (first candidates))
+                          (recur (+ index 1)))))
+                    nil))
+                nil)
+              nil))
+          nil))
+      nil)
+    nil))
+
 
 (defn c14-equality-selection [mir]
   (if (c14-equality-bounded? mir) (c14-equality-selection-bounded mir) nil))
@@ -1533,8 +1551,7 @@
         :profile :hosted
         :target target-request})))
 
-(defn c14-identity-optimized-input-valid?
-  [optimized policy]
+(defn c14-identity-optimized-input-valid? [optimized policy]
   (if (map? optimized)
     (if (map? policy)
       (if (c14-c13-envelope-valid? optimized)
@@ -1542,83 +1559,61 @@
           (if (c14-sha256-id? (get optimized :semantic-id))
             (if (c14-sha256-id? (get policy :expected-c11-artifact-id))
               (if (c14-sha256-id? (get policy :expected-c13-artifact-id))
-                (if (= (get (get optimized :input) :c11-artifact-id)
-                       (get policy :expected-c11-artifact-id))
-                  (if (= (get optimized :artifact-id)
-                         (get policy :expected-c13-artifact-id))
-                    (if (= (get (get optimized :verifier-replay) :result)
-                           :passed)
-                      (if (= [(get (get optimized :semantic-identity)
-                                    :c11-input-mir-id)
-                              (get (get optimized :semantic-identity)
-                                   :c11-output-mir-id)
-                              (get (get optimized :decision-record)
-                                   :input-mir)
-                              (get (get optimized :decision-record)
-                                   :output-mir)
-                              (get (get optimized :verifier-replay)
-                                   :c11-mir-id)]
-                             [(get (get optimized :input) :c11-mir-id)
-                              (get (get optimized :input) :c11-mir-id)
-                              (get (get optimized :input) :c11-mir-id)
-                              (get (get optimized :input) :c11-mir-id)
-                              (get (get optimized :input) :c11-mir-id)])
-                        (if (= (get (get optimized :semantic-identity)
-                                    :unchanged?) true)
-                        (if (= (get (get optimized :semantic-identity)
-                                    :fact-bindings)
-                               (get policy :fact-bindings))
-                          (let [mir (get optimized :optimized-mir)
-                                semantic (get optimized :semantic-identity)
-                                decision (get optimized :decision-record)
-                                operation-order
-                                (c14-bounded-operation-order mir)]
-                            (if (= [(get semantic :maximum-operation-count)
-                                    (get (get optimized :pass-contract)
-                                         :maximum-operation-count)]
-                                   [256 256])
-                              (if (= (get semantic :operation-order)
-                                     operation-order)
-                              (if (> (count operation-order) 0)
-                                (if (= (get semantic :operation-count)
-                                       (count operation-order))
-                                  (if (= (get semantic :effect-order-graph)
-                                         (get mir :effect-order-graph))
-                                    (if (= (get decision :preserved)
-                                           {:fact-bindings
-                                            (get semantic :fact-bindings)
-                                            :operation-order operation-order
-                                            :effect-order-graph
-                                            (get mir :effect-order-graph)})
-                                      (if (= (get decision :decision-id)
-                                             (get (get optimized
-                                                       :invalidation-ledger)
-                                                  :decision-id))
-                                        (if (c14-sha256-id?
-                                             (get decision :decision-id))
-                                          (if (= (get decision :residual-checks)
-                                                 (get mir
-                                                      :runtime-check-table))
-                                            (if (c14-c13-residual-check-report-valid?
-                                                 optimized)
-                                              (if (c14-c13-verifier-replay-valid?
-                                                   optimized)
-                                                (if (= [(get mir :module-id)
-                                                        (get semantic
-                                                             :input-module-id)
-                                                        (get semantic
-                                                             :output-module-id)]
-                                                       [(get (get optimized
-                                                                  :input)
-                                                             :module-id)
-                                                        (get (get optimized
-                                                                  :input)
-                                                             :module-id)
-                                                        (get (get optimized
-                                                                  :input)
-                                                             :module-id)])
-                                                  (c14-c13-invalidation-ledger-valid?
-                                                   optimized)
+                (if (=
+                      (get (get optimized :input) :c11-artifact-id)
+                      (get policy :expected-c11-artifact-id))
+                  (if (= (get optimized :artifact-id) (get policy :expected-c13-artifact-id))
+                    (if (= (get (get optimized :verifier-replay) :result) :passed)
+                      (if (=
+                            [(get (get optimized :semantic-identity) :c11-input-mir-id)
+                             (get (get optimized :semantic-identity) :c11-output-mir-id)
+                             (get (get optimized :decision-record) :input-mir)
+                             (get (get optimized :decision-record) :output-mir)
+                             (get (get optimized :verifier-replay) :c11-mir-id)]
+                            [(get (get optimized :input) :c11-mir-id)
+                             (get (get optimized :input) :c11-mir-id)
+                             (get (get optimized :input) :c11-mir-id)
+                             (get (get optimized :input) :c11-mir-id)
+                             (get (get optimized :input) :c11-mir-id)])
+                        (if (= (get (get optimized :semantic-identity) :unchanged?) true)
+                          (if (=
+                                (get (get optimized :semantic-identity) :fact-bindings)
+                                (get policy :fact-bindings))
+                            (let [mir (get optimized :optimized-mir)
+                                  semantic (get optimized :semantic-identity)
+                                  decision (get optimized :decision-record)
+                                  operation-order (c14-bounded-operation-order mir)]
+                              (if (= (get semantic :operation-order) operation-order)
+                                (if (> (count operation-order) 0)
+                                  (if (= (get semantic :operation-count) (count operation-order))
+                                    (if (=
+                                          (get semantic :effect-order-graph)
+                                          (get mir :effect-order-graph))
+                                      (if (=
+                                            (get decision :preserved)
+                                            {:fact-bindings (get semantic :fact-bindings),
+                                             :operation-order operation-order,
+                                             :effect-order-graph (get mir :effect-order-graph)})
+                                        (if (=
+                                              (get decision :decision-id)
+                                              (get
+                                                (get optimized :invalidation-ledger)
+                                                :decision-id))
+                                          (if (c14-sha256-id? (get decision :decision-id))
+                                            (if (=
+                                                  (get decision :residual-checks)
+                                                  (get mir :runtime-check-table))
+                                              (if (c14-c13-residual-check-report-valid? optimized)
+                                                (if (c14-c13-verifier-replay-valid? optimized)
+                                                  (if (=
+                                                        [(get mir :module-id)
+                                                         (get semantic :input-module-id)
+                                                         (get semantic :output-module-id)]
+                                                        [(get (get optimized :input) :module-id)
+                                                         (get (get optimized :input) :module-id)
+                                                         (get (get optimized :input) :module-id)])
+                                                    (c14-c13-invalidation-ledger-valid? optimized)
+                                                    false)
                                                   false)
                                                 false)
                                               false)
@@ -1628,12 +1623,10 @@
                                       false)
                                     false)
                                   false)
-                                false)
-                              false)
-                            false))
+                                false))
+                            false)
                           false)
                         false)
-                      false)
                       false)
                     false)
                   false)
@@ -1644,6 +1637,7 @@
         false)
       false)
     false))
+
 
 (defn c14-equality-translation-valid? [optimized policy]
   (let [original (c14-equality-original-mir optimized) input (get optimized :input)
@@ -1666,10 +1660,10 @@
             :invalidates [:data-flow-cache :use-def-facts] :regenerates [:use-def-facts]
             :proof-obligations [:bounded-i64-equality-reconstruction] :profile-constraints [:hosted]
             :target-assumptions [] :effect-ordering-policy :unchanged :safety-policy :unchanged :domain-policy :unchanged
-            :maximum-operation-count 256 :emits [:decision-record :invalidation-ledger :residual-check-report :verifier-replay]})
+            :emits [:decision-record :invalidation-ledger :residual-check-report :verifier-replay]})
         (= semantic {:c11-input-mir-id input-id :c11-output-mir-id output-id :input-module-id (get input :module-id)
                      :output-module-id (get input :module-id) :fact-bindings facts :operation-order order
-                     :operation-count (count order) :maximum-operation-count 256
+                     :operation-count (count order)
                      :effect-order-graph (get original :effect-order-graph) :unchanged? false})
         (= replay {:artifact :gravity/c13-equality-fold-translation-replay :required? true
                    :method :bounded-i64-equality-reconstruction :delta delta
@@ -1689,6 +1683,7 @@
             :certificates-invalidated [] :runtime-checks-restored [] :passes-to-rerun [] :caches-cleared [:analysis-cache]
             :diagnostics-affected [] :profile :hosted :target :llvm-x86_64-linux})
         (c14-c13-residual-check-report-valid? optimized)]) false)))
+
 
 (defn c14-bounded-optimized-input-valid? [optimized policy]
   (if (c14-equality-fold? optimized)
@@ -1796,7 +1791,6 @@
   [policy]
   (if (= (get policy :target-policy)
          {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-          :maximum-operation-count 256
           :whole-c14? false :whole-b1? false :whole-b3? false
           :public? false :release? false :self-hosted? false})
     (if (= (get policy :unsupported-surface)
@@ -1811,6 +1805,7 @@
         false)
       false)
     false))
+
 
 (defn c14-bounded-policy-valid?
   [optimized policy]
@@ -2391,8 +2386,7 @@
           false))
       false)))
 
-(defn c14-c-bounded-mir-surface-valid?
-  [optimized policy]
+(defn c14-c-bounded-mir-surface-valid? [optimized policy]
   (let [mir (get optimized :optimized-mir)
         functions (get mir :functions)
         function (get functions (first (keys functions)))
@@ -2410,18 +2404,11 @@
                     (if (= (get mir :domain-anchors) {})
                       (if (= (get mir :globals) {})
                         (if (> (count operations) 0)
-                          (if (<= (count operations) 128)
-                            (if (= operation-order
-                                   (get policy :supported-operation-ids))
-                              (if (= operation-order
-                                     (c14-operation-ids operations []))
-                                (if (= (count operations)
-                                       (count operations-by-id))
-                                  (if (c14-c-operations-valid?
-                                       operations operations-by-id #{} 0)
-                                    (c14-c-process-result-valid?
-                                     mir operations operations-by-id)
-                                    false)
+                          (if (= operation-order (get policy :supported-operation-ids))
+                            (if (= operation-order (c14-operation-ids operations []))
+                              (if (= (count operations) (count operations-by-id))
+                                (if (c14-c-operations-valid? operations operations-by-id #{} 0)
+                                  (c14-c-process-result-valid? mir operations operations-by-id)
                                   false)
                                 false)
                               false)
@@ -2437,6 +2424,7 @@
           false)
         false)
       false)))
+
 
 (defn c14-llvm-equality-operations-valid? [operations all-by-id seen selected-id conditional-count]
   (if (= (count operations) 0) (<= conditional-count 1)
@@ -2457,8 +2445,7 @@
 ; The operation helpers above are target-neutral even though their historical
 ; names predate the bounded LLVM slice.  C14 owns this target eligibility gate:
 ; B1 and B3 must never be the first stage to discover an unsupported scalar.
-(defn c14-llvm-bounded-mir-surface-valid?
-  [optimized policy]
+(defn c14-llvm-bounded-mir-surface-valid? [optimized policy]
   (let [mir (get optimized :optimized-mir)
         functions (get mir :functions)
         function (get functions (first (keys functions)))
@@ -2476,21 +2463,20 @@
                     (if (= (get mir :domain-anchors) {})
                       (if (= (get mir :globals) {})
                         (if (> (count operations) 0)
-                          (if (<= (count operations) 256)
-                            (if (= operation-order
-                                   (get policy :supported-operation-ids))
-                              (if (= operation-order
-                                     (c14-operation-ids operations []))
-                                (if (= (count operations)
-                                       (count operations-by-id))
-                                  (if (if (c14-equality-fold? optimized)
-                                        (c14-llvm-equality-operations-valid?
-                                         operations operations-by-id #{}
-                                         (get (get (get optimized :verifier-replay) :delta) :operation-id) 0)
-                                        (c14-c-operations-valid? operations operations-by-id #{} 0))
-                                    (c14-llvm-process-result-valid?
-                                     mir operations operations-by-id)
-                                    false)
+                          (if (= operation-order (get policy :supported-operation-ids))
+                            (if (= operation-order (c14-operation-ids operations []))
+                              (if (= (count operations) (count operations-by-id))
+                                (if (if (c14-equality-fold? optimized)
+                                      (c14-llvm-equality-operations-valid?
+                                        operations
+                                        operations-by-id
+                                        #{}
+                                        (get
+                                          (get (get optimized :verifier-replay) :delta)
+                                          :operation-id)
+                                        0)
+                                      (c14-c-operations-valid? operations operations-by-id #{} 0))
+                                  (c14-llvm-process-result-valid? mir operations operations-by-id)
                                   false)
                                 false)
                               false)
@@ -2506,6 +2492,7 @@
           false)
         false)
       false)))
+
 
 (defn c14-llvm-process-result-valid?
   [mir operations operations-by-id]
@@ -2562,27 +2549,25 @@
       false)
     false))
 
-(defn c14-c-policy-core-valid?
-  [optimized policy]
+(defn c14-c-policy-core-valid? [optimized policy]
   (if (c14-c-target-envelope-valid? optimized policy)
     (if (c14-c-bounded-mir-surface-valid? optimized policy)
       (if (= (get policy :effects) #{})
-            (if (= (get policy :capabilities) #{})
-              (if (= (get policy :supported-operation-ids)
-                     (get (get optimized :semantic-identity)
-                          :operation-order))
-                (if (<= (count (get policy :supported-operation-ids)) 128)
-                  (if (c14-abi-valid? (get policy :abi))
-                    (if (c14-runtime-valid? (get policy :runtime))
-                      (c14-providers-valid? (get policy :providers))
-                      false)
-                    false)
+        (if (= (get policy :capabilities) #{})
+          (if (=
+                (get policy :supported-operation-ids)
+                (get (get optimized :semantic-identity) :operation-order))
+            (if (c14-abi-valid? (get policy :abi))
+              (if (c14-runtime-valid? (get policy :runtime))
+                (c14-providers-valid? (get policy :providers))
                 false)
               false)
             false)
           false)
         false)
+      false)
     false))
+
 
 (defn c14-c-contract-bindings-match?
   [optimized policy]
@@ -2675,7 +2660,6 @@
   [policy]
   (if (= (get policy :target-policy)
          {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-          :maximum-operation-count 128
           :dialect :c17
           :whole-c14? false :whole-b1? false :whole-b2? false
           :public? false :release? false :self-hosted? false})
@@ -2692,6 +2676,7 @@
         false)
       false)
     false))
+
 
 (defn c14-bounded-c-policy-valid?
   [optimized policy]
@@ -3124,10 +3109,9 @@
         (contains? #{true false nil} result))
       false)))
 
-(defn c14-wasm-bounded-mir-surface-valid?
-  [optimized policy]
+(defn c14-wasm-bounded-mir-surface-valid? [optimized policy]
   (let [mir (get optimized :optimized-mir)
-        function (get (get mir :functions) (quote main))
+        function (get (get mir :functions) 'main)
         block-order (c14-wasm-block-order mir)
         operations (c14-c-operation-sequence mir)
         operations-by-id (c14-c-operation-map operations {})
@@ -3136,22 +3120,21 @@
     (if (= (get mir :profile) :hosted)
       (if (= (get mir :target-request) :wasm)
         (if (= (get mir :target-independent?) true)
-          (if (= (set (keys (get mir :functions))) #{(quote main)})
+          (if (= (set (keys (get mir :functions))) #{'main})
             (if (= (get function :params) [])
               (if (= (get function :latent-effects) #{})
                 (if (= (get function :capabilities) #{})
                   (if (contains? #{1 4} (count (get function :blocks)))
                     (if (if (> (count operations) 0)
-                          (if (<= (count operations) 127)
-                            (= (count operation-index) (count operations))
-                            false)
+                          (= (count operation-index) (count operations))
                           false)
                       (if (c14-wasm-cfg-valid? mir function block-order)
                         (if (c14-wasm-operations-valid?
-                             operations operations-by-id operation-index
-                             block-labels)
-                          (c14-wasm-process-result-valid?
-                           mir operations operations-by-id)
+                              operations
+                              operations-by-id
+                              operation-index
+                              block-labels)
+                          (c14-wasm-process-result-valid? mir operations operations-by-id)
                           false)
                         false)
                       false)
@@ -3163,6 +3146,7 @@
           false)
         false)
       false)))
+
 
 (defn c14-wasm-target-valid?
   [target]
@@ -3340,7 +3324,6 @@
                           (if (= (get policy :target-policy)
                                  {:scope
                                   :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-                                  :maximum-operation-count 127
                                   :target-kind :core-module
                                   :whole-c14? false :whole-b1? false
                                   :whole-b4? false :public? false
@@ -3387,6 +3370,7 @@
         false)
       false)
     false))
+
 
 (defn c14-wasm-first-invalid-constant
   [operations]
@@ -3549,31 +3533,18 @@
 ; historical bounded builders above.  It admits only a small, exact,
 ; target-independent MIR surface after an iterative structural preflight.
 (defn sh17-target-lowering-policy []
-  {:artifact :gravity/sh17-target-lowering-policy
-   :schema-version 1
-   :backends [:llvm :c :wasm]
-   :profiles [:hosted]
-   :structural-bounds
-   {:maximum-nodes 8192
-    :maximum-depth 64
-    :maximum-width 512
-    :maximum-collections 4096
-    :maximum-scalars 8192
-    :maximum-scalar-units 65536
-    :maximum-functions 1
-    :maximum-blocks 32
-    :maximum-operations 128
-    :maximum-operands 16
-    :maximum-identifier-units 128
-    :maximum-string-units 4096}
-   :supported-opcodes
-   [:constant :integer-add :integer-eq :call :runtime-check :return]
+  {:artifact :gravity/sh17-target-lowering-policy,
+   :schema-version 1,
+   :backends [:llvm :c :wasm],
+   :profiles [:hosted],
+   :supported-opcodes [:constant :integer-add :integer-eq :call :runtime-check :return],
    :pending
    [:complete-c11-operation-surface
     :authenticated-sh16-envelope-ingress
     :target-tool-execution
     :object-and-executable-emission
     :seed-retirement]})
+
 
 (defn sh17-current-c11-revision []
   {:artifact :gravity/sh17-c11-revision
@@ -3624,16 +3595,13 @@
 (defn sh17-ascii-identifier? [value]
   (if (string? value)
     (if (> (count value) 0)
-      (if (<= (count value) 128)
-        (loop [index 0]
-          (if (= index (count value))
-            true
-            (if (sh17-ascii-identifier-character? (get value index))
-              (recur (+ index 1))
-              false)))
-        false)
+      (loop [index 0]
+        (if (= index (count value))
+          true
+          (if (sh17-ascii-identifier-character? (get value index)) (recur (+ index 1)) false)))
       false)
     false))
+
 
 (defn sh17-identifier? [value]
   (if (keyword? value)
@@ -3659,145 +3627,76 @@
       (if (integer? value)
         (sh17-i64? value)
         (if (string? value)
-          (<= (count value) 4096)
+          true
           (if (keyword? value)
             (sh17-identifier? value)
-            (if (symbol? value)
-              (sh17-identifier? value)
-              (char? value))))))))
+            (if (symbol? value) (sh17-identifier? value) (char? value))))))))
 
-(defn sh17-scalar-units [value]
-  (if (string? value)
-    (count value)
-    (if (keyword? value)
-      (count (str value))
-      (if (symbol? value)
-        (count (str value))
-        1))))
+
+
 
 (defn sh17-structural-preflight [value]
-  (let [bounds (get (sh17-target-lowering-policy) :structural-bounds)
-        maximum-nodes (get bounds :maximum-nodes)
-        maximum-depth (get bounds :maximum-depth)
-        maximum-width (get bounds :maximum-width)
-        maximum-collections (get bounds :maximum-collections)
-        maximum-scalars (get bounds :maximum-scalars)
-        maximum-scalar-units (get bounds :maximum-scalar-units)]
-    (loop [frontier [[value 0]]
-           cursor 0
-           nodes 0
-           collections 0
-           scalars 0
-           scalar-units 0]
-      (if (= cursor (count frontier))
-        {:status :accepted
-         :nodes nodes
-         :collections collections
-         :scalars scalars
-         :scalar-units scalar-units}
-        (let [entry (get frontier cursor)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :structure-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :structure-depth-bound}
-              (if (sh17-aggregate? current)
-                (let [components (sh17-aggregate-components current)
-                      width (count components)
-                      next-collections (+ collections 1)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :structure-width-bound}
-                    (if (> next-collections maximum-collections)
-                      {:status :rejected
-                       :reason :structure-collection-bound}
-                      (let [next-frontier
-                            (loop [remaining components
-                                   result frontier]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining) (+ depth 1)]))))]
-                        (recur next-frontier (+ cursor 1)
-                               next-nodes next-collections
-                               scalars scalar-units)))))
-                (if (seq? current)
-                  {:status :rejected :reason :structure-sequence-carrier}
-                  (if (sh17-scalar-valid? current)
-                    (let [next-scalars (+ scalars 1)
-                          next-units
-                          (+ scalar-units (sh17-scalar-units current))]
-                      (if (> next-scalars maximum-scalars)
-                        {:status :rejected :reason :structure-scalar-bound}
-                        (if (> next-units maximum-scalar-units)
-                          {:status :rejected
-                           :reason :structure-scalar-unit-bound}
-                          (recur frontier (+ cursor 1) next-nodes
-                                 collections next-scalars next-units))))
-                    {:status :rejected
-                     :reason :structure-noncanonical-scalar}))))))))))
+  (loop [frontier [value]]
+    (if (= 0 (count frontier))
+      {:status :accepted}
+      (let [current (first frontier)
+            remaining (subvec frontier 1 (count frontier))]
+        (if (seq? current)
+          {:status :rejected :reason :structure-sequence-carrier}
+          (if (sh17-aggregate? current)
+            (recur (c14-equality-append (sh17-aggregate-components current) remaining))
+            (if (sh17-scalar-valid? current)
+              (recur remaining)
+              {:status :rejected :reason :structure-noncanonical-scalar})))))))
 
 (defn sh17-exact-map? [value expected-keys]
   (if (map? value)
     (= (set (keys value)) expected-keys)
     false))
 
-(defn sh17-identifier-vector? [values maximum]
+(defn sh17-identifier-vector? [values]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (loop [index 0]
-        (if (= index (count values))
-          true
-          (if (sh17-identifier? (get values index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (sh17-identifier? (get values index)) (recur (+ index 1)) false)))
     false))
 
+
 (defn sh17-origin-valid? [origin]
-  (if (sh17-exact-map?
-       origin #{:generator-id :anchor-id :actual-source-path})
+  (if (sh17-exact-map? origin #{:anchor-id :actual-source-path :generator-id})
     (if (c14-sha256-id? (get origin :generator-id))
       (if (c14-sha256-id? (get origin :anchor-id))
-        (if (string? (get origin :actual-source-path))
-          (<= (count (get origin :actual-source-path)) 4096)
-          false)
+        (if (string? (get origin :actual-source-path)) true false)
         false)
       false)
     false))
 
+
 (defn sh17-origins-valid? [origins]
   (if (vector? origins)
-    (if (<= (count origins) 32)
-      (loop [index 0]
-        (if (= index (count origins))
-          true
-          (if (sh17-origin-valid? (get origins index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count origins))
+        true
+        (if (sh17-origin-valid? (get origins index)) (recur (+ index 1)) false)))
     false))
 
+
 (defn sh17-span-valid? [span]
-  (if (sh17-exact-map?
-       span #{:source-id :start-byte :end-byte :actual-source-path})
+  (if (sh17-exact-map? span #{:end-byte :actual-source-path :source-id :start-byte})
     (if (c14-sha256-id? (get span :source-id))
       (if (sh17-i64? (get span :start-byte))
         (if (>= (get span :start-byte) 0)
           (if (sh17-i64? (get span :end-byte))
             (if (>= (get span :end-byte) (get span :start-byte))
-              (if (string? (get span :actual-source-path))
-                (<= (count (get span :actual-source-path)) 4096)
-                false)
+              (if (string? (get span :actual-source-path)) true false)
               false)
             false)
           false)
         false)
       false)
     false))
+
 
 (defn sh17-source-map-entry-valid? [entry]
   (if (sh17-exact-map?
@@ -3813,15 +3712,12 @@
 
 (defn sh17-source-map-valid? [source-map]
   (if (vector? source-map)
-    (if (<= (count source-map) 128)
-      (loop [index 0]
-        (if (= index (count source-map))
-          true
-          (if (sh17-source-map-entry-valid? (get source-map index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count source-map))
+        true
+        (if (sh17-source-map-entry-valid? (get source-map index)) (recur (+ index 1)) false)))
     false))
+
 
 (defn sh17-provider-valid? [provider]
   (if (sh17-exact-map?
@@ -3835,15 +3731,12 @@
 
 (defn sh17-providers-valid? [providers]
   (if (vector? providers)
-    (if (<= (count providers) 16)
-      (loop [index 0]
-        (if (= index (count providers))
-          true
-          (if (sh17-provider-valid? (get providers index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count providers))
+        true
+        (if (sh17-provider-valid? (get providers index)) (recur (+ index 1)) false)))
     false))
+
 
 (defn sh17-provider-bindings-valid?
   [providers effects capabilities]
@@ -3889,15 +3782,12 @@
 
 (defn sh17-proofs-valid? [proofs]
   (if (vector? proofs)
-    (if (<= (count proofs) 128)
-      (loop [index 0]
-        (if (= index (count proofs))
-          true
-          (if (sh17-proof-valid? (get proofs index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count proofs))
+        true
+        (if (sh17-proof-valid? (get proofs index)) (recur (+ index 1)) false)))
     false))
+
 
 (defn sh17-operation-valid? [operation]
   (if (sh17-exact-map?
@@ -3908,12 +3798,12 @@
       (if (contains? (set (get (sh17-target-lowering-policy)
                                :supported-opcodes))
                      (get operation :opcode))
-        (if (sh17-identifier-vector? (get operation :operands) 16)
+        (if (sh17-identifier-vector? (get operation :operands))
           (if (sh17-identifier? (get operation :result-id))
             (if (sh17-identifier? (get operation :type))
-              (if (sh17-identifier-vector? (get operation :effects) 16)
+              (if (sh17-identifier-vector? (get operation :effects))
                 (if (sh17-identifier-vector?
-                     (get operation :capabilities) 16)
+                     (get operation :capabilities))
                   (c14-sha256-id? (get operation :source-id))
                   false)
                 false)
@@ -3933,21 +3823,17 @@
 
 (defn sh17-operations-valid? [operations]
   (if (vector? operations)
-    (if (<= (count operations) 128)
-      (if (> (count operations) 0)
-        (loop [index 0 seen #{}]
-          (if (= index (count operations))
-            true
-            (let [operation (get operations index)
-                  operation-id (get operation :operation-id)]
-              (if (sh17-operation-valid? operation)
-                (if (contains? seen operation-id)
-                  false
-                  (recur (+ index 1) (conj seen operation-id)))
-                false))))
-        false)
+    (if (> (count operations) 0)
+      (loop [index 0 seen #{}]
+        (if (= index (count operations))
+          true
+          (let [operation (get operations index) operation-id (get operation :operation-id)]
+            (if (sh17-operation-valid? operation)
+              (if (contains? seen operation-id) false (recur (+ index 1) (conj seen operation-id)))
+              false))))
       false)
     false))
+
 
 (defn sh17-block-valid? [block]
   (if (sh17-exact-map? block #{:block-id :operations :terminator})
@@ -3960,24 +3846,20 @@
 
 (defn sh17-blocks-valid? [blocks]
   (if (vector? blocks)
-    (if (<= (count blocks) 32)
-      (if (> (count blocks) 0)
-        (loop [index 0 seen #{} total 0]
-          (if (= index (count blocks))
-            (<= total 128)
-            (let [block (get blocks index)
-                  block-id (get block :block-id)
-                  next-total (+ total (count (get block :operations)))]
-              (if (sh17-block-valid? block)
-                (if (contains? seen block-id)
-                  false
-                  (if (<= next-total 128)
-                    (recur (+ index 1) (conj seen block-id) next-total)
-                    false))
-                false))))
-        false)
+    (if (> (count blocks) 0)
+      (loop [index 0 seen #{}]
+        (if (= index (count blocks))
+          true
+          (let [block (get blocks index)
+                block-id (get block :block-id)]
+            (if (sh17-block-valid? block)
+              (if (contains? seen block-id)
+                false
+                (recur (+ index 1) (conj seen block-id)))
+              false))))
       false)
     false))
+
 
 (defn sh17-function-valid? [function]
   (if (sh17-exact-map?
@@ -4153,33 +4035,30 @@
 (defn sh17-runtime-valid? [runtime]
   (if (sh17-exact-map? runtime #{:family :services})
     (if (= (get runtime :family) :minimal-native)
-      (sh17-identifier-vector? (get runtime :services) 16)
+      (sh17-identifier-vector? (get runtime :services))
       false)
     false))
 
 (defn sh17-path-provenance-entry-valid? [entry]
-  (if (sh17-exact-map? entry #{:kind :path})
+  (if (sh17-exact-map? entry #{:path :kind})
     (if (= (get entry :kind) :actual-source-path)
-      (if (string? (get entry :path))
-        (<= (count (get entry :path)) 4096)
-        false)
+      (if (string? (get entry :path)) true false)
       false)
     false))
+
 
 (defn sh17-path-provenance-valid? [provenance]
   (if (vector? provenance)
     (if (> (count provenance) 0)
-      (if (<= (count provenance) 32)
-        (loop [index 0]
-          (if (= index (count provenance))
-            true
-            (if (sh17-path-provenance-entry-valid?
-                 (get provenance index))
-              (recur (+ index 1))
-              false)))
-        false)
+      (loop [index 0]
+        (if (= index (count provenance))
+          true
+          (if (sh17-path-provenance-entry-valid? (get provenance index))
+            (recur (+ index 1))
+            false)))
       false)
     false))
+
 
 (defn sh17-operation-summaries-valid? [request]
   (let [blocks
@@ -4240,9 +4119,9 @@
                 (if (sh17-runtime-valid? (get request :runtime))
                   (if (sh17-providers-valid? (get request :providers))
                     (if (sh17-identifier-vector?
-                         (get request :effects) 16)
+                         (get request :effects))
                       (if (sh17-identifier-vector?
-                           (get request :capabilities) 16)
+                           (get request :capabilities))
                         (if (sh17-provider-bindings-valid?
                              (get request :providers)
                              (get request :effects)
