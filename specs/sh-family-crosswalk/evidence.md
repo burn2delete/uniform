@@ -54,11 +54,11 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 8 tests / 73 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 8 tests / 72 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
-  extension passed 13 tests / 395 assertions, zero failures/errors. The first
+  extension passed 14 tests / 402 assertions, zero failures/errors. The first
   run caught an incorrect false-condition predicate (two errors); it was fixed
   to explicit membership and the final run passed. This is source/graph checking,
   not compiler, migration or release acceptance.
@@ -150,6 +150,18 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   metadata-only accepted adoption for the unchanged `ae42fea9...` payload;
   this candidate records that exact disposition. No current SH whole-criterion
   acceptance or new implementation acceptance is inferred.
+- Main `4fa8575b` subsequently landed PR495. Its seven incoming paths are
+  preserved by normal merge; the only intersecting evidence locator is the
+  C7 test source already explicitly marked current-applicability unassessed.
+  Its original inspected `4325a9f4` commit/hash remain conserved. The graph now
+  reports live source drift separately instead of requiring a historical
+  source-only locator to equal later compiler bytes. All existing inspected
+  locator hashes are frozen from the reviewed input; new locators require an
+  explicit pin. Current task records/contracts and current-applicable evidence
+  remain strict, and pre-write Git-object validation is unchanged. This bounded
+  locator-applicability correction is pending independent review; readiness
+  remains false. No task, source acceptance predicate, graph dependency or
+  current SH whole-criterion state changes.
 
 ## Publication dispositions
 

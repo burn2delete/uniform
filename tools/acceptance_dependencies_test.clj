@@ -170,6 +170,22 @@
            (get-in (dependencies/advisory-frontier (assoc-in nodes ["producer" :state] :unassessed)
                                                    edges {:needed true}) ["consumer" :state])))))
 
+(deftest unassessed-source-inspections-preserve-pins-and-expose-live-drift
+  (let [old "inspected source" digest (dependencies/sha256 old)
+        record {:path "fixture.clj" :sha256 digest :source-commit "original"
+                :current-applicability :unassessed}
+        same (dependencies/evidence-source-state record (constantly old))
+        changed (dependencies/evidence-source-state record (constantly "new source"))
+        missing (dependencies/evidence-source-state record (fn [_] (throw (java.io.FileNotFoundException.))))]
+    (is (= :same-bytes-as-inspection (:state same)))
+    (is (= :changed-since-inspection (:state changed)))
+    (is (= :absent-from-current-checkout (:state missing)))
+    (is (= digest (:inspected-sha256 changed)))
+    (is (= "original" (:inspected-commit changed)))
+    (is (= :unassessed (:current-applicability changed)))
+    (is (thrown? Exception (dependencies/evidence-source-state
+                            (assoc record :current-applicability :current) (constantly "new source"))))))
+
 (deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         view (dependencies/task-sh-view source slurp)

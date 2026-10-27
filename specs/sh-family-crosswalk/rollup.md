@@ -7,7 +7,7 @@ current whole-criterion acceptance remain separate and unassessed.
 
 Original source: 15a5499e97798621d270c36dd2546ce98ddd62a9. Task authority amendment: 254a5b50ea5e2825c424248c9216802cc866c0fd.
 
-Source-version adoption: accepted-mapping-only. The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.
+Source-version adoption: pending-source-version-review. The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.
 
 Every requirement retains its complete acceptance/context text, source bytes,
 lines and SHA256 in original-inventory.edn and crosswalk.edn. Current acceptance

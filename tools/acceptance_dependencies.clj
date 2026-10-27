@@ -257,6 +257,21 @@
   (let [id (get-in routing [component (dec ordinal)]) row (task-map id)]
     (require! (= component (:component row)) "Missing semantic task route") id))
 
+(defn evidence-source-state [{:keys [path sha256 source-commit current-applicability]} read-text]
+  (let [current (try (acceptance-dependencies/sha256 (read-text path))
+                    (catch java.io.IOException _ nil))
+        state (cond (nil? current) :absent-from-current-checkout
+                    (= sha256 current) :same-bytes-as-inspection
+                    :else :changed-since-inspection)]
+    ;; These records are explicitly pinned source inspections, not current
+    ;; execution evidence. Preserve the old commit/hash and expose drift; a
+    ;; normal compiler edit cannot silently become acceptance or invalidate
+    ;; that historical source identity. Current-applicable claims stay strict.
+    (when-not (= :unassessed current-applicability)
+      (require! (= sha256 current) (str "Changed current-applicable evidence source: " path)))
+    {:path path :inspected-commit source-commit :inspected-sha256 sha256
+     :current-sha256 current :state state :current-applicability current-applicability}))
+
 ;; These selected-output composition requirements come from the consuming
 ;; task's own acceptance block, never from Markdown cross-reference counts.
 ;; No edge requires final component release merely to develop another task.
@@ -319,9 +334,6 @@
             (source-bound! (:context-source r) read-text)
             (when-let [history (get-in r [:historical-completion :evidence-source])]
               (source-bound! history read-text))
-            (doseq [{:keys [path sha256]} (:evidence-source-locators r)]
-              (require! (= sha256 (acceptance-dependencies/sha256 (read-text path)))
-                        (str "Changed evidence-source locator: " path)))
             (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
                       "SH criterion changed original completion prerequisites")
             (require! (= (:shared-completion-rule r)
@@ -367,6 +379,9 @@
         shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)
                                       {:state :unassessed :scope :uniform-completion-gate :rule (:id shared-rule)}]))
         nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes)
+        evidence-applicability (mapv #(evidence-source-state % read-text)
+                                    (sort-by (juxt :path :source-commit :sha256)
+                                      (distinct (mapcat :evidence-source-locators requirements))))
         conditions {:optimization-requested :unknown :runtime-service-required :unknown
                     :compiler-artifacts-consumed :unknown :build-command-selected :unknown
                     :execution-command-selected :unknown :stable-candidate-selection :unknown}
@@ -409,6 +424,7 @@
     (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :condition-values conditions
+     :evidence-source-applicability evidence-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
      :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)

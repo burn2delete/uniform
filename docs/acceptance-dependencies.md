@@ -248,3 +248,12 @@ source/routes cannot inherit that review; regeneration checks stamped bytes
 against their actual local Git commit before writing. The dashboard collector may
 consume this projection only after accepted integration. It remains the sole
 writer of its store and Site.
+
+Unassessed source-inspection locators retain the exact inspected Git commit and
+hash. The report's `:evidence-source-applicability` separately records whether
+the live file matches, changed or is absent; none of those observations grants
+current execution acceptance. Ordinary later compiler/test edits therefore do
+not erase a valid historical inspection or masquerade as its original bytes.
+Current task authorities, acceptance contracts and claims marked current remain
+strict. Regeneration still verifies every stamped snapshot against its actual
+Git object, including all explicit applying pins, before either output write.
