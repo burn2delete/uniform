@@ -33,6 +33,41 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-06 LR validation allowance removal - 2026-10-27 UTC
+
+Accounting retains sole ownership of the three existing C7, Effects and emitter
+source files and their SH08, SH09 and runtime-iteration tests. This successor
+starts at main `9c093bc671036beb097c37e636082172330cfb5c`, tree
+`4fb4101eb593a69937cd2f8abeb4db751ab7a8be`. Native, shared registration,
+authenticated source adapters and the held runtime chain are not edited.
+
+The finite unit is exactly three `lr-type-work` helpers and their three direct
+`lr-derive` callers. Replace the three-argument helpers with semantic
+two-argument `lr-validate-types`, remove their supplied allowance and exported
+`work-count` / `member-work`, and retain relation, checked-member extent and
+semantic rejection diagnostics. Each derive retains its own existing source
+prefix and budget, without a zero/default helper cost. Existing v2 premise,
+identity, source reconstruction and full-row/census contracts stay intact.
+
+- [ ] Record actual old-helper budget dependence on exact immutable inputs.
+- [ ] Check all three production callers and dynamic test references; remove
+  old helper interfaces and cost readers coherently.
+- [ ] Validate declared type through the canonical native/grammar walk before
+  its homogeneous-List predicate; validate actual type fully before member
+  reads, count or equality. Preserve declaration/incompatibility reasons and
+  `type-check-reason`, Never behavior, empty checked extent, cycles, DAGs,
+  native views and inert metadata with zero foreign/opaque callbacks.
+- [ ] Pass cheap reader/interface/argument/output/parity controls, then bounded
+  three-owner relation and actual derive/context/typed-consumer positives and
+  late-invalid, source, stale-row/fact and census negatives. Preserve a separate
+  current-owner large late-member result with exact narrow provenance.
+- [ ] Obtain independent exact-source and retained-result acceptance, reconcile
+  current main, pass repository gates and exact preflight, publish draft and
+  verify current-head CI/readback before ordinary validated integration.
+
+This does not remove the derive/context/inference source pools, PL construction
+or PE/PC ceilings, and does not close the whole ACC-06 row.
+
 ## ACC-06 caller-interface acceptance - 2026-10-27 22:21 UTC
 
 Accounting owns this finite source/test increment in the existing C7, Effects
@@ -64,7 +99,7 @@ Finite merge checklist:
   three-owner walk parity. Effects/emitter large executions remain unrun.
 - [x] Pass repository gates at `666efaa5`: LOC 5/12, source census 2,035,
   docs 240/19 and roadmap; exact integration preflight is clean/all-pass.
-- [ ] Finish independent current-head integration review, routine CI,
+- [x] Finish independent current-head integration review, routine CI,
   publication and normal merge/readback.
 
 Draft PR506 is published. Initial run `40595990230` passed six routine jobs
@@ -73,6 +108,14 @@ correction `bbfcd9f3` preserves production inputs and all assertions/cases;
 structural controls pass 1/6 and fresh boundary/LOC gates pass 11/23 with
 docs/roadmap passing. Corrected-head CI and ordinary integration remain open.
 The failed CI record and all original semantic receipt identities are retained.
+PR506 subsequently merged as `9c093bc6`, with exactly reviewed tree `4fb4101e`.
+Corrected PR run `40597498166` passed all seven routine jobs. Main run
+`40598401746` passed all seven routine jobs and the source-only prerelease;
+its overall result is nonpassing solely because the separate Core gate
+explicitly declares the current Reader-provenance join unavailable, with no
+genuine compiler execution attempted. Exact merged-tree and public readback
+were independently inspected. This closes this finite caller-interface
+milestone, not ACC-06 or any other original row.
 
 Evidence and original NONPASS attempts are recorded in `evidence.md`; passing
 selectors retain their exact original provenance. There is no summed or

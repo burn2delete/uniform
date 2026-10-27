@@ -1,5 +1,37 @@
 # Accounting removal evidence
 
+## ACC-06 LR validator successor - 2026-10-27 UTC
+
+The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree
+`4fb4101eb593a69937cd2f8abeb4db751ab7a8be`. Source inspection finds exactly
+three `lr-type-work` definitions and three production calls, one in each
+matching `lr-derive`; remaining references are dynamic tests in the same three
+owned namespaces. The helpers' `1 + member-count` reservation can reject
+otherwise valid relations solely because a caller supplied a smaller budget.
+Their `member-work` has no production reader, while the derives consume
+`work-count`, relation and the semantic checked-member extent.
+
+The finite successor retires only those helper allowances/reports, including
+the three caller debits. Declaration and actual-type native/grammar validation
+must precede homogeneous-type hashing, member reads and equality. Existing
+semantic `type-check-reason`, Never and checked-member extent behavior survive.
+The derive's own source allowance and every full v2 premise/row/source/census
+obligation remain. This is a source-grounded acceptance plan, not an executed
+baseline, candidate result or whole-row closure; actual receipts follow when
+available.
+
+The preceding PR506 finite caller-interface increment is integrated at that
+baseline. Normal squash merge `9c093bc6` has exactly reviewed candidate
+`5ef17137`'s tree, and its branch is retained. Corrected PR CI `40597498166`
+passed all seven routine jobs. Actual main run `40598401746` passed the same
+seven routine jobs plus the source-only prerelease. Only the explicit
+Core-unavailable job is nonpassing: `C6-VERIFY/:actual-selected-current-reader-products`,
+with no genuine compiler execution attempted. Independent source/result and
+final integration/readback review accepted the finite unit. The original
+semantic NONPASS receipts, first failed CI and narrower C7 large-owner evidence
+below keep their original provenance. No whole ACC-06, authentication, Core,
+C12, language-runtime or release acceptance follows.
+
 ## ACC-06 caller budgets and result plumbing - 2026-10-27 22:21 UTC
 
 Independent code and retained-result review accepted this finite implementation
