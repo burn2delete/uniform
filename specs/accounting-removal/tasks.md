@@ -63,14 +63,18 @@ at their recorded heads. No uncertain source operation was repeated. The
 original row disposition remains ACC-02/03 closed and eleven criteria open;
 the legacy 50% estimate remains unmeasured and is not recalculated from counts.
 
-[PR499](https://github.com/burn2delete/uniform/pull/499) remains draft despite
-passing local semantic and composed gates. Its first normal CI static job
+[PR499](https://github.com/burn2delete/uniform/pull/499) initially remained draft
+despite passing local semantic and composed gates. Its first normal CI static job
 reported zero errors and 76 warnings in the two changed legacy test files.
 The one newly introduced unused binding is corrected in test-only `fb02ad96`;
 independent review confirmed unchanged assertions and production. The other
 75 warnings predate this patch, including seven helpers with dynamic callers.
-Their coordinated lint disposition remains an integration gate; no helper is
-deleted, warning suppressed or CI policy changed to obtain a merge.
+CI-owner PR500, merged `a43facc7`, independently established that all 75 match
+unchanged mapped baseline spans. New warnings and every current error still
+block; changed or incomplete spans fail closed. Normal reconciliation preserves
+that reviewed remedy without editing accounting source/tests. Original failed
+runs remain failed. Fresh current-head CI and normal integration remain gates;
+no dynamic helper is deleted and no check is bypassed.
 
 ## ACC-13 vector-origin binding chains - 2026-10-27 00:12:53 MDT
 

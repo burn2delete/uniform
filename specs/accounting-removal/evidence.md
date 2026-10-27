@@ -93,6 +93,24 @@ break actual consumers. The existing CI owner retains its policy; no accounting
 worker suppresses or bypasses the check. The failed run remains failed, and
 the draft cannot be integrated until the normal check has a reviewed resolution.
 
+CI-owner PR500 supplies that separate reviewed resolution at main `a43facc7` /
+tree `981e6b38`. The exact first-parent baseline `bf7893da` and tested merge
+`764fe0f8` both produce 75 warnings / zero errors; all warnings match unchanged
+mapped spans under the same pinned clj-kondo. The historical pre-fix `0453a469`
+still blocks exactly its new unused binding (76 current / 75 baseline). New
+warnings and every current error block; changed or incomplete spans fail closed.
+The CI owner reports independently reviewed 9 tests / 70 assertions and seven
+routine main jobs passing; this is attributed CI evidence, not accounting,
+source-Core or reviewer execution credit. Explicit unavailable Core readiness
+remains nonpassing on main.
+
+Normal reconciliation `0ed0d800` / tree `3bea5fd9` preserves exactly four
+incoming paths: `docs/ci.md` and `tools/ci/{lint,run,run_test}.clj`. Independent
+consumed-input review confirms no change to the selected compiler, Bootstrap
+load or manual guarded runner routes. Original semantic 16/494 remains at
+`3e94a631`; cold-load/composed 11/23 remains at `0453a469`. No semantic or cold
+load repetition is implied by this CI-only merge. Fresh repository gates,+exact preflight and automatic current-head CI precede normal integration.
+
 ## Vector-origin binding-chain admission
 
 The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree
