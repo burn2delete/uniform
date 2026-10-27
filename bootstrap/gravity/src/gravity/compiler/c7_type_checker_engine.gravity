@@ -11868,14 +11868,13 @@
           (if (= :gravity.type/vector (get type :kind))
             (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false))
 
-(defn sh08-pe-selected-work [header census shapes types private-root? budget]
-  ; Existing entry reservations pay guarded key/coordinate and scalar scans.
+(defn sh08-pe-validate-selected [header census shapes types private-root?]
   ; Validate every selected Vector candidate before deep equality or finish.
-  (loop [remaining (get census :calls) inputs shapes used 0]
+  (loop [remaining (get census :calls) inputs shapes]
     (if (= 0 (count remaining))
-      (if (= 0 (count inputs)) {:status :accepted :work-count used}
-        {:status :rejected :reason :map-get-private-entry-presence-required :work-count used})
-      (if (= 0 (count inputs)) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+      (if (= 0 (count inputs)) {:status :accepted}
+        {:status :rejected :reason :map-get-private-entry-presence-required})
+      (if (= 0 (count inputs)) {:status :rejected :reason :map-get-private-entry-presence-required}
         (let [call (first remaining) args (get call :argument-node-ids) shape (first inputs)
               ids? (if (vector? args)
                      (loop [ids args]
@@ -11883,7 +11882,7 @@
                          (let [id (first ids)]
                            (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
                              (recur (rest ids)) false)))) false)]
-          (if (= false ids?) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+          (if (= false ids?) {:status :rejected :reason :map-get-private-entry-presence-required}
             (let [invoked? (sh08-pe-invoked? types args)
                   candidate (if invoked?
                     (let [parts (get shape :parts)
@@ -11904,26 +11903,26 @@
                   checked (if (= :accepted (get candidate :status))
                             (let [selected (get candidate :types)]
                               (if (vector? selected)
-                                (loop [pending selected work used]
-                                  (if (= 0 (count pending)) {:status :accepted :work-count work}
+                                (loop [pending selected]
+                                  (if (= 0 (count pending)) {:status :accepted}
                                     (let [type (first pending)]
                                       (if (sh08-pe-vector-root? type)
-                                        (let [walked (sh08-lc-validate-types [type]) total work]
-                                          (if (= :accepted (get walked :status)) (recur (rest pending) total)
-                                            {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count total}))
+                                        (let [walked (sh08-lc-validate-types [type])]
+                                          (if (= :accepted (get walked :status)) (recur (rest pending))
+                                            {:status :rejected :reason :map-get-private-entry-selected-type-required}))
                                         (if (if (= false private-root?) true
                                             (if (keyword? type)
                                               (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                                            :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                                            :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                                                            :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false))
-                                          (recur (rest pending) work)
-                                          {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count work})))))
-                                {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))
-                            (if (= :not-invoked (get candidate :status)) {:status :accepted :work-count used}
-                              {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))]
+                                          (recur (rest pending))
+                                          {:status :rejected :reason :map-get-private-entry-selected-type-required})))))
+                                {:status :rejected :reason :map-get-private-entry-presence-required}))
+                            (if (= :not-invoked (get candidate :status)) {:status :accepted}
+                              {:status :rejected :reason :map-get-private-entry-presence-required}))]
               (if (= :accepted (get checked :status))
-                (recur (rest remaining) (rest inputs) (get checked :work-count)) checked))))))))
+                (recur (rest remaining) (rest inputs)) checked))))))))
 
 (defn sh08-pe-finish [header census shapes core nodes types]
   (if (map? census)
@@ -11965,21 +11964,21 @@
                             :selected-part part :selected-coordinate (get part :coordinate) :selected-type value-type})
               (if invoked? value-type selected) (if invoked? (+ normal-count 1) normal-count)) nil)))) nil))
 
-(defn sh08-pe-check-work [header descriptor core nodes bindings forms types budget]
-  ; The caller reserves the existing census; this result carries newly paid
-  ; selection/type validation, never an unchecked common constructor shape.
+(defn sh08-pe-check [header descriptor core nodes bindings forms types]
+  ; Reconstruct the census and validate selected types before finishing.
+  ; Return semantic status and the freshly derived descriptor.
   (let [census (sh08-pe-census header core nodes bindings forms)
         entries (get (get descriptor :presence-proof) :entries)]
     (if (if (map? census) (if (vector? entries) (= (count entries) (count (get census :calls))) false) false)
       (let [shapes (loop [remaining entries out []]
                      (if (= 0 (count remaining)) out
                        (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
-            checked (sh08-pe-selected-work header census shapes types true budget)
+            checked (sh08-pe-validate-selected header census shapes types true)
             expected (if (= :accepted (get checked :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
         (if (map? expected) (assoc checked :descriptor expected)
           (if (= :rejected (get checked :status)) checked
-            {:status :rejected :reason :map-get-private-entry-presence-required :work-count (get checked :work-count)})))
-      {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0})))
+            {:status :rejected :reason :map-get-private-entry-presence-required})))
+      {:status :rejected :reason :map-get-private-entry-presence-required})))
 
 (defn sh08-pe-recheck [header descriptor core nodes bindings forms types]
   (let [census (sh08-pe-census header core nodes bindings forms)
@@ -12666,22 +12665,22 @@
                 (assoc checked :work-count work)))))
         {:status :rejected :reason :map-get-source-mismatch :work-count 0}))))
 
-(defn sh08-pc-link-types-work [links types budget]
+(defn sh08-pc-validate-link-types [links types]
   (if (if (vector? links) (<= (count links) 256) false)
-    (loop [remaining links used 0]
-      (if (= 0 (count remaining)) {:status :accepted :work-count used}
+    (loop [remaining links]
+      (if (= 0 (count remaining)) {:status :accepted}
         (let [link (first remaining) ref-id (get link :reference-core-node-id)
               init-id (get (get link :binding-record) :initializer-node-id)]
           (if (if (sh08-pc-id? ref-id) (sh08-pc-id? init-id) false)
             (let [ref-type (get types ref-id) init-type (get types init-id)
                   walked (sh08-lc-validate-types [ref-type init-type])
-                  work used]
+]
               (if (= :accepted (get walked :status))
-                (if (= ref-type init-type) (recur (rest remaining) work)
-                  {:status :rejected :reason :map-get-source-mismatch :work-count work})
-                {:status :rejected :reason :map-get-private-first-entry-presence-required :work-count work}))
-            {:status :rejected :reason :map-get-source-mismatch :work-count used}))))
-    {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
+                (if (= ref-type init-type) (recur (rest remaining))
+                  {:status :rejected :reason :map-get-source-mismatch})
+                {:status :rejected :reason :map-get-private-first-entry-presence-required}))
+            {:status :rejected :reason :map-get-source-mismatch}))))
+    {:status :rejected :reason :map-get-source-mismatch}))
 
 (defn sh08-pc-candidate [core node call nodes types budget]
   ; Source structure chooses this probe; descriptor tags never do.
@@ -13182,8 +13181,8 @@
         used (+ prefix (if (= :accepted (get entry-set :status)) (get first-result :work-count) 0))
         links (sh08-pc-links route)
         linked (if (= :accepted (get first-result :status))
-                 (sh08-pc-link-types-work links types (- budget used)) first-result)
-        spent (+ used (if (= :accepted (get first-result :status)) (get linked :work-count) 0))]
+                 (sh08-pc-validate-link-types links types) first-result)
+        spent used]
     (if (= :accepted (get linked :status))
       (let [header (sh08-mg-source core node call edge nodes bindings types (get core :module))
             project (if (map? header)
@@ -13551,11 +13550,11 @@
       (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count work)
       (loop [remaining (get census :calls) shapes [] used work]
         (if (= 0 (count remaining))
-          (let [selected-work (sh08-pe-selected-work header census shapes types true (- budget used))
-                total (+ used (get selected-work :work-count))
+          (let [selected-work (sh08-pe-validate-selected header census shapes types true)
+                total used
                 descriptor (if (= :accepted (get selected-work :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
             (if (= :rejected (get selected-work :status))
-              (assoc (sh08-sm-failure (if (= :map-get-work-limit (get selected-work :reason)) "C7-GENERIC" "C7-ANNOTATION")
+              (assoc (sh08-sm-failure "C7-ANNOTATION"
                        (get selected-work :reason) nil :complete-established-private-entry-selected-type (get header :key)) :work-count total)
             (if (map? descriptor)
               (if (= :accepted (get (sh08-carrier-preflight descriptor) :status))
@@ -13691,9 +13690,9 @@
                    {:status :accepted :shapes [] :work-count 0})
         checked (if (if (= :accepted (get prepared :status))
                         (if (map? header) (= :normal (get header :application)) false) false)
-                  (let [walked (sh08-pe-selected-work header (if private? census {:calls [call] :parameter-index 0})
-                                 (get prepared :shapes) types private? (- budget (get prepared :work-count)))]
-                    (assoc walked :work-count (+ (get prepared :work-count) (get walked :work-count)))) prepared)
+                  (let [walked (sh08-pe-validate-selected header (if private? census {:calls [call] :parameter-index 0})
+                                 (get prepared :shapes) types private?)]
+                    (assoc walked :work-count (get prepared :work-count))) prepared)
         expected (if (if (map? header) (= :accepted (get checked :status)) false)
                    (if private? (sh08-pe-finish header census (get prepared :shapes) core nodes types)
                      (sh08-mg-present-finish header (get proof :operand-shape))) nil)]

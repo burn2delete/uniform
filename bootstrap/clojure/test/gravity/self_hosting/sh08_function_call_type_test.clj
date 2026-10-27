@@ -16726,10 +16726,10 @@
     (-> changed (assoc-in [:types :input] type) (assoc-in [:binding-types :span-binding] type))))
 
 (deftest sh08-private-entry-vector-get-development-kernel
-  (doseq [[values type-visits] [[[[\a] [\b]] 2]
-                                [[[] []] 1]
-                                [[[(array-map :algorithm :sha256 :status :verified)] [(array-map :algorithm :sha512 :status :rejected)]] 6]
-                                [[[[{:x false}]] [[{:x true}]]] 5]]]
+  (doseq [values [[[\a] [\b]]
+                  [[] []]
+                  [[(array-map :algorithm :sha256 :status :verified)] [(array-map :algorithm :sha512 :status :rejected)]]
+                  [[[{:x false}]] [[{:x true}]]]]]
     (let [input (private-entry-vector-get-input values) result (map-present-get-derived input)
           expected (private-vector-value-type (first values)) descriptor (:descriptor result)
           proof (:presence-proof descriptor)
@@ -16737,19 +16737,14 @@
                                            (:nodes input) (:bindings input) (:types input) (:module input)])
           census (invoke-c7 'sh08-pe-census [header (:core input) (:nodes input) (:bindings input) (:forms input)])
           shapes (mapv :argument-shape (:entries proof))
-          measured #(invoke-c7 'sh08-pe-selected-work [header census shapes (:types input) true %])
-          count-work (* 6 type-visits)]
+          checked (invoke-c7 'sh08-pe-validate-selected [header census shapes (:types input) true])]
       (is (= :accepted (:status result)) (pr-str result))
       (is (= expected (:type result) (:return descriptor) (:selected-type proof)))
       (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
       (is (= 2 (count (:entries proof))))
       (is (not (contains? proof :operand-shape)))
       (is (= [:input-0 :input-1] (mapv :argument-node-id (:entries proof))))
-      (is (= :accepted (:status (measured 65536))))
-      (is (= count-work (:work-count (measured 65536))))
-      (is (= (measured 65536) (measured count-work)))
-      (is (= :map-get-work-limit (:reason (measured (dec count-work)))))
-      (is (= (dec count-work) (:work-count (measured (dec count-work)))))
+      (is (= {:status :accepted} checked))
       (is (= result (map-present-get-derived input (:work-count result))))
       (is (= :map-get-work-limit (:reason (map-present-get-derived input (dec (:work-count result))))))
       (doseq [mutate [#(assoc-in % [:core :module :exports] ['without-path])
@@ -16790,7 +16785,7 @@
     (doseq [bad bad-types]
       (let [types (walk/postwalk-replace {good bad} (:types input))
             changed-shapes (walk/postwalk-replace {good bad} shapes)
-            checked (invoke-c7 'sh08-pe-selected-work [header census changed-shapes types true 65536])]
+            checked (invoke-c7 'sh08-pe-validate-selected [header census changed-shapes types true])]
         (is (= :rejected (:status checked)))
         (is (= :map-get-private-entry-selected-type-required (:reason checked)))))
     (let [changed (-> input (assoc-in [:nodes :entry-key-0-1 :attributes :value] :absent)
@@ -16821,15 +16816,15 @@
                 {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
                 {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
     (let [input (finite-present-return-type-control type) call (:call input)
-          checked (invoke-c7 'sh08-pe-selected-work [(:header input) {:calls [call] :parameter-index 0}
-                                                    [(:shape input)] (:types input) false 65536])
+          checked (invoke-c7 'sh08-pe-validate-selected [(:header input) {:calls [call] :parameter-index 0}
+                                                        [(:shape input)] (:types input) false])
           types (assoc (:types input) :operator (:descriptor input) :present-get type)
           calls (into {} (map (juxt :core-node-id identity) (get-in input [:core :calls])))
           actual (invoke-c7 'sh08-mg-inferred-work [(:core input) (:node input) call (:edge input) (:nodes input)
                                                    (:bindings input) types calls 65536])]
       (is (= type (get-in input [:descriptor :result-type])))
       (is (= :accepted (:status checked) (:status actual)))
-      (is (= 0 (:work-count checked))))))
+      (is (not (contains? checked :work-count))))))
 
 (deftest sh08-private-entry-vector-get-scoped-consumer-development-kernel
   ;; Complete normalized function roots retain the existing private-entry premise.
@@ -22382,3 +22377,98 @@
                             [(positional [:gravity.type/string]) :gravity.type/string] 1)]
         (is (= [:rejected :list-prepend-work-limit 2]
                ((juxt :status :reason :work-count) checked)))))))
+
+(defn- recursive-validation-consumer-input [operation operand]
+  ;; Use the existing normalized fixture, with the same native SHA-ID remap
+  ;; used by the Effects owner tests. This creates no authenticated authority.
+  (let [input (integral-ordering-input operation [operand])
+        ids (zipmap (keys (:nodes input)) (map #(str "sha256:" (format "%064x" %)) (range 4100 4110)))
+        source #(-> % (update :form-id ids) (update :syntax-id ids))
+        nodes (mapv #(-> % (update :node-id ids) (update :children (fn [children] (mapv ids children)))
+                         (update :source source)
+                         (update-in [:evaluation :order] (fn [order] (mapv (fn [entry] (update entry :core-node-id ids)) order))))
+                    (get-in input [:core :nodes]))
+        forms (into {} (for [[id form] (:forms input)]
+                         [(ids id) (-> form (update :form-id ids) (update :syntax-id ids)
+                                       (update :parent-form-id ids) (update :child-form-ids #(mapv ids %)))]))
+        call (-> (:call input) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge input) (update :call-core-node-id ids)
+                 (update :argument-core-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        core (assoc (:core input) :nodes nodes :calls [call] :call-edges [edge])]
+    (assoc input :core core :node (last nodes) :nodes (into {} (map (juxt :node-id identity) nodes))
+                 :call call :edge edge :forms forms :ids ids
+                 :types (into {} (map (fn [[id type]] [(ids id) type]) (:types input))))))
+
+(deftest recursive-validation-predicate-Effects-and-emitter-consumers
+  (doseq [[family operation context-key]
+          [["mapp" 'map? :map-predicate-context] ["setp" 'set? :set-predicate-context]
+           ["listp" 'list? :list-predicate-context] ["symp" 'symbol? :symbol-predicate-context]
+           ["boolp" 'boolean? :boolean-predicate-context] ["chp" 'char? :character-predicate-context]
+           ["nilp" 'nil? :nil-predicate-context] ["kp" 'keyword? :keyword-predicate-context]
+           ["strp" 'string? :string-predicate-context] ["ip" 'integer? :integer-predicate-context]
+           ["vp" 'vector? :vector-predicate-context]]
+          operand [:gravity.type/string :gravity.type/never]]
+    (let [{:keys [core node call edge nodes bindings types forms module ids]}
+          (recursive-validation-consumer-input operation operand)
+          derived (return-premise-c7 (symbol (str "sh08-" family "-derive"))
+                                    core node call edge nodes bindings types forms 65536)
+          descriptor (:descriptor derived) id (:node-id node) operator (:operator-node-id call)
+          row #(return-premise-c7 (symbol (str "sh08-" family "-constraint")) %)
+          fact #(return-premise-c7 (symbol (str "sh08-" family "-call-fact")) % module)
+          checked-types (assoc types operator descriptor id (:type derived))
+          facts {:type-table checked-types :function-type-table []
+                 :constraint-ledger [(row descriptor)] :call-type-facts [(fact descriptor)]}
+          request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+          prepare #(return-premise-effects (symbol (str "body-" family "-context")) request % bindings 65536)
+          context (prepare facts)
+          checked (assoc facts context-key (:context context))
+          valid? #(return-premise-effects (symbol (str "body-" family "-call-valid?")) core % bindings node call edge nodes)
+          typed {:core core :nodes nodes :forms forms :bindings bindings :types checked-types
+                 :calls {id call} :edges {id edge} :call-order {id 0}
+                 :call-facts {id (fact descriptor)} :ledger [(row descriptor)]
+                 :locals {(ids :arg0) 'value} :parameter-types types}
+          compile-node #(return-premise-emit 'p15-s23-typed-compile-node % id 65536)]
+      (is (= :accepted (:status derived) (:status context)) (str family " " operand))
+      (is (true? (valid? checked)) family)
+      (is (true? (return-premise-effects 'body-call-joins-with-foreign-valid? core checked bindings {})) family)
+      (is (= :complete (:status (compile-node typed))) family)
+      (doseq [stale [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :operand-type-work 1)]]
+        (let [forged (assoc facts :type-table (assoc checked-types operator stale)
+                                  :constraint-ledger [(row stale)] :call-type-facts [(fact stale)])
+              prepared (prepare forged)
+              checked-forged (assoc forged context-key (:context prepared))
+              changed (assoc typed :types (assoc checked-types operator stale)
+                                  :ledger [(row stale)] :call-facts {id (fact stale)})]
+          (is (= :accepted (:status prepared)) family)
+          (is (false? (valid? checked-forged)) family)
+          (is (false? (return-premise-effects 'body-call-joins-with-foreign-valid? core checked-forged bindings {})) family)
+          (is (= :rejected (:status (compile-node changed))) family)))
+      (let [missing (assoc facts :constraint-ledger []) prepared (prepare missing)
+            checked-missing (assoc missing context-key (:context prepared))]
+        (is (= :accepted (:status prepared)) family)
+        (is (false? (valid? checked-missing)) family)
+        (is (false? (return-premise-effects 'body-call-joins-with-foreign-valid? core checked-missing bindings {})) family))
+      (is (= :rejected (:status (compile-node (assoc typed :ledger [])))) family))))
+
+(deftest recursive-validation-link-types-have-no-cost-interface
+  (let [id #(str "sha256:" (format "%064x" %))
+        links [{:reference-core-node-id (id 1) :binding-record {:initializer-node-id (id 2)}}
+               {:reference-core-node-id (id 3) :binding-record {:initializer-node-id (id 4)}}]
+        type (recursive-validation-positional [:gravity.type/string :gravity.type/bool])
+        types {(id 1) type (id 2) type (id 3) type (id 4) type}
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "link type hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "link type equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "link type printing"))))]
+    (doseq [[invoke prefix] [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
+      (let [check #(invoke (symbol (str prefix "pc-validate-link-types")) links %)]
+        (is (= {:status :accepted} (check types)))
+        (is (= {:status :rejected :reason :map-get-source-mismatch}
+               (check (assoc types (id 4) (recursive-validation-positional [:gravity.type/bool])))))
+        (doseq [invalid [:gravity.type/unknown opaque]]
+          (is (= {:status :rejected :reason :map-get-private-first-entry-presence-required}
+                 (check (assoc types (id 4) (recursive-validation-positional [:gravity.type/string invalid]))))))
+        (is (empty? @callbacks))))))
