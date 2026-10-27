@@ -71,6 +71,28 @@ Both complete diagnostic sets, base source bytes, Git hunks, process receipts
 and the classification report remain in the CI artifact. Existing warnings
 remain visible debt; a passing comparison does not claim the file is lint-clean.
 
+Bootstrap manifest fragments are loaded into `gravity.bootstrap`, rather than
+as independent namespaces. For a changed fragment, lint reads the immutable
+base and current manifest closures without evaluation, restores that namespace
+before each resource as the loader does, and sends the assembled text to
+clj-kondo on standard input. Each resource must also parse independently;
+balanced text across two broken resources is rejected. The loader SHA and the
+entrypoint's exact loading recipe are checked before assembly. Unsupported
+recipes, missing resources, symbolic links, malformed manifests and unmappable
+diagnostic spans fail closed. LF and CRLF preserve row/column mapping; lone CR
+input is rejected rather than mapped approximately. This view models static
+namespace context; it does not execute Bootstrap or establish compiler acceptance.
+
+Every diagnostic in the changed resources is mapped back to its original file,
+rows and columns before the same warning comparison. Every selected error
+still blocks. Complete context diagnostics remain visible in artifacts;
+diagnostics solely in unchanged context dependencies are outside this changed
+file selection, except syntax failures, which invalidate the context. Changing
+the entrypoint or manifest selects the whole context. Source bytes, input
+hashes, assembly hash, source map and redirected-input command receipts are
+retained for both revisions. Ordinary files are linted in separate invocations
+to prevent unrelated namespace state from corrupting diagnostic filenames.
+
 Cache tests retain their owner and permission checks: Java temporary
 files use a runner-owned private directory, rather than Linux's root-owned
 shared `/tmp`. No source security or runtime pin is relaxed for CI.
