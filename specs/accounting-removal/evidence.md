@@ -1,5 +1,87 @@
 # Accounting removal evidence
 
+## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
+
+Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
+`2c2ac4199c7bc57fca8717324f1f282e368f36b4`, passed its current-main candidate
+batch: 21 tests / 1,644 assertions, zero failures/errors, natural exit zero in
+22.062 s, actual 2 GiB heap, complete 2,595-byte stdout and empty stderr.
+Exact clean bookends and complete cleanup were recorded. Seven new normalized
+three-owner tests, eight actual Effects kernels and six language-boundary
+tests were selected explicitly. Independent exact-source and retained-result
+review accepted the finite removal and private alias routing. Full descriptor
+and nested proof equality, rebuilt stale-field rows/facts, source/type/ledger
+tampering, public fallback, late opaque validation, Never and construction
+effects all remain effective. The receipt SHA-256 is
+`0ab80bbdb1dcbd70de3e0f69a081f0fbfaa9c68d570cb2d180d715f4ebbce53d`.
+This is a fresh batch, not reuse of historical PR359 tests. Final repository
+gates, exact public readback and normal integration remain separate steps.
+
+The read-only current-main baseline receipt SHA-256 is
+`fd4d88595fee341f403ff1b3cb49d381a10243f61b12585a37d8cd4b3373e42e`.
+
+| Tested input | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `aee721506668fbada2af2d77617117550fc50228bb3d694419b73ad05823d0e7` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `de7090d503549239c27ef22d7f21c0c71e06f5036de49d3f47dcdfae9d1d6729` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `1583132ef8fefcdcec67687699f6b986db806cb062e1160a9ecdad96a402a863` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `f21a1e57354e9e9c0a4fff556041769d1f7083c12616357276ffe103be07efd8` |
+
+Repository gates at documentation successor `7647b2f7` passed 11 tests / 23
+assertions, the actual 2,035-file LOC census, all 240 docs / 19 phase indexes
+and the full-language roadmap. This 256 MiB child exited naturally in 2.399 s
+with complete 456-byte stdout, empty stderr, clean bookends and cleanup.
+Independent review then accepted normal reconciliation `b6ece097`, tree
+`16f2d7da`, with new main `490b7b57`. The fourteen incoming paths are crosswalk
+and dependency documentation/tools; all Bootstrap, compiler/runtime, test,
+broker/runner, contracts and `deps.edn` inputs consumed by the semantic batch
+are unchanged. Thus the 21/1644 receipt retains its original `0c64757d`
+provenance without another semantic run. Fresh final repository-scanning gates,
+exact preflight, public readback and routine CI still precede normal integration.
+
+The original draft is preserved at `6a4f87f013d0076b81aba9e0667650e70d28e635`,
+tree `f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. Its common base with current
+main is `cfb499405450d479955fa70daa0f14dfa3233ee8`. The authored delta has
+29 paths; a direct comparison to current main includes unrelated incoming work
+and is not a safe patch. Normal reconciliation starts with main `bffefedf`,
+tree `ec9e272e`, preserving the original draft in ancestry and retaining its
+branch. Independent inspection confirmed that the prepared index and worktree
+exactly matched main before selected edits. No current-main source was lost.
+
+The finite selected outcome is exported ANE/BKA/PMK and four-variant PL
+descriptor accounting removal across all three owners, plus exact private Map
+constraint/call-fact alias routing. It is not the whole accounting-removal
+backlog. Current main already contains the separately integrated ACC-02 guard
+and Map/List repair and ACC-03 LR migration; they are not replayed for credit.
+
+Every original authored path has the following disposition. All unselected work
+remains **preserved and unintegrated**, not accepted, discarded or made optional.
+Accounting retains responsibility under the existing ACC IDs and normal actual
+owner acceptance. Historical passing and failed receipts keep their old source
+identities; none accepts this new current-main composition.
+
+| Original authored paths | Finite disposition and residual obligation |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`, `bootstrap/gravity/src/gravity/effects.gravity`, `bootstrap/gravity/p15_s23/emitter.gravity` | Start from current main and port only selected descriptor fields and private aliases. Preserve other unique DSE, private entry/source proof, predicate/query/construction, verifier, quoted-data, inference and recursive-validator changes at the original head. Those remain original ACC-01/04/05/06/07/08/12/13 work with complete source/type/effect/proof and actual consumer acceptance required. DSE is a full absent feature, not a two-field edit. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Retain all current-main tests. Port selected normalized ANE/BKA/PMK/PL regressions with prefixed helpers. Other unique old tests remain preserved; old unmetered depth expectations are not imported into still-metered current-main helpers. |
+| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj`, `prepend_premise_test.clj`, `private_map_route_contract_test.clj` | Selected complete descriptor/proof, alias, typed-call and stale-field controls move into existing SH08 ownership. DSE and any remaining old-only assertions stay preserved; no new orphan test namespace or metadata writer is introduced. |
+| `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj`, `list_return_premise_test.clj` | ACC-02/03 have separate current-main closure. Preserve remaining old test differences until exact equivalence/disposition is established; do not replay old fixtures as current acceptance. |
+| `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj`, `list_query_contract_test.clj`, `predicate_descriptor_family_test.clj` | Preserved-unintegrated schema/source-family work under ACC-04/05/06/12; requires coherent actual owners and their positive/negative acceptance before integration. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj`, `sh01_list_set_mixed_ledger_test.clj`, `sh01_map_keys_mixed_ledger_test.clj`, `sh01_stage2_runtime_iteration_test.clj`, `sh09_body_effect_test.clj` | Preserve old-only DSE, conversion/query and mixed-ledger feature acceptance. Current-main versions remain authoritative; all corresponding source/runtime/type/effect joins must reconcile together under ACC-04/09/12. |
+| Ten files under `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/`: the `.gravity` and `.qst` pairs named `compact-source-proof-interval`, `compact-source-proof-minimum`, `function-verifier-qualified-map-get`, `function-verifier-work-ledger`, `local-runtime-bare-set-equality` | Preserve all five pairs unintegrated with their original source/verifier/DSE obligations. No fixtures are claimed consumed or accepted by this finite descriptor change. |
+| `specs/accounting-removal/tasks.md`, `specs/accounting-removal/evidence.md` | Use current main as sole task truth and record this reconciliation, finite PR checklists, source-pinned evidence and residual work here. Historical old records remain accessible at the original head. |
+
+The read-only baseline on clean `bffefedf` used unchanged guarded 2 GiB / 120 s
+execution and completed naturally in 21.177 s, with 159 stdout bytes, empty
+stderr, exact clean before/after identities and complete cleanup. Actual heap
+was 2,147,483,648 bytes. Five ANE/BKA and sixteen PL cases produced matching
+complete three-owner descriptors with the exported cost fields still present.
+Thus this current-main batch removes bookkeeping, not a newly demonstrated
+descriptor-parity defect. Earlier defect evidence remains historical. PMK,
+the selected removal and current consumer negatives still require candidate
+acceptance. Genuine source authentication, public B47, C12 and release were
+not executed.
+
 ## Private-return path admission after recovery
 
 Accepted implementation: `3e94a6318bc1d598a109cb174d0fdf02944538b7` / tree
