@@ -21,16 +21,19 @@ Core construction verification tests; the incremental dependency contract,
 planner, child cache wiring and explicit input revalidation; SH15 diagnostic
 case construction; current Native/MIR source/composition receipts.
 
-Current assessment: **2026-10-27 04:32:34 UTC**, on merged main
-`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
-`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. The original inventory is unchanged.
+Current PR494 assessment: **2026-10-27 18:47:24 UTC**, on tested source
+`8204a761c85aa3d04c8772f73b865698e30a3143`, tree
+`8e5160f9e1770647b9a24877d304c8196ba89def`, based on merged main
+`bffefedfada9e3312e68e0a28a69d71db459d0e2`. The original inventory is unchanged.
+RV1 closure remains withdrawn and its separate correction is held; this
+facade-batching result neither resumes nor accepts that work.
 The statuses below describe this cleanup's acceptance criteria, not compiler or
 language completion. Earlier increment receipts had accumulated without a dated
 reconciliation for the dashboard collector; this assessment corrects that gap.
 
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | **Partial.** PR396's construction reuse is present at `d00cc2d5`; PR469's callback and PR477's embedded-proof necessity decisions cover only their named operations. PR480 reduces structural calculation work; PR483 repairs its load regression. None proves whole upstream-report equivalence or every retained repeat necessary. The full identity/mutation boundary, independent negative controls, review and integration remain required. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | **Partial.** PR396's construction reuse is present at `d00cc2d5`; PR469/477 cover their named necessity decisions and PR480/483 the structural calculation and load repair. PR493 at `e5d0bacd` closes the concrete after-Resolve parent-mutation control with genuine positive/public verification and rejection evidence. It does not prove whole-report equivalence or every retained repeat necessary. Transitive live-plan, Reader invocation, AE/dispatch and closed-over-state equivalence, or a complete necessity decision, remain open. |
 | RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | **Closed for this resource-dispatch prerequisite.** Reviewed fallback and controls integrated through PR452 at `7ae18ee6`. This supplies no in-memory class identity or whole-RV1 proof and is not an additional original outcome counted toward a percentage. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | **Partial.** Corrected Reader closure integrated through PR432 at `6e49d6f8`; PR461 at `e93322ef` supplies the actual supported-leaf miss/hit/invalidation proof. Both bootstrap-dependent compatibility selections still need complete runtime read/effect closure, a reviewed representation and separately attributed producer/reuse/invalidation evidence, or proof that their repeats are necessary. Full-repository fallback and audit inventories do not close that obligation. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | **Closed for the four-namespace catalog correction.** Source-grounded owners, freshness and conservative execution dispositions integrated through PR432 at `6e49d6f8`. No residual catalog gate for those four namespaces; their component/source authentication acceptance remains separate. |
@@ -52,10 +55,12 @@ fallbacks, PR461's actual supported-leaf evidence, and PR469/477/480's bounded
 RV1 work. PR483 at `c0c7f9c363c709827e95f166e922fe9d1c07caf2` fixes PR480's
 Bootstrap regression; it is a repair, not another closed original criterion.
 The detailed sections preserve exact source/merge identities, failed attempts,
-tested scopes and independent reviews. No implementation PR for this outcome
-remains draft at this assessment time.
+tested scopes and independent reviews. PR493's mutation control is merged;
+the compatibility initialization candidate below is unfinished and must remain
+draft until its real C11 acceptance blocker is resolved.
 
-At the assessment above, unpublished work remained separate: the reserved
+At the earlier **2026-10-27 04:32:34 UTC** assessment, unpublished work remained
+separate: the reserved
 `resolution_parent_mutation_test.clj` candidate and SH06 fresh/unsupported
 execution metadata are in progress. Independent review accepted the proposed
 whole-boundary test scope only; the exact harness/code/result are not accepted.
@@ -903,7 +908,11 @@ Full child receipt SHA-256:
 The exact code and harness were independently approved before this single
 genuine attempt. Independent retained-result review accepted the actual
 positive, mutation, rejection and restoration evidence without replay.
-Integration remains pending at this record's candidate stage.
+That exact result and its code were subsequently integrated through PR493 at
+`e5d0bacdc59611ec9219e37d659532bf04f084a2`, tree
+`7f739ed52784386df7cd63edca42d1679b65f87d`. The merge tree equals the independently
+reviewed composition. The genuine result remains attributed to `b930cdf6`;
+incoming source changes receive no semantic acceptance from it.
 
 Cheap source-form observer controls passed 4 / 20 without entering Bootstrap;
 planner and language-boundary controls passed 67 / 590, injected generic-launch
@@ -921,3 +930,146 @@ necessity decision for the original row, remains required. No additional
 verification call is removed, no compatibility cache is enabled, and RV2/RV4
 whole-outcome acceptance remains open. The earlier failed aliased-array memo
 experiment and original PR480 load failure retain their NONPASS dispositions.
+
+### RV2: shared compatibility initialization, acceptance held
+
+This finite implementation targets repeated Bootstrap initialization for the
+two original compatibility selections, not narrower result-cache authority.
+`sh01_parallel_test_runner.clj` gives the two named normal jobs a common batch
+affinity when their policies match and neither supplies a narrowed closure.
+In that original candidate, the actual test bodies and separate namespace
+results remained unchanged. The explicit test-only successor below changes
+the C11 facade test's construction-dependent assertion, not either production
+facade or its authentication contract.
+Different policies, narrowed closures, foreign namespaces, other resource
+classes, batch-size limits, standalone selection and fail-fast skips retain
+their existing boundaries. A heterogeneous batch does not inherit one
+component's identity. Full-repository cache fallback remains active.
+
+Independent code/harness review accepted source
+`8c4026b7147149a0828b63b5f5f68e55de6f4153`, tree
+`b3c2802673a32c1c4e36ea4d6468ee4b6c94850d`, before the genuine attempt.
+Its immediate base is Reader PR492, `4325a9f46292472a7f984c5adfef81209874bb5c`;
+the initial handoff incorrectly named PR493 as that immediate base and is
+corrected here. Eleven injected controls passed 66 assertions, language
+boundary passed 6 / 11, and the actual receipt-predicate negatives passed
+1 / 13 without loading Bootstrap.
+
+The single genuine combined child returned NONPASS: natural exit 1, 2 GiB,
+10,315 ms supervisor elapsed, identical clean bookends, complete outer capture
+and completed cleanup with the root dead. It observed exactly one actual
+`gravity/bootstrap_impl/load_order.edn` initialization. All observed Bootstrap,
+C11 and loader-observer roots were restored. Manifest compatibility passed
+1 test / 48 assertions. C11 compatibility passed seven assertions, then raised
+`C2-HASH` with missing field `:exact-regular-pinned-sh03-reader-source`:
+expected Reader bytes 231576, observed 231666. The C11 artifact assertions were
+not reached. Total: 2 tests, 55 passing assertions, zero failures and one error.
+The C11 namespace's inner output was truncated at 8192 of 25720 bytes; the
+failure and available diagnostic facts are retained, not promoted to a pass.
+
+The exact guard is
+`components/self-hosting-sh03-sh07/00808-sh03-reader-expected-source-byte-count.clj`
+under `bootstrap/clojure/src/gravity/bootstrap_impl/`. It binds an authenticated
+Reader source identity, not a work allowance to increase for this test. The
+current accepted Reader source and the legacy C11 facade route disagree.
+The existing MIR owner is asked to identify the intended current invocation
+or required source-owner handoff. That original attempt changed no pin, test
+body or compiler source; the later handoff below is distinct. No unchanged
+retry is authorized by the original result.
+
+Supervisor receipt SHA-256:
+`1829423660404107fed5e394c2f8dd4faf73d91add813d049183ba57271981ba`.
+Full child receipt SHA-256:
+`2458ea4f04a1ce9221d7570df265934df7c70974bbaccf582bc483d532767ce3`.
+Independent retained-result review confirms the NONPASS and held disposition.
+The initialization observation does not close this implementation's acceptance:
+both real compatibility namespaces must pass with independent result review
+before normal integration. RV2 runtime read/effect closure and the original
+RV1/RV4 residual criteria remain open. CI's separately owned catalog and helper
+registration files are untouched.
+
+#### PR494 finite completion criteria
+
+PR494 owns only sharing Bootstrap initialization between the two named normal
+compatibility jobs, their runner controls, the handed-off C11 facade test and
+this acceptance record. It does not own a new Reader mode, C11 product
+construction, cache narrowing or the separately held RV1 correction.
+
+| ID | Required completion evidence | Current disposition and dependency |
+| --- | --- | --- |
+| PR494-1 | Preserve both namespace selections and standalone execution; share one bounded JVM only for matching normal-job policies without narrowed closures. Preserve resource limits and independent namespace results. | Accepted on `8204a761` after exact source/scope/harness review. The tested combined schedule selects one child; each standalone schedule still selects one. Runner and test bodies are unchanged by the subsequent receipt-only documentation. |
+| PR494-2 | Reject sharing for mismatched or unknown policies, narrowed closures, foreign affinity keys and non-normal resources; honor batch-size one. Preserve fail-fast skips and retain an error alongside the other namespace's passing result when fail-fast is off. Preserve String job identities and freshness policy. | Bookended controls on `8fc4b6a3` passed 13 / 78, boundary 6 / 11 and docs 240 / 19, natural exit 0 at 256 MiB with Bootstrap absent. Those control bodies are unchanged at `8204a761`. The initial compile error and incorrect Symbol-normalization expectation remain nonpasses. |
+| PR494-3 | Fresh standalone and combined executions of the actual facade-only C11 namespace and manifest namespace pass on one reviewed tuple. Compare per-namespace status, counters and complete stdout/stderr; the combined child initializes the real Bootstrap once. All interposed roots, including the final artifact factory, must be restored. | Accepted actual evidence on `8204a761`: standalone C11 facade 1 / 14, standalone manifest 1 / 48, combined 2 / 62. Complete per-namespace outcomes match exactly; all declared roots are restored. This is the explicitly reviewed oracle scope below, not product construction. |
+| PR494-4 | Retain full reports, actual natural process exits, heap/watchdog/capture/cleanup results and identical clean source bookends. Use existing common, host-exclusive and canonical guards. No cached report substitutes for any execution or authentication. | All three fresh phases exited naturally 0 at actual 2 GiB, with complete captures, stderr empty, cleanup complete/root dead and identical clean source/private-harness bookends. Independent retained-result review accepted them without replay. Original `8c4026b7` product NONPASS remains separate. |
+| PR494-5 | Reconcile current main normally, conserve incoming blobs and reviewed source/test scope, pass relevant cheap checks and actual configured CI, and obtain independent current-head code/result/integration acceptance before expected-head merge. | Draft remains held until PR494-1 through PR494-4 and final review pass. Source-provider or whole-RV2 acceptance is not a merge claim for this finite batching change. |
+
+The legacy entrypoints have only source `[path text]` and file `[path]`
+arities. The newer public checked-Core/C11 interface is a different API; it
+cannot be substituted silently. The MIR owner released only
+`bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj` for the
+following explicit facade-only correction, with all production, Reader,
+provider and codec paths retained by their existing owners.
+
+The test keeps the real Bootstrap wrapper, `c11-call`, `c11/with-operations`
+and configuration assembly. Only `gravity.c11-mir.artifact/file-artifact` is
+replaced by a recording oracle. The oracle captures the actual configuration
+and path, and returns a unique Object sentinel; it fabricates no C11 artifact
+fields or verifier report. Assertions cover call count, unchanged path,
+sentinel identity and actual interposed governing-document, diagnostic-ID and
+rejected-design configuration. Existing operation, arity and public-API checks
+remain. The path is an opaque facade argument here, not evidence that the
+fixture bytes were read or authenticated.
+
+This amendment tests the namespace's stated wrapper/interposition contract.
+It deliberately replaces the previous accidental hosted-product construction
+with that explicit oracle. The old `C2-HASH` failure remains a real failure of
+the hosted chain; current-source/Reader/C11 product acceptance stays separately
+owned and unproven by PR494. The original test was introduced as
+`c11-mir-compatibility-wrappers-preserve-interposition`; its operation, public
+arity and interposed-configuration assertions define that forwarding property.
+The engine contract also explicitly declares partial operation overrides,
+compatibility-only status and no source-authentication or canonical-verifier
+authority. Those facts support this facade-only oracle, not removal of a
+product-conformance requirement.
+
+Actual verifier/product obligations remain open in the canonical
+[MIR tasks](../specs/mir-workflow/tasks.md), particularly `mir/3` and `mir/5`;
+none of their task states is changed here. The specific legacy hosted file
+constructor's `C2-HASH` failure above also remains unresolved with the MIR and
+upstream owners. New checked-Core/C11 public-v2 evidence does not repair or
+accept that different legacy route. A supported source-policy interface or
+properly reviewed authenticated source revision is a separate owner decision.
+No upstream authenticated input or report is stubbed to obtain source
+acceptance, and no pin is changed.
+
+The source-owner review accepted the single C11 test amendment at `8fc4b6a3`;
+independent review separately accepted its original facade/interposition intent,
+the complete runner/checklist scope and the three-phase harness. A docs-only
+successor corrected historical unchanged-test wording; the driver and comparator
+then changed only their expected head/tree literals to the reviewed `8204a761`
+tuple. Actual receipt-predicate negatives passed 1 / 15 and natural-process
+predicate negatives passed 1 / 12 without loading Bootstrap.
+
+| Fresh phase | Test result | Supervisor elapsed | Initialization/restoration |
+| --- | --- | --- | --- |
+| C11 facade standalone | 1 test / 14 assertions, zero failures/errors | 8,637 ms | One real Bootstrap manifest; declared roots restored |
+| Manifest standalone | 1 / 48, zero failures/errors | 8,028 ms | One manifest; declared roots restored |
+| Combined | 2 / 62, zero failures/errors | 9,034 ms | One manifest for both suites; declared roots restored |
+
+These are independent fresh processes at the same source tuple. The comparison
+first validates each actual supervisor exit/capture/cleanup/source record, then
+compares per-namespace statuses, attempt flags, summaries, counters and complete
+stdout/stderr. Only elapsed time is excluded. Equality holds. The unmodified
+production batch-report validator also accepts all three serialized reports;
+that consumption check loads no Bootstrap or provider. No timing speedup or
+whole runtime read/effect closure is inferred.
+
+The equivalence receipt SHA-256 is
+`21279e022b004c9615a8213f19a0aafa628c0c30312ee6b4f0293dffde064b6f`.
+The three full child receipt hashes, in table order, are
+`676e40fdfdf3535b4db89ce348374aec7fb436046646634ab5a070345a0f4020`,
+`5071acecf616bd32d7265e56b490b2da2a78e017888c3488d69fb38c33fa5c1a`,
+and `57ab406be14a65689bd69cb0763347c0d1bf0ff4239cbb9d66c260193120224c`.
+PR494-5 remains the final integration gate: current-head independent review,
+appropriate docs/preflight checks, actual configured CI and expected-head merge.
+The earlier failed product attempt is never relabeled as this facade-only pass.
