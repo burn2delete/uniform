@@ -5261,7 +5261,7 @@
                     :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                                    :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]
                     :parameter-types [type] :return expected-type :result-type expected-type}]
-      (is (= [:accepted expected-type (+ 66 (count (:function-records core)))]
+      (is (= [:accepted expected-type (+ 65 (count (:function-records core)))]
              ((juxt :status :type :work-count) result)))
       (is (= expected (:descriptor result))))))
 

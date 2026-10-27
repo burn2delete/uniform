@@ -2629,7 +2629,10 @@
           row (first (:constraint-ledger facts))]
       (is (= :accepted (:status context)) (pr-str context))
       (is (= {:list-prepend 2 :vector-append 1} (frequencies (vals (get-in context [:context :families])))))
-      (is (> (get-in context [:context :type-checks nested-id :work-count]) 1024))
+      (let [checked (get-in context [:context :type-checks nested-id])]
+        (is (= 1 (:work-count checked) (:construction-work checked)))
+        (is (= (positional [nested]) (:result-type checked)))
+        (is (not-any? #(contains? checked %) [:operand-work :result-work])))
       (is (true? (leaf 'body-call-joins-with-foreign-valid? core facts bindings {})))
       (is (= context (leaf 'body-va-context request facts bindings (:work-count context))))
       (is (= :body-deferred-work-limit (:reason (leaf 'body-va-context request facts bindings (dec (:work-count context))))))
