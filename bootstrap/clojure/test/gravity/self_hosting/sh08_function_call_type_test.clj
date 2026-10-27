@@ -386,40 +386,29 @@
       (is (zero? (:vector-tail-calls observed)))
       (is (= membership-calls (:membership-calls observed))))))
 
-(deftest sh08-imported-work-boundaries-development-kernel
-  ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
+(deftest sh08-imported-module-validation-development-kernel
+  ;; Invocation-local normalized memo DATA, not authenticated source admission.
   (let [bounds (invoke-c7 'sh08-local-bounds-value [])
         id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
         c5 {:artifact-id module-id}
         request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
-        usage {:status :accepted :nodes 1 :scalar-units 1}
-        memo {id {:request request :result {:status :accepted} :usage usage}}
-        check #(invoke-c7 'sh08-im-work-check [%1 %2 %3])]
-    (is (= :accepted (:status (check {} {} usage))))
-    (is (= :module-type-distinct-producer-limit
-           (:reason (check (zipmap (range (:maximum-root-nodes bounds)) (repeat {:usage usage})) {} usage))))
-    (is (= :module-type-dependency-depth-limit
-           (:reason (check {} (zipmap (range (:maximum-carrier-depth bounds)) (repeat usage)) usage))))
-    (is (= :module-type-total-core-work-limit
-           (:reason (check {id {:usage (assoc usage :nodes (:maximum-carrier-nodes bounds))}} {} usage))))
-    (is (= :module-type-total-scalar-work-limit
-           (:reason (check {id {:usage (assoc usage :scalar-units (:maximum-scalar-units bounds))}} {} usage))))
-    (is (= :module-type-producer-core-bound (:reason (check {} {} {:status :rejected :reason :carrier-width-bound}))))
+        memo {id {:request request :result {:status :accepted}}}]
     (is (= {:status :accepted} (:result (invoke-c7 'sh08-im-derive [request memo {}]))))
     (is (= :substituted-module-type-request
            (get-in (invoke-c7 'sh08-im-derive [(assoc request :extra true) memo {}]) [:result :diagnostics 0 :reason])))
     (is (= :cyclic-module-type-request
-           (get-in (invoke-c7 'sh08-im-derive [request {} {id usage}]) [:result :diagnostics 0 :reason])))
+           (get-in (invoke-c7 'sh08-im-derive [request {} {id true}]) [:result :diagnostics 0 :reason])))
     (is (= :undeclared-module-type-producer (:reason (invoke-c7 'sh08-im-producers [[request] memo {} []]))))
     (is (= :undeclared-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request] memo {} [(assoc c5 :forged true)]]))))
     (is (= :duplicate-or-invalid-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request request] memo {} [c5]]))))
-    (is (= :module-type-input-count-limit
-           (:reason (invoke-c7 'sh08-im-inputs-check
+    ;; This accepts the container only; duplicated producers still reject above.
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
-                        :module-requests (vec (repeat (inc (:maximum-root-nodes bounds)) request))}]))))
+                        :module-requests (vec (repeat 1025 request))}]))))
     (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
           supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
                     :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
@@ -428,6 +417,62 @@
       (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
       (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
       (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
+
+(defn- normalized-import-derive [resolution]
+  ;; Supply normalized authentication/inference results at explicit test seams.
+  ;; Real carrier validation, input checks, producer traversal and memo updates
+  ;; still execute in Gravity. This does not confer authentication authority.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) calls (atom [])
+        request {:b47-context {:artifact-id :current-module}}
+        bounds (invoke-c7 'sh08-local-bounds-value [])
+        memo (zipmap (range 1025) (repeat {:request {} :result {}}))
+        active (zipmap (range (inc (:maximum-carrier-depth bounds))) (repeat true))
+        result (with-redefs-fn
+                 {scoped (fn [runtime plan callee args scope]
+                           (if (and (identical? owner (Thread/currentThread))
+                                    (= :gravity-sh08-function-call-type-leaf (:engine runtime)))
+                             (do (when (contains? #{'sh08-ft-authenticated-core 'sh08-carrier-preflight
+                                                    'sh08-im-producers-with-allowance
+                                                    'sh08-ft-function-type-core-artifact-with-imports-and-allowance} callee)
+                                   (swap! calls conj [callee args]))
+                                 (cond
+                                   (= 'sh08-ft-authenticated-core callee) resolution
+                                   (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee)
+                                   {:status :accepted :scope :normalized-inference-control}
+                                   :else (original runtime plan callee args scope)))
+                             (original runtime plan callee args scope)))}
+                 #(invoke-c7 'sh08-im-derive-with-allowance [request memo active 37]))]
+    {:result result :calls @calls :request request :memo memo :active active}))
+
+(deftest sh08-imported-module-control-routing-development-kernel
+  (let [core {:module {:namespace 'example.normalized} :nodes []}
+        accepted (normalized-import-derive {:status :accepted :core core :binding-table []})
+        calls (:calls accepted)
+        producer-args (second (first (filter #(= 'sh08-im-producers-with-allowance (first %)) calls)))
+        inference-args (second (first (filter #(= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance (first %)) calls)))
+        entry (get-in accepted [:result :memo :current-module])]
+    (is (= {:status :accepted :scope :normalized-inference-control} (get-in accepted [:result :result])))
+    (is (= (:request accepted) (:request entry)))
+    (is (= #{:request :result} (set (keys entry))))
+    (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
+    (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
+    (is (= 37 (last producer-args) (last inference-args))))
+  (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
+                      {:status :rejected :reason :normalized-authentication-rejection}]]
+    (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
+          diagnostic (get-in result [:result :diagnostics 0])]
+      (is (= :rejected (get-in result [:result :status])))
+      (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
+                 :normalized-authentication-rejection) (:reason diagnostic)))
+      (when (= :accepted (:status resolution))
+        (is (= :carrier-depth-bound (get-in diagnostic [:actual-type :reason]))))
+      (is (= (if (= :accepted (:status resolution))
+               (assoc memo :current-module {:request request :result (:result result)}) memo)
+             (:memo result)))
+      (is (false? (boolean
+                    (some #(contains? #{'sh08-im-producers-with-allowance
+                                        'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
@@ -20615,3 +20660,356 @@
     (is (string?
          (get-in gravity [:diagnostics 0 :parameter-binding-id])))
     (is (= (:diagnostics gravity) (:diagnostics qst)))))
+
+
+;; Normalized Core shape fixtures; no B47 authentication authority.
+(defn- core-shape-sha [n] (str "sha256:" (format "%064x" n)))
+(def ^:private core-shape-module
+  {:namespace 'example.shape :profile :meta :target :jvm :safety :safe
+   :effects [] :capabilities [] :exports [] :source-revision-id (core-shape-sha 1)})
+(def ^:private core-shape-origin {:origin-id (core-shape-sha 2) :kind :source :from-syntax-id (core-shape-sha 3) :role :expression})
+(def ^:private core-shape-source {:syntax-id (core-shape-sha 4) :form-id (core-shape-sha 5) :semantic-span {}
+                   :origin-chain [] :generated-origin []})
+(defn- core-shape-node [n]
+  {:artifact :gravity/sh07-core-node :node-id (core-shape-sha (+ 100 n)) :core-form :literal
+   :children [] :attributes {:literal-kind :integer} :source core-shape-source :binding-context nil
+   :generated? false :resolved-binding-ids [] :evaluation {}
+   :module (select-keys core-shape-module [:namespace :profile :target]) :metadata {}
+   :preserved-declarations (select-keys core-shape-module [:effects :capabilities :safety])
+   :pending-fact-families [] :lowering-rule-version :core-shape-fixture})
+(defn- core-shape-core [n]
+  (let [nodes (mapv core-shape-node (range n))]
+    {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (core-shape-sha 6)
+     :module core-shape-module :nodes nodes :root-core-node-ids (mapv :node-id nodes)}))
+(def ^:private core-shape-binding
+  {:binding-id (core-shape-sha 7) :upstream-binding-id (core-shape-sha 8)
+   :definition-artifact-id (core-shape-sha 9) :definition-syntax-id (core-shape-sha 10)
+   :name 'value :kind :var :binding-class :namespace :namespace 'example.shape
+   :package {:name 'example.shape :version "v1"} :visibility :public
+   :profile-set [:meta] :target-set [:jvm] :effects [] :capabilities []
+   :type-ref :gravity.type/integer :safety :safe :semantic-span {} :scope-id nil})
+(defn- core-shape-entries [n] (into {} (map #(vector (keyword (str "field-" %)) %) (range n))))
+
+(deftest sh08-core-shape-field-extents-development-kernel
+  ;; Actual Gravity shape helpers on normalized DATA, not source admission.
+  (is (= #{:maximum-core-nodes :maximum-node-children :maximum-carrier-nodes
+           :maximum-carrier-depth :maximum-carrier-width :maximum-scalar-units}
+         (set (keys (invoke-c7 'sh08-local-bounds-value [])))))
+  (doseq [[function arguments]
+          [['sh08-module-shape? [(assoc core-shape-module :effects (vec (repeat 129 :io/write)))]]
+           ['sh08-module-shape? [(assoc core-shape-module :capabilities (vec (repeat 129 :io/stdout)))]]
+           ['sh08-module-shape? [(assoc core-shape-module :exports (vec (repeat 1025 'value)))]]
+           ['sh08-source-shape? [(assoc core-shape-source :semantic-span (core-shape-entries 17))]]
+           ['sh08-source-shape? [(assoc core-shape-source :origin-chain (vec (repeat 257 core-shape-origin))
+                                                       :generated-origin (vec (repeat 257 core-shape-origin)))]]
+           ['sh08-node-shape? [(assoc (core-shape-node 0)
+                                     :children (vec (repeat 1025 (core-shape-sha 2)))
+                                     :resolved-binding-ids (vec (repeat 1025 (core-shape-sha 3)))
+                                     :metadata (core-shape-entries 257)
+                                     :attributes (core-shape-entries 257)
+                                     :pending-fact-families (vec (repeat 33 :types))) core-shape-module]]]]
+    (is (true? (invoke-c7 function arguments))))
+  (doseq [field [:effects :capabilities]]
+    (let [valid (assoc core-shape-module field (vec (repeat 129 :permission)))]
+      (is (false? (invoke-c7 'sh08-module-shape? [(assoc-in valid [field 128] "wrong")])))))
+  (doseq [field [:origin-chain :generated-origin]]
+    (let [valid (assoc core-shape-source field (vec (repeat 257 core-shape-origin)))]
+      (doseq [bad [(dissoc core-shape-origin :role) (assoc core-shape-origin :origin-id "sha256:wrong")]]
+        (is (false? (invoke-c7 'sh08-source-shape? [(assoc-in valid [field 256] bad)]))))))
+  (doseq [field [:children :resolved-binding-ids]]
+    (let [valid (assoc (core-shape-node 0) field (vec (repeat 1025 (core-shape-sha 2))))
+          callbacks (atom 0)
+          opaque (reify Object
+                   (hashCode [_] (swap! callbacks inc) (throw (ex-info "unreachable" {})))
+                   (toString [_] (swap! callbacks inc) (throw (ex-info "unreachable" {}))))]
+      (doseq [bad ["sha256:wrong" opaque]]
+        (is (false? (invoke-c7 'sh08-node-shape? [(assoc-in valid [field 1024] bad) core-shape-module]))))
+      (is (zero? @callbacks))))
+  (doseq [bad [(assoc (core-shape-node 0) :extra true)
+               (assoc (core-shape-node 0) :pending-fact-families (conj (vec (repeat 32 :types)) "wrong"))
+               (assoc-in (core-shape-node 0) [:preserved-declarations :safety] :unsafe)
+               (assoc-in (core-shape-node 0) [:module :namespace] 'forged)]]
+    (is (false? (invoke-c7 'sh08-node-shape? [bad core-shape-module]))))
+  (doseq [bad [nil [] (assoc core-shape-source :extra true) (assoc core-shape-source :semantic-span [])]]
+    (is (false? (invoke-c7 'sh08-source-shape? [bad])))))
+
+(deftest sh08-core-binding-field-extents-development-kernel
+  (let [binding (-> core-shape-binding
+                    (assoc :profile-set (vec (repeat 129 :meta)) :target-set (vec (repeat 129 :jvm))
+                           :effects (vec (repeat 129 :io/write)) :capabilities (vec (repeat 129 :io/stdout))
+                           :semantic-span (core-shape-entries 257))
+                    (assoc-in [:package :version] (apply str (repeat 1025 "x"))))]
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [binding])))
+    ;; Existing binding fields require vectors; element policy belongs elsewhere.
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding :profile-set [nil])])))
+    (doseq [field [:profile-set :target-set :effects :capabilities]]
+      (is (false? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding field nil)]))))
+    (doseq [bad [(assoc binding :extra true) (assoc binding :upstream-binding-id "wrong")
+                 (assoc binding :semantic-span []) (assoc-in binding [:package :version] 1)
+                 (assoc binding :scope-id (core-shape-sha 9))
+                 (assoc binding :binding-class :lexical :scope-id nil)]]
+      (is (false? (invoke-c7 'sh08-ft-binding-valid? [bad]))))
+    (is (true? (invoke-c7 'sh08-ft-binding-valid?
+                         [(assoc binding :binding-class :lexical :scope-id (core-shape-sha 11))])))))
+
+(deftest sh08-core-shape-graph-and-typing-development-kernel
+  (let [core (core-shape-core 2)
+        typed (invoke-c7 'sh08-type-core-artifact [core])
+        roots (:root-core-node-ids core)
+        wide-roots (mapv core-shape-sha (range 2000 3025))
+        wide-table (zipmap wide-roots (repeat {}))]
+    (is (= :accepted (:status (invoke-c7 'sh08-validate-core-shape [core])) (:status typed)))
+    (is (= (zipmap roots (repeat :gravity.type/integer)) (:type-table typed)))
+    (is (= roots (mapv :core-node-id (:type-facts typed))))
+    (is (= :coordinator-adapter-required (:authentication-status typed)))
+    (is (true? (invoke-c7 'sh08-roots-valid? [wide-roots wide-table])))
+    (doseq [bad [(assoc wide-roots 1024 (first wide-roots))
+                 (assoc wide-roots 1024 (core-shape-sha 4000))
+                 (assoc wide-roots 1024 "wrong") [] nil]]
+      (is (false? (invoke-c7 'sh08-roots-valid? [bad wide-table]))))
+    (doseq [[bad reason]
+            [[(assoc core :nodes []) :empty-core-node-vector]
+             [(assoc core :nodes nil) :core-node-vector-or-bound]
+             [(assoc-in core [:nodes 1 :node-id] (get-in core [:nodes 0 :node-id])) :duplicate-core-node-id]
+             [(assoc-in core [:nodes 0 :children] [(get-in core [:nodes 1 :node-id])]) :child-id-missing-or-not-before-parent]
+             [(assoc-in core [:nodes 1 :children] [(core-shape-sha 4000)]) :child-id-missing-or-not-before-parent]
+             [(assoc core :root-core-node-ids [(first roots)]) :orphan-core-node]
+             [(assoc core :root-core-node-ids [(first roots) (first roots)]) :malformed-or-unresolved-roots]
+             [(assoc core :artifact-id "wrong") :malformed-core-artifact-id]
+             [(assoc-in core [:nodes 1 :preserved-declarations :effects] [:io/write]) :malformed-core-node]]]
+      (is (= reason (:reason (invoke-c7 'sh08-validate-core-shape [bad])))))
+    (let [large-source (assoc core-shape-source :semantic-span (core-shape-entries 17)
+                                              :origin-chain (vec (repeat 257 core-shape-origin)))
+          large-node (assoc (core-shape-node 0) :source large-source :metadata (core-shape-entries 257))
+          result (invoke-c7 'sh08-type-core-artifact [(assoc core :nodes [large-node]
+                                                           :root-core-node-ids [(:node-id large-node)])])]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/integer (get (:type-table result) (:node-id large-node))))
+      (is (= (:semantic-span large-source) (get-in result [:type-facts 0 :source-span])))
+      (is (= (:origin-chain large-source) (get-in result [:type-facts 0 :origin-chain])))
+      (is (= (:syntax-id large-source) (get-in result [:type-facts 0 :syntax-id]))))))
+
+
+;; Record/Union descriptor cardinality; normalized authentication only.
+(defn- ru-cardinality-family [n]
+  (let [types [:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/string :gravity.type/keyword]
+        values [nil true 7 "text" :value]
+        fields (mapv #(hash-map :name (keyword (str "field-" %)) :type (types (mod % 5))) (range n))
+        entries (mapv #(hash-map :name (:name %) :value (values (mod %2 5))) fields (range n))
+        variants (mapv #(hash-map :tag (keyword (str "variant-" %)) :payload-type (types (mod % 5))) (range n))]
+    {:record-type {:name :record :fields fields}
+     :record-construction {:type :record :fields entries}
+     :record-access {:record-type :record :field (:name (last fields))}
+     :union-type {:name :union :variants variants}
+     :union-construction {:type :union :variant (:tag (last variants)) :payload (values (mod (dec n) 5))}
+     :union-match {:union-type :union :branches (mapv #(hash-map :variant (:tag %) :result 1) variants)}}))
+
+(defn- ru-cardinality-fixture [n]
+  (let [family (ru-cardinality-family n)
+        branch-names (mapv #(symbol (str "branch-" %)) (range n))
+        rows (into [['descriptor family]
+                    ['program {:record-construction-definition 'record :record-access-definition 'access
+                               :union-construction-definition 'union :union-match-definition 'match}]
+                    ['record (:record-construction family)]
+                    ['access {:record-definition 'record :field (get-in family [:record-access :field])}]
+                    ['union (:union-construction family)]
+                    ['match {:union-type :union :scrutinee-definition 'union :branch-definitions branch-names}]]
+                   (mapv (fn [i variant name]
+                           [name {:variant (:tag variant) :binding (keyword (str "payload-" i))
+                                  :pattern-payload-type (:payload-type variant) :result 1}])
+                         (range n) (get-in family [:union-type :variants]) branch-names))
+        nodes (mapv (fn [i [_ value]]
+                      (assoc (core-shape-node i) :core-form :collection-literal
+                             :attributes {:literal-kind :map :source-value value}
+                             :source {:syntax-id (core-shape-sha (+ 10000 i)) :form-id (core-shape-sha (+ 20000 i))
+                                      :semantic-span {:form-index i} :origin-chain [] :generated-origin []})) (range) rows)
+        definitions (mapv (fn [i [name _]]
+                            {:name name :binding-id (core-shape-sha (+ 30000 i))
+                             :core-node-id (core-shape-sha (+ 40000 i)) :value-node-id (:node-id (nodes i))}) (range) rows)
+        core {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (core-shape-sha 50)
+              :module core-shape-module :nodes nodes :definitions definitions
+              :provenance {:source-path "normalized-record-union.gravity"}}
+        request {:canonical-core-artifact core
+                 :b47-context {:canonical-core-artifact core :provenance (:provenance core)}
+                 :coordinator-verification {:verified-source-extension ".gravity"}}]
+    {:family family :core core :request request :branch-names branch-names}))
+
+(defn- ru-cardinality-operation [fixture operation]
+  ;; Only authentication is supplied at this normalized test seam. All source
+  ;; joins, semantic checks, fact production and fresh verification are Gravity.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) selected-plan @c7-plan
+        request (:request fixture) calls (atom 0)
+        value (with-redefs-fn
+                {scoped (fn [runtime plan callee args scope]
+                          (if (and (identical? owner (Thread/currentThread)) (identical? plan selected-plan)
+                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                   (= 'sh08-ft-authenticated-core callee) (= 1 (count args))
+                                   (identical? request (first args)))
+                            (do (swap! calls inc)
+                                (:resolution fixture {:status :accepted :core (:core fixture) :binding-table []}))
+                            (original runtime plan callee args scope)))} operation)]
+    {:value value :authentication-seam-calls @calls}))
+
+(defn- ru-cardinality-alter [fixture name change]
+  (let [index (.indexOf (mapv :name (get-in fixture [:core :definitions])) name)]
+    (assert (<= 0 index))
+    (let [core (update-in (:core fixture) [:nodes index :attributes :source-value] change)]
+      (-> fixture (assoc :core core)
+          (assoc-in [:request :canonical-core-artifact] core)
+          (assoc-in [:request :b47-context :canonical-core-artifact] core)))))
+
+(defn- ru-cardinality-opaque [callbacks]
+  (reify Object
+    (equals [_ _] (swap! callbacks inc) (throw (ex-info "unreachable equality" {})))
+    (hashCode [_] (swap! callbacks inc) (throw (ex-info "unreachable hash" {})))
+    (toString [_] (swap! callbacks inc) (throw (ex-info "unreachable printing" {})))))
+
+(deftest sh08-record-union-cardinality-producers-development-kernel
+  ;; Only authentication is supplied. Both producers and both fresh verifiers
+  ;; execute actual Gravity joins, checking, complete facts and strict equality.
+  (doseq [n [65 129]]
+    (let [fixture (ru-cardinality-fixture n)
+          request (:request fixture)
+          observed (ru-cardinality-operation fixture
+                     #(let [descriptor (invoke-c7 'sh08-record-union-type-core-artifact [request 'descriptor])
+                            typed (invoke-c7 'sh08-record-access-match-typed-core-artifact [request 'descriptor 'program descriptor])
+                            dv (invoke-c7 'sh08-verify-record-union-type-result [request 'descriptor descriptor])
+                            tv (invoke-c7 'sh08-verify-record-access-match-typing-result [request 'descriptor 'program descriptor typed])]
+                        {:descriptor descriptor :typed typed :dv dv :tv tv}))
+          {:keys [descriptor typed dv tv]} (:value observed)]
+      (is (pos? (:authentication-seam-calls observed)))
+      (is (= :accepted (:status descriptor) (:status typed)))
+      (is (= :passed (:status dv) (:status tv)))
+      (is (= (:family fixture) (:descriptor descriptor) (get-in descriptor [:identity-input :descriptor])))
+      (is (some #{:closed-descriptor-schema-valid} (:checks dv)))
+      (is (not-any? #{:closed-descriptor-schema-bounded} (:checks dv)))
+      (is (false? (:roadmap-credit? descriptor)))
+      (is (false? (:executable-record-union-language-behavior? descriptor)))
+      (is (false? (:roadmap-credit? typed)))
+      (is (= n (count (:record-construction-type-facts typed))
+             (count (:union-match-narrowing-facts typed)) (count (:pattern-binding-environments typed))))
+      (is (= (+ n 4) (count (get-in typed [:typed-core :types]))))
+      (is (= (+ (* 2 n) 3) (count (get-in typed [:constraint-ledger :constraints]))))
+      (is (= :solved (get-in typed [:constraint-ledger :status])))
+      (is (= [] (get-in typed [:constraint-ledger :unsolved])))
+      (is (= (:name (last (get-in fixture [:family :record-type :fields])))
+             (get-in typed [:record-access-type-fact :field])))
+      (is (= (:type (last (get-in fixture [:family :record-type :fields])))
+             (get-in typed [:record-access-type-fact :result-type])))
+      (is (= n (get-in typed [:match-expression-type-fact :branch-count])))
+      (is (= :closed-total (get-in typed [:match-expression-type-fact :exhaustiveness])))
+      (is (= 1 (count (filter :selected? (:union-match-narrowing-facts typed)))))
+      (is (= (:tag (last (get-in fixture [:family :union-type :variants])))
+             (:variant (last (:union-match-narrowing-facts typed)))))
+      (is (= (:branch-names fixture) (mapv :branch-definition (:union-match-narrowing-facts typed))))
+      (is (= (mapv :payload-type (get-in fixture [:family :union-type :variants]))
+             (mapv :narrowed-payload-type (:union-match-narrowing-facts typed))))
+      (doseq [candidate [(assoc-in descriptor [:descriptor :record-access :field] :forged)
+                         (assoc-in descriptor [:provenance :source-path] "forged.gravity")]]
+        (is (= :rejected
+               (get-in (ru-cardinality-operation fixture
+                         #(invoke-c7 'sh08-verify-record-union-type-result [request 'descriptor candidate])) [:value :status]))))
+      (doseq [candidate [(assoc-in typed [:record-access-type-fact :value] :forged)
+                         (assoc-in typed [:union-match-narrowing-facts (dec n) :narrowed-payload-type] :gravity.type/unknown)
+                         (assoc typed :actual-source-path "forged.gravity")]]
+        (is (= :rejected
+               (get-in (ru-cardinality-operation fixture
+                         #(invoke-c7 'sh08-verify-record-access-match-typing-result
+                                     [request 'descriptor 'program descriptor candidate])) [:value :status])))))))
+
+(deftest sh08-record-union-cardinality-invalid-members-development-kernel
+  (let [fixture (ru-cardinality-fixture 65)]
+    (doseq [[change reason]
+            [[#(assoc-in % [:record-type :fields 64 :name] (get-in % [:record-type :fields 0 :name])) :malformed-record-union-family]
+             [#(assoc-in % [:record-construction :fields 64 :name] (get-in % [:record-construction :fields 0 :name])) :malformed-record-union-family]
+             [#(assoc-in % [:union-type :variants 64 :tag] (get-in % [:union-type :variants 0 :tag])) :malformed-record-union-family]
+             [#(assoc-in % [:union-match :branches 64 :variant] (get-in % [:union-match :branches 0 :variant])) :malformed-record-union-family]
+             [#(update-in % [:record-type :fields 64] assoc :extra true) :malformed-record-union-family]
+             [#(assoc-in % [:record-type :fields 64 :type] :gravity.type/unknown) :malformed-record-union-family]
+             [#(update-in % [:record-construction :fields] pop) :record-missing-field]
+             [#(update-in % [:record-construction :fields] conj {:name :extra :value 7}) :record-field-set-mismatch]
+             [#(assoc-in % [:record-construction :fields 64 :value] 9) :record-field-type-mismatch]
+             [#(assoc-in % [:record-access :field] :missing) :record-access-invalid-field]
+             [#(update-in % [:union-match :branches] pop) :union-match-nonexhaustive]
+             [#(update-in % [:union-match :branches] conj {:variant :extra :result 1}) :union-match-invalid-variant]
+             [#(assoc-in % [:union-match :branches 64 :result] "wrong") :union-match-branch-type-mismatch]]]
+      (let [changed (ru-cardinality-alter fixture 'descriptor change)
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request changed) 'descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))))
+    (doseq [[path reason]
+            [[[:record-type :fields 64 :name] :malformed-record-union-family]
+             [[:record-construction :fields 64 :name] :malformed-record-union-family]
+             [[:union-type :variants 64 :tag] :malformed-record-union-family]
+             [[:union-match :branches 64 :variant] :malformed-record-union-family]
+             [[:record-type :fields 64 :type] :malformed-record-union-family]
+             [[:union-type :variants 64 :payload-type] :malformed-record-union-family]
+             [[:record-construction :fields 64 :value] :record-field-type-mismatch]
+             [[:union-construction :payload] :union-payload-type-mismatch]
+             [[:union-match :branches 64 :result] :union-match-branch-type-mismatch]]]
+      (let [callbacks (atom 0) opaque (ru-cardinality-opaque callbacks)
+            changed (ru-cardinality-alter fixture 'descriptor #(assoc-in % path opaque))
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request changed) 'descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))
+        (is (zero? @callbacks))))
+    (doseq [function '[sh08-ru-all-field-schemas-valid? sh08-ru-all-field-values-valid?
+                      sh08-ru-all-variant-schemas-valid? sh08-ru-all-match-branches-valid?]]
+      (is (true? (invoke-c7 function [[]]))))
+    (is (false? (invoke-c7 'sh08-ram-symbol-vector? [[]])))))
+
+(deftest sh08-record-union-cardinality-source-controls-development-kernel
+  (let [fixture (ru-cardinality-fixture 65)
+        descriptor (:value (ru-cardinality-operation fixture
+                             #(invoke-c7 'sh08-record-union-type-core-artifact [(:request fixture) 'descriptor])))]
+    (doseq [[name change reason]
+            [['match #(assoc-in % [:branch-definitions 64] 'branch-0) :union-match-shape-invalid]
+             ['match #(assoc-in % [:branch-definitions 64] 'absent) :match-branch-definition-required]
+             ['match #(assoc % :branch-definitions []) :union-match-shape-invalid]
+             ['record #(assoc-in % [:fields 64 :value] 9) :record-field-type-mismatch]
+             ['access #(assoc % :record-definition 'forged) :record-access-definition-substitution]
+             ['match #(assoc % :scrutinee-definition 'forged) :union-match-scrutinee-substitution]
+             ['branch-64 #(assoc % :variant :variant-0) :union-match-unreachable-duplicate-variant]
+             ['branch-64 #(assoc % :pattern-payload-type :gravity.type/integer) :union-match-contradictory-narrowing]
+             ['branch-64 #(assoc % :result "wrong") :union-match-branch-type-mismatch]]]
+      (let [changed (ru-cardinality-alter fixture name change)
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                         [(:request changed) 'descriptor 'program descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))))
+    (doseq [[name path reason]
+            [['match [:branch-definitions 64] :union-match-shape-invalid]
+             ['record [:fields 64 :name] :record-construction-shape-invalid]
+             ['record [:fields 64 :value] :record-field-type-mismatch]
+             ['union [:payload] :union-construction-shape-invalid]
+             ['branch-64 [:pattern-payload-type] :union-match-branch-shape-invalid]
+             ['branch-64 [:result] :union-match-branch-shape-invalid]]]
+      (let [callbacks (atom 0) opaque (ru-cardinality-opaque callbacks)
+            changed (ru-cardinality-alter fixture name #(assoc-in % path opaque))
+            result (:value (ru-cardinality-operation changed
+                             #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                         [(:request changed) 'descriptor 'program descriptor])))]
+        (is (= :rejected (:status result)))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))
+        (is (zero? @callbacks))))
+    (doseq [candidate [(assoc-in descriptor [:descriptor :record-access :field] :forged)
+                       (assoc-in descriptor [:provenance :source-path] "forged.gravity")]]
+      (is (= :rejected
+             (get-in (ru-cardinality-operation fixture
+                       #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                   [(:request fixture) 'descriptor 'program candidate])) [:value :status]))))
+    (let [rejected (assoc fixture :resolution {:status :rejected :reason :normalized-authentication-rejection})
+          wrong-path (assoc-in fixture [:request :coordinator-verification :verified-source-extension] ".qst")]
+      (is (= :normalized-authentication-rejection
+             (get-in (ru-cardinality-operation rejected
+                       #(invoke-c7 'sh08-record-union-type-core-artifact [(:request rejected) 'descriptor]))
+                     [:value :diagnostics 0 :reason])))
+      (is (= :source-extension-path-mismatch
+             (get-in (ru-cardinality-operation wrong-path
+                       #(invoke-c7 'sh08-record-access-match-typed-core-artifact
+                                   [(:request wrong-path) 'descriptor 'program descriptor]))
+                     [:value :diagnostics 0 :reason]))))))

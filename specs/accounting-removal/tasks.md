@@ -13,7 +13,7 @@ including implemented work whose required acceptance has not completed.
 | ACC-06 | C7 `lc-validate-types`, `lc-type-work`, construction helpers; Effects/emitter `lc/pl/lr-type-work` | ACC-02 release | Work/depth/width admission removed with complete nested type, Never, parity and late malformed/opaque validation |
 | ACC-07 | C7 `ft-effective-work-policy`, `ft-invalid-work-policy`, `ft-work-allowance`, `ft-infer-acyclic-with-context`, `ft-inference-round-bound`, `ft-infer-pass-products-prepared`, public work-policy entrypoints | ACC-02 release; ACC-01 call graph | Remove allowances/debits/reservations and policy API premises; preserve fixed-point/cycle/conflict semantics and genuine fresh result verification |
 | ACC-08 | C7 module products; Effects `body-analyze-module` and imports; emitter `typed-compile-node` | ACC-03/05/06/07 as interfaces require | Remove module/profile-validation work and cumulative pools coherently; genuine complete joins, typed emission, effects/capabilities and tamper rejection |
-| ACC-09 | Runtime `initializer-work`, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, `module-census`, `instruction-children`, `runtime-module-reads`; emitter callers | Module-read traversal merged in PR433; finite census/root-uniqueness increment accepted at `db2e925b`; fresh guarded metadata composition accepted at `452c05ed`, final integration pending; ACC-01 | Remaining helper/runtime policy dispositions and coherent removal; preserve genuine runtime/source/type/uniqueness/constructor/callback/collision/Unicode checks; initializer-specific accounting remains open |
+| ACC-09 | Runtime `initializer-work`, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, `module-census`, `instruction-children`, `runtime-module-reads`; emitter callers | Module-read traversal merged in PR433; census/root-uniqueness and fresh guarded metadata composition merged in PR444 at `6b2e63b3`, exact reviewed tree `68609de1`; ACC-01 | Census allowance/shared initializer pool removal and its metadata integration are complete. Remaining initializer, collection and runtime-shape accounting, exhaustive dispositions and their actual owner acceptance stay open; preserve genuine runtime/source/type/uniqueness/constructor/callback/collision/Unicode checks |
 | ACC-10 | Existing MIR PR378/421 and Native PR383/parameter paths | Existing owners; shared codec resolution | Exact producer/consumer removal acceptance, genuine source replay and negative controls, independently reviewed current-main integration; helper passes alone insufficient |
 | ACC-11 | Existing PR370 optimization/lowering owners and consumers | Existing PR370 owner | Actual opt/lower composition, source/fact/profile/safety preservation, independent review and current-main integration |
 | ACC-12 | Accounting-only tests/docs/schema premises and final main reconciliation | Every other applicable ACC item | No current accounting requirement or orphan producer/consumer field, reviewed exhaustive dispositions, current-main regression/integration receipts and explicit restricted boundaries |
@@ -32,3 +32,59 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-11 Integrate accepted existing optimization/lowering accounting work.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
+
+## ACC-08 imported-module aggregate increment
+
+The independent C7 successor removes `sh08-im-usage`, `sh08-im-work-check`,
+their two derive call sites and the module-request container count cap. This
+removes aggregate producer/dependency-depth/node/scalar admission and the
+accounting-only memo/active usage payload. Active ID presence still rejects
+cycles; memo reuse still requires exact request equality. Fresh authenticated
+Core derivation, per-Core preflight, strict input schema, retained producer
+identity, complete signature/origin joins and the ordinary inference allowance
+remain unchanged. Per-Core capacity limits are still open accounting; they are
+not reclassified as native safety.
+
+Normalized joins and actual Gravity derive control routing are tested, with
+explicit authentication/inference seams in the routing test. Independent source
+and retained-result review accepted this finite scope. Its normal integration
+outcome is tracked in [PR467](https://github.com/burn2delete/uniform/pull/467).
+This increment has no Native
+registration dependency. Other C7/Effects/emitter module pools, recursive
+validation, inference allowances and full ACC-08 acceptance remain open.
+
+## ACC-08 / ACC-13 Core envelope and binding shapes
+
+The independent C7 shape increment removes cardinality admission from the
+module/source/node/origin/root/Core-envelope and binding shape validators. All
+bounded-vector callers migrate together; keyword/hash vectors retain complete
+member validation. Six unused descriptor fields are removed, including the
+root-count field and its two inherited test dependencies. Binding fields keep
+their existing vector-only semantics. Exact hashes, schemas, nonempty graphs,
+root uniqueness/membership, ordering/reachability, declaration equality and
+binding/provenance checks remain.
+
+Independent source and retained-result review accepted this finite scope. Its
+repository integration outcome belongs to the corresponding pull request.
+The carrier preflight, quote/collection limits, ordinary inference allowances,
+Effects/emitter pools and full ACC-08/ACC-13 remain open. In particular, removing
+the Core node-vector cap does not establish admission above the still-enforced
+65,536 carrier width. Historical source/migration pins remain unchanged.
+
+## ACC-13 Record/Union descriptor and branch cardinality
+
+The C7 successor removes both 64-entry admission checks: the shared descriptor
+entry validator and the typed match branch-reference validator. All four
+descriptor collections and the existing Record/Union typed consumer therefore
+advance together. Complete schemas, name/tag/reference uniqueness, supported
+scalar types, field-set equality, constructor/access checks, exhaustive branches,
+source/path joins and fresh result equality remain.
+
+Key/type validation now precedes local RU uniqueness hashing, and scalar
+classification avoids opaque equality/hash callbacks. These are prerequisites
+for checking every newly reached member, not a new runtime feature. The shared
+generic uniqueness function is unchanged. Independent source/actual-result
+review accepted 65/129-entry producers and fresh verifiers under an explicit
+authentication-only test seam. Genuine authenticated-source/public authority,
+foreign-container safety, runtime, carrier/inference removal and whole ACC-13
+remain open; integration outcome belongs to the corresponding pull request.
