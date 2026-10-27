@@ -123,7 +123,7 @@
     (let [substituted-hash "sha256:0000000000000000000000000000000000000000000000000000000000000000"]
       (is (not= substituted-hash (get-in context [:checked-core :source-content-hash])))
       (rejected-input (assoc-in context [:checked-core :source-content-hash] substituted-hash)
-                      :invalid-specialization-relation)))))
+                      :invalid-specialization-relation))))
 
 (deftest sh17-input-boundary-rejects-malformed-and-unbound-contexts
   (let [context (:context @(get cases ["true" "gravity"]))]
