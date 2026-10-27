@@ -83,8 +83,10 @@
     (is (= expected-abbreviations (set (keep :abbrev forms))))
     (is (= (count tokens) (count by-token)))
     (is (= (count forms) (count by-form)))
-    (is (= (set (:root-form-ids products))
-           (set (map :form-id (filter #(nil? (:parent-form-id %)) forms)))))
+    (is (= (:root-form-ids products)
+           (mapv :form-id (filter #(nil? (:parent-form-id %)) forms))))
+    (let [starts (mapv #(get-in (by-form %) [:span :byte-start]) (:root-form-ids products))]
+      (is (apply < starts)))
     (doseq [record (concat tokens forms)]
       (is (= (:raw record) (reference/slice input (:span record)))))
     (doseq [form forms]
@@ -99,7 +101,14 @@
         (is (= (:abbrev form) (:reason origin)))
         (is (some #{(:child-form-id origin)} (:children form)))
         (is (= (:surface-span form) (:from origin)))
-        (is (= (:value form) (:expanded-form form)))))
+        (is (= ({:quote "'" :syntax-quote "`" :unquote "~" :splice-unquote "~@"
+                 :deref "@" :metadata "^"} (:reason origin))
+               (reference/slice input (:from origin))))
+        (is (= (:value form) (:expanded-form form)))
+        (when-not (= :metadata (:abbrev form))
+          (is (= ({:quote 'quote :syntax-quote 'syntax-quote :unquote 'unquote
+                   :splice-unquote 'splice-unquote :deref 'deref} (:abbrev form))
+                 (first (:expanded-form form)))))))
     (doseq [[spelling expected] expected-literals]
       (testing spelling
         (is (seq (semantic spelling)))
@@ -121,6 +130,15 @@
            (set (map :raw (get-in products [:semantic-error-deferment-record :deferred-literal-records])))))
     (doseq [literal (:literal-decoding-records products)]
       (is (= (:raw literal) (:raw (by-form (:form-id literal))))))
+    (let [spelling (str "\"escapes:" "\\n" "\\r" "\\t" "\\b" "\\f" "\\\\" "\\\"" "\"")
+          record (first (filter #(= spelling (:raw %)) (:literal-decoding-records products)))]
+      (is (= spelling (:raw record)))
+      (is (= [{:raw "\\n" :character-offset 9} {:raw "\\r" :character-offset 11}
+              {:raw "\\t" :character-offset 13} {:raw "\\b" :character-offset 15}
+              {:raw "\\f" :character-offset 17} {:raw "\\\\" :character-offset 19}
+              {:raw "\\\"" :character-offset 21}]
+             (get-in record [:facts :escapes]))))
+    (is (= #{'inst 'uuid} (set (map :tag (filter #(= :tagged-literal (:kind %)) forms)))))
     (if retain?
       (do (is (= text (apply str (map :raw tokens))))
           (is (some #(= :comment (:kind %)) tokens))
@@ -165,7 +183,10 @@
         (is (true? (:verified? report)))
         (is (= :rejected (:reader-result-status report)))
         (is (= "C2-NUMERIC" (:id raised)))
+        (is (= "STAGE1READER007" (:reader-engine-diagnostic raised)))
         (is (= spelling (:raw-spelling raised)))
         (is (= source (get-in raised [:source-span :source])))
+        (is (= [0 (count spelling)] ((juxt :byte-start :byte-end) (:source-span raised))))
         (is (empty? (:top-level-form-ids result)))
+        (is (empty? (:form-tree result)))
         (*progress* {:case label :event :returned})))))
