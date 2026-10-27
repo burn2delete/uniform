@@ -98,20 +98,32 @@
 (deftest sh17-fresh-true-qst-input-stops-at-jvm-contract (check-valid "true" "qst"))
 (deftest sh17-fresh-false-qst-input-stops-at-jvm-contract (check-valid "false" "qst"))
 
-(defn- rejected-input [context]
-  (let [result (lower context)]
-    (is (= [:rejected :rejected] ((juxt :status :input-status) result)))
-    (is (= ["C14-INPUT"] (mapv :diagnostic-id (:diagnostics result))))
-    (is (not-any? #(contains? result %) [:emitted-artifact :target-program :authority :artifact-id]))))
+(defn- rejected-input
+  ([context] (rejected-input context nil))
+  ([context reason]
+   (let [result (lower context)]
+     (is (= [:rejected :rejected] ((juxt :status :input-status) result)))
+     (is (= ["C14-INPUT"] (mapv :diagnostic-id (:diagnostics result))))
+     (when reason
+       (is (= [reason] (mapv :reason (:diagnostics result)))))
+     (is (not-any? #(contains? result %) [:emitted-artifact :target-program :authority :artifact-id])))))
 
 (deftest sh17-contextual-module-validates-original-and-rejects-substitution
   ;; Minimal affected-integration control: one real source producer, followed
-  ;; by actual fresh module execution for the positive and both mutations.
+  ;; by actual fresh module execution for the positive and independent
+  ;; invalidation, target and source-binding mutations.
   (check-valid "true" "gravity")
   (let [context (:context @(get cases ["true" "gravity"]))]
     (rejected-input (assoc-in context [:c13-result :invalidation-ledger :proofs-invalidated]
-                             [:substituted-proof]))
-    (rejected-input (assoc context :target-request :llvm :checked-core nil))))
+                             [:substituted-proof])
+                    :stale-c13-result)
+    ;; Keep the authentic Core present: a malformed Core would mask this edge.
+    (rejected-input (assoc context :target-request :llvm)
+                    :substituted-target-request)
+    (let [substituted-hash "sha256:0000000000000000000000000000000000000000000000000000000000000000"]
+      (is (not= substituted-hash (get-in context [:checked-core :source-content-hash])))
+      (rejected-input (assoc-in context [:checked-core :source-content-hash] substituted-hash)
+                      :invalid-specialization-relation)))))
 
 (deftest sh17-input-boundary-rejects-malformed-and-unbound-contexts
   (let [context (:context @(get cases ["true" "gravity"]))]
