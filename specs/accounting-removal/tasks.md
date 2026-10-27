@@ -88,3 +88,69 @@ review accepted 65/129-entry producers and fresh verifiers under an explicit
 authentication-only test seam. Genuine authenticated-source/public authority,
 foreign-container safety, runtime, carrier/inference removal and whole ACC-13
 remain open; integration outcome belongs to the corresponding pull request.
+
+## ACC-13 Source-proof ancestry paths
+
+The ancestry increment removes the 128-depth admission checks from
+`sh08-si-within?` and `sh08-si-ancestry-path`, and the matching 129-entry checks
+from the successor and vector-loop proof consumers. Iterative visited-ID checks
+reject cycles; paths require actual canonical node records, unique IDs and all
+existing parent-child edges, endpoints, source and guard relationships. The
+existing normalized Keyword/String ID domain has no new size allowance.
+
+Independent source and retained-result review accepted actual successor,
+vector-nth and vector-get derivations beyond the old path limit, and their
+fresh proof validators. Runtime guards remain retained and check elision remains
+unauthorized. This closes implementation and focused validation of this finite
+ancestry family, not full ACC-13. Vector-origin recursion/binding-link limits,
+collection extents, carrier limits, work pools and other original criteria stay
+open. PR483 repaired the distinct Bootstrap load failure. Fresh composition on
+that merged main passed 9 tests / 63 assertions, preserving the original
+standalone and failed receipts separately. Repository gates, independent final
+review and normal integration complete this finite ancestry increment; no full
+original ACC row is closed by it.
+
+## Original-criteria assessment - 2026-10-26 22:28:21 MDT
+
+Assessment source: main `15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. Time zone: America/Edmonton;
+UTC observation time: 2026-10-27 04:28:21. Pull-request states below were read
+fresh for this assessment. This section assesses the original rows above; it
+does not add completion criteria or replace their acceptance contracts.
+
+**Score disposition:** retain **50% only as the legacy provisional estimate**,
+originally dated October 26 04:11. It is not measured coverage and has not been
+recomputed. No defensible numeric revision follows from the available evidence:
+original rows differ greatly in scope, their exhaustive inventory is unfinished,
+and no weighted baseline was established. PR/test totals are not the scoring
+method. The current assessment is the completed/remaining milestones below.
+
+Status method: a row is closed only when all its original implementation,
+validation, independent review and integration obligations are satisfied.
+Partial means a concrete subset has advanced while named obligations remain.
+Open means this assessment cannot establish an accepted completed subset of
+that original criterion. No full original row is closed; this is not a claim
+of zero implementation progress or a computed percentage.
+
+| Original ID | Status | Accepted/merged or separately held advance | Exact remaining acceptance boundary |
+| --- | --- | --- | --- |
+| ACC-01 | Partial | Stable source-grounded inventory and reviewed dispositions underpin the published families below | Complete the whole in-scope producer/consumer/schema/caller census and independently review every unresolved numeric/cost disposition; local scans are not exhaustive coverage |
+| ACC-02 | Partial | Independently reviewed C7 guard and Map/List premise repairs published in draft PR359, head `6a4f87f0` | Reconcile and accept that slice on current main, preserving adaptation/identity/not-applicable, complete extents and invalid/opaque/source/callee controls; finish its required integration |
+| ACC-03 | Partial | Coordinated LR schema/premise repair and legacy-row rejection accepted and published in draft PR359 | Current-main three-owner composition and integration; helper/live accounting remains distinct, not silently accepted from descriptor tests |
+| ACC-04 | Partial | ANE/BKA/DSE and completed private-Map header/alias repairs independently accepted in draft PR359 | Reconcile actual C7/Effects/emitter consumers and remaining proof accounting, retain exact source/domain/mode/collision semantics, and integrate; unknown historical mode operation is not retried |
+| ACC-05 | Partial | Exported PL cost fields coherently removed across three owners/four branches, accepted in draft PR359 | Shared live helper accounting and required runtime/consumer composition, current-main acceptance and integration; exported-field parity is not full family closure |
+| ACC-06 | Open | Current source and deep/late-invalid behavior have been inspected; no complete removal/acceptance of this recursive-validation criterion is established | Remove artificial recursive type work/depth/width/construction admission across actual owners with full nested/Never/late-invalid/opaque validation and integration |
+| ACC-07 | Open | Existing allowance, debit and round-policy call graph is identified; these enforcing APIs remain | Remove the coherent inference policy/allowance/reservation family while preserving demonstrated fixed-point, cycle/conflict and fresh-verification semantics; no naive unbounded iteration or constant increase |
+| ACC-08 | Partial | Imported-module aggregate removal PR467 and Core/binding shape removal PR474 merged | Remaining per-Core carrier admission and profile/module/Effects/emitter pools, complete actual joins/emission, safety/profile/tamper controls and current-main acceptance |
+| ACC-09 | Partial | Module-read traversal PR433 and module-census/root uniqueness PR444 merged; initializer PR450, Set-literal PR454 and conversion PR462 have separately accepted finite draft implementations | Resolve the existing Native/API registration dependency without duplicating its uncertain operation, then reconcile/integrate those drafts; finish remaining runtime collection/domain/equality/insertion/shape policies with genuine source/type/callback/collision/Unicode/constructor guards |
+| ACC-10 | Partial | MIR guard restoration PR378 and guarded MIR/Native composition PR421 merged; PR383 is closed unmerged and receives no separate merge credit | Existing owners must complete the remaining accounting dispositions and exact producer/consumer source-replay/negative acceptance for their actual current tuples; helper counts, a closed unmerged PR or unrelated public work do not close this row |
+| ACC-11 | Open | Optimization/lowering PR370 remains an open draft at head `516f5f6c`; no fresh completed owner acceptance is inferred here | Existing owner must return exact opt/lower consumer composition and source/fact/profile/safety evidence, independent acceptance and current-main integration |
+| ACC-12 | Partial | Existing canonical ledgers, regression/schema controls and failed/reused-receipt distinctions are maintained; finite accepted increments have integrated | Final whole-outcome test/doc/schema reconciliation after the other applicable rows, exhaustive dispositions and permitted current-main acceptance; restricted execution remains explicitly unrun |
+| ACC-13 | Partial | Core-shape PR474, Record/Union cardinality PR479 and source-proof ancestry PR481 merged with their finite acceptance boundaries | Remaining carrier/origin-link/structural-projection/syntax/schema/macro capacity mechanisms and exhaustive disposition; retained cycle/representation/source safety cannot be replaced by a work cutoff |
+
+Why the score could look unchanged despite work: recent merges close concrete
+subfamilies inside these original conjunctive rows. Draft PR359 and the held
+runtime chain have accepted implementation slices but have not passed their
+remaining integration gates. Consequently they are progress evidence, not full
+row closure or grounds for invented arithmetic. The dashboard collector remains
+the sole dashboard writer; this dated source assessment supplies its evidence.

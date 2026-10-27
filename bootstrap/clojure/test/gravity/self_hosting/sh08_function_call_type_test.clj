@@ -21013,3 +21013,126 @@
                        #(invoke-c7 'sh08-record-access-match-typed-core-artifact
                                    [(:request wrong-path) 'descriptor 'program descriptor]))
                      [:value :diagnostics 0 :reason]))))))
+
+(defn- proof-ancestry-wrap [input leaf depth]
+  ;; Extend the existing normalized Core graph with inert, one-child do nodes.
+  ;; No source authentication, inference result or safety proof is supplied.
+  (let [original (get-in input [:nodes leaf])
+        owner (first (filter #(some #{leaf} (:children %)) (vals (:nodes input))))
+        wrappers (loop [i 0 child leaf out []]
+                   (if (= i depth) out
+                     (let [id (keyword (str "ancestry-" (name leaf) "-" i))
+                           node (-> original
+                                    (assoc :node-id id :core-form :do :children [child]
+                                           :attributes {} :resolved-binding-ids [])
+                                    (assoc :source (assoc (:source original) :form-id id :syntax-id id))
+                                    (assoc :evaluation {:kind :left-to-right
+                                                        :order [{:index 0 :core-node-id child}]}))]
+                       (recur (inc i) id (conj out node)))))
+        outer (or (:node-id (last wrappers)) leaf)
+        replace-id (fn [id] (if (= leaf id) outer id))
+        owner (-> owner (update :children #(mapv replace-id %))
+                  (update-in [:evaluation :order]
+                             #(mapv (fn [entry] (update entry :core-node-id replace-id)) %)))
+        nodes (merge (:nodes input) {(:node-id owner) owner}
+                     (into {} (map (juxt :node-id identity) wrappers)))
+        ordered (vec (mapcat (fn [node]
+                              (if (= leaf (:node-id node)) (cons node wrappers)
+                                [(nodes (:node-id node))])) (get-in input [:core :nodes])))
+        forms (loop [remaining wrappers
+                     out (update-in (:forms input) [(:node-id owner) :child-form-ids]
+                                    #(mapv replace-id %)) child leaf]
+                (if (empty? remaining)
+                  (assoc-in out [outer :parent-form-id] (:node-id owner))
+                  (let [node (first remaining) id (:node-id node)
+                        template (get-in input [:forms leaf])]
+                    (recur (rest remaining)
+                           (-> out
+                               (assoc-in [child :parent-form-id] id)
+                               (assoc id (assoc template :form-id id :syntax-id id :kind :list
+                                                :value nil :child-form-ids [child]))) id))))]
+    (-> input (assoc :nodes nodes :forms forms)
+        (assoc-in [:core :nodes] ordered)
+        (update :types merge (zipmap (map :node-id wrappers) (repeat (get-in input [:types leaf])))))))
+
+(defn- proof-ancestry-chain [depth]
+  (let [ids (mapv #(keyword (str "path-" %)) (range (inc depth)))
+        nodes (into {} (map-indexed
+                         (fn [i id] [id {:node-id id :core-form :do
+                                         :children (if (zero? i) [] [(ids (dec i))])}]) ids))
+        parents (into {} (map (fn [[child owner]] [child {:owner owner :ordinal 0}])
+                              (partition 2 1 ids)))]
+    {:leaf (first ids) :root (last ids) :nodes nodes :parents parents}))
+
+(deftest sh08-proof-ancestry-complete-path-development-kernel
+  (doseq [depth [2 140 260]]
+    (let [{:keys [leaf root nodes parents]} (proof-ancestry-chain depth)
+          expected (mapv (fn [i] {:node (nodes (keyword (str "path-" i)))
+                                  :child-index (when (pos? i) 0)}) (range (inc depth)))
+          path (invoke-c7 'sh08-si-ancestry-path [leaf root nodes parents])]
+      (is (true? (invoke-c7 'sh08-si-within? [leaf root parents])))
+      (is (= expected path))
+      (is (true? (invoke-c7 'sh08-vl-path-valid? [path leaf root nodes])))
+      (when (> depth 129)
+        (doseq [changed [(assoc-in path [(dec (count path)) :child-index] 9)
+                       (assoc-in path [130 :node :node-id] :absent)
+                       (conj path (first path))]]
+          (is (false? (invoke-c7 'sh08-vl-path-valid? [changed leaf root nodes]))))))))
+
+(deftest sh08-proof-ancestry-invalid-graph-development-kernel
+  (let [{:keys [leaf root nodes parents]} (proof-ancestry-chain 140)
+        late (keyword "path-139")
+        path (invoke-c7 'sh08-si-ancestry-path [leaf root nodes parents])]
+    (doseq [changed [(assoc-in parents [late :owner] leaf)
+                     (dissoc parents late)
+                     (assoc-in parents [late :owner] :absent)]]
+      (is (false? (invoke-c7 'sh08-si-within? [leaf root changed])))
+      (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf root nodes changed]))))
+    (is (false? (invoke-c7 'sh08-si-within? [nil nil {}])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [nil nil {} {}])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf root (dissoc nodes late) parents])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf :disconnected nodes parents])))
+    (doseq [changed [(assoc-in nodes [late :children] [:wrong])
+                     (assoc-in nodes [late :core-form] :loop)
+                     (assoc-in nodes [late :core-form] :fn)]]
+      (is (false? (invoke-c7 'sh08-vl-path-valid? [path leaf root changed]))))))
+
+(deftest sh08-proof-ancestry-derived-consumers-development-kernel
+  (let [{:keys [core nodes bindings types] :as input}
+        (proof-ancestry-wrap (bounded-successor-input 3) :again 140)
+        result (bounded-successor-derived input 65536)
+        descriptor (:descriptor result) proof (:range-proof descriptor)
+        valid #(invoke-c7 'sh08-si-inferred-call-valid?
+                         [core (nodes :increment) (last (:calls core)) (last (:call-edges core))
+                          nodes bindings (assoc types :inc-op %)])]
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :rule])))
+    (is (= 141 (count (first (:backedge-paths proof)))))
+    (is (= [:proven-safe :retained :not-authorized]
+           ((juxt :outcome :runtime-guards :check-elision) proof)))
+    (is (true? (valid descriptor)))
+    (doseq [changed [(assoc-in descriptor [:range-proof :backedge-paths 0 139 :child-index] 9)
+                     (assoc-in descriptor [:range-proof :backedge-paths 0 139 :node :source :syntax-id] :forged)
+                     (update-in descriptor [:range-proof :backedge-paths 0] conj
+                                (first (first (:backedge-paths proof))))
+                     (assoc-in descriptor [:range-proof :guarded-edge :relation] :forged)]]
+      (is (false? (valid changed)))))
+  (doseq [family [:nth :get]]
+    (let [base (if (= family :nth) (vector-loop-nth-input 3 false) (vector-loop-get-input 3))
+          {:keys [core nodes bindings types] :as input}
+          (vector-loop-nth-completed (proof-ancestry-wrap base :check 140))
+          result (vector-loop-nth-derived input 65536)
+          descriptor (:descriptor result) proof (:bounds-proof descriptor)
+          valid #(invoke-c7 (if (= family :nth) 'sh08-vn-inferred-call-valid? 'sh08-mg-inferred-call-valid?)
+                           [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2)
+                            nodes bindings (assoc types :nth-op %)])]
+      (is (= :accepted (get-in input [:invariant-result :status]) (:status result))
+          (pr-str {:family family :result (select-keys result [:status :reason :rule])}))
+      (is (= 142 (count (:guard-path proof))))
+      (is (= [:proven-safe :retained :not-authorized]
+             ((juxt :outcome :runtime-guards :check-elision) proof)))
+      (is (true? (valid descriptor)))
+      (doseq [changed [(assoc-in descriptor [:bounds-proof :guard-path 139 :child-index] 9)
+                       (assoc-in descriptor [:bounds-proof :guard-path 139 :node :source :syntax-id] :forged)
+                       (update-in descriptor [:bounds-proof :guard-path] conj (first (:guard-path proof)))
+                       (assoc-in descriptor [:bounds-proof :slot-binding-id] :forged)]]
+        (is (false? (valid changed)))))))
