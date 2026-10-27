@@ -456,12 +456,14 @@
     (is (= 37 (last producer-args) (last inference-args))))
   (doseq [resolution [{:status :accepted :core {:unsupported (Object.)}}
                       {:status :rejected :reason :normalized-authentication-rejection}]]
-    (let [{:keys [result calls memo]} (normalized-import-derive resolution)
+    (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
           diagnostic (get-in result [:result :diagnostics 0])]
       (is (= :rejected (get-in result [:result :status])))
       (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
                  :normalized-authentication-rejection) (:reason diagnostic)))
-      (is (= memo (:memo result)))
+      (is (= (if (= :accepted (:status resolution))
+               (assoc memo :current-module {:request request :result (:result result)}) memo)
+             (:memo result)))
       (is (not-any? #(contains? #{'sh08-im-producers-with-allowance
                                  'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))
 
