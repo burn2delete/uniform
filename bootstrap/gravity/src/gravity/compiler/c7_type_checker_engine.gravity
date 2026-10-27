@@ -23181,7 +23181,7 @@
                    (= (get record :definition-binding-id) (get definition-binding :binding-id))
                    (= (get record :definition-name) (get definition-binding :name))])
               {:status :accepted :work-count work
-               :premise {:version :sh08-homogeneous-list-return-v1 :relation (get validation :relation)
+               :premise {:version :sh08-homogeneous-list-return-v2 :relation (get validation :relation)
                          :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
                          :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
                          :declaration declaration :function-record record :definition-binding definition-binding
@@ -23190,7 +23190,6 @@
                          :return-source (sh08-lr-source application) :constructor-source (sh08-lr-source constructor)
                          :element-source (sh08-lr-source member)
                          :checked-element-type (get declared :element-type) :checked-element-count (get validation :checked-member-count)
-                         :type-work (get validation :type-work) :member-work (get validation :member-work)
                          :normal-completion? (= false (= actual :gravity.type/never))
                          :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
                          :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
@@ -23199,8 +23198,8 @@
           (assoc validation :work-count work))))))
 
 (defn sh08-lr-row [premise]
-  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v1 :return-compatibility premise}
-   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v1
+  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v2 :return-compatibility premise}
+   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v2
    :lhs {:function-id (get premise :function-id) :body-core-node-id (get premise :body-core-node-id) :role :return}
    :rhs {:actual-body-type (get premise :actual-body-type) :declared-return-type (get premise :declared-return-type)}
    :dependencies premise
