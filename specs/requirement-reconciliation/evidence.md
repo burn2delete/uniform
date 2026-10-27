@@ -186,3 +186,31 @@ whole requirement or the Partial Reader task. The earlier self-hosting-runner
 selector rejected this namespace before executing tests; the repository's
 documented leaf owner then listed and ran the exact namespace. No failed selector
 is counted as a feature test, and no bootstrap compiler was loaded or replayed.
+
+## Language, Foundation and extension proposal conservation
+
+The complete Language fragment adds 160 candidate records and 2,069 exact
+facets. It connects the three existing L1 units to their structured facets while
+preserving their reviewed local split, historical support and current development
+observation. Foundation adds all 82 original candidates and 2,119 facets; seven
+equivalence proposals remain unapplied. Five extension/policy sources add 43
+candidates and 392 facets, retaining future product scope and historical release
+limits. Historical discovery keeps receipt identities and qualifications; original
+proposal record digests retain lineage without copying their full normative text.
+
+The combined draft has 997 candidates and 24,580 facets. Complete structured
+partitions cover 173 original documents and five extension/policy sources; the
+remaining 67 original documents already have first-pass proposals awaiting
+canonical normalization. These are conservation counts, not an accepted scope
+or implementation denominator. All existing candidate records are preserved
+apart from the three explicit L1 facet bindings; no aliases or task-status
+changes are applied.
+
+Residuals now distinguish scope identity, nonoverlap and acceptance qualification.
+An unknown signature, binding or applicable receipt inside a known obligation
+does not itself make the obligation's scope unknown. Explicit acceptance
+qualifications require a known unit owner and reason. Untyped residuals remain
+scope blockers. This change does not relabel any existing source residual or
+approve a unit; the real scope remains open. Twenty focused tests / 110
+assertions pass, including known-scope acceptance gaps, genuine scope blockers,
+invalid categories and missing qualification rationale.

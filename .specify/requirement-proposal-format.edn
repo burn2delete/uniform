@@ -18,6 +18,10 @@
             "Propose aliases for repeated invariants; retain context-specific refinements and distinct behaviors. Central equivalence review decides joins."
             "No sentence, paragraph, schema-field, task, phase or package count is a requirement denominator."
             "Do not silently discard unresolved source, future in-scope requirements, retired implementation evidence or missing task interfaces."]
+ :residual-categories {:scope-identity "Undecided outcome ownership or scope alternative; blocks denominator readiness."
+                       :nonoverlap "Undecided duplicate/distinct relationship; blocks denominator readiness."
+                       :acceptance-qualification "Known outcome with missing interface, implementation or evidence detail; retains denominator membership and blocks applicable acceptance credit."
+                       :default "An untyped unresolved facet remains a scope blocker. Every typed residual requires an exact facet, known unit owner and explicit qualification-reason. No bulk reclassification."}
  :proposal-record
  {:source-documents [{:id "Original inventory ID" :path "Exact inventory path" :sha256 "Pinned raw UTF-8 file SHA256"}]
   :units [{:proposed-id "Stable semantic candidate, not occurrence hash"

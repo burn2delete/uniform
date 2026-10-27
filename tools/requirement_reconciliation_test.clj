@@ -254,4 +254,24 @@
     (is (false? (:denominator-ready? result)))
     (is (= [(:id o)] (:unresolved-source-occurrences result)))))
 
+(deftest known-obligation-acceptance-gaps-do-not-change-scope
+  (let [[m sources] (complete-fixture)
+        o (first (rr/source-occurrences "X" (get sources "X")))
+        facet {:id "f" :source-occurrence-id (:id o) :start-byte 0 :end-byte (:end-byte o)
+               :start-line 1 :end-line 1 :raw-sha256 (:raw-sha256 o) :unit-ids ["fixture/one-thing"]
+               :unresolved true :unresolved-category :acceptance-qualification
+               :qualification-reason "The known outcome lacks applicable implementation evidence."}
+        m (-> m (assoc :source-facets [facet])
+              (assoc-in [:requirements 0 :source-facet-ids] ["f"])
+              (assoc-in [:source-dispositions 0 :facet-ids] ["f"]))
+        result (rr/project m sources)]
+    (is (= 1 (:denominator result)))
+    (is (= 1 (:acceptance-qualification-facet-count result)))
+    (is (nil? (:overall-rate result)))
+    (doseq [category [:scope-identity :nonoverlap nil]]
+      (is (false? (:denominator-ready? (rr/project (assoc-in m [:source-facets 0 :unresolved-category] category) sources)))))
+    (is (thrown? Exception (rr/project (assoc-in m [:source-facets 0 :unresolved-category] :ignore) sources)))
+    (is (thrown? Exception (rr/project (update-in m [:source-facets 0] dissoc :qualification-reason) sources)))
+    (is (thrown? Exception (rr/project (assoc-in m [:source-facets 0 :unresolved] false) sources)))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

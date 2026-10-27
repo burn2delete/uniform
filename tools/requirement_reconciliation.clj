@@ -149,6 +149,7 @@
        :scope-version (:scope-version manifest)
        :source-documents (count sources) :source-occurrences (count occurrences)
        :source-facet-count (:facets facet-result)
+       :acceptance-qualification-facet-count (:acceptance-qualified-facets facet-result)
        :source-dispositions {:reviewed (count (remove #(= :proposed (:review-state %)) dispositions))
                              :proposed (count (filter #(= :proposed (:review-state %)) dispositions))}
        :unresolved-source-occurrences unresolved

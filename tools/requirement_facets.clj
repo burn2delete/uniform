@@ -5,6 +5,9 @@
 (defn require! [condition message]
   (when-not condition (throw (ex-info message {:diagnostic "REQUIREMENT-FACET"}))))
 
+(defn scope-unresolved? [facet]
+  (and (:unresolved facet) (not= :acceptance-qualification (:unresolved-category facet))))
+
 (defn validate! [manifest sources by-source sha256]
   (let [facets (:source-facets manifest) ids (mapv :id facets)
         by-id (into {} (map (juxt :id identity) facets))
@@ -14,6 +17,12 @@
                             {} facets)
         grouped (group-by :source-occurrence-id facets)]
     (require! (= (count ids) (count (set ids))) "Duplicate source facet ID")
+    (doseq [f facets :when (:unresolved-category f)]
+      (require! (and (:unresolved f)
+                     (#{:scope-identity :nonoverlap :acceptance-qualification} (:unresolved-category f))
+                     (string? (:qualification-reason f)) (not (str/blank? (:qualification-reason f)))
+                     (seq (:unit-ids f)))
+                "Categorized residual needs a known owner, reason and valid category"))
     (doseq [{:keys [source-occurrence-id start-byte end-byte start-line end-line raw-sha256 unit-ids]} facets]
       (let [o (get by-source source-occurrence-id)]
         (require! (and o (= :source-block (:structural-kind o))
@@ -50,4 +59,5 @@
                  (set (map :occurrence-id (filter #(seq (:facet-ids %)) (:source-dispositions manifest)))))
               "Facet occurrence has no complete source disposition")
     {:facets (count facets)
-     :unresolved-occurrence-ids (set (map :source-occurrence-id (filter :unresolved facets)))}))
+     :acceptance-qualified-facets (count (filter #(and (:unresolved %) (= :acceptance-qualification (:unresolved-category %))) facets))
+     :unresolved-occurrence-ids (set (map :source-occurrence-id (filter scope-unresolved? facets)))}))
