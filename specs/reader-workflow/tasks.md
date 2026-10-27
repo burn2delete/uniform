@@ -51,9 +51,9 @@ Current evidence/status: Partial; merged current invocation and default/source-d
 
 Done when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance.
 
-- [ ] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff
+- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff
 
-Current evidence/status: Partial; real current Reader/Syntax products participate in the linked accepted pilot. Full component handoff coverage remains open.
+Current evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.
 
 Done when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run.
 

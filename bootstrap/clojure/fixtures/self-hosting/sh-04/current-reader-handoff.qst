@@ -1,0 +1,19 @@
+nil
+true
+false
+17
+:item
+item
+\newline
+()
+{}
+#{}
+#uuid "550e8400-e29b-41d4-a716-446655440000"
+#inst "2026-10-27T00:00:00.000-00:00"
+`(item "🙂" ~value ~@values)
+@target
+^:fresh item
+'(item)
+[:child {:nested #{1}}]
+1.25
+"matrix"

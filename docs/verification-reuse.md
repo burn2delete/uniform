@@ -786,3 +786,42 @@ passed 240 / 19. The helper contributed 12 / 151, the planner 60 / 556 and the
 boundary 6 / 11. The brokered 256 MiB process exited zero with identical clean
 source/hash bookends and no Bootstrap load. No compiler/provider acceptance
 or public artifact replay follows from that scope.
+
+### PR480 Bootstrap load-order regression
+
+Accounting's subsequent composition on main
+`8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa`, tree
+`d0e0d650e67c13de5f71c8a12dd356a2f1fda30f`, failed Bootstrap loading before
+semantic tests: the `macro-run-storage` alias was unavailable. The original
+bounded process exited 1 after 7,472 ms with no semantic observations. Its
+complete retained receipt SHA-256 is
+`d1b1cded91173a3924269e244e643edd5932f3dcf801090cb8cfbd7bc5f5e1de`.
+That NONPASS is not replaced by the earlier modeled-adapter results.
+
+The ordered manifest loads the semantic expansion stage before the public
+SH05 facade where PR480 placed the helper require. The modeled test primed the
+alias itself and therefore missed this actual entry-order failure. The repair
+moves the require to the first consumer, removes the late declaration, and
+loads all consumer forms into a fresh test namespace without priming its helper
+alias. A negative omitting that declaration must reproduce the missing-alias
+compile error. The resulting helper/consumer controls pass 13 tests / 157
+assertions; they remain Bootstrap-free.
+
+A complete cold Bootstrap namespace load is a separate acceptance requirement
+for this repair. It validates actual entry/load order without requesting compiler,
+Reader, AE, provider or C12 entrypoints; it does not prove namespace initialization
+effect closure. The structural calculation, fallback and
+verification calls are unchanged. The original RV1 mutation candidate is
+preserved separately; neither this repair nor PR480 closes whole RV1/RV2/RV4.
+
+The cold load completed on repair `537664462a25e9affb26a7810b104b36b4799c36`,
+tree `dd2b5fd0b78e53b4b0dd891821c4dbcb5d8faaa2`: natural exit 0, actual
+2 GiB, 8,123 ms bounded-process elapsed, complete capture and identical clean
+source bookends. Bootstrap and the helper namespace were both absent before
+loading; the actual public/private Macro verifier definitions, helper alias and
+public arglists were present afterward. The supervisor receipt SHA-256 is
+`9fa047f5493867e4ac410c03d3442761619e2bce572b461c7a00a30ef36b93f5`.
+Helper/load-order and language-boundary controls passed 19 / 168, docs passed
+240 / 19, and exact integration preflight passed. These remain load-order
+observations on the named repair, not semantic acceptance of Accounting's
+separate candidate or proof of initialization-effect closure.
