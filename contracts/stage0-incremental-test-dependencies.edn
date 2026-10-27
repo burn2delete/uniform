@@ -318,6 +318,14 @@
                  :performance? false
                  :proof? false
                  :freshness-required? true}}
+  {:test-id "macro-run-storage"
+   :path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
+   :namespace gravity.self-hosting.macro-run-storage-test
+   :jvm-group "macro-run-storage"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
   {:test-id "resolution-construction-inputs"
    :path "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
    :namespace gravity.self-hosting.resolution-construction-inputs-test
