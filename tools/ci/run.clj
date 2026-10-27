@@ -150,7 +150,8 @@
                         ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
                         ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]]
                        (when (seq paths)
-                         [["changed-clojure-lint" 120 (into ["clj-kondo" "--lint"] paths)]])))
+                         [["changed-clojure-lint" 120
+                           (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "projections" (projection-commands)
     "bootstrap" [["cold-bootstrap-load" 120
                   (command "1g" "-M" "-e"

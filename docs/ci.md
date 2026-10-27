@@ -56,6 +56,21 @@ parent of that tested merge, so stale event-base metadata cannot lint incoming
 main changes as PR changes. Main pushes compare against the push's `before`
 SHA and test the exact integrated commit.
 
+CI tooling itself must have zero lint warnings/errors. For other changed
+Clojure/EDN files, CI runs the same pinned clj-kondo configuration with caches
+disabled against both the immutable base bytes and current files. A warning
+is inherited only if Git maps its entire source span to unchanged, identical
+lines and the full diagnostic (including type, message, columns and mapped
+location) already exists there. Matching consumes each baseline occurrence
+once. New warnings, warnings on modified/unknown spans and every current error
+block the check, including newly unused definitions on otherwise unchanged
+lines. New files receive strict lint; changed `.clj-kondo` configuration disables
+baseline allowances. Malformed output, inconsistent exit/count receipts and
+tool failures fail closed. No linter is disabled or warning severity lowered.
+Both complete diagnostic sets, base source bytes, Git hunks, process receipts
+and the classification report remain in the CI artifact. Existing warnings
+remain visible debt; a passing comparison does not claim the file is lint-clean.
+
 Cache tests retain their owner and permission checks: Java temporary
 files use a runner-owned private directory, rather than Linux's root-owned
 shared `/tmp`. No source security or runtime pin is relaxed for CI.
