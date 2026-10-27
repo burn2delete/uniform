@@ -370,6 +370,10 @@
   {:namespace gravity.self-hosting.mir-source-snapshot-test
    :slice "SH-07"
    :owner :sh-core}
+  "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
+  {:namespace gravity.self-hosting.macro-run-storage-test
+   :slice "SH-05"
+   :owner :sh-macro}
   "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
   {:namespace gravity.self-hosting.resolution-construction-inputs-test
    :slice "SH-06"

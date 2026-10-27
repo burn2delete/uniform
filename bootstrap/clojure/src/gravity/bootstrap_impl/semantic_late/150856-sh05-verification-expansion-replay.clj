@@ -67,24 +67,7 @@
    run-count-current?
    (= (:expanded-defn-count artifact) (count runs))
    run-storage-exact?
-   (every?
-    (fn
-     [run]
-     (and
-      (=
-       #{:template-verification
-         :raw-template-result
-         :resolved-expansion
-         :digest-requests
-         :resolved-digests
-         :resolved-verification}
-       (set (keys run)))
-      (=
-       #{:schema-version :status :artifact :expansion-template}
-       (set (keys (:raw-template-result run))))
-      (= #{:rule :schema-version :status :artifact} (set (keys (:template-verification run))))
-      (= #{:rule :schema-version :status :artifact} (set (keys (:resolved-verification run))))))
-    runs)
+   (macro-run-storage/exact? runs)
    plan-binding-current?
    (=
     (select-keys
