@@ -218,13 +218,7 @@
 
 (defn sh08-local-bounds-value []
   {:maximum-core-nodes 65536
-   :maximum-root-nodes 1024
    :maximum-node-children 1024
-   :maximum-origin-entries 256
-   :maximum-metadata-entries 256
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-exports 1024
    :maximum-carrier-nodes 1048576
    :maximum-carrier-depth 128
    :maximum-carrier-width 65536
@@ -270,13 +264,8 @@
       false)
     false))
 
-(defn sh08-bounded-vector? [value maximum]
-  (if (vector? value)
-    (<= (count value) maximum)
-    false))
-
-(defn sh08-keyword-vector? [values maximum]
-  (if (sh08-bounded-vector? values maximum)
+(defn sh08-keyword-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -285,8 +274,8 @@
           false)))
     false))
 
-(defn sh08-sha-vector? [values maximum]
-  (if (sh08-bounded-vector? values maximum)
+(defn sh08-sha-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -404,8 +393,7 @@
     false))
 
 (defn sh08-origin-vector? [origins]
-  (if (sh08-bounded-vector?
-       origins (get (sh08-local-bounds-value) :maximum-origin-entries))
+  (if (vector? origins)
     (loop [remaining origins]
       (if (= (count remaining) 0)
         true
@@ -422,10 +410,8 @@
     (if (sh08-sha256-id? (get source :syntax-id))
       (if (sh08-sha256-id? (get source :form-id))
         (if (map? (get source :semantic-span))
-          (if (<= (count (get source :semantic-span)) 16)
-            (if (sh08-origin-vector? (get source :origin-chain))
-              (sh08-origin-vector? (get source :generated-origin))
-              false)
+          (if (sh08-origin-vector? (get source :origin-chain))
+            (sh08-origin-vector? (get source :generated-origin))
             false)
           false)
         false)
@@ -441,17 +427,10 @@
       (if (keyword? (get module :profile))
         (if (keyword? (get module :target))
           (if (keyword? (get module :safety))
-            (if (sh08-keyword-vector?
-                 (get module :effects)
-                 (get (sh08-local-bounds-value) :maximum-effects))
-              (if (sh08-keyword-vector?
-                   (get module :capabilities)
-                   (get (sh08-local-bounds-value) :maximum-capabilities))
-                (if (sh08-bounded-vector?
-                     (get module :exports)
-                     (get (sh08-local-bounds-value) :maximum-exports))
-                  (sh08-sha256-id?
-                   (get module :source-revision-id))
+            (if (sh08-keyword-vector? (get module :effects))
+              (if (sh08-keyword-vector? (get module :capabilities))
+                (if (vector? (get module :exports))
+                  (sh08-sha256-id? (get module :source-revision-id))
                   false)
                 false)
               false)
@@ -489,43 +468,27 @@
     (if (= (get node :artifact) :gravity/sh07-core-node)
       (if (sh08-sha256-id? (get node :node-id))
         (if (keyword? (get node :core-form))
-          (if (sh08-sha-vector?
-               (get node :children)
-               (get (sh08-local-bounds-value) :maximum-node-children))
+          (if (sh08-sha-vector? (get node :children))
             (if (map? (get node :attributes))
-              (if (<= (count (get node :attributes))
-                      (get (sh08-local-bounds-value)
-                           :maximum-metadata-entries))
-                (if (sh08-source-shape? (get node :source))
-                  (if (if (= (get node :binding-context) nil)
-                        true
-                        (sh08-sha256-id?
-                         (get node :binding-context)))
-                    (if (contains? #{true false} (get node :generated?))
-                      (if (sh08-sha-vector?
-                           (get node :resolved-binding-ids)
-                           (get (sh08-local-bounds-value)
-                                :maximum-node-children))
-                        (if (map? (get node :evaluation))
-                          (if (sh08-node-module-matches?
-                               (get node :module) module)
-                            (if (map? (get node :metadata))
-                              (if (<= (count (get node :metadata))
-                                      (get (sh08-local-bounds-value)
-                                           :maximum-metadata-entries))
-                                (if
-                                 (sh08-preserved-declarations-match?
+              (if (sh08-source-shape? (get node :source))
+                (if (if (= (get node :binding-context) nil)
+                      true
+                      (sh08-sha256-id? (get node :binding-context)))
+                  (if (contains? #{true false} (get node :generated?))
+                    (if (sh08-sha-vector?
+                          (get node :resolved-binding-ids))
+                      (if (map? (get node :evaluation))
+                        (if (sh08-node-module-matches?
+                              (get node :module)
+                              module)
+                          (if (map? (get node :metadata))
+                            (if (sh08-preserved-declarations-match?
                                   (get node :preserved-declarations)
                                   module)
-                                  (if (sh08-keyword-vector?
-                                       (get node
-                                            :pending-fact-families)
-                                       32)
-                                    (keyword?
-                                     (get node
-                                          :lowering-rule-version))
-                                    false)
-                                  false)
+                              (if (sh08-keyword-vector?
+                                    (get node :pending-fact-families))
+                                (keyword?
+                                  (get node :lowering-rule-version))
                                 false)
                               false)
                             false)
@@ -574,8 +537,7 @@
            :node (if (map? node) node {})})))))
 
 (defn sh08-roots-valid? [roots node-table]
-  (if (sh08-sha-vector?
-       roots (get (sh08-local-bounds-value) :maximum-root-nodes))
+  (if (sh08-sha-vector? roots)
     (if (> (count roots) 0)
       (if (sh08-all-unique? roots [])
         (loop [remaining roots]
@@ -616,8 +578,7 @@
                 nodes (get core-artifact :nodes)
                 roots (get core-artifact :root-core-node-ids)]
             (if (sh08-module-shape? module)
-              (if (sh08-bounded-vector?
-                   nodes (get (sh08-local-bounds-value) :maximum-core-nodes))
+              (if (vector? nodes)
                 (if (> (count nodes) 0)
                   (let [validated
                         (sh08-validate-node-sequence nodes module)]
@@ -1769,43 +1730,19 @@
                          (get binding :package) #{:name :version})
                       (if (symbol? (get (get binding :package) :name))
                         (if (string? (get (get binding :package) :version))
-                          (if (<= (count
-                                   (get (get binding :package) :version))
-                                  1024)
-                            (if (keyword? (get binding :visibility))
-                              (if (sh08-bounded-vector?
-                                   (get binding :profile-set) 128)
-                                (if (sh08-bounded-vector?
-                                     (get binding :target-set) 128)
-                                  (if (sh08-bounded-vector?
-                                       (get binding :effects) 128)
-                                    (if (sh08-bounded-vector?
-                                         (get binding :capabilities) 128)
-                                      (if (if (keyword?
-                                               (get binding :type-ref))
-                                            true
-                                            (if (symbol?
-                                                 (get binding :type-ref))
-                                              true
-                                              (map?
-                                               (get binding :type-ref))))
-                                        (if (keyword? (get binding :safety))
-                                          (if (map?
-                                               (get binding :semantic-span))
-                                            (if (<=
-                                                 (count
-                                                  (get binding
-                                                       :semantic-span))
-                                                 256)
-                                              (if (= (get binding
-                                                          :binding-class)
-                                                     :lexical)
-                                                (sh08-sha256-id?
-                                                 (get binding :scope-id))
-                                                (= (get binding :scope-id)
-                                                   nil))
-                                              false)
-                                            false)
+                          (if (keyword? (get binding :visibility))
+                            (if (vector? (get binding :profile-set))
+                              (if (vector? (get binding :target-set))
+                                (if (vector? (get binding :effects))
+                                  (if (vector? (get binding :capabilities))
+                                    (if (if (keyword? (get binding :type-ref)) true
+                                          (if (symbol? (get binding :type-ref)) true
+                                            (map? (get binding :type-ref))))
+                                      (if (keyword? (get binding :safety))
+                                        (if (map? (get binding :semantic-span))
+                                          (if (= (get binding :binding-class) :lexical)
+                                            (sh08-sha256-id? (get binding :scope-id))
+                                            (= (get binding :scope-id) nil))
                                           false)
                                         false)
                                       false)
