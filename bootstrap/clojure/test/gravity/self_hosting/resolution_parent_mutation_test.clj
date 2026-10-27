@@ -35,6 +35,7 @@
         sample (fn []
                  {:same-parent? true
                   :invocation-current? (= invocation ((implementation 'sh06-resolution-reader-invocation)))
+                  :proof-transaction-absent? (nil? ((implementation 'sh07-proof-transaction-context!)))
                   ;; This is the existing short-seam catalog, not a claim of
                   ;; complete transitive dispatch or closed-over-state proof.
                   :observed-roots-stable?
@@ -76,6 +77,8 @@
 
 (deftest actual-current-parent-mutation-is-rejected-after-resolve
   (reset! observations {:phase :constructing-fresh-current-reader-parent})
+  (when (some? ((implementation 'sh07-proof-transaction-context!)))
+    (throw (ex-info "Fresh mutation control cannot borrow a proof transaction" {})))
   (let [source (.getCanonicalPath
                 (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/accepted/compiler-subset.gravity"))
         reader (.getCanonicalPath (io/file b/sh03-reader-source-relative-path))
@@ -122,6 +125,7 @@
                     :changed-missing-fields (:missing-fields data) :changed-failed-checks checks
                     :same-parent? (every? :same-parent? entries)
                     :invocation-current? (every? :invocation-current? entries)
+                    :proof-transaction-absent? (every? :proof-transaction-absent? entries)
                     :observed-roots-stable? (every? :observed-roots-stable? entries)
                     :alias-restored? (restored?) :no-precomputed-reader-product? true
                     :no-verifier-report-substitution? true :whole-rv1-closed? false}]
@@ -140,6 +144,7 @@
         (is (seq entries))
         (is (:same-parent? result))
         (is (:invocation-current? result))
+        (is (:proof-transaction-absent? result))
         (is (:observed-roots-stable? result))
         (is (:alias-restored? result))
         (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
