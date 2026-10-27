@@ -97,6 +97,24 @@ accepted the source correction, pure baseline/candidate evidence and genuine
 fixed-catalog result. Pre-run test-shape and syntax corrections were never
 executed as source acceptance attempts.
 
+## Current-main composition
+
+Main `4fa8575b` updates homogeneous List-return premises/domains to v2, removes
+their accounting fields and adjusts typed constraint census handling. Those
+changes are preserved by normal reconciliation. That route consumes checked
+Core/type facts; the exercised Reader route builds its `sh03-` closure through
+the unchanged seed compiler and normal Reader runtime. The full emitter source
+and binding hashes change, so the genuine receipt keeps its original tuple.
+
+Composed commit `3b7c1280a0a5e731e6415dc9e89f2f83e38e354a`, tree
+`8049ebfcd8eb0d37a70a5ecdd79762308b704bd1`, passed the compiler-free source-identity
+namespace and language/LOC gates: 20 tests / 169 assertions, natural exit 0 in
+1.308 seconds, actual 512 MiB/60 seconds, Bootstrap unloaded and matching clean
+bookends. Both output streams were empty. All three owned source/test blobs
+remain identical to the genuine candidate. The composition receipt SHA-256 is
+`30a55357d21d1b437b461271f4bf1cef75541460240a7b1ae3cd9d5adc76127f`.
+No seven-call replay or reissued source acceptance is claimed.
+
 This original lexical-products/origins row is complete at the stated enabled
 boundary. Historical fixture-README quota expectations remain historical and
 are not current acceptance rules. In particular, huge-decimal deferment here
