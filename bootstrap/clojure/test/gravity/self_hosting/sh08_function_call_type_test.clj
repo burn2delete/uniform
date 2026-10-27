@@ -20660,3 +20660,128 @@
     (is (string?
          (get-in gravity [:diagnostics 0 :parameter-binding-id])))
     (is (= (:diagnostics gravity) (:diagnostics qst)))))
+
+
+;; Normalized Core shape fixtures; no B47 authentication authority.
+(defn- core-shape-sha [n] (str "sha256:" (format "%064x" n)))
+(def ^:private core-shape-module
+  {:namespace 'example.shape :profile :meta :target :jvm :safety :safe
+   :effects [] :capabilities [] :exports [] :source-revision-id (core-shape-sha 1)})
+(def ^:private core-shape-origin {:origin-id (core-shape-sha 2) :kind :source :from-syntax-id (core-shape-sha 3) :role :expression})
+(def ^:private core-shape-source {:syntax-id (core-shape-sha 4) :form-id (core-shape-sha 5) :semantic-span {}
+                   :origin-chain [] :generated-origin []})
+(defn- core-shape-node [n]
+  {:artifact :gravity/sh07-core-node :node-id (core-shape-sha (+ 100 n)) :core-form :literal
+   :children [] :attributes {:literal-kind :integer} :source core-shape-source :binding-context nil
+   :generated? false :resolved-binding-ids [] :evaluation {}
+   :module (select-keys core-shape-module [:namespace :profile :target]) :metadata {}
+   :preserved-declarations (select-keys core-shape-module [:effects :capabilities :safety])
+   :pending-fact-families [] :lowering-rule-version :core-shape-fixture})
+(defn- core-shape-core [n]
+  (let [nodes (mapv core-shape-node (range n))]
+    {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (core-shape-sha 6)
+     :module core-shape-module :nodes nodes :root-core-node-ids (mapv :node-id nodes)}))
+(def ^:private core-shape-binding
+  {:binding-id (core-shape-sha 7) :upstream-binding-id (core-shape-sha 8)
+   :definition-artifact-id (core-shape-sha 9) :definition-syntax-id (core-shape-sha 10)
+   :name 'value :kind :var :binding-class :namespace :namespace 'example.shape
+   :package {:name 'example.shape :version "v1"} :visibility :public
+   :profile-set [:meta] :target-set [:jvm] :effects [] :capabilities []
+   :type-ref :gravity.type/integer :safety :safe :semantic-span {} :scope-id nil})
+(defn- core-shape-entries [n] (into {} (map #(vector (keyword (str "field-" %)) %) (range n))))
+
+(deftest sh08-core-shape-field-extents-development-kernel
+  ;; Actual Gravity shape helpers on normalized DATA, not source admission.
+  (doseq [[function arguments]
+          [['sh08-module-shape? [(assoc core-shape-module :effects (vec (repeat 129 :io/write)))]]
+           ['sh08-module-shape? [(assoc core-shape-module :capabilities (vec (repeat 129 :io/stdout)))]]
+           ['sh08-module-shape? [(assoc core-shape-module :exports (vec (repeat 1025 'value)))]]
+           ['sh08-source-shape? [(assoc core-shape-source :semantic-span (core-shape-entries 17))]]
+           ['sh08-source-shape? [(assoc core-shape-source :origin-chain (vec (repeat 257 core-shape-origin))
+                                                       :generated-origin (vec (repeat 257 core-shape-origin)))]]
+           ['sh08-node-shape? [(assoc (core-shape-node 0)
+                                     :children (vec (repeat 1025 (core-shape-sha 2)))
+                                     :resolved-binding-ids (vec (repeat 1025 (core-shape-sha 3)))
+                                     :metadata (core-shape-entries 257)
+                                     :attributes (core-shape-entries 257)
+                                     :pending-fact-families (vec (repeat 33 :types))) core-shape-module]]]]
+    (is (true? (invoke-c7 function arguments))))
+  (doseq [field [:effects :capabilities]]
+    (let [valid (assoc core-shape-module field (vec (repeat 129 :permission)))]
+      (is (false? (invoke-c7 'sh08-module-shape? [(assoc-in valid [field 128] "wrong")])))))
+  (doseq [field [:origin-chain :generated-origin]]
+    (let [valid (assoc core-shape-source field (vec (repeat 257 core-shape-origin)))]
+      (doseq [bad [(dissoc core-shape-origin :role) (assoc core-shape-origin :origin-id "sha256:wrong")]]
+        (is (false? (invoke-c7 'sh08-source-shape? [(assoc-in valid [field 256] bad)]))))))
+  (doseq [field [:children :resolved-binding-ids]]
+    (let [valid (assoc (core-shape-node 0) field (vec (repeat 1025 (core-shape-sha 2))))
+          callbacks (atom 0)
+          opaque (reify Object
+                   (hashCode [_] (swap! callbacks inc) (throw (ex-info "unreachable" {})))
+                   (toString [_] (swap! callbacks inc) (throw (ex-info "unreachable" {}))))]
+      (doseq [bad ["sha256:wrong" opaque]]
+        (is (false? (invoke-c7 'sh08-node-shape? [(assoc-in valid [field 1024] bad) core-shape-module]))))
+      (is (zero? @callbacks))))
+  (doseq [bad [(assoc (core-shape-node 0) :extra true)
+               (assoc (core-shape-node 0) :pending-fact-families (conj (vec (repeat 32 :types)) "wrong"))
+               (assoc-in (core-shape-node 0) [:preserved-declarations :safety] :unsafe)
+               (assoc-in (core-shape-node 0) [:module :namespace] 'forged)]]
+    (is (false? (invoke-c7 'sh08-node-shape? [bad core-shape-module]))))
+  (doseq [bad [nil [] (assoc core-shape-source :extra true) (assoc core-shape-source :semantic-span [])]]
+    (is (false? (invoke-c7 'sh08-source-shape? [bad])))))
+
+(deftest sh08-core-binding-field-extents-development-kernel
+  (let [binding (-> core-shape-binding
+                    (assoc :profile-set (vec (repeat 129 :meta)) :target-set (vec (repeat 129 :jvm))
+                           :effects (vec (repeat 129 :io/write)) :capabilities (vec (repeat 129 :io/stdout))
+                           :semantic-span (core-shape-entries 257))
+                    (assoc-in [:package :version] (apply str (repeat 1025 "x"))))]
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [binding])))
+    ;; Existing binding fields require vectors; element policy belongs elsewhere.
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding :profile-set [nil])])))
+    (doseq [field [:profile-set :target-set :effects :capabilities]]
+      (is (false? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding field nil)]))))
+    (doseq [bad [(assoc binding :extra true) (assoc binding :upstream-binding-id "wrong")
+                 (assoc binding :semantic-span []) (assoc-in binding [:package :version] 1)
+                 (assoc binding :scope-id (core-shape-sha 9))
+                 (assoc binding :binding-class :lexical :scope-id nil)]]
+      (is (false? (invoke-c7 'sh08-ft-binding-valid? [bad]))))
+    (is (true? (invoke-c7 'sh08-ft-binding-valid?
+                         [(assoc binding :binding-class :lexical :scope-id (core-shape-sha 11))])))))
+
+(deftest sh08-core-shape-graph-and-typing-development-kernel
+  (let [core (core-shape-core 2)
+        typed (invoke-c7 'sh08-type-core-artifact [core])
+        roots (:root-core-node-ids core)
+        wide-roots (mapv core-shape-sha (range 2000 3025))
+        wide-table (zipmap wide-roots (repeat {}))]
+    (is (= :accepted (:status (invoke-c7 'sh08-validate-core-shape [core])) (:status typed)))
+    (is (= (zipmap roots (repeat :gravity.type/integer)) (:type-table typed)))
+    (is (= roots (mapv :core-node-id (:type-facts typed))))
+    (is (= :coordinator-adapter-required (:authentication-status typed)))
+    (is (true? (invoke-c7 'sh08-roots-valid? [wide-roots wide-table])))
+    (doseq [bad [(assoc wide-roots 1024 (first wide-roots))
+                 (assoc wide-roots 1024 (core-shape-sha 4000))
+                 (assoc wide-roots 1024 "wrong") [] nil]]
+      (is (false? (invoke-c7 'sh08-roots-valid? [bad wide-table]))))
+    (doseq [[bad reason]
+            [[(assoc core :nodes []) :empty-core-node-vector]
+             [(assoc core :nodes nil) :core-node-vector-or-bound]
+             [(assoc-in core [:nodes 1 :node-id] (get-in core [:nodes 0 :node-id])) :duplicate-core-node-id]
+             [(assoc-in core [:nodes 0 :children] [(get-in core [:nodes 1 :node-id])]) :child-id-missing-or-not-before-parent]
+             [(assoc-in core [:nodes 1 :children] [(core-shape-sha 4000)]) :child-id-missing-or-not-before-parent]
+             [(assoc core :root-core-node-ids [(first roots)]) :orphan-core-node]
+             [(assoc core :root-core-node-ids [(first roots) (first roots)]) :malformed-or-unresolved-roots]
+             [(assoc core :artifact-id "wrong") :malformed-core-artifact-id]
+             [(assoc-in core [:nodes 1 :preserved-declarations :effects] [:io/write]) :malformed-core-node]]]
+      (is (= reason (:reason (invoke-c7 'sh08-validate-core-shape [bad])))))
+    (let [large-source (assoc core-shape-source :semantic-span (core-shape-entries 17)
+                                              :origin-chain (vec (repeat 257 core-shape-origin)))
+          large-node (assoc (core-shape-node 0) :source large-source :metadata (core-shape-entries 257))
+          result (invoke-c7 'sh08-type-core-artifact [(assoc core :nodes [large-node]
+                                                           :root-core-node-ids [(:node-id large-node)])])]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/integer (get (:type-table result) (:node-id large-node))))
+      (is (= (:semantic-span large-source) (get-in result [:type-facts 0 :source-span])))
+      (is (= (:origin-chain large-source) (get-in result [:type-facts 0 :origin-chain])))
+      (is (= (:syntax-id large-source) (get-in result [:type-facts 0 :syntax-id]))))))
