@@ -190,7 +190,8 @@ retains each producer identity; reconciliation does not reissue its source runs.
 | --- | --- | --- |
 | Zero-arity source to C6/MIR and Native | `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`, tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`: genuine true `.gravity` and false `.qst` construction, separate fresh C6 verification, Gravity reconstruction verification, Native positives, both source-substitution directions and exact type/quota negatives. Separate children naturally exited 0 at 2 GiB/120 seconds. | B's DATA was inspected in-process but not retained for a later independent saved-artifact rewalk. No other source or parameter family is inferred. |
 | Composed Native consumer | `38f8f6e0`, tree `5b2f86c3`: retained A passed real seal/provenance, Gravity and Native consumption, with type, retired-scope, source-Core and parameter-impostor negatives; 42 tests / 426 assertions, natural exit 0. | This reconsumes A; it is not a new original source construction. |
-| Single Bool entry parameter | The same `38f8f6e0` / `5b2f86c3` tuple: genuine c41 `.gravity` original 1/7 and separate independent fresh replay 1/48, natural exit 0 at 2 GiB/120 seconds. Full typed raw-C6 equality, actual C6/Gravity verification, Native acceptance and parameter negatives passed. | Parameter `.qst` and other parameter families are not accepted by these receipts. |
+| Single Bool entry parameter, `.gravity` | The same `38f8f6e0` / `5b2f86c3` tuple: genuine c41 `.gravity` original 1/7 and separate independent fresh replay 1/48, natural exit 0 at 2 GiB/120 seconds. Full typed raw-C6 equality, actual C6/Gravity verification, Native acceptance and parameter negatives passed. | These original receipts retain their `.gravity` attribution; other parameter families are not inferred. |
+| Single Bool entry parameter, `.qst` | `66f46c53aaa24bfecffca782eb8f2128b85ac1e1`, tree `bce85a1d8daac945ab26b039f180685cf68990b6`: genuine original 1/7 and separate independent fresh replay 1/48, both natural exit 0 at actual 2 GiB under the unchanged 120-second execution profile. Complete typed raw-C6 equality, fresh C6 verification, Gravity build/verification, Native acceptance and the existing parameter/source/type negatives passed. | This closes the missing `.qst` case for this supported Bool diamond. No other parameter family, final admission or newer-tuple source execution is inferred. |
 | Final main reconciliation | `d67406b3` / `6ed68a33`: independent source/contract review conserved the SH04 projection, fallback, descriptors and fresh authentication; fresh focused/boundary/LOC controls 21/94, docs 240/19 and exact integration preflight passed. | Earlier source evidence retains its original tuple. No emitted-code or final-artifact admission is inferred. |
 
 The parameter handoff's strict V3 typed DATA digest is
@@ -200,6 +201,39 @@ were reviewed; no equality relaxation replaced the source/callback guards.
 The C11 producer in these receipts is 567399 bytes, SHA256
 `c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
 It must not inherit the full-Reader b9 source receipt or vice versa.
+
+The `.qst` candidate changes only the private source-test helper relative to
+`38f8f6e0`: its existing one-argument `.gravity` default is preserved, with an
+explicit second argument restricted to `.gravity` or `.qst`. Reader released
+that helper to the existing Native C6 owner before the change. Native reused
+the original guarded controller and shared V3 codec, archiving the historical
+`.gravity` controller bytes and receipts. No saved Reader product, accepted Core
+or verification result was injected; only original raw C6 DATA crossed the
+externally gated handoff. Independent source/harness review and compiler-free
+controls passed 6/56 before either source child ran.
+
+Original and replay execution phases were 99803.001334 ms and 106984.993042 ms;
+these are not total controller/process wall times. Both external supervisors
+observed natural exit zero. All four source/harness bookends matched on the
+frozen `.qst` tuple; source and controller stderr were empty. The raw handoff
+SHA256 is `c08a443d902d639ef5f72699aac4bb86c94516302be3dd04220aebb17fea8687`.
+Original/replay terminal SHA256 values are
+`5b87d16342d143871985220e987973bce304998fca149f30f8585f757f06ff7a` and
+`6ad973861c7ca05b740a4d8354e375673afddbd87361e260a1d4e9ebb593d3d7`.
+Retained-result readback checked those hashes, the `.qst` source selection,
+complete typed comparison and actual C6/Gravity/Native verification. Earlier
+cheap-control failures remain nonpasses; this adds no original source retry.
+
+Normal main composition retains these receipts at `66f46c53`. Incoming Reader
+index changes from PR442/449 do not receive a new full source-run claim here.
+The source-test helper, fixture pair, consumed Gravity C6/C11/Reader/emitter sources
+and p15 independent constructed-validator components remain identical to that
+accepted candidate. The separate hosted `gravity/c11_mir/validation.clj` facade
+changed through PR447/`0968daed`, adding termination/dominance checks to its
+status, proof and diagnostic handling. The frozen source receipts do not accept
+that changed facade or reexecute it on the newer tuple. The helper addition
+and this acceptance record require their own reviewed main
+integration; merging them does not reissue the frozen semantic receipts.
 
 These finite development joins are complete. OWN-04 still requires a disposition
 for each remaining inventoried supported schema/parameter path and its actual
