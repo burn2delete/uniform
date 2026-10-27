@@ -573,8 +573,12 @@ not a fresh passing 14-test batch, and counts are not summed with retained scope
 Separate cheap checks on the first candidate passed 11 tests/23 assertions and
 the actual 2031-file repository LOC gate, natural exit 0 in 1392 ms, 489 complete
 stdout bytes and empty stderr. The later change affects one test constant only.
-Independent source and retained-result review, public review and current-main
-integration remain pending. No authenticated/public runtime, C12, release or
+Independent review accepted the exact five-path candidate, retained records and
+outgoing public payload at `d422f0db341218c02ef78e4032c5222938809f14`, tree
+`442ee15d87ee6b93ae81e4e6c8fb1c34bdf2ae9e`. The reviewer verified the source/
+receipt hashes, test-only correction and unchanged-input reuse boundaries and
+performed no semantic execution. Dependency and current-main integration remain
+pending. No authenticated/public runtime, C12, release or
 whole accounting acceptance is claimed.
 
 | Evidence | SHA-256 |

@@ -67,6 +67,7 @@ Work/width/content admission and caller/capture/deduplication debits are removed
 together with obsolete fields and tests. Input and captured extents and actual
 unique insertions remain. The semantic runtime-function census is updated from
 57 to 56 because three helpers become two; it remains a complete arity/bijection
-check, not an admission allowance. Independent source/result review and dependency/
-current-main integration remain pending. Typed conversion/lowering accounting,
+check, not an admission allowance. Independent source/retained-result/public
+review accepted this finite scope; dependency/current-main integration remains
+pending. Typed conversion/lowering accounting,
 other runtime operations and whole ACC-09 remain open.
