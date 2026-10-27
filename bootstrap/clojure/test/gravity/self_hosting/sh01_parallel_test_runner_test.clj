@@ -197,6 +197,44 @@
     (is (= [(:namespace (second jobs))] (:skipped-namespaces report)))
     (is (true? (:fail-fast-triggered? report)))))
 
+(deftest shared-compatibility-error-does-not-hide-the-other-result
+  (let [jobs (bootstrap-compatibility-jobs)
+        calls (atom 0)
+        report
+        (runner/execute-plan
+          (plan jobs)
+          {:normal-batch-worker
+           (fn [batch]
+             (swap! calls inc)
+             (-> (batch-result batch [:failed :passed] [] false)
+                 (assoc :fail 0 :error 1
+                        :summary {:test 2 :pass 1 :fail 0 :error 1})
+                 (assoc-in [:namespace-results 0 :status] :error)
+                 (assoc-in [:namespace-results 0 :fail] 0)
+                 (assoc-in [:namespace-results 0 :error] 1)
+                 (assoc-in [:namespace-results 0 :summary]
+                           {:test 1 :pass 0 :fail 0 :error 1})))})]
+    (is (= 1 @calls))
+    (is (= :failed (:status report)))
+    (is (= 1 (:exit-code report)))
+    (is (= (mapv :namespace jobs) (mapv :namespace (:results report))))
+    (is (= [:error :passed] (mapv :status (:results report))))
+    (is (= [1 0] (mapv :error (:results report))))
+    (is (empty? (:skipped-namespaces report)))))
+
+(deftest shared-compatibility-affinity-preserves-job-identity-and-freshness
+  (let [jobs (bootstrap-compatibility-jobs)
+        fresh (mapv #(-> % (update :namespace str)
+                         (assoc-in [:test-policy :freshness-required?] true)) jobs)
+        batches (get-in (runner/schedule-plan (plan fresh))
+                        [:parallel-phase :normal-batches])]
+    (is (= 1 (count batches)))
+    (is (= (mapv :namespace fresh) (:batch-namespaces (first batches))))
+    (is (true? (get-in batches [0 :test-policy :freshness-required?])))
+    (doseq [unknown [{:unknown true} :unknown]]
+      (let [bad (mapv #(assoc % :test-policy unknown) jobs)]
+        (is (= 2 (:planned-jvms (runner/schedule-plan (plan bad)))))))))
+
 (deftest warm-batch-fail-fast-preserves-attempted-prefix-and-skipped-tail
   (let [first-job (shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
         second-job (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)

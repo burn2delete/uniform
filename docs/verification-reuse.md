@@ -981,3 +981,42 @@ both real compatibility namespaces must pass with independent result review
 before normal integration. RV2 runtime read/effect closure and the original
 RV1/RV4 residual criteria remain open. CI's separately owned catalog and helper
 registration files are untouched.
+
+#### PR494 finite completion criteria
+
+PR494 owns only sharing Bootstrap initialization between the two named normal
+compatibility jobs, their runner controls, the handed-off C11 facade test and
+this acceptance record. It does not own a new Reader mode, C11 product
+construction, cache narrowing or the separately held RV1 correction.
+
+| ID | Required completion evidence | Current disposition and dependency |
+| --- | --- | --- |
+| PR494-1 | Preserve both namespace selections and standalone execution; share one bounded JVM only for matching normal-job policies without narrowed closures. Preserve resource limits and independent namespace results. | Original implementation independently reviewed at `8c4026b7`; current-main composition and added controls require exact-head review. Runner source/test remain with this PR's owner. |
+| PR494-2 | Reject sharing for mismatched or unknown policies, narrowed closures, foreign affinity keys and non-normal resources; honor batch-size one. Preserve fail-fast skips and retain an error alongside the other namespace's passing result when fail-fast is off. Preserve String job identities and freshness policy. | Earlier 11 / 66 controls remain on their source. Two additional controls are prepared; an initial compile error and an incorrect Symbol-normalization expectation are retained as nonpasses, not test evidence. Final bookended validation is pending. |
+| PR494-3 | Fresh standalone and combined executions of the actual facade-only C11 namespace and manifest namespace pass on one reviewed tuple. Compare per-namespace status, counters and complete stdout/stderr; the combined child initializes the real Bootstrap once. All interposed roots, including the final artifact factory, must be restored. | Dependency decision received from the existing MIR owner: no current Reader selector exists at the legacy facade. That owner handed off the single facade-test amendment described below. Exact scope/source/harness review is required before the new executions. |
+| PR494-4 | Retain full reports, actual natural process exits, heap/watchdog/capture/cleanup results and identical clean source bookends. Use existing common, host-exclusive and canonical guards. No cached report substitutes for any execution or authentication. | The prior source `8c4026b7` result stays NONPASS. New facade-only receipts must be separately attributed. No changed-input run has started at this record's candidate stage. |
+| PR494-5 | Reconcile current main normally, conserve incoming blobs and reviewed source/test scope, pass relevant cheap checks and actual configured CI, and obtain independent current-head code/result/integration acceptance before expected-head merge. | Draft remains held until PR494-1 through PR494-4 and final review pass. Source-provider or whole-RV2 acceptance is not a merge claim for this finite batching change. |
+
+The legacy entrypoints have only source `[path text]` and file `[path]`
+arities. The newer public checked-Core/C11 interface is a different API; it
+cannot be substituted silently. The MIR owner released only
+`bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj` for the
+following explicit facade-only correction, with all production, Reader,
+provider and codec paths retained by their existing owners.
+
+The test keeps the real Bootstrap wrapper, `c11-call`, `c11/with-operations`
+and configuration assembly. Only `gravity.c11-mir.artifact/file-artifact` is
+replaced by a recording oracle. The oracle captures the actual configuration
+and path, and returns a unique Object sentinel; it fabricates no C11 artifact
+fields or verifier report. Assertions cover call count, unchanged path,
+sentinel identity and actual interposed governing-document, diagnostic-ID and
+rejected-design configuration. Existing operation, arity and public-API checks
+remain. The path is an opaque facade argument here, not evidence that the
+fixture bytes were read or authenticated.
+
+This amendment tests the namespace's stated wrapper/interposition contract.
+It deliberately replaces the previous accidental hosted-product construction
+with that explicit oracle. The old `C2-HASH` failure remains a real failure of
+the hosted chain; current-source/Reader/C11 product acceptance stays separately
+owned and unproven by PR494. No upstream authenticated input or report is
+stubbed to obtain source acceptance, and no pin is changed.
