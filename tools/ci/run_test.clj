@@ -10,14 +10,17 @@
     (and (.isPresent handle) (.isAlive (.get handle)))))
 
 (deftest ci-sources-pass-the-actual-clojure-reader
-  (doseq [file (file-seq (io/file "tools/ci"))
-          :when (.endsWith (.getName file) ".clj")]
-    (with-open [reader (java.io.PushbackReader. (io/reader file))]
-      (is (pos? (loop [forms 0]
-                  (if (= ::eof (read {:eof ::eof} reader))
-                    forms
-                    (recur (inc forms)))))
-          (str file)))))
+  (binding [*read-eval* false]
+    (is (thrown? RuntimeException (read-string "#=(+ 1 1)")))
+    (is (thrown? IllegalArgumentException (read-string "^String \".\"")))
+    (doseq [file (file-seq (io/file "tools/ci"))
+            :when (.endsWith (.getName file) ".clj")]
+      (with-open [reader (java.io.PushbackReader. (io/reader file))]
+        (is (pos? (loop [forms 0]
+                    (if (= ::eof (read {:eof ::eof} reader))
+                      forms
+                      (recur (inc forms)))))
+            (str file))))))
 
 (deftest changed-path-base-is-consistent
   (doseq [base [nil "" "main;echo bad" (apply str (repeat 40 "0"))]]
