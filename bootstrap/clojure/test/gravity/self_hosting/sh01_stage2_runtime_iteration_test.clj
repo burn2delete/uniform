@@ -28736,8 +28736,8 @@
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
-        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
         record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
         call (fn [id args] {:core-node-id id :argument-node-ids args})
         edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
@@ -28817,7 +28817,7 @@
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [[wrong]]))))
-        (is (zero? @callbacks)))))))
+        (is (zero? @callbacks))))))
 
 (deftest current-gravity-string-set-carrier-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -36320,8 +36320,8 @@ else
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'p15-s23-syc-type? [wrong])))
-        (do (is (= :rejected (:status (work [wrong]))))
-(is (zero? (clojure.core/deref callbacks))))))
+        (is (= :rejected (:status (work [wrong]))))
+        (is (zero? @callbacks))))
     (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
                      wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
                      late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]

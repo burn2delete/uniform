@@ -16528,10 +16528,10 @@
 (deftest sh08-vector-first-development-kernel
   (let [finite (fn [members] {:kind :gravity.type/vector :shape :literal :element-types members})
         derive #(list-query-derived (list-query-input 'first [%]))]
-    (doseq [[members visits] [[[:gravity.type/string] 2] [[:gravity.type/bool :gravity.type/nil] 3]
-                              [[:gravity.type/nil :gravity.type/character] 3]
-                              [[:gravity.type/character :gravity.type/character] 3]
-                              [[{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/symbol :gravity.type/string]} :gravity.type/bool] 5]]]
+    (doseq [members [[:gravity.type/string] [:gravity.type/bool :gravity.type/nil]
+                     [:gravity.type/nil :gravity.type/character]
+                     [:gravity.type/character :gravity.type/character]
+                     [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/symbol :gravity.type/string]} :gravity.type/bool]]]
       (let [input (list-query-input 'first [(finite members)])
             {:keys [core node call edge nodes bindings types forms]} input
             result (list-query-derived input) descriptor (:descriptor result) proof (:bounds-proof descriptor)
@@ -18226,8 +18226,8 @@
 
 (deftest sh08-string-set-carrier-private-values-development-kernel
   ;; Original private inference algorithms over normalized DATA; no admission claim.
-  (let [invoke invoke-c7]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+  (let [invoke invoke-c7
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
         record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
         call (fn [id args] {:core-node-id id :argument-node-ids args})
         edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
@@ -18307,7 +18307,7 @@
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'sh08-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'sh08-lc-validate-types [[wrong]]))))
-        (is (zero? @callbacks)))))))
+        (is (zero? @callbacks))))))
 
 (deftest sh08-string-set-carrier-equality-development-kernel
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} s :gravity.type/string
@@ -19907,8 +19907,8 @@
       (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
 
 (deftest sh08-symbol-set-carrier-development-kernel
-  (let [invoke invoke-c7]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+  (let [invoke invoke-c7
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
@@ -19968,14 +19968,14 @@
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'sh08-syc-type? [wrong])))
-        (do (is (= :rejected (:status (work [wrong]))))
-(is (zero? (clojure.core/deref callbacks))))))
+        (is (= :rejected (:status (work [wrong]))))
+        (is (zero? @callbacks))))
     (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
                      wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
                      late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
                  (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
                    (is (= {:status :accepted} (work [value]))))
-                 (is (= :unsupported-type (:reason (work [late])))))))
+                 (is (= :unsupported-type (:reason (work [late]))))))
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} s :gravity.type/symbol
         finite {:kind :gravity.type/set :shape :literal :element-types []}
         input (list-prepend-input finite s) result (list-prepend-derived input) descriptor (:descriptor result)

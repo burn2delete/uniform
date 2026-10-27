@@ -8680,8 +8680,8 @@
 
 (deftest body-string-set-carrier-private-values-development-kernel
   ;; Independent original C8 reconstruction of inferred entry and return domains.
-  (let [invoke (fn [function args] (apply leaf function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+  (let [invoke (fn [function args] (apply leaf function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
         record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
         call (fn [id args] {:core-node-id id :argument-node-ids args})
         edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
@@ -8761,7 +8761,7 @@
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'body-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'body-lc-validate-types [[wrong]]))))
-        (is (zero? @callbacks)))))))
+        (is (zero? @callbacks))))))
 
 (deftest body-string-set-carrier-comparison-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -9535,8 +9535,8 @@
       (is (zero? @callbacks)))))
 
 (deftest body-symbol-set-carrier-development-kernel
-  (let [invoke (fn [function args] (apply leaf function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+  (let [invoke (fn [function args] (apply leaf function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
@@ -9596,14 +9596,14 @@
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'body-syc-type? [wrong])))
-        (do (is (= :rejected (:status (work [wrong]))))
-(is (zero? (clojure.core/deref callbacks))))))
+        (is (= :rejected (:status (work [wrong]))))
+        (is (zero? @callbacks))))
     (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
                      wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
                      late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
                  (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
                    (is (= {:status :accepted} (work [value]))))
-                 (is (= :unsupported-type (:reason (work [late]))))))))
+                 (is (= :unsupported-type (:reason (work [late])))))))
 
 (deftest body-symbol-set-carrier-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
