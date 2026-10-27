@@ -377,6 +377,10 @@
   "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
   {:namespace gravity.self-hosting.resolution-construction-inputs-test
    :slice "SH-06"
+   :owner :sh-resolution}
+  "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
+  {:namespace gravity.self-hosting.resolution-parent-mutation-test
+   :slice "SH-06"
    :owner :sh-resolution}}
 
  :reserved-leaf-modules
