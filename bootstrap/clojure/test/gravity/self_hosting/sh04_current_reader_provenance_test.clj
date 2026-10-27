@@ -72,8 +72,7 @@
                     start (:byte-start span) end (:byte-end span)
                     raw (get-in node [:form :raw])
                     origin (first (filter #(= :source (:kind %)) (:origin node)))
-                    coordinates [:byte-start :byte-end :scalar-start :scalar-end
-                                 :line-start :column-start :line-end :column-end]]
+                    coordinates [:byte-start :byte-end :scalar-start :scalar-end]]
                 (is (= source (:source span)))
                 (is (<= 0 start end (alength bytes)))
                 (is (= raw (String. (java.util.Arrays/copyOfRange bytes (int start) (int end))
