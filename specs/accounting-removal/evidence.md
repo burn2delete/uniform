@@ -854,3 +854,97 @@ to accepted `26768f8e`. Those incoming tools are not consumed by the selected
 C7/Effects/emitter execution route. Semantic receipts retain their original
 provenance; fresh repository gates and exact-base preflight cover the composed
 candidate. No compiler-API/release implementation acceptance is inferred here.
+
+## ACC-03 complete LR premise/schema closure
+
+Assessed **2026-10-26 23:45:48 MDT (America/Edmonton)**, equivalent to
+2026-10-27 05:45:48 UTC. The original criterion is coherent LR premise/schema
+alignment and invalidation, full equality, semantic extents, every-member
+controls and typed definitions. The original ACC-06 separately owns recursive
+`lc/pl/lr-type-work` admission. This record does not redefine that helper work
+away or credit the broader held PR359. Closure is effective only after normal
+reviewed current-main integration and exact readback.
+
+### Actual baseline and coordinated migration
+
+Baseline main `a33e0eef2561ec0f522d05763cbdd33b5b01f418`, tree
+`790f03c22a3f515551cab108c6e4b8b9dd0c9d31`, passed **30 persisted observations**
+in **21,210 ms**, natural exit 0, actual 2 GiB. Empty, singleton, 1,024-member,
+homogeneous identity and Never cases reached actual C7/Effects/emitter derivation,
+equal full premises, both contexts and actual typed definitions. All owners
+exported the two work fields and v1 schema. Complete 3,628-byte stdout, empty
+stderr, identical clean bookends and cleanup were independently inspected.
+Receipt SHA:
+`82e4f1edaca06339b7157ad5d208223cb1731b43ce9d39984a911b8b4f485aac`.
+
+Candidate `01e9ec5f8ae8e39dbc2d0b9a3f52d13db26ab0d0`, tree
+`6a21f1aad49a7152c725cfa0c5dd18cee055b8b1`, removes six exported fields and
+migrates the three premise versions, producer tags and constraint identity
+domains together to v2. Helper `checked-member-count` and exported semantic
+`checked-element-count`/type remain; every-member validation, source and binding
+joins, actual/declared types, relation and completion/effect/allocation semantics
+are unchanged. The helper work results and budgets remain open ACC-06 work.
+All existing test expectations referring to the current LR schema migrate.
+Tracked-source reference inspection found old v1 literals only in rejecting
+census guards and explicit negative tests, not an acceptance fallback.
+
+Before any candidate run, source inspection found that a reserved LR identity
+domain could escape a producer/kind-only filter if both labels were changed.
+Both context filters now include reserved current and legacy producers **or
+identity domains**, as well as the return kind, solely for complete rejecting
+census/equality checks. The actual controls append legacy and domain-only rows
+with foreign/missing kinds or foreign producers, both with active declarations
+and with no LR declaration. They require exact census rejection; empty ordinary
+contexts remain accepted. This is schema-invalidation work within ACC-03, not
+new authority, field normalization or legacy wire acceptance.
+
+### Actual acceptance
+
+The bounded candidate passed **16 tests / 1,093 assertions**, zero failures or
+errors, natural exit 0 in **33,628 ms**, actual 2 GiB under the unchanged brokers,
+canonical lock and 120-second watchdog. Complete 2,188-byte stdout, empty stderr,
+exact clean bookends and complete cleanup/root termination were independently
+inspected. Receipt SHA:
+`b01444416478393ccf3cc36c89e2deb4ff8c99e072c0c962af6288c5a4a4bf50`.
+Driver SHA:
+`673a12b452d45503c3287fdaee29fa249deab44fec544a4cc3dc0fd503d9e956`.
+
+Selected scope: five new LR owner/census vars, the existing C7 LR kernel, two
+Effects LR kernels, emitter typed-definition and consumer kernels, and six
+boundary vars. Actual three-owner rows match completely. Effective controls
+cover positional adaptation, homogeneous identity, Never, checked extents and
+types, late invalid/opaque members, coherent stale/extra fields, old/mixed tags
+and domains, duplicate/reordered/missing/orphan rows, source/callee bindings and
+typed definitions. Opaque callbacks remain zero. This is one fresh complete
+selected batch, not a sum or promotion of old PR359 evidence. No reviewer
+compiler/semantic execution was performed.
+
+| Accepted input | SHA-256 |
+| --- | --- |
+| C7 engine | `e81f55f444d5a0e3a131eba719c1a57973c2a84fb227b1a0ee1479088f14c239` |
+| Effects | `155e9c3912f3f88d22376ab22efa7fcd4569234966b8b5e57772c6fde1dfe137` |
+| Emitter | `4dee31fd3fcec487157a8f3c2432b145f097974f2ac237e50ed682c97e1b9454` |
+| Existing SH08 namespace | `aa1ad4e111a2321c2b5de9e58666d19f3619791647529fb76ea6964632523c7f` |
+| Existing runtime-iteration namespace | `dd08c863c1cc2ff8b33c6c4c50564c00fc21ec7dea010ae03c937d0b4b419ebe` |
+
+Higher authenticated-source/language-runtime test families whose only changes
+are current-tag expectations remain unrun. Their static migration is not claimed
+as source authentication, language-runtime execution, C12 or release acceptance.
+All helper/recursive budgets and the eleven other original criteria remain open.
+
+### Current-main dependency reconciliation
+
+Normal composition `02a2292defe923a563f8b06dd735094caa9cb66f`, tree
+`7bbc7d53a900d737750a09e7f8b047e09c2d2eea`, preserves main
+`4325a9f46292472a7f984c5adfef81209874bb5c` and its 17 Reader/Resolve-test,
+planner/contract and documentation paths. All five accepted owner/test bodies,
+Gravity source and `deps.edn` remain unchanged. The sole incoming Bootstrap
+implementation delta fixes the canonical Reader decode invocation path. The
+selected compiler construction uses host-oracle records; the H6 route explicitly
+binds authenticated source records to nil. It does not invoke that changed Reader
+constructor. Planner policy changes concern the unselected Resolve-parent test;
+the established explicit-command wrapper and its process APIs/guards are unchanged.
+Independent dependency review accepted reuse of the 16/1,093 receipt at `01e9`
+provenance with fresh composed repository gates/preflight. No broader Reader,
+Resolve or planner acceptance is inferred, and no unchanged semantic run is
+repeated merely because main advanced.

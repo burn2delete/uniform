@@ -21,7 +21,7 @@ including implemented work whose required acceptance has not completed.
 
 - [ ] ACC-01 Complete and independently review exhaustive dispositions.
 - [x] ACC-02 Accept and reconcile the guard and Map/List slice (main-only closure record below).
-- [ ] ACC-03 Remove LR premise accounting coherently.
+- [x] ACC-03 Remove LR premise accounting coherently (main-only closure record below).
 - [ ] ACC-04 Close remaining nonpredicate descriptor accounting.
 - [ ] ACC-05 Remove shared PL accounting.
 - [ ] ACC-06 Remove artificial recursive validation limits.
@@ -196,3 +196,43 @@ There is no revised numerical percentage. The historical 50% remains an
 unmeasured provisional estimate; one original row closing does not supply an
 agreed weighting or exhaustive denominator. Implementation counts and test/PR
 totals are not used as progress arithmetic.
+
+## ACC-03 closure and current assessment - 2026-10-26 23:45:48 MDT
+
+This closure applies only to the integrated main revision containing the
+reviewed LR migration and its acceptance evidence. A draft branch does not
+close the row; normal integration and exact readback remain required. This
+update supersedes only ACC-03 in the earlier dated assessments. ACC-02 remains
+closed, and other owners receive no new acceptance credit from this update.
+
+All three LR owners now use the same v2 premise/producer/constraint domain
+without exported `type-work` or `member-work`. Every semantic extent, actual
+body type, declared return type, relation, source/declaration binding, normal
+completion, effect/allocation obligation and full-row equality remains. Both
+consumer censuses recognize reserved v1/v2 producers and identity domains solely
+to reject stale, extra or mislabeled rows, including when no LR declaration is
+active. There is no v1 acceptance fallback or field stripping. Actual three-owner
+derivation, Effects/emitter contexts and typed definitions pass the complete
+named original criterion. Recursive helper admission remains explicitly ACC-06
+work; source authentication, language-runtime execution and release are not
+claimed. The broader held PR359 remains unchanged.
+
+| Original ID | Current integrated disposition |
+| --- | --- |
+| ACC-01 | Partial; exhaustive source/contract dispositions remain |
+| ACC-02 | Closed by the integrated guard/parameter-premise criterion |
+| ACC-03 | Closed by integration of this complete LR premise/schema record |
+| ACC-04 | Partial; descriptor/live-proof accounting and integration remain |
+| ACC-05 | Partial; shared PL/helper and consumer integration remain |
+| ACC-06 | Open; recursive validation/construction accounting remains |
+| ACC-07 | Open; inference allowance removal and sound convergence remain |
+| ACC-08 | Partial; per-Core/profile/Effects/emitter pools remain |
+| ACC-09 | Partial; held runtime chain and other runtime policies remain |
+| ACC-10 | Partial; existing MIR/Native owner acceptance boundaries remain |
+| ACC-11 | Open; existing optimization/lowering owner acceptance remains |
+| ACC-12 | Partial; final whole-outcome reconciliation remains |
+| ACC-13 | Partial; remaining capacity mechanisms/dispositions remain |
+
+The old 50% remains a historical unmeasured estimate, not a recalculated score.
+Two original rows closing does not establish a weighted completion denominator;
+no percentage is derived from rows, PRs, tests or assertions.
