@@ -33,6 +33,51 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-06 caller-interface acceptance - 2026-10-27 22:21 UTC
+
+Accounting owns this finite source/test increment in the existing C7, Effects
+and emitter files. Candidate `3bb8e754384ec80d78515ab043f7c3314e787d29`, tree
+`ecbcef76f4368a5ac89b0e57e580b674c1e67e1d`, has independent source and retained
+result acceptance. Its base includes the integrated intrinsic-limit removal
+and documentation-only main `637d5f07`. This is independent of the held Native
+registration and runtime PR450/454/462 chain.
+
+The three canonical `lc-type-work` APIs are replaced by one-argument
+`lc-validate-types`, returning semantic status/reason without a work report.
+All 115 direct calls in 109 functions and 39 escaped source-cell publishers
+are migrated. The unused Vector-first budget is retired. Nine additional
+PE selected-type, PC link-type and PE check APIs, with 14 production calls,
+no longer carry constant-zero cost reports or budget arguments. Mixed callers
+retain their already-computed source prefix and any actual independent cost;
+there is no fabricated LC zero, default allowance or legacy API fallback.
+
+Finite merge checklist:
+
+- [x] Complete argument-preserving call migration and result/debit closure,
+  including escaped producers, exact source-cell schemas and transitive callers.
+- [x] Independently review the exact three-owner source, semantic/native/cycle
+  guards, full descriptors/proofs and status-only output contracts.
+- [x] Accept actual normalized Effects/emitter consumers for all eleven
+  predicates, collection/proof/parameter paths, three-owner composed PC callers,
+  coherent stale-field/row/fact controls and late-invalid/opaque types.
+- [x] Accept one separately guarded current C7 large-owner run and exact
+  three-owner walk parity. Effects/emitter large executions remain unrun.
+- [ ] Finish current-head repository gates, independent integration review,
+  routine CI, publication and normal merge/readback.
+
+Evidence and original NONPASS attempts are recorded in `evidence.md`; passing
+selectors retain their exact original provenance. There is no summed or
+globally fresh suite claim. The two original rows ACC-02/03 remain closed;
+eleven original criteria remain open or partial. The historical unmeasured
+50-percent estimate is unchanged.
+
+ACC-06 itself remains open. Remaining work includes PL construction/Set and LR
+member allowances, independent source/conversion pools, and unresolved source
+admission ceilings such as PE parts and PC links. The existing 512-part and
+256-link conditions are not reclassified as safety merely because they remain
+in this increment. Complete semantic extents, Map parity, Never placement,
+source/type/full-row equality and actual native/cycle/host protections survive.
+
 ## ACC-06 recursive type validation - 2026-10-27 13:44 MDT
 
 Accounting owns the three existing LC validator families in C7, Effects and
@@ -61,8 +106,11 @@ owner's separate manual large-family receipt pass. The first 29-selector batch
 remains NONPASS; its unchanged semantic selectors retain their original source
 provenance. Normal current-main composition `bef14d55`, tree `d6130be1`, preserves
 all accepted semantic inputs. Fresh LOC tests (5/12), actual repository LOC,
-docs (240/19) and roadmap gates passed at `105cc4de`. Final current-head
-integration review, CI and normal publication/merge readback remain required.
+docs (240/19) and roadmap gates passed at `105cc4de`. PR504 integrated the exact
+reviewed tree at `6e0f6b849d554f5b3cc9aa01701778ed25194c60`, tree
+`01e78a324b90038f4b15206a3d5cb7b12ee0dab2`. All seven routine main jobs and
+source-only prerelease passed; the separate Core readiness gate explicitly
+reported unavailable selected Reader products without running genuine Core.
 ACC-06 remains open; original ACC-02/03 are closed and
 eleven original criteria remain open or partial.
 

@@ -1,5 +1,98 @@
 # Accounting removal evidence
 
+## ACC-06 caller budgets and result plumbing - 2026-10-27 22:21 UTC
+
+Independent code and retained-result review accepted this finite implementation
+at `3bb8e754384ec80d78515ab043f7c3314e787d29`, tree
+`ecbcef76f4368a5ac89b0e57e580b674c1e67e1d`. Current-head gates, public CI and
+normal integration remain separate acceptance stages.
+
+The canonical three-owner validator now takes only the original arguments and
+returns status/reason. Its 115 direct calls in 109 containing functions, 39
+source-cell publishers and the escaped Vector-first consumer are migrated.
+Nine pure PE selected/link/check APIs and their 14 calls also lose their
+unused budgets, carried zero counters and cost reports. Exact call checks
+compare every semantic argument against the original ordered arguments with
+only the final budget removed. A private preliminary rewrite with eleven
+misremoved arguments was rejected before application or compiler execution;
+arity-only checks were insufficient. The strengthened checks pass.
+
+All four canonical/pure-check families have identical three-owner forms after
+owner-name normalization. Reader/interface controls passed 2 tests / 25
+assertions; the stronger argument/order/output/parity controls passed 3/41.
+These controls execute no compiler and are distinct from semantic acceptance.
+
+Source cells accept the exact status-only shape, with the existing semantic
+head-proof variant confined to query validation. Old cost fields and unknown
+fields reject; no field stripping or old-wire compatibility is provided.
+Descriptors, identity requests, call facts and rows are freshly rederived and
+compared in full. Semantic family identifiers stay unchanged under existing
+source-bound invalidation. Checked extents, source/callee/definition binding,
+complete type validation, Never placement, Map parity and native/callback/
+cycle controls are retained. Actual independent construction/source costs
+remain explicit unfinished work, not replacement LC charges.
+
+| Actual stage | Exact source | Observed result and capture | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Initial smoke | `2690745b25bc8599dc5c54f278d9c03ce5654479`, tree `76bd7374b9d0502a02fc5a6b54bd4aa7341d3162` | NONPASS: 20 tests, 1,414 passing assertions, 3 failures, 0 errors; natural exit 1 / 23,302 ms; 3,342 stdout / 394 stderr bytes | `43e20f2fe0a54169f332c264977da5d7af72f1882b04ad710e39f4828cf3e9f8` |
+| Two changed smoke vars plus boundary | `bb377d23d82de5ff27db8cd69d01433a24bcf74e`, tree `169decf9b60c52a1fecc65603173a22b47c2840d` | 8 tests / 111 assertions, zero failures/errors; natural exit 0 / 19,234 ms; 1,156 stdout / 0 stderr | `06c28935b1bb5ee08fc0d2b5ff6837e71260781273f5b842db434f8779a76326` |
+| Family composition | `6ebf029ee0f7367caf0bc2eab0d182c7d1246941`, tree `953c5dc2601979ac13d96e3babc6546b0cbce74f` | NONPASS: 27 tests, 2,840 passing assertions, 23 failures, 0 errors; natural exit 1 / 34,908 ms; 8,182 stdout / 0 stderr | `122d0249120cc1626f70cb8f68829d0acbd282cfd415818b95e9e993590746f5` |
+| Two changed family vars plus boundary | `3bb8e754`, tree `ecbcef76` | 8 tests / 376 assertions, zero failures/errors; natural exit 0 / 18,435 ms; 1,202 stdout / 0 stderr | `a5139d8e58cf22c3d4317b7aed0b0742afe7e9180290d9bde08cc93ec144f85c` |
+| Three-owner PC composition plus boundary | `3bb8e754`, tree `ecbcef76` | 9 tests / 130 assertions, zero failures/errors; natural exit 0 / 26,737 ms; 1,278 stdout / 0 stderr | `9c6a185117cdc9d6fc330c6ce9c04a5eceba9157987ff24519aa5245691ed407` |
+| Current unary C7 large owner | `3bb8e754`, tree `ecbcef76` | 1 test / 3 assertions, zero failures/errors; natural exit 0 / 87,077 ms; 648 stdout / 0 stderr | `277e3dcd44389d0632309f1ec2f32dd4c24593a57b02f54f1563ff65339ed9c6` |
+
+Every semantic receipt records actual 2 GiB heap, complete capture, exact clean
+bookends, cleanup completion and root termination under the existing normal
+Git-common broker, host-exclusive broker, canonical lock and 120-second child
+watchdog. The first smoke stderr contains only the controlled reflective
+logical-List fixture warning. The reviewer inspected actual records and did
+not repeat compiler execution.
+
+The smoke failures were obsolete LC debit expectations in two existing test
+vars. Their correction preserves full result equality and the actual remaining
+construction charge. Twelve unchanged non-boundary selectors retain original
+`2690745b` provenance; their consumed definitions/fixtures do not enter the
+later PE/PC source changes. The two corrected vars retain `bb377d23` provenance.
+
+The family failures were twenty-two emitter positives in the new matrix, whose
+fixture confused remapped node IDs with preserved binding IDs, and one obsolete
+partial-debit expectation. Test-only `3bb8e754` supplies the correct binding
+identity to emitter locals/parameter types and keeps the full independent
+reservation report. Its actual matrix positives and negatives now pass. The
+earlier vacuous emitter negatives confer no acceptance. Nineteen unaffected
+non-boundary family selectors retain `6ebf029e` provenance. Fresh boundaries
+are separately recorded. Neither original NONPASS is promoted to a fresh
+whole-suite pass, and counts from separate runs are not summed.
+
+PC composition executes C7, Effects and emitter parent/link/project consumers,
+including fresh and reused Effects parents and full-row negatives. The current
+unary C7 large check accepts 65,537 operands and the 67,585-node pending family,
+then rejects its last invalid leaf with `unsupported-type`. These are fixture
+extents, not a production work report or a progress percentage. Each completed
+scalar observation was saved before its assertion. Only C7 was executed at
+that scale; Effects/emitter large executions remain unrun, with exact walk
+parity and fresh ordinary three-owner controls supplying the stated narrower
+acceptance. Earlier PR504 large results retain their historical source identity.
+
+| Accepted implementation input | SHA-256 |
+| --- | --- |
+| C7 engine | `ca7d9874b4d8fe060c7399b73de165bfcc3ea0a2f4457a2a0a9817702aea7b98` |
+| Effects | `60230bcdc6b441584403d1f783d913e829d05a0cb40f5086d613c2b9ee8867d9` |
+| Emitter | `a00b6a2caf40586745967d10e427209208910e85b40746a7e4d3120dd2bbf097` |
+| SH08 tests | `2ec464c76f7dd66b97431eb7cd691980014c8808a109e3e8eb70749d8ee3ab01` |
+| SH09 tests | `6ac257dd8dfec9082ebb54ddb0fbb1817a1970a28e26a718b6518a014f53d620` |
+| Runtime iteration tests | `f9e615b30a60d8770d0e0c4632b2bc9bdd53336e521fa5c01cf7cba159405ebf` |
+
+Main `637d5f070d3e5546f24fabe13407728da03b2bd2` adds only
+`docs/end-to-end-contracts.md` after the integrated PR504 base. Normal merge
+`f9c6d6af586905607ac6c36d94c0f28445cc74d4` preserves all semantic inputs;
+later family, correction, PC and current large receipts include that main.
+No Native registration or held runtime branch is imported. Public source
+authentication, Core, C12, release and whole ACC-06/accounting acceptance are
+unrun. PL/Set construction, LR member/source allowances and existing PE-part /
+PC-link ceilings remain unresolved accounting, not relabeled safety guards.
+ACC-02/03 remain the only closed original rows; eleven remain open or partial.
+
 ## ACC-06 finite intrinsic-limit acceptance - 2026-10-27 13:59 MDT
 
 Source candidate `cedbfd3b785d9f50676c9eb40a3fe1a9da8e0334`, tree
@@ -63,13 +156,19 @@ actual repository LOC census 2,035, docs 240/19 and roadmap. This 256 MiB
 non-Bootstrap child exited naturally in 2,104 ms, complete 396-byte stdout and
 empty stderr, exact clean bookends and complete cleanup. Receipt SHA-256:
 `0b5ba30f3b91c5cf1323a38bf373ee98f698cc90ef9ef366627dfe1abf7868dc`.
-Final integration review, CI and published-head/merge readback remain separate
-acceptance steps; this later evidence-only edit does not change semantic inputs.
+PR504 subsequently integrated the exact independently reviewed tree at
+`6e0f6b849d554f5b3cc9aa01701778ed25194c60`, tree
+`01e78a324b90038f4b15206a3d5cb7b12ee0dab2`. PR run 40574699092 passed all seven
+routine jobs. Main run 40575952086 passed all seven routine jobs and source-only
+prerelease; only the explicit unavailable Core readiness gate failed with
+`C6-VERIFY/actual-selected-current-reader-products`, without genuine Core
+execution. This later bookkeeping correction changes no semantic inputs.
 
-This closes the finite intrinsic used/pending/depth/width removal only after
-normal integration. Supplied budgets/work-count APIs, all 115 caller/debit
-interfaces, outer constructor policies and the full ACC-06 criterion remain
-unfinished. No public source authentication, C12, release, Native registration
+This closes the integrated finite intrinsic used/pending/depth/width removal.
+Supplied budgets/work-count APIs and their 115 caller/debit interfaces were
+unfinished at that integration; the later caller-interface record above
+tracks their successor separately. Outer constructor policies and full ACC-06
+remain unfinished. No public source authentication, C12, release, Native registration
 or whole-accounting completion is claimed. ACC-02/03 remain closed; eleven
 original criteria remain open or partial, with the historical unmeasured
 50-percent estimate unchanged.
