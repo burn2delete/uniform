@@ -38,6 +38,37 @@ implementation completion population.
 
 ## Validation and publication
 
+Recovery completion gates (PR490, source/dependency mapping only):
+
+1. Recover operation state: the clean published head was `82914632`; reviewer16
+   had queued its locator review, reviewer17 issued no verdict and left it with
+   reviewer16. The auditor21 request did not execute. The existing queued review
+   is resumed, rather than duplicated. The former reviewer16 acknowledgement
+   denial belongs to that separate messaging operation; it does not authorize
+   a retry or prevent read-only local review.
+2. Reviewer16 independently checks the fixed inspected pins and same/changed/
+   absent source reporting. Positive unassessed drift must work; false current
+   applicability, changed normative/task records and unavailable/mismatched Git
+   pins must fail. The review must preserve all 180 criteria/30 milestones/18
+   SH07 steps and every historical/current qualification.
+3. Integrate main with normal Git ancestry. Main `bffefedf` changes only three
+   strict projection inputs: Reader task/roadmap and the ownership source. The
+   successor bridge preserves their old/new identities and exact record
+   comparisons. Adopt the owner's existing lexical/origins task receipt without
+   replay or whole-SH acceptance; preserve all other incoming source/CI work.
+4. Validate deterministic inventory/crosswalk, dependency edge/condition/cycle
+   controls, all component projections, links, docs and language boundaries.
+   Independently review the exact current-head composition and new Reader
+   source-version join, then adopt only the actual bounded mapping receipt.
+5. Publish the reviewed head, pass exact clean integration preflight and required
+   GitHub checks/conversations, merge normally with an expected-head guard and
+   verify fresh main ancestry plus all reviewed file blobs.
+6. Hand the accepted projection and source identities to the existing collector
+   and canonical requirement owner. They retain their respective write scopes.
+
+This checklist tracks this delivery's gates, not additional implementation
+tasks. No current whole-SH acceptance, denominator or rate follows from merge.
+
 Run the original inventory check, generated crosswalk check, dependency parser
 and graph controls, all affected component projections, document/roadmap and
 language-boundary checks. Record actual results and failures. No compiler proof

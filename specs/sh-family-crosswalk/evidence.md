@@ -165,6 +165,26 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
 
 ## Publication dispositions
 
+Recovery on 2026-10-27 confirmed the clean published `82914632` and the prior
+review routing: reviewer16 had queued the locator correction, reviewer17 had
+read it without a verdict, and the auditor21 request never executed. The same
+review is now active with reviewer16. The historical acknowledgement denial in
+reviewer16's thread is preserved as a separate messaging operation.
+
+Normal merge of main `bffefedfada9e3312e68e0a28a69d71db459d0e2` preserves all
+31 incoming paths. Only Reader task/roadmap and ownership are strict projection
+input changes. The bridge's successor retains their old/new hashes, all seven
+Reader record comparisons, unchanged predicates, six unchanged raw blocks and
+the unchanged historical suffix. It projects the owner's PR496 lexical/origin
+acceptance with exact genuine and separate compiler-free composition identities.
+No source execution was replayed; all 180 whole-SH states remain unassessed.
+
+Initial local CI projection-catalog execution failed during child JVM startup
+with macOS `sysctl` operation-not-permitted before the checks ran. It was not a
+semantic or projection failure. The same existing compiler-free command was
+resubmitted through supported sandbox approval; actual results follow in the
+final PR receipt. No runner, catalog or CI-owner file was changed here.
+
 1. Full 180-route/18-step, source-pin guard, newer-main source-version and
    correction reviews are complete at the exact receipts above.
 2. Final graph/source/links/projection checks, exact clean integration preflight,

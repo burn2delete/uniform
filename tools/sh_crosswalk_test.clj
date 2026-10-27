@@ -101,5 +101,23 @@
       (is (some #(= "core/current-evidence-and-remaining-work/core2-preserve-binding-structure" (:id %))
                 (:task-references (sequence id)))))))
 
+(deftest current-main-reader-adoption-preserves-predicates-and-history
+  (let [view (sh-crosswalk/build)
+        bridge (:current-main-successor
+                 (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn")))
+        rows (:reader-task-comparisons bridge)
+        lexical "reader/finite-remaining-work/lexical-products-and-origins-closure"
+        changed (remove :raw-unchanged rows)]
+    (is (= 7 (count rows)))
+    (is (every? :acceptance-predicate-unchanged rows))
+    (is (= [lexical] (mapv :id changed)))
+    (is (false? (get-in (first changed) [:before :checked])))
+    (is (true? (get-in (first changed) [:after :checked])))
+    (is (:historical-reader-suffix-unchanged bridge))
+    (is (= 3 (count (:accepted-current-scoped-evidence view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (is (= (:applying-main bridge)
+           (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"])))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

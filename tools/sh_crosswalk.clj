@@ -4,12 +4,11 @@
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  (zipmap ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
-           "docs/component-roadmaps/reader.md" "docs/self-hosting-slice-ownership.edn"
-           "specs/reader-workflow/tasks.md" "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"]
-          (repeat "4325a9f46292472a7f984c5adfef81209874bb5c")))
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
 (def pinned-evidence-hashes
-  {"bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
+  {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
+ "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
+ "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
  "7bde0be1b0e264276827deeac058f7fed5d283f58a7f23580173c147d336d644",
  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj"
  "cb3e62b8b02c86928ecc99ab529f6aaeac467c8d0d4353dad9a175073f22fdba",
@@ -478,7 +477,7 @@
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
-   :input-fingerprint "8fd53ddc7a6291ab7c40c4781c7371af76e72e8e1f865e3f5363814241cf4e8c"
+   :input-fingerprint "cbde3bf9b753bdf01aae1ea9abc79f1e26bc2209c53fef2f11c1ce4821bb414c"
    :source-version-review
    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"
@@ -508,6 +507,7 @@
                              (span-matches sh-inventory/plan-path #"(?ms)^## (SH-\d{2}) - [^\n]+\n.*?(?=^## |\z)")))
         crows (span-matches sh07-path #"(?m)^\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|$")
         sources (distinct (concat [sh-inventory/plan-path sh07-path audit-path p15-whole-gate p15-final-proof
+                                    "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
                                     "docs/phase-15-bootstrap-and-self-hosting/IMPLEMENTATION-ROADMAP.md"
                                     "docs/artifacts/phase-18/self-hosted/p18-t03-self-hosted-release-artifact-proof.edn"
                                     "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
@@ -599,7 +599,14 @@
                               :relation :bounded-history-not-whole-sh-acceptance
                               :scope "Three actual native ABI producers and selected PR368 SH22 consumer progress; original source/provider qualifications and14source facets retained; no generic authentication/C12/selfhost/release acceptance."}
      :accepted-current-scoped-evidence
-     [{:task-id "reader/finite-remaining-work/fresh-syntax-handoff"
+     [{:task-id "reader/finite-remaining-work/lexical-products-and-origins-closure"
+       :implementation-commit "8a0d6a90f00e53fa90a9c0e9fe2c2207c0b09190"
+       :composition-commit "3b7c1280a0a5e731e6415dc9e89f2f83e38e354a"
+       :integrated-main "2766511b1c68410627775926d9215ee51e40395b"
+       :receipt (locator "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md")
+       :relation :retained-explicit-accepted-task-record
+       :qualification "Owner accepted only the existing selected-current enabled lexical/origin row in PR496. Retain baseline escape-offset failures, original genuine seven-call receipt and separate compiler-free composition. New grammar, extension authorization, authentication closure, release and downstream acceptance stay open; all180 whole SH states unassessed."}
+      {:task-id "reader/finite-remaining-work/fresh-syntax-handoff"
        :implementation-commit "bcf9c72ed9445e0b8bf259dc5d025c3192ddacc6"
        :receipt (locator "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md")
        :relation :retained-explicit-accepted-task-record
