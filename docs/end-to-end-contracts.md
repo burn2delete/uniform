@@ -227,8 +227,12 @@ cheap-control failures remain nonpasses; this adds no original source retry.
 Normal main composition retains these receipts at `66f46c53`. Incoming Reader
 index changes from PR442/449 do not receive a new full source-run claim here.
 The source-test helper, fixture pair, Gravity compiler/Reader/emitter sources
-and Native consumer files remain identical to that accepted candidate. The
-helper addition and this acceptance record require their own reviewed main
+and p15 independent constructed-validator components remain identical to that
+accepted candidate. The separate hosted `gravity/c11_mir/validation.clj` facade
+changed through PR447/`0968daed`, adding termination/dominance checks to its
+status, proof and diagnostic handling. The frozen source receipts do not accept
+that changed facade or reexecute it on the newer tuple. The helper addition
+and this acceptance record require their own reviewed main
 integration; merging them does not reissue the frozen semantic receipts.
 
 These finite development joins are complete. OWN-04 still requires a disposition
