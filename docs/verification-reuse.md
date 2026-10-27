@@ -1114,6 +1114,15 @@ repository runner alias with a script argument and failed before tests; that
 nonpass is retained. Source, retained-result and integration review remain
 required for this successor; no compiler/provider acceptance follows.
 
+The first configured CI attempt on `6a85dc57` failed its static job on the
+existing temporary-root fixture macro's unresolved `base` binding. Baseline
+and current lint reported the same error; the all-errors gate was preserved.
+The test-only correction expresses the fixture as a function with explicit
+callback bindings and preserves its permissions, return value and `finally`
+cleanup. It changes no production guard or lint policy. Local clj-kondo
+2025.10.23 reports zero errors/warnings for that test source; renewed wiring
+validation and independent review are required on the changed fixture.
+
 Closing unsupported admission does not close original RV2's redundancy
 criterion. Complete compatibility read/effect closure and a reviewed reusable
 representation with real producer/hit/invalidation evidence, or a complete
