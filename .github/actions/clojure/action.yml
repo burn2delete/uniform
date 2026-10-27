@@ -4,10 +4,14 @@ inputs:
   java-version:
     description: Exact JDK required by the selected source contract
     default: 21.0.8+9.0.LTS
+  private-temp:
+    description: Use an owned Java temporary directory for portable cache tests
+    default: 'true'
 runs:
   using: composite
   steps:
     - name: Prepare an owned private Java temporary directory
+      if: inputs.private-temp == 'true'
       shell: bash
       run: |
         ci_tmp="$RUNNER_TEMP/uniform-ci"
