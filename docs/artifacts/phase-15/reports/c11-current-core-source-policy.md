@@ -131,7 +131,35 @@ normal physical paths and original producer working directory, with an absolute
 new-consumer classpath and complete distinct resource/source/runtime closures.
 Changed Reader host code still requires affected validation and actual fresh
 authentication on that final consumer. Such execution, independent exact-head
-review and integration preflight remain pending. Broader compiler API acceptance
+review and integration preflight remain separate. Broader compiler API acceptance
 remains open in the existing compiler API task authority; no task is closed by
 this report. No C12, backend, emitted-code, wider family, frozen admission,
 release or self-hosting completion follows.
+
+## Composed-consumer evidence and later source classification
+
+Consumer 1f51ee30c2e9c93db409f2e871af71b58a5540bc, tree
+91e2f20f8948902e0dfa11ce64a534fe27869f9d, subsequently passed one actual
+fresh public C11 report against the unchanged original cb370 physical source,
+Core, context and artifact. Independent review accepted the fresh result and
+complete distinct consumer/producer closures. A separate normal new-consumer
+working-directory run passed the affected escape-location test (1/17) and
+Reader path/hash test (1/11), and the actual version-2 expression binding rejected
+the newer 1,670,903-byte source at its unchanged source-snapshot guard. Both
+operations exited naturally with zero status, actual 2 GiB, matching bookends
+and empty stderr. Full reports remain child-domain-attested rather than retained
+for independent complete report recomputation.
+
+Main 6e0f6b849d554f5b3cc9aa01701778ed25194c60 later changed the expression
+program again to 1,675,514 bytes, SHA256
+1ae3a25e376b5797bb3ed9fb6218811140707025fd29816c73dabee23dfa2f83.
+This source is also unsupported by the immutable version-2 contract. That
+classification is static: no new guard execution is claimed for these bytes.
+Independent consumed-closure review found all selected Clojure production,
+loader, dependency and affected host-test inputs unchanged. The fresh public
+path still resolves the original cb370 physical source files; the new-source
+guard checks size before compilation. The 1f51 execution receipts therefore
+retain their exact original identity and do not become runs at the later head.
+Final head review, exact source inventory, repository preflight and normal
+integration remain necessary. Latest-expression positive support and broader
+compiler API obligations stay open.
