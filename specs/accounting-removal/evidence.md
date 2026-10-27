@@ -745,3 +745,102 @@ acceptance, independent review and current-main integration. Genuine runtime,
 type, source, authentication, representation, cycle and physical host controls
 remain. No whole-language completion or restricted C12 run has been added as a
 new requirement for accounting closure.
+
+## ACC-02 complete guard and parameter-premise closure
+
+Assessment update: **2026-10-26 23:04:48 MDT (America/Edmonton)**,
+2026-10-27 05:04:48 UTC. This current-main successor is independent of the held
+Native/Set chain and does not import the broad PR359 implementation. Explicit
+source ownership release was received earlier; `release` in that handoff does
+not mean product release. The complete original ACC-02 acceptance is eligible
+for closure only on normal reviewed main integration and exact readback.
+
+### Actual source contract and baseline
+
+Main `c637326dcf026cfd1697420a3b9b383439cb804a`, tree
+`a7a6219b17db67cbd50fa3c10062ad97f3bd7fff`, has six accounting fields:
+`operand-type-work` in both `mp-compatibility` and `lp-compatibility` for C7,
+Effects and the emitter. The earlier four-consumer-field description assumed
+those two producer fields were already absent. Removing all six coherently on
+this source preserves the same original producer/consumer obligation.
+
+The accepted baseline passed 20 persisted observations in **25,934 ms**, natural
+exit 0, actual 2 GiB. All three owners produced equal full premises and exported
+the accounting field; adapted Map/bare List/homogeneous List and identity cases
+reached actual typed emission. A bounded opaque object demonstrated that the
+old C7 ordering classifier called its hash method before rejecting the type.
+Complete 1,996-byte stdout, empty stderr and identical clean bookends/cleanup
+were retained. Receipt SHA:
+`7d7ed186b73b173678b04b833f2f8a6405eea50fe9feffcc716ea58a96cc3ad1`.
+The first launch used digits in a letters-only harness label and failed its
+assertion before any child, bookend or lease; the valid-label launch changed no
+harness guard, resource limit or baseline source. That preparation failure is
+not semantic acceptance.
+
+### Implementation and preserved semantics
+
+Source `d346b9312ab7797e34f0abc66ff6ef45482a22fc`, tree
+`0a58737e200d1ba53e46d8d696b6422992eac155`, changes exactly the six premise
+fields and guards integral set membership with `keyword?`. Semantic family and
+identity domains stay unchanged: full source-bound reconstruction/equality
+rejects stale or extra fields; there is no old-wire acceptance or field
+stripping. Helper work results, supplied budgets and real full validation are
+unchanged and remain explicitly open in their other original criteria.
+
+Three-owner controls preserve Map member-refinement forgetting, bare List
+position forgetting and homogeneous List every-element checking. Checked
+element count/type, Never/not-applicable, ordinary identity, all preserved
+value/provenance/schema/ownership/region/profile/memory properties and actual
+Effects context/local checks and typed emission remain effective. Positives
+include 1,024-member types. Late unknown/opaque members at position 1,023 lie
+within the existing admissible extent and reject without opaque callbacks.
+Stale work values (zero and the prior actual value), extra fields, extent/type,
+source/declaration, callee, duplicate ledger and argument forgeries reject.
+These are actual Gravity owners over normalized declaration/source fixtures,
+not genuine authenticated-source/public authority or runtime execution.
+
+### Failed batch and bounded correction
+
+The first source batch is **NONPASS**: 13 tests, 662 passing assertions, zero
+failures and **9 errors**, natural exit 1 in **29,367 ms**. All errors are two
+existing tests calling `sh08-ft-loop-kernel-transfer-types` with six arguments;
+production already required seven in baseline `c637326d`. Complete 36,133-byte
+stdout, empty stderr and exact clean bookends/cleanup were retained. Receipt:
+`57b92da4518746dff7343947d0e858b2ed1cc254159cd590fd858fc7637a25de`.
+This failed batch is not relabeled or summed into a passing result.
+
+Test-only correction `26768f8ec3c9bab87864f5beb371463893ac7407`, tree
+`340c05407cfd782f8226ecd6ce1a6adccce7ed86`, adds the empty invariants argument
+to all three stale direct test callers. Expected semantic results and all
+production sources are unchanged. The changed homogeneous List, bare List and
+Map recur controls plus six boundary vars passed **9 tests / 142 assertions**,
+zero failures/errors, natural exit 0 in **16,636 ms**, actual 2 GiB. Complete
+1,325-byte stdout, empty stderr, identical clean bookends and complete cleanup
+were independently inspected. Receipt SHA:
+`2e84466ebd6fc010ba1384447ee3ea0741226e0f1e7ef26f7802806e55dd5912`.
+
+Five unchanged successful non-boundary selectors retain original `d346b931`
+provenance: the opaque ordering guard, complete three-owner premise/typed-call
+control, invalid-member/declaration control, bare Map kernel and mixed Map/List
+kernel. Their bodies, shared helpers and consumed production inputs are
+unchanged. Boundary acceptance is fresh at `26768f8e`. There is no fresh full
+13-var or summed passing count. Independent source and actual-record review
+accepted this composed ACC-02 scope and found no further required affected-owner
+path in the governing row. No reviewer semantic execution was performed.
+
+| Accepted implementation input | SHA-256 |
+| --- | --- |
+| C7 engine | `3ceabc93ceaa8899d7274c1eec32838828862a1c9be1109c1b639d45ca4823ee` |
+| Effects | `e0e261df37c4af1103b1d73bd9b26008ed232a98f39ff42631fff43fee078578` |
+| Emitter | `1c9c242002fbdf8174356974bf4b29c9bdc34f81c27bfc386abefa39a246e7be` |
+| Existing SH08 test namespace after correction | `b2c0dd7f07918dcee4b3aa9fba8d853ebd0eb8317ef3f2262abf0a23e46cbd55` |
+
+Full helper/native-cycle/view validation and construction admission remain open
+ACC-06 work; a native header by itself is not an unbounded traversal proof.
+Inference work/round allowances remain open ACC-07 accounting; finite node IDs
+alone do not prove finite-height evolving structured types. These findings do
+not reclassify artificial limits as permanent safety guards or require a
+replacement budget. Other original rows remain open, as listed in the current
+`tasks.md` assessment. Genuine authenticated-source/public admission, arbitrary
+foreign-container safety, runtime execution, C12 and product release are unrun.
+No percentage or whole-accounting closure follows from this row.
