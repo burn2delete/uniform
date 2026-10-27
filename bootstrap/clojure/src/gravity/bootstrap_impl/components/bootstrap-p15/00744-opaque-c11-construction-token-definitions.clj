@@ -120,7 +120,7 @@
          :passed)))
 
     (defn p15-s23-stage2-c11-mir-authentic?
-      ([artifact] false)
+      ([_artifact] false)
       ([artifact checked-core context]
        (try (= :passed (p15-s23-stage2-c11-mir-verify! artifact checked-core context))
             (catch InterruptedException error (.interrupt (Thread/currentThread)) (throw error))

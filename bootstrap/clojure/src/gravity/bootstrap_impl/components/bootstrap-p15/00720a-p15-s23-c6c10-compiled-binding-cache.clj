@@ -1,11 +1,14 @@
 (let [authority-token (Object.)
       cache-state (atom nil)]
 
+  ;; Bootstrap cache tests resolve these private inspection hooks by symbol.
+  #_{:clj-kondo/ignore [:unused-private-var]}
   (defn- p15-s23-c6c10-clear-compiled-binding-cache!
     []
     (reset! cache-state nil)
     :cleared)
 
+  #_{:clj-kondo/ignore [:unused-private-var]}
   (defn- p15-s23-c6c10-compiled-binding-cache-state
     []
     (let [entry @cache-state]

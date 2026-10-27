@@ -228,6 +228,7 @@
   "bootstrap/clojure/src/gravity/reader_primitives.clj" :sh-reader
   "bootstrap/clojure/src/gravity/source_span.clj" :sh-reader
   "bootstrap/clojure/src/gravity/source_unit.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/source_interface_header.clj" :sh-core
   "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :sh-syntax
   "bootstrap/clojure/src/gravity/syntax_origin.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj" :master-coordinator
@@ -307,6 +308,7 @@
   "bootstrap/clojure/test/gravity/reader_primitives_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/source_span_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/source_unit_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/source_interface_header_test.clj" :sh-core
   "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
@@ -448,6 +450,7 @@
   "reader-primitives" :sh-reader
   "source-span" :sh-reader
   "source-unit" :sh-reader
+  "source-interface-header" :sh-core
   "syntax-object-stream" :sh-syntax
   "syntax-origin" :sh-syntax
  }

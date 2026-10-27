@@ -1,5 +1,4 @@
 (declare p15-s23-c11-mir-digest)
-(require '[gravity.source-interface-header :as source-interface-header])
 
 (defn- p15-s23-c6c10-reader-owner-field!
   [source-path value key]

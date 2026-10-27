@@ -1,5 +1,4 @@
-(require '[gravity.c6-c10.source-contract :as c6-source-contract]
-         '[gravity.c6-c10.source-interface :as c6-source-interface])
+(require '[gravity.c6-c10.source-interface :as c6-source-interface])
 
 (defn p15-s23-c6c10-source-program-contract [version]
   (when-not (identical? Long (class version))
