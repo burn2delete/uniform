@@ -48,8 +48,10 @@
         failure (fn [context]
                   (try (options path context) nil
                        (catch clojure.lang.ExceptionInfo error (ex-data error))))]
-    (is (= explicit (:invocation-context selected)))
-    (is (= explicit (:invocation-context selected-absolute)))
+    (is (= (assoc explicit :reader-source-path absolute) (:invocation-context selected)))
+    (is (= (assoc explicit :reader-source-path absolute) (:invocation-context selected-absolute)))
+    (is (= absolute (get-in selected [:plan-binding :source-path])
+                    (get-in selected-absolute [:plan-binding :source-path])))
     (is (= {:source :development-current}
            (options path (assoc explicit :reader-source-path absolute))))
     (is (nil? (:invocation-context default)))
