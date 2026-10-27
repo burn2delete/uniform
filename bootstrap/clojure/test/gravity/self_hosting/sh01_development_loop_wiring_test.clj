@@ -9,7 +9,9 @@
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]
             [gravity.self-hosting-test-runner :as child-runner])
-  (:import [java.nio.file Files LinkOption Path StandardCopyOption]
+  (:import [java.net URL URLClassLoader]
+           [java.util.jar Attributes$Name JarEntry JarOutputStream Manifest]
+           [java.nio.file Files LinkOption Path StandardCopyOption]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
            [java.util.concurrent CountDownLatch TimeUnit]))
 
@@ -1848,3 +1850,107 @@
                       :receipt
                       :reason))
               label))))))
+
+(defn- write-loader-archive! [^Path path class-path entries]
+  (let [manifest (Manifest.)
+        attributes (.getMainAttributes manifest)]
+    (.put attributes Attributes$Name/MANIFEST_VERSION "1.0")
+    (when (some? class-path)
+      (.put attributes Attributes$Name/CLASS_PATH class-path))
+    (with-open [archive (JarOutputStream. (Files/newOutputStream path
+                                          (make-array java.nio.file.OpenOption 0)) manifest)]
+      (doseq [[name content] entries]
+        (.putNextEntry archive (JarEntry. name))
+        (.write archive (.getBytes ^String content "UTF-8"))
+        (.closeEntry archive)))))
+
+(deftest manifest-class-path-resources-are-not-covered-by-listed-archive-bytes
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          archive (.resolve base "listed.jar")
+          dependency (.resolve base "dependency.jar")
+          malformed (.resolve base "malformed.jar")
+          link (.resolve base "archive-link.jar")
+          accepted? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'archive-loader-inputs-contained?)
+          identities (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'explicit-classpath-identities)
+          file-identity (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'regular-file-identity)
+          old-classpath (System/getProperty "java.class.path")
+          separator (System/getProperty "path.separator")
+          resource-content (fn []
+                             (with-open [loader (URLClassLoader.
+                                                  (into-array URL [(.toURL (.toUri archive))])
+                                                  nil)]
+                               (slurp (.getResource loader "dependency-marker.txt"))))]
+      (Files/createDirectories root no-file-attributes)
+      (write-loader-archive! archive nil {})
+      (try
+        (System/setProperty "java.class.path"
+          (str (.resolve root "bootstrap/clojure/src") separator
+               (.resolve root "bootstrap/clojure/test") separator archive))
+        (is (true? (accepted? archive)))
+        (is (= 3 (count (identities root snapshot-id))))
+        (write-loader-archive! archive "dependency.jar" {})
+        (write-loader-archive! dependency nil {"dependency-marker.txt" "first"})
+        (let [listed-before (file-identity archive)]
+          (is (= "first" (resource-content)))
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id)))
+          (write-loader-archive! dependency nil {"dependency-marker.txt" "other"})
+          (is (= "other" (resource-content)))
+          (is (= listed-before (file-identity archive)))
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id))))
+        ;; Even empty or unresolvable declarations are outside this domain.
+        (doseq [value ["" "absent.jar" "https://example.invalid/dependency.jar" "../classes/"]]
+          (write-loader-archive! archive value {})
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id))))
+        (spit (str malformed) "not an archive")
+        (Files/createSymbolicLink link archive no-file-attributes)
+        (doseq [path [malformed link root (.resolve base "missing.jar")]]
+          (is (false? (accepted? path))))
+        (finally (System/setProperty "java.class.path" old-classpath))))))
+
+(deftest actual-runtime-observer-rejects-transitive-and-unknown-archives
+  (with-coordination-root [base]
+    (let [archive (.resolve base "runtime.jar")
+          root (.resolve base "repository")
+          basis-path (.resolve base "basis.edn")
+          current {:basis-config {} :argmap {:main-opts ["-m" "gravity.self-hosting-test-runner"]}}
+          arguments ["--namespace" "gravity.compiler-pass-manifest-test"]
+          observe (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'effective-child-runtime)
+          jvm-args (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'jvm-input-arguments)
+          startup (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'child-startup-resources-absent?)
+          keys ["java.class.path" "sun.java.command" "clojure.basis"]
+          original (into {} (map (fn [key] [key (System/getProperty key)]) keys))
+          separator (System/getProperty "path.separator")]
+      (Files/createDirectories root no-file-attributes)
+      (spit (str basis-path) "{}")
+      (write-loader-archive! archive nil {})
+      (try
+        (System/setProperty "java.class.path"
+          (str (.resolve root "bootstrap/clojure/src") separator
+               (.resolve root "bootstrap/clojure/test") separator archive))
+        (System/setProperty "clojure.basis" (str basis-path))
+        (System/setProperty "sun.java.command"
+          (str/join " " (into ["clojure.main" "-m" "gravity.self-hosting-test-runner"] arguments)))
+        (with-redefs-fn {#'basis/current-basis (constantly current)
+                        #'basis/initial-basis (constantly current)
+                        jvm-args (constantly []) startup (constantly true)}
+          (fn []
+            (is (= :actual-child-runtime-v1 (:id (observe (str root) arguments))))
+            (write-loader-archive! archive "outside.jar" {})
+            (is (nil? (observe (str root) arguments)))
+            (spit (str archive) "unreadable archive structure")
+            (is (nil? (observe (str root) arguments)))
+            (Files/delete archive)
+            (is (nil? (observe (str root) arguments)))))
+        (finally
+          (doseq [[key value] original]
+            (if value (System/setProperty key value) (System/clearProperty key))))))))

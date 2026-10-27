@@ -444,6 +444,41 @@ The correction restores and rethrows interruption before that fallback.
 Injected controls verify zero cache lookups and zero test executions on this
 interruption, while an ordinary observation error still permits fresh tests.
 The corrected wiring controls passed 46 / 518. Independent successor review
-and integration are pending. Complete
+accepted the finite increment, integrated through PR448 as
+`3bf69cbcd16be840fac8e687adfcf8e52b65696e`, tree
+`5d074683014ae871e1d2a9cf71e43e0ef33f2cd8`, identical to the reviewed
+candidate. The initial publication denial remains recorded; one supported
+reassessment using explicit user publication intent succeeded. Complete
 bootstrap initialization/resource closure, a separately reviewed cache
 representation, producer evidence and RV1/RV4 remain open.
+
+### External archive manifest dependency boundary
+
+RV2's next finite family starts at integrated PR448. The installed JDK's
+`URLClassPath` adds a JAR loader's manifest `Class-Path` URLs to its search
+order. Those URLs can name other archives or directories outside the listed
+`java.class.path`. Hashing only the listed archive does not bind those bytes.
+This is a source-backed omission, not a measured production stale hit.
+
+The narrowed classpath admission and actual child runtime observer now require
+each external classpath file to be an inspectable archive without a main
+manifest `Class-Path` attribute. Any such attribute, including an empty value,
+stays outside the reviewed domain. Malformed, absent, directory and symlink
+inputs cannot establish that condition. Unknown archives disable optional reuse;
+the existing child fallback executes tests fresh. No referenced URL is opened
+by this inspection, and no recursive manifest representation is admitted.
+
+A cheap fixture uses a real `URLClassLoader` to read a marker from an archive
+referenced only through the listed archive's manifest. Changing the referenced
+marker changes the observed resource while preserving the listed archive's
+identity. Both observations reject narrowed admission. Separate controls verify
+that a closed archive is accepted for further checks, adding a manifest edge
+rejects it, malformed and missing archives remain unknown, and the actual
+runtime observer applies the same condition. Fixtures load resources only;
+they execute no classes or source. Wiring passed 48 tests / 543 assertions.
+Independent review, documentation/boundary gates and integration are pending.
+
+This closes only the manifest dependency fallback rule. It does not establish
+complete JVM image, custom ClassLoader, native library or bootstrap runtime
+effect closure, admit narrower bootstrap reuse, or refresh older producer
+evidence after a consumed runner change. RV1/RV4 remain open.
