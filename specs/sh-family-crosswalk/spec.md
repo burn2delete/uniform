@@ -57,8 +57,10 @@ Regeneration checks each stamped task/evidence file against its actual local
 Git commit before writing either view. The accepted mapping receipt is bound
 to an input fingerprint; changed source/routing inputs require a successor
 review disposition, rather than inheriting the old mapping-ready state.
-The [source-version bridge](source-version-bridge.edn) preserves the four actual
-newer-main file changes and one new Reader receipt with explicit per-file pins.
+The [source-version bridge](source-version-bridge.edn) preserves its original
+four named version changes and Reader receipt, then an explicit current-main
+successor for Reader task/roadmap and ownership versions plus the scoped
+lexical/origin receipt. Each has exact per-file pins and preserved predecessors.
 All other original source pins remain; no global baseline is reset.
 
 The dependency helper derives the single typed graph, SH/task incidence,

@@ -165,6 +165,39 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
 
 ## Publication dispositions
 
+Final recovery review passed on `79305c95a2440d3879940043494a5cad396b6100`
+/ tree `bddcb3d9e7130eca8868ff2be1b98afdacc5747d`. Reviewer16 conserved
+all 180 criterion records/30 milestones/18 steps and all 112 prior inspection
+snapshots, checked 139 actual Git-pin pairs/six explicit pins and all 31 incoming
+main paths. The scoped current Reader adoption preserves all seven predicates,
+six other raw blocks and history. A provenance sentence incorrectly described
+an SH03 reservation; hold receipt at audit `e8e24f6e` is retained, then the exact
+correction matched actual macro-helper ownership/auxiliary test associations.
+Final audit commit `90b6f524a2f498fbb21bf9d63b7aef7c368922c3`, receipt SHA256
+`6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f`,
+explicitly approves metadata-only adoption for fingerprint `655a9b89...`.
+The prior full-route and source-guard reviews remain separately preserved.
+
+Actual final focused checks: crosswalk nine tests/87 assertions and dependency
+14 tests/402 assertions, zero failures/errors. All 53 existing compiler-free CI
+projection commands passed, including all 24 task projections and controls,
+240-doc/19-index validation and roadmap positive/negative checks. The local
+link/anchor check passed 327 targets; language boundary passed six tests/11
+assertions, zero skipped namespaces. Fresh GitHub static checks passed after
+six introduced lint diagnostics were corrected without behavior/routing changes.
+
+The current graph has 982 evidence/task/facet nodes and 1142 typed edges with
+no cycles. These are not implementation completion units. Advisory frontier
+states are 139 eligible declared facets, five unknown conditions, 357 unmet
+prerequisites, 340 execution/review-unassessed facets and 141 accepted recorded
+scopes. SH07-C01 can establish its required population now; SH29 remains held
+by unaccepted prerequisites. Eligibility grants no execution permission.
+Four inspected test sources drift in this applying checkout: SH01 ownership,
+SH01 stage2 runtime iteration, SH08 function calls and SH08 recursive functions.
+All retain their exact old pins and current applicability unassessed; none is
+silently relabeled as a current executed receipt. All 180 whole-SH acceptance
+states remain unassessed, regardless of mapping readiness.
+
 Recovery on 2026-10-27 confirmed the clean published `82914632` and the prior
 review routing: reviewer16 had queued the locator correction, reviewer17 had
 read it without a verdict, and the auditor21 request never executed. The same
