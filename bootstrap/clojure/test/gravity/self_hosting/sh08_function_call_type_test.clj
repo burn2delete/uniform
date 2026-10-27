@@ -408,7 +408,7 @@
     (is (= :accepted
            (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
-                        :module-requests (vec (repeat (inc (:maximum-root-nodes bounds)) request))}]))))
+                        :module-requests (vec (repeat 1025 request))}]))))
     (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
           supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
                     :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
@@ -426,7 +426,7 @@
         original @scoped owner (Thread/currentThread) calls (atom [])
         request {:b47-context {:artifact-id :current-module}}
         bounds (invoke-c7 'sh08-local-bounds-value [])
-        memo (zipmap (range (inc (:maximum-root-nodes bounds))) (repeat {:request {} :result {}}))
+        memo (zipmap (range 1025) (repeat {:request {} :result {}}))
         active (zipmap (range (inc (:maximum-carrier-depth bounds))) (repeat true))
         result (with-redefs-fn
                  {scoped (fn [runtime plan callee args scope]
@@ -20692,6 +20692,9 @@
 
 (deftest sh08-core-shape-field-extents-development-kernel
   ;; Actual Gravity shape helpers on normalized DATA, not source admission.
+  (is (= #{:maximum-core-nodes :maximum-node-children :maximum-carrier-nodes
+           :maximum-carrier-depth :maximum-carrier-width :maximum-scalar-units}
+         (set (keys (invoke-c7 'sh08-local-bounds-value [])))))
   (doseq [[function arguments]
           [['sh08-module-shape? [(assoc core-shape-module :effects (vec (repeat 129 :io/write)))]]
            ['sh08-module-shape? [(assoc core-shape-module :capabilities (vec (repeat 129 :io/stdout)))]]

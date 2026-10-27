@@ -218,7 +218,6 @@
 
 (defn sh08-local-bounds-value []
   {:maximum-core-nodes 65536
-   :maximum-root-nodes 1024
    :maximum-node-children 1024
    :maximum-carrier-nodes 1048576
    :maximum-carrier-depth 128
