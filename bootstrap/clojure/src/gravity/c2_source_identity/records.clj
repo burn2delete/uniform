@@ -84,14 +84,13 @@
           {:exponent-spelling (second (re-find #"([eE][+-]?[0-9]+)" raw))
            :exact? false}
           :string
-          {:escapes (mapv (fn [[match offset]]
-                            {:raw match :character-offset offset})
-                          (map vector
-                               (re-seq #"\\(?:[btnfr\"\\]|u[0-9A-Fa-f]{4})"
-                                       raw)
-                               (keep-indexed (fn [offset ch]
-                                               (when (= \\ ch) offset))
-                                             raw)))}
+          {:escapes (let [^java.util.regex.Matcher matcher
+                          (re-matcher #"\\(?:[btnfr\"\\]|u[0-9A-Fa-f]{4})" raw)]
+                      (loop [escapes []]
+                        (if (.find matcher)
+                          (recur (conj escapes {:raw (.group matcher)
+                                                :character-offset (.start matcher)}))
+                          escapes)))}
           :character {:escape raw}
           :symbol {:namespace (namespace value)}
           :keyword {:namespace (namespace value)}

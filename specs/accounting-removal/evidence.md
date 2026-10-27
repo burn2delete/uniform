@@ -1,5 +1,76 @@
 # Accounting removal evidence
 
+## Vector-origin binding-chain admission
+
+The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree
+`54c49d1c97803493a3f942aabb5016b94bbfb99d`, based on main `4fa8575b` / tree
+`d85107f9f443ee60fd87c8863c200bf68a3670c1`. Exactly two implementation/test paths
+change. No Native, Reader, MIR, runner or catalog source is changed.
+
+The old-source diagnostic completed naturally with exit 0 in 14,128 ms at
+actual 2 GiB: full canonical 1/128-link origins passed their closed consumer;
+the producer refused a valid 129-link chain, and actual successor derivation
+rejected it with `:bounded-successor-range-proof-required`. The rejected producer
+does not supply independent 129-link consumer evidence. Capture was complete
+(346-byte stdout, empty stderr), exact clean bookends and cleanup passed.
+Receipt SHA-256:
+`3fea56edede016d7d81373e994ca0bc22c6617e1476aceee723d5c226a7ff685`.
+
+The candidate replaces producer recursion with an iterative canonical-ID walk,
+rejects repeated IDs, and reverses collected links at constructor termination
+to preserve inner-to-outer proof order. The consumer walks that exact sequence
+independently, rejects repeated reference IDs and reconstructs the constructor
+endpoint with canonical immutable-record and type equality. Both production
+callers and the direct test migrate to the depth-free arity. Source-form
+validation remains the producer's existing responsibility; the consumer is not
+claimed to establish a new source-authentication theorem.
+
+Actual candidate execution selected three new chain kernels, seven affected
+regressions and six language-boundary vars: 16 tests / 460 assertions, zero
+failures/errors, natural exit 0 / 15,700 ms / actual 2 GiB. All 1/128/129/130-link
+origins retain complete ordered records; actual 129-link successor and nth/get
+derivations and fresh proof consumers pass. Late source/mutability/type/node
+changes, missing/duplicate bindings, cycles, wrong endpoints, reordered/missing/
+orphan witnesses and malformed entry IDs reject. The malformed-ID control
+observes zero hash callbacks; this is not arbitrary-container ingress authority.
+Capture was complete (2,019-byte stdout, empty stderr), source bookends were
+exact and clean, and cleanup completed with the child gone. Receipt SHA-256:
+`27b2c8088719d005788712af3528d6c883b6e8bfcf071982b55ca467f1d9344a`.
+
+Independent review inspected the exact source, driver and retained records;
+it did not execute a second semantic batch. Source hashes are:
+
+| Path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `a89c885244593d2359e8e93825a31951cf4aa2a6234e2a548f91f15c75286bad` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `12894ec7b266330c9fc3c0892067e41227d9ee4320244db59ddc1369a1d13923` |
+
+Extent 1,024 and `:maximum-vector-extent`, the remaining type/collection/work
+policies, structural projections and other ACC-13 mechanisms remain open.
+Runtime checks and the prohibition on check elision are retained. Genuine
+authenticated-source admission, language-runtime execution, C12 and product
+release were unrun. The failed first form-reader command had an extra command
+delimiter after reading all 1,085 source forms; the corrected form-reader
+completed without Bootstrap execution. It is not semantic evidence or a
+candidate failure. Final gates and normal integration are recorded by the
+associated pull request; whole ACC-13 and accounting completion remain open.
+
+Repository gates on documentation successor `82292a36` passed 11 tests / 23
+assertions, actual LOC validation for 2,035 files, 240 documents / 19 indexes and
+the roadmap; natural exit 0 / 2,573 ms, complete 456-byte stdout, empty stderr,
+clean bookends and cleanup. Receipt SHA-256:
+`19ecf603062138bfd52b1915f19a516a9e79cef616fd2429b47f3f461c60bab7`.
+
+The initial integration preflight detected main advancing to Reader PR496 and
+failed with `WORKTREE-CANDIDATE-BASE-MISMATCH`; that record is retained as
+nonpassing. Normal reconciliation at `4ed9939b` / tree `5466a877` preserves all
+six incoming paths from main `2766511b`. Its sole production delta changes C2
+literal escape offsets. The selected compiler-plan route uses the unchanged
+host-oracle form reader with authenticated records unbound; it does not invoke
+that C2 literal-record producer. All Gravity source, the selected SH08 test and
+dependency configuration are identical to tested `903e330e`. Original semantic
+receipt provenance is retained; reconciliation is not a fresh semantic run.
+
 ## Observed baseline
 
 2026-10-26 GitHub fetch: main
@@ -854,3 +925,97 @@ to accepted `26768f8e`. Those incoming tools are not consumed by the selected
 C7/Effects/emitter execution route. Semantic receipts retain their original
 provenance; fresh repository gates and exact-base preflight cover the composed
 candidate. No compiler-API/release implementation acceptance is inferred here.
+
+## ACC-03 complete LR premise/schema closure
+
+Assessed **2026-10-26 23:45:48 MDT (America/Edmonton)**, equivalent to
+2026-10-27 05:45:48 UTC. The original criterion is coherent LR premise/schema
+alignment and invalidation, full equality, semantic extents, every-member
+controls and typed definitions. The original ACC-06 separately owns recursive
+`lc/pl/lr-type-work` admission. This record does not redefine that helper work
+away or credit the broader held PR359. Closure is effective only after normal
+reviewed current-main integration and exact readback.
+
+### Actual baseline and coordinated migration
+
+Baseline main `a33e0eef2561ec0f522d05763cbdd33b5b01f418`, tree
+`790f03c22a3f515551cab108c6e4b8b9dd0c9d31`, passed **30 persisted observations**
+in **21,210 ms**, natural exit 0, actual 2 GiB. Empty, singleton, 1,024-member,
+homogeneous identity and Never cases reached actual C7/Effects/emitter derivation,
+equal full premises, both contexts and actual typed definitions. All owners
+exported the two work fields and v1 schema. Complete 3,628-byte stdout, empty
+stderr, identical clean bookends and cleanup were independently inspected.
+Receipt SHA:
+`82e4f1edaca06339b7157ad5d208223cb1731b43ce9d39984a911b8b4f485aac`.
+
+Candidate `01e9ec5f8ae8e39dbc2d0b9a3f52d13db26ab0d0`, tree
+`6a21f1aad49a7152c725cfa0c5dd18cee055b8b1`, removes six exported fields and
+migrates the three premise versions, producer tags and constraint identity
+domains together to v2. Helper `checked-member-count` and exported semantic
+`checked-element-count`/type remain; every-member validation, source and binding
+joins, actual/declared types, relation and completion/effect/allocation semantics
+are unchanged. The helper work results and budgets remain open ACC-06 work.
+All existing test expectations referring to the current LR schema migrate.
+Tracked-source reference inspection found old v1 literals only in rejecting
+census guards and explicit negative tests, not an acceptance fallback.
+
+Before any candidate run, source inspection found that a reserved LR identity
+domain could escape a producer/kind-only filter if both labels were changed.
+Both context filters now include reserved current and legacy producers **or
+identity domains**, as well as the return kind, solely for complete rejecting
+census/equality checks. The actual controls append legacy and domain-only rows
+with foreign/missing kinds or foreign producers, both with active declarations
+and with no LR declaration. They require exact census rejection; empty ordinary
+contexts remain accepted. This is schema-invalidation work within ACC-03, not
+new authority, field normalization or legacy wire acceptance.
+
+### Actual acceptance
+
+The bounded candidate passed **16 tests / 1,093 assertions**, zero failures or
+errors, natural exit 0 in **33,628 ms**, actual 2 GiB under the unchanged brokers,
+canonical lock and 120-second watchdog. Complete 2,188-byte stdout, empty stderr,
+exact clean bookends and complete cleanup/root termination were independently
+inspected. Receipt SHA:
+`b01444416478393ccf3cc36c89e2deb4ff8c99e072c0c962af6288c5a4a4bf50`.
+Driver SHA:
+`673a12b452d45503c3287fdaee29fa249deab44fec544a4cc3dc0fd503d9e956`.
+
+Selected scope: five new LR owner/census vars, the existing C7 LR kernel, two
+Effects LR kernels, emitter typed-definition and consumer kernels, and six
+boundary vars. Actual three-owner rows match completely. Effective controls
+cover positional adaptation, homogeneous identity, Never, checked extents and
+types, late invalid/opaque members, coherent stale/extra fields, old/mixed tags
+and domains, duplicate/reordered/missing/orphan rows, source/callee bindings and
+typed definitions. Opaque callbacks remain zero. This is one fresh complete
+selected batch, not a sum or promotion of old PR359 evidence. No reviewer
+compiler/semantic execution was performed.
+
+| Accepted input | SHA-256 |
+| --- | --- |
+| C7 engine | `e81f55f444d5a0e3a131eba719c1a57973c2a84fb227b1a0ee1479088f14c239` |
+| Effects | `155e9c3912f3f88d22376ab22efa7fcd4569234966b8b5e57772c6fde1dfe137` |
+| Emitter | `4dee31fd3fcec487157a8f3c2432b145f097974f2ac237e50ed682c97e1b9454` |
+| Existing SH08 namespace | `aa1ad4e111a2321c2b5de9e58666d19f3619791647529fb76ea6964632523c7f` |
+| Existing runtime-iteration namespace | `dd08c863c1cc2ff8b33c6c4c50564c00fc21ec7dea010ae03c937d0b4b419ebe` |
+
+Higher authenticated-source/language-runtime test families whose only changes
+are current-tag expectations remain unrun. Their static migration is not claimed
+as source authentication, language-runtime execution, C12 or release acceptance.
+All helper/recursive budgets and the eleven other original criteria remain open.
+
+### Current-main dependency reconciliation
+
+Normal composition `02a2292defe923a563f8b06dd735094caa9cb66f`, tree
+`7bbc7d53a900d737750a09e7f8b047e09c2d2eea`, preserves main
+`4325a9f46292472a7f984c5adfef81209874bb5c` and its 17 Reader/Resolve-test,
+planner/contract and documentation paths. All five accepted owner/test bodies,
+Gravity source and `deps.edn` remain unchanged. The sole incoming Bootstrap
+implementation delta fixes the canonical Reader decode invocation path. The
+selected compiler construction uses host-oracle records; the H6 route explicitly
+binds authenticated source records to nil. It does not invoke that changed Reader
+constructor. Planner policy changes concern the unselected Resolve-parent test;
+the established explicit-command wrapper and its process APIs/guards are unchanged.
+Independent dependency review accepted reuse of the 16/1,093 receipt at `01e9`
+provenance with fresh composed repository gates/preflight. No broader Reader,
+Resolve or planner acceptance is inferred, and no unchanged semantic run is
+repeated merely because main advanced.
