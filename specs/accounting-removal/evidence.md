@@ -56,8 +56,15 @@ inputs. Incoming changes concern CI lint context and two compatibility-suite
 batch/cache policies. The explicit-command owner wrapper uses unchanged
 process APIs and guards; it invokes neither optional child-cache admission nor
 normal batch grouping. No unchanged semantic run is repeated for those deltas.
-Final repository gates, integration review, CI and published-head/merge readback
-remain separate acceptance steps.
+Fresh repository gates at documentation successor
+`105cc4deaf2d623934470377dc45028d6a19c7ec`, tree
+`2608e19cb663621e0bf71cce16c2b51055a943d9`, passed 5 LOC tests / 12 assertions,
+actual repository LOC census 2,035, docs 240/19 and roadmap. This 256 MiB
+non-Bootstrap child exited naturally in 2,104 ms, complete 396-byte stdout and
+empty stderr, exact clean bookends and complete cleanup. Receipt SHA-256:
+`0b5ba30f3b91c5cf1323a38bf373ee98f698cc90ef9ef366627dfe1abf7868dc`.
+Final integration review, CI and published-head/merge readback remain separate
+acceptance steps; this later evidence-only edit does not change semantic inputs.
 
 This closes the finite intrinsic used/pending/depth/width removal only after
 normal integration. Supplied budgets/work-count APIs, all 115 caller/debit

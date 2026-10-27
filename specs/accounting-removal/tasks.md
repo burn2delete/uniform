@@ -60,8 +60,10 @@ unit at `b3172528`, tree `72989337`: the corrected small selector and each
 owner's separate manual large-family receipt pass. The first 29-selector batch
 remains NONPASS; its unchanged semantic selectors retain their original source
 provenance. Normal current-main composition `bef14d55`, tree `d6130be1`, preserves
-all accepted semantic inputs. Repository gates, final integration review and
-normal publication/merge readback remain required. ACC-06 remains open; original ACC-02/03 are closed and
+all accepted semantic inputs. Fresh LOC tests (5/12), actual repository LOC,
+docs (240/19) and roadmap gates passed at `105cc4de`. Final current-head
+integration review, CI and normal publication/merge readback remain required.
+ACC-06 remains open; original ACC-02/03 are closed and
 eleven original criteria remain open or partial.
 
 PR359's finite descriptor/alias scope is integrated at `00cdaf55`, tree
