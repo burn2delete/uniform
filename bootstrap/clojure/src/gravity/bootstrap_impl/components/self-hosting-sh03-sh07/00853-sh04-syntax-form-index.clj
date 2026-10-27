@@ -121,6 +121,8 @@
    #'gravity.c3-literal-projection.indexes/native-keyword-map? @#'gravity.c3-literal-projection.indexes/native-keyword-map?
    #'clojure.core/get get #'clojure.core/keep keep #'clojure.core/class class
    #'clojure.core/reduce reduce #'clojure.core/conj conj
+   #'clojure.core.protocols/coll-reduce clojure.core.protocols/coll-reduce
+   #'clojure.core.protocols/internal-reduce clojure.core.protocols/internal-reduce
    #'clojure.core/into into #'clojure.core/map map #'clojure.core/juxt juxt
    #'clojure.core/identity identity #'clojure.core/transduce transduce
    #'clojure.core/transient transient #'clojure.core/conj! conj!
