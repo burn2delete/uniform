@@ -6,7 +6,26 @@
   (when-not condition (throw (ex-info message {:diagnostic "REQUIREMENT-FACET"}))))
 
 (defn scope-unresolved? [facet]
-  (and (:unresolved facet) (not= :acceptance-qualification (:unresolved-category facet))))
+  (if (= :historical-superseded (:requirement-role facet))
+    (not= :reviewed (get-in facet [:supersession :review-state]))
+    (and (:unresolved facet) (not= :acceptance-qualification (:unresolved-category facet)))))
+
+(defn validate-supersession! [manifest by-source facet]
+  (when (= :historical-superseded (:requirement-role facet))
+    (let [s (:supersession facet)
+          d (first (filter #(= (:decision-id s) (:id %)) (:scope-decisions manifest)))
+          authority (get by-source (:authority-source-occurrence-id s))]
+      (require! (and authority (= :source-block (:structural-kind authority))
+                     (= :accepted (:state d)) (not (str/blank? (:authority d)))
+                     (= (:scope-version manifest) (:scope-version s) (:scope-version d))
+                     (= (:source-id d) (:document-id authority))
+                     (= (:authority-source-occurrence-id d) (:authority-source-occurrence-id s))
+                     (= (:authority-sha256 d) (:authority-sha256 s) (:raw-sha256 authority))
+                     (= (:id facet) (:source-facet-id s))
+                     (= (:raw-sha256 facet) (:source-fragment-sha256 s))
+                     (#{:proposed :reviewed} (:review-state s))
+                     (string? (:reason s)) (not (str/blank? (:reason s))))
+                "Facet supersession lacks exact source authority, scope or lineage"))))
 
 (defn validate! [manifest sources by-source sha256]
   (let [facets (:source-facets manifest) ids (mapv :id facets)
@@ -17,6 +36,9 @@
                             {} facets)
         grouped (group-by :source-occurrence-id facets)]
     (require! (= (count ids) (count (set ids))) "Duplicate source facet ID")
+    (doseq [f facets]
+      (require! (contains? #{nil :historical-superseded} (:requirement-role f)) "Unknown facet requirement role")
+      (validate-supersession! manifest by-source f))
     (doseq [f facets :when (:unresolved-category f)]
       (require! (and (:unresolved f)
                      (#{:scope-identity :nonoverlap :acceptance-qualification} (:unresolved-category f))
@@ -46,7 +68,9 @@
     (doseq [requirement (:requirements manifest)
             :when (or (seq (:source-facet-ids requirement)) (contains? unit-facets (:id requirement)))]
       (require! (= (set (:source-facet-ids requirement)) (get unit-facets (:id requirement) #{}))
-                "Requirement facets differ from inverse facet/unit relation"))
+                "Requirement facets differ from inverse facet/unit relation")
+      (require! (some #(not= :historical-superseded (:requirement-role (get by-id %))) (:source-facet-ids requirement))
+                "Current requirement has only superseded provenance"))
     (doseq [d (:source-dispositions manifest) :when (or (seq (:facet-ids d)) (seq (get grouped (:occurrence-id d))))]
       (let [o (get by-source (:occurrence-id d)) fs (sort-by :start-byte (get grouped (:occurrence-id d)))]
         (require! (and (= (set (:facet-ids d)) (set (map :id fs)))
@@ -59,5 +83,6 @@
                  (set (map :occurrence-id (filter #(seq (:facet-ids %)) (:source-dispositions manifest)))))
               "Facet occurrence has no complete source disposition")
     {:facets (count facets)
+     :historical-superseded-facets (count (filter #(= :historical-superseded (:requirement-role %)) facets))
      :acceptance-qualified-facets (count (filter #(and (:unresolved %) (= :acceptance-qualification (:unresolved-category %))) facets))
      :unresolved-occurrence-ids (set (map :source-occurrence-id (filter scope-unresolved? facets)))}))

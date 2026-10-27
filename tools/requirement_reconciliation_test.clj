@@ -291,4 +291,44 @@
                             (str/replace text "Owner role:" "Malformed role:")
                             "compiler-api-implementation-tasks" "pipeline")))))
 
+(deftest exact-facet-supersession-needs-authority-and-review
+  (let [[m sources] (complete-fixture) text (get sources "X")
+        o (first (rr/source-occurrences "X" text))
+        authority-text "Remove project work quotas.\n"
+        authority (first (rr/source-occurrences "policy" authority-text))
+        sources (assoc sources "policy" authority-text)
+        facet (fn [id start end]
+                {:id id :source-occurrence-id (:id o) :start-byte start :end-byte end
+                 :start-line 1 :end-line 1 :raw-sha256 (rr/sha256 (subs text start end))
+                 :unit-ids ["fixture/one-thing"]})
+        first-facet (facet "old" 0 3) second-facet (facet "current" 3 (count text))
+        decision {:id "removal" :state :accepted :authority "Fixture policy" :source-id "policy"
+                  :scope-version "fixture-1" :authority-source-occurrence-id (:id authority)
+                  :authority-sha256 (:raw-sha256 authority)}
+        supersession {:decision-id "removal" :scope-version "fixture-1" :review-state :proposed
+                      :authority-source-occurrence-id (:id authority) :authority-sha256 (:raw-sha256 authority)
+                      :source-facet-id "old" :source-fragment-sha256 (:raw-sha256 first-facet)
+                      :reason "Remove only the old quota fragment; retain the other predicate."}
+        m (-> m (assoc :scope-decisions [decision]
+                       :source-facets [(assoc first-facet :requirement-role :historical-superseded :supersession supersession) second-facet])
+              (assoc-in [:requirements 0 :source-facet-ids] ["old" "current"])
+              (assoc-in [:source-dispositions 0 :facet-ids] ["old" "current"])
+              (update :source-dispositions conj {:occurrence-id (:id authority) :kind :nonnormative
+                                                :rationale "Fixture governing policy, not another product requirement."}))
+        reviewed (assoc-in m [:source-facets 0 :supersession :review-state] :reviewed)]
+    (is (false? (:denominator-ready? (rr/project m sources))))
+    (is (= 1 (:historical-superseded-facet-count (rr/project reviewed sources))))
+    (is (= 1 (:denominator (rr/project reviewed sources))))
+    (doseq [field [:decision-id :scope-version :authority-source-occurrence-id :authority-sha256
+                  :source-facet-id :source-fragment-sha256 :review-state :reason]]
+      (is (thrown? Exception (rr/project (update-in reviewed [:source-facets 0 :supersession] dissoc field) sources))))
+    (is (thrown? Exception (rr/project (assoc-in reviewed [:scope-decisions 0 :state] :unresolved) sources)))
+    (is (thrown? Exception (rr/project (assoc-in reviewed [:source-facets 0 :requirement-role] :ignored) sources)))
+    (is (thrown? Exception (rr/project
+                            (assoc-in reviewed [:source-facets 1]
+                                      (assoc second-facet :requirement-role :historical-superseded
+                                             :supersession (assoc supersession :review-state :reviewed
+                                                                  :source-facet-id "current"
+                                                                  :source-fragment-sha256 (:raw-sha256 second-facet)))) sources)))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

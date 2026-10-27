@@ -319,3 +319,29 @@ accepted denominator. Proposed or unreviewed aliases now independently withhold
 readiness, even in an otherwise fully reviewed finite fixture. Twenty-one tests /
 126 assertions pass. Exact semantic and preservation review of this applied
 batch remains required; no implementation task or acceptance state changes.
+
+## Exact accounting-source and predicate corrections
+
+Thirty-six exact existing facets (29 Math, seven Language) receive proposed
+historical-supersession roles under the standing accounting-removal authority.
+Their raw bytes, IDs, owners, residuals and complete previous records survive.
+The authority points to the exact `accounting-policy` source occurrence and
+hash, correcting the advice input's different document-name convention. Each
+decision binds scope version, original facet/hash, reason and retained neighboring
+predicates. No original document or implementation source is edited. Mathematical
+error/domain/branch/proof rules, actual stopping/selection/replay facts, semantic
+checks and host/external boundaries remain. Fifteen retained or ambiguous advice
+records are not superseded; Standard Library fragments await their complete import.
+
+Unreviewed facet supersessions independently withhold readiness. Missing source
+authority, mismatched scope/hash/facet identity, invalid roles and a current unit
+with only superseded provenance reject. Twenty-two tests / 140 assertions pass,
+including the positive reviewed fixture and these negative controls. This is
+source-policy reconciliation, not evidence that enforcing compiler code changed.
+
+Direct source review also corrects three candidate predicates while preserving
+their complete prior records. P8's source-explicit expected capability destruction
+qualifies the diagnostic; PERF2 permits accurately reported residual work instead
+of universal erasure; PERF4 does not itself impose the candidate's invented
+endianness attribution. Other actual ABI/serialization endianness obligations
+remain with their source owners. Exact independent semantic review is pending.
