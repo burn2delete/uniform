@@ -412,3 +412,30 @@ source readiness, denominator and overall rate remain withheld. Documentation,
 roadmap and Clojure source-size validation pass. The remaining Standard Library
 normalization, compound splits, cross-family equivalence and current evidence
 adjudication are substantive unfinished work, not omitted scope.
+
+Independent review subsequently approved all fourteen new Profile alias routes,
+checking the complete retained contexts, original records, task/history pointers
+and 670 selected facet hashes. The SAFE15 survivor descriptions now state the
+retained policy-artifact discharge and imported-theorem/hash-chain/trust
+qualifications explicitly. Eighteen of the twenty-five aliases have scoped
+independent confirmation; seven remain proposed. Neither alias confirmation nor
+bounded atomicity review changes implementation acceptance.
+
+Normal composition with main `8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa`
+preserves all eighteen incoming changed paths and the four checkpoint blobs
+exactly. The composed checkpoint `ffabc795a1e4364619fbd1c41955df6a1f59a3b5`
+passed the focused 24 tests / 176 assertions and the complete source audit.
+Read-only preflight is an inspection receipt, not integration authorization.
+Subsequent review metadata and bounded definition pointers preserve their own
+inspected source identities; incoming Reader changes do not retag old native
+receipts as a new execution on the composed tree.
+
+The complete 245-record AI/Build/Tools review adds 206 bounded atomicity passes
+while retaining all 39 compound holds, all 105 unapplied fold/alias suggestions
+and five actual ownership overlaps. The overlaps concern nonidempotent retry,
+memory deletion/index coherence, revoked safety evidence, registry-index trust
+and provenance-subject binding. They remain scope/nonoverlap questions; missing
+implementation or conformance alone does not create a new scope blocker.
+All original candidate definitions, source facets and historical pointers stay
+intact. Current task-reference additions are preserved independently of this
+source-predicate review, whose inspected definition commit remains explicit.
