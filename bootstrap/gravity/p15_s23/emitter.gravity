@@ -5855,54 +5855,134 @@
                   :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
                   :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio} (get type :element-type)) false) false) false))
 
+(defn p15-s23-lc-ancestor? [value ancestors]
+  (loop [index 0]
+    (if (= index (count ancestors)) false
+      (if (bootstrap-native-identical? value (get ancestors index)) true
+        (recur (+ index 1))))))
+
+(defn p15-s23-lc-native-view? [value]
+  ; Inspect raw native headers before count/indexing. Only visible view DATA
+  ; is subsequently traversed; metadata and unused backing slots stay inert.
+  (loop [current value ancestors []]
+    (if (p15-s23-lc-ancestor? current ancestors) false
+      (let [header (bootstrap-native-carrier-header current) kind (get header 0)]
+        (if (= :vector kind) (>= (get header 2) 0)
+          (if (= :subvector kind)
+            (let [extent (get header 2) start (get header 5)
+                  backing (get header 4) backing-header (bootstrap-native-carrier-header backing)]
+              (if (contains? #{:vector :subvector} (get backing-header 0))
+                (if (if (>= start 0) (if (>= extent 0)
+                      (if (>= (get backing-header 2) 0)
+                        (<= (+ start extent) (get backing-header 2)) false) false) false)
+                  (recur backing (conj ancestors current)) false) false)) false))))))
+
+(defn p15-s23-lc-native-map? [value]
+  (let [header (bootstrap-native-carrier-header value) kind (get header 0)]
+    (if (if (= :map kind) true
+          (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
+      (if (>= (get header 2) 0)
+        ; These type schemas have at most three named fields. This is their
+        ; closed grammar, not an allowance on nested members.
+        (if (<= (get header 2) 3)
+          (loop [fields (keys value)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) false)))
+
+(defn p15-s23-lc-native-arguments [arguments]
+  (let [header (bootstrap-native-carrier-header arguments) kind (get header 0)]
+    (if (contains? #{:nil :empty-list} kind)
+      {:status :accepted :arguments []}
+      (if (contains? #{:vector :subvector} kind)
+        (if (p15-s23-lc-native-view? arguments)
+          {:status :accepted :arguments arguments}
+          {:status :rejected :reason :unsupported-arguments :work-count 0})
+        (if (= :list-node kind)
+          ; Follow the existing header's logical native List/Cons spine.
+          ; PersistentList.next hides its raw tail at count one; that hidden
+          ; DATA stays inert. Visible native counts must agree with the spine.
+          (loop [current arguments ancestors [] out []]
+            (if (p15-s23-lc-ancestor? current ancestors)
+              {:status :rejected :reason :cyclic-arguments :work-count 0}
+              (let [node (bootstrap-native-carrier-header current) tag (get node 0)]
+                (if (contains? #{:nil :empty-list} tag)
+                  {:status :accepted :arguments out}
+                  (if (= :list-node tag)
+                    (let [next (get node 5) extent (get node 2)
+                          next-ancestors (conj ancestors current)]
+                      (if (p15-s23-lc-ancestor? next next-ancestors)
+                        {:status :rejected :reason :cyclic-arguments :work-count 0}
+                        (let [next-header (bootstrap-native-carrier-header next)
+                              coherent? (if (= extent nil) true
+                                          (if (> extent 0)
+                                            (if (= extent 1)
+                                              (contains? #{:nil :empty-list} (get next-header 0))
+                                              (if (= :list-node (get next-header 0))
+                                                (= (- extent 1) (get next-header 2)) false)) false))]
+                          (if coherent? (recur next next-ancestors (conj out (get node 4)))
+                            {:status :rejected :reason :unsupported-arguments :work-count 0}))))
+                    {:status :rejected :reason :unsupported-arguments :work-count 0})))))
+          {:status :rejected :reason :unsupported-arguments :work-count 0})))))
+
 (defn p15-s23-lc-type-work [arguments budget]
-  (loop [pending (loop [remaining arguments out []]
-                   (if (= 0 (count remaining)) out
-                     (recur (rest remaining) (conj out {:type (first remaining) :depth 0 :operand? true}))))
-         used 0]
-    (if (= 0 (count pending)) {:status :accepted :work-count used}
-      (if (if (>= used budget) true (>= used 65536))
-        {:status :rejected :reason :work-limit :work-count used}
-        (let [frame (get pending (- (count pending) 1)) type (get frame :type) depth (get frame :depth)
-              tail (subvec pending 0 (- (count pending) 1)) next-work (+ used 1)]
-          (if (> depth 128) {:status :rejected :reason :type-depth :work-count next-work}
-            (if (if (keyword? type) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
-                            :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                            :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
-                            :gravity.type/f32 :gravity.type/f64 :gravity.type/character :gravity.type/string
-                            :gravity.type/symbol :gravity.type/keyword :gravity.type/list :gravity.type/vector
-                            :gravity.type/map :gravity.type/set} type) false)
-              (recur tail next-work)
-              (if (= :gravity.type/never type)
-                (if (get frame :operand?) (recur tail next-work)
-                  {:status :rejected :reason :nested-never :work-count next-work})
-                (if (if (map? type)
-                      (if (<= (count type) 3)
-                        (loop [fields (keys type)]
-                          (if (= 0 (count fields)) true
-                            (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
-                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (p15-s23-ss-type? type) true (if (p15-s23-syc-type? type) true (if (keyword? (get type :element-type)) (p15-s23-hl-type? type) false)))
-                        nil-bearing? (if (keyword? (get type :value-type)) (p15-s23-ni-type? type) false)
-                        children (if nil-bearing? [(get type :value-type)]
-                                   (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
-                        valid? (if nil-bearing? true (if homogeneous? true (if (if (keyword? kind) (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind) false)
-                                 (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
-                                   (if (= :literal (get type :shape))
-                                     (if (vector? children)
-                                       (if (<= (count children) 1024)
-                                         (if members? (loop [remaining children]
-                                                        (if (= 0 (count remaining)) true
-                                                          (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) true)
-                                         false) false) false) false) false)))]
-                    (if valid?
-                      (if (> (+ next-work (count tail) (count children)) 65536)
-                        {:status :rejected :reason :type-size :work-count next-work}
-                        (recur (loop [remaining children out tail]
-                                 (if (= 0 (count remaining)) out
-                                   (recur (rest remaining) (conj out {:type (first remaining) :depth (+ depth 1) :operand? false}))))
-                               next-work))
-                      {:status :rejected :reason :malformed-type :work-count next-work}))
-                  {:status :rejected :reason :unsupported-type :work-count next-work})))))))))
+  (let [ingress (p15-s23-lc-native-arguments arguments)]
+    (if (= :accepted (get ingress :status))
+      (let [arguments (get ingress :arguments)]
+        (loop [pending (loop [remaining arguments out []]
+                         (if (= 0 (count remaining)) out
+                           (recur (rest remaining)
+                                  (conj out {:type (first remaining) :ancestors [] :operand? true}))))
+               used 0]
+          (if (= 0 (count pending)) {:status :accepted :work-count used}
+            (if (>= used budget)
+              {:status :rejected :reason :work-limit :work-count used}
+              (let [frame (get pending (- (count pending) 1)) type (get frame :type)
+                    ancestors (get frame :ancestors)
+                    tail (subvec pending 0 (- (count pending) 1)) next-work (+ used 1)]
+                (if (if (keyword? type)
+                      (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                                   :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                   :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                                   :gravity.type/f32 :gravity.type/f64 :gravity.type/character :gravity.type/string
+                                   :gravity.type/symbol :gravity.type/keyword :gravity.type/list :gravity.type/vector
+                                   :gravity.type/map :gravity.type/set} type) false)
+                  (recur tail next-work)
+                  (if (= :gravity.type/never type)
+                    (if (get frame :operand?) (recur tail next-work)
+                      {:status :rejected :reason :nested-never :work-count next-work})
+                    (if (p15-s23-lc-native-map? type)
+                      (if (p15-s23-lc-ancestor? type ancestors)
+                        {:status :rejected :reason :cyclic-type :work-count next-work}
+                        (let [kind (get type :kind) members? (= :gravity.type/map kind)
+                              homogeneous? (if (p15-s23-ss-type? type) true
+                                             (if (p15-s23-syc-type? type) true
+                                               (if (keyword? (get type :element-type)) (p15-s23-hl-type? type) false)))
+                              nil-bearing? (if (keyword? (get type :value-type)) (p15-s23-ni-type? type) false)
+                              children (if nil-bearing? [(get type :value-type)]
+                                         (if homogeneous? [(get type :element-type)]
+                                           (get type (if members? :member-types :element-types))))
+                              valid? (if nil-bearing? true
+                                       (if homogeneous? true
+                                         (if (if (keyword? kind)
+                                               (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind) false)
+                                           (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
+                                             (if (= :literal (get type :shape))
+                                               (if (p15-s23-lc-native-view? children)
+                                                 (if members?
+                                                   (loop [remaining children]
+                                                     (if (= 0 (count remaining)) true
+                                                       (if (= 1 (count remaining)) false
+                                                         (recur (rest (rest remaining)))))) true) false) false) false) false)))
+                              next-ancestors (conj ancestors type)]
+                          (if valid?
+                            (recur (loop [remaining children out tail]
+                                     (if (= 0 (count remaining)) out
+                                       (recur (rest remaining)
+                                              (conj out {:type (first remaining) :ancestors next-ancestors :operand? false}))))
+                                   next-work)
+                            {:status :rejected :reason :malformed-type :work-count next-work})))
+                      {:status :rejected :reason :unsupported-type :work-count next-work}))))))))
+      ingress)))
 
 (defn p15-s23-lc-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
