@@ -226,7 +226,7 @@ cheap-control failures remain nonpasses; this adds no original source retry.
 
 Normal main composition retains these receipts at `66f46c53`. Incoming Reader
 index changes from PR442/449 do not receive a new full source-run claim here.
-The source-test helper, fixture pair, Gravity compiler/Reader/emitter sources
+The source-test helper, fixture pair, consumed Gravity C6/C11/Reader/emitter sources
 and p15 independent constructed-validator components remain identical to that
 accepted candidate. The separate hosted `gravity/c11_mir/validation.clj` facade
 changed through PR447/`0968daed`, adding termination/dominance checks to its
