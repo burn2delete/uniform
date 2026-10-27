@@ -99,3 +99,31 @@
                       (catch Throwable error error))))))
     (is (= 2 @calls))
     (is (nil? (literals/c3-lossless-literal-descriptor seed root artifact {:authentic? false})))) )
+
+(deftest opaque-artifacts-retain-the-original-field-callback-path
+  (let [{:keys [seed root artifact]} (sample "1/2" false)
+        calls (atom []) legacy (update seed :span dissoc :scalar-start :scalar-end)
+        foreign (proxy [java.util.HashMap] []
+                  (get [key] (swap! calls conj key) (get artifact key))
+                  (containsKey [_] (throw (ex-info "new artifact lookup is forbidden" {}))))
+        result (literals/c3-lossless-literal-descriptor legacy root foreign {:authentic? true})]
+    (is (= :accepted (:semantic-validation result)))
+    (is (= [:form-tree :token-stream :literal-decoding-records :semantic-error-deferment-record] @calls))))
+
+(deftest native-artifact-field-selection-never-hashes-or-compares-opaque-keys
+  (doseq [retained? [false true]]
+    (let [{:keys [seed root artifact]} (sample "1/2" false)
+          calls (atom 0) active? (atom false)
+          opaque (proxy [Object clojure.lang.IHashEq] []
+                   (hashCode [] (when @active? (swap! calls inc)) (.hashCode :syntax-seed-stream))
+                   (hasheq [] (when @active? (swap! calls inc)) (.hasheq ^clojure.lang.IHashEq :syntax-seed-stream))
+                   (equals [_] (when @active? (swap! calls inc)) false)
+                   (toString [] (swap! calls inc) "opaque"))
+          artifact (cond-> (into artifact (map #(vector (keyword (str "other" %)) %) (range 20)))
+                     (not retained?) (dissoc :syntax-seed-stream))
+          artifact (assoc artifact opaque :not-a-stream)
+          seed (if retained? seed (update seed :span dissoc :scalar-start :scalar-end))]
+      (reset! calls 0) (reset! active? true)
+      (let [result (literals/c3-lossless-literal-descriptor seed root artifact {:authentic? true})]
+        (is (= :accepted (:semantic-validation result)))
+        (is (zero? @calls))))))
