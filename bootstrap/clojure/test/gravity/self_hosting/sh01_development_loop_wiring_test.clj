@@ -1954,3 +1954,86 @@
         (finally
           (doseq [[key value] original]
             (if value (System/setProperty key value) (System/clearProperty key))))))))
+
+(deftest unlisted-context-resources-change-without-changing-the-declared-classpath
+  (with-coordination-root [base]
+    (let [thread (Thread/currentThread)
+          original (.getContextClassLoader thread)
+          classpath (System/getProperty "java.class.path")
+          marker (.resolve base "unlisted-loader-marker.txt")
+          supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'supported-resource-loaders?)
+          observations (atom 0)
+          lookups (atom 0)
+          operations (atom 0)]
+      (with-open [loader (URLClassLoader. (into-array URL [(.toURL (.toUri base))])
+                                         (ClassLoader/getSystemClassLoader))]
+        (try
+          (.setContextClassLoader thread loader)
+          (spit (str marker) "first")
+          (is (= "first" (slurp (io/resource "unlisted-loader-marker.txt"))))
+          (spit (str marker) "other")
+          (is (= "other" (slurp (io/resource "unlisted-loader-marker.txt"))))
+          (is (= classpath (System/getProperty "java.class.path")))
+          (is (false? (supported?)))
+          (with-redefs [io/resource (fn [& _] (swap! observations inc)
+                                     (throw (ex-info "startup resource lookup must not run" {})))
+                        basis/current-basis (fn [] (swap! observations inc)
+                                              (throw (ex-info "basis lookup must not run" {})))
+                        cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                              (throw (ex-info "cache lookup must not run" {})))]
+            (dotimes [_ 2]
+              (let [result (wiring/run-child-unit!
+                             ['gravity.compiler-pass-manifest-test]
+                             {:arguments ["not-the-actual-cli"]}
+                             #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+                (is (true? (:tests-executed? result)))
+                (is (false? (:child-cache-hit? result)))
+                (is (= :unreviewed-resource-loaders
+                       (get-in result [:child-cache-receipt :reason]))))))
+          (is (= 2 @operations))
+          (is (zero? @observations))
+          (is (zero? @lookups))
+          (finally (.setContextClassLoader thread original)))))))
+
+(deftest compiler-resource-loader-url-addition-invalidates-the-reviewed-domain
+  (with-coordination-root [base]
+    (let [thread (Thread/currentThread)
+          original (.getContextClassLoader thread)
+          system (ClassLoader/getSystemClassLoader)
+          supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'supported-resource-loaders?)
+          observe (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'effective-child-runtime)
+          marker (.resolve base "compiler-loader-marker.txt")
+          callbacks (atom 0)]
+      (spit (str marker) "compiler resource")
+      (try
+        (.setContextClassLoader thread system)
+        (with-open [loader (clojure.lang.DynamicClassLoader. system)]
+          (with-bindings {clojure.lang.Compiler/LOADER loader}
+            (is (true? (supported?)))
+            (is (nil? (.getResource loader "compiler-loader-marker.txt")))
+            (.addURL loader (.toURL (.toUri base)))
+            (is (false? (supported?)))
+            (with-open [input (clojure.lang.RT/resourceAsStream
+                                (clojure.lang.RT/baseLoader) "compiler-loader-marker.txt")]
+              (is (= "compiler resource" (slurp input))))
+            (with-redefs [basis/current-basis (fn [] (swap! callbacks inc)
+                                                (throw (ex-info "must reject before basis" {})))]
+              (is (nil? (observe "." []))))))
+        ;; Exact class matters: an empty URL list cannot authorize arbitrary delegation.
+        (with-open [custom (proxy [clojure.lang.DynamicClassLoader] [system]
+                             (getURLs [] (swap! callbacks inc)
+                               (throw (ex-info "custom loader callback must not run" {}))))]
+          (with-bindings {clojure.lang.Compiler/LOADER custom}
+            (is (false? (supported?))))
+          (.setContextClassLoader thread custom)
+          (is (false? (supported?))))
+        (.setContextClassLoader thread nil)
+        (is (false? (supported?)))
+        (.setContextClassLoader thread system)
+        (with-bindings {clojure.lang.Compiler/LOADER nil}
+          (is (false? (supported?))))
+        (is (zero? @callbacks))
+        (finally (.setContextClassLoader thread original))))))

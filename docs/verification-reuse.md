@@ -24,6 +24,7 @@ case construction; current Native/MIR source/composition receipts.
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
 | RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
+| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Finite resource fallback implementation and controls below; independent review and integration pending. In-memory class identity and whole RV1 remain open. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Compatibility loader audit below removes obsolete declarations; narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
 | RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
@@ -482,3 +483,49 @@ This closes only the manifest dependency fallback rule. It does not establish
 complete JVM image, custom ClassLoader, native library or bootstrap runtime
 effect closure, admit narrower bootstrap reuse, or refresh older producer
 evidence after a consumed runner change. RV1/RV4 remain open.
+
+### RV1-LDR: resource-dispatch fallback
+
+The manifest fallback increment above was integrated through PR451 as
+`662f516f1c476664fc0204eb424c9565ac127962`, tree
+`e6fc4e860be03f5cd2a1e4ad4a684dcf28f5cdc6`, identical to its independently
+reviewed candidate. Its actual resource-mutation evidence stays on that tuple.
+
+The next source audit separates two resource-dispatch interfaces. Installed
+Clojure 1.12.5 `clojure.java.io/resource` uses the current thread's context
+ClassLoader by default. `RT.baseLoader` separately prefers `Compiler.LOADER`
+when bound, then the context loader when configured, otherwise the defining
+loader. These loaders can supply additional resource bytes absent from
+`java.class.path`, even when all declared classpath file hashes are unchanged.
+`DynamicClassLoader` inherits URL resource lookup and exposes `addURL`.
+
+The finite supported domain requires the bootstrap-defined JDK application
+system loader, also defining `Compiler`. Both the current context loader and
+actual `RT.baseLoader` must be that loader or a chain of exact
+`DynamicClassLoader` instances with empty URL lists delegating to it.
+Subclasses, other loader implementations, additional URLs and nil/unknown
+delegation stay outside the domain. Exact class checks precede calls that
+could dispatch to a custom loader implementation. An observation failure
+disables reuse; interruption propagates. The condition applies before child
+startup-resource lookup and basis measurement, at narrowed classpath admission,
+and during existing runtime revalidation. Unknown loaders execute the existing
+fresh operation with reason `:unreviewed-resource-loaders` and no cache lookup.
+
+Resource-only controls mutate an external marker observed through a real
+context loader while the declared classpath stays unchanged. They require two
+fresh operation calls and zero startup, basis or cache lookups. A compiler-bound
+empty dynamic loader is initially inside the resource domain; adding a URL
+exposes a marker through `RT.baseLoader` and rejects the configuration. Custom
+subclass, nil-context and nil-compiler-loader controls also reject, without
+invoking custom URL callbacks. Wiring passed 50 tests / 566 assertions. Initial
+observation attempts failed before observation because the test path was absent
+and then because an inline form was malformed; both nonpasses remain recorded.
+The corrected development-JVM observation and controls completed separately.
+Independent review, documentation/boundary gates and integration are pending.
+
+This is a current-thread resource-domain observation, not atomic attestation,
+proof of prior nonexecution, or proof of in-memory class identity. A known empty
+dynamic loader can already contain defined classes. Other threads, JVM image,
+native libraries, bootstrap effects, live operation/AE identity and unsampled
+mutation remain separate unresolved prerequisites. No additional Macro check
+is removed, and no whole-RV1 completion or new bootstrap reuse is admitted.
