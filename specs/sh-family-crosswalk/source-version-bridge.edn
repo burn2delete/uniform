@@ -426,7 +426,7 @@
   :predecessor-bridge-sha256
   "f830cf1ec4a496a596cacca2ce136b69e19ef5553571d5fcbc05ff980fe9e599",
   :qualification
-  "Only the existing Reader lexical-products/origins record is owner-accepted at its enabled selected-current boundary. All seven predicates and six other raw blocks are unchanged. Resolution ownership adds an SH03 test reservation; existing entries survive. Source-only test locators keep their original inspected pins, not current execution credit. All180 whole SH acceptance states remain unassessed.",
+  "Only the existing Reader lexical-products/origins record is owner-accepted at its enabled selected-current boundary. All seven predicates and six other raw blocks are unchanged. Ownership adds the SH05 macro-run-storage helper association and module owner plus four auxiliary Reader/Syntax leaf-test associations; primary component pairs and existing reservations remain unchanged. Source-only test locators keep their original inspected pins, not current execution credit. All180 whole SH acceptance states remain unassessed.",
   :reader-task-comparisons
   [{:id
     "reader/finite-remaining-work/contract-coverage-reconciliation",

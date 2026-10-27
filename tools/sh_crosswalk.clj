@@ -478,7 +478,7 @@
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
-   :input-fingerprint "cec36e0478078819ec5e588939c2d7f1fbe5232906459932633cc68becd7f88a"
+   :input-fingerprint "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"
    :source-version-review
    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"

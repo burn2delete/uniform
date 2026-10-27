@@ -12641,7 +12641,7 @@
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
-  "7547dd9461fd2dae3694aaa5569928535b1ee738fca7975544f5db96dcb11b9e"},
+  "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507"},
  :mapping-review
  {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
   :source-version-review
@@ -12663,7 +12663,7 @@
   :review-text-sha256
   "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
   :input-fingerprint
-  "cec36e0478078819ec5e588939c2d7f1fbe5232906459932633cc68becd7f88a"},
+  "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
