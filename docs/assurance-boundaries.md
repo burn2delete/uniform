@@ -94,7 +94,7 @@ and B each completed naturally with observed 2 GiB heaps. A completed 13 and B
 these are checkpoints, not Clojure test totals. Each performed actual original
 construction and independent fresh C6 replay, real Gravity/Native positives,
 provenance and immutability checks. B additionally checked both substitution
-directions and exact type/quota rejection. Both actual domains contained 12
+directions and exact type and retired-quota-field rejection. Both actual domains contained 12
 full-pair and 11 carried classes; neither observed metadata or SubVector.
 Controlled coverage of those shapes remains distinct. A's handoff was retained
 and independently consumed; B's artifact was not retained, so its domain is
