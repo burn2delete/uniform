@@ -1,5 +1,20 @@
 
 
+(defn sh04-syntax-rich-object
+  [syntax serialization-id]
+  (-> syntax
+      (assoc :syntax/id (:syntax-id syntax)
+             :identity {:algorithm :sha256
+                        :authority :gravity.bootstrap.syntax
+                        :domain :gravity/sh04-syntax-object-v1
+                        :input-hash (:syntax-id syntax)
+                        :serialization-id serialization-id}
+             :authority {:slice :SH-04
+                         :owner :gravity-source
+                         :module 'gravity.bootstrap.syntax
+                         :clojure-adapter-residual? true})
+      (dissoc :syntax-id :schema-version)))
+
 (defn- sh04-syntax-reader-expansion-history [source-path c2]
   (let [view (c3-current-reader-identity-view source-path c2)
         source-id (sh04-syntax-semantic-source-id source-path (:source-unit-record view))
@@ -26,21 +41,6 @@
                            :gravity/sh04-syntax-products descriptor source-path]
                     invocation (conj (sh03-reader-authenticated-envelope-options source-path invocation))))))
          (c3-reader-expansions/current? (:roots history) source-nodes))))
-
-(defn sh04-syntax-rich-object
-  [syntax serialization-id]
-  (-> syntax
-      (assoc :syntax/id (:syntax-id syntax)
-             :identity {:algorithm :sha256
-                        :authority :gravity.bootstrap.syntax
-                        :domain :gravity/sh04-syntax-object-v1
-                        :input-hash (:syntax-id syntax)
-                        :serialization-id serialization-id}
-             :authority {:slice :SH-04
-                         :owner :gravity-source
-                         :module 'gravity.bootstrap.syntax
-                         :clojure-adapter-residual? true})
-      (dissoc :syntax-id :schema-version)))
 
 (defn sh04-syntax-generated-products!
   [source-path binding base semantic-source-id reader-binding
