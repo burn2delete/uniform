@@ -432,7 +432,10 @@
                  {scoped (fn [runtime plan callee args scope]
                            (if (and (identical? owner (Thread/currentThread))
                                     (= :gravity-sh08-function-call-type-leaf (:engine runtime)))
-                             (do (swap! calls conj [callee args])
+                             (do (when (contains? #{'sh08-ft-authenticated-core 'sh08-carrier-preflight
+                                                    'sh08-im-producers-with-allowance
+                                                    'sh08-ft-function-type-core-artifact-with-imports-and-allowance} callee)
+                                   (swap! calls conj [callee args]))
                                  (cond
                                    (= 'sh08-ft-authenticated-core callee) resolution
                                    (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee)
@@ -454,7 +457,7 @@
     (is (= #{:request :result} (set (keys entry))))
     (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
     (is (= 37 (last producer-args) (last inference-args))))
-  (doseq [resolution [{:status :accepted :core {:unsupported (Object.)}}
+  (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
                       {:status :rejected :reason :normalized-authentication-rejection}]]
     (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
           diagnostic (get-in result [:result :diagnostics 0])]
@@ -464,8 +467,9 @@
       (is (= (if (= :accepted (:status resolution))
                (assoc memo :current-module {:request request :result (:result result)}) memo)
              (:memo result)))
-      (is (not-any? #(contains? #{'sh08-im-producers-with-allowance
-                                 'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))
+      (is (false? (boolean
+                    (some #(contains? #{'sh08-im-producers-with-allowance
+                                        'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
