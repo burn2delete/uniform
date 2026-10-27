@@ -51,6 +51,52 @@
          :expanded-form (:expanded-form origin)}))))
 (defn- expansion-facts [node]
   (:value (first (filter #(= :authenticated-reader-products (:fact-kind %)) (:facts node)))))
+(defn- changed-history [artifact]
+  (let [forms (get-in artifact [:c2-reader-artifact :form-tree])
+        ordinal (first (keep-indexed #(when (seq (:generated-origin %2)) %1) forms))]
+    (assoc-in artifact [:c2-reader-artifact :form-tree ordinal :generated-origin 0 :reason]
+              :substituted-reader-expansion)))
+(defn- matched-facts [artifact]
+  (let [c2 (:c2-reader-artifact artifact)
+        bytes (.getBytes ^String (apply str (map :raw (:token-stream c2)))
+                          java.nio.charset.StandardCharsets/UTF_8)
+        source-id (get-in artifact [:syntax-object-stream 0 :span :primary :file])
+        rewrite (fn [node]
+                  (if (= :generated-form (get-in node [:form :kind])) node
+                    (let [history (history-for c2 (get-in node [:source :form-id]) source-id bytes)]
+                      (update node :facts
+                        #(mapv (fn [fact]
+                                 (if (= :authenticated-reader-products (:fact-kind fact))
+                                   (update fact :value
+                                     (fn [value] (if (seq history)
+                                                   (assoc value :reader-expansion-origins history)
+                                                   (dissoc value :reader-expansion-origins))))
+                                   fact)) %)))))]
+    (-> artifact
+        (update :syntax-object-stream #(mapv rewrite %))
+        (update-in [:gravity-syntax-boundary :resolved-syntax-result :syntax-object-stream]
+                   #(mapv rewrite %)))))
+(defn- remove-history [artifact]
+  (-> artifact
+      (update-in [:c2-reader-artifact :form-tree]
+                 #(mapv (fn [form] (assoc form :generated-origin [])) %))
+      (update-in [:c2-reader-artifact :syntax-seed-stream]
+                 #(mapv (fn [seed] (assoc seed :generated-origin [])) %))
+      matched-facts))
+(defn- forged-history-summary [artifact source]
+  (let [c2 (:c2-reader-artifact artifact)
+        bytes (.getBytes ^String (apply str (map :raw (:token-stream c2)))
+                          java.nio.charset.StandardCharsets/UTF_8)
+        source-id (get-in artifact [:syntax-object-stream 0 :span :primary :file])
+        roots (mapv (fn [seed]
+                      {:form-id (:form-id seed)
+                       :origins (history-for c2 (:form-id seed) source-id bytes)})
+                    (:syntax-seed-stream c2))
+        digest (b/p15-s23-c6c10-canonical-digest source
+                 {:domain :gravity/sh04-reader-expansion-history-v1 :roots roots})]
+    ;; Change only untrusted descriptor data, never rebuild its real envelope.
+    (assoc-in artifact [:gravity-syntax-boundary :authenticated-envelope-descriptor
+                        :semantic-projections 0 :value :reader-expansion-history-id] digest)))
 
 (def ^:private expected-kinds
   [:nil :boolean :boolean :integer :keyword :symbol :character :list :map :set
@@ -154,6 +200,38 @@
              (mapv :syntax/id (:syntax-object-stream qst))))
       (is (not= (get-in gravity [:gravity-syntax-boundary :authenticated-envelope :provenance-binding-id])
                 (get-in qst [:gravity-syntax-boundary :authenticated-envelope :provenance-binding-id])))
+      (let [history-only (changed-history gravity)
+            matched (matched-facts history-only)]
+        (doseq [[label changed]
+                [[:history-only history-only]
+                 [:matched-history-and-facts matched]
+                 [:removed-history-and-facts (remove-history gravity)]
+                 [:forged-descriptor-summary (forged-history-summary matched (first paths))]
+                 [:fact-only (update-in gravity [:syntax-object-stream 12 :facts 0 :value
+                                                 :reader-expansion-origins] pop)]]]
+          (testing (name label)
+            (let [fresh (proof changed)]
+              (is (= :failed (:status fresh)))
+              (is (false? (:reader-products-authentic? fresh)))
+              (is (false? (:syntax-verifier-current? fresh)))))))
+      (let [source (.getCanonicalPath (io/file (str fixture-base "-plain.gravity")))
+            text (slurp source :encoding "UTF-8")
+            plain (construct source text)
+            node (first (source-syntax plain))
+            fresh (proof plain)]
+        (is (nil? (get-in plain [:c2-reader-artifact :registered-literal-projection])))
+        (is (= :decimal (get-in node [:form :kind])))
+        (is (= 2.5M (get-in node [:form :value])))
+        (is (= {:measured true} (:metadata node)))
+        (is (= :complete (:status fresh)))
+        (is (= [:metadata] (mapv :reader-abbreviation
+                                 (:reader-expansion-origins (expansion-facts node)))))
+        (is (= :failed (:status (proof (matched-facts (changed-history plain)))))))
+      (let [source (.getCanonicalPath
+                     (io/file "bootstrap/clojure/fixtures/self-hosting/sh-04/current-reader-lossless.qst"))
+            ratio (construct source (slurp source :encoding "UTF-8"))]
+        ;; Completes the previously unexecuted .qst ratio handoff only.
+        (is (= :complete (:status (proof ratio)))))
       (doseq [[label changed]
               [[:missing-seed (update-in gravity [:c2-reader-artifact :syntax-seed-stream] pop)]
                [:duplicate-seed (update-in gravity [:c2-reader-artifact :syntax-seed-stream]
