@@ -33,6 +33,33 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-13 vector-origin binding chains - 2026-10-27 00:12:53 MDT
+
+Assessment source is accepted candidate `903e330ed28dd0fc5e56380d144d48bc67138944`,
+tree `54c49d1c97803493a3f942aabb5016b94bbfb99d`, over main `4fa8575b`.
+The producer's 128-depth allowance and consumer's 128-link admission are removed
+together. An iterative canonical-ID walk rejects cycles and preserves the full
+inner-to-outer immutable binding witnesses. The obsolete depth argument and
+both actual production callers migrate together.
+
+Independent source and actual-result review accepted 16 tests / 460 assertions,
+including 129/130-link origins, actual successor and nth/get derivation with
+fresh consumers, late invalid links, cycles and witness tampering. The baseline
+independently observed valid 1/128-link origins and the 129-link producer
+refusal. Final repository gates, publication and integration belong to this
+increment's pull request; a draft alone is not integrated completion.
+
+This advances the existing origin-link obligation in ACC-13; it does not add a
+criterion or close the row. Extent 1,024, its proof field, collection/type
+admission, work pools, structural projections, syntax/schema/macro mechanisms
+and exhaustive dispositions remain open under their original IDs. Runtime
+guards, source/type joins, proof validation and check-elision restrictions stay
+in force. No genuine source-authentication or product-release credit is claimed.
+
+Current original-row disposition remains ACC-02 and ACC-03 closed on main;
+ACC-01 and ACC-04 through ACC-13 remain open. The legacy 50% estimate is still
+unmeasured; this accepted family is not a numeric score revision.
+
 ## ACC-08 imported-module aggregate increment
 
 The independent C7 successor removes `sh08-im-usage`, `sh08-im-work-check`,

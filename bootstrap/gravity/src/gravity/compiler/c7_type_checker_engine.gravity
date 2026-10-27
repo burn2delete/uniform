@@ -20802,25 +20802,31 @@
       (= :symbol (get form :kind)) (= (get form :value) (get (get bindings binding) :name))
       (= (get node :source) (sh08-ma-form-source form))])))
 
-(defn sh08-si-vector-origin [id loop-id expected core nodes types bindings forms parents seen depth]
-  (if (if (> depth 128) true (contains? seen id)) nil
+(defn sh08-si-vector-origin [id loop-id expected core nodes types bindings forms parents seen]
+  ; Walk canonical references without a depth allowance. Reverse the collected
+  ; links only at the constructor to preserve inner-to-outer proof order.
+  (loop [id id seen seen links []]
+  (if (= false (sh08-si-path-id? id)) nil
+  (if (contains? seen id) nil
     (let [node (get nodes id) kind (get node :core-form) form (get forms (get (get node :source) :form-id))
           children (get node :children) attrs (get node :attributes)
           extent (if (vector? (get expected :element-types)) (count (get expected :element-types)) nil)]
-      (if (sh08-ft-all-true? [(= :gravity.type/vector (get expected :kind)) (integer? extent)
+      (if (sh08-ft-all-true? [(map? node) (sh08-si-path-id? (get node :node-id)) (= id (get node :node-id))
+             (= :gravity.type/vector (get expected :kind)) (integer? extent)
              (if (integer? extent) (<= 0 extent (get (sh08-local-bounds-value) :maximum-node-children)) false)
              (= expected (get types id)) (if (= kind :reference) true (= false (sh08-si-within? id loop-id parents)))])
         (if (= :reference kind)
           (let [bid (get attrs :binding-id) records (sh08-bm-select (get core :lexical-bindings) :binding-id bid)
                 record (first records)]
             (if (if (= 1 (count records)) (sh08-sm-let-link-valid? record node nodes bindings forms) false)
-              (let [origin (sh08-si-vector-origin (get record :initializer-node-id) loop-id expected core nodes types bindings forms parents (conj seen id) (+ depth 1))]
-                (if (map? origin) (assoc origin :binding-links (conj (get origin :binding-links []) record)) nil)) nil))
+              (recur (get record :initializer-node-id) (conj seen id) (conj links record)) nil))
         (if (= :quote kind)
           (let [data (sh08-qd-node node forms)]
             (if (sh08-ft-all-true? [(= :accepted (get data :status)) (= :vector (get (get data :data) :kind))
                    (= expected (get (get data :data) :type)) (= extent (count (get (get data :data) :children)))])
-              {:node node :source-form form :type expected :extent extent :data-origin (get (get data :data) :origin) :binding-links []} nil))
+              {:node node :source-form form :type expected :extent extent :data-origin (get (get data :data) :origin)
+               :binding-links (loop [i (- (count links) 1) out []]
+                                (if (< i 0) out (recur (- i 1) (conj out (get links i)))))} nil))
         (if (sh08-ft-all-true? [(= :collection-literal kind) (= :vector (get attrs :literal-kind)) (= :vector (get form :kind))
                (vector? children) (= extent (count children) (get attrs :element-count) (count (get form :child-form-ids)))
                (= (get node :source) (sh08-ma-form-source form)) (sh08-ft-loop-kernel-ordered-children? node)
@@ -20830,7 +20836,9 @@
                          (= (get child :source) (sh08-ma-form-source source))
                          (= (get (get expected :element-types) i) (get types (get children i)))])
                      (recur (+ i 1)) false))))])
-          {:node node :source-form form :type expected :extent extent :binding-links []} nil))) nil))))
+          {:node node :source-form form :type expected :extent extent
+           :binding-links (loop [i (- (count links) 1) out []]
+                            (if (< i 0) out (recur (- i 1) (conj out (get links i)))))} nil))) nil))))))
 
 (defn sh08-si-record [records field value]
   (loop [remaining records found nil]
@@ -20867,8 +20875,9 @@
              (conj out (sh08-si-ancestry-path (get (first remaining) :recur-core-node-id) root nodes parents))))))
 
 (defn sh08-si-origin-closed? [origin operand expected core nodes types]
+  ; The finite evidence vector must reconstruct an acyclic canonical chain.
   (let [links (get origin :binding-links) extent (get origin :extent) constructor (get origin :node)]
-    (if (if (vector? links) (<= (count links) 128) false)
+    (if (vector? links)
       (if (sh08-ft-all-true? [(= :gravity.type/vector (get expected :kind)) (vector? (get expected :element-types))
              (= extent (count (get expected :element-types))) (if (integer? extent) (<= 0 extent 1024) false)
              (= expected (get origin :type)) (= constructor (get nodes (get constructor :node-id)))
@@ -20878,14 +20887,17 @@
                (if (vector? (get (get origin :source-form) :child-form-ids))
                  (= extent (count (get constructor :children)) (get (get constructor :attributes) :element-count)
                     (count (get (get origin :source-form) :child-form-ids))) false) true)])
-        (loop [id operand index (- (count links) 1)]
+        (loop [id operand index (- (count links) 1) seen #{}]
+          (if (= false (sh08-si-path-id? id)) false
+          (if (contains? seen id) false
           (if (< index 0) (= id (get constructor :node-id))
             (let [record (get links index) node (get nodes id) bid (get record :binding-id)]
-              (if (sh08-ft-all-true? [(= :reference (get node :core-form))
+              (if (sh08-ft-all-true? [(map? node) (sh08-si-path-id? (get node :node-id)) (= id (get node :node-id))
+                     (= :reference (get node :core-form))
                      (= bid (get (get node :attributes) :binding-id)) (= [bid] (get node :resolved-binding-ids))
                      (= expected (get types id)) (= :immutable (get record :mutability))
                      (= record (sh08-si-record (get core :lexical-bindings) :binding-id bid))])
-                (recur (get record :initializer-node-id) (- index 1)) false)))) false) false)))
+                (recur (get record :initializer-node-id) (- index 1) (conj seen id)) false)))))) false) false)))
 
 (defn sh08-si-step-source [operation call nodes forms]
   (let [addition? (= operation '+) unit (get nodes (get (get call :argument-node-ids) 1))]
@@ -21044,7 +21056,7 @@
             count-node (get nodes (get guard-args 1)) count-call (get calls (get count-node :node-id))
             count-header (sh08-cq-source core count-node count-call (get edges (get count-node :node-id)) nodes bindings types (get core :module))
             count-type (first (get count-header :argument-types)) extent (if (vector? (get count-type :element-types)) (count (get count-type :element-types)) nil)
-            origin (sh08-si-vector-origin (first (get count-call :argument-node-ids)) loop-id count-type core nodes types bindings forms parents #{} 0)
+            origin (sh08-si-vector-origin (first (get count-call :argument-node-ids)) loop-id count-type core nodes types bindings forms parents #{})
             guard (sh08-io-descriptor core condition guard-call (get edges (get condition :node-id)) nodes bindings types (get core :module))
             slot-check (if (= :accepted (get prepared :status))
                          (sh08-ft-loop-kernel-collect-slots working prepared types {} (- budget work)) {})
@@ -21567,7 +21579,7 @@
                 (if (= :accepted (get prepared :status))
                   (let [range (get invariant :range-proof) parents (get prepared :index)
                         origin (sh08-si-vector-origin (first args) (get (get range :target) :owner-core-node-id) vector-type
-                                 core nodes types bindings forms parents #{} 0)
+                                 core nodes types bindings forms parents #{})
                         path (sh08-si-ancestry-path (get node :node-id) (get (get (get range :guard-node) :children) 1) nodes parents)
                         descriptor (sh08-vn-finish (assoc header :bounds-proof (sh08-vl-bounds header invariant origin path nodes)))]
                     (if (if (sh08-si-ref? index bid forms bindings) (sh08-vl-proof-valid? descriptor core node nodes bindings types) false)
