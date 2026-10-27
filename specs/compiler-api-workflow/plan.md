@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-These are the authoritative task/outcome sections; do not copy their task rows here:
+Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). The existing outcome sections below retain their headings and acceptance boundaries as generated views:
 
 - [built in compiler pipeline outcome](../../docs/component-roadmaps/compiler-api.md#built-in-compiler-pipeline-outcome)
 - [plugin host finite remaining tasks](../../docs/component-roadmaps/compiler-api.md#plugin-host-finite-remaining-tasks)
@@ -19,8 +19,9 @@ These are the authoritative task/outcome sections; do not copy their task rows h
 
 1. `spec.md`: scope, retained contract navigation and accepted/rejected workflow behavior.
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
-3. `tasks.md`: only migration preparation, validation, review and integration tasks.
-4. `evidence.md`: exact observed documentation checks, pending acceptance and implementation nonclaims.
+3. `tasks.md`: three literal-key implementation records and the entire unchanged historical migration file, clearly separated.
+4. `evidence.md`: observed checks and implementation nonclaims.
+5. `tools/compiler_api_task_projection{,_test}.clj`: fixed-path parsing, deterministic projection and focused controls. Shared helpers stay unchanged.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 
@@ -39,3 +40,12 @@ Publish the prepared slice as a draft. An independent reviewer checks mapping, a
 ## Names, callers and compatibility
 
 Package key `compiler-api-workflow` is semantic. No imports, load order, manifests, source hashes, schemas or public APIs are changed. Historical planning IDs in canonical links remain traceability only.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md#requirements): Compose portable language conformance from the owning front-end passes, with fixture/profile/target/type/effect identities and stable diagnostic spans; orchestration does not own each language rule.

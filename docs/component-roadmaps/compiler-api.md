@@ -8,6 +8,10 @@ verification specialists. Current owners are unassigned by this proposal;
 Deus confirms existing reservations or assigns unowned work. No code ownership
 is transferred by this page.
 
+Implementation task authority: [Spec Kit ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+Edit that ledger and run `clojure -M tools/compiler_api_task_projection.clj --write`;
+the four task blocks below are generated views.
+
 ## Purpose and scope
 
 Provide the public compiler artifact/context interface and the executable host
@@ -109,6 +113,7 @@ requires the complete extension host or final backend before demonstrating
 that endpoint. Final selected-target composition consumes its complete
 source-to-artifact path and the applicable Pass Evidence below.
 
+<!-- compiler-api-task-projection/pipeline:start -->
 Owner role: compiler API/pipeline maintainer. All tasks open; source evidence
 above is partial implementation evidence, not closure.
 
@@ -124,9 +129,11 @@ Yes/no acceptance: are passes actually invoked? Are all required stage facts
 verified and retained? Are clean and reused results semantically equivalent?
 Are stale inputs and invalid stage orders rejected? Does public API behavior
 remain independent of ambient mutable compiler state? All must be yes.
+<!-- compiler-api-task-projection/pipeline:end -->
 
 ## Plugin Host: finite remaining tasks
 
+<!-- compiler-api-task-projection/plugins:start -->
 Owner role: compiler extension-host maintainer. All tasks open.
 
 | Task | Concrete closing evidence |
@@ -141,9 +148,11 @@ Yes/no acceptance: can incompatible plugin initialization run? Can a plugin
 perform ungranted effects or mutate hidden state? Can an invalid output enter
 the pipeline? All must be no. Are allowed sandboxed/trusted invocations real,
 traceable and reproducible under their declared replay policy? Must be yes.
+<!-- compiler-api-task-projection/plugins:end -->
 
 ## Pass Evidence: finite remaining tasks
 
+<!-- compiler-api-task-projection/pass-evidence:start -->
 Owner role: compiler verification maintainer. All tasks open.
 
 | Task | Concrete closing evidence |
@@ -158,6 +167,40 @@ Yes/no acceptance: do reports derive from actual checks on exact artifacts?
 Are plugin and backend passes included when used? Are absent evidence and
 counterexamples visible? Do failures block the affected claimed release path?
 All must be yes. No claim of a fully mechanized compiler is implied.
+<!-- compiler-api-task-projection/pass-evidence:end -->
+
+## Compiler development ownership and verification boundaries
+
+The following new authority record closes the SH-01 task-traceability gap while
+preserving its historically completed implementation. Current acceptance stays
+unassessed. Edit only the Compiler API Spec Kit implementation ledger.
+
+<!-- compiler-api-task-projection/development-boundaries:start -->
+Owner role: compiler development infrastructure maintainer. Current acceptance unassessed.
+This is the new task-authority record for the existing SH-01 delivery, not a
+claim of missing implementation or another pipeline/pass-evidence task. The
+original accepted E01 scope and four-test/57-assertion report remain historical
+completion at `cbc55cd1477deca08a9c042c91db98005833021a`; the
+[source-pinned audit](https://github.com/burn2delete/uniform/blob/15a5499e97798621d270c36dd2546ce98ddd62a9/docs/self-hosting-sh00-sh06-evidence-audit.md)
+retains the later S-after-repair qualifications. Open tracks unassessed current
+acceptance, and does not reopen the historically completed implementation.
+
+| Task | Concrete closing evidence |
+| --- | --- |
+| Publish semantic module and API ownership | One actual semantic owner for each compiler stage and public API; total source-pinned ownership projection with duplicate and missing-owner rejection. |
+| Preserve fixture and shared-routing ownership | Fixture, test, artifact-generation, coverage and shared dispatch paths have explicit owners; executable shared files have no competing semantic writers. |
+| Permit dedicated focused tests | Add and select a focused owning test without unrelated changes to the monolithic bootstrap namespace; retain the actual dedicated discovery result. |
+| Delegate compatibility entrypoints | Compatibility wrappers call the owning implementation; representative checks reject a second semantic implementation hidden behind an adapter. |
+| Select affected verification truthfully | Exact namespace/selector selection covers affected callers and rejects unknown selectors; failed, interrupted and skipped results retain their actual disposition. |
+| Verify representative ownership boundaries | Source-pinned leaf and shared changes exercise routing and ownership with affected checks, without unrelated compiler modifications. |
+
+Yes/no acceptance: are semantic and fixture/shared-path owners total and unique,
+dedicated test changes possible, compatibility entrypoints delegated, affected
+selectors strict, and representative leaf/shared changes verified? All must be
+yes for current acceptance. Preserve historical completion at its original scope.
+Stop at this existing boundary; no new coordination framework, compiler feature,
+mass refactor, per-change admission wrapper or task-count gate is required.
+<!-- compiler-api-task-projection/development-boundaries:end -->
 
 ## Integration milestones and decision gate
 

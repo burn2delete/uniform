@@ -950,7 +950,8 @@
 
 (defn- closure-owned?
   [ownership component-id closure]
-  (let [stem (get {"c11-mir" "c11_mir"
+  (let [stem (get {"c2-artifact-identity" "c2_artifact_identity"
+                   "c11-mir" "c11_mir"
                    "compiler-pass-manifest" "compiler_pass_manifest"}
                   component-id)
         source (when stem (str "bootstrap/clojure/src/gravity/" stem ".clj"))
@@ -1133,6 +1134,27 @@
                 nil))))
          vec)))
 
+(defn unsupported-execution
+  "Describe a known source selection without a committed guarded runner route."
+  [namespace]
+  ;; These source tests have only owner-local wrappers. Their established common
+  ;; broker, host-exclusive and canonical-heavy guards have no committed route.
+  ;; Discover their real owner without silently scheduling ordinary jobs.
+  (let [namespace (symbol (str namespace))
+        owner (cond
+                (contains? '#{gravity.self-hosting.runtime-module-reads-test
+                              gravity.self-hosting.module-census-test} namespace)
+                {:slice "SH-19" :owner :sh-runtime}
+                (= 'gravity.self-hosting.resolution-parent-mutation-test namespace)
+                {:slice "SH-06" :owner :sh-resolution})]
+    (when owner
+      (merge owner
+             {:id "SH01-IMPACT-EXTERNAL-WRAPPER"
+              :namespace namespace
+              :execution :unsupported
+              :reason :missing-committed-resource-wrapper
+              :required-guards [:common-host-broker :host-exclusive :canonical-heavy-lock]}))))
+
 (defn- build-iteration-plan
   [context classified changed-paths requested]
   (let [catalog (validate-test-catalog
@@ -1206,9 +1228,10 @@
              (mapv
               (fn [namespace]
                 (let [slice (get catalog-by-namespace namespace)]
-                  {:namespace namespace
-                   :slice slice
-                   :resource-class (resource-class slice)}))))]
+                  (merge {:namespace namespace
+                          :slice slice
+                          :resource-class (resource-class slice)}
+                         (unsupported-execution namespace))))))]
     (when (seq invalid-slices)
       (throw
        (ex-info
@@ -1463,9 +1486,10 @@
                   (fn [namespace]
                     (let [slice (get catalog-by-namespace namespace)]
                       (cond->
-                       {:namespace namespace
-                        :slice slice
-                        :resource-class (resource-class slice)}
+                       (merge {:namespace namespace
+                               :slice slice
+                               :resource-class (resource-class slice)}
+                              (unsupported-execution namespace))
                         (contains? job-metadata-by-namespace namespace)
                         (merge (get job-metadata-by-namespace namespace)))))))]
         (merge
@@ -1643,9 +1667,10 @@
              (mapv
               (fn [namespace]
                 (let [slice (:slice (get by-namespace namespace))]
-                  {:namespace namespace
-                   :slice slice
-                   :resource-class (resource-class slice)}))
+                  (merge {:namespace namespace
+                          :slice slice
+                          :resource-class (resource-class slice)}
+                         (unsupported-execution namespace))))
               namespaces)
              slices (vec (sort (distinct (map :slice shards))))]
          {:schema :gravity/sh01-impact-test-plan-v1

@@ -30,6 +30,11 @@ Build and release are consumers, not prerequisites for local analysis.
 
 ## Remaining tasks and evidence
 
+Implementation task authority: [Spec Kit ledger](../../specs/legality-workflow/tasks.md#implementation-tasks).
+The following table is generated; edit the ledger and run
+`clojure -M tools/legality_task_projection.clj --write`.
+
+<!-- legality-task-projection:start -->
 | Task (all open) | Evidence baseline | Closing evidence |
 | --- | --- | --- |
 | Complete profile restrictions and generated-form checks | [Profile contract](../../bootstrap/clojure/src/gravity/profile_validation/contract.clj) | Allowed profile matrix and hidden-allocation/reflection/effect rejection before lowering |
@@ -37,6 +42,7 @@ Build and release are consumers, not prerequisites for local analysis.
 | Complete safe-code classification and taint/unsafe boundaries | [Safety contract](../../bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj) | Every dangerous operation classified and unclassified operations rejected |
 | Preserve obligations into MIR and runtime execution | [Safety pipeline](../../bootstrap/clojure/src/gravity/c10_safety_analysis/pipeline.clj) | Surviving check/proof/source edges; missing-check and unjustified-elision rejection |
 | Close conformance for the declared profile surface | [Architecture](../phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md) | Accepted/rejected source fixtures, emitted facts and diagnostics for each claimed profile |
+<!-- legality-task-projection:end -->
 
 Hosted projection contracts deny canonical analysis authority; safety explicitly
 records that its model is not complete. Recommendation for the analysis

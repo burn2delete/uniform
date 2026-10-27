@@ -695,11 +695,10 @@
           (is (= "P15S23X002" (get-in result [0 :diagnostic])))
           (is (= :invalid-local-runtime-instruction (get-in result [0 :reason]))))))
     (let [hidden {:op :namespace-read :binding-id :missing}
-          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction 2)
+          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction)
           functions {'main {:params [] :instructions [instruction]}}
-          read-check (invoke 'p15-s23-runtime-module-reads-work functions {} 65536)]
-      (is (= {:status :accepted :work-count 2 :children [hidden]} children))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
+          read-check (invoke 'runtime-module-reads functions {})]
+      (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
       (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
@@ -709,7 +708,7 @@
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
       (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-module-reads-work {'main {:instructions [quoted]}} {} 65536)))))
+      (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [failure (AssertionError. "original Keyword representation failure") original-str str
           observed (with-redefs [clojure.core/str (fn [& values]
                                                   (if (= [:explode] values) (throw failure) (apply original-str values)))]
@@ -3018,8 +3017,8 @@
                  'p15-s23-runtime-string-set-insertion-work 3 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
                  'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-character-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-keyword-list-set-work 2
-                 'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
-                 'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
+                 'p15-s23-runtime-module-census 1 'p15-s23-runtime-instruction-children 1
+                 'runtime-module-reads 2 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
                  'p15-s23-runtime-list-equality-work 3
                  'p15-s23-runtime-vector-domain 2 'p15-s23-runtime-vector-equality-work 3 'p15-s23-runtime-vector-equality 2
@@ -4915,7 +4914,7 @@
                     (is (= :nonnegative-integer (get-in descriptor [:query-semantics :result-domain]))))))
               (is (= 4 (count (filter #(= :normal (:application %)) counts))))
               (is (= 1 (count (filter #(= :not-invoked (:application %)) counts))))
-              (is (= :sh08-homogeneous-list-return-v1 (get-in functions ['produced :return-compatibility :version])))
+              (is (= :sh08-homogeneous-list-return-v2 (get-in functions ['produced :return-compatibility :version])))
               (is (= {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} (get-in functions ['produced :return])))
               (is (= {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string :gravity.type/string]}
                      (get-in functions ['produced :return-actual-type])))
@@ -5369,15 +5368,13 @@
     (is (= ["binding-modes"] (get-in first-run [:module-initialization :initialized-binding-ids])))
     (is (= {"binding-modes" {:vector-literal 1}} (get-in first-run [:module-initialization :validated-constructor-occurrences])))
     (is (= "" (:stdout first-run)))
-    (let [census (invoke 'p15-s23-runtime-module-census plan 65536) work (:work-count census)]
+    (let [census (invoke 'p15-s23-runtime-module-census plan)]
       (is (= :accepted (:status census)) (pr-str census))
-      (is (= census (invoke 'p15-s23-runtime-module-census plan work)))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-census plan (dec work)))))
-      (let [reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) 65536)]
+      (is (not (contains? census :work-count)))
+      (let [reads (invoke 'runtime-module-reads (:functions plan) (:definitions census))]
         (is (= :accepted (:status reads)))
-        (is (= reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) (:work-count reads))))
-        (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-reads-work
-                                                                 (:functions plan) (:definitions census) (dec (:work-count reads))))))))
+        (is (= :namespace-read-without-initialized-definition
+               (:reason (invoke 'runtime-module-reads (:functions plan) {}))))))
     (doseq [evaluate [(invoke 'p15-s23-runtime-evaluate-closed-instruction read {'modes expected :namespace-pool {"binding-modes" expected}} "")
                       (invoke 'p15-s23-runtime-evaluate-in-context read {} "" (assoc (:functions plan) :namespace-pool {"binding-modes" expected}) [])
                       (invoke 'p15-s23-runtime-activate-function (get-in plan [:functions 'getter]) [] "" (:functions plan) [])]]
@@ -7529,7 +7526,7 @@
              (doseq [name names] (is (= homogeneous (get-in functions [name :return]))))
              (is (= homogeneous (get-in functions ['annotated :return-actual-type])))
              (is (= :homogeneous-list-identity (get-in functions ['annotated :return-compatibility :relation])))
-             (is (= :sh08-homogeneous-list-return-v1 (get-in functions ['annotated :return-compatibility :version])))
+             (is (= :sh08-homogeneous-list-return-v2 (get-in functions ['annotated :return-compatibility :version])))
              (doseq [name ['exact 'aborted]] (is (= (finite [s]) (get-in functions [name :return]))))
              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
              (when-not (= :accepted (:status effects)) (throw (ex-info "List join C8 rejected" {:diagnostics (:diagnostics effects)})))
@@ -8088,7 +8085,7 @@
                   c5-rows (get-in products [:c5 :namespace-analysis :resolution-table])
                   c6-rows (:resolution-table authenticated) c6-ids (mapv :reference-syntax-id c6-rows)
                   return-functions (mapv functions ['empty-parts 'singleton 'matched-parts 'reverse-parts])
-                  return-rows (filterv #(= :sh08-homogeneous-list-return-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  return-rows (filterv #(= :sh08-homogeneous-list-return-v2 (:producer-rule %)) (:constraint-ledger facts))
                   calls (:call-type-facts facts)
                   binding (seal (:request input) (:typed input) (:verification input))
                   effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
@@ -8111,7 +8108,7 @@
                   (is (= (case name empty-parts (finite []) singleton (finite [:gravity.type/string])
                                      matched-parts (finite [:gravity.type/string]) reverse-parts homogeneous) actual))
                   (is (= :sh07-list-return-declaration-v1 (:rule-version declaration)))
-                  (is (= :sh08-homogeneous-list-return-v1 (:version premise)))
+                  (is (= :sh08-homogeneous-list-return-v2 (:version premise)))
                   (is (= (if (= name 'reverse-parts) :homogeneous-list-identity :all-positional-elements-match) (:relation premise)))
                   (is (= declaration (:declaration premise)))
                   (is (= record (:function-record premise)))
@@ -8166,8 +8163,8 @@
         originals (:typed input)
         hostile-premise (walk/postwalk
                           #(cond
-                             (and (map? %) (= :sh08-homogeneous-list-return-v1 (:version %))) (assoc % :version :sh08-homogeneous-list-parameter-v1)
-                             (and (map? %) (= :sh08-homogeneous-list-return-v1 (:producer-rule %))) (assoc % :kind :equality)
+                             (and (map? %) (= :sh08-homogeneous-list-return-v2 (:version %))) (assoc % :version :sh08-homogeneous-list-parameter-v1)
+                             (and (map? %) (= :sh08-homogeneous-list-return-v2 (:producer-rule %))) (assoc % :kind :equality)
                              :else %) originals)
         hostile-types (walk/postwalk #(if (= :gravity.type/string %) :gravity.type/keyword %) originals)]
     (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
@@ -18133,7 +18130,7 @@
         (is (= :complete (:status joined)) (pr-str joined))
         (is (= homogeneous (get-in joined [:value :function :return])))
         (is (= actual (get-in joined [:value :function :return-actual-type])))
-        (is (= :sh08-homogeneous-list-return-v1 (get-in joined [:value :function :return-compatibility :version])))
+        (is (= :sh08-homogeneous-list-return-v2 (get-in joined [:value :function :return-compatibility :version])))
         (doseq [mutate [#(dissoc % :return-context)
                         #(assoc-in % [:functions definition-name :return-compatibility :relation] :parameter-compatibility)
                         #(assoc-in % [:types (:function-core-node-id record) :return-actual-type] :gravity.type/list)
@@ -18829,7 +18826,7 @@
             instruction (call helper-name [(say "unreached" (literal values)) (literal :alpha) (literal 0)])]
         (is (= ["" :rejected] (subvec (evaluate instruction {} deep functions) 1))))
       (let [{:keys [plan read]} (module-literal-runtime-input)
-            census (invoke 'p15-s23-runtime-module-census plan 65536)
+            census (invoke 'p15-s23-runtime-module-census plan)
             initialized (invoke 'p15-s23-runtime-initialize-module census (:functions plan))
             pool (:pool initialized)
             caller (assoc helper :instructions [{:op :do :body [read step-op]}])]
@@ -25143,11 +25140,10 @@
           (is (= "P15S23X002" (get-in result [0 :diagnostic])))
           (is (= :invalid-local-runtime-instruction (get-in result [0 :reason]))))))
     (let [hidden {:op :namespace-read :binding-id :missing}
-          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction 2)
+          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction)
           functions {'main {:params [] :instructions [instruction]}}
-          read-check (invoke 'p15-s23-runtime-module-reads-work functions {} 65536)]
-      (is (= {:status :accepted :work-count 2 :children [hidden]} children))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
+          read-check (invoke 'runtime-module-reads functions {})]
+      (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
       (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
@@ -25157,7 +25153,7 @@
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
       (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-module-reads-work {'main {:instructions [quoted]}} {} 65536)))))
+      (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [scalar (bootstrap/sh03-reader-host-character-value! "<duplicate-character-construction>" {:codepoint 0x1f600})
           same-codepoint (assoc scalar :text "xy") result (work [scalar same-codepoint] 65536)]
       (is (not= scalar same-codepoint))
@@ -26876,7 +26872,7 @@
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
                 checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan 65536)]
+                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
             (is (= charge (:work-count checked)))
             (is (= :exact-logical-content-reservation (:work-count-kind checked)))
@@ -26887,9 +26883,7 @@
             (is (= :module-initialization-work-limit
                    (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
-            (is (= census (invoke 'p15-s23-runtime-module-census plan (:work-count census))))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-module-census plan (dec (:work-count census))))))
+            (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
             (let [first-run (execute plan) pair (:entrypoint-result first-run)]
               (is (= :complete (:status first-run)) (pr-str first-run))
@@ -26953,17 +26947,19 @@
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
               one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-              census (invoke 'p15-s23-runtime-module-census two 65536)]
+              census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
           (is (= (reservation [long-key]) (:work-count one)))
-          (is (= :module-initialization-work-limit (:reason census)))
-          (is (= 65537 (:work-count census)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind census)))
+          (is (= :accepted (:status census)))
+          (is (not (contains? census :work-count)))
+          (is (not (contains? census :work-count-kind)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
-            (is (= :rejected (:status result)))
+            (is (= :complete (:status result)))
             (is (= "" (:stdout result)))
-            (is (= 0 @constructor-calls))))
+            (is (= [(:binding-id definition) (:binding-id unused)]
+                   (get-in result [:module-initialization :initialized-binding-ids])))
+            (is (= 2 @constructor-calls))))
         (let [callbacks (atom 0)
               opaque (proxy [Object] []
                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload equality")))
@@ -27290,7 +27286,7 @@
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
                 checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan 65536)]
+                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
             (is (= charge (:work-count checked)))
             (is (= :exact-logical-content-reservation (:work-count-kind checked)))
@@ -27301,9 +27297,7 @@
             (is (= :module-initialization-work-limit
                    (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
-            (is (= census (invoke 'p15-s23-runtime-module-census plan (:work-count census))))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-module-census plan (dec (:work-count census))))))
+            (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
             (let [first-run (execute plan) pair (:entrypoint-result first-run)]
               (is (= :complete (:status first-run)) (pr-str first-run))
@@ -27369,17 +27363,19 @@
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
               one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-              census (invoke 'p15-s23-runtime-module-census two 65536)]
+              census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
           (is (= (reservation [long-string]) (:work-count one)))
-          (is (= :module-initialization-work-limit (:reason census)))
-          (is (= 65537 (:work-count census)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind census)))
+          (is (= :accepted (:status census)))
+          (is (not (contains? census :work-count)))
+          (is (not (contains? census :work-count-kind)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
-            (is (= :rejected (:status result)))
+            (is (= :complete (:status result)))
             (is (= "" (:stdout result)))
-            (is (= 0 @constructor-calls))))
+            (is (= [(:binding-id definition) (:binding-id unused)]
+                   (get-in result [:module-initialization :initialized-binding-ids])))
+            (is (= 2 @constructor-calls))))
         (let [callbacks (atom 0)
               opaque (proxy [Object] []
                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload equality")))

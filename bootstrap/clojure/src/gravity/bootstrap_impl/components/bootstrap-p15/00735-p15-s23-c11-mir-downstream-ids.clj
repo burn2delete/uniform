@@ -17,7 +17,8 @@
 
 (defn p15-s23-c11-mir-expected-block-operation-ids
   [checked-core]
-  (let [nodes (:core-nodes checked-core)
+  (let [parameter (p15-s23-c11-mir-entry-parameter! (:source-path checked-core) checked-core)
+        nodes (filterv #(not= (:id parameter) (:node-id %)) (:core-nodes checked-core))
         artifact-id (:artifact-id checked-core)
         entry-id (str artifact-id ":mir:entry")
         then-id (str artifact-id ":mir:then")
@@ -175,19 +176,21 @@
       :edge-kind (:edge-kind use)})))
 
 (defn p15-s23-c11-mir-expected-value
-  [node data-flow terminator-uses operation]
+  ([node data-flow terminator-uses operation]
+   (p15-s23-c11-mir-expected-value node data-flow terminator-uses operation nil))
+  ([node data-flow terminator-uses operation parameter]
   (let [node-id (:node-id node)]
     {:artifact :gravity/mir-value
      :value-id node-id
-     :kind :instruction-result
+     :kind (if parameter :parameter :instruction-result)
      :type (:type node)
      :constant-payload
-     (if (= :constant (p15-s23-c11-mir-node-opcode node))
+     (if (and (nil? parameter) (= :constant (p15-s23-c11-mir-node-opcode node)))
        {:present? true :value (get-in node [:attributes :value])}
        :not-applicable)
-     :defined-by {:value-id node-id
+     :defined-by (or (:definition parameter) {:value-id node-id
                   :operation-id node-id
-                  :block-id (:block-id operation)}
+                  :block-id (:block-id operation)})
      :uses (vec (concat
                  (p15-s23-c11-mir-expected-uses data-flow node-id)
                  (p15-s23-c11-mir-expected-terminator-value-uses
@@ -195,7 +198,7 @@
      :source (:source node)
      :ownership (:ownership node)
      :effects (:effects node)
-     :safety (:safety node)}))
+     :safety (:safety node)})))
 
 (defn p15-s23-c11-mir-expected-runtime-check-value
   [node data-flow operation]

@@ -4,6 +4,7 @@
 (def operation-keys
   #{:c3-c2-reader-integrity-report
     :form-kind
+    :c3-form-index :c3-token-index
     :c3-deferred-ratio-descriptor-from-raw
     :c3-ratio-descriptor-from-raw
     :c3-lossless-literal-descriptor
@@ -30,6 +31,9 @@
    :contract-boundary :hosted-c3-authenticated-literal-projection
    :public-api
    {'with-operations {:arglists '([operations thunk])}
+    'c3-form-index {:arglists '([artifact])}
+    'c3-token-index {:arglists '([artifact])}
+    'c3-index-operations-current? {:arglists '([expected])}
     'c3-deferred-ratio-descriptor-from-raw {:arglists '([raw])}
     'c3-ratio-descriptor-from-raw {:arglists '([raw])}
     'c3-lossless-literal-descriptor

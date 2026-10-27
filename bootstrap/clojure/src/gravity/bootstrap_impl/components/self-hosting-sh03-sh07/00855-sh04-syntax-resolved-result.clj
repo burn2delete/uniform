@@ -21,6 +21,8 @@
         top-level-products (c2-top-level-products c2-artifact)
         seeds (:syntax-seed-stream c2-artifact)
         base-products
+        (clojure.core/binding [*sh04-syntax-form-index-transaction*
+                  {:artifact c2-artifact :thread (Thread/currentThread) :slot (volatile! nil)}]
         (mapv
          (fn [seed {:keys [form-record]}]
            (let [descriptor
@@ -34,7 +36,7 @@
              (sh04-syntax-resolve-template!
               source-path binding raw reader-binding
               reader-source-revision)))
-         seeds top-level-products)
+         seeds top-level-products))
         _ (when (empty? base-products)
             (sh04-syntax-boundary-fail!
              "C3-SHAPE" source-path :nonempty-syntax-object-stream
@@ -144,8 +146,9 @@
               (repeat serialization-id))
         graph-report (:graph-verification-report resolved-stream)
         syntax-result-id (:artifact-id resolved-stream)
+        expansion-history (sh04-syntax-reader-expansion-history source-path c2-artifact)
         summary
-        {:slice :SH-04 :status :accepted
+        (cond-> {:slice :SH-04 :status :accepted
          :adapter-contract sh04-syntax-adapter-contract
          :semantic-source-id semantic-source-id
          :reader-binding-id (reader-canonical-hash reader-binding)
@@ -154,6 +157,8 @@
          :serialization-set-id serialization-id
          :graph-id (reader-canonical-hash graph-report)
          :syntax-result-id syntax-result-id}
+          (:id expansion-history)
+          (assoc :reader-expansion-history-id (:id expansion-history)))
         descriptor (sh04-syntax-sh02-descriptor source-path binding summary)
         envelope
         (apply p15-s23-stage2-sh02-descriptor-envelope

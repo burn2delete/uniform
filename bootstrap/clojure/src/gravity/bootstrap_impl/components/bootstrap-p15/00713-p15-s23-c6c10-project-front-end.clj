@@ -133,12 +133,24 @@
   ([source-path source-text front-end]
    (p15-s23-c6c10-resolved-parameter source-path source-text front-end nil))
   ([source-path source-text front-end c3-parent]
+   (p15-s23-c6c10-resolved-parameter source-path source-text front-end c3-parent nil))
+  ([source-path source-text front-end c3-parent invocation]
   ;; This existing resolver projection constructs no SH-07 Core. Its original
   ;; SH-06 replay and C2 occurrence bijection own the binding/source premise.
-  (let [resolved (if (nil? c3-parent) (sh06-resolution-source-artifact source-path source-text)
-                   (sh06-resolution-artifact-from-sh05-artifact source-path
-                     (sh05-macro-artifact-from-c3-artifact source-path c3-parent)))
-        request (sh07-core-authenticated-request resolved)
+  (let [resolved (if (nil? c3-parent)
+                   (do (when (some? invocation)
+                         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :explicit-reader-c3-parent {}))
+                       (sh06-resolution-source-artifact source-path source-text))
+                   (let [parent (if (some? invocation)
+                                  (sh05-macro-artifact-from-c3-artifact source-path c3-parent invocation)
+                                  (sh05-macro-artifact-from-c3-artifact source-path c3-parent))]
+                     (if (some? invocation)
+                       (sh06-resolution-artifact-from-sh05-artifact source-path parent
+                         {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                         (:reader-source-path invocation) invocation)
+                       (sh06-resolution-artifact-from-sh05-artifact source-path parent))))
+        request (if (some? invocation) (sh07-core-authenticated-request resolved ::legacy invocation)
+                    (sh07-core-authenticated-request resolved))
         forms (into {} (map (juxt :form-id identity)) (:forms request))
         root (get forms (first (:top-level-form-ids request)))
         function (get forms (get (:child-form-ids root) 2))

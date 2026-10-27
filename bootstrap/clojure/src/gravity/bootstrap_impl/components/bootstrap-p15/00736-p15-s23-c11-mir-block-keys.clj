@@ -15,7 +15,8 @@
 
 (defn p15-s23-c11-mir-validate-module-envelope!
   [source-path checked-core mir]
-  (let [entrypoint (:entrypoint checked-core)
+  (let [parameter (p15-s23-c11-mir-entry-parameter! source-path checked-core)
+        entrypoint (:entrypoint checked-core)
         function (get-in mir [:functions entrypoint])
         root-id (first (:root-node-ids checked-core))
         root-node (first (filter #(= root-id (:node-id %))
@@ -60,7 +61,7 @@
           (= root-id (:fn-id function))
           (= entrypoint (:name function))
           (vector? (:params function))
-          (= [] (:params function))
+          (= (if parameter [(:id parameter)] []) (:params function))
           (= (:type return-node) (:returns function))
           (= (get-in checked-core
                      [:source-core-input :declared-effects])
@@ -159,11 +160,6 @@
                :do :if :let :str :println :function
                :runtime-check]
               :maximum-conditionals 1
-              :maximum-module-carrier-nodes
-              p15-s23-c11-mir-max-carrier-nodes
-              :maximum-final-artifact-carrier-nodes
-              p15-s23-c11-mir-max-final-artifact-carrier-nodes
-              :maximum-carrier-depth 256
               :whole-c11? false
               :domain-ir-credit? false
               :optimization-credit? false
@@ -190,10 +186,6 @@
        :do :if :let :str :println :function
        :runtime-check]
       :maximum-conditionals 1
-      :maximum-module-carrier-nodes p15-s23-c11-mir-max-carrier-nodes
-      :maximum-final-artifact-carrier-nodes
-      p15-s23-c11-mir-max-final-artifact-carrier-nodes
-      :maximum-carrier-depth 256
       :whole-c11? false
       :domain-ir-credit? false
       :optimization-credit? false

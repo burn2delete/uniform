@@ -218,13 +218,7 @@
 
 (defn sh08-local-bounds-value []
   {:maximum-core-nodes 65536
-   :maximum-root-nodes 1024
    :maximum-node-children 1024
-   :maximum-origin-entries 256
-   :maximum-metadata-entries 256
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-exports 1024
    :maximum-carrier-nodes 1048576
    :maximum-carrier-depth 128
    :maximum-carrier-width 65536
@@ -270,13 +264,8 @@
       false)
     false))
 
-(defn sh08-bounded-vector? [value maximum]
-  (if (vector? value)
-    (<= (count value) maximum)
-    false))
-
-(defn sh08-keyword-vector? [values maximum]
-  (if (sh08-bounded-vector? values maximum)
+(defn sh08-keyword-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -285,8 +274,8 @@
           false)))
     false))
 
-(defn sh08-sha-vector? [values maximum]
-  (if (sh08-bounded-vector? values maximum)
+(defn sh08-sha-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -404,8 +393,7 @@
     false))
 
 (defn sh08-origin-vector? [origins]
-  (if (sh08-bounded-vector?
-       origins (get (sh08-local-bounds-value) :maximum-origin-entries))
+  (if (vector? origins)
     (loop [remaining origins]
       (if (= (count remaining) 0)
         true
@@ -422,10 +410,8 @@
     (if (sh08-sha256-id? (get source :syntax-id))
       (if (sh08-sha256-id? (get source :form-id))
         (if (map? (get source :semantic-span))
-          (if (<= (count (get source :semantic-span)) 16)
-            (if (sh08-origin-vector? (get source :origin-chain))
-              (sh08-origin-vector? (get source :generated-origin))
-              false)
+          (if (sh08-origin-vector? (get source :origin-chain))
+            (sh08-origin-vector? (get source :generated-origin))
             false)
           false)
         false)
@@ -441,17 +427,10 @@
       (if (keyword? (get module :profile))
         (if (keyword? (get module :target))
           (if (keyword? (get module :safety))
-            (if (sh08-keyword-vector?
-                 (get module :effects)
-                 (get (sh08-local-bounds-value) :maximum-effects))
-              (if (sh08-keyword-vector?
-                   (get module :capabilities)
-                   (get (sh08-local-bounds-value) :maximum-capabilities))
-                (if (sh08-bounded-vector?
-                     (get module :exports)
-                     (get (sh08-local-bounds-value) :maximum-exports))
-                  (sh08-sha256-id?
-                   (get module :source-revision-id))
+            (if (sh08-keyword-vector? (get module :effects))
+              (if (sh08-keyword-vector? (get module :capabilities))
+                (if (vector? (get module :exports))
+                  (sh08-sha256-id? (get module :source-revision-id))
                   false)
                 false)
               false)
@@ -489,43 +468,27 @@
     (if (= (get node :artifact) :gravity/sh07-core-node)
       (if (sh08-sha256-id? (get node :node-id))
         (if (keyword? (get node :core-form))
-          (if (sh08-sha-vector?
-               (get node :children)
-               (get (sh08-local-bounds-value) :maximum-node-children))
+          (if (sh08-sha-vector? (get node :children))
             (if (map? (get node :attributes))
-              (if (<= (count (get node :attributes))
-                      (get (sh08-local-bounds-value)
-                           :maximum-metadata-entries))
-                (if (sh08-source-shape? (get node :source))
-                  (if (if (= (get node :binding-context) nil)
-                        true
-                        (sh08-sha256-id?
-                         (get node :binding-context)))
-                    (if (contains? #{true false} (get node :generated?))
-                      (if (sh08-sha-vector?
-                           (get node :resolved-binding-ids)
-                           (get (sh08-local-bounds-value)
-                                :maximum-node-children))
-                        (if (map? (get node :evaluation))
-                          (if (sh08-node-module-matches?
-                               (get node :module) module)
-                            (if (map? (get node :metadata))
-                              (if (<= (count (get node :metadata))
-                                      (get (sh08-local-bounds-value)
-                                           :maximum-metadata-entries))
-                                (if
-                                 (sh08-preserved-declarations-match?
+              (if (sh08-source-shape? (get node :source))
+                (if (if (= (get node :binding-context) nil)
+                      true
+                      (sh08-sha256-id? (get node :binding-context)))
+                  (if (contains? #{true false} (get node :generated?))
+                    (if (sh08-sha-vector?
+                          (get node :resolved-binding-ids))
+                      (if (map? (get node :evaluation))
+                        (if (sh08-node-module-matches?
+                              (get node :module)
+                              module)
+                          (if (map? (get node :metadata))
+                            (if (sh08-preserved-declarations-match?
                                   (get node :preserved-declarations)
                                   module)
-                                  (if (sh08-keyword-vector?
-                                       (get node
-                                            :pending-fact-families)
-                                       32)
-                                    (keyword?
-                                     (get node
-                                          :lowering-rule-version))
-                                    false)
-                                  false)
+                              (if (sh08-keyword-vector?
+                                    (get node :pending-fact-families))
+                                (keyword?
+                                  (get node :lowering-rule-version))
                                 false)
                               false)
                             false)
@@ -574,8 +537,7 @@
            :node (if (map? node) node {})})))))
 
 (defn sh08-roots-valid? [roots node-table]
-  (if (sh08-sha-vector?
-       roots (get (sh08-local-bounds-value) :maximum-root-nodes))
+  (if (sh08-sha-vector? roots)
     (if (> (count roots) 0)
       (if (sh08-all-unique? roots [])
         (loop [remaining roots]
@@ -616,8 +578,7 @@
                 nodes (get core-artifact :nodes)
                 roots (get core-artifact :root-core-node-ids)]
             (if (sh08-module-shape? module)
-              (if (sh08-bounded-vector?
-                   nodes (get (sh08-local-bounds-value) :maximum-core-nodes))
+              (if (vector? nodes)
                 (if (> (count nodes) 0)
                   (let [validated
                         (sh08-validate-node-sequence nodes module)]
@@ -1769,43 +1730,19 @@
                          (get binding :package) #{:name :version})
                       (if (symbol? (get (get binding :package) :name))
                         (if (string? (get (get binding :package) :version))
-                          (if (<= (count
-                                   (get (get binding :package) :version))
-                                  1024)
-                            (if (keyword? (get binding :visibility))
-                              (if (sh08-bounded-vector?
-                                   (get binding :profile-set) 128)
-                                (if (sh08-bounded-vector?
-                                     (get binding :target-set) 128)
-                                  (if (sh08-bounded-vector?
-                                       (get binding :effects) 128)
-                                    (if (sh08-bounded-vector?
-                                         (get binding :capabilities) 128)
-                                      (if (if (keyword?
-                                               (get binding :type-ref))
-                                            true
-                                            (if (symbol?
-                                                 (get binding :type-ref))
-                                              true
-                                              (map?
-                                               (get binding :type-ref))))
-                                        (if (keyword? (get binding :safety))
-                                          (if (map?
-                                               (get binding :semantic-span))
-                                            (if (<=
-                                                 (count
-                                                  (get binding
-                                                       :semantic-span))
-                                                 256)
-                                              (if (= (get binding
-                                                          :binding-class)
-                                                     :lexical)
-                                                (sh08-sha256-id?
-                                                 (get binding :scope-id))
-                                                (= (get binding :scope-id)
-                                                   nil))
-                                              false)
-                                            false)
+                          (if (keyword? (get binding :visibility))
+                            (if (vector? (get binding :profile-set))
+                              (if (vector? (get binding :target-set))
+                                (if (vector? (get binding :effects))
+                                  (if (vector? (get binding :capabilities))
+                                    (if (if (keyword? (get binding :type-ref)) true
+                                          (if (symbol? (get binding :type-ref)) true
+                                            (map? (get binding :type-ref))))
+                                      (if (keyword? (get binding :safety))
+                                        (if (map? (get binding :semantic-span))
+                                          (if (= (get binding :binding-class) :lexical)
+                                            (sh08-sha256-id? (get binding :scope-id))
+                                            (= (get binding :scope-id) nil))
                                           false)
                                         false)
                                       false)
@@ -6897,8 +6834,9 @@
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining) (if (= :gravity.type/never (first remaining)) out (conj out (first remaining))))))
         family (first normal) invoked? (= (count normal) (count args))
-        integral? (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                              :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family)
+        integral? (if (keyword? family)
+                    (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family) false)
         caller (loop [remaining (get core :function-records)]
                  (if (= 0 (count remaining)) nil
                    (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
@@ -20847,11 +20785,15 @@
                   (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
               (recur (+ i 1)) false))))]) false)))
 
+(defn sh08-si-path-id? [id]
+  (if (keyword? id) true (string? id)))
+
 (defn sh08-si-within? [id root parents]
-  (loop [id id depth 0]
-    (if (= id root) true
-      (if (if (= id nil) true (> depth 128)) false
-        (recur (get (get parents id) :owner) (+ depth 1))))))
+  (loop [id id seen #{}]
+    (if (sh08-si-path-id? id)
+      (if (contains? seen id) false
+        (if (= id root) true
+          (recur (get (get parents id) :owner) (conj seen id)))) false)))
 
 (defn sh08-si-ref? [node binding forms bindings]
   (let [form (get forms (get (get node :source) :form-id))]
@@ -20860,25 +20802,31 @@
       (= :symbol (get form :kind)) (= (get form :value) (get (get bindings binding) :name))
       (= (get node :source) (sh08-ma-form-source form))])))
 
-(defn sh08-si-vector-origin [id loop-id expected core nodes types bindings forms parents seen depth]
-  (if (if (> depth 128) true (contains? seen id)) nil
+(defn sh08-si-vector-origin [id loop-id expected core nodes types bindings forms parents seen]
+  ; Walk canonical references without a depth allowance. Reverse the collected
+  ; links only at the constructor to preserve inner-to-outer proof order.
+  (loop [id id seen seen links []]
+  (if (= false (sh08-si-path-id? id)) nil
+  (if (contains? seen id) nil
     (let [node (get nodes id) kind (get node :core-form) form (get forms (get (get node :source) :form-id))
           children (get node :children) attrs (get node :attributes)
           extent (if (vector? (get expected :element-types)) (count (get expected :element-types)) nil)]
-      (if (sh08-ft-all-true? [(= :gravity.type/vector (get expected :kind)) (integer? extent)
+      (if (sh08-ft-all-true? [(map? node) (sh08-si-path-id? (get node :node-id)) (= id (get node :node-id))
+             (= :gravity.type/vector (get expected :kind)) (integer? extent)
              (if (integer? extent) (<= 0 extent (get (sh08-local-bounds-value) :maximum-node-children)) false)
              (= expected (get types id)) (if (= kind :reference) true (= false (sh08-si-within? id loop-id parents)))])
         (if (= :reference kind)
           (let [bid (get attrs :binding-id) records (sh08-bm-select (get core :lexical-bindings) :binding-id bid)
                 record (first records)]
             (if (if (= 1 (count records)) (sh08-sm-let-link-valid? record node nodes bindings forms) false)
-              (let [origin (sh08-si-vector-origin (get record :initializer-node-id) loop-id expected core nodes types bindings forms parents (conj seen id) (+ depth 1))]
-                (if (map? origin) (assoc origin :binding-links (conj (get origin :binding-links []) record)) nil)) nil))
+              (recur (get record :initializer-node-id) (conj seen id) (conj links record)) nil))
         (if (= :quote kind)
           (let [data (sh08-qd-node node forms)]
             (if (sh08-ft-all-true? [(= :accepted (get data :status)) (= :vector (get (get data :data) :kind))
                    (= expected (get (get data :data) :type)) (= extent (count (get (get data :data) :children)))])
-              {:node node :source-form form :type expected :extent extent :data-origin (get (get data :data) :origin) :binding-links []} nil))
+              {:node node :source-form form :type expected :extent extent :data-origin (get (get data :data) :origin)
+               :binding-links (loop [i (- (count links) 1) out []]
+                                (if (< i 0) out (recur (- i 1) (conj out (get links i)))))} nil))
         (if (sh08-ft-all-true? [(= :collection-literal kind) (= :vector (get attrs :literal-kind)) (= :vector (get form :kind))
                (vector? children) (= extent (count children) (get attrs :element-count) (count (get form :child-form-ids)))
                (= (get node :source) (sh08-ma-form-source form)) (sh08-ft-loop-kernel-ordered-children? node)
@@ -20888,7 +20836,9 @@
                          (= (get child :source) (sh08-ma-form-source source))
                          (= (get (get expected :element-types) i) (get types (get children i)))])
                      (recur (+ i 1)) false))))])
-          {:node node :source-form form :type expected :extent extent :binding-links []} nil))) nil))))
+          {:node node :source-form form :type expected :extent extent
+           :binding-links (loop [i (- (count links) 1) out []]
+                            (if (< i 0) out (recur (- i 1) (conj out (get links i)))))} nil))) nil))))))
 
 (defn sh08-si-record [records field value]
   (loop [remaining records found nil]
@@ -20898,11 +20848,25 @@
         (recur (rest remaining) found)))))
 
 (defn sh08-si-ancestry-path [id root nodes parents]
-  (loop [id id ordinal nil depth 0 out []]
-    (let [next (conj out {:node (get nodes id) :child-index ordinal})]
-      (if (= id root) next
-        (if (if (= id nil) true (> depth 128)) []
-          (recur (get (get parents id) :owner) (get (get parents id) :ordinal) (+ depth 1) next))))))
+  (loop [id id ordinal nil seen #{} out []]
+    (if (sh08-si-path-id? id)
+      (if (contains? seen id) []
+        (let [node (get nodes id)]
+          (if (if (map? node) (= id (get node :node-id)) false)
+            (let [next (conj out {:node node :child-index ordinal})]
+              (if (= id root) next
+                (recur (get (get parents id) :owner) (get (get parents id) :ordinal)
+                       (conj seen id) next))) []))) [])))
+
+(defn sh08-si-path-records? [path nodes]
+  (if (if (vector? path) (> (count path) 0) false)
+    (loop [remaining path seen #{}]
+      (if (= 0 (count remaining)) true
+        (let [entry (first remaining) node (get entry :node) id (get node :node-id)]
+          (if (if (map? entry) (if (map? node) (sh08-si-path-id? id) false) false)
+            (if (= node (get nodes id))
+              (if (contains? seen id) false
+                (recur (rest remaining) (conj seen id))) false) false)))) false))
 
 (defn sh08-si-backedge-paths [incoming root nodes parents]
   (loop [remaining incoming out []]
@@ -20911,8 +20875,9 @@
              (conj out (sh08-si-ancestry-path (get (first remaining) :recur-core-node-id) root nodes parents))))))
 
 (defn sh08-si-origin-closed? [origin operand expected core nodes types]
+  ; The finite evidence vector must reconstruct an acyclic canonical chain.
   (let [links (get origin :binding-links) extent (get origin :extent) constructor (get origin :node)]
-    (if (if (vector? links) (<= (count links) 128) false)
+    (if (vector? links)
       (if (sh08-ft-all-true? [(= :gravity.type/vector (get expected :kind)) (vector? (get expected :element-types))
              (= extent (count (get expected :element-types))) (if (integer? extent) (<= 0 extent 1024) false)
              (= expected (get origin :type)) (= constructor (get nodes (get constructor :node-id)))
@@ -20922,14 +20887,17 @@
                (if (vector? (get (get origin :source-form) :child-form-ids))
                  (= extent (count (get constructor :children)) (get (get constructor :attributes) :element-count)
                     (count (get (get origin :source-form) :child-form-ids))) false) true)])
-        (loop [id operand index (- (count links) 1)]
+        (loop [id operand index (- (count links) 1) seen #{}]
+          (if (= false (sh08-si-path-id? id)) false
+          (if (contains? seen id) false
           (if (< index 0) (= id (get constructor :node-id))
             (let [record (get links index) node (get nodes id) bid (get record :binding-id)]
-              (if (sh08-ft-all-true? [(= :reference (get node :core-form))
+              (if (sh08-ft-all-true? [(map? node) (sh08-si-path-id? (get node :node-id)) (= id (get node :node-id))
+                     (= :reference (get node :core-form))
                      (= bid (get (get node :attributes) :binding-id)) (= [bid] (get node :resolved-binding-ids))
                      (= expected (get types id)) (= :immutable (get record :mutability))
                      (= record (sh08-si-record (get core :lexical-bindings) :binding-id bid))])
-                (recur (get record :initializer-node-id) (- index 1)) false)))) false) false)))
+                (recur (get record :initializer-node-id) (- index 1) (conj seen id)) false)))))) false) false)))
 
 (defn sh08-si-step-source [operation call nodes forms]
   (let [addition? (= operation '+) unit (get nodes (get (get call :argument-node-ids) 1))]
@@ -21032,7 +21000,7 @@
                   header (sh08-si-source core increment call (get edges increment-id) nodes bindings types (get core :module))
                   path (get paths index)]
               (if (if (vector? path)
-                    (if (if (> (count path) 0) (<= (count path) 129) false)
+                    (if (sh08-si-path-records? path nodes)
                       (sh08-ft-all-true? [(map? header) (if extended? (sh08-si-step-source-valid? (get steps index) header nodes) true)
                      (= 1 (count (get transfer :argument-node-ids)))
                      (= (get transfer :recur-core-node-id) (get (get (first path) :node) :node-id))
@@ -21088,7 +21056,7 @@
             count-node (get nodes (get guard-args 1)) count-call (get calls (get count-node :node-id))
             count-header (sh08-cq-source core count-node count-call (get edges (get count-node :node-id)) nodes bindings types (get core :module))
             count-type (first (get count-header :argument-types)) extent (if (vector? (get count-type :element-types)) (count (get count-type :element-types)) nil)
-            origin (sh08-si-vector-origin (first (get count-call :argument-node-ids)) loop-id count-type core nodes types bindings forms parents #{} 0)
+            origin (sh08-si-vector-origin (first (get count-call :argument-node-ids)) loop-id count-type core nodes types bindings forms parents #{})
             guard (sh08-io-descriptor core condition guard-call (get edges (get condition :node-id)) nodes bindings types (get core :module))
             slot-check (if (= :accepted (get prepared :status))
                          (sh08-ft-loop-kernel-collect-slots working prepared types {} (- budget work)) {})
@@ -21526,7 +21494,7 @@
 
 (defn sh08-vl-path-valid? [path leaf root nodes]
   (if (vector? path)
-    (if (if (> (count path) 0) (<= (count path) 129) false)
+    (if (sh08-si-path-records? path nodes)
       (sh08-ft-all-true? [(= leaf (get (get (first path) :node) :node-id))
         (= root (get (get (get path (- (count path) 1)) :node) :node-id))
         (loop [i 0]
@@ -21611,7 +21579,7 @@
                 (if (= :accepted (get prepared :status))
                   (let [range (get invariant :range-proof) parents (get prepared :index)
                         origin (sh08-si-vector-origin (first args) (get (get range :target) :owner-core-node-id) vector-type
-                                 core nodes types bindings forms parents #{} 0)
+                                 core nodes types bindings forms parents #{})
                         path (sh08-si-ancestry-path (get node :node-id) (get (get (get range :guard-node) :children) 1) nodes parents)
                         descriptor (sh08-vn-finish (assoc header :bounds-proof (sh08-vl-bounds header invariant origin path nodes)))]
                     (if (if (sh08-si-ref? index bid forms bindings) (sh08-vl-proof-valid? descriptor core node nodes bindings types) false)
@@ -22539,7 +22507,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:key-value-member-types :static-entry-count]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
@@ -22599,7 +22567,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:positional-element-types :static-length]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}]
@@ -23225,7 +23193,7 @@
                    (= (get record :definition-binding-id) (get definition-binding :binding-id))
                    (= (get record :definition-name) (get definition-binding :name))])
               {:status :accepted :work-count work
-               :premise {:version :sh08-homogeneous-list-return-v1 :relation (get validation :relation)
+               :premise {:version :sh08-homogeneous-list-return-v2 :relation (get validation :relation)
                          :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
                          :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
                          :declaration declaration :function-record record :definition-binding definition-binding
@@ -23234,7 +23202,6 @@
                          :return-source (sh08-lr-source application) :constructor-source (sh08-lr-source constructor)
                          :element-source (sh08-lr-source member)
                          :checked-element-type (get declared :element-type) :checked-element-count (get validation :checked-member-count)
-                         :type-work (get validation :type-work) :member-work (get validation :member-work)
                          :normal-completion? (= false (= actual :gravity.type/never))
                          :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
                          :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
@@ -23243,8 +23210,8 @@
           (assoc validation :work-count work))))))
 
 (defn sh08-lr-row [premise]
-  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v1 :return-compatibility premise}
-   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v1
+  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v2 :return-compatibility premise}
+   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v2
    :lhs {:function-id (get premise :function-id) :body-core-node-id (get premise :body-core-node-id) :role :return}
    :rhs {:actual-body-type (get premise :actual-body-type) :declared-return-type (get premise :declared-return-type)}
    :dependencies premise
@@ -23823,8 +23790,10 @@
 ; return positions reachable through independently typed control and prefixes.
 ; Pending positions remain obligations of the later complete body check.
 (defn sh08-is-return-witness [record nodes types budget]
+  ; Each active return path carries its own canonical-ID ancestors. Shared
+  ; acyclic leaves remain independent witnesses; path length is not admission.
   (let [body (get record :body-core-node-id)]
-    (loop [queue [{:node-id body :path [body] :control-records []}] offset 0
+    (loop [queue [{:node-id body :path [body] :control-records [] :ancestors #{}}] offset 0
            witnesses [] pending [] selected nil work 0]
       (if (= offset (count queue))
         (if (> (count witnesses) 0)
@@ -23832,16 +23801,21 @@
            :pending-return-node-ids pending :work-count work}
           {:status :rejected :reason :private-self-independent-return-required
            :pending-return-node-ids pending :work-count work})
-        (let [frame (get queue offset) id (get frame :node-id) node (get nodes id)
+        (let [frame (get queue offset) id (get frame :node-id)
+              valid-id? (if (keyword? id) true (if (string? id) (> (count id) 0) false))
+              node (if valid-id? (get nodes id) nil)
               kind (get node :core-form) children (get node :children)
-              path (get frame :path) controls (get frame :control-records)
-              type (get types id :gravity.type/unknown)
+              path (get frame :path) controls (get frame :control-records) ancestors (get frame :ancestors)
+              type (if valid-id? (get types id :gravity.type/unknown) :gravity.type/unknown)
               used (+ work 1 (* (+ 3 (count path) (count controls)) (+ 1 (count children))))]
           (if (> used budget)
             {:status :rejected :reason :private-self-work-limit :work-count used}
-            (if (> (count path) 128)
-              {:status :rejected :reason :private-self-return-path-bound :work-count used}
-              (if (= false (map? node))
+            (if (if valid-id? (contains? ancestors id) false)
+              {:status :rejected :reason :private-self-return-cycle :work-count used}
+              (if (= false (if (map? node)
+                               (let [stored-id (get node :node-id)]
+                                 (if (if (keyword? stored-id) true (if (string? stored-id) (> (count stored-id) 0) false))
+                                   (= id stored-id) false)) false))
                 {:status :rejected :reason :private-self-return-source-required :work-count used}
                 (if (= kind :if)
                   (if (= 3 (count children))
@@ -23865,7 +23839,7 @@
                               (if (= 0 (count remaining)) out
                                 (let [child (get children (first remaining))]
                                   (recur (rest remaining)
-                                    (conj out {:node-id child :path (conj path child)
+                                    (conj out {:node-id child :path (conj path child) :ancestors (conj ancestors id)
                                                :control-records (conj controls control)})))))
                             (+ offset 1) witnesses pending selected used)
                           (recur queue (+ offset 1) witnesses (conj pending id) selected used))))
@@ -23883,7 +23857,7 @@
                         (if (get prefix :abort?)
                           (recur queue (+ offset 1) witnesses pending selected used)
                           (if (get prefix :normal?)
-                            (recur (conj queue {:node-id last-id :path (conj path last-id)
+                            (recur (conj queue {:node-id last-id :path (conj path last-id) :ancestors (conj ancestors id)
                                                 :control-records (conj controls {:owner-core-node-id id
                                                                                  :rule :independent-normal-prefix
                                                                                  :prefix (get prefix :rows)})})
@@ -24893,42 +24867,14 @@
   (if (sh08-exact-keys? inputs #{:artifact :schema-version :module-requests})
     (if (= [:gravity/sh08-module-type-inputs 1] [(get inputs :artifact) (get inputs :schema-version)])
       (if (vector? (get inputs :module-requests))
-        (if (<= (count (get inputs :module-requests)) (get (sh08-local-bounds-value) :maximum-root-nodes))
-          {:status :accepted}
-          (sh08-im-failure "C7-VERIFY" :module-type-input-count-limit nil))
+        {:status :accepted}
         (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
       (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
     (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil)))
 
-(defn sh08-im-usage [entries pending?]
-  (loop [ids (keys entries) result {:nodes 0 :scalar-units 0}]
-    (if (= (count ids) 0) result
-      (let [entry (get entries (first ids)) usage (if pending? entry (get entry :usage))]
-        (recur (rest ids) {:nodes (+ (get result :nodes) (get usage :nodes 0))
-                          :scalar-units (+ (get result :scalar-units) (get usage :scalar-units 0))})))))
-
-(defn sh08-im-work-check [memo active usage]
-  ; Units are distinct authenticated producers and their canonical-core DATA
-  ; visits, not raw repeated proof bytes, VM operations, or a CPU guarantee.
-  (let [bounds (sh08-local-bounds-value) complete (sh08-im-usage memo false) pending (sh08-im-usage active true)
-        total {:producers (+ (count memo) (count active) 1) :dependency-depth (+ (count active) 1)
-               :nodes (+ (get complete :nodes) (get pending :nodes) (get usage :nodes 0))
-               :scalar-units (+ (get complete :scalar-units) (get pending :scalar-units) (get usage :scalar-units 0))}]
-    (if (= :accepted (get usage :status))
-      (if (<= (get total :producers) (get bounds :maximum-root-nodes))
-        (if (<= (get total :dependency-depth) (get bounds :maximum-carrier-depth))
-          (if (<= (get total :nodes) (get bounds :maximum-carrier-nodes))
-            (if (<= (get total :scalar-units) (get bounds :maximum-scalar-units)) {:status :accepted :usage total}
-              (sh08-im-failure "C7-VERIFY" :module-type-total-scalar-work-limit total))
-            (sh08-im-failure "C7-VERIFY" :module-type-total-core-work-limit total))
-          (sh08-im-failure "C7-VERIFY" :module-type-dependency-depth-limit total))
-        (sh08-im-failure "C7-VERIFY" :module-type-distinct-producer-limit total))
-      (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound usage))))
-
 (defn sh08-im-derive-with-allowance [request memo active allowance]
   (let [id (sh08-im-path request [:b47-context :artifact-id]) previous (get memo id)
-        preliminary (sh08-im-work-check memo active {:status :accepted :nodes 0 :scalar-units 0})
-        resolution (if (if (map? previous) true (if (contains? active id) true (= :rejected (get preliminary :status))))
+        resolution (if (if (map? previous) true (contains? active id))
                      {} (sh08-ft-authenticated-core request))
         inputs (get request :module-type-inputs {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests []})]
     (if (map? previous)
@@ -24936,14 +24882,12 @@
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :substituted-module-type-request id)) :memo memo})
       (if (contains? active id)
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :cyclic-module-type-request id)) :memo memo}
-      (if (= :rejected (get preliminary :status))
-        {:result (sh08-im-rejected-result request preliminary) :memo memo}
       (if (= :accepted (get resolution :status))
-        (let [usage (sh08-carrier-preflight (get resolution :core))
-              work (sh08-im-work-check memo active usage)
-              input-check (if (= :accepted (get work :status)) (sh08-im-inputs-check inputs) work)
+        (let [checked (sh08-carrier-preflight (get resolution :core))
+              input-check (if (= :accepted (get checked :status)) (sh08-im-inputs-check inputs)
+                            (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound checked))
               producers (if (= :accepted (get input-check :status))
-                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id usage)
+                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id true)
                             (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
                                                   :gravity-resolution-boundary :module-inputs :module-artifacts]) allowance) input-check)
               imports (if (= :accepted (get producers :status))
@@ -24956,8 +24900,8 @@
                          (get imports :imports))
                        (sh08-im-rejected-result request imports))
               next (get producers :memo memo)]
-          {:result result :memo (assoc next id {:request request :result result :usage usage})})
-        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo}))))))
+          {:result result :memo (assoc next id {:request request :result result})})
+        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo})))))
 
 (defn sh08-im-derive [request memo active]
   (sh08-im-derive-with-allowance request memo active 65536))
@@ -25071,9 +25015,9 @@
 ; Surface defrecord/defunion and pattern lowering remain blocked on SH-07.
 
 (defn sh08-ru-value-type [value]
-  (if (= value nil)
+  (if (= nil value)
     :gravity.type/nil
-    (if (contains? #{true false} value)
+    (if (boolean? value)
       :gravity.type/bool
       (if (integer? value)
         :gravity.type/integer
@@ -25084,12 +25028,14 @@
             :gravity.type/unknown))))))
 
 (defn sh08-ru-supported-type? [value]
-  (contains? #{:gravity.type/nil
-               :gravity.type/bool
-               :gravity.type/integer
-               :gravity.type/string
-               :gravity.type/keyword}
-             value))
+  (if (keyword? value)
+    (contains? #{:gravity.type/nil
+                 :gravity.type/bool
+                 :gravity.type/integer
+                 :gravity.type/string
+                 :gravity.type/keyword}
+               value)
+    false))
 
 (defn sh08-ru-entry-by [entries key-name value]
   (if (= (count entries) 0)
@@ -25100,69 +25046,59 @@
 
 (defn sh08-ru-all-record-shapes? [entries expected]
   (if (vector? entries)
-    (if (<= (count entries) 64)
-      (loop [remaining entries]
-        (if (= (count remaining) 0)
-          true
-          (if (sh08-ft-record-shape? (first remaining) expected)
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining entries]
+      (if (= (count remaining) 0)
+        true
+        (if (sh08-ft-record-shape? (first remaining) expected)
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-all-field-schemas-valid? [fields]
   (if (sh08-ru-all-record-shapes? fields #{:name :type})
-    (if (sh08-ft-unique-records? fields :name)
-      (loop [remaining fields]
-        (if (= (count remaining) 0)
-          true
-          (let [field (first remaining)]
-            (if (keyword? (get field :name))
-              (if (sh08-ru-supported-type? (get field :type))
-                (recur (rest remaining))
-                false)
-              false))))
-      false)
+    (loop [remaining fields]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (let [field (first remaining)]
+          (if (keyword? (get field :name))
+            (if (sh08-ru-supported-type? (get field :type))
+              (recur (rest remaining))
+              false)
+            false))))
     false))
 
 (defn sh08-ru-all-field-values-valid? [fields]
   (if (sh08-ru-all-record-shapes? fields #{:name :value})
-    (if (sh08-ft-unique-records? fields :name)
-      (loop [remaining fields]
-        (if (= (count remaining) 0)
-          true
-          (if (keyword? (get (first remaining) :name))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining fields]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (if (keyword? (get (first remaining) :name))
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-all-variant-schemas-valid? [variants]
   (if (sh08-ru-all-record-shapes? variants #{:tag :payload-type})
-    (if (sh08-ft-unique-records? variants :tag)
-      (loop [remaining variants]
-        (if (= (count remaining) 0)
-          true
-          (let [variant (first remaining)]
-            (if (keyword? (get variant :tag))
-              (if (sh08-ru-supported-type?
-                   (get variant :payload-type))
-                (recur (rest remaining))
-                false)
-              false))))
-      false)
+    (loop [remaining variants]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? variants :tag)
+        (let [variant (first remaining)]
+          (if (keyword? (get variant :tag))
+            (if (sh08-ru-supported-type?
+                 (get variant :payload-type))
+              (recur (rest remaining))
+              false)
+            false))))
     false))
 
 (defn sh08-ru-all-match-branches-valid? [branches]
   (if (sh08-ru-all-record-shapes? branches #{:variant :result})
-    (if (sh08-ft-unique-records? branches :variant)
-      (loop [remaining branches]
-        (if (= (count remaining) 0)
-          true
-          (if (keyword? (get (first remaining) :variant))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining branches]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? branches :variant)
+        (if (keyword? (get (first remaining) :variant))
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-family-shape? [family]
@@ -25653,7 +25589,7 @@
      :status (if (= expected candidate) :passed :rejected)
      :checks [:authenticated-b47-core-boundary
               :named-family-source-bound
-              :closed-descriptor-schema-bounded
+              :closed-descriptor-schema-valid
               :descriptor-consistency-result-recomputed
               :supported-descriptor-value-types-only
               :path-neutral-descriptor-identity-input
@@ -25735,17 +25671,15 @@
 (defn sh08-ram-symbol-vector? [values]
   (if (vector? values)
     (if (> (count values) 0)
-      (if (<= (count values) 64)
-        (loop [remaining values seen #{}]
-          (if (= 0 (count remaining))
-            true
-            (let [value (first remaining)]
-              (if (symbol? value)
-                (if (contains? seen value)
-                  false
-                  (recur (rest remaining) (conj seen value)))
-                false))))
-        false)
+      (loop [remaining values seen #{}]
+        (if (= 0 (count remaining))
+          true
+          (let [value (first remaining)]
+            (if (symbol? value)
+              (if (contains? seen value)
+                false
+                (recur (rest remaining) (conj seen value)))
+              false))))
       false)
     false))
 

@@ -88,37 +88,41 @@
 
 (defn p15-s23-c6c10-canonical-form*
   [source-path value]
-  (let [active (or p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.))
-        entered (java.util.IdentityHashMap.)]
+  (let [active (or p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.))]
     (binding [p15-s23-c6c10-canonical-ancestors active]
-      (try
-        (loop [stack [[:visit value]] results []]
-          (let [[action item kind size] (peek stack) stack (pop stack)]
-            (if (= :finish action)
-              (let [offset (- (count results) size)
-                    children (into [] (subvec results offset))
-                    form (p15-s23-c6c10-canonical-collection-form source-path kind children)]
-                (.remove active item)
-                (.remove entered item)
-                (if (empty? stack) form
-                    (recur stack (conj (subvec results 0 offset) form))))
-              ;; Semantic class/metadata/comparator checks precede cycle checks.
-              (let [{:keys [kind children]} (p15-s23-c6c10-canonical-carrier source-path item)]
-                (if children
-                  (do
-                    (when (.containsKey active item)
-                      (p15-s23-c6c10-host-fail!
-                       "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
-                    (.put entered item true)
-                    (.put active item true)
-                    (recur (into (conj stack [:finish item kind (count children)])
-                                 (map #(vector :visit %) (rseq children)))
-                           results))
-                  (let [form (p15-s23-c6c10-canonical-scalar-form source-path item)]
-                    (if (empty? stack) form (recur stack (conj results form)))))))))
-        (finally
-          ;; Preserve markers owned by the caller, including on failed fallback.
-          (doseq [item (.keySet entered)] (.remove active item)))))))
+      (if (identical? clojure.lang.Keyword (class value))
+        (do
+          (p15-s23-c6c10-canonical-carrier source-path value)
+          (p15-s23-c6c10-canonical-scalar-form source-path value))
+        (let [entered (java.util.IdentityHashMap.)]
+          (try
+            (loop [stack [[:visit value]] results []]
+              (let [[action item kind size] (peek stack) stack (pop stack)]
+                (if (= :finish action)
+                  (let [offset (- (count results) size)
+                        children (into [] (subvec results offset))
+                        form (p15-s23-c6c10-canonical-collection-form source-path kind children)]
+                    (.remove active item)
+                    (.remove entered item)
+                    (if (empty? stack) form
+                        (recur stack (conj (subvec results 0 offset) form))))
+                  ;; Semantic class/metadata/comparator checks precede cycle checks.
+                  (let [{:keys [kind children]} (p15-s23-c6c10-canonical-carrier source-path item)]
+                    (if children
+                      (do
+                        (when (.containsKey active item)
+                          (p15-s23-c6c10-host-fail!
+                           "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
+                        (.put entered item true)
+                        (.put active item true)
+                        (recur (into (conj stack [:finish item kind (count children)])
+                                     (map #(vector :visit %) (rseq children)))
+                               results))
+                      (let [form (p15-s23-c6c10-canonical-scalar-form source-path item)]
+                        (if (empty? stack) form (recur stack (conj results form)))))))))
+            (finally
+              ;; Preserve markers owned by the caller, including on failed fallback.
+              (doseq [item (.keySet entered)] (.remove active item)))))))))
 
 (defn p15-s23-c6c10-canonical-record
   ([value]
