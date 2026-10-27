@@ -269,6 +269,17 @@
                 ["--namespace" "<owned-test-namespace>" "--fail-fast"]
                 ["--report-file" "<contained-path>"]]}))))))))
 
+(defn valid-development-cache-options?
+  "The closed child-cache option shape, shared with command construction.
+  This validates data only and supplies no execution or cache authority."
+  [options]
+  (and (map? options)
+       (= #{:cache-directory :timeout-ms :repository-identity} (set (keys options)))
+       (string? (:cache-directory options))
+       (string? (:repository-identity options))
+       (re-matches #"sha256:[0-9a-f]{64}" (:repository-identity options))
+       (pos-int? (:timeout-ms options))))
+
 (defn select-tests
   "Select tests, with optional actual-child reuse for an explicit selection."
   [arguments]
@@ -291,14 +302,7 @@
                             (invalid!))
                           result))
                       (catch Exception _ (invalid!)))
-            _ (when-not (and (map? options)
-                             (= #{:cache-directory :timeout-ms :repository-identity}
-                                (set (keys options)))
-                             (string? (:cache-directory options))
-                             (string? (:repository-identity options))
-                             (re-matches #"sha256:[0-9a-f]{64}"
-                                         (:repository-identity options))
-                             (pos-int? (:timeout-ms options)))
+            _ (when-not (valid-development-cache-options? options)
                 (invalid!))
             remaining (into (subvec arguments 0 position)
                             (subvec arguments (+ position 2)))
