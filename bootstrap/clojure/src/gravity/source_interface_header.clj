@@ -90,4 +90,3 @@
     (when-not (== current-version (.longValue ^Long version))
       (reject! :explicit-interface-version))
     current-version)))
-
