@@ -6318,7 +6318,7 @@
         (is (= (if (= operation 'rest) type :gravity.type/bool) (:type result)))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'first [type])))))
     (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:items]}
-          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] 65536])]
+          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] {} 65536])]
       (is (= :accepted (:status (check type))))
       (doseq [wrong [:gravity.type/list (positional [s]) (assoc type :element-type :gravity.type/keyword)]]
         (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))))
@@ -6469,7 +6469,7 @@
 
 (deftest sh08-map-parameter-recur-development-kernel
   (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:packet]}
-        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] 65536])]
+        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] {} 65536])]
     (is (= :accepted (:status (check :gravity.type/map))))
     (is (= :accepted (:status (check :gravity.type/never))))
     (doseq [wrong [{:kind :gravity.type/map :shape :literal :member-types []} :gravity.type/list :gravity.type/string]]
@@ -6553,7 +6553,7 @@
           target {:target-kind :function :binding-ids [:items :marks]}
           check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types
                     [transfer target {} {:next % :marks :gravity.type/string}
-                     [:gravity.type/list :gravity.type/string] 65536])]
+                     [:gravity.type/list :gravity.type/string] {} 65536])]
       (is (= :accepted (:status (check :gravity.type/list))))
       (is (= :accepted (:status (check :gravity.type/never))))
       (doseq [wrong [actual :gravity.type/vector :gravity.type/string]]
