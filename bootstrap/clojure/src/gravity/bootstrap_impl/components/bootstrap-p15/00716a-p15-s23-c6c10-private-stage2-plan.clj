@@ -7,4 +7,3 @@
   (let [function-table (stage0-function-table authoritative-module)]
     (p15-s23-stage2-construct-emitted-core-plan
      emitter source-path source-text authoritative-module function-table)))
-
