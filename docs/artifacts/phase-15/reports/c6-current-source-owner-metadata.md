@@ -69,9 +69,21 @@ caller print settings do not affect it. The descriptor verifier in these control
 is an explicit oracle, so they do not establish fresh source authentication.
 
 The first control run exposed a shadowed printing macro and remains a separate
-nonpass. The correction qualifies that macro; no genuine constructor was rerun.
-Exact independent source and harness review, followed by the real changed Core
-constructor and independent fresh verifier, remain required. C11 must preserve
-these new commitments through its own policy projection and public fresh replay.
-No Core/C11 final admission, C12, backend, frozen migration, release or self-hosting
+nonpass. The correction qualifies that macro. Independent source and harness
+review subsequently accepted the changed source at
+cb3701556e9082ae8387c18fa1f6396a9d284617, tree
+b873b9aa3674622eada97bc0278256f9df584c22. The genuine public constructor and
+separately invoked fresh public report both exited naturally with zero status,
+actual 2 GiB, complete matching bookends and empty stderr. Independent
+retained-result review accepted construction/transport and actual fresh report
+verification, including observed development-unadmitted envelope state.
+
+These results bind that exact selected-source tuple. Later C11 construction,
+fresh replay and rejection evidence are recorded in the companion
+`c11-current-core-source-policy.md` report, preserving their own consumer
+identity. Full raw owner metadata was not retained for independent complete
+metadata/policy-hash recomputation. Later main expression sources are not
+silently admitted by this immutable version-2 contract. Changed consumer host
+code, final composition execution and current-head integration review remain
+separate obligations. No C12, backend, frozen migration, release or self-hosting
 acceptance is claimed here.
