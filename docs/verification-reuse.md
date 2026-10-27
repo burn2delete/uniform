@@ -55,7 +55,7 @@ The detailed sections preserve exact source/merge identities, failed attempts,
 tested scopes and independent reviews. No implementation PR for this outcome
 remains draft at this assessment time.
 
-Unpublished work remains separate: the reserved
+At the assessment above, unpublished work remained separate: the reserved
 `resolution_parent_mutation_test.clj` candidate and SH06 fresh/unsupported
 execution metadata are in progress. Independent review accepted the proposed
 whole-boundary test scope only; the exact harness/code/result are not accepted.
@@ -67,7 +67,8 @@ current Reader-to-C5 positive and independent public verification, then rejectio
 of the same aliased parent after actual Resolve execution, followed by review
 and integration. Even that concrete negative does not alone prove every repeat
 necessary or close whole RV1. Existing reservations and uncertain Reader
-message operations are preserved. This reconciliation launches no test or
+message operations are preserved. The subsequent genuine result is recorded
+below; this dated reconciliation itself launched no test or
 compiler replay and does not write the dashboard.
 
 ## Exact Reader leaf closure
@@ -865,3 +866,58 @@ Helper/load-order and language-boundary controls passed 19 / 168, docs passed
 240 / 19, and exact integration preflight passed. These remain load-order
 observations on the named repair, not semantic acceptance of Accounting's
 separate candidate or proof of initialization-effect closure.
+
+### RV1: real supplied-parent mutation after Resolve
+
+The bounded mutation control completed on
+`b930cdf64b5aadf697b09337c4a9e86001d6a054`, tree
+`7272ad6d08d4c1c95435b1dbad269ced7fe64687`, based on merged assessment
+`c637326dcf026cfd1697420a3b9b383439cb804a`. This closes the concrete
+same-parent mutation observation for this fixture; RV1 remains partial.
+
+`resolution_parent_mutation_test.clj` constructs the actual accepted SH06
+compiler-subset fixture through the direct current Reader route, with an
+explicit Reader source and invocation and no precomputed C2 product or
+candidate. It constructs a genuine Macro parent and C5 result, then runs the
+independent public C5 verifier, which passes. No SH07 proof transaction is
+borrowed. Every observed Macro verifier and Resolve operation calls its
+original implementation; no report or exception is substituted.
+
+The changed case keeps the same parent object and invocation. Immediately
+after the actual Resolve operation returns, it changes the caller-owned
+array-map key `:resolved-verification`, leaving expansion and digest operands
+intact. The subsequent real Macro report fails
+`:macro-run-storage-exact?`; C5 raises `C5-UNRESOLVED`, with missing field
+`:final-authenticated-resolution-artifact` and failed check
+`:fresh-upstream-sh05-verification?`. The alias and both observer roots are
+restored. The existing short-seam root catalog stays stable, but this is not
+a complete transitive identity or closed-over-state proof.
+
+Actual result: 1 test / 20 assertions, zero failures/errors, natural exit 0,
+2 GiB heap, 104,975 ms supervisor elapsed. Both source bookends are identical
+and clean; stdout is complete at 835 bytes, stderr is empty, and cleanup
+completes with the process root dead. Supervisor receipt SHA-256:
+`8b4f95d0db3dc1cdea09cb5fbae9d16ea2499f297f099f28044b6b134443b284`.
+Full child receipt SHA-256:
+`82c3c677d7bfee8743d54f4d49b818f3f24c1948a5ea1d4f63bac1ee1300d091`.
+The exact code and harness were independently approved before this single
+genuine attempt. Independent retained-result review accepted the actual
+positive, mutation, rejection and restoration evidence without replay.
+Integration remains pending at this record's candidate stage.
+
+Cheap source-form observer controls passed 4 / 20 without entering Bootstrap;
+planner and language-boundary controls passed 67 / 590, injected generic-launch
+refusal controls passed 3 / 148, and docs passed 240 / 19. The SH06 catalog entry
+requires fresh execution and rejects generic execution until a committed route
+represents the common host broker, host-exclusive lease and canonical heavy
+lock. Discovery does not authorize execution. CI's separately owned leaf
+catalog correction is unchanged here.
+
+This observation rules out reusing an earlier successful whole Macro report
+solely from parent identity across this Resolve seam. It does not prove that
+every computation within that report must repeat. Full live-plan, Reader
+invocation, AE/dispatch and closed-over-state equivalence, or a complete
+necessity decision for the original row, remains required. No additional
+verification call is removed, no compatibility cache is enabled, and RV2/RV4
+whole-outcome acceptance remains open. The earlier failed aliased-array memo
+experiment and original PR480 load failure retain their NONPASS dispositions.
