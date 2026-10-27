@@ -70,3 +70,21 @@ The carrier preflight, quote/collection limits, ordinary inference allowances,
 Effects/emitter pools and full ACC-08/ACC-13 remain open. In particular, removing
 the Core node-vector cap does not establish admission above the still-enforced
 65,536 carrier width. Historical source/migration pins remain unchanged.
+
+## ACC-13 Record/Union descriptor and branch cardinality
+
+The C7 successor removes both 64-entry admission checks: the shared descriptor
+entry validator and the typed match branch-reference validator. All four
+descriptor collections and the existing Record/Union typed consumer therefore
+advance together. Complete schemas, name/tag/reference uniqueness, supported
+scalar types, field-set equality, constructor/access checks, exhaustive branches,
+source/path joins and fresh result equality remain.
+
+Key/type validation now precedes local RU uniqueness hashing, and scalar
+classification avoids opaque equality/hash callbacks. These are prerequisites
+for checking every newly reached member, not a new runtime feature. The shared
+generic uniqueness function is unchanged. Independent source/actual-result
+review accepted 65/129-entry producers and fresh verifiers under an explicit
+authentication-only test seam. Genuine authenticated-source/public authority,
+foreign-container safety, runtime, carrier/inference removal and whole ACC-13
+remain open; integration outcome belongs to the corresponding pull request.

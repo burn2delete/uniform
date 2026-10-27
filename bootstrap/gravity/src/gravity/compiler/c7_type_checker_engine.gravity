@@ -24978,9 +24978,9 @@
 ; Surface defrecord/defunion and pattern lowering remain blocked on SH-07.
 
 (defn sh08-ru-value-type [value]
-  (if (= value nil)
+  (if (= nil value)
     :gravity.type/nil
-    (if (contains? #{true false} value)
+    (if (boolean? value)
       :gravity.type/bool
       (if (integer? value)
         :gravity.type/integer
@@ -24991,12 +24991,14 @@
             :gravity.type/unknown))))))
 
 (defn sh08-ru-supported-type? [value]
-  (contains? #{:gravity.type/nil
-               :gravity.type/bool
-               :gravity.type/integer
-               :gravity.type/string
-               :gravity.type/keyword}
-             value))
+  (if (keyword? value)
+    (contains? #{:gravity.type/nil
+                 :gravity.type/bool
+                 :gravity.type/integer
+                 :gravity.type/string
+                 :gravity.type/keyword}
+               value)
+    false))
 
 (defn sh08-ru-entry-by [entries key-name value]
   (if (= (count entries) 0)
@@ -25007,69 +25009,59 @@
 
 (defn sh08-ru-all-record-shapes? [entries expected]
   (if (vector? entries)
-    (if (<= (count entries) 64)
-      (loop [remaining entries]
-        (if (= (count remaining) 0)
-          true
-          (if (sh08-ft-record-shape? (first remaining) expected)
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining entries]
+      (if (= (count remaining) 0)
+        true
+        (if (sh08-ft-record-shape? (first remaining) expected)
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-all-field-schemas-valid? [fields]
   (if (sh08-ru-all-record-shapes? fields #{:name :type})
-    (if (sh08-ft-unique-records? fields :name)
-      (loop [remaining fields]
-        (if (= (count remaining) 0)
-          true
-          (let [field (first remaining)]
-            (if (keyword? (get field :name))
-              (if (sh08-ru-supported-type? (get field :type))
-                (recur (rest remaining))
-                false)
-              false))))
-      false)
+    (loop [remaining fields]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (let [field (first remaining)]
+          (if (keyword? (get field :name))
+            (if (sh08-ru-supported-type? (get field :type))
+              (recur (rest remaining))
+              false)
+            false))))
     false))
 
 (defn sh08-ru-all-field-values-valid? [fields]
   (if (sh08-ru-all-record-shapes? fields #{:name :value})
-    (if (sh08-ft-unique-records? fields :name)
-      (loop [remaining fields]
-        (if (= (count remaining) 0)
-          true
-          (if (keyword? (get (first remaining) :name))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining fields]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (if (keyword? (get (first remaining) :name))
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-all-variant-schemas-valid? [variants]
   (if (sh08-ru-all-record-shapes? variants #{:tag :payload-type})
-    (if (sh08-ft-unique-records? variants :tag)
-      (loop [remaining variants]
-        (if (= (count remaining) 0)
-          true
-          (let [variant (first remaining)]
-            (if (keyword? (get variant :tag))
-              (if (sh08-ru-supported-type?
-                   (get variant :payload-type))
-                (recur (rest remaining))
-                false)
-              false))))
-      false)
+    (loop [remaining variants]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? variants :tag)
+        (let [variant (first remaining)]
+          (if (keyword? (get variant :tag))
+            (if (sh08-ru-supported-type?
+                 (get variant :payload-type))
+              (recur (rest remaining))
+              false)
+            false))))
     false))
 
 (defn sh08-ru-all-match-branches-valid? [branches]
   (if (sh08-ru-all-record-shapes? branches #{:variant :result})
-    (if (sh08-ft-unique-records? branches :variant)
-      (loop [remaining branches]
-        (if (= (count remaining) 0)
-          true
-          (if (keyword? (get (first remaining) :variant))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining branches]
+      (if (= (count remaining) 0)
+        (sh08-ft-unique-records? branches :variant)
+        (if (keyword? (get (first remaining) :variant))
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-family-shape? [family]
@@ -25560,7 +25552,7 @@
      :status (if (= expected candidate) :passed :rejected)
      :checks [:authenticated-b47-core-boundary
               :named-family-source-bound
-              :closed-descriptor-schema-bounded
+              :closed-descriptor-schema-valid
               :descriptor-consistency-result-recomputed
               :supported-descriptor-value-types-only
               :path-neutral-descriptor-identity-input
@@ -25642,17 +25634,15 @@
 (defn sh08-ram-symbol-vector? [values]
   (if (vector? values)
     (if (> (count values) 0)
-      (if (<= (count values) 64)
-        (loop [remaining values seen #{}]
-          (if (= 0 (count remaining))
-            true
-            (let [value (first remaining)]
-              (if (symbol? value)
-                (if (contains? seen value)
-                  false
-                  (recur (rest remaining) (conj seen value)))
-                false))))
-        false)
+      (loop [remaining values seen #{}]
+        (if (= 0 (count remaining))
+          true
+          (let [value (first remaining)]
+            (if (symbol? value)
+              (if (contains? seen value)
+                false
+                (recur (rest remaining) (conj seen value)))
+              false))))
       false)
     false))
 
