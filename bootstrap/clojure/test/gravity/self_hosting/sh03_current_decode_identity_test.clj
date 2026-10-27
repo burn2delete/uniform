@@ -3,7 +3,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as b]
-            [gravity.self-hosting.reader-decode-reference :as reference]
+            [gravity.self-hosting.sh03-decode-reference :as reference]
             [gravity.self-hosting.sh12-zero-arity-bool-diamond-test]))
 
 (def ^:dynamic *phase* :population)

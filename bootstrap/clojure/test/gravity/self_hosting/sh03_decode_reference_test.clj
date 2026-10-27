@@ -1,6 +1,6 @@
-(ns gravity.self-hosting.reader-decode-reference-test
+(ns gravity.self-hosting.sh03-decode-reference-test
   (:require [clojure.test :refer [deftest is]]
-            [gravity.self-hosting.reader-decode-reference :as reference]))
+            [gravity.self-hosting.sh03-decode-reference :as reference]))
 
 (deftest unicode-and-mixed-newlines-have-explicit-reference-positions
   (let [positions (reference/positions "a\r\nλ🙂\rb\nc")]

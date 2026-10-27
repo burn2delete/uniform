@@ -1,4 +1,4 @@
-(ns gravity.self-hosting.reader-decode-reference
+(ns gravity.self-hosting.sh03-decode-reference
   "Independent UTF-8/scalar/location oracle. No Reader or Bootstrap dependency.")
 
 (defn sha256 [bytes]
