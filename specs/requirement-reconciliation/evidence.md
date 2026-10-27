@@ -345,3 +345,24 @@ qualifies the diagnostic; PERF2 permits accurately reported residual work instea
 of universal erasure; PERF4 does not itself impose the candidate's invented
 endianness attribution. Other actual ABI/serialization endianness obligations
 remain with their source owners. Exact independent semantic review is pending.
+
+## Platform authority-only source view
+
+All 24 registered component authorities are now integrated; migration remains
+separate from implementation acceptance. Platform's accepted transfer changes
+only its navigation stanza and four projection marker lines. The bridge binds
+the original roadmap SHA256
+`03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f`
+to the accepted layout SHA256
+`8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364`
+at `5e84b5acb59f605d8f71cc2d5cf21cc24d15a662`.
+
+The source reader removes only those exact additions, exactly once, and requires
+the complete result to equal the pinned baseline bytes. Its spans and occurrence
+IDs remain explicitly based on the original source view. The integrated ledger
+and projected roadmap remain intact. The audit separately reads both declared
+Git snapshots and verifies their bytes; a well-shaped nonexistent commit is
+insufficient provenance. Semantic edits, missing/duplicate transfer additions,
+unrecognized drift and unrelated baselines reject. A proposed used bridge still
+withholds scope readiness pending independent review. Twenty-three tests /
+150 assertions pass, including snapshot and semantic-change negative controls.

@@ -331,4 +331,31 @@
                                                                   :source-facet-id "current"
                                                                   :source-fragment-sha256 (:raw-sha256 second-facet)))) sources)))))
 
+(deftest layout-transfer-is-exact-and-snapshot-bound
+  (let [base "# Platform\n\nProjects.\n\nProduct.\n"
+        live (str "# Platform\n\n" requirement-sources/platform-authority
+                  "<!-- platform-task-projection:start -->\nProjects.\n<!-- platform-task-projection:end -->\n\n"
+                  "<!-- platform-product-projection:start -->\nProduct.\n<!-- platform-product-projection:end -->\n")
+        baseline (apply str (repeat 40 "a")) applying (apply str (repeat 40 "b"))
+        doc {:id "platform-product" :path "docs/component-roadmaps/platform.md" :sha256 (rr/sha256 base)}
+        b {:document-id "platform-product" :kind :platform-task-authority-layout-only
+           :baseline-ref baseline :applying-ref applying :baseline-sha256 (rr/sha256 base)
+           :live-sha256 (rr/sha256 live) :review-state :proposed}
+        m {:source-baseline baseline :extension-sources [doc] :source-version-bridges [b]}
+        view #(requirement-sources/view %1 doc %2 rr/sha256 rr/require!)
+        v (view m live) receipt (:bridge v)
+        snapshots {baseline base applying live}
+        read-ref (fn [ref _] (get snapshots ref))]
+    (is (= base (:text v)))
+    (is (= :unverified (:snapshot-provenance receipt)))
+    (is (= :git-bytes-verified (:snapshot-provenance (requirement-sources/validate-snapshots! receipt read-ref rr/sha256 rr/require!))))
+    (is (thrown? Exception (requirement-sources/validate-snapshots! (assoc receipt :applying-ref (apply str (repeat 40 "0"))) read-ref rr/sha256 rr/require!)))
+    (doseq [changed [(str/replace live "Product." "Changed product.")
+                     (str/replace live "<!-- platform-product-projection:end -->\n" "")
+                     (str live requirement-sources/platform-authority)]]
+      (is (thrown? Exception (view (assoc-in m [:source-version-bridges 0 :live-sha256] (rr/sha256 changed)) changed))))
+    (is (thrown? Exception (view (assoc m :source-version-bridges []) live)))
+    (is (thrown? Exception (view (assoc-in m [:source-version-bridges 0 :baseline-ref] applying) live)))
+    (is (= base (:text (view m base))))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

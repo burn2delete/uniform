@@ -5,6 +5,7 @@
 
 (load-file "tools/requirement_evidence.clj")
 (load-file "tools/requirement_facets.clj")
+(load-file "tools/requirement_sources.clj")
 
 (def manifest-path "contracts/requirement-reconciliation.edn")
 (defn require! [condition message]
@@ -101,7 +102,9 @@
               "Supersession lacks source-bound authority, rationale or versioned lineage")))
 
 (defn project [manifest sources]
-  (let [requirements (:requirements manifest) ids (mapv :id requirements)
+  (let [views (requirement-sources/views manifest sources sha256 require!)
+        sources (requirement-sources/texts views)
+        requirements (:requirements manifest) ids (mapv :id requirements)
         occurrences (mapcat (fn [[id text]] (source-occurrences id text)) sources)
         by-source (into {} (map (juxt :id identity) occurrences))
         dispositions (:source-dispositions manifest)
@@ -144,11 +147,14 @@
                                              (= :reviewed (:nonoverlap %)))) requirements)
           pending-decisions (filter #(not= :accepted (:state %)) (:scope-decisions manifest))
           pending-aliases (filter #(not= :reviewed (:review-state %)) (:aliases manifest))
+          bridges (vec (keep :bridge (vals views)))
           ready? (and (= :reviewed (:scope-state manifest)) (seq ids)
-                      (empty? unresolved) (empty? unresolved-reqs) (empty? pending-decisions) (empty? pending-aliases))]
+                      (empty? unresolved) (empty? unresolved-reqs) (empty? pending-decisions) (empty? pending-aliases)
+                      (every? #(= :reviewed (:review-state %)) bridges))]
       {:authority :source-conservation-and-canonical-traceability-only
        :scope-version (:scope-version manifest)
        :source-documents (count sources) :source-occurrences (count occurrences)
+       :source-version-bridges bridges
        :source-facet-count (:facets facet-result)
        :historical-superseded-facet-count (:historical-superseded-facets facet-result)
        :acceptance-qualification-facet-count (:acceptance-qualified-facets facet-result)
@@ -185,14 +191,15 @@
                  (mapv (fn [d] {"id" (:id d) "path" (:path d) "sequence" (:sequence d)}) original))
               "Original inventory identities/order changed")
     (require! (= (:inventory-sha256 manifest) (sha256 (read-source inventory-path))) "Inventory source drift")
-    (let [texts (into (sorted-map)
-                      (for [{:keys [id path sha256]} sources
-                            :let [text (read-source (checked-path root path))]]
-                        (do (require! (= sha256 (requirement-reconciliation/sha256 text))
-                                      (str "Source drift: " id)) [id text])))
-          result (project manifest texts)]
+    (let [raw (into (sorted-map) (for [{:keys [id path]} sources] [id (read-source (checked-path root path))]))
+          texts (requirement-sources/texts (requirement-sources/views manifest raw sha256 require!))
+          result (project manifest raw)
+          bridges (mapv #(requirement-sources/validate-snapshots! %
+                           (fn [ref path] (requirement-sources/git-source root ref path require!)) sha256 require!)
+                        (:source-version-bridges result))]
       (require! (= (count sources) (count texts)) "Duplicate original/extension source ID")
       (assoc result :source-baseline (:source-baseline manifest)
+             :source-version-bridges bridges
              :evidence-projections
              (mapv (fn [requirement]
                      (requirement-evidence/project
@@ -221,6 +228,7 @@
             source (first (filter #(= id (:id %)) (concat (:original-documents manifest) (:extension-sources manifest))))]
         (require! (and source (empty? extra)) "Unknown source ID or extra argument")
         (prn {:document-id id :path (:path source)
-              :source-occurrences (source-occurrences id (read-source (checked-path "." (:path source))))})))))
+              :source-ref (:source-baseline manifest)
+              :source-occurrences (source-occurrences id (:text (requirement-sources/view manifest source (read-source (checked-path "." (:path source))) sha256 require!)))})))))
 
 (when (seq *command-line-args*) (run *command-line-args*))

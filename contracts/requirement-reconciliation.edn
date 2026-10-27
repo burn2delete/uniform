@@ -4377,6 +4377,22 @@
    :sha256
    "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3"}],
  :kind :gravity/requirement-reconciliation,
+ :source-version-bridges
+ [{:live-sha256
+   "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364",
+   :applying-blob "2e49f62a9be9c3b06fd99c1610998f0f6525c16b",
+   :review-state :proposed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :authority
+   "Integrated Platform task-authority transfer PR472, preserving all original source clauses and scope.",
+   :kind :platform-task-authority-layout-only,
+   :document-id "platform-product",
+   :applying-ref "5e84b5acb59f605d8f71cc2d5cf21cc24d15a662",
+   :qualification
+   "Only the exact added navigation stanza and four projection marker lines are removed to recover baseline bytes. New task authority remains in its integrated ledger; no implementation or product decision is accepted by this bridge.",
+   :baseline-sha256
+   "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+   :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"}],
  :scope-decisions
  [{:id "scope/release-extension-relations",
    :state :unresolved,
