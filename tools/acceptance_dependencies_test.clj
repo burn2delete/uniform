@@ -1,5 +1,6 @@
 (ns acceptance-dependencies-test
   (:require [clojure.test :refer [deftest is run-tests]]
+            [clojure.edn :as edn]
             [clojure.string :as str]))
 
 (binding [*command-line-args* nil] (load-file "tools/acceptance_dependencies.clj"))
@@ -153,6 +154,62 @@
     (is (contains? (set (:limits result)) :no-semantic-acceptance))
     (is (thrown? Exception (dependencies/run ["--write"])))
     (is (thrown? Exception (dependencies/run ["--check" "outside.edn"])))))
+
+(deftest conditional-edges-never-turn-unknown-into-eligibility
+  (let [nodes {"consumer" {:state :unassessed} "producer" {:state :accepted}}
+        edges [{:from "consumer" :to "producer" :kind :selected-output :condition :needed :source {:fixture true}}]]
+    (is (= #{"producer"} (get (dependencies/typed-adjacency nodes edges {}) "consumer")))
+    (is (= :unknown-condition (get-in (dependencies/advisory-frontier nodes edges {}) ["consumer" :state])))
+    (is (= #{} (get (dependencies/typed-adjacency nodes edges {:needed false}) "consumer")))
+    (is (= :eligible-for-declared-facet (get-in (dependencies/advisory-frontier nodes edges {:needed false}) ["consumer" :state])))
+    (is (= :eligible-for-declared-facet (get-in (dependencies/advisory-frontier nodes edges {:needed true}) ["consumer" :state])))
+    (is (thrown? Exception (dependencies/typed-adjacency nodes edges {:needed nil})))
+    (is (thrown? Exception (dependencies/typed-adjacency nodes (assoc-in edges [0 :to] "unknown") {})))
+    (is (thrown? Exception (dependencies/typed-adjacency nodes (update edges 0 dissoc :source) {})))
+    (is (= :prerequisite-not-accepted
+           (get-in (dependencies/advisory-frontier (assoc-in nodes ["producer" :state] :unassessed)
+                                                   edges {:needed true}) ["consumer" :state])))))
+
+(deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        view (dependencies/task-sh-view source slurp)
+        ids (set (map :id (:requirements source)))
+        sh (dependencies/milestone-graph (slurp dependencies/milestone-path))]
+    (is (= 180 (count (:incidence view))))
+    (is (= 18 (count (:sh07-sequence source))))
+    (is (empty? (:cycles view)))
+    (is (every? #(or (seq (get (:incidence view) %)) (some #{%} (:coverage-gaps view))) ids))
+    (is (= [] (:coverage-gaps view)))
+    (is (false? (:mapping-ready? view)))
+    (doseq [[milestone deps] sh r (filter #(= milestone (:milestone %)) (:requirements source)) p deps]
+      (is (contains? (get-in view [:adjacency (:id r)]) p)))
+    (is (= #{"SH07-C01"} (get-in view [:adjacency "SH07-C02"])))
+    (is (= 17 (count (get-in view [:adjacency "SH07-C18"]))))
+    (is (= :eligible-for-declared-facet (get-in view [:frontier "SH07-C01" :state])))
+    (is (= :prerequisite-not-accepted (get-in view [:frontier "SH-29" :state])))
+    (is (every? #(= :unassessed (:state %)) (map (:nodes view) ids)))
+    (doseq [changed [(update source :requirements pop)
+                     (update source :requirements conj (first (:requirements source)))
+                     (assoc-in source [:requirements 0 :task-references 0 :id] "fabricated-task")
+                     (assoc-in source [:requirements 0 :acceptance-source :raw] "forged acceptance")
+                     (assoc-in source [:requirements 6 :completion-prerequisites] [])
+                     (assoc-in source [:requirements 0 :context-source :raw] "forged stopping rule")
+                     (assoc-in source [:task-authorities "core" 0 :checked] true)
+                     (assoc-in source [:sh07-sequence 1 :dependency-declaration] "none")
+                     (update source :sh07-sequence pop)]]
+      (is (thrown? Exception (dependencies/task-sh-view changed slurp))))
+    (is (thrown? Exception
+                 (dependencies/task-sh-view source
+                   (fn [path] (if (= path "specs/core-workflow/tasks.md")
+                                (str/replace (slurp path) "core1-lower-core-forms" "unknown-task")
+                                (slurp path))))))))
+
+(deftest sh07-dependency-ranges-preserve-original-sequence
+  (is (= ["SH07-C02" "SH07-C03" "SH07-C04"] (dependencies/sh07-prerequisites "C02-C04")))
+  (is (= ["SH07-C03" "SH07-C04"] (dependencies/sh07-prerequisites "C03, C04")))
+  (is (= [] (dependencies/sh07-prerequisites "none")))
+  (doseq [bad ["C00" "C19" "C09-C02" "C01x" "C01 C02" "C01," "all previous"]]
+    (is (thrown? Exception (dependencies/sh07-prerequisites bad)))))
 
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

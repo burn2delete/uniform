@@ -1,0 +1,41 @@
+(ns sh-crosswalk-test
+  (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str] [clojure.edn :as edn]))
+(binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
+
+(deftest exact-original-inventory-and-negative-population-controls
+  (let [source (slurp sh-inventory/plan-path) rows (sh-inventory/inventory source)
+        pinned (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))]
+    (is (= 180 (count rows)))
+    (is (= rows (:requirements pinned)))
+    (is (= (:source-file-sha256 pinned) (sh-inventory/sha256 source)))
+    (doseq [changed [(str/replace source "**SH-00.1:" "**SH-99.1:")
+                     (str/replace source "**SH-00.1:" "**SH-00.2:")
+                     (str source "\n1. **SH-003.1:** Malformed extra\n\nChecks:\n")
+                     (str/replace source "1. **SH-00.1:" "1. **SH-003.1:")]]
+      (is (thrown? Exception (sh-inventory/inventory changed))))))
+
+(deftest source-spans-are-utf8-byte-bound-not-character-offsets
+  (let [source "\u03bb\naccepted\n" span (sh-inventory/source-span "fixture" source 2 10)]
+    (is (= 3 (:start-byte span)))
+    (is (= 11 (:end-byte span)))
+    (is (= 2 (:start-line span) (:end-line span)))
+    (is (= "accepted" (:raw span)))))
+
+(deftest real-derived-view-is-deterministic-and-preserves-gate-boundaries
+  (let [view (sh-crosswalk/build) text (sh-crosswalk/rollup view)
+        n26 (filter #(= "SH-26" (:milestone %)) (:requirements view))]
+    (is (= view (edn/read-string (slurp sh-crosswalk/output-path))))
+    (is (= text (slurp sh-crosswalk/rollup-path)))
+    (is (= 180 (count (re-seq #"(?m)^\| \[SH-\d{2}\.[1-6]\]" text))))
+    (is (= 18 (count (re-seq #"(?m)^\| \[SH07-C\d{2}\]" text))))
+    (is (= [] (:task-references (last (:sh07-sequence view)))))
+    (is (every? #(some (fn [t] (= "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" (:id t)))
+                      (:task-references %)) n26))
+    (is (= :incomplete (get-in view [:source-conflicts 0 :final-seed-retirement-recorded-flags :status])))
+    (is (= :complete (get-in view [:source-conflicts 0 :whole-gate-recorded-flags :status])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (is (= 1 (count (get-in view [:requirements 6 :task-references]))))
+    (is (= "development-boundaries" (get-in view [:requirements 6 :task-references 0 :id])))))
+
+(let [result (run-tests 'sh-crosswalk-test)]
+  (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

@@ -2,6 +2,7 @@
   "Read-only roadmap dependency audit. Graph edges point to prerequisites.
   No compiler execution, status mutation, receipt authentication or acceptance."
   (:require [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [gravity.tooling.strict-json :as json]))
 
@@ -197,6 +198,212 @@
      :directly-linked-contracts (count linked) :without-direct-package-links (vec unlinked)
      :authority :navigation-not-contract-replacement}))
 
+;; SH criteria and task status are derived views of the original source and the
+;; existing component authorities. This is the only dependency representation;
+;; crosswalk routes are incidence, not a second editable task/status graph.
+(def sh-crosswalk-path "specs/sh-family-crosswalk/crosswalk.edn")
+
+(defn source-bound! [{:keys [path start-byte end-byte sha256 raw]} read-text]
+  (let [text (read-text path) bytes (.getBytes text "UTF-8")]
+    (require! (and (integer? start-byte) (integer? end-byte)
+                   (<= 0 start-byte end-byte (alength bytes))) "Invalid source byte span")
+    (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
+      (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
+                (str "Changed source span: " path)))))
+
+(defn typed-adjacency [nodes edges condition-values]
+  (let [ids (set (keys nodes))]
+    (require! (every? #(contains? #{true false :unknown} %) (vals condition-values)) "Invalid condition state")
+    (reduce (fn [g {:keys [from to condition kind source]}]
+              (require! (and (ids from) (ids to) (keyword? kind) source)
+                        "Unknown or unbound typed edge")
+              ;; Unknown conditions are conserved in the conservative graph.
+              ;; Only a specifically false declared condition disables an edge.
+              (if (and condition (= false (get condition-values condition :unknown))) g
+                  (update g from conj to)))
+            (into (sorted-map) (map (fn [id] [id #{}]) ids)) edges)))
+
+(defn advisory-frontier [nodes edges condition-values]
+  (let [graph (typed-adjacency nodes edges condition-values)
+        unresolved (set (for [e edges :when (and (:condition e)
+                          (= :unknown (get condition-values (:condition e) :unknown)))] (:from e)))]
+    (into (sorted-map)
+          (for [[id row] nodes]
+            [id {:state (cond
+                          (= :accepted (:state row)) :accepted-recorded-scope
+                          (= :missing-task-authority (:coverage row)) :missing-task-authority
+                          (= :selected-acceptance-facet (:scope row)) :execution-and-review-unassessed
+                          (unresolved id) :unknown-condition
+                          (some #(not= :accepted (:state (nodes %))) (graph id)) :prerequisite-not-accepted
+                          (= :current-acceptance (:scope row)) :execution-and-review-unassessed
+                          :else :eligible-for-declared-facet)
+                 :prerequisites (vec (sort (graph id)))
+                 :authority :advisory-not-execution-permission}]))))
+
+(defn sh07-prerequisites [declaration]
+  (let [prefix (first (str/split declaration #";"))
+        parts (str/split prefix #", ")]
+    (if (= "none" prefix) []
+      (vec (mapcat (fn [part]
+                    (let [[_ a b] (re-matches #"C(\d{2})(?:-C(\d{2}))?" part)]
+                      (require! a "Unknown SH07 dependency declaration")
+                      (let [start (Long/parseLong a) end (if b (Long/parseLong b) start)]
+                        (require! (<= 1 start end 18) "Invalid SH07 dependency range")
+                        (map #(format "SH07-C%02d" %) (range start (inc end)))))) parts)))))
+
+(defn source-ref [source] (dissoc source :raw))
+
+(defn task-key [task-map component ordinal]
+  (let [rows (filter #(= component (:component %)) (vals task-map))
+        ordered (sort-by #(get-in % [:source :start-byte]) rows)
+        row (nth ordered (dec ordinal) nil)]
+    (require! row "Missing semantic task route") (:id row)))
+
+;; These selected-output composition requirements come from the consuming
+;; task's own acceptance block, never from Markdown cross-reference counts.
+;; No edge requires final component release merely to develop another task.
+(def composition-routes
+  [["syntax" 5 "reader" 6 nil]
+   ["expand" 5 "syntax" 5 nil]
+   ["resolve" 5 "expand" 5 nil]
+   ["core" 5 "resolve" 5 nil]
+   ["types" 5 "core" 5 nil]
+   ["effects" 5 "types" 5 nil]
+   ["auth" 2 "types" 5 nil]
+   ["auth" 2 "effects" 5 nil]
+   ["auth" 2 "legality" 1 nil]
+   ["mir" 5 "types" 5 nil]
+   ["mir" 5 "effects" 5 nil]
+   ["mir" 5 "legality" 4 nil]
+   ["mir" 5 "auth" 2 nil]
+   ["opt" 5 "mir" 5 nil]
+   ["lower" 5 "mir" 5 nil]
+   ["lower" 5 "opt" 5 :optimization-requested]
+   ["lower" 3 "runtime" 1 :runtime-service-required]
+   ["emit" 5 "lower" 5 nil]
+   ["build" 2 "emit" 5 :compiler-artifacts-consumed]
+   ["cli" 2 "build" 2 :build-command-selected]
+   ["cli" 2 "runtime" 2 :execution-command-selected]
+   ["release" 3 "build" 2 nil]
+   ["release" 3 "cli" 5 nil]
+   ["release" 3 "runtime" 2 nil]])
+
+(defn task-sh-view [crosswalk read-text]
+  (let [requirements (:requirements crosswalk)
+        original-sh (milestone-graph (read-text milestone-path))
+        _ (require-population! (set (for [n (range 30) r (range 1 7)] (format "SH-%02d.%d" n r)))
+                               (map :id requirements) "SH acceptance criterion")
+        _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
+        tasks (vec (mapcat val (:task-authorities crosswalk)))
+        task-map (into {} (map (juxt :id identity) tasks))
+        _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
+        _ (doseq [[component rows] (:task-authorities crosswalk)]
+            (require-population! (set (map :id rows))
+              (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
+              (str component " live implementation task")))
+        _ (doseq [row tasks]
+            (source-bound! (:source row) read-text)
+            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (get-in row [:source :raw]))]
+              (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
+                        "Task status/ID differs from actual authority")
+              (when (:checked row)
+                (require! (str/includes? (get-in row [:source :raw]) "Accepted;")
+                          "Checked task lacks explicit accepted status"))))
+        _ (doseq [r requirements]
+            (source-bound! (:acceptance-source r) read-text)
+            (source-bound! (:context-source r) read-text)
+            (when-let [history (get-in r [:historical-completion :evidence-source])]
+              (source-bound! history read-text))
+            (doseq [{:keys [path sha256]} (:evidence-source-locators r)]
+              (require! (= sha256 (acceptance-dependencies/sha256 (read-text path)))
+                        (str "Changed evidence-source locator: " path)))
+            (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
+                      "SH criterion changed original completion prerequisites")
+            (require! (or (seq (:task-references r)) (= :missing-task-authority (:coverage r)))
+                      "Unmapped SH criterion without explicit gap")
+            (doseq [t (:task-references r)]
+              (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
+        _ (doseq [[path digest] (:source-digests crosswalk)]
+            (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
+        ;; Contract declarations permit interface work; they do not attest an
+        ;; implementation. Acceptance facets remain unknown without exact receipts.
+        interface-nodes (into {} (for [[id row] task-map]
+                                  [(str "task:" id "/interface")
+                                   {:state :accepted :scope :declared-interface-only :task-id id :component (:component row)}]))
+        implementation-nodes (into {} (for [[id row] task-map]
+                                       [(str "task:" id "/implementation")
+                                        {:state (if (:checked row) :accepted :unassessed)
+                                         :scope :literal-task-record :task-id id :component (:component row)}]))
+        criterion-nodes (into {} (for [r requirements]
+                                  [(:id r) {:state :unassessed :scope :current-acceptance :milestone (:milestone r)
+                                            :coverage (:coverage r)}]))
+        milestone-nodes (into {} (for [id (sort (set (map :milestone requirements)))]
+                                   [id {:state :unassessed :scope :current-completion-credit}]))
+        facet-nodes (into {} (for [r requirements t (:task-references r)]
+                              [(str "facet:" (:id r) ":" (:id t))
+                               {:state :unassessed :scope :selected-acceptance-facet
+                                :task-id (:id t) :criterion (:id r)}]))
+        sequence (:sh07-sequence crosswalk)
+        _ (require-population! (set (map #(format "SH07-C%02d" %) (range 1 19))) (map :id sequence) "SH07 sequence")
+        _ (require! (= 18 (count sequence)) "Duplicate SH07 sequence row")
+        _ (doseq [r sequence]
+            (source-bound! (:source r) read-text)
+            (let [[_ id _ _ declaration] (re-matches #"\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|"
+                                                    (get-in r [:source :raw]))]
+              (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
+                        "SH07 sequence metadata differs from original source")))
+        sequence-nodes (into {} (for [r sequence] [(:id r) {:state :unassessed :scope :original-implementation-sequence}]))
+        composition-nodes (into {} (for [[id row] task-map]
+                                      [(str "task:" id "/composition")
+                                       {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
+        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes)
+        conditions {:optimization-requested :unknown :runtime-service-required :unknown
+                    :compiler-artifacts-consumed :unknown :build-command-selected :unknown
+                    :execution-command-selected :unknown :stable-candidate-selection :unknown}
+        edges (vec (concat
+          [{:from "SH-07" :to "SH07-C18" :kind :single-milestone-completion-decision
+            :source (source-ref (:source (last sequence)))}]
+          (for [[id row] task-map]
+            {:from (str "task:" id "/implementation") :to (str "task:" id "/interface")
+             :kind :declared-interface :source (source-ref (:source row))})
+          (for [[id row] task-map]
+            {:from (str "task:" id "/composition") :to (str "task:" id "/implementation")
+             :kind :actual-implementation :source (source-ref (:source row))})
+          (for [[consumer n producer p condition] composition-routes
+                :let [from (task-key task-map consumer n) to (task-key task-map producer p)]]
+            {:from (str "task:" from "/composition") :to (str "task:" to "/implementation")
+             :kind :selected-producer-implementation :condition condition
+             :source (source-ref (:source (task-map from)))})
+          (mapcat (fn [r]
+                    (let [id (:id r)
+                          prerequisites (cond-> (sh07-prerequisites (:dependency-declaration r))
+                                          (= id "SH07-C18") (into (map #(format "SH07-C%02d" %) (range 1 17))))]
+                      (concat
+                       (for [p (distinct prerequisites)]
+                         {:from id :to p :kind :original-sequence-prerequisite :source (source-ref (:source r))})
+                       (when (= id "SH07-C12")
+                         [{:from id :to "SH07-C11" :kind :final-selection-only
+                           :condition :stable-candidate-selection :source (source-ref (:source r))}])))) sequence)
+          (mapcat (fn [r]
+                    (concat
+                     [{:from (:milestone r) :to (:id r) :kind :acceptance-conjunction :source (source-ref (:acceptance-source r))}]
+                     (for [p (:completion-prerequisites r)]
+                       {:from (:id r) :to p :kind :completion-credit-only :source (source-ref (:context-source r))})
+                     (for [t (:task-references r)]
+                       {:from (:id r) :to (str "facet:" (:id r) ":" (:id t))
+                        :kind :requires-selected-execution-and-review :source (source-ref (:acceptance-source r))}))) requirements)))
+        adjacency (typed-adjacency nodes edges conditions)]
+    (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
+    {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
+     :condition-values conditions
+     :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
+     :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
+     :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)
+     :incidence (into (sorted-map) (map (fn [r] [(:id r) (mapv :id (:task-references r))]) requirements))
+     :limits [:task-interface-is-not-execution :selected-facet-not-whole-task
+              :historical-acceptance-does-not-set-current-state :semantic-edge-review-pending
+              :frontier-is-not-platform-permission]}))
+
 (defn audit []
   (let [roadmap (slurp roadmap-path)
         milestones (slurp milestone-path)
@@ -226,6 +433,8 @@
      :components {:sources components :reference-cycles (cycles component-graph)
                   :edge-class :document-links-not-acceptance-prerequisites}
      :canonical-contract-source-digests contract-inputs
+     :spec-kit-task-self-hosting
+     (task-sh-view (edn/read-string (slurp sh-crosswalk-path)) slurp)
      :retained-spec-kit (retained-packages (slurp ".specify/contract-mapping.md") inventory slurp)
      :limits [:no-semantic-acceptance :no-task-status-change :no-receipt-authentication
               :interfaces-do-not-satisfy-composition :proof-gates-remain-required]}))
