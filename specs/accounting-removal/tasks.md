@@ -32,3 +32,22 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-11 Integrate accepted existing optimization/lowering accounting work.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
+
+## ACC-08 imported-module aggregate increment
+
+The independent C7 successor removes `sh08-im-usage`, `sh08-im-work-check`,
+their two derive call sites and the module-request container count cap. This
+removes aggregate producer/dependency-depth/node/scalar admission and the
+accounting-only memo/active usage payload. Active ID presence still rejects
+cycles; memo reuse still requires exact request equality. Fresh authenticated
+Core derivation, per-Core preflight, strict input schema, retained producer
+identity, complete signature/origin joins and the ordinary inference allowance
+remain unchanged. Per-Core capacity limits are still open accounting; they are
+not reclassified as native safety.
+
+Normalized joins and actual Gravity derive control routing are tested, with
+explicit authentication/inference seams in the routing test. Independent source
+and retained-result review accepted this finite scope; current-main integration
+is pending. This increment has no Native
+registration dependency. Other C7/Effects/emitter module pools, recursive
+validation, inference allowances and full ACC-08 acceptance remain open.

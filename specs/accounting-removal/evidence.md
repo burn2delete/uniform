@@ -313,3 +313,75 @@ remain unchanged and open.
 
 Composition receipt SHA-256:
 `be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.
+
+## ACC-08 imported-module aggregate removal
+
+This independent finite increment starts at main
+`dcc9849df582ebb177560b41d702071e3481669a`, tree
+`f5362aacb21cf4fcb9f6e4cedd5e74c5ac087db3`. Accounting owns the C7 engine and
+its SH08 test file through the previously recorded explicit handoff. No held
+runtime, Native, metadata or other owner's source is changed. L3's acyclic
+module requirement, L5's signature/effect requirements and C7's fresh typed
+artifact validation remain the semantic contracts.
+
+The original C7 `sh08-im-work-check` sums invocation-local memo/active usage
+against fixed producer, dependency-depth, node and scalar allowances. Its only
+production callers are the two checks in `sh08-im-derive-with-allowance`;
+`sh08-im-usage` serves only this aggregate. Both checks, both helpers and the
+request-vector count cap are removed coherently. Memo entries now retain only
+request/result, and active entries retain ID presence for cycle rejection.
+This does not remove per-Core carrier limits or ordinary inference allowance.
+The actual carrier preflight's accepted/rejected control dependency remains;
+it is not a native-class validator or authentication authority.
+
+The source-pinned baseline on `dcc9849d` completed 10 tests / 252 assertions,
+natural exit 0 in 15.056 seconds, with actual 2 GiB heap, 1,285 complete stdout
+bytes and empty stderr. Source and worktree bookends matched. Receipt SHA-256:
+`3775b11a49109f058e8b2d0782398f7a55772d6f2810080ff9ce6220782244f6`.
+
+Production was frozen at `3c71eb01563a3613bb130c5d48337008a73eccb7`, tree
+`f95ccb66258d2d06ad10f93e9d45d40d2ae321d7`. Independent pre-run review caught
+and corrected a test-only memo expectation before execution. The resulting
+`e384b03008fe2f2c8e4a61798ecfeb150aa7ac87`, tree
+`275421e2a7021e71868ea6190983d1b2aefa76f6`, is NONPASS: 11 tests, 256 passing
+assertions, three failures, no errors, natural exit 1 in 14.133 seconds. Its
+Object fixture was accepted by the unchanged carrier preflight, invalidating
+the test's rejection premise. Failure diagnostics produced 70,276 observed
+stdout bytes, of which 65,536 were captured; stdout is truncated, stderr empty.
+The durable counts, source bookends and cleanup are retained. Receipt SHA-256:
+`9fae91922eaf5a838f9ebf03ed22e26e2f943d5ba81c934a8c666c85cbbf9860`.
+
+The test-only successor uses a native depth-129 vector to reach the retained
+carrier-depth rejection, asserts its exact diagnostic payload, checks the
+original Core operand and restricts diagnostic observations. Independent review
+corrected the payload key before the next execution. Production is unchanged.
+At `f803d9344590bdadfd6238458fcf92932837773a`, tree
+`55d1d99878661fd6c23225b2d9fe4c0a8e232e34`, the changed routing var plus six
+boundary vars passed: 7 tests / 26 assertions, natural exit 0 in 14.417 seconds,
+actual 2 GiB heap, 977 complete stdout bytes, empty stderr, exact clean bookends
+and completed cleanup. Receipt SHA-256:
+`ef1e522066d18576b4e6376c260c5260b3754b3a1362b6bb0a0e6096e769f38d`.
+
+Four unchanged SH08 selectors retain original `e384b030` provenance: imported
+function joins, inferred signatures, scalar catalog and module validation. They
+ran before the first failing routing assertion; no failed selector is promoted.
+This is not a fresh combined 11-test pass and counts are not summed. Their
+source/test inputs and production are unchanged in the test-only correction.
+The routing test explicitly supplies normalized authentication and inference
+results; actual Gravity derive, carrier/input checks, producer traversal and
+memo updates execute, but genuine fresh authenticated-source derivation is
+unrun. Source/provenance/signature forgeries, memo substitution, active cycles,
+duplicate/undeclared producers and malformed containers remain covered by the
+actual normalized owner helpers.
+
+| Tested input | SHA-256 at corrected source |
+| --- | --- |
+| C7 engine | `fe71a3e26f89927439237817d7eaae08770c6ef0487e93d8aae3651b83144f87` |
+| SH08 test source | `66d70f7446dc2c7aef6131934b6b8ef367f4bb19fdb1b0857e3e15731ed49cc2` |
+
+Independent source and retained-result review accepted the finite scope and
+the exact correction/reuse boundary without executing another compiler child.
+Current-main integration remains pending.
+Per-Core admission limits, ordinary inference, Effects/emitter pools, full ACC-08,
+authenticated/public C7, C12 and release remain open or unrun. No source-auth,
+Native registration, runtime Set or whole-cleanup acceptance is inferred.
