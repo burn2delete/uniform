@@ -466,7 +466,7 @@
       (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
                  :normalized-authentication-rejection) (:reason diagnostic)))
       (when (= :accepted (:status resolution))
-        (is (= :carrier-depth-bound (get-in diagnostic [:actual :reason]))))
+        (is (= :carrier-depth-bound (get-in diagnostic [:actual-type :reason]))))
       (is (= (if (= :accepted (:status resolution))
                (assoc memo :current-module {:request request :result (:result result)}) memo)
              (:memo result)))
