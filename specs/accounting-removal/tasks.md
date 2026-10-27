@@ -49,21 +49,28 @@ semantic rejection diagnostics. Each derive retains its own existing source
 prefix and budget, without a zero/default helper cost. Existing v2 premise,
 identity, source reconstruction and full-row/census contracts stay intact.
 
-- [ ] Record actual old-helper budget dependence on exact immutable inputs.
-- [ ] Check all three production callers and dynamic test references; remove
+- [x] Record actual old-helper budget dependence on exact immutable inputs.
+- [x] Check all three production callers and dynamic test references; remove
   old helper interfaces and cost readers coherently.
-- [ ] Validate declared type through the canonical native/grammar walk before
+- [x] Validate declared type through the canonical native/grammar walk before
   its homogeneous-List predicate; validate actual type fully before member
   reads, count or equality. Preserve declaration/incompatibility reasons and
   `type-check-reason`, Never behavior, empty checked extent, cycles, DAGs,
   native views and inert metadata with zero foreign/opaque callbacks.
-- [ ] Pass cheap reader/interface/argument/output/parity controls, then bounded
+- [x] Pass cheap reader/interface/argument/output/parity controls, then bounded
   three-owner relation and actual derive/context/typed-consumer positives and
   late-invalid, source, stale-row/fact and census negatives. Preserve a separate
   current-owner large late-member result with exact narrow provenance.
-- [ ] Obtain independent exact-source and retained-result acceptance, reconcile
-  current main, pass repository gates and exact preflight, publish draft and
+- [x] Obtain independent exact-source and retained-result acceptance at
+  `ccc2702d`, tree `6dd6af2e`: ordinary three-owner 23/1,186 and separate current
+  C7 large 1/2, with original baseline 1/39 and compiler-free controls 2/41.
+- [ ] Pass repository gates and exact current-main preflight, publish draft and
   verify current-head CI/readback before ordinary validated integration.
+
+Fresh main readback remains `9c093bc6`; no incoming dependency change invalidates
+the accepted candidate. Local CI-pinned lint recognizes 223 unchanged baseline
+warnings and zero blockers without a policy change. Each receipt and the
+controlled 401-byte reflection warning keep their exact scope in `evidence.md`.
 
 This does not remove the derive/context/inference source pools, PL construction
 or PE/PC ceilings, and does not close the whole ACC-06 row.
