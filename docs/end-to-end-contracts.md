@@ -201,6 +201,55 @@ below). This accepts the exercised development joins, not the complete analysis
 fact population required by OWN-03. C12 execution remains prohibited; any consumed C12
 dependency remains a blocker, not an excluded passing path.
 
+#### Bounded fact producer and consumer contract
+
+The accepted Bool path has one concrete fused producer, not six independently
+observed public analysis calls. The Native Core owner is accountable for the
+public C6-v2 constructor and fresh verification (`00724a`/`00726`), which execute
+`bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`.
+That source has SHA-256
+`0e7e30e15bc68dabdcee3cfea4c91740d82808204c5fe322d67ccd0ffdb76b98`.
+`c6-c10-build-checked-core-template` calls `c6c10-build-fact-tables` and
+`c6c10-build-node-facts` on actual lowered Core nodes. These are executable
+Gravity derivations, not fact tables supplied by an acceptance fixture.
+
+| Product in the exercised pure Bool path | Actual fused producer basis | Immediate consumer requirement |
+| --- | --- | --- |
+| Type facts | Node operation, type, operands and source-origin identity | C11 maps facts to MIR node identities; Native compares the complete type table against the authenticated Core. |
+| Effect and capability facts | Pure effect closure; capability requirements, grants and grant-ID vectors are empty, and authority is explicitly `:none-required` | Preserve those exact empty requirements and the linked fact identities. They do not evidence a nonempty grant or effect family. |
+| Ownership facts | Persistent shared owner domain and source-value identities | Preserve the actual ownership facts. Borrow, move, consume, region and linear-resource variations are not exercised by this path. |
+| Safety facts and proofs | Actual node safety outcomes linked to type, effect and ownership fact IDs | Preserve outcome/proof links and residual runtime checks; labels alone do not authorize check elision. |
+| Profile/target and origins | Hosted/JVM facts; `c6c10-origin-products` and `c6c10-register-origin` join actual source origins | Preserve profile/target, origin and dominance relationships rather than reconstructing them from a synthetic source label. |
+
+The MIR producer owns the actual c41 builder's consumption of these products.
+The Native consumer owns `00737-p15-s23-c11-mir-validate-fact-tables.clj`, which
+independently reindexes the authenticated Core's tables and compares the MIR
+tables and capability/safety proofs. This is independent consumer validation
+against that same Core, not an independent public C7/C8/C9/C10 producer result.
+The existing `00739` and `00740` origin/CFG/runtime-check requirements remain.
+
+Frozen public Core construction/replay used
+`cb3701556e9082ae8387c18fa1f6396a9d284617`, tree
+`b873b9aa3674622eada97bc0278256f9df584c22`, for source and consumer. Later
+accepted C11 construction/replay and substitutions used that original physical
+source with consumer `9c27c3e8856b9659482a3e48238896e1548fce02`, tree
+`3a08f38f6797a28b4f421146df0fac2e72ef349f`. The real type-fact removal from six
+facts to five was rejected by `C11-TYPE/:id-indexed-c7-type-facts`; its retained
+independent review SHA-256 is
+`19c32be46ded04e9eb63ddb5847d3faf6d77680d212f5c546265e45fbb82d94a`.
+It establishes the exercised consumer check, not the full C7 producer population
+or a run on current main. Current-consumer integration remains with Native;
+MIR retains its existing private validation harness. No new execution is implied.
+
+D1 permits fused implementations with explicit equivalent pass boundaries.
+The C7/C8/C9/C10 pass-history labels in this source do not by themselves prove
+separate producer API/result identity composition. This contract identifies the
+real bounded producer and immediate consumers; the original OWN-03 independent
+fact-population/ownership requirement remains partial. General nonempty
+grant/effect/ownership/safety variations retain their component obligations;
+they are not new unsupported Bool cases to invent for OWN-04. No full raw
+positive-report or owner policy-hash recomputation is claimed from this mapping.
+
 ### OWN-04 - MIR/Native schema, parameters and DATA continuity
 
 Accountable join: existing MIR composite owner with Native consumer owner;
