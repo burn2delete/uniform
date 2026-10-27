@@ -55,6 +55,7 @@
 
 (deftest incomplete-or-mismatched-retained-root-slices-stop-before-seed-delegation
   (doseq [input [(assoc products :sh03-reader-result nil)
+                 (assoc-in products [:sh03-reader-result :form-tree] :not-a-collection)
                  (assoc-in products [:sh03-reader-result :form-tree] [])
                  (assoc-in products [:sh03-reader-result :top-level-form-ids] ["form/4" "form/0"])
                  (assoc-in products [:sh03-reader-result :top-level-form-ids] ["form/0"])
