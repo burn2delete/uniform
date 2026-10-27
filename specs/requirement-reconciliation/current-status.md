@@ -1,6 +1,6 @@
 # Current project task list and remaining reconciliation
 
-Read-only view of canonical task source `4325a9f46292472a7f984c5adfef81209874bb5c`. Requirement proposal snapshot SHA256 `39c20f1f2ec02e8b813ef677a79a1411f7340f0eabe797bc1781d0bea96d7c00`. This view changes no task or acceptance state.
+Read-only view of canonical task source `4325a9f46292472a7f984c5adfef81209874bb5c`. Requirement proposal snapshot SHA256 `f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690`. This view changes no task or acceptance state.
 
 ## Current finite component-task list
 
@@ -10,11 +10,11 @@ The accepted rows are Reader decode/source identity and fresh Syntax handoff, wi
 
 ## Requirement coverage and concrete remaining gate
 
-All 240 originals plus five declared extension/policy sources are represented: 10,096 nonblank source dispositions and 29,177 exact facets. No original source is missing. The 1256 candidate records are still proposed as a whole model; their current implementation acceptance is unassessed. There are 25 independently confirmed alias dispositions and 40 newly applied Compiler aliases pending applied-graph review. All original records and source facets are retained.
+All 240 originals plus five declared extension/policy sources are represented: 10,096 nonblank source dispositions and 29,177 exact facets. No original source is missing. The 1231 candidate records are still proposed as a whole model; their current implementation acceptance is unassessed. There are 25 independently confirmed alias dispositions and 65 newly applied Compiler/Testing aliases pending applied-graph review. All original records and source facets are retained.
 
-Current task-interface coverage: {:primary-interface 599, :no-current-canonical-task-interface 601, :additional-interface-only 56}. These gaps include constraints and pending folds; they are not automatically new implementation tasks.
+Current task-interface coverage: {:primary-interface 596, :no-current-canonical-task-interface 577, :additional-interface-only 58}. These gaps include constraints and pending folds; they are not automatically new implementation tasks.
 
-All requested family review batches have been delivered. Five batches/857 original records are incorporated, including 40 concrete Compiler alias applications; Foundation82, Testing104 and Math/Backend134 (320 records) await central incorporation. Remaining decisions in incorporated batches are still explicit. The bottleneck is applying the delivered decisions, not waiting for new research. The exact per-ID queue and the full proposed work inventory are in the paired EDN view.
+All requested family review batches have been delivered. Six batches/961 original records are incorporated, including 40 Compiler and 25 Testing alias applications plus four Testing predicate corrections; Foundation82 and Math/Backend134 (216 records) await central incorporation. Remaining decisions in incorporated batches are still explicit. The bottleneck is applying the delivered decisions, not waiting for new research. The exact per-ID queue and the full proposed work inventory are in the paired EDN view.
 
 ## Delivered decision queue
 
@@ -25,8 +25,8 @@ All requested family review batches have been delivered. Five batches/857 origin
 | safety | 119 | true | {:alias 53, :split 31, :keep 32, :correct-hold 2, :keep-join-hold 1} |
 | language-runtime-domain-schema | 295 | true | {:keep 236, :split 37, :alias 14, :preserve-retired-alias 6, :correct 2} |
 | compiler | 119 | true | {:ownership 25, :alias 40, :keep 53, :correction 1} |
+| testing | 104 | true | {:keep 41, :alias 25, :facet-refinement 15, :split 14, :correct 4, :keep-join-hold 1, :conditional-refinement 3, :correction-hold 1} |
 | foundation | 82 | false | {:split 3, :keep 70, :alias 9} |
-| testing | 104 | false | {:keep 41, :alias 25, :facet-refinement 15, :split 14, :correct 4, :keep-join-hold 1, :conditional-refinement 3, :correction-hold 1} |
 | math-backends | 134 | false | {:keep 124, :correction 7, :split 3} |
 
 Additional central scope work: BOOT/GOV34; Standard Library67 plus five overlap questions/31 mixed accounting facets; extension/policy43 including binding conduct roles and future product outcomes. Known-scope implementation details stay acceptance qualifications, not new scope blockers.

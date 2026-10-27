@@ -530,7 +530,7 @@ requirement acceptance. Their nineteen existing API references and changed Reade
 status source require preserved-history rebinding during normal reconciliation;
 the generated task census can report current source statuses independently.
 
-## Integrated task-source adoption and Compiler consolidation
+## Checkpoint 22325cf4 task-source adoption and Compiler consolidation
 
 The current derived view now reads integrated main
 `4325a9f46292472a7f984c5adfef81209874bb5c`, tree
@@ -573,3 +573,31 @@ incorporation, while all remaining split/ownership decisions in incorporated
 batches remain explicit. Known-scope evidence gaps stay visible rather than
 becoming scope exclusions. This is an unfinished reconciliation checkpoint,
 not whole-model acceptance, integration approval or a dashboard update.
+
+## Testing consolidation and executable predicate correction
+
+The Testing104 review now supplies 25 applied aliases and four source-backed
+predicate corrections. Shared diagnostic matching, fixture admission, backend
+conformance execution, runnable examples, evaluation identity and release-evidence
+gates retain their complete source-specific contexts. The reviewed conditional
+alternatives remain explicit, including available-target comparison, documented
+non-executability, applicable diverse double compilation and signed-or-verifiable
+provenance. Testing requirements do not establish implementation of the tested
+mechanisms. Fourteen split decisions and the exact TEST9 resource exception remain
+open; they are not erased by consolidating the independent duplicate operations.
+
+The corrected predicates require actual incremental mutation/rebuild tests,
+generated-code re-entry with provenance assertions, unsafe-fixture audit inspection
+and generated property-case execution against its declared invariant and oracle.
+Complete predecessor definitions remain in predicate history, with unchanged
+source-facet, acceptance-boundary, task and historical-evidence references.
+
+The inventory is now 1,231 proposed candidates, 583 bounded atomicity flags and
+90 aliases: 25 previously confirmed and 65 Compiler/Testing applications pending
+applied-graph review. Six incorporated reviews cover 961 original records;
+Foundation82 and Math/Backends134 account for the other 216 delivered records.
+Unapplied decisions within incorporated reviews remain in the explicit queue.
+All 29,177 facets and 245 source views remain conserved. The complete audit and
+25 tests / 186 assertions pass; the independent whole-model denominator and
+current implementation acceptance remain unfinished. The component census stays
+at its separately pinned main source with 2 Accepted / 138 coarse outcomes.
