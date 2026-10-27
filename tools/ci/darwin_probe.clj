@@ -20,9 +20,9 @@
         :bound-symbol "fstatat"
         :method-type (str (.type ^java.lang.invoke.MethodHandle (:fstatat runtime)))
         :capture-layout (str (:state-layout runtime))
-        :required-flags contract/relative-unique-stat-flags
-        :probes
-        (mapv (fn [flags]
-                {:fd -1 :leaf "uniform-ci-abi-probe" :flags flags
-                 :result (stat/fstatat-result runtime -1 "uniform-ci-abi-probe" flags)})
-              [0 0x800 0x2000 0x2800 0xa800])}))
+        :required-flags contract/relative-unique-stat-flags})
+  (flush)
+  (doseq [flags [0 0x800 0x2000 0x2800 0xa800]]
+    (prn {:fd (int -1) :leaf "uniform-ci-abi-probe" :flags (int flags)
+          :result (stat/fstatat-result runtime (int -1) "uniform-ci-abi-probe" flags)})
+    (flush)))
