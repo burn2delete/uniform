@@ -245,7 +245,7 @@
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def mapping-review
-  {:status :pending-source-version-review
+  {:status :accepted-mapping-only
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36"
    :reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55"
@@ -253,6 +253,11 @@
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
    :input-fingerprint "ae42fea9b309c421343b6cfa1da81ceeecc197f9aeb4f9ffb1ff517eb915ecf7"
+   :source-version-review
+   {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
+    :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"
+    :receipt-sha256 "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70"
+    :scope "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."})
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))

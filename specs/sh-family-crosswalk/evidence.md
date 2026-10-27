@@ -132,8 +132,8 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   its predicate, other six raw task blocks and historical suffix are unchanged.
   The new report and original implementation/composition/final candidate commits
   are pinned separately. All 180 SH whole-criterion states remain unassessed;
-  no compiler proof was replayed. The bounded source-version review is pending,
-  so mapping-ready is temporarily false rather than inheriting an old review.
+  no compiler proof was replayed. Mapping-ready stayed false while the bounded
+  source-version review was pending rather than inheriting an old review.
 - Bounded source-version/composition review passed conservation at `6b151cc3`
   but found a P2 guard omission: the Reader-roadmap and ownership explicit pins
   were not read before writes. The correction validates every explicit pin
@@ -141,17 +141,26 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   unavailable Git objects and missing digest probes all fail before either
   output write. The source payload remains exactly `ae42fea9...`; no mapping,
   task status, acceptance predicate or source pin changes in this correction.
+- Independent correction review passed at `a7b52d45` / tree
+  `49119f422a98f51131a5ee171ef3a107bdb7a2fb`, receipt SHA256
+  `a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70`.
+  Original skipped-pin and all five real-view mismatch/unavailable/missing-digest
+  probes reject before writing; real regeneration is byte-identical. Independent
+  checks passed 21 tests / 468 assertions. The reviewer explicitly approved
+  metadata-only accepted adoption for the unchanged `ae42fea9...` payload;
+  this candidate records that exact disposition. No current SH whole-criterion
+  acceptance or new implementation acceptance is inferred.
 
-## Remaining finite publication gates
+## Publication dispositions
 
-1. Bounded newer-main source-version bridge review. The full 180-route/18-step
-   and final source-pin guard reviews are complete.
-2. Exact graph/source/links/projection checks on the final reviewed candidate,
-   followed by normal publication/integration. Draft work earns no closure.
-3. Accepted graph-input handoff to the existing dashboard collector after
-   integration; no direct store/Site write or duplicate graph is introduced.
+1. Full 180-route/18-step, source-pin guard, newer-main source-version and
+   correction reviews are complete at the exact receipts above.
+2. Final graph/source/links/projection checks, exact clean integration preflight,
+   public head/merge identity and fresh main readback are recorded in PR490.
+   Draft work earns no closure.
+3. Accepted graph inputs go to the existing dashboard collector after accepted
+   integration. No direct store/Site write or duplicate graph is introduced.
 
-Exact final integration and dashboard handoff receipts will be recorded only
-when those operations complete. The full mapping is reviewed; newer-main source
-review and normal integration remain. No accepted dashboard input has been
-handed off yet.
+At the candidate freeze, integration and dashboard handoff had not yet run;
+their actual subsequent dispositions belong in the public PR record and the
+accepted-input handoff. The collector remains the sole store/Site writer.

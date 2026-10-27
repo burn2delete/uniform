@@ -1,8 +1,8 @@
 # All-SH acceptance crosswalk
 
-Status: source-bound routing, dependency mapping and source-pin guard reviewed;
-owner task-boundary integration is complete. A bounded newer-main source-version
-bridge and normal integration remain pending. This is an acceptance view,
+Status: source-bound routing, dependency mapping, source-pin guard and bounded
+source-version bridge independently reviewed; owner task-boundary integration
+is complete. Publication receipts are recorded in PR490. This is an acceptance view,
 not an editable implementation task ledger or project denominator.
 
 ## Purpose and finite population
