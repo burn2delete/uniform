@@ -6834,8 +6834,9 @@
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining) (if (= :gravity.type/never (first remaining)) out (conj out (first remaining))))))
         family (first normal) invoked? (= (count normal) (count args))
-        integral? (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                              :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family)
+        integral? (if (keyword? family)
+                    (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family) false)
         caller (loop [remaining (get core :function-records)]
                  (if (= 0 (count remaining)) nil
                    (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
@@ -20784,11 +20785,15 @@
                   (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
               (recur (+ i 1)) false))))]) false)))
 
+(defn sh08-si-path-id? [id]
+  (if (keyword? id) true (string? id)))
+
 (defn sh08-si-within? [id root parents]
-  (loop [id id depth 0]
-    (if (= id root) true
-      (if (if (= id nil) true (> depth 128)) false
-        (recur (get (get parents id) :owner) (+ depth 1))))))
+  (loop [id id seen #{}]
+    (if (sh08-si-path-id? id)
+      (if (contains? seen id) false
+        (if (= id root) true
+          (recur (get (get parents id) :owner) (conj seen id)))) false)))
 
 (defn sh08-si-ref? [node binding forms bindings]
   (let [form (get forms (get (get node :source) :form-id))]
@@ -20835,11 +20840,25 @@
         (recur (rest remaining) found)))))
 
 (defn sh08-si-ancestry-path [id root nodes parents]
-  (loop [id id ordinal nil depth 0 out []]
-    (let [next (conj out {:node (get nodes id) :child-index ordinal})]
-      (if (= id root) next
-        (if (if (= id nil) true (> depth 128)) []
-          (recur (get (get parents id) :owner) (get (get parents id) :ordinal) (+ depth 1) next))))))
+  (loop [id id ordinal nil seen #{} out []]
+    (if (sh08-si-path-id? id)
+      (if (contains? seen id) []
+        (let [node (get nodes id)]
+          (if (if (map? node) (= id (get node :node-id)) false)
+            (let [next (conj out {:node node :child-index ordinal})]
+              (if (= id root) next
+                (recur (get (get parents id) :owner) (get (get parents id) :ordinal)
+                       (conj seen id) next))) []))) [])))
+
+(defn sh08-si-path-records? [path nodes]
+  (if (if (vector? path) (> (count path) 0) false)
+    (loop [remaining path seen #{}]
+      (if (= 0 (count remaining)) true
+        (let [entry (first remaining) node (get entry :node) id (get node :node-id)]
+          (if (if (map? entry) (if (map? node) (sh08-si-path-id? id) false) false)
+            (if (= node (get nodes id))
+              (if (contains? seen id) false
+                (recur (rest remaining) (conj seen id))) false) false)))) false))
 
 (defn sh08-si-backedge-paths [incoming root nodes parents]
   (loop [remaining incoming out []]
@@ -20969,7 +20988,7 @@
                   header (sh08-si-source core increment call (get edges increment-id) nodes bindings types (get core :module))
                   path (get paths index)]
               (if (if (vector? path)
-                    (if (if (> (count path) 0) (<= (count path) 129) false)
+                    (if (sh08-si-path-records? path nodes)
                       (sh08-ft-all-true? [(map? header) (if extended? (sh08-si-step-source-valid? (get steps index) header nodes) true)
                      (= 1 (count (get transfer :argument-node-ids)))
                      (= (get transfer :recur-core-node-id) (get (get (first path) :node) :node-id))
@@ -21463,7 +21482,7 @@
 
 (defn sh08-vl-path-valid? [path leaf root nodes]
   (if (vector? path)
-    (if (if (> (count path) 0) (<= (count path) 129) false)
+    (if (sh08-si-path-records? path nodes)
       (sh08-ft-all-true? [(= leaf (get (get (first path) :node) :node-id))
         (= root (get (get (get path (- (count path) 1)) :node) :node-id))
         (loop [i 0]
@@ -22476,7 +22495,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:key-value-member-types :static-entry-count]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
@@ -22536,7 +22555,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:positional-element-types :static-length]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}]

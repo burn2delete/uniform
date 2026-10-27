@@ -6318,7 +6318,7 @@
         (is (= (if (= operation 'rest) type :gravity.type/bool) (:type result)))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'first [type])))))
     (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:items]}
-          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] 65536])]
+          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] {} 65536])]
       (is (= :accepted (:status (check type))))
       (doseq [wrong [:gravity.type/list (positional [s]) (assoc type :element-type :gravity.type/keyword)]]
         (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))))
@@ -6469,7 +6469,7 @@
 
 (deftest sh08-map-parameter-recur-development-kernel
   (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:packet]}
-        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] 65536])]
+        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] {} 65536])]
     (is (= :accepted (:status (check :gravity.type/map))))
     (is (= :accepted (:status (check :gravity.type/never))))
     (doseq [wrong [{:kind :gravity.type/map :shape :literal :member-types []} :gravity.type/list :gravity.type/string]]
@@ -6553,7 +6553,7 @@
           target {:target-kind :function :binding-ids [:items :marks]}
           check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types
                     [transfer target {} {:next % :marks :gravity.type/string}
-                     [:gravity.type/list :gravity.type/string] 65536])]
+                     [:gravity.type/list :gravity.type/string] {} 65536])]
       (is (= :accepted (:status (check :gravity.type/list))))
       (is (= :accepted (:status (check :gravity.type/never))))
       (doseq [wrong [actual :gravity.type/vector :gravity.type/string]]
@@ -21013,3 +21013,324 @@
                        #(invoke-c7 'sh08-record-access-match-typed-core-artifact
                                    [(:request wrong-path) 'descriptor 'program descriptor]))
                      [:value :diagnostics 0 :reason]))))))
+
+(defn- proof-ancestry-wrap [input leaf depth]
+  ;; Extend the existing normalized Core graph with inert, one-child do nodes.
+  ;; No source authentication, inference result or safety proof is supplied.
+  (let [original (get-in input [:nodes leaf])
+        owner (first (filter #(some #{leaf} (:children %)) (vals (:nodes input))))
+        wrappers (loop [i 0 child leaf out []]
+                   (if (= i depth) out
+                     (let [id (keyword (str "ancestry-" (name leaf) "-" i))
+                           node (-> original
+                                    (assoc :node-id id :core-form :do :children [child]
+                                           :attributes {} :resolved-binding-ids [])
+                                    (assoc :source (assoc (:source original) :form-id id :syntax-id id))
+                                    (assoc :evaluation {:kind :left-to-right
+                                                        :order [{:index 0 :core-node-id child}]}))]
+                       (recur (inc i) id (conj out node)))))
+        outer (or (:node-id (last wrappers)) leaf)
+        replace-id (fn [id] (if (= leaf id) outer id))
+        owner (-> owner (update :children #(mapv replace-id %))
+                  (update-in [:evaluation :order]
+                             #(mapv (fn [entry] (update entry :core-node-id replace-id)) %)))
+        nodes (merge (:nodes input) {(:node-id owner) owner}
+                     (into {} (map (juxt :node-id identity) wrappers)))
+        ordered (vec (mapcat (fn [node]
+                              (if (= leaf (:node-id node)) (cons node wrappers)
+                                [(nodes (:node-id node))])) (get-in input [:core :nodes])))
+        forms (loop [remaining wrappers
+                     out (update-in (:forms input) [(:node-id owner) :child-form-ids]
+                                    #(mapv replace-id %)) child leaf]
+                (if (empty? remaining)
+                  (assoc-in out [outer :parent-form-id] (:node-id owner))
+                  (let [node (first remaining) id (:node-id node)
+                        template (get-in input [:forms leaf])]
+                    (recur (rest remaining)
+                           (-> out
+                               (assoc-in [child :parent-form-id] id)
+                               (assoc id (assoc template :form-id id :syntax-id id :kind :list
+                                                :value nil :child-form-ids [child]))) id))))]
+    (-> input (assoc :nodes nodes :forms forms)
+        (assoc-in [:core :nodes] ordered)
+        (update :types merge (zipmap (map :node-id wrappers) (repeat (get-in input [:types leaf])))))))
+
+(defn- proof-ancestry-chain [depth]
+  (let [ids (mapv #(keyword (str "path-" %)) (range (inc depth)))
+        nodes (into {} (map-indexed
+                         (fn [i id] [id {:node-id id :core-form :do
+                                         :children (if (zero? i) [] [(ids (dec i))])}]) ids))
+        parents (into {} (map (fn [[child owner]] [child {:owner owner :ordinal 0}])
+                              (partition 2 1 ids)))]
+    {:leaf (first ids) :root (last ids) :nodes nodes :parents parents}))
+
+(deftest sh08-proof-ancestry-complete-path-development-kernel
+  (doseq [depth [2 140 260]]
+    (let [{:keys [leaf root nodes parents]} (proof-ancestry-chain depth)
+          expected (mapv (fn [i] {:node (nodes (keyword (str "path-" i)))
+                                  :child-index (when (pos? i) 0)}) (range (inc depth)))
+          path (invoke-c7 'sh08-si-ancestry-path [leaf root nodes parents])]
+      (is (true? (invoke-c7 'sh08-si-within? [leaf root parents])))
+      (is (= expected path))
+      (is (true? (invoke-c7 'sh08-vl-path-valid? [path leaf root nodes])))
+      (when (> depth 129)
+        (doseq [changed [(assoc-in path [(dec (count path)) :child-index] 9)
+                       (assoc-in path [130 :node :node-id] :absent)
+                       (conj path (first path))]]
+          (is (false? (invoke-c7 'sh08-vl-path-valid? [changed leaf root nodes]))))))))
+
+(deftest sh08-proof-ancestry-invalid-graph-development-kernel
+  (let [{:keys [leaf root nodes parents]} (proof-ancestry-chain 140)
+        late (keyword "path-139")
+        path (invoke-c7 'sh08-si-ancestry-path [leaf root nodes parents])]
+    (doseq [changed [(assoc-in parents [late :owner] leaf)
+                     (dissoc parents late)
+                     (assoc-in parents [late :owner] :absent)]]
+      (is (false? (invoke-c7 'sh08-si-within? [leaf root changed])))
+      (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf root nodes changed]))))
+    (is (false? (invoke-c7 'sh08-si-within? [nil nil {}])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [nil nil {} {}])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf root (dissoc nodes late) parents])))
+    (is (= [] (invoke-c7 'sh08-si-ancestry-path [leaf :disconnected nodes parents])))
+    (doseq [changed [(assoc-in nodes [late :children] [:wrong])
+                     (assoc-in nodes [late :core-form] :loop)
+                     (assoc-in nodes [late :core-form] :fn)]]
+      (is (false? (invoke-c7 'sh08-vl-path-valid? [path leaf root changed]))))))
+
+(deftest sh08-proof-ancestry-derived-consumers-development-kernel
+  (let [{:keys [core nodes bindings types] :as input}
+        (proof-ancestry-wrap (bounded-successor-input 3) :again 140)
+        result (bounded-successor-derived input 65536)
+        descriptor (:descriptor result) proof (:range-proof descriptor)
+        valid #(invoke-c7 'sh08-si-inferred-call-valid?
+                         [core (nodes :increment) (last (:calls core)) (last (:call-edges core))
+                          nodes bindings (assoc types :inc-op %)])]
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :rule])))
+    (is (= 141 (count (first (:backedge-paths proof)))))
+    (is (= [:proven-safe :retained :not-authorized]
+           ((juxt :outcome :runtime-guards :check-elision) proof)))
+    (is (true? (valid descriptor)))
+    (doseq [changed [(assoc-in descriptor [:range-proof :backedge-paths 0 139 :child-index] 9)
+                     (assoc-in descriptor [:range-proof :backedge-paths 0 139 :node :source :syntax-id] :forged)
+                     (update-in descriptor [:range-proof :backedge-paths 0] conj
+                                (first (first (:backedge-paths proof))))
+                     (assoc-in descriptor [:range-proof :guarded-edge :relation] :forged)]]
+      (is (false? (valid changed)))))
+  (doseq [family [:nth :get]]
+    (let [base (if (= family :nth) (vector-loop-nth-input 3 false) (vector-loop-get-input 3))
+          {:keys [core nodes bindings types] :as input}
+          (vector-loop-nth-completed (proof-ancestry-wrap base :check 140))
+          result (vector-loop-nth-derived input 65536)
+          descriptor (:descriptor result) proof (:bounds-proof descriptor)
+          valid #(invoke-c7 (if (= family :nth) 'sh08-vn-inferred-call-valid? 'sh08-mg-inferred-call-valid?)
+                           [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2)
+                            nodes bindings (assoc types :nth-op %)])]
+      (is (= :accepted (get-in input [:invariant-result :status]) (:status result))
+          (pr-str {:family family :result (select-keys result [:status :reason :rule])}))
+      (is (= 142 (count (:guard-path proof))))
+      (is (= [:proven-safe :retained :not-authorized]
+             ((juxt :outcome :runtime-guards :check-elision) proof)))
+      (is (true? (valid descriptor)))
+      (doseq [changed [(assoc-in descriptor [:bounds-proof :guard-path 139 :child-index] 9)
+                       (assoc-in descriptor [:bounds-proof :guard-path 139 :node :source :syntax-id] :forged)
+                       (update-in descriptor [:bounds-proof :guard-path] conj (first (:guard-path proof)))
+                       (assoc-in descriptor [:bounds-proof :slot-binding-id] :forged)]]
+        (is (false? (valid changed)))))))
+
+(defn- acc02-typed-call-context [base c7 input actual]
+  (let [declaration (:declaration input) type (get-in input [:callee :parameters 0 :type])
+        signature (assoc (get-in base [:records 'identity :signature]) :parameters [declaration])
+        record (assoc (get-in base [:records 'identity]) :signature signature)
+        function (assoc (get-in base [:functions 'identity]) :signature signature :parameters [{:binding-id :parameter :type type}])
+        raw-type (if (= :homogeneous (:shape type)) '(List String) (:type-symbol declaration))
+        raw-fn (list 'fn (vector 'problem :- raw-type) :- 'String "done") raw-def (list 'def 'identity raw-fn)
+        type-id (:type-form-id declaration) marker-id (:marker-form-id declaration)
+        context (-> base
+                    (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+                    (assoc-in [:functions 'identity] function) (assoc-in [:types :operator] function)
+                    (assoc-in [:types :function] function) (assoc-in [:types :definition] function)
+                    (assoc-in [:types :argument] actual) (assoc-in [:parameter-types :caller-parameter] actual)
+                    (assoc-in [:nodes :function :attributes :signature] signature)
+                    (assoc-in [:nodes :reference :core-form] :literal)
+                    (assoc-in [:nodes :reference :attributes] {:literal-kind :string :value "done"})
+                    (assoc-in [:raw-roots :definition-form] raw-def) (assoc-in [:forms :definition-form :value] raw-def)
+                    (assoc-in [:forms :function-form :value] raw-fn) (assoc-in [:forms :body-form :value] "done")
+                    (assoc-in [:forms :parameter-form :value] (vector 'problem :- raw-type))
+                    (assoc-in [:forms :parameter-form :child-form-ids] [:parameter-name marker-id type-id])
+                    (assoc-in [:forms marker-id] {:form-id marker-id :syntax-id (:marker-syntax-id declaration) :value :- :parent-form-id :parameter-form})
+                    (assoc-in [:forms type-id] {:form-id type-id :syntax-id (:type-syntax-id declaration) :kind :symbol :value raw-type
+                                              :parent-form-id :parameter-form :child-form-ids []})
+                    (update :bindings merge (select-keys (:bindings input) [(:type-binding-id declaration) (:element-binding-id declaration)])))
+        context (if (= :homogeneous (:shape type))
+                  (let [ctor (:constructor-form-id declaration) member (:element-form-id declaration)]
+                    (-> context (assoc-in [:forms type-id :kind] :list) (assoc-in [:forms type-id :child-form-ids] [ctor member])
+                        (assoc-in [:forms ctor] {:form-id ctor :syntax-id (:constructor-syntax-id declaration) :kind :symbol :value 'List :parent-form-id type-id})
+                        (assoc-in [:forms member] {:form-id member :syntax-id (:element-syntax-id declaration) :kind :symbol :value 'String :parent-form-id type-id}))) context)
+        call (get-in context [:calls :call]) edge (get-in context [:edges :call])
+        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+        pair (cond-> {:parameter :parameter :argument actual :chosen type} (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
+        row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
+        fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
+        context (assoc context :ledger [row] :call-facts {:call fact})]
+    context))
+
+(defn- acc02-environment []
+  (require 'gravity.self-hosting.sh09-body-effect-test
+           'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
+  (let [up 'gravity.self-hosting.sh08-function-call-type-test
+        stage 'gravity.self-hosting.sh01-stage2-runtime-iteration-test
+        runtime (var-get (ns-resolve stage 'runtime))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        emit (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} ((ns-resolve stage 'typed-lowering-kernel-data))]
+    {:helper #(ns-resolve up %) :c7 (ns-resolve up 'invoke-c7)
+     :body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) :emit emit
+     :base ((ns-resolve stage 'typed-direct-call-kernel-context) (:value (emit 'p15-s23-typed-context module input observation)))}))
+
+(defn- acc02-positional [members] {:kind :gravity.type/list :shape :literal :element-types members})
+(defn- acc02-finite-map [members] {:kind :gravity.type/map :shape :literal :member-types members})
+(def ^:private acc02-homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string})
+(defn- acc02-parameter-input [helper family actual]
+  ((helper (case family :map 'bare-map-parameter-input :bare 'bare-list-parameter-input :hom 'homogeneous-list-parameter-input)) actual))
+(defn- acc02-facts-and-context [body input rows]
+  (let [facts {:constraint-ledger (vec rows) :type-table (:types input) :function-type-table [(:callee input)]}
+        context (body 'body-lp-context {:canonical-core-artifact (:core input)} facts (:bindings input) 65536)]
+    {:facts facts :context context :checked (assoc facts :list-parameter-context (:context context))}))
+(defn- acc02-local-valid? [body input checked actual]
+  (body 'body-local-arguments-valid? (:core input) checked (:bindings input) (:edge input) (:call input)
+        {:argument-types [actual]} (:callee input)))
+
+(deftest sh08-parameter-premise-owner-composition-development-kernel
+  (let [{:keys [helper c7 body emit base]} (acc02-environment)]
+    (doseq [[family actual adapted?]
+            [[:map (acc02-finite-map []) true]
+             [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/bool :gravity.type/string :gravity.type/nil]) true]
+             [:map (acc02-finite-map [:gravity.type/symbol :gravity.type/string]) true]
+             [:map (acc02-finite-map (vec (mapcat identity (repeat 512 [:gravity.type/keyword :gravity.type/string])))) true]
+             [:bare (acc02-positional []) true] [:bare (acc02-positional [:gravity.type/string :gravity.type/bool]) true]
+             [:hom (acc02-positional []) true] [:hom (acc02-positional [:gravity.type/string :gravity.type/string]) true]
+             [:hom (acc02-positional (vec (repeat 1024 :gravity.type/string))) true]
+             [:map :gravity.type/map false] [:bare :gravity.type/list false] [:hom acc02-homogeneous false]]]
+      (testing (str family " adaptation=" adapted?)
+        (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
+              a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+              b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              produced ((helper 'bare-list-parameter-constraints) input) row (first (:constraints produced))
+              {:keys [context checked facts]} (acc02-facts-and-context body input (:constraints produced))
+              typed (acc02-typed-call-context base c7 input actual)
+              compile #(emit 'p15-s23-typed-compile-node % :call 65536)
+              lowered (compile typed)]
+          (is (= (repeat 3 (if adapted? :accepted :not-applicable)) (map :status [a b c])))
+          (is (empty? (:diagnostics produced)))
+          (is (= :accepted (:status context)))
+          (is (true? (acc02-local-valid? body input checked actual)))
+          (is (= :complete (:status lowered)))
+          (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value lowered)))
+          (when adapted?
+            (is (= (:premise a) (:premise b) (:premise c)))
+            (is (every? #(not (contains? (:premise %) :operand-type-work)) [a b c]))
+            (is (= (case family :map [:key-value-member-types :static-entry-count]
+                                :bare [:positional-element-types :static-length]
+                                :hom [:static-length]) (get-in a [:premise :forgets])))
+            (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
+                   (get-in a [:premise :preserves])))
+            (when (= family :map)
+              (is (= (:premise a) (:premise (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings 65536])))))
+            (when (= family :hom)
+              (is (= (count (:element-types actual)) (get-in a [:premise :checked-element-count]))))
+            (doseq [[key value] [[:operand-type-work 0]
+                                [:operand-type-work (:work-count (body 'body-lc-type-work [actual] 65536))]
+                                [::unknown-field true]]]
+              (let [changed-row (assoc-in row [:rhs 0 :compatibility key] value)
+                    rejected (acc02-facts-and-context body input [changed-row])
+                    changed-typed (assoc-in typed [:ledger 0 :rhs 0 :compatibility key] value)]
+                (is (= :rejected (get-in rejected [:context :status])))
+                (is (false? (acc02-local-valid? body input (:checked rejected) actual)))
+                (is (= :rejected (:status (compile changed-typed))))))
+            (when (= family :hom)
+              (doseq [[key value] [[:checked-element-count (inc (count (:element-types actual))) ]
+                                  [:checked-element-type :gravity.type/keyword]]]
+                (let [changed-row (assoc-in row [:rhs 0 :compatibility key] value)
+                      rejected (acc02-facts-and-context body input [changed-row])]
+                  (is (= :rejected (get-in rejected [:context :status])))
+                  (is (false? (acc02-local-valid? body input (:checked rejected) actual)))
+                  (is (= :rejected (:status (compile (assoc-in typed [:ledger 0 :rhs 0 :compatibility key] value)))))))))
+          (doseq [changed [(assoc-in typed [:forms (get-in input [:declaration :type-form-id]) :syntax-id] :forged)
+                           (assoc-in typed [:edges :call :callee-function-syntax-id] :orphan)
+                           (update typed :ledger into (:ledger typed))
+                           (assoc-in typed [:calls :call :argument-node-ids] [])]]
+            (is (= :rejected (:status (compile changed))))))))
+    (let [input (acc02-parameter-input helper :hom :gravity.type/never)
+          {:keys [core call edge callee nodes bindings]} input
+          produced ((helper 'bare-list-parameter-constraints) input)
+          {:keys [context checked]} (acc02-facts-and-context body input (:constraints produced))]
+      (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings 65536]))))
+      (is (= :not-applicable (:status (body 'body-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :not-applicable (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :accepted (:status context)))
+      (is (true? (acc02-local-valid? body input checked :gravity.type/never))))))
+
+(deftest sh08-parameter-premise-invalid-controls-development-kernel
+  (let [{:keys [helper c7 body emit base]} (acc02-environment)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [[family actual] [[:map (acc02-finite-map [:gravity.type/keyword])]
+                             [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/unknown])]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/unknown))]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:bare (acc02-positional [:gravity.type/string :gravity.type/unknown])]
+                             [:bare (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:hom (acc02-positional [:gravity.type/string :gravity.type/string :gravity.type/keyword])]
+                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/keyword))]
+                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:hom (acc02-positional '())]
+                             [:hom (acc02-positional [:gravity.type/never])]
+                             [:hom (acc02-positional [:gravity.type/string opaque])]]]
+      (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
+            a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+            b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            produced ((helper 'bare-list-parameter-constraints) input)
+            {:keys [checked]} (acc02-facts-and-context body input (:constraints produced))
+            lowered (emit 'p15-s23-typed-compile-node (acc02-typed-call-context base c7 input actual) :call 65536)]
+        (is (= [:rejected :rejected :rejected] (mapv :status [a b c])))
+        (is (seq (:diagnostics produced)))
+        (is (false? (acc02-local-valid? body input checked actual)))
+        (is (= :rejected (:status lowered)))
+        (is (empty? @callbacks))))
+    (doseq [family [:map :bare :hom]]
+      (let [actual (case family :map (acc02-finite-map []) (acc02-positional []))
+            {:keys [core call edge callee nodes bindings declaration] :as input} (acc02-parameter-input helper family actual)
+            bid (if (= family :hom) (:element-binding-id declaration) (:type-binding-id declaration))]
+        (doseq [changed-bindings [(assoc-in bindings [bid :kind] :var) (assoc-in bindings [bid :namespace] 'other)]]
+          (is (= :rejected (:status (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings 65536]))))
+          (is (= :rejected (:status (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (emit 'p15-s23-typed-compile-node
+                                         (assoc-in (acc02-typed-call-context base c7 input actual) [:bindings bid]
+                                                   (get changed-bindings bid)) :call 65536)))))
+        (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 1 actual nodes bindings 65536]))))))
+    (is (empty? @callbacks))))
+
+
+(deftest sh08-nonintrinsic-opaque-ordering-classification-development-kernel
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))
+        actual {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string opaque]}
+        input (homogeneous-list-parameter-input actual)
+        result (bare-list-parameter-constraints input)]
+    (is (nil? (integral-ordering-descriptor (assoc input :module (get-in input [:core :module])))))
+    (is (= :call-argument-type-mismatch (get-in result [:diagnostics 0 :reason])))
+    (is (empty? (:constraints result)))
+    (doseq [type [opaque actual]]
+      (is (nil? (integral-ordering-descriptor (integral-ordering-input '< [type type])))))
+    (is (empty? @callbacks))))

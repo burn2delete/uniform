@@ -42,6 +42,16 @@
                "<!-- release-task-projection:end -->\n<!-- release-task-projection:start -->"]]
     (is (rejects? #(release-task-projection/project tasks bad)))))
 
+(deftest rebuild-executor-remains-in-existing-third-record
+  (let [rows (release-task-projection/records tasks) row (nth rows 2)]
+    (is (= 5 (count rows)))
+    (is (= "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" (:id row)))
+    (is (= "Open" (:status row)))
+    (doseq [required ["prior Gravity compiler process" "complete declared next-stage" "accepted and rejected compiler inputs"
+                      "without Clojure" "logs/lineage" "public check/run/compile" "absent seed boundaries"
+                      "SH27 equivalence" "supplied rebuild records or plans do not prove execution"]]
+      (is (str/includes? (:acceptance row) required)))))
+
 (deftest relative-link-provenance
   (doseq [row (release-task-projection/records tasks)]
     (let [projected (release-task-projection/rebase-links (:evidence row)

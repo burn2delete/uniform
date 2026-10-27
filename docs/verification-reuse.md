@@ -21,14 +21,55 @@ Core construction verification tests; the incremental dependency contract,
 planner, child cache wiring and explicit input revalidation; SH15 diagnostic
 case construction; current Native/MIR source/composition receipts.
 
+Current assessment: **2026-10-27 04:32:34 UTC**, on merged main
+`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. The original inventory is unchanged.
+The statuses below describe this cleanup's acceptance criteria, not compiler or
+language completion. Earlier increment receipts had accumulated without a dated
+reconciliation for the dashboard collector; this assessment corrects that gap.
+
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Recursive canonical dispatch and the public embedded-proof comparison are classified below as necessary operations. Sharing the remaining upstream Macro-verification fragment still lacks the required identity/mutation proof; retain those calls. |
-| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
-| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Current supported-leaf miss/hit/consumed-runner invalidation accepted on `9db7e9f3`, below; earlier unrelated-edit observations retain their original tuples. Narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
-| RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
-| RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
-| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Current supported-leaf miss/hit/invalidation evidence is complete on `9db7e9f3`, below. Whole RV4 remains open for RV1's further-elision prerequisites and narrower bootstrap compatibility closure. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | **Partial.** PR396's construction reuse is present at `d00cc2d5`; PR469's callback and PR477's embedded-proof necessity decisions cover only their named operations. PR480 reduces structural calculation work; PR483 repairs its load regression. None proves whole upstream-report equivalence or every retained repeat necessary. The full identity/mutation boundary, independent negative controls, review and integration remain required. |
+| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | **Closed for this resource-dispatch prerequisite.** Reviewed fallback and controls integrated through PR452 at `7ae18ee6`. This supplies no in-memory class identity or whole-RV1 proof and is not an additional original outcome counted toward a percentage. |
+| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | **Partial.** Corrected Reader closure integrated through PR432 at `6e49d6f8`; PR461 at `e93322ef` supplies the actual supported-leaf miss/hit/invalidation proof. Both bootstrap-dependent compatibility selections still need complete runtime read/effect closure, a reviewed representation and separately attributed producer/reuse/invalidation evidence, or proof that their repeats are necessary. Full-repository fallback and audit inventories do not close that obligation. |
+| RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | **Closed for the four-namespace catalog correction.** Source-grounded owners, freshness and conservative execution dispositions integrated through PR432 at `6e49d6f8`. No residual catalog gate for those four namespaces; their component/source authentication acceptance remains separate. |
+| RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | **Closed for the scoped reuse change**, integrated at `c3f35fef51a7f729c65689e4d68e5a3adb0c7f44`. Current source retains the representative delay, delayed references and explicit build counter; later accounting-test edits did not change that region. This assessment ran no C12 work and grants no current C12/product admission. |
+| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | **Partial.** PR461's supported-leaf three-phase evidence step is closed on its original `9db7e9f3` tuple; finite merged increments have independent reviews and attributed receipts below. Final whole-outcome closure still requires RV1 and RV2's remaining acceptance, regression evidence, independent review and integration. No saved PASS or counts replace those gates. |
+
+Numerical reporting: **50% remains the inherited provisional estimate from
+2026-10-26 04:11, not a current coverage measurement.** This review supplies no
+new measured percentage. The original criteria have no agreed weighting, and
+PR totals, assertion totals or the number of closed rows are not a defensible
+conversion. Recent RV1 increments advance bounded subcases but do not close its
+whole-report criterion; bootstrap compatibility remains unfinished. The current
+assessment is the dated disposition and residual acceptance above.
+
+Accepted merged advances are retained with their original scope: PR432's
+corrected Reader closure/catalog, PR440's removal of false compatibility
+declarations, PR441/443's explicitly incomplete audits, PR448/451/452's safe
+fallbacks, PR461's actual supported-leaf evidence, and PR469/477/480's bounded
+RV1 work. PR483 at `c0c7f9c363c709827e95f166e922fe9d1c07caf2` fixes PR480's
+Bootstrap regression; it is a repair, not another closed original criterion.
+The detailed sections preserve exact source/merge identities, failed attempts,
+tested scopes and independent reviews. No implementation PR for this outcome
+remains draft at this assessment time.
+
+At the assessment above, unpublished work remained separate: the reserved
+`resolution_parent_mutation_test.clj` candidate and SH06 fresh/unsupported
+execution metadata are in progress. Independent review accepted the proposed
+whole-boundary test scope only; the exact harness/code/result are not accepted.
+Two cheap metadata/admission controls passed 72 assertions on the unpublished
+working candidate based on `c0c7f9c363c709827e95f166e922fe9d1c07caf2`; they
+are not current-main semantic coverage. No genuine current Reader/C5 mutation
+process has launched. The acceptance gate is a genuine
+current Reader-to-C5 positive and independent public verification, then rejection
+of the same aliased parent after actual Resolve execution, followed by review
+and integration. Even that concrete negative does not alone prove every repeat
+necessary or close whole RV1. Existing reservations and uncertain Reader
+message operations are preserved. The subsequent genuine result is recorded
+below; this dated reconciliation itself launched no test or
+compiler replay and does not write the dashboard.
 
 ## Exact Reader leaf closure
 
@@ -786,3 +827,97 @@ passed 240 / 19. The helper contributed 12 / 151, the planner 60 / 556 and the
 boundary 6 / 11. The brokered 256 MiB process exited zero with identical clean
 source/hash bookends and no Bootstrap load. No compiler/provider acceptance
 or public artifact replay follows from that scope.
+
+### PR480 Bootstrap load-order regression
+
+Accounting's subsequent composition on main
+`8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa`, tree
+`d0e0d650e67c13de5f71c8a12dd356a2f1fda30f`, failed Bootstrap loading before
+semantic tests: the `macro-run-storage` alias was unavailable. The original
+bounded process exited 1 after 7,472 ms with no semantic observations. Its
+complete retained receipt SHA-256 is
+`d1b1cded91173a3924269e244e643edd5932f3dcf801090cb8cfbd7bc5f5e1de`.
+That NONPASS is not replaced by the earlier modeled-adapter results.
+
+The ordered manifest loads the semantic expansion stage before the public
+SH05 facade where PR480 placed the helper require. The modeled test primed the
+alias itself and therefore missed this actual entry-order failure. The repair
+moves the require to the first consumer, removes the late declaration, and
+loads all consumer forms into a fresh test namespace without priming its helper
+alias. A negative omitting that declaration must reproduce the missing-alias
+compile error. The resulting helper/consumer controls pass 13 tests / 157
+assertions; they remain Bootstrap-free.
+
+A complete cold Bootstrap namespace load is a separate acceptance requirement
+for this repair. It validates actual entry/load order without requesting compiler,
+Reader, AE, provider or C12 entrypoints; it does not prove namespace initialization
+effect closure. The structural calculation, fallback and
+verification calls are unchanged. The original RV1 mutation candidate is
+preserved separately; neither this repair nor PR480 closes whole RV1/RV2/RV4.
+
+The cold load completed on repair `537664462a25e9affb26a7810b104b36b4799c36`,
+tree `dd2b5fd0b78e53b4b0dd891821c4dbcb5d8faaa2`: natural exit 0, actual
+2 GiB, 8,123 ms bounded-process elapsed, complete capture and identical clean
+source bookends. Bootstrap and the helper namespace were both absent before
+loading; the actual public/private Macro verifier definitions, helper alias and
+public arglists were present afterward. The supervisor receipt SHA-256 is
+`9fa047f5493867e4ac410c03d3442761619e2bce572b461c7a00a30ef36b93f5`.
+Helper/load-order and language-boundary controls passed 19 / 168, docs passed
+240 / 19, and exact integration preflight passed. These remain load-order
+observations on the named repair, not semantic acceptance of Accounting's
+separate candidate or proof of initialization-effect closure.
+
+### RV1: real supplied-parent mutation after Resolve
+
+The bounded mutation control completed on
+`b930cdf64b5aadf697b09337c4a9e86001d6a054`, tree
+`7272ad6d08d4c1c95435b1dbad269ced7fe64687`, based on merged assessment
+`c637326dcf026cfd1697420a3b9b383439cb804a`. This closes the concrete
+same-parent mutation observation for this fixture; RV1 remains partial.
+
+`resolution_parent_mutation_test.clj` constructs the actual accepted SH06
+compiler-subset fixture through the direct current Reader route, with an
+explicit Reader source and invocation and no precomputed C2 product or
+candidate. It constructs a genuine Macro parent and C5 result, then runs the
+independent public C5 verifier, which passes. No SH07 proof transaction is
+borrowed. Every observed Macro verifier and Resolve operation calls its
+original implementation; no report or exception is substituted.
+
+The changed case keeps the same parent object and invocation. Immediately
+after the actual Resolve operation returns, it changes the caller-owned
+array-map key `:resolved-verification`, leaving expansion and digest operands
+intact. The subsequent real Macro report fails
+`:macro-run-storage-exact?`; C5 raises `C5-UNRESOLVED`, with missing field
+`:final-authenticated-resolution-artifact` and failed check
+`:fresh-upstream-sh05-verification?`. The alias and both observer roots are
+restored. The existing short-seam root catalog stays stable, but this is not
+a complete transitive identity or closed-over-state proof.
+
+Actual result: 1 test / 20 assertions, zero failures/errors, natural exit 0,
+2 GiB heap, 104,975 ms supervisor elapsed. Both source bookends are identical
+and clean; stdout is complete at 835 bytes, stderr is empty, and cleanup
+completes with the process root dead. Supervisor receipt SHA-256:
+`8b4f95d0db3dc1cdea09cb5fbae9d16ea2499f297f099f28044b6b134443b284`.
+Full child receipt SHA-256:
+`82c3c677d7bfee8743d54f4d49b818f3f24c1948a5ea1d4f63bac1ee1300d091`.
+The exact code and harness were independently approved before this single
+genuine attempt. Independent retained-result review accepted the actual
+positive, mutation, rejection and restoration evidence without replay.
+Integration remains pending at this record's candidate stage.
+
+Cheap source-form observer controls passed 4 / 20 without entering Bootstrap;
+planner and language-boundary controls passed 67 / 590, injected generic-launch
+refusal controls passed 3 / 148, and docs passed 240 / 19. The SH06 catalog entry
+requires fresh execution and rejects generic execution until a committed route
+represents the common host broker, host-exclusive lease and canonical heavy
+lock. Discovery does not authorize execution. CI's separately owned leaf
+catalog correction is unchanged here.
+
+This observation rules out reusing an earlier successful whole Macro report
+solely from parent identity across this Resolve seam. It does not prove that
+every computation within that report must repeat. Full live-plan, Reader
+invocation, AE/dispatch and closed-over-state equivalence, or a complete
+necessity decision for the original row, remains required. No additional
+verification call is removed, no compatibility cache is enabled, and RV2/RV4
+whole-outcome acceptance remains open. The earlier failed aliased-array memo
+experiment and original PR480 load failure retain their NONPASS dispositions.
