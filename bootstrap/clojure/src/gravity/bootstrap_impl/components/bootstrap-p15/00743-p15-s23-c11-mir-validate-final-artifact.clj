@@ -23,7 +23,8 @@
     (binding [*p15-s23-c11-mir-diagnostic-context*
               (p15-s23-c11-mir-diagnostic-context
                checked-core context artifact)]
-     (let [source-path source-path]
+     (let [source-path source-path
+           policy (get-in artifact [:checked-core-ingress :source-policy])]
     (p15-s23-c11-mir-require!
      (p15-s23-c11-mir-metadata-free? artifact)
      "C11-VERIFY" source-path {}
@@ -46,12 +47,14 @@
           (true? (:clojure-seed-boundary? artifact))
           (false? (:self-hosted? artifact)))
      "C11-MODULE" source-path artifact :authenticated-c11-artifact-envelope)
-    (p15-s23-c11-mir-require!
-     (= (p15-s23-c11-mir-expected-ingress-semantic
-         checked-core context)
-        (:checked-core-ingress artifact))
-     "C11-MODULE" source-path artifact
-     :authenticated-checked-core-ingress-authority)
+    ;; Relative structural coherence is not fresh Core/source authority.
+    (if (= 2 version)
+      (p15-s23-c11-mir-validate-ingress-data!
+       checked-core context (:checked-core-ingress artifact) version)
+      (p15-s23-c11-mir-require!
+       (= (p15-s23-c11-mir-expected-ingress-semantic checked-core context)
+          (:checked-core-ingress artifact))
+       "C11-MODULE" source-path artifact :authenticated-checked-core-ingress-authority))
     (p15-s23-c11-mir-require!
      (= p15-s23-c11-mir-module-keys
         (set (keys (:mir-module artifact))))
@@ -75,21 +78,21 @@
               (:mir-module artifact)
               checked-core
               (:verification-report artifact)
-              (:scope artifact) version)
+              (:scope artifact) version policy)
              (:b1-preflight artifact)))
      "C11-VERIFY" source-path artifact :verified-mir-candidate-for-b1)
     (p15-s23-c11-mir-require-strict-structure!
      source-path
      (p15-s23-c11-b1-candidate-record
       (:mir-module artifact) checked-core
-      (:verification-report artifact) (:scope artifact) version)
+      (:verification-report artifact) (:scope artifact) version policy)
      (:b1-preflight artifact) :type-sensitive-verified-mir-candidate-for-b1)
     (p15-s23-c11-mir-require!
      (and (= (p15-s23-c11-mir-pass-contract-record)
              (get-in artifact [:mir-module :pass-contract]))
           (= (p15-s23-c11-mir-pass-execution-record
               (:mir-module artifact) checked-core
-              (:verification-report artifact) version)
+              (:verification-report artifact) version policy)
              (get-in artifact [:mir-module :pass-execution-record])))
      "C11-VERIFY" source-path artifact
      :content-bound-build-mir-pass-contract-and-execution)
@@ -100,7 +103,7 @@
     (p15-s23-c11-mir-require-strict-structure!
      source-path
      (p15-s23-c11-mir-pass-execution-record
-      (:mir-module artifact) checked-core (:verification-report artifact) version)
+      (:mir-module artifact) checked-core (:verification-report artifact) version policy)
      (get-in artifact [:mir-module :pass-execution-record])
      :type-sensitive-content-bound-build-mir-pass-execution)
     (p15-s23-c11-mir-require!
@@ -189,13 +192,13 @@
            source-path checked-core
            (p15-s23-c11-mir-pending-view (:mir-module artifact)))]
       (p15-s23-c11-mir-require!
-       (= (p15-s23-c11-independent-verifier-record recomputed-verifier version)
+       (= (p15-s23-c11-independent-verifier-record recomputed-verifier version policy)
           (:verification-report artifact))
        "C11-VERIFY" source-path artifact
        :independently-recomputed-verifier-report)
       (p15-s23-c11-mir-require-strict-structure!
        source-path
-       (p15-s23-c11-independent-verifier-record recomputed-verifier version)
+       (p15-s23-c11-independent-verifier-record recomputed-verifier version policy)
        (:verification-report artifact)
        :type-sensitive-independently-recomputed-verifier-report))
     :passed)))))

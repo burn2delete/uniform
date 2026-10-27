@@ -1162,6 +1162,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00738-p15-s23-c11-mir-validate-operations.clj", :reader-line 118109, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-operations!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj", :reader-line 118351, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-terminator!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00740-p15-s23-c11-mir-validate-effect-edge-placement.clj", :reader-line 118584, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-effect-edge-placement!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00740a-p15-s23-c11-current-core-policy.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00741-p15-s23-c11-mir-map-blocks.clj", :reader-line 118820, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-map-blocks"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00742-p15-s23-c11-mir-expected-ingress-semantic.clj", :reader-line 119017, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-expected-ingress-semantic"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00743-p15-s23-c11-mir-validate-final-artifact.clj", :reader-line 119196, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-final-artifact!"}

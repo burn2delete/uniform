@@ -918,3 +918,63 @@
              #(b/p15-s23-stage2-compiler-artifact-binding! (with-meta emitter {:untrusted true}) path :jvm 2))))
     (is (= "sha256:e25ae2c9b7853627f8f9db45eb916b6b3775e28b51fbe6e29ecd734598ca8ac2"
            (b/p15-s23-stage2-compiler-artifact-expected-artifact-hash)))))
+
+(defn- current-core-policy-fixture []
+  ;; Synthetic DATA for relative validation. This is not a source artifact or
+  ;; a verification report produced by the current Core owner.
+  (let [core {:artifact-id "policy-control-core"}
+        context {:source-path path}
+        receipt
+        {:source-interface {:interface :gravity/c6-c10 :version 2}
+         :admission-status :development-unadmitted :verification-scope :selected-current-source-host-seed
+         :reader-plan-binding (:binding c6-contract/current-reader-program)
+         :reader-source-revision {:source-content-hash (get-in c6-contract/current-reader-program [:binding :source-content-hash])}
+         :reader-result-identity {:actual-sh03-reader-result-id "result" :actual-sh03-semantic-product-binding {}
+                                 :actual-c2-artifact-id "c2" :actual-reader-product-integrity-hash "integrity"
+                                 :actual-reader-source-id "source"}
+         :authenticated-envelope {:stage :c2-reader :status :accepted :source-rule {:admission-status :development-unadmitted}}
+         :envelope-verification :passed :self-hosted? false
+         :expression-binding (assoc (select-keys c6-contract/current-expression-program
+                                     [:source-content-hash :semantic-hash :functions-semantic-hash :artifact-hash :function-count])
+                                   :source-contract-version 2)}
+        bind-data (fn [policy]
+                    (assoc policy :source-policy-binding-id
+                      (b/p15-s23-c6c10-canonical-digest path
+                       {:domain :gravity/c6-c10-source-policy-v2 :artifact-id (:artifact-id core)
+                        :context context :policy (:source-policy-receipt policy)})))
+        policy (bind-data
+                {:source-interface (:source-interface receipt) :admission-status :development-unadmitted
+                 :verification-scope :selected-current-source-host-seed :source-policy-receipt receipt
+                 :compiler-program (assoc (select-keys c6-contract/current-compiler-program
+                                           (rest b/p15-s23-c11-core-program-projection-keys)) :source-contract-version 2)})]
+    {:core core :context context :policy policy :bind-data bind-data}))
+
+(deftest current-core-policy-data-is-relative-and-binds-final-record-identities
+  (let [{:keys [core context policy bind-data]} (current-core-policy-fixture)
+        changed (bind-data (assoc-in policy [:source-policy-receipt :reader-result-identity :actual-c2-artifact-id] "changed"))
+        report #(b/p15-s23-c11-independent-verifier-record {:status :passed} 2 %)
+        pass #(b/p15-s23-c11-mir-pass-execution-record {} core (report %) 2 %)
+        b1 #(b/p15-s23-c11-b1-candidate-record {:pass-execution-record (pass %)} core (report %) {} 2 %)]
+    (is (= policy (b/p15-s23-c11-mir-require-core-policy-data! core context policy)))
+    ;; Coherent hashes validate only relative DATA. Public C11 verification
+    ;; must freshly reconstruct Core/source ground truth and reject this swap.
+    (is (= changed (b/p15-s23-c11-mir-require-core-policy-data! core context changed)))
+    (is (not= (:report-id (report policy)) (:report-id (report changed))))
+    (is (not= (:record-id (pass policy)) (:record-id (pass changed))))
+    (is (not= (:binding (b1 policy)) (:binding (b1 changed))))
+    (doseq [bad [(dissoc policy :source-policy-binding-id)
+                (assoc policy :extra true)
+                (assoc policy :admission-status :admitted)
+                (assoc-in policy [:source-interface :version] (int 2))
+                (assoc-in policy [:source-policy-receipt :source-interface :version] (int 2))
+                (assoc-in policy [:compiler-program :source-content-hash] "wrong")
+                (assoc-in policy [:source-policy-receipt :reader-result-identity :actual-c2-artifact-id] "unsealed")]]
+      (is (= :current-core-source-policy-data
+             (failure #(b/p15-s23-c11-mir-require-core-policy-data! core context bad)))))
+    (is (= :current-core-policy-binding-required (failure #(report nil))))
+    (is (not (contains? (b/p15-s23-c11-independent-verifier-record {:status :passed} 1)
+                       :checked-core-source-policy-binding)))
+    (let [calls (atom 0) foreign (foreign-map #(do (swap! calls inc) (throw (ex-info "callback invoked" {}))))]
+      (is (some? (failure #(b/p15-s23-c11-mir-require-core-policy-data! core context foreign))))
+      (is (some? (failure #(b/p15-s23-c11-mir-core-policy-projection core context foreign))))
+      (is (zero? @calls)))))

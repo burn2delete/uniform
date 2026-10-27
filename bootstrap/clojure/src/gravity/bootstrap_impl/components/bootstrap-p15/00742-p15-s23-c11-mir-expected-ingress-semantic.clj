@@ -135,10 +135,10 @@
   ([checked-core context ingress binding constructed verifier version]
   (let [scope (p15-s23-c11-mir-scope-record version)
         verifier-record
-        (p15-s23-c11-independent-verifier-record verifier version)
+        (p15-s23-c11-independent-verifier-record verifier version (:source-policy ingress))
         mir-module
         (p15-s23-c11-mir-finalize
-         constructed checked-core verifier-record scope version)
+         constructed checked-core verifier-record scope version (:source-policy ingress))
         source-rule (p15-s23-c11-mir-source-rule-record binding)
         base
         {:kind :gravity/p15-s23-c11-authenticated-mir-artifact

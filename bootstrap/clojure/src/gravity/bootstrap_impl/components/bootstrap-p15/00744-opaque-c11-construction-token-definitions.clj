@@ -8,7 +8,7 @@
   (letfn [(artifact* [checked-core context version]
             (try
               (let [ingress (authenticate-checked-core-ingress!
-                             checked-core context :contained-checked-core-ingress)]
+                             checked-core context :contained-checked-core-ingress version)]
                 (p15-s23-c11-mir-v2-source-family! (:source-path context) checked-core version)
                 (binding [*p15-s23-c11-mir-diagnostic-context*
                           (p15-s23-c11-mir-diagnostic-context checked-core context {})]
@@ -40,7 +40,7 @@
                  source-path :public-c11-mir-verifier-ingress artifact
                  p15-s23-c11-mir-max-final-artifact-carrier-nodes p15-s23-c11-mir-max-carrier-depth)
                 (let [ingress (authenticate-checked-core-ingress!
-                               checked-core context :contained-public-checked-core-verifier)]
+                               checked-core context :contained-public-checked-core-verifier version)]
                   (p15-s23-c11-mir-v2-source-family! source-path checked-core version)
                   (binding [*p15-s23-c11-mir-diagnostic-context*
                             (p15-s23-c11-mir-diagnostic-context checked-core context artifact)]
@@ -54,9 +54,9 @@
                           replay (invoke-pinned-c11-builder!
                                   checked-core context binding :verification-replay opaque-c11-construction-token)
                           replay-verifier (p15-s23-c11-mir-validate-constructed! (:source-path context) checked-core replay)
-                          verifier-record (p15-s23-c11-independent-verifier-record replay-verifier version)
+                          verifier-record (p15-s23-c11-independent-verifier-record replay-verifier version (:source-policy ingress))
                           replay-module (p15-s23-c11-mir-finalize
-                                         replay checked-core verifier-record (p15-s23-c11-mir-scope-record version) version)
+                                         replay checked-core verifier-record (p15-s23-c11-mir-scope-record version) version (:source-policy ingress))
                           expected (p15-s23-c11-mir-final-artifact-base
                                     checked-core context ingress binding replay replay-verifier version)]
                       (p15-s23-c11-mir-require!
