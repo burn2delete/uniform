@@ -23,7 +23,7 @@ case construction; current Native/MIR source/composition receipts.
 
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Required recursive canonical callback dispatch is classified below as a necessary transitive operation under the current override contract. Further whole-Macro-check removal remains unproved; retain those checks. |
 | RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Current supported-leaf miss/hit/consumed-runner invalidation accepted on `9db7e9f3`, below; earlier unrelated-edit observations retain their original tuples. Narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
@@ -91,7 +91,8 @@ The remaining original criteria are finite and separate:
 1. RV1 needs the transitive live-plan, dynamic-dispatch and AE stability plus
    whole-seam mutation proof required for another construction-check elision,
    or a source-grounded decision that each retained check is necessary under
-   the current interface. The checks remain active meanwhile.
+   the current interface. The recursive callback event schedule below is now
+   an explicit necessary-work decision; the remaining Macro checks stay active.
 2. RV2 still needs the read/effect and representation closure for the two
    inventoried bootstrap-dependent compatibility selections, or evidence
    proving their retained repeats necessary. A full-repository key is the
@@ -620,3 +621,52 @@ representation gap. Public/fresh verification, compiler/provider acceptance,
 benchmark, release and whole-outcome completion do not follow from these
 development receipts. The hit still launched a child JVM; no startup avoidance
 or measured speedup is claimed.
+
+### RV1: required recursive canonical callback dispatch
+
+This is a bounded necessary-work decision within RV1's transitive dispatch
+prerequisite. Within one canonicalization call, the current partial-override
+interface requires the callback event for each child, including equal children.
+Equality of input values or callback function identity cannot justify suppressing
+one of those events. This classifies that recursive dispatch outside redundancy;
+it does not determine how many whole Macro owner-verification calls are needed.
+
+The source chain is explicit. `c2_artifact_identity.clj` owns `with-operations`,
+`call-entrypoint-body` and recursive interposition. Its `operations.clj` validator
+accepts supplied functions without certifying purity or immutable closure state.
+`c2_artifact_identity/canonical.clj` applies the callback to every vector/list
+child and preserves map/set printer ordering. Bootstrap components
+`00799-c2-artifact-identity-ops.clj`, `00801-c2-artifact-identity-call.clj` and
+`00802-reader-canonical-value.clj` connect the compatibility route to that API.
+Observing outer binding data and unchanged Var roots does not establish the
+absence of mutable state inside a supplied function.
+
+The Reader owner's retained compiler-free leaf probe executed at
+`f40942fe903b25ad6fbaf626aeae246afc815aee`, tree
+`48d8d0118c2e38086d56f78882d27808aebddc8f`. Four existing contract tests passed
+4 tests / 28 assertions, zero failures/errors. An additional actual control
+canonicalized `[7 7]`: the same supplied callback observed both children and
+threw its sentinel on the second call. The identical Throwable object propagated.
+Suppressing the second event would suppress that observed exception, changing
+the current contract rather than removing redundant work.
+
+Those tests also preserve recursive Var interposition, stable printed-sort ties,
+printer call order and exact thrown-object precedence. The driver SHA-256 is
+`7faf723b3a223876e158308e6a66d4b2df360006d6dec263bb17fc24d8aedec1`;
+the original complete receipt SHA-256 is
+`7ed7ab7a91d9ec553913dc85b6a3453c1cb511b4f8e16a241f79ce2d3a5f5dd8`.
+Its source/control bookends match, measured maximum heap is 268435456 bytes,
+and the original process completed with exit zero in 983.636125 ms. The probe
+did not load `gravity.bootstrap` or authenticate a Reader product. All eleven
+recorded source/test inputs remain byte-identical in this successor; the receipt
+retains its original source attribution and was not rerun for this decision.
+
+Any further RV1 proposal must conserve these callback/printer events and error
+identity/order, or separately establish an eligible closed route where the
+proposed reuse preserves its contract. Live-plan and AE identity, invocation
+isolation and whole-seam unsampled mutation remain unresolved for another Macro
+check removal. No new runtime implementation is justified by this leaf result.
+Allocation changes that preserve every event require their own evidence; no
+full-source cost share, speedup or whole-RV1 completion follows here. RV2's
+bootstrap compatibility closure and the existing fresh public verifiers remain
+separate, and the accepted RV4 supported-leaf proof remains unchanged.
