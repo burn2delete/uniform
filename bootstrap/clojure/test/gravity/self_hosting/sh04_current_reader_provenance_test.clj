@@ -33,6 +33,10 @@
         last-line (peek lines)]
     {:line (count lines)
      :column (inc (.codePointCount ^String last-line 0 (.length ^String last-line)))}))
+(defn- scalar-at [bytes offset]
+  (let [prefix (String. (java.util.Arrays/copyOfRange bytes 0 (int offset))
+                       java.nio.charset.StandardCharsets/UTF_8)]
+    (.codePointCount prefix 0 (.length prefix))))
 
 (deftest selected-current-reader-preserves-syntax-spans-origins-and-pair-identity
   (binding [b/*p15-s23-stage2-compiler-artifact-binding* (current-emitter)]
@@ -68,12 +72,15 @@
                     start (:byte-start span) end (:byte-end span)
                     raw (get-in node [:form :raw])
                     origin (first (filter #(= :source (:kind %)) (:origin node)))
-                    coordinates [:byte-start :byte-end :line-start :column-start :line-end :column-end]]
+                    coordinates [:byte-start :byte-end :scalar-start :scalar-end
+                                 :line-start :column-start :line-end :column-end]]
                 (is (= source (:source span)))
                 (is (<= 0 start end (alength bytes)))
                 (is (= raw (String. (java.util.Arrays/copyOfRange bytes (int start) (int end))
                                     java.nio.charset.StandardCharsets/UTF_8)))
                 (is (= (select-keys (:span seed) coordinates) (select-keys span coordinates)))
+                (is (= (scalar-at bytes start) (:scalar-start span)))
+                (is (= (scalar-at bytes end) (:scalar-end span)))
                 (is (= (position-at bytes start)
                        {:line (:line-start span) :column (:column-start span)}))
                 (is (= (position-at bytes end)
@@ -86,12 +93,13 @@
               (is (> (alength (.getBytes ^String raw java.nio.charset.StandardCharsets/UTF_8))
                      (.codePointCount ^String raw 0 (.length ^String raw))))
               (is (= {:doc "Reader spans" :reader/fixture true} (:metadata node))))
-            (let [generated (first (filter #(= :generated-form (get-in % [:form :kind]))
-                                            (:syntax-object-stream artifact)))
-                  origin (first (:origin generated))]
+            (let [generated (filterv #(= :generated-form (get-in % [:form :kind]))
+                                     (:syntax-object-stream artifact))
+                  origin (first (:origin (first generated)))]
+              (is (= 1 (count generated)))
               (is (= :generated (:kind origin)))
               (is (= 'gravity.bootstrap.syntax/generated-conformance (get-in origin [:producer :name])))
-              (is (contains? (set (or (:input-syntax-ids origin) (:inputs origin)))
+              (is (contains? (set (:input-syntax-ids origin))
                              (:syntax/id (first syntax))))))))
       (is (= (:artifact-id gravity) (:artifact-id qst)))
       (is (= (mapv :syntax/id (:syntax-object-stream gravity))
