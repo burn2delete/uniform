@@ -28,9 +28,29 @@
     (is (= expected (sh-crosswalk/task-ref {"core" (vec (reverse rows))} ["core" 1])))
     (is (thrown? Exception (sh-crosswalk/task-ref {"core" (vec (rest rows))} ["core" 1])))))
 
+(deftest regeneration-refuses-to-relabel-changed-bytes-with-an-old-source-commit
+  (let [text "original source" digest (sh-inventory/sha256 text)
+        record {:task-authorities {"component" [{:path "tasks.md" :source-commit "pinned" :file-sha256 digest}]}
+                :locator {:path "test.clj" :source-commit "pinned" :sha256 digest}}
+        reads (atom #{})]
+    (is (nil? (sh-crosswalk/validate-pinned-sources! record
+                (fn [commit path] (swap! reads conj [commit path]) text))))
+    (is (= #{["pinned" "tasks.md"] ["pinned" "test.clj"]} @reads))
+    (is (thrown? Exception (sh-crosswalk/validate-pinned-sources! record (fn [_ _] "changed source"))))))
+
+(deftest review-adoption-is-mapping-only-and-bound-to-unchanged-inputs
+  (let [source (sh-crosswalk/source-view) view (sh-crosswalk/build)]
+    (is (= :accepted-mapping-only (get-in view [:mapping-review :status])))
+    (is (every? #(= :owner-and-independent-reviewed (:coverage %)) (:requirements view)))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (is (thrown? Exception (sh-crosswalk/adopt-review
+                            (assoc-in source [:requirements 0 :task-references] []) sh-crosswalk/mapping-review)))
+    (is (thrown? Exception (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :pending))))))
+
 (deftest real-derived-view-is-deterministic-and-preserves-gate-boundaries
   (let [view (sh-crosswalk/build) text (sh-crosswalk/rollup view)
         n26 (filter #(= "SH-26" (:milestone %)) (:requirements view))]
+    (is (nil? (sh-crosswalk/validate-pinned-sources! view (fn [_ path] (slurp path)))))
     (is (= view (edn/read-string (slurp sh-crosswalk/output-path))))
     (is (= text (slurp sh-crosswalk/rollup-path)))
     (is (= 180 (count (re-seq #"(?m)^\| \[SH-\d{2}\.[1-6]\]" text))))

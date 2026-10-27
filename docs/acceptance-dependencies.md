@@ -241,7 +241,10 @@ remain explicit; a zero-cycle result cannot resolve them.
 The controls conserve every SH completion edge, all 18 sequence identities and
 literal marked task IDs; reject unknown/duplicate/missing nodes, stale byte
 spans, forged task checkmarks and malformed ranges; and demonstrate that an
-unknown optional edge cannot produce eligibility. Owner/semantic routing review
-is separately pending in the crosswalk evidence. The dashboard collector may
+unknown optional edge cannot produce eligibility. Full source/routing review
+passed at `c6c80530`, with its receipt and input fingerprint in the crosswalk.
+Current implementation and criterion acceptance remain unassessed. Changed
+source/routes cannot inherit that review; regeneration checks stamped bytes
+against their actual local Git commit before writing. The dashboard collector may
 consume this projection only after accepted integration. It remains the sole
 writer of its store and Site.

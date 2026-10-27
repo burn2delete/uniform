@@ -54,7 +54,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 5 tests / 31 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 7 tests / 40 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
@@ -106,17 +106,33 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   Five mixed legacy accounting/bound phrases now link to the existing current
   policy, preserving semantic/authentication/resource safety and actual host
   controls. No global source-facet or equivalence adjudication is made here.
+- Full independent mapping/graph review passed at `c6c80530` / tree
+  `1229798edab46b3774dbab18c1c555c043eafa55`, including all 180 routes, 18
+  sequence rows, shared gates, fixed routing and historical qualifications.
+  Independent focused checks passed 18 tests / 426 assertions. Review receipt
+  SHA256 `39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c`;
+  review text SHA256 `1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942`.
+  Mapping metadata now cites that accepted scope and an exact input fingerprint.
+  All implementation task records and current whole-criterion acceptance remain
+  unchanged; a changed route/source cannot inherit the old mapping receipt.
+- The final successor adds a pre-write source-commit check using read-only local
+  Git objects. Regeneration cannot stamp changed task/evidence bytes with an old
+  commit. Initial real regeneration exposed a sorted-map key-type error before
+  any output write; it was fixed and covered by a real-view regression. Final
+  regeneration and 7-test/40-assertion crosswalk checks pass. Exported-tree
+  read-only `--check` remains independent of local Git; only regeneration needs
+  the declared history. Final bounded guard/adoption review is pending.
 
 ## Remaining finite publication gates
 
-1. Full 180-route semantic/nonoverlap review plus all 18 SH07 sequence joins,
-   historical/current evidence separation, dependency conditions and frontier.
+1. Bounded review of the final source-pin guard and adoption of the already
+   accepted exact mapping receipt. The full 180-route/18-step review is complete.
 2. Exact graph/source/links/projection checks on the final reviewed candidate,
    followed by normal publication/integration. Draft work earns no closure.
 3. Accepted graph-input handoff to the existing dashboard collector after
    integration; no direct store/Site write or duplicate graph is introduced.
 
-Exact final checks, source hashes, immutable review and publication receipts
-will be added only when those operations have actually completed. Owner and
-independent semantic reviews are pending; all mappings remain marked pending.
-No accepted dashboard input has been handed off yet.
+Exact final integration and dashboard handoff receipts will be recorded only
+when those operations complete. The full mapping is reviewed; final successor
+review and normal integration remain. No accepted dashboard input has been
+handed off yet.

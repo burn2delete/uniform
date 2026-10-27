@@ -180,7 +180,7 @@
     (is (empty? (:cycles view)))
     (is (every? #(or (seq (get (:incidence view) %)) (some #{%} (:coverage-gaps view))) ids))
     (is (= [] (:coverage-gaps view)))
-    (is (false? (:mapping-ready? view)))
+    (is (true? (:mapping-ready? view)))
     (doseq [[milestone deps] sh r (filter #(= milestone (:milestone %)) (:requirements source)) p deps]
       (is (contains? (get-in view [:adjacency (:id r)]) p)))
     (is (= #{"SH07-C01"} (get-in view [:adjacency "SH07-C02"])))
