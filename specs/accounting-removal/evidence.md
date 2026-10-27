@@ -20,6 +20,25 @@ gates, exact public readback and normal integration remain separate steps.
 The read-only current-main baseline receipt SHA-256 is
 `fd4d88595fee341f403ff1b3cb49d381a10243f61b12585a37d8cd4b3373e42e`.
 
+| Tested input | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `aee721506668fbada2af2d77617117550fc50228bb3d694419b73ad05823d0e7` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `de7090d503549239c27ef22d7f21c0c71e06f5036de49d3f47dcdfae9d1d6729` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `1583132ef8fefcdcec67687699f6b986db806cb062e1160a9ecdad96a402a863` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `f21a1e57354e9e9c0a4fff556041769d1f7083c12616357276ffe103be07efd8` |
+
+Repository gates at documentation successor `7647b2f7` passed 11 tests / 23
+assertions, the actual 2,035-file LOC census, all 240 docs / 19 phase indexes
+and the full-language roadmap. This 256 MiB child exited naturally in 2.399 s
+with complete 456-byte stdout, empty stderr, clean bookends and cleanup.
+Independent review then accepted normal reconciliation `b6ece097`, tree
+`16f2d7da`, with new main `490b7b57`. The fourteen incoming paths are crosswalk
+and dependency documentation/tools; all Bootstrap, compiler/runtime, test,
+broker/runner, contracts and `deps.edn` inputs consumed by the semantic batch
+are unchanged. Thus the 21/1644 receipt retains its original `0c64757d`
+provenance without another semantic run. Fresh final repository-scanning gates,
+exact preflight, public readback and routine CI still precede normal integration.
+
 The original draft is preserved at `6a4f87f013d0076b81aba9e0667650e70d28e635`,
 tree `f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. Its common base with current
 main is `cfb499405450d479955fa70daa0f14dfa3233ee8`. The authored delta has
