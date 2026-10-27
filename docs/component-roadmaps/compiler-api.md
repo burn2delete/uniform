@@ -10,7 +10,7 @@ is transferred by this page.
 
 Implementation task authority: [Spec Kit ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
 Edit that ledger and run `clojure -M tools/compiler_api_task_projection.clj --write`;
-the three task blocks below are generated views.
+the four task blocks below are generated views.
 
 ## Purpose and scope
 

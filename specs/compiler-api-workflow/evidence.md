@@ -73,8 +73,11 @@ existing projector retains the original five-row validation for each old
 record, adds an explicit six-row rule for the new outcome, and still validates
 before writing its fixed generated roadmap regions. Shared helpers are unchanged.
 
-Focused candidate checks: Compiler API projection 5 tests / 72 assertions,
+Focused candidate checks: Compiler API projection 5 tests / 74 assertions,
 zero failures/errors. New controls reject missing/extra acceptance facets and
 unassessed-status mutation; original path/write/link/status controls remain.
 Independent review and integration are pending. No compiler execution or
 current SH-01 acceptance was performed for this documentation/tooling change.
+The independent review found stale three-record authority introductions in the
+ledger and roadmap. The successor corrects both to four records, preserves
+the original three task blocks, and adds checks for those authority statements.

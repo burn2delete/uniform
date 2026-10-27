@@ -4,10 +4,12 @@ Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](ev
 
 ## Implementation tasks
 
-The three literal outcome keys below are the sole editable implementation task
-authority. Each grouped record retains its complete original five-row task table
-and acceptance questions. No individual-row IDs or completion denominator are
-invented. All three outcomes remain Open; migration is not compiler acceptance.
+The four literal outcome keys below are the sole editable implementation task
+authority. The original three grouped records retain their five-row task tables
+and acceptance questions. The new development-boundaries record has six SH-01
+acceptance facets under one task outcome. All four records remain Open for
+current acceptance; original SH-01 historical completion is preserved separately.
+No individual-row IDs or completion denominator are invented.
 
 <!-- compiler-api-implementation-tasks:start -->
 - [ ] `pipeline` Built-in compiler pipeline outcome
