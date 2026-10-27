@@ -20,7 +20,7 @@ including implemented work whose required acceptance has not completed.
 | ACC-13 | Syntax graph/container ceilings; canonical-schema reservations/debits; macro expansion depth; other census discoveries | ACC-01; each actual writer confirmed | Source-grounded remove/retain/history decisions under current verification policy; eligible removals and owner-path acceptance; unknown classifications remain open |
 
 - [ ] ACC-01 Complete and independently review exhaustive dispositions.
-- [ ] ACC-02 Accept and reconcile existing writer's guard and Map/List slice.
+- [x] ACC-02 Accept and reconcile the guard and Map/List slice (main-only closure record below).
 - [ ] ACC-03 Remove LR premise accounting coherently.
 - [ ] ACC-04 Close remaining nonpredicate descriptor accounting.
 - [ ] ACC-05 Remove shared PL accounting.
@@ -109,3 +109,90 @@ that merged main passed 9 tests / 63 assertions, preserving the original
 standalone and failed receipts separately. Repository gates, independent final
 review and normal integration complete this finite ancestry increment; no full
 original ACC row is closed by it.
+
+## Original-criteria assessment - 2026-10-26 22:28:21 MDT
+
+Assessment source: main `15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. Time zone: America/Edmonton;
+UTC observation time: 2026-10-27 04:28:21. Pull-request states below were read
+fresh for this assessment. This section assesses the original rows above; it
+does not add completion criteria or replace their acceptance contracts.
+
+**Score disposition:** retain **50% only as the legacy provisional estimate**,
+originally dated October 26 04:11. It is not measured coverage and has not been
+recomputed. No defensible numeric revision follows from the available evidence:
+original rows differ greatly in scope, their exhaustive inventory is unfinished,
+and no weighted baseline was established. PR/test totals are not the scoring
+method. The current assessment is the completed/remaining milestones below.
+
+Status method: a row is closed only when all its original implementation,
+validation, independent review and integration obligations are satisfied.
+Partial means a concrete subset has advanced while named obligations remain.
+Open means this assessment cannot establish an accepted completed subset of
+that original criterion. No full original row is closed; this is not a claim
+of zero implementation progress or a computed percentage.
+
+| Original ID | Status | Accepted/merged or separately held advance | Exact remaining acceptance boundary |
+| --- | --- | --- | --- |
+| ACC-01 | Partial | Stable source-grounded inventory and reviewed dispositions underpin the published families below | Complete the whole in-scope producer/consumer/schema/caller census and independently review every unresolved numeric/cost disposition; local scans are not exhaustive coverage |
+| ACC-02 | Partial | Independently reviewed C7 guard and Map/List premise repairs published in draft PR359, head `6a4f87f0` | Reconcile and accept that slice on current main, preserving adaptation/identity/not-applicable, complete extents and invalid/opaque/source/callee controls; finish its required integration |
+| ACC-03 | Partial | Coordinated LR schema/premise repair and legacy-row rejection accepted and published in draft PR359 | Current-main three-owner composition and integration; helper/live accounting remains distinct, not silently accepted from descriptor tests |
+| ACC-04 | Partial | ANE/BKA/DSE and completed private-Map header/alias repairs independently accepted in draft PR359 | Reconcile actual C7/Effects/emitter consumers and remaining proof accounting, retain exact source/domain/mode/collision semantics, and integrate; unknown historical mode operation is not retried |
+| ACC-05 | Partial | Exported PL cost fields coherently removed across three owners/four branches, accepted in draft PR359 | Shared live helper accounting and required runtime/consumer composition, current-main acceptance and integration; exported-field parity is not full family closure |
+| ACC-06 | Open | Current source and deep/late-invalid behavior have been inspected; no complete removal/acceptance of this recursive-validation criterion is established | Remove artificial recursive type work/depth/width/construction admission across actual owners with full nested/Never/late-invalid/opaque validation and integration |
+| ACC-07 | Open | Existing allowance, debit and round-policy call graph is identified; these enforcing APIs remain | Remove the coherent inference policy/allowance/reservation family while preserving demonstrated fixed-point, cycle/conflict and fresh-verification semantics; no naive unbounded iteration or constant increase |
+| ACC-08 | Partial | Imported-module aggregate removal PR467 and Core/binding shape removal PR474 merged | Remaining per-Core carrier admission and profile/module/Effects/emitter pools, complete actual joins/emission, safety/profile/tamper controls and current-main acceptance |
+| ACC-09 | Partial | Module-read traversal PR433 and module-census/root uniqueness PR444 merged; initializer PR450, Set-literal PR454 and conversion PR462 have separately accepted finite draft implementations | Resolve the existing Native/API registration dependency without duplicating its uncertain operation, then reconcile/integrate those drafts; finish remaining runtime collection/domain/equality/insertion/shape policies with genuine source/type/callback/collision/Unicode/constructor guards |
+| ACC-10 | Partial | MIR guard restoration PR378 and guarded MIR/Native composition PR421 merged; PR383 is closed unmerged and receives no separate merge credit | Existing owners must complete the remaining accounting dispositions and exact producer/consumer source-replay/negative acceptance for their actual current tuples; helper counts, a closed unmerged PR or unrelated public work do not close this row |
+| ACC-11 | Open | Optimization/lowering PR370 remains an open draft at head `516f5f6c`; no fresh completed owner acceptance is inferred here | Existing owner must return exact opt/lower consumer composition and source/fact/profile/safety evidence, independent acceptance and current-main integration |
+| ACC-12 | Partial | Existing canonical ledgers, regression/schema controls and failed/reused-receipt distinctions are maintained; finite accepted increments have integrated | Final whole-outcome test/doc/schema reconciliation after the other applicable rows, exhaustive dispositions and permitted current-main acceptance; restricted execution remains explicitly unrun |
+| ACC-13 | Partial | Core-shape PR474, Record/Union cardinality PR479 and source-proof ancestry PR481 merged with their finite acceptance boundaries | Remaining carrier/origin-link/structural-projection/syntax/schema/macro capacity mechanisms and exhaustive disposition; retained cycle/representation/source safety cannot be replaced by a work cutoff |
+
+Why the score could look unchanged despite work: recent merges close concrete
+subfamilies inside these original conjunctive rows. Draft PR359 and the held
+runtime chain have accepted implementation slices but have not passed their
+remaining integration gates. Consequently they are progress evidence, not full
+row closure or grounds for invented arithmetic. The dashboard collector remains
+the sole dashboard writer; this dated source assessment supplies its evidence.
+
+## ACC-02 closure and current assessment - 2026-10-26 23:04:48 MDT
+
+This closure record is effective only in an integrated main revision containing
+this reviewed guard/premise implementation and its acceptance evidence.
+Publication in a draft branch is not closure: normal reviewed integration and
+exact readback are required. The earlier 22:28 assessment remains historical;
+this update supersedes its ACC-02 disposition only. All other original IDs
+retain their last independently assessed boundaries, without new owner credit.
+
+ACC-02's complete named scope is the keyword-before-integral-membership guard
+and coherent Map/List parameter premises. Its original four-field consumer
+repair was relative to the earlier producer source. Current main still exports
+two corresponding C7 fields; therefore this implementation removes six fields
+across the actual three owners, not four fields in isolation. No criterion is
+dropped. Complete refinement forgetting, identity/not-applicable/Never behavior,
+homogeneous checked extents, every-member validation and source/callee/row
+rejection remain. Actual C7 production, Effects context/local validation and
+typed emission are accepted; the explicit writer release is already recorded
+in `plan.md`. This establishes no product-release or B47 authentication claim.
+The broader PR359 remains draft and is not integrated or credited wholesale.
+
+| Original ID | Current integrated disposition |
+| --- | --- |
+| ACC-01 | Partial; exhaustive source/contract dispositions remain |
+| ACC-02 | Closed by integration of this complete guard/premise record |
+| ACC-03 | Partial; LR/helper and current-main integration boundaries remain |
+| ACC-04 | Partial; descriptor/live-proof accounting and integration remain |
+| ACC-05 | Partial; shared PL/helper and consumer integration remain |
+| ACC-06 | Open; recursive validation/construction accounting remains |
+| ACC-07 | Open; coherent inference allowance removal and sound convergence remain |
+| ACC-08 | Partial; per-Core/profile/Effects/emitter pools remain |
+| ACC-09 | Partial; held runtime chain and remaining runtime policies remain |
+| ACC-10 | Partial; existing MIR/Native owner acceptance boundaries remain |
+| ACC-11 | Open; existing optimization/lowering owner acceptance remains |
+| ACC-12 | Partial; final whole-outcome reconciliation remains |
+| ACC-13 | Partial; remaining capacity mechanisms and dispositions remain |
+
+There is no revised numerical percentage. The historical 50% remains an
+unmeasured provisional estimate; one original row closing does not supply an
+agreed weighting or exhaustive denominator. Implementation counts and test/PR
+totals are not used as progress arithmetic.

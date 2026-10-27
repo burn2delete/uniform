@@ -7,7 +7,7 @@
 
 (deftest exact-outcomes-and-status-boundaries
   (let [rows (compiler-api-task-projection/records tasks)]
-    (is (= ["pipeline" "plugins" "pass-evidence"] (mapv :id rows)))
+    (is (= ["pipeline" "plugins" "pass-evidence" "development-boundaries"] (mapv :id rows)))
     (is (every? #(= "Open" (:status %)) rows))
     (is (compiler-api-task-projection/check-projection tasks roadmap))
     (is (= roadmap (compiler-api-task-projection/project tasks roadmap)))
@@ -22,7 +22,7 @@
     (is (= projected (compiler-api-task-projection/project changed projected))))
   (let [accepted (-> tasks (str/replace-first "- [ ]" "- [x]")
                      (str/replace-first "Status: Open" "Status: Accepted; [review](https://example.com/review)"))]
-    (is (= 3 (count (compiler-api-task-projection/records accepted))))
+    (is (= 4 (count (compiler-api-task-projection/records accepted))))
     (is (str/includes? (compiler-api-task-projection/project accepted roadmap)
                       "all outcomes below remain open"))))
 
@@ -62,6 +62,21 @@
         (is (= (:suffix before) (:suffix after))))))
   (is (str/includes? tasks "## Historical workflow migration record"))
   (is (str/includes? tasks "- [x] T001 [US1]")))
+
+(deftest new-development-boundary-is-one-six-facet-outcome
+  (let [row (last (compiler-api-task-projection/records tasks))
+        changed (str/replace tasks "Current acceptance unassessed" "Current acceptance accepted")]
+    (is (= "development-boundaries" (:id row)))
+    (is (= "Open" (:status row)))
+    (is (str/includes? tasks "The four literal outcome keys"))
+    (is (str/includes? roadmap "the four task blocks below are generated views"))
+    (is (str/includes? (:projection row) "historically completed implementation"))
+    (is (str/includes? (:projection row) "cbc55cd1477deca08a9c042c91db98005833021a"))
+    (is (rejects? #(compiler-api-task-projection/records changed)))
+    (doseq [bad [(str/replace tasks #"(?m)^\| Verify representative ownership[^\n]+\n" "")
+                 (str/replace tasks "| Publish semantic module and API ownership |"
+                   "| Extra outcome | Extra evidence |\n| Publish semantic module and API ownership |")]]
+      (is (rejects? #(compiler-api-task-projection/records bad))))))
 
 (defn snapshot [root]
   (into {} (for [f (file-seq root) :when (.isFile f)]
