@@ -232,9 +232,9 @@
     (assert (not-any? #(= missing (:form-id %)) forms))
     (assert (seq (:semantic-value-table raw)))
     (assert (seq (:literal-decoding-records raw)))
-    [[:missing-token (update raw :token-stream #(subvec % 1))]
+    [[:missing-token (update raw :token-stream #(into [] (rest %)))]
      [:duplicated-token (update raw :token-stream #(conj % (first %)))]
-     [:missing-form (update raw :form-tree #(subvec % 1))]
+     [:missing-form (update raw :form-tree #(into [] (rest %)))]
      [:duplicated-form (update raw :form-tree #(conj % (first %)))]
      [:missing-value (update raw :semantic-value-table pop)]
      [:duplicated-value (update raw :semantic-value-table #(conj % (first %)))]
