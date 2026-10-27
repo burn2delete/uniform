@@ -57,13 +57,18 @@
               (diagnostic #(b/p15-s23-c6c10-resolved-parameter source text front nil invocation)))))
       (is (empty? @calls)))))
 
-(defn- current-parameter-case [binding-data]
+(defn- current-parameter-case
+  ([binding-data] (current-parameter-case binding-data ".gravity"))
+  ([binding-data extension]
+   (when-not (contains? #{".gravity" ".qst"} extension)
+     (throw (ex-info "Unsupported parameter fixture extension"
+                     {:id "C6-TEST-SOURCE-EXTENSION" :extension extension})))
   ;; One genuine source traversal. Compiled binding DATA may be reused, never
   ;; a source ingress, accepted Core or verifier result.
   (binding [b/*p15-s23-stage2-compiler-artifact-binding*
             @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'current-emitter))]
     (let [root @(owner 'root)
-          path (str (.resolve root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+          path (str (.resolve root (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)))
           text (slurp path) reader (str (.resolve root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
           invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}}
           observed (atom []) actual-macro b/sh05-macro-artifact-from-c3-artifact
@@ -85,7 +90,7 @@
         (is (= path (first arguments)))
         (is (= invocation (last arguments))))
       {:root root :path path :text text :reader reader :invocation invocation
-       :parent (second (first @observed)) :products products :raw raw})))
+       :parent (second (first @observed)) :products products :raw raw}))))
 
 (defn- check-parameter-replay [raw fresh]
   ;; The original template is untrusted input until current C6 reconstructs it.
