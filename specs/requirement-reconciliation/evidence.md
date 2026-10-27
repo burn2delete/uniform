@@ -132,3 +132,57 @@ structured unit's facet IDs to equal the complete inverse relation. Legacy L1
 paragraph bindings remain valid. Seventeen tests / 93 assertions pass, including
 the swapped-relationship and omitted-declaration regressions. The import data is
 unchanged; full semantic and equivalence review remains open.
+
+## Complete source pass and additional family imports
+
+The initial family pass covers all 240 original documents: 19,665 exact source
+occurrences, including 9,945 nonblank blocks. Five extension/policy sources add
+297 occurrences and 151 nonblank blocks. These totals describe conservation,
+not requirements or completion. Family proposals retain unresolved operational
+laws, policy fragments, task interfaces and future product decisions explicitly.
+The library review retains public-name candidates without assuming their names
+establish standalone behavioral contracts or semantic equivalence.
+
+Four further normalized imports preserve 245 AI/build/tool candidates, 134
+mathematics/backend candidates, 119 compiler candidates and 132 runtime/domain/
+schema candidates. Complete pinned source partitions validate together with
+the existing profile/performance batch. No proposed unit is accepted merely
+because it is imported. Structured historical support remains separate from
+historical discovery pointers and unassessed current applicability.
+
+The evidence extractor now preserves the Backends ledger's existing grouped
+`Projected task block`, including its multiline yes/no, evidence and residual
+boundary. It reads `backend-conformance` as Open and unchecked; source IDs,
+statuses and paragraphs remain unchanged. Duplicate or competing boundary labels
+reject. An explicit unresolved source disposition is also supported, preventing
+external-owner uncertainty from being disguised as nonnormative source.
+
+Nineteen focused tests / 101 assertions pass on the combined dataset. The current
+draft has 712 candidate IDs, 20,000 exact partition facets, one reviewed source
+disposition, 5,710 proposed dispositions and 4,385 unclassified blocks. All 10,095
+nonreviewed/unresolved blocks remain visible; denominator and rate stay null.
+T001 records only the completed, independently reviewed source-conservation work.
+T002 through T006 remain open. No language implementation task or historical
+phase status was changed, and no dashboard write or compiler replay occurred.
+
+## Current source-policy observation
+
+On 2026-10-27 the existing bootstrap-free leaf runner executed
+`clojure -J-Xmx256m -M:leaf-test --namespace gravity.source-unit-test`:
+four tests / 62 assertions passed, with zero failures or errors. The runner
+explicitly labels its result non-authoritative. Its catalog identity is
+`sha256:d225e279b60325b6e12cbfd6e3b8f765cc9bb67d6995abdcff26a8b9eeed7cfc`;
+the selected namespace identity is
+`sha256:84f9d34ac0e2ce41b5b9c7e9580323000ff68a14909a1811893d8347832570d2`.
+The manifest retains the implementation, test, runner and dependency-file hashes
+under `source-kind-metadata-leaf-20261027`, linked to the source-kind requirement.
+Those files are unchanged from the recorded `52bf88de` source context.
+
+This is observed current development support for extension classification,
+extension-derived provenance kind, case sensitivity and path edge cases. The
+leaf's own contract excludes caller rejection ordering, source-unit identity,
+source bytes/artifacts and diagnostics. The observation does not close the
+whole requirement or the Partial Reader task. The earlier self-hosting-runner
+selector rejected this namespace before executing tests; the repository's
+documented leaf owner then listed and ran the exact namespace. No failed selector
+is counted as a feature test, and no bootstrap compiler was loaded or replayed.

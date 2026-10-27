@@ -230,4 +230,28 @@
                                            (assoc-in [:requirements 0 :source-facet-ids] ["fb"])
                                            (assoc-in [:requirements 1 :source-facet-ids] ["fa"])) sources)))))
 
+(deftest grouped-backend-task-preserves-its-entire-boundary
+  (let [text (slurp "specs/backends-workflow/tasks.md")
+        record (requirement-evidence/task-record text "backends-implementation-tasks" "backend-conformance")]
+    (is (= "Open" (:status record)))
+    (is (false? (:checked? record)))
+    (is (str/includes? (:acceptance record) "unavailable targets honestly open"))
+    (is (str/includes? (:acceptance record) "No automatic release closure follows."))
+    (is (thrown? Exception (requirement-evidence/task-record
+                            (str/replace text "Projected task block:" "Projected task block:\nProjected task block:")
+                            "backends-implementation-tasks" "backend-conformance")))
+    (is (thrown? Exception (requirement-evidence/task-record
+                            (str/replace text "Status: Open" "Status: Open\nClosing evidence: Unrelated boundary")
+                            "backends-implementation-tasks" "backend-conformance")))))
+
+(deftest explicit-unresolved-source-is-not-nonnormative-or-ready
+  (let [[m sources] (complete-fixture)
+        text "An externally owned behavior needs an exact join.\n"
+        o (first (rr/source-occurrences "outside" text))
+        m (update m :source-dispositions conj {:occurrence-id (:id o) :kind :unresolved
+                                               :review-state :reviewed :rationale "Owner interface is not adjudicated."})
+        result (rr/project m (assoc sources "outside" text))]
+    (is (false? (:denominator-ready? result)))
+    (is (= [(:id o)] (:unresolved-source-occurrences result)))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

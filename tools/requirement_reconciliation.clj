@@ -115,13 +115,13 @@
         facet-result (requirement-facets/validate! manifest sources by-source sha256)]
     (doseq [{:keys [occurrence-id kind requirement-ids rationale decision-id]} dispositions]
       (require! (contains? by-source occurrence-id) "Disposition targets missing source occurrence")
-      (require! (#{:requirement :alias :refinement :nonnormative :superseded :scope-decision} kind)
+      (require! (#{:requirement :alias :refinement :nonnormative :superseded :scope-decision :unresolved} kind)
                 "Unknown disposition kind")
       (when (#{:requirement :alias :refinement} kind)
         (require! (and (= :source-block (:structural-kind (get by-source occurrence-id)))
                        (seq requirement-ids) (every? req-set requirement-ids))
                   "Disposition has dangling requirement"))
-      (when (#{:alias :refinement :nonnormative} kind)
+      (when (#{:alias :refinement :nonnormative :unresolved} kind)
         (require! (not (str/blank? rationale)) "Missing semantic disposition rationale"))
       (when (#{:superseded :scope-decision} kind)
         (require! (contains? (set (map :id (:scope-decisions manifest))) decision-id)
@@ -138,7 +138,7 @@
                                           (or (nil? (get mapped (:id o)))
                                               (= :proposed (:review-state (get mapped (:id o))))
                                               (contains? (:unresolved-occurrence-ids facet-result) (:id o))
-                                              (= :scope-decision (:kind (get mapped (:id o))))))]
+                                              (#{:scope-decision :unresolved} (:kind (get mapped (:id o))))))]
                            (:id o)))
           unresolved-reqs (filter #(not (and (= :reviewed (:atomicity %))
                                              (= :reviewed (:nonoverlap %)))) requirements)

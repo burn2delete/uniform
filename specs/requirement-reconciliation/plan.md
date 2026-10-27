@@ -89,3 +89,14 @@ and cross-family equivalence review. Thus the current source ledger has one
 reviewed block, 1,052 proposed blocks and 9,043 blocks with no disposition; the
 last two populations together remain 10,095 unresolved blocks. These are
 classification-work counts, never completion percentages or additive estimates.
+
+The next complete imports cover AI/build/tools (36 documents), mathematics and
+backends (25), compiler architecture (18), and runtime/domains/schemas (42).
+They retain 630 additional candidate IDs and exact provenance partitions. The
+current canonical draft therefore contains 712 candidates and 20,000 source
+facets, with 5,710 proposed nonblank dispositions plus the one reviewed L1
+paragraph. Another 4,385 blocks have no canonical disposition yet. All original
+documents now have complete family proposals outside the canonical draft;
+normalization, semantic review, cross-family joins and evidence qualification
+continue before those proposals can close scope. Missing task interfaces remain
+separate from missing source semantics, and neither receives implementation credit.
