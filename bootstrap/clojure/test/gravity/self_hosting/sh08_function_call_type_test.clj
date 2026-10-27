@@ -21474,6 +21474,9 @@
     (is (every? #(= :accepted (:status %)) (return-premise-contexts products facts)))
     (doseq [row [legacy (assoc legacy :kind :equality)
                  (assoc legacy :kind :unrecognized)
+                 (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                 (assoc-in (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                           [:constraint-id-request :domain] :gravity/sh08-homogeneous-list-return-constraint-v2)
                  (dissoc legacy :kind)]]
       (let [results (return-premise-contexts products (update facts :constraint-ledger conj row))]
         (is (every? #(= :rejected (:status %)) results))
@@ -21495,7 +21498,11 @@
         inactive-facts (assoc facts :function-type-table [] :constraint-ledger [])]
     (is (every? #(= :accepted (:status %)) (return-premise-contexts inactive inactive-facts)))
     (doseq [row [legacy (assoc legacy :kind :equality)
-                 (assoc legacy :kind :unrecognized) (dissoc legacy :kind)]]
+                 (assoc legacy :kind :unrecognized)
+                 (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                 (assoc-in (assoc legacy :kind :equality :producer-rule :foreign-producer)
+                           [:constraint-id-request :domain] :gravity/sh08-homogeneous-list-return-constraint-v2)
+                 (dissoc legacy :kind)]]
       (let [results (return-premise-contexts inactive (assoc inactive-facts :constraint-ledger [row]))]
         (is (every? #(= :rejected (:status %)) results))
         (is (every? #(= :list-return-constraint-census (:reason %)) results))))))
