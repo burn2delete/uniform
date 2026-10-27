@@ -15,6 +15,33 @@
                          :clojure-adapter-residual? true})
       (dissoc :syntax-id :schema-version)))
 
+(defn- sh04-syntax-reader-expansion-history [source-path c2]
+  (let [view (c3-current-reader-identity-view source-path c2)
+        source-id (sh04-syntax-semantic-source-id source-path (:source-unit-record view))
+        roots (sh04-syntax-strip-host-metadata (c3-reader-expansions/roots view source-id))]
+    {:roots roots
+     :id (when (some #(seq (:origins %)) roots)
+           (p15-s23-c6c10-canonical-digest source-path
+             {:domain :gravity/sh04-reader-expansion-history-v1 :roots roots}))}))
+
+(defn- sh04-syntax-reader-expansions-current? [syntax-stream c2 boundary invocation history]
+  (let [source-path (get-in c2 [:source-unit-record :path])
+        descriptor (:authenticated-envelope-descriptor boundary)
+        summary (:value (first (filter #(= :syntax-product-identities (:name %))
+                                      (:semantic-projections descriptor))))
+        source-nodes (filterv #(not= :generated-form (get-in % [:form :kind])) syntax-stream)
+        key :reader-expansion-history-id
+        present? (some? (:id history))]
+    (and (= present? (contains? summary key))
+         (= (:id history) (get summary key))
+         (or (not present?)
+             (= :passed
+                (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+                  (cond-> [(:authenticated-envelope boundary) :c3-syntax
+                           :gravity/sh04-syntax-products descriptor source-path]
+                    invocation (conj (sh03-reader-authenticated-envelope-options source-path invocation))))))
+         (c3-reader-expansions/current? (:roots history) source-nodes))))
+
 (defn sh04-syntax-generated-products!
   [source-path binding base semantic-source-id reader-binding
    reader-source-revision]
