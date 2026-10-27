@@ -693,3 +693,55 @@ vector-get kernels) retain `d3e17c27` provenance. The original 12/294 and fresh
 9/63 are not summed and are not described as a fresh full 12-var run. Genuine
 authenticated-source/public acceptance, arbitrary foreign containers, runtime,
 C12, release and every full original accounting row remain open.
+
+## Current original-criteria reconciliation
+
+Assessment time: **2026-10-26 22:28:21 MDT (America/Edmonton)**, equivalent to
+2026-10-27 04:28:21 UTC. Exact assessed main is
+`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. The original-ID disposition table
+in `tasks.md` is the current assessment; no dashboard or separate status ledger
+was written. The old 50% is retained only as an unmeasured provisional estimate,
+not silently promoted to measured current coverage or recomputed from counts.
+
+The ancestry increment PR481 is now integrated by normal squash at that exact
+main/tree, identical to reviewed candidate
+`95d67b76c423d2856a3eba513af3698baf37a6f0`. Fresh remote merged state, exact
+head/body, full-tree equality, main ancestry and retained branch were verified;
+independent review accepted the identical merged tree. This resolves the earlier
+ancestry integration hold. Original standalone 12/294, fresh composed 9/63,
+final repository gates 11/23 and the initial load NONPASS remain separate
+provenance. No fresh semantic rerun was needed for the identical merge tree.
+
+Fresh GitHub states at assessment time establish the following exact merged
+increments. Their individual earlier evidence scopes remain authoritative; this
+table does not turn PR state into semantic acceptance or whole-row completion.
+
+| Finite increment | Merge commit | Original rows advanced |
+| --- | --- | --- |
+| PR433 module reads | `cfb499405450d479955fa70daa0f14dfa3233ee8` | ACC-09 |
+| PR444 module census | `6b2e63b32f215b0c5f963fadfc018624837685b0` | ACC-09 |
+| PR467 imported-module aggregate | `3727e0c9e297374c9fed4a0fa28efa8251893dc9` | ACC-08 |
+| PR474 Core/binding shapes | `029e0bd2b93542e62854b57eb7d8146e5354cb19` | ACC-08/13 |
+| PR479 Record/Union cardinality | `f3c74ffeac5ccd5c9047d6c436a4886796282d03` | ACC-13 |
+| PR481 source-proof ancestry | `15a5499e97798621d270c36dd2546ce98ddd62a9` | ACC-13 |
+| PR378 MIR guard restoration | `96cec79c0ec1f658d62e96027d4a570e48bff7c7` | ACC-10 finite owner slice |
+| PR421 guarded MIR/Native composition | `06a256fdb97f49b5fedea36a6803483302631bbc` | ACC-10 finite owner slice |
+
+Separately held work was read fresh as draft/unmerged: PR359
+`6a4f87f013d0076b81aba9e0667650e70d28e635`, PR450
+`99b84629bc9b4cb1c30c5f59777ae64f02cf65b0`, PR454
+`93efcde35fce442d9e3ee289331ad421ee8dbe45`, PR462
+`0cd2f29427ca67ae6127c7983eb51896b564f977`, and PR370
+`516f5f6ca77aede73fc7a6d7ec56d5a6da606ee6`. PR383 is closed **unmerged** at
+`356ba311afa4ec80afae4188db87d1511b5dc6ce`; imported evidence belongs to the
+actual reviewed composition, not an invented separate merge. No new owner
+acceptance is inferred for PR370 from its presence in this list.
+
+The precise residual gates and status of every original ACC-01 through ACC-13
+are in the dated table. Full closure still requires exhaustive dispositions,
+coherent removal in each remaining family, actual permitted producer/consumer
+acceptance, independent review and current-main integration. Genuine runtime,
+type, source, authentication, representation, cycle and physical host controls
+remain. No whole-language completion or restricted C12 run has been added as a
+new requirement for accounting closure.
