@@ -109,7 +109,8 @@ incoming paths: `docs/ci.md` and `tools/ci/{lint,run,run_test}.clj`. Independent
 consumed-input review confirms no change to the selected compiler, Bootstrap
 load or manual guarded runner routes. Original semantic 16/494 remains at
 `3e94a631`; cold-load/composed 11/23 remains at `0453a469`. No semantic or cold
-load repetition is implied by this CI-only merge. Fresh repository gates,+exact preflight and automatic current-head CI precede normal integration.
+load repetition is implied by this CI-only merge. Fresh repository gates,
+exact preflight and automatic current-head CI precede normal integration.
 
 ## Vector-origin binding-chain admission
 
