@@ -728,6 +728,61 @@ rules out substituting the whole construction report for public verification.
 It does not prove that every upstream Macro recheck must be recomputed.
 Sharing that fragment still requires an owner guarantee for the exact live
 plan, Reader invocation, AE/dispatch identities and mutation boundary; a saved
-PASS, common parent ID or compiled binding DATA does not supply it. No runtime
-change is justified by this predicate result. The original RV1/RV2 remaining
+PASS, common parent ID or compiled binding DATA does not supply it. That predicate
+result alone justifies no runtime change. The original RV1/RV2 remaining
 criteria, fresh public verification and immutable RV4 evidence remain intact.
+
+### RV1: fresh structural checks without temporary key sets
+
+The whole-boundary review confirmed that both repeated upstream Macro reports
+use SH05 `:final` mode. C5's construction/public proof difference cannot justify
+that entire repeat. Report equivalence across intervening Resolve execution
+still needs the actual Reader invocation/source, Macro plan/runtime, AE/lineage
+and dispatch/closure state, preserving observable errors and callbacks. The
+short construction guard does not provide that guarantee. An atomic execution
+domain is one possible design; factoring a pure fragment can be smaller.
+
+The implementation starts with the existing `run-storage-exact?` calculation
+in `semantic_late/150856-sh05-verification-expansion-replay.clj`. Its new helper,
+`gravity/macro_run_storage.clj`, checks the same four key sets without constructing
+temporary sets for native `PersistentArrayMap` values with keyword keys.
+Distinct key bits preserve set equality, including duplicate keys. It visits
+all keys before deciding even after an extra keyword, preserving later errors.
+Other map classes and foreign keys retain the original set computation.
+Values and metadata outside the key-shape calculation are not inspected.
+
+Every shape is read fresh. An initial construction-local memo design failed a
+cheap negative: `PersistentArrayMap` can retain a caller-supplied array, whose
+mutation changed the shape without changing the vector identity. That design
+was discarded before publication. Its earlier eight-test pass did not cover
+aliasing; the corrected selector recorded one test, two passing assertions and
+one failure. The first selector accidentally selected no test and earns no
+credit. No cached Boolean, verification report or token survives in the
+implementation, and no construction or public verification call is removed.
+
+Controls compare the original expression across consumed-key changes, other
+schema keywords, foreign-key callbacks and identical thrown errors, lazy
+short-circuiting, malformed and odd backing arrays, duplicate keys, and actual
+aliased-array mutation. A source-based adapter model executes the actual
+expansion-stage function twice and checks the unchanged collaborator call
+order. Its collaborators are explicitly modeled; no admitted artifact or fresh
+Gravity/Reader/AE execution is claimed. The new namespace remains fresh in the
+development catalog under SH05 ownership and receives no cache opt-in.
+
+A separate native fixture allocation control used 32 measured calls with 65
+runs each, after 32 warmup calls per operation, under the existing normal broker
+at 256 MiB. The retained baseline allocated 6,542,664 bytes; the fresh helper
+allocated 3,830,272 bytes on that fixture. An earlier helper allocated more
+than its baseline and was replaced. These observations establish the bounded
+allocation result only; they are not compiler speedup or verification-elision
+evidence. Bootstrap was not loaded. The accepted supported-leaf and callback
+evidence is unchanged; whole RV1, RV2 compatibility closure and whole RV4 remain
+open pending their original acceptance requirements.
+
+On exact implementation `7e7da6deaf810a85412d372dddd1578c3fd2d83c`, tree
+`880eb72fdb4fadce3a8bec047f8eaff20727a65d`, the combined fresh helper/adapter,
+planner and language-boundary controls passed 78 tests / 718 assertions; docs
+passed 240 / 19. The helper contributed 12 / 151, the planner 60 / 556 and the
+boundary 6 / 11. The brokered 256 MiB process exited zero with identical clean
+source/hash bookends and no Bootstrap load. No compiler/provider acceptance
+or public artifact replay follows from that scope.
