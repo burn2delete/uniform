@@ -384,6 +384,24 @@
              :fail-fast (boolean (or (:fail-fast? options)
                                      (:fail-fast options)))))))
 
+(defn- compatibility-bootstrap-affinity
+  [job]
+  ;; Both suites require the real Bootstrap facade, restore their interposed
+  ;; Vars, and keep separate namespace results. This shares initialization,
+  ;; never an upstream artifact or verifier report. A narrowed closure cannot
+  ;; be carried across component ownership by this affinity.
+  (when (and (contains? #{"gravity.bootstrap-compatibility.c11-test"
+                         "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"}
+                       (namespace-name (:namespace job)))
+             (not (contains? job :cache-closure))
+             (not (:cache-closure-authorized? job))
+             (or (nil? (:test-policy job))
+                 (and (map? (:test-policy job))
+                      (= #{:deterministic? :performance? :proof? :freshness-required?}
+                         (set (keys (:test-policy job))))
+                      (every? boolean? (vals (:test-policy job))))))
+    [::compatibility-bootstrap (:test-policy job)]))
+
 (defn- normal-batches
   "Packs normal jobs into bounded, deterministic cache-affine batches.
 
@@ -392,7 +410,8 @@
   or exclusive job can enter this path."
   [jobs batch-size]
   (->> jobs
-       (group-by #(or (:batch-key %) (:slice %)))
+       (group-by #(or (compatibility-bootstrap-affinity %)
+                      [::existing-affinity (or (:batch-key %) (:slice %))]))
        (sort-by (comp str key))
        (mapcat (fn [[_ affinity-jobs]]
                  (partition-all
@@ -401,6 +420,14 @@
        (mapv
         (fn [batch]
           (let [batch (vec batch)
+                shared-bootstrap? (and (> (count batch) 1)
+                                       (compatibility-bootstrap-affinity (first batch)))
+                component-id (when (or (not shared-bootstrap?)
+                                       (apply = (map :component-id batch)))
+                               (:component-id (first batch)))
+                batch-key (if shared-bootstrap?
+                            "bootstrap-facade/compatibility"
+                            (:batch-key (first batch)))
                 test-policies (mapv :test-policy batch)
                 common-test-policy
                 (when (and (every? map? test-policies)
@@ -412,10 +439,10 @@
               :resource-class :normal
               :batch-jobs batch
               :batch-namespaces (mapv :namespace batch)}
-              (:component-id (first batch))
-              (assoc :component-id (:component-id (first batch)))
-              (:batch-key (first batch))
-              (assoc :batch-key (:batch-key (first batch)))
+              component-id
+              (assoc :component-id component-id)
+              batch-key
+              (assoc :batch-key batch-key)
               common-test-policy
               (assoc :test-policy common-test-policy)))))))
 
