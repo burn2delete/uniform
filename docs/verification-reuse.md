@@ -24,11 +24,11 @@ case construction; current Native/MIR source/composition receipts.
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
 | RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
-| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Finite resource fallback implementation and controls below; independent review and integration pending. In-memory class identity and whole RV1 remain open. |
+| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Compatibility loader audit below removes obsolete declarations; narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
 | RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
-| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Open until independent review and integration. |
+| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Open: finite merged increments are accepted, but RV1's further-elision prerequisites, narrower bootstrap compatibility closure and current consumed-runner real miss/hit/invalidation evidence remain unresolved. |
 
 ## Exact Reader leaf closure
 
@@ -78,6 +78,33 @@ integration/regression evidence or proved necessary and classified outside
 redundancy. It does not mean zero verification, a closed compiler pipeline or
 a complete language. Unproved reuse prerequisites, unexplored conservative
 fallbacks, independent review and integration are open boundaries, not credit.
+
+The accepted original finite advances are the Reader leaf closure and fresh
+namespace mappings in PR432, removal of obsolete compatibility declarations
+in PR440, and the SH15 immutable-case reuse already integrated at `c3f35fef`.
+PR448, PR451 and PR452 close specific unsafe startup/resource reuse routes.
+Those safety corrections are prerequisites, not additional compiler or language
+completion. These milestones do not support a measured percentage.
+
+The remaining original criteria are finite and separate:
+
+1. RV1 needs the transitive live-plan, dynamic-dispatch and AE stability plus
+   whole-seam mutation proof required for another construction-check elision,
+   or a source-grounded decision that each retained check is necessary under
+   the current interface. The checks remain active meanwhile.
+2. RV2 still needs the read/effect and representation closure for the two
+   inventoried bootstrap-dependent compatibility selections, or evidence
+   proving their retained repeats necessary. A full-repository key is the
+   conservative fallback, not proof that every documentation edit is semantic.
+3. RV4 needs current supported-leaf real miss/hit/consumed-input invalidation
+   evidence after the consumed runner changes, then independent review and
+   integrated acceptance records for all rows. Earlier real results retain
+   their original tuples; they are not executions of the newer guards.
+
+The shortest current step is RV4's three-phase pure Reader leaf observation.
+Its private harness review identified missing-value comparisons and owned-child
+interruption cleanup that require correction before launch. Preparation is not
+execution evidence; no new producer or hit is claimed by this reconciliation.
 
 The finite Reader closure/mapping increment is published in
 [PR #432](https://github.com/burn2delete/uniform/pull/432). Independent code
@@ -380,8 +407,9 @@ The reused reader controls passed 10 tests / 45 assertions; new initialization
 controls passed 7 / 37. The first attempt passed the reader controls but could
 not read the new tool because of an unmatched delimiter; no new controls or
 source audit ran in that attempt. That nonpass is retained. Independent source
-and representation review, documentation/language gates and integration remain
-pending for this unit. Whole RV1/RV4 closure is not implied.
+and representation review, documentation/language gates and integration
+completed for the finite audit-only unit through PR443, recorded below.
+Runtime effect closure and whole RV1/RV4 closure remain open.
 
 ### Startup resources before the child cache decision
 
@@ -477,7 +505,10 @@ that a closed archive is accepted for further checks, adding a manifest edge
 rejects it, malformed and missing archives remain unknown, and the actual
 runtime observer applies the same condition. Fixtures load resources only;
 they execute no classes or source. Wiring passed 48 tests / 543 assertions.
-Independent review, documentation/boundary gates and integration are pending.
+Independent code/result/composition review accepted the finite fallback;
+composed wiring and boundary passed 54 / 554, documents passed 240 / 19, and
+exact clean preflight passed. PR451 integration is recorded below. No provider
+or compiler replay was performed for those gates.
 
 This closes only the manifest dependency fallback rule. It does not establish
 complete JVM image, custom ClassLoader, native library or bootstrap runtime
@@ -521,7 +552,12 @@ invoking custom URL callbacks. Wiring passed 50 tests / 566 assertions. Initial
 observation attempts failed before observation because the test path was absent
 and then because an inline form was malformed; both nonpasses remain recorded.
 The corrected development-JVM observation and controls completed separately.
-Independent review, documentation/boundary gates and integration are pending.
+Independent code/result review accepted `b293edb2db8e0109c5323d340bdc54924c6ec198`,
+tree `85b01e6b161390d4fb579cad428a202e36de4587`. Boundary passed 6 / 11,
+final documents passed 240 / 19 and exact clean preflight passed. PR452 merged
+as `7ae18ee6c388db55748b0b2427f2964f60953768`, with full tree identity to
+that reviewed candidate. The source observation failures remain historical;
+no compiler/provider replay or remote CI result is inferred.
 
 This is a current-thread resource-domain observation, not atomic attestation,
 proof of prior nonexecution, or proof of in-memory class identity. A known empty
