@@ -1,5 +1,140 @@
 # Accounting removal evidence
 
+## ACC-06 finite intrinsic-limit acceptance - 2026-10-27 13:59 MDT
+
+Source candidate `cedbfd3b785d9f50676c9eb40a3fe1a9da8e0334`, tree
+`39d9e9d65f03515624a968be40e95df1f65edd40`, completed 29 tests with 3,255
+passing assertions and one failure, natural exit 1 in 37,396 ms. Its receipt
+SHA-256 is `ce0df39d42aaa9e8b37e32846218c19f1643736af8cf300a61843b9096aa62d5`.
+This batch remains NONPASS. The sole failure was an existing VectorRest oracle
+that still rejected a well-formed 1,025-member Vector solely at the removed
+recursive width cap. All new native/metadata/view/cycle/grammar tests, actual
+LC/PL/LR consumer tests and selected Effects joins passed in that batch.
+
+Test-only correction `b3172528bf22a73dc83397d8aa26892976a4c990`, tree
+`72989337f13683a565a81bba48d00e97b3e78179`, adds that input to the existing
+complete VectorRest output/inference/descriptor loop and replaces the obsolete
+refusal with a last-member unknown type and its exact type diagnostic. No
+production code or shared helper changed. The changed var plus six boundary
+tests passed 7/254, natural exit 0 in 15,352 ms, complete 1,007-byte stdout and
+empty stderr. Receipt SHA-256:
+`7cbca6c7e881d7f56e916008eaaf4445e9ea7d4fb7c3d4262823f78609826fb4`.
+Twenty-two unchanged non-boundary semantic selectors retain `cedbfd3b`
+provenance; six boundary tests are fresh at `b3172528`. This is composed
+acceptance, not a summed or globally fresh 29-test pass. The original batch's
+393-byte stderr is only the controlled reflective final-field fixture warning.
+
+Each owner then completed its own manually guarded batch on exact `b3172528`:
+
+| Owner | Actual selected result | Natural elapsed | Complete stdout/stderr bytes | Receipt SHA-256 |
+| --- | --- | --- | --- | --- |
+| C7 | 1 test / 3 assertions, zero failures/errors | 88,305 ms | 536 / 0 | `a2d52ce64e9ed133334ac8581dd54ef4a158f3f422c341c8a4a8de28609bc1ae` |
+| Effects | 1 test / 3 assertions, zero failures/errors | 90,687 ms | 561 / 0 | `7dc4b29af98e7097d142ae8db0a1e57291938fdefcaf1b1f5a4473f363b7663d` |
+| Emitter | 1 test / 3 assertions, zero failures/errors | 89,428 ms | 560 / 0 | `8daaf2740b99e8f2387b4f14239dc0e6933ae950b859a191a3382e14e90956bd` |
+
+Every receipt records actual 2 GiB heap, natural exit zero, complete capture,
+exact clean bookends and complete cleanup/root termination. Completed scalar
+phase observations were persisted before assertions. Each owner accepts all
+65,537 primitive operands and the full 67,585-node pending family; a final
+unknown type rejects with `unsupported-type` at visited count 67,585. These
+are separate owner receipts, not automatic/generic CI execution authority.
+Independent review inspected source, drivers and actual retained records;
+the reviewer did not run compiler semantics again.
+
+| Accepted source input at `b3172528` | SHA-256 |
+| --- | --- |
+| C7 engine | `178db8bd722e905ef8a2073717a367678de26787e280f80e8844feba6d82148d` |
+| Effects | `ed37e584222606abd7fe27e94b73b7e428b13c6f162ecb1b2a3bdb3fabcf3480` |
+| Emitter | `1ae3a25e376b5797bb3ed9fb6218811140707025fd29816c73dabee23dfa2f83` |
+| Existing SH08 namespace | `b8c1e1dd06bb035e468a8a7bf0246b8584993cd563c079884988e4f887919432` |
+
+Normal current-main composition `bef14d553d3c886a13c0d3deac38b869bdefe4c2`,
+tree `d6130be19704151b3e422d3798f65a3d050b5b42`, includes main
+`190bc35c7c4dbb4e80053813a2372048c8863d9e`. All Gravity, Bootstrap production
+source, SH08/SH09 bodies, contracts and `deps.edn` are unchanged from accepted
+inputs. Incoming changes concern CI lint context and two compatibility-suite
+batch/cache policies. The explicit-command owner wrapper uses unchanged
+process APIs and guards; it invokes neither optional child-cache admission nor
+normal batch grouping. No unchanged semantic run is repeated for those deltas.
+Fresh repository gates at documentation successor
+`105cc4deaf2d623934470377dc45028d6a19c7ec`, tree
+`2608e19cb663621e0bf71cce16c2b51055a943d9`, passed 5 LOC tests / 12 assertions,
+actual repository LOC census 2,035, docs 240/19 and roadmap. This 256 MiB
+non-Bootstrap child exited naturally in 2,104 ms, complete 396-byte stdout and
+empty stderr, exact clean bookends and complete cleanup. Receipt SHA-256:
+`0b5ba30f3b91c5cf1323a38bf373ee98f698cc90ef9ef366627dfe1abf7868dc`.
+Final integration review, CI and published-head/merge readback remain separate
+acceptance steps; this later evidence-only edit does not change semantic inputs.
+
+This closes the finite intrinsic used/pending/depth/width removal only after
+normal integration. Supplied budgets/work-count APIs, all 115 caller/debit
+interfaces, outer constructor policies and the full ACC-06 criterion remain
+unfinished. No public source authentication, C12, release, Native registration
+or whole-accounting completion is claimed. ACC-02/03 remain closed; eleven
+original criteria remain open or partial, with the historical unmeasured
+50-percent estimate unchanged.
+
+## ACC-06 intrinsic recursive validation baseline - 2026-10-27 13:44 MDT
+
+Exact base `00cdaf5513d356a0c58ce02ab263e4765b713eed`, tree
+`d75f42d1a6c445423efa7f12699ee667683f9a25`, completed one read-only old-source
+batch: natural exit zero, 47,922 ms, actual 2 GiB heap, complete 4,642-byte
+stdout and empty stderr, exact clean bookends and complete cleanup/root
+termination. Receipt SHA-256:
+`73811130a9f66fffc1c6f2a10fac9d6d56018e7e113c5a9c55db01994797ef54`.
+Independent retained-record review accepted diagnosis only, not candidate
+behavior or whole ACC-06 completion.
+
+Forty actual calls produced 43 durable observations. All owners accept depth
+128 and width 1,024 but reject 129/1,025; all reject the prospective pending
+family. C7 rejects 65,537 primitive operands at its intrinsic work ceiling
+despite supplied budget 100,000. Cyclic type DATA stops at the old depth limit,
+which is not native cycle evidence. Foreign type maps are accepted after
+count/sequence/lookup callbacks. Foreign and cyclic metadata remain inert,
+with zero metadata callbacks. Nil, native List/Cons and visible SubVector
+ordinary cases are accepted. No root-spine cycle was executed on the old
+unbounded normalization path.
+
+Candidate source removes the intrinsic limits coherently from all three LC
+owners, retaining supplied-budget/work-count APIs and all caller debits as
+unfinished work. It uses existing Meta/JVM native headers and identity, not
+the held hosted Native API. Small registered controls cover grammar and
+physical representation; large visited/pending/late-invalid cases are invoked
+only through a manual owner helper under the established guarded route. No
+candidate semantic result is claimed by this baseline. Preliminary fixture-only
+controls initially passed 1/21 without Bootstrap; the amended List fixtures
+passed 1/24, with a controlled reflective final-field fixture warning.
+Form/resource-registration controls passed 1/87 without
+Bootstrap. These are fixture/structural evidence, not compiler acceptance.
+
+Independent preliminary review identified that the existing native header uses
+`PersistentList.next()`, not a raw backing-tail accessor. The candidate therefore
+checks visible count/spine coherence and identity cycles. A count-one List's
+hidden raw tail stays inert, including foreign or cyclic DATA; no total
+validation of arbitrary reflectively corrupted JVM internals is claimed. New
+controls distinguish malformed visible counts from intentionally hidden tails.
+
+## PR359 terminal integration and preserved-source disposition
+
+PR359 merged `00cdaf5513d356a0c58ce02ab263e4765b713eed` with exact independently
+reviewed tree `d75f42d1a6c445423efa7f12699ee667683f9a25`. The accepted source
+batch below remains at its actual `0c64757d` provenance; subsequent documentation
+and current-main reconciliation preserved its consumed source inputs. Final
+repository gates passed 11/23, LOC, docs 240/19 and roadmap. PR run 40563266217
+passed all seven routine jobs. Main run 40564406756 passed those jobs and
+source-only prerelease; only the explicit unavailable Core gate failed at
+`C6-VERIFY/:actual-selected-current-reader-products`, without genuine execution.
+No failed gate was rerun or promoted.
+
+All retained unique historical source is explicitly owned in open draft PR502,
+unchanged `6a4f87f013d0076b81aba9e0667650e70d28e635`, tree
+`f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. That draft requires a reviewed
+integration/incorporation/rejection or separately owned implementation-draft
+disposition for every unique delta before terminal closure. Historical source
+preservation supplies no acceptance credit and does not duplicate the held
+runtime implementation drafts. No original ACC row closes from this finite
+PR359 increment; ACC-02/03 remain the only closed original rows.
+
 ## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
 
 Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
