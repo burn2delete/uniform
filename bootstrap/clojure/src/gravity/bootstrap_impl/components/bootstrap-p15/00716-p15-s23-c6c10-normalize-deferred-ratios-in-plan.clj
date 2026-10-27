@@ -136,6 +136,8 @@
   ([source-path source-text reader-source-path]
    (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path nil))
   ([source-path source-text reader-source-path source-policy-version]
+   (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path source-policy-version nil))
+  ([source-path source-text reader-source-path source-policy-version selected-reader-binding]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -215,7 +217,7 @@
         (= 2 source-policy-version)
         (assoc :source-policy-receipt
                (p15-s23-c6c10-current-reader-envelope-state!
-                source-path raw-front-end reader-source-path)))))))
+                source-path raw-front-end reader-source-path selected-reader-binding)))))))
 (defn p15-s23-c6c10-resolve-source-path
   []
   (let [relative p15-s23-c6c10-source-relative-path

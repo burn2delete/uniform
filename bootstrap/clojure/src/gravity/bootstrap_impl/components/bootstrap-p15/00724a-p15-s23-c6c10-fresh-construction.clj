@@ -14,7 +14,8 @@
         (if (= 2 version)
           (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
             (p15-s23-c6c10-private-ingress-products
-             source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) 2))
+             source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) 2
+             (dissoc (:binding reader) :plan)))
           (p15-s23-c6c10-private-ingress-products source-path (:source-text context)))
         envelope
         (p15-s23-c6c10-private-builder-envelope
