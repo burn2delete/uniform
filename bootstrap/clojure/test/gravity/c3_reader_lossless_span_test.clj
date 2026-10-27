@@ -113,10 +113,10 @@
 (deftest native-artifact-field-selection-never-hashes-or-compares-opaque-keys
   (doseq [retained? [false true]]
     (let [{:keys [seed root artifact]} (sample "1/2" false)
-          calls (atom 0) active? (atom false)
+          calls (atom 0) active? (atom false) target :syntax-seed-stream
           opaque (proxy [Object clojure.lang.IHashEq] []
-                   (hashCode [] (when @active? (swap! calls inc)) (.hashCode :syntax-seed-stream))
-                   (hasheq [] (when @active? (swap! calls inc)) (.hasheq ^clojure.lang.IHashEq :syntax-seed-stream))
+                   (hashCode [] (when @active? (swap! calls inc)) (.hashCode target))
+                   (hasheq [] (when @active? (swap! calls inc)) (.hasheq ^clojure.lang.IHashEq target))
                    (equals [_] (when @active? (swap! calls inc)) false)
                    (toString [] (swap! calls inc) "opaque"))
           artifact (cond-> (into artifact (map #(vector (keyword (str "other" %)) %) (range 20)))
