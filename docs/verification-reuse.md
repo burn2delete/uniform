@@ -25,10 +25,10 @@ case construction; current Native/MIR source/composition receipts.
 | --- | --- | --- | --- |
 | RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
 | RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
-| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Compatibility loader audit below removes obsolete declarations; narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
+| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Current supported-leaf miss/hit/consumed-runner invalidation accepted on `9db7e9f3`, below; earlier unrelated-edit observations retain their original tuples. Narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
 | RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
-| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Open: finite merged increments are accepted, but RV1's further-elision prerequisites, narrower bootstrap compatibility closure and current consumed-runner real miss/hit/invalidation evidence remain unresolved. |
+| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Current supported-leaf miss/hit/invalidation evidence is complete on `9db7e9f3`, below. Whole RV4 remains open for RV1's further-elision prerequisites and narrower bootstrap compatibility closure. |
 
 ## Exact Reader leaf closure
 
@@ -96,15 +96,17 @@ The remaining original criteria are finite and separate:
    inventoried bootstrap-dependent compatibility selections, or evidence
    proving their retained repeats necessary. A full-repository key is the
    conservative fallback, not proof that every documentation edit is semantic.
-3. RV4 needs current supported-leaf real miss/hit/consumed-input invalidation
-   evidence after the consumed runner changes, then independent review and
-   integrated acceptance records for all rows. Earlier real results retain
-   their original tuples; they are not executions of the newer guards.
+3. RV4 now has independently reviewed current supported-leaf real
+   miss/hit/consumed-runner invalidation evidence on `9db7e9f3`, recorded below.
+   Closing the whole outcome still requires reviewed, integrated acceptance or
+   necessary-check decisions for the remaining RV1/RV2 rows. Earlier real
+   results retain their original tuples; none is relabeled as a newer execution.
 
-The shortest current step is RV4's three-phase pure Reader leaf observation.
-Its private harness review identified missing-value comparisons and owned-child
-interruption cleanup that require correction before launch. Preparation is not
-execution evidence; no new producer or hit is claimed by this reconciliation.
+The three-phase pure Reader leaf observation completes this RV4 evidence step.
+The private harness's missing-value and owned-child cleanup findings were
+corrected and independently reviewed before launch. Its first report-path
+nonpass and the corrected actual results remain separate below. This increment
+consumes an original acceptance criterion; it adds no new hardening family.
 
 The finite Reader closure/mapping increment is published in
 [PR #432](https://github.com/burn2delete/uniform/pull/432). Independent code
@@ -565,3 +567,56 @@ dynamic loader can already contain defined classes. Other threads, JVM image,
 native libraries, bootstrap effects, live operation/AE identity and unsampled
 mutation remain separate unresolved prerequisites. No additional Macro check
 is removed, and no whole-RV1 completion or new bootstrap reuse is admitted.
+
+### RV4: current supported-leaf miss, hit and invalidation
+
+The frozen clean source was `9db7e9f30ddf26b1c42138e7abbde04aa2214eb1`, tree
+`f9a573eaf36ff964fac4843273c73f580cea93d1`. Its consumed runner includes the
+integrated startup, manifest and resource-loader guards. The selection was only
+`gravity.c2-artifact-identity-test`, a pure artifact-identity leaf; it does not
+construct or authenticate a current-source Reader product.
+
+The reviewed private supervisor had SHA-256
+`3ab235dce37c3c12318826d786bd75d61505d4e9ad2baa4bd74ba516a2911dba`.
+Before test-child execution, 14 report/data cases, two owned-process cleanup
+cases and two existing report-path cases passed. Missing keys/provenance,
+trailing EDN, wrong selection, zero counts, saturated output, interruption and
+report exceptions reject rather than becoming acceptance evidence. The existing
+child writer's path contract is checked before launch; it was not relaxed.
+
+The corrected supervisor and all three child commands completed with natural
+exit zero. Each child ran under the existing normal broker with a configured
+256 MiB heap and 60-second watchdog. Full reports, process waits/exits, cleanup
+facts and source bookends were retained before compact extraction.
+
+| Phase | Actual result | Attribution |
+| --- | --- | --- |
+| Cold-cache producer | 18 tests / 930 assertions; stored miss | Fresh non-authoritative result on the frozen clean source |
+| Unchanged request | Hit; `tests-executed? false` | Same nonempty key and full original producer provenance; displayed 18 / 930 belongs to that producer |
+| Consumed runner comment changed | Different key; fresh 18 / 930 and stored miss | Same Git HEAD plus the explicit working-tree delta below |
+
+Only `sh01_development_loop_wiring.clj` was temporarily changed, by appending a
+comment. Its original SHA-256 was
+`668b0501e46631430671e20a26967dd356897fb0b4bdecbf815bcab9598e137d`;
+the changed bytes had SHA-256
+`fa32d2c71858f0de74c032382e43e2b7a47b007995861fe45737f4068c65d264`.
+The changed phase is not claimed as a clean-tree execution. Its prelaunch
+snapshot, applying snapshot and producer snapshot record that delta. Final
+restoration returned the exact original bytes and identical clean source
+bookend. Independent result readback accepted all three full reports, natural
+exits, provenance equality and restoration without replay.
+
+The first attempted producer remains a nonpass: its child naturally exited one
+because the harness chose a phase-named report file instead of `result.edn`.
+No passing report or accepted counts were obtained, and its later phases were
+not launched. A possible internal cache result from that failed command was
+not acceptance authority and was not used by the corrected cold-cache attempt.
+That correction received separate review and positive/negative path controls.
+
+This closes the current supported-leaf real-evidence criterion in RV4 and
+renews the Reader leaf evidence in RV2. It does not close the remaining RV1
+identity/mutation prerequisites or the bootstrap compatibility read/effect and
+representation gap. Public/fresh verification, compiler/provider acceptance,
+benchmark, release and whole-outcome completion do not follow from these
+development receipts. The hit still launched a child JVM; no startup avoidance
+or measured speedup is claimed.
