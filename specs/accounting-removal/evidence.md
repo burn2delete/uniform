@@ -1,5 +1,60 @@
 # Accounting removal evidence
 
+## Vector-origin binding-chain admission
+
+The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree
+`54c49d1c97803493a3f942aabb5016b94bbfb99d`, based on main `4fa8575b` / tree
+`d85107f9f443ee60fd87c8863c200bf68a3670c1`. Exactly two implementation/test paths
+change. No Native, Reader, MIR, runner or catalog source is changed.
+
+The old-source diagnostic completed naturally with exit 0 in 14,128 ms at
+actual 2 GiB: full canonical 1/128-link origins passed their closed consumer;
+the producer refused a valid 129-link chain, and actual successor derivation
+rejected it with `:bounded-successor-range-proof-required`. The rejected producer
+does not supply independent 129-link consumer evidence. Capture was complete
+(346-byte stdout, empty stderr), exact clean bookends and cleanup passed.
+Receipt SHA-256:
+`3fea56edede016d7d81373e994ca0bc22c6617e1476aceee723d5c226a7ff685`.
+
+The candidate replaces producer recursion with an iterative canonical-ID walk,
+rejects repeated IDs, and reverses collected links at constructor termination
+to preserve inner-to-outer proof order. The consumer walks that exact sequence
+independently, rejects repeated reference IDs and reconstructs the constructor
+endpoint with canonical immutable-record and type equality. Both production
+callers and the direct test migrate to the depth-free arity. Source-form
+validation remains the producer's existing responsibility; the consumer is not
+claimed to establish a new source-authentication theorem.
+
+Actual candidate execution selected three new chain kernels, seven affected
+regressions and six language-boundary vars: 16 tests / 460 assertions, zero
+failures/errors, natural exit 0 / 15,700 ms / actual 2 GiB. All 1/128/129/130-link
+origins retain complete ordered records; actual 129-link successor and nth/get
+derivations and fresh proof consumers pass. Late source/mutability/type/node
+changes, missing/duplicate bindings, cycles, wrong endpoints, reordered/missing/
+orphan witnesses and malformed entry IDs reject. The malformed-ID control
+observes zero hash callbacks; this is not arbitrary-container ingress authority.
+Capture was complete (2,019-byte stdout, empty stderr), source bookends were
+exact and clean, and cleanup completed with the child gone. Receipt SHA-256:
+`27b2c8088719d005788712af3528d6c883b6e8bfcf071982b55ca467f1d9344a`.
+
+Independent review inspected the exact source, driver and retained records;
+it did not execute a second semantic batch. Source hashes are:
+
+| Path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `a89c885244593d2359e8e93825a31951cf4aa2a6234e2a548f91f15c75286bad` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `12894ec7b266330c9fc3c0892067e41227d9ee4320244db59ddc1369a1d13923` |
+
+Extent 1,024 and `:maximum-vector-extent`, the remaining type/collection/work
+policies, structural projections and other ACC-13 mechanisms remain open.
+Runtime checks and the prohibition on check elision are retained. Genuine
+authenticated-source admission, language-runtime execution, C12 and product
+release were unrun. The failed first form-reader command had an extra command
+delimiter after reading all 1,085 source forms; the corrected form-reader
+completed without Bootstrap execution. It is not semantic evidence or a
+candidate failure. Final gates and normal integration are recorded by the
+associated pull request; whole ACC-13 and accounting completion remain open.
+
 ## Observed baseline
 
 2026-10-26 GitHub fetch: main
