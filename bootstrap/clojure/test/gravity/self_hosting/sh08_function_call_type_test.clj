@@ -16872,15 +16872,15 @@
     (is (= 1 (get @visits 'sh08-mg-inferred-work 0) (get @visits 'sh08-pe-finish 0))
         "The owning consumer measures and reconstructs the private result once")
     (is (= 6 (get @visits 'sh08-lc-validate-types 0))
-        "Three selected Vector representations are paid at each of two entries")
+        "Three selected Vector representations are validated at each of two entries")
     (is (zero? (get @visits 'sh08-io-descriptor 0)) "Map get skips the unrelated IO probe")
-    (is (zero? (get @visits 'sh08-mg-inferred-call-valid? 0)) "The paid result is reused by the scoped consumer")
+    (is (zero? (get @visits 'sh08-mg-inferred-call-valid? 0)) "The validated result is reused by the scoped consumer")
     (is (= accepted (check types (:work-count accepted))))
     (is (= :rejected (:status (check types (dec (:work-count accepted))))))
     (let [limit (+ prefix (dec (:work-count own))) rejected (check types limit)]
       (is (= :rejected (:status rejected)))
       (is (= ["C7-GENERIC" :map-get-work-limit] ((juxt :rule :reason) (first (:diagnostics rejected)))))
-      (is (= limit (:work-count rejected))))
+      (is (= (+ prefix (:work-count own)) (:work-count rejected))))
     (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
       (is (= :rejected (:status (check changed 65536))))))))
 
@@ -22424,10 +22424,11 @@
           context (prepare facts)
           checked (assoc facts context-key (:context context))
           valid? #(return-premise-effects (symbol (str "body-" family "-call-valid?")) core % bindings node call edge nodes)
+          argument-binding (get-in nodes [(ids :arg0) :attributes :binding-id])
           typed {:core core :nodes nodes :forms forms :bindings bindings :types checked-types
                  :calls {id call} :edges {id edge} :call-order {id 0}
                  :call-facts {id (fact descriptor)} :ledger [(row descriptor)]
-                 :locals {(ids :arg0) 'value} :parameter-types types}
+                 :locals {argument-binding 'value} :parameter-types {argument-binding operand}}
           compile-node #(return-premise-emit 'p15-s23-typed-compile-node % id 65536)]
       (is (= :accepted (:status derived) (:status context)) (str family " " operand))
       (is (true? (valid? checked)) family)
