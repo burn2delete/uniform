@@ -55,6 +55,22 @@ completed without Bootstrap execution. It is not semantic evidence or a
 candidate failure. Final gates and normal integration are recorded by the
 associated pull request; whole ACC-13 and accounting completion remain open.
 
+Repository gates on documentation successor `82292a36` passed 11 tests / 23
+assertions, actual LOC validation for 2,035 files, 240 documents / 19 indexes and
+the roadmap; natural exit 0 / 2,573 ms, complete 456-byte stdout, empty stderr,
+clean bookends and cleanup. Receipt SHA-256:
+`19ecf603062138bfd52b1915f19a516a9e79cef616fd2429b47f3f461c60bab7`.
+
+The initial integration preflight detected main advancing to Reader PR496 and
+failed with `WORKTREE-CANDIDATE-BASE-MISMATCH`; that record is retained as
+nonpassing. Normal reconciliation at `4ed9939b` / tree `5466a877` preserves all
+six incoming paths from main `2766511b`. Its sole production delta changes C2
+literal escape offsets. The selected compiler-plan route uses the unchanged
+host-oracle form reader with authenticated records unbound; it does not invoke
+that C2 literal-record producer. All Gravity source, the selected SH08 test and
+dependency configuration are identical to tested `903e330e`. Original semantic
+receipt provenance is retained; reconciliation is not a fresh semantic run.
+
 ## Observed baseline
 
 2026-10-26 GitHub fetch: main
