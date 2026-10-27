@@ -1140,14 +1140,20 @@
   ;; These source tests have only owner-local wrappers. Their established common
   ;; broker, host-exclusive and canonical-heavy guards have no committed route.
   ;; Discover their real owner without silently scheduling ordinary jobs.
-  (let [namespace (symbol (str namespace))]
-    (when (contains? '#{gravity.self-hosting.runtime-module-reads-test
-                       gravity.self-hosting.module-census-test} namespace)
-      {:id "SH01-IMPACT-EXTERNAL-WRAPPER"
-       :namespace namespace
-       :slice "SH-19" :owner :sh-runtime :execution :unsupported
-       :reason :missing-committed-resource-wrapper
-       :required-guards [:common-host-broker :host-exclusive :canonical-heavy-lock]})))
+  (let [namespace (symbol (str namespace))
+        owner (cond
+                (contains? '#{gravity.self-hosting.runtime-module-reads-test
+                              gravity.self-hosting.module-census-test} namespace)
+                {:slice "SH-19" :owner :sh-runtime}
+                (= 'gravity.self-hosting.resolution-parent-mutation-test namespace)
+                {:slice "SH-06" :owner :sh-resolution})]
+    (when owner
+      (merge owner
+             {:id "SH01-IMPACT-EXTERNAL-WRAPPER"
+              :namespace namespace
+              :execution :unsupported
+              :reason :missing-committed-resource-wrapper
+              :required-guards [:common-host-broker :host-exclusive :canonical-heavy-lock]}))))
 
 (defn- build-iteration-plan
   [context classified changed-paths requested]
