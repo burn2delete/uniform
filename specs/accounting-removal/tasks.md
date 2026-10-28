@@ -737,6 +737,15 @@ families, outer pools, metadata carrier safety and the original row's complete
 consumer acceptance remain open. DSE's preserved unrun work and the separate
 unknown historical mode operation are not replayed or reclassified here.
 
+## ACC-12 operative documentation correction
+
+PR522 integrated the two-span development-verification correction at
+`4a798d86`. It removes contradictory instructions to preserve accounting quota
+and work-limit boundaries while retaining source, type, effect, extent and
+transfer checks. Live membership and vector-index work pools remain for their
+actual source owners to migrate. ACC-12 remains partial; this documentation
+correction does not establish source, runtime, Core, C12 or release acceptance.
+
 ## ACC-06 private collection chain integration
 
 PR511 integrated the finite private collection binding-chain change at

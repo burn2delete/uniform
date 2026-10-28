@@ -1978,3 +1978,22 @@ A later PR513 compiler-free metadata gate rejected the new
 non-slice namespace. Its owners are coordinating the required impact-catalog
 registration; that gate remains nonpassing and does not replace the original
 PR511 semantic or CI receipts.
+
+## PR522 operative documentation integration
+
+PR522 merged as `4a798d86b78f14599f7acfbdb809cbd08e74ef1e` over
+`3a8b90c190c5756e1cce551c0a92503b5bbc5d3a`. The fetched tree
+`4b356262cc2c7226818edc96976c7c13fab75e0a` equals independently reviewed
+head `8639657fb6a55e66f1a5de6f21d500464aee8b77`; the source branch is
+retained. The two documentation spans remove conflicting quota/work-limit
+instructions and require coherent source-owner migration while preserving
+source identity, type, effect, transfer, index and extent legality checks.
+
+The independently reviewed documentation gate passed 240 documents, 19 phase
+indexes and roadmap at the earlier composed `763521e2` head. Its unchanged
+consumed inputs were verified at the final candidate; no fresh execution is
+claimed. The earlier cancelled CI remains nonpassing history. Final-head CI
+`40634871650` passed seven routine jobs, with Core and prerelease skipped.
+The live membership/vector-index accounting consumers and original ACC-12
+dependencies remain open; this documentation-only result does not establish
+source, B51, Core, C12 or release acceptance.
