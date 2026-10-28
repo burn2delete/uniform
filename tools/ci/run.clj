@@ -153,7 +153,8 @@
                         ["workflow-lint" 30 ["actionlint" "-color"]]
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
                         ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
-                        ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]]
+                        ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
+                        ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]]
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
