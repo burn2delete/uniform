@@ -41,7 +41,7 @@
                                 source-path (:reader-source-path invocation)) :bytes)
          :reader (resolution-construction-binding-view
                   (:binding (sh03-reader-verification-invocation! source-path invocation)))
-         :syntax (resolution-construction-binding-view (sh04-syntax-current-binding! source-path))
+         :syntax (resolution-construction-binding-view (sh04-syntax-current-binding! source-path invocation))
          :macro (resolution-construction-binding-view (sh05-macro-current-binding! source-path))
          :resolver (resolution-construction-binding-view (sh06-resolution-current-binding! source-path))
          :resolver-inputs (sh06-resolution-current-source-key)
@@ -51,14 +51,18 @@
     dependencies))
 
 (defn- resolution-construction-observe [source-path invocation]
-  (try
+  (let [selected (sh04-syntax-selection! source-path invocation)]
+   (try
     (resolution-construction-dependencies source-path invocation)
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
     ;; Optional observations may be stricter than the owning reader (for
     ;; example secure snapshot link/permission policy). No new admission gate.
-    (catch Exception _ ::unavailable)))
+    (catch Exception _
+      (if selected
+        (resolution-construction-fail! source-path :selected-syntax-dependency-unavailable)
+        ::unavailable)))))
 
 (defn- resolution-construction-roots []
   ;; Explicit short-seam drift boundary. No namespace scan or missing roots;
@@ -73,6 +77,16 @@
          #'sh03-reader-authenticated-envelope-options #'sh03-reader-verification-invocation!
          #'sh03-reader-invocation-source! #'sh03-reader-current-binding!
          #'sh03-reader-read-selected-source-bytes! #'sh04-syntax-current-binding!
+         #'sh04-syntax-selection! #'sh04-development-syntax-source!
+         #'sh04-development-syntax-data! #'sh04-development-syntax-interface! #'sh04-development-syntax-binding!
+         #'sh04-development-syntax-binding? #'sh04-development-syntax-context!
+         #'sh04-development-syntax-verification-context!
+         #'sh04-syntax-verification-binding!
+         #'sh04-development-syntax-contract #'sh04-development-syntax-diagnostics
+         #'sh04-syntax-source-relative-path #'sh04-syntax-resolve-source-path #'sh04-syntax-plan-identities
+         #'sh04-syntax-public-function-shapes #'sh04-syntax-public-function-hashes
+         #'p15-s23-stage2-compiler-artifact-plan #'p15-s23-c11-mir-digest
+         #'read-forms #'c-backend-canonical-value #'sha256-hex
          #'sh04-syntax-read-pinned-source! #'sh05-macro-current-binding!
          #'sh05-macro-read-pinned-source! #'sh06-resolution-current-binding!
          #'sh06-resolution-binding-current! #'sh06-resolution-current-source-key

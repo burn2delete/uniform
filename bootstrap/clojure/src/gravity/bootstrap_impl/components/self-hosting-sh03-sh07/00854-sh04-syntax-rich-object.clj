@@ -91,7 +91,10 @@
 
 (defn sh04-syntax-sh02-descriptor
   [source-path binding summary]
-  (let [projection-name :syntax-product-identities
+  (let [selected? (sh04-development-syntax-binding? binding)
+        implementation-name :syntax-implementation-binding
+        implementation (:implementation-projection binding)
+        projection-name :syntax-product-identities
         fact-name :syntax-product-binding
         identity-name :syntax-result
         identity-domain :gravity/sh04-syntax-result-identity-v1
@@ -128,18 +131,26 @@
       :functions-semantic-hash (:functions-semantic-hash binding)
       :builder-function 'c3-syntax-stream-build-template
       :builder-semantic-hash
-      (get sh04-syntax-public-function-hashes
+      (get (if selected? (:public-function-hashes binding) sh04-syntax-public-function-hashes)
            'c3-syntax-stream-build-template)
-      :function-shapes sh04-syntax-public-function-shapes}
+      :function-shapes (if selected?
+                         (into {} (map (fn [[name shape]]
+                                         [name (assoc shape :semantic-hash
+                                                 (get (:public-function-hashes binding) name))])
+                                       (:public-function-shapes binding)))
+                         sh04-syntax-public-function-shapes)}
      :projection-contract
-     {:contract-kind :gravity/sh04-syntax-product-envelope-contract
+     {:contract-kind (if selected? :gravity/sh04-development-syntax-product-envelope-contract-v1
+                                   :gravity/sh04-syntax-product-envelope-contract)
       :contract-version 1 :profile :meta :target :jvm
-      :required-semantic-projections [projection-name]
+      :required-semantic-projections (cond-> [projection-name] selected? (conj implementation-name))
       :required-fact-families [fact-name]
       :required-identity-subjects [identity-name]}
      :semantic-projections
-     [{:name projection-name :role :complete-syntax-product-identities
-       :entry-count (count summary) :value summary}]
+     (cond-> [{:name projection-name :role :complete-syntax-product-identities
+               :entry-count (count summary) :value summary}]
+       selected? (conj {:name implementation-name :role :development-unadmitted-syntax-implementation
+                        :entry-count (count implementation) :value implementation}))
      :fact-transitions
      [{:name fact-name :disposition :preserved
        :input fact-value :output fact-value

@@ -1,4 +1,4 @@
-(declare ^:private p15-s23-c6c10-digest-validated-form)
+(declare ^:private p15-s23-c6c10-digest-validated-form sh04-syntax-selection!)
 
 (defn- sh03-reader-authenticated-envelope-options
   ([source-path invocation] (sh03-reader-authenticated-envelope-options source-path invocation nil))
@@ -6,11 +6,15 @@
   (when (some? invocation)
     (when-not
      (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
-          (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
+          (contains? #{#{:reader-source-path :authenticated-envelope-options}
+                       #{:reader-source-path :authenticated-envelope-options :syntax-source-selection}}
+                     (set (keys invocation)))
           (string? (:reader-source-path invocation))
           (= {:source :development-current} (:authenticated-envelope-options invocation)))
       (sh03-reader-boundary-fail!
        source-path :explicit-sh03-reader-invocation-source-selection nil {}))
+    (when (contains? invocation :syntax-source-selection)
+      (sh04-syntax-selection! source-path invocation))
     (sh03-reader-invocation-source! source-path (:reader-source-path invocation) expected-binding)
     (:authenticated-envelope-options invocation))))
 
