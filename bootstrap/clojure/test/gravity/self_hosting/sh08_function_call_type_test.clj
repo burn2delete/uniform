@@ -22929,3 +22929,49 @@
                 result (invoke header core node call edge nodes changed types module)]
             (is (= expected (:status result)))))
         (is (empty? @callbacks))))))
+
+(deftest bare-keyword-anchor-throw-consumer-development-kernel
+  ;; The actual scoped-call consumer has a separate outer allowance. BKA's
+  ;; semantic result carries no helper report for that consumer to debit.
+  (doseq [anchor-index [0 1]]
+    (let [anchor {:kind :gravity.type/set :shape :literal
+                  :element-types (vec (repeat 1030 :gravity.type/keyword))}
+          input (atomic-equality-input (assoc [:gravity.type/set :gravity.type/set] anchor-index anchor))
+          record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                  :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+          function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                    :source {:form-id :predicate-form :syntax-id :predicate-function}
+                    :evaluation {:kind :function-creation :order []}}
+          ordered (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                        (get-in input [:core :nodes]))
+          node (last ordered) call (:call input)
+          edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+          core (assoc (:core input) :nodes (conj ordered function) :function-records [record]
+                      :call-edges [edge] :root-core-node-ids [:predicate-fn])
+          nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+          derived (pr359-descriptor-c7 'sh08-bka-derive core node call edge nodes (:bindings input) (:types input) (:forms input))
+          descriptor (:descriptor derived)
+          types (assoc (:types input) :operator descriptor :call :gravity.type/bool)
+          bindings (vec (vals (:bindings input)))
+          functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                           :parameters [] :return :gravity.type/bool :latent-effects []
+                                           :capabilities [] :thrown-error-effects []}}
+          direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+          scope (pr359-descriptor-c7 'sh08-tc-scope-with-types core (:throws direct) 65536 types)
+          check #(pr359-descriptor-c7 'sh08-tc-products core % functions bindings direct 65536)
+          accepted (check types)]
+      (is (= :accepted (:status derived) (:status accepted)))
+      (is (= :accepted (:status scope)))
+      (is (true? (:active? scope)))
+      (is (contains? (:scope scope) :predicate-function))
+      (is (not (contains? derived :work-count)))
+      (is (= [] (get-in accepted [:throws :predicate-function])))
+      (is (= [] (:diagnostics accepted)))
+      (is (pos? (:work-count accepted)))
+      (doseq [changed [(assoc descriptor :anchor-domain-work 0)
+                       (assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc-in descriptor [:equality-policy :identity] :observed)]]
+        (let [rejected (check (assoc types :operator changed))]
+          (is (= :rejected (:status rejected)))
+          (is (= ["C7-VERIFY" :bare-keyword-anchor-set-equality-source-mismatch]
+                 ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
