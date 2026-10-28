@@ -24328,9 +24328,7 @@
                       convergence
                       {:status (get inference :convergence-status)
                        :round-count (get inference :round-count)
-                       :round-bound (get inference :round-bound)
-                       :proof
-                       :monotone-finite-type-fact-propagation}
+                       :round-bound (get inference :round-bound)}
                       identity-input-base
                       {:domain (if recursive?
                                 (if (sh08-is? recursive-proof)

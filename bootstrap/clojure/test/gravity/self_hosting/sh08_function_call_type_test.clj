@@ -15307,8 +15307,7 @@
     (is (= :converged (get-in gravity [:convergence :status])))
     (is (<= (get-in gravity [:convergence :round-count])
             (get-in gravity [:convergence :round-bound])))
-    (is (= :monotone-finite-type-fact-propagation
-           (get-in gravity [:convergence :proof])))
+    (is (not (contains? (:convergence gravity) :proof)))
     (is (= (set (map :function-core-node-id functions))
            (set (map :function-core-node-id
                      (get-in gravity
@@ -15360,7 +15359,16 @@
                    :gravity.type/string)
          (assoc-in result [:constraint-ledger 0 :status]
                    :rejected)
-         (assoc-in result [:convergence :round-count] 0)]]
+         (assoc-in result [:convergence :round-count] 0)
+         (assoc-in result [:convergence :proof]
+                   :monotone-finite-type-fact-propagation)
+         (-> result
+             (assoc-in [:convergence :proof]
+                       :monotone-finite-type-fact-propagation)
+             (assoc-in [:identity-input :convergence :proof]
+                       :monotone-finite-type-fact-propagation)
+             (assoc-in [:artifact-id-request :convergence :proof]
+                       :monotone-finite-type-fact-propagation))]]
     (doseq [candidate alterations]
       (is (= :rejected
              (:status (verification-result artifact candidate)))))))
