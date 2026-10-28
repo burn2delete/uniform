@@ -2514,7 +2514,7 @@
     (doseq [actual [{:kind :gravity.type/list :shape :literal :element-types []}
                    {:kind :gravity.type/list :shape :literal :element-types [s]} homogeneous :gravity.type/never]]
       (let [{:keys [core facts bindings forms record]} (input-fn actual)
-            returns (leaf 'body-lr-context core facts bindings forms 65536)
+            returns (leaf 'body-lr-context core facts bindings forms)
             facts (assoc facts :return-context (:context returns))
             check #(leaf 'body-function-joins-valid? core % bindings)]
         (is (= :accepted (:status returns)) (pr-str returns))
@@ -2541,8 +2541,8 @@
           actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
           {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
           ids (mapv :function-syntax-id (:function-records core))
-          run (fn [facts budget] (leaf 'body-lr-context core facts bindings (vec (vals forms)) budget))
-          result (run facts 65536) rows (:constraint-ledger facts)
+          run (fn [facts] (leaf 'body-lr-context core facts bindings (vec (vals forms))))
+          result (run facts) rows (:constraint-ledger facts)
           first-id (first ids) index (.indexOf (mapv :function-id (:function-type-table facts)) first-id)
           body-id (get-in inputs [0 :record :body-core-node-id])]
       (is (= :accepted (:status checked) (:status result)) (pr-str result))
@@ -2550,8 +2550,7 @@
       (is (not= ids (vec (keys functions))))
       (is (= ids (mapv #(get-in % [:lhs :function-id]) rows)))
       (is (= (set ids) (set (keys (get-in result [:context :premises])))))
-      (is (= result (run facts (:work-count result))))
-      (is (= :list-return-work-limit (:reason (run facts (dec (:work-count result))))))
+      (is (not (contains? result :work-count)))
       (doseq [changed [(assoc facts :constraint-ledger [])
                        (update facts :constraint-ledger conj (first rows))
                        (assoc facts :constraint-ledger (vec (reverse rows)))
@@ -2563,12 +2562,14 @@
                        (assoc-in facts [:function-type-table index :return-actual-type] :gravity.type/list)
                        (assoc-in facts [:function-type-table index :return] :gravity.type/list)
                        (assoc-in facts [:type-table body-id] (positional [:gravity.type/keyword]))]]
-        (is (= :rejected (:status (run changed 65536)))))
+        (let [rejected (run changed)]
+          (is (= :rejected (:status rejected)))
+          (is (not (contains? rejected :work-count)))))
       (doseq [changed-bindings [(assoc-in bindings [(get-in inputs [0 :declaration :element-binding-id]) :kind] :var)]]
         (is (= :list-return-source-mismatch
-               (:reason (leaf 'body-lr-context core facts changed-bindings (vec (vals forms)) 65536)))))
+               (:reason (leaf 'body-lr-context core facts changed-bindings (vec (vals forms)))))))
       (is (= :list-return-constraint-census
-             (:reason (leaf 'body-lr-context (assoc core :function-records []) facts bindings (vec (vals forms)) 65536)))))
+             (:reason (leaf 'body-lr-context (assoc core :function-records []) facts bindings (vec (vals forms)))))))
     (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
                     (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
                     (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]

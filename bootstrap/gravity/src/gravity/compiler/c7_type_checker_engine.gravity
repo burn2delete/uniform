@@ -23386,69 +23386,111 @@
         {:status :rejected :reason :list-return-declaration-required})
       {:status :rejected :reason :list-return-declaration-required})))
 
-(defn sh08-lr-derive [core record function nodes types bindings forms budget]
-  (let [signature (get record :signature) declaration (get signature :return)
-        declared (get declaration :type-id) body-id (get record :body-core-node-id)
-        actual (get types body-id :gravity.type/unknown)
-        base (+ 64 (if (vector? (get signature :parameters)) (count (get signature :parameters)) 0))]
-    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
-      (let [validation (sh08-lr-validate-types declared actual) work base]
-        (if (= :accepted (get validation :status))
-          (let [fn-node (get nodes (get record :function-core-node-id)) body (get nodes body-id)
-                fn-form (get forms (get (get fn-node :source) :form-id))
-                body-form (get forms (get (get body :source) :form-id))
-                ids (get fn-form :child-form-ids) parameter-form (get forms (get ids 1))
-                marker (get forms (get declaration :marker-form-id)) application (get forms (get declaration :type-form-id))
-                constructor (get forms (get declaration :constructor-form-id)) member (get forms (get declaration :element-form-id))
-                type-binding (get bindings (get declaration :type-binding-id))
-                element-binding (get bindings (get declaration :element-binding-id))
-                definition-binding (get bindings (get record :definition-binding-id))]
-            (if (sh08-ft-all-true?
-                  [(sh08-lr-declaration? declaration bindings)
-                   (= :fn (get fn-node :core-form)) (= [body-id] (get fn-node :children))
-                   (= :list (get fn-form :kind)) (vector? ids) (= 5 (if (vector? ids) (count ids) 0))
-                   (= (get record :function-syntax-id) (get function :function-id) (get (get fn-node :source) :syntax-id))
-                   (= (get record :function-core-node-id) (get function :function-core-node-id))
-                   (= body-id (get function :body-core-node-id) (get body :node-id))
-                   (= (get record :function-form-id) (get fn-form :form-id))
-                   (= signature (get function :signature) (get (get fn-node :attributes) :signature))
-                   (= declared (get function :return))
-                   (= [2 4] [(get declaration :source-child-index) (get signature :body-source-child-index)])
-                   (= [(get marker :form-id) (get application :form-id) (get body-form :form-id)]
-                      [(get ids 2) (get ids 3) (get ids 4)])
-                   (= [(get marker :kind) (get marker :value)] [:keyword ':-])
-                   (= (get marker :syntax-id) (get declaration :marker-syntax-id))
-                   (= :list (get application :kind))
-                   (= [(get constructor :form-id) (get member :form-id)] (get application :child-form-ids))
-                   (= (get application :syntax-id) (get declaration :type-syntax-id))
-                   (= (get constructor :syntax-id) (get declaration :constructor-syntax-id))
-                   (= (get member :syntax-id) (get declaration :element-syntax-id))
-                   (= (get fn-form :form-id) (get marker :parent-form-id) (get application :parent-form-id) (get body-form :parent-form-id))
-                   (= (get application :form-id) (get constructor :parent-form-id) (get member :parent-form-id))
-                   (= (get application :scope-id) (get constructor :scope-id) (get member :scope-id) (get parameter-form :scope-id))
-                   (= :symbol (get constructor :kind) (get member :kind))
-                   (= [(get constructor :value) (get member :value)]
-                      [(get declaration :constructor-reference-symbol) (get declaration :element-reference-symbol)])
-                   (= (get fn-node :source) (sh08-lr-source fn-form))
-                   (= (get body :source) (sh08-lr-source body-form))
-                   (= (get record :definition-binding-id) (get definition-binding :binding-id))
-                   (= (get record :definition-name) (get definition-binding :name))])
-              {:status :accepted :work-count work
-               :premise {:version :sh08-homogeneous-list-return-v2 :relation (get validation :relation)
-                         :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
-                         :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
-                         :declaration declaration :function-record record :definition-binding definition-binding
-                         :type-binding type-binding :element-binding element-binding
-                         :function-source (get fn-node :source) :body-source (get body :source)
-                         :return-source (sh08-lr-source application) :constructor-source (sh08-lr-source constructor)
-                         :element-source (sh08-lr-source member)
-                         :checked-element-type (get declared :element-type) :checked-element-count (get validation :checked-member-count)
-                         :normal-completion? (= false (= actual :gravity.type/never))
-                         :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
-                         :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
-                         :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
-              {:status :rejected :reason :list-return-source-mismatch :work-count work}))
-          (assoc validation :work-count work))))))
+(defn sh08-lr-derive [core record function nodes types bindings forms]
+  (let [signature (get record :signature)
+        declaration (get signature :return)
+        declared (get declaration :type-id)
+        body-id (get record :body-core-node-id)
+        actual (get types body-id :gravity.type/unknown)]
+    (let [validation (sh08-lr-validate-types declared actual)]
+      (if (= :accepted (get validation :status))
+        (let [fn-node (get nodes (get record :function-core-node-id))
+              body (get nodes body-id)
+              fn-form (get forms (get (get fn-node :source) :form-id))
+              body-form (get forms (get (get body :source) :form-id))
+              ids (get fn-form :child-form-ids)
+              parameter-form (get forms (get ids 1))
+              marker (get forms (get declaration :marker-form-id))
+              application (get forms (get declaration :type-form-id))
+              constructor (get forms (get declaration :constructor-form-id))
+              member (get forms (get declaration :element-form-id))
+              type-binding (get bindings (get declaration :type-binding-id))
+              element-binding (get bindings (get declaration :element-binding-id))
+              definition-binding (get bindings (get record :definition-binding-id))]
+          (if (sh08-ft-all-true?
+                [(sh08-lr-declaration? declaration bindings)
+                 (= :fn (get fn-node :core-form))
+                 (= [body-id] (get fn-node :children))
+                 (= :list (get fn-form :kind))
+                 (vector? ids)
+                 (= 5 (if (vector? ids) (count ids) 0))
+                 (=
+                   (get record :function-syntax-id)
+                   (get function :function-id)
+                   (get (get fn-node :source) :syntax-id))
+                 (= (get record :function-core-node-id) (get function :function-core-node-id))
+                 (= body-id (get function :body-core-node-id) (get body :node-id))
+                 (= (get record :function-form-id) (get fn-form :form-id))
+                 (= signature (get function :signature) (get (get fn-node :attributes) :signature))
+                 (= declared (get function :return))
+                 (= [2 4] [(get declaration :source-child-index) (get signature :body-source-child-index)])
+                 (=
+                   [(get marker :form-id) (get application :form-id) (get body-form :form-id)]
+                   [(get ids 2) (get ids 3) (get ids 4)])
+                 (= [(get marker :kind) (get marker :value)] [:keyword ':-])
+                 (= (get marker :syntax-id) (get declaration :marker-syntax-id))
+                 (= :list (get application :kind))
+                 (= [(get constructor :form-id) (get member :form-id)] (get application :child-form-ids))
+                 (= (get application :syntax-id) (get declaration :type-syntax-id))
+                 (= (get constructor :syntax-id) (get declaration :constructor-syntax-id))
+                 (= (get member :syntax-id) (get declaration :element-syntax-id))
+                 (=
+                   (get fn-form :form-id)
+                   (get marker :parent-form-id)
+                   (get application :parent-form-id)
+                   (get body-form :parent-form-id))
+                 (= (get application :form-id) (get constructor :parent-form-id) (get member :parent-form-id))
+                 (=
+                   (get application :scope-id)
+                   (get constructor :scope-id)
+                   (get member :scope-id)
+                   (get parameter-form :scope-id))
+                 (= :symbol (get constructor :kind) (get member :kind))
+                 (=
+                   [(get constructor :value) (get member :value)]
+                   [(get declaration :constructor-reference-symbol)
+                    (get declaration :element-reference-symbol)])
+                 (= (get fn-node :source) (sh08-lr-source fn-form))
+                 (= (get body :source) (sh08-lr-source body-form))
+                 (= (get record :definition-binding-id) (get definition-binding :binding-id))
+                 (= (get record :definition-name) (get definition-binding :name))])
+            {:status :accepted
+             :premise
+             {:checked-element-count (get validation :checked-member-count)
+              :definition-binding definition-binding
+              :function-source (get fn-node :source)
+              :constructor-source (sh08-lr-source constructor)
+              :checked-element-type (get declared :element-type)
+              :body-core-node-id body-id
+              :function-record record
+              :normal-completion? (= false (= actual :gravity.type/never))
+              :element-source (sh08-lr-source member)
+              :element-binding element-binding
+              :type-binding type-binding
+              :preserves
+              [:value
+               :actual-body-type
+               :provenance
+               :schema
+               :ownership
+               :linearity
+               :regions
+               :effects
+               :allocation-obligations]
+              :function-core-node-id (get record :function-core-node-id)
+              :declaration declaration
+              :body-source (get body :source)
+              :declared-return-type declared
+              :target (get (get core :module) :target)
+              :version :sh08-homogeneous-list-return-v2
+              :relation (get validation :relation)
+              :function-id (get function :function-id)
+              :profile (get (get core :module) :profile)
+              :actual-body-type actual
+              :return-source (sh08-lr-source application)
+              :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])}}
+            {:status :rejected :reason :list-return-source-mismatch}))
+        validation))))
 
 (defn sh08-lr-row [premise]
   {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v2 :return-compatibility premise}
@@ -23494,47 +23536,69 @@
                  (assoc function :return next-type)
                  :return-conflict conflict)))))))
 
-(defn sh08-ft-update-function-returns-with-context [functions nodes types context budget]
+(defn sh08-ft-update-function-returns-with-context [functions nodes types context]
   (let [updated (sh08-ft-update-function-returns functions nodes types)
         active? (loop [ids (keys functions)]
-                  (if (= 0 (count ids)) false
-                    (if (= :sh07-list-return-declaration-v1 (get (get (get (get functions (first ids)) :signature) :return) :rule-version))
-                      true (recur (rest ids)))))]
-    (if (= false active?) {:status :accepted :function-types updated :constraints [] :diagnostics [] :work-count 0}
-      (let [core (get context :ordering-core) source-forms (get context :lookup-forms)
-            source-bindings (get context :lookup-bindings)
-            base (+ (count functions) (count (get core :function-records)) (count source-forms) (count source-bindings))]
-        (if (> base budget)
-          {:status :rejected :function-types updated :constraints [] :work-count base
-           :diagnostics [{:node {} :rule "C7-GENERIC" :reason :list-return-work-limit :expected :remaining-type-join-units :actual budget}]}
-          (let [forms (if (map? source-forms) source-forms (sh08-ft-index source-forms :form-id))
-                bindings (if (map? source-bindings) source-bindings (sh08-ft-binding-index source-bindings))]
-            (loop [remaining (get core :function-records) out updated used base rows []]
-              (if (= 0 (count remaining))
-                {:status :accepted :function-types out :constraints rows :diagnostics [] :work-count used}
-                (let [record (first remaining) id (get record :function-syntax-id) function (get out id)
-                      declaration (get (get function :signature) :return)]
-                  (if (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
-                    (let [body-id (get function :body-core-node-id) actual (get types body-id :gravity.type/unknown)
-                          checked (if (sh08-ft-unknown? actual)
-                                    (if (> (+ used 1) budget)
-                                      {:status :rejected :reason :list-return-work-limit :work-count 1}
-                                      {:status :deferred :work-count 1})
-                                    (sh08-lr-derive core record function nodes types bindings forms (- budget used)))
-                          total (+ used (get checked :work-count))
-                          premise (get checked :premise)]
-                      (if (contains? #{:accepted :deferred :homogeneous-list-return-incompatible}
-                            (if (= :rejected (get checked :status)) (get checked :reason) (get checked :status)))
-                        (recur (rest remaining)
-                          (assoc out id (assoc function :return-actual-type actual :return-compatibility premise
-                            :return-conflict (if (= :homogeneous-list-return-incompatible (get checked :reason))
-                                               {:function-id id :body-core-node-id body-id :expected (get declaration :type-id) :actual actual} nil)))
-                          total (if (= :accepted (get checked :status)) (conj rows (sh08-lr-row premise)) rows))
-                        {:status :rejected :function-types out :constraints rows :work-count total
-                         :diagnostics [{:node (get nodes body-id)
-                                        :rule (if (= :list-return-work-limit (get checked :reason)) "C7-GENERIC" "C7-VERIFY")
-                                        :reason (get checked :reason) :expected :authenticated-homogeneous-list-return :actual actual}]}))
-                    (recur (rest remaining) out used rows)))))))))))
+                  (if (= 0 (count ids))
+                    false
+                    (if (=
+                          :sh07-list-return-declaration-v1
+                          (get (get (get (get functions (first ids)) :signature) :return) :rule-version))
+                      true
+                      (recur (rest ids)))))]
+    (if (= false active?)
+      {:status :accepted :function-types updated :constraints [] :diagnostics []}
+      (let [core (get context :ordering-core)
+            source-forms (get context :lookup-forms)
+            source-bindings (get context :lookup-bindings)]
+        (let [forms (if (map? source-forms) source-forms (sh08-ft-index source-forms :form-id))
+              bindings (if (map? source-bindings) source-bindings (sh08-ft-binding-index source-bindings))]
+          (loop [remaining (get core :function-records) out updated rows []]
+            (if (= 0 (count remaining))
+              {:status :accepted :function-types out :constraints rows :diagnostics []}
+              (let [record (first remaining)
+                    id (get record :function-syntax-id)
+                    function (get out id)
+                    declaration (get (get function :signature) :return)]
+                (if (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
+                  (let [body-id (get function :body-core-node-id)
+                        actual (get types body-id :gravity.type/unknown)
+                        checked (if (sh08-ft-unknown? actual)
+                                  {:status :deferred}
+                                  (sh08-lr-derive core record function nodes types bindings forms))
+                        premise (get checked :premise)]
+                    (if (contains?
+                          #{:accepted :deferred :homogeneous-list-return-incompatible}
+                          (if (= :rejected (get checked :status)) (get checked :reason) (get checked :status)))
+                      (recur
+                        (rest remaining)
+                        (assoc
+                          out
+                          id
+                          (assoc
+                            function
+                            :return-actual-type
+                            actual
+                            :return-compatibility
+                            premise
+                            :return-conflict
+                            (if (= :homogeneous-list-return-incompatible (get checked :reason))
+                              {:function-id id
+                               :body-core-node-id body-id
+                               :expected (get declaration :type-id)
+                               :actual actual}
+                              nil)))
+                        (if (= :accepted (get checked :status)) (conj rows (sh08-lr-row premise)) rows))
+                      {:status :rejected
+                       :function-types out
+                       :constraints rows
+                       :diagnostics
+                       [{:node (get nodes body-id)
+                         :rule "C7-VERIFY"
+                         :reason (get checked :reason)
+                         :expected :authenticated-homogeneous-list-return
+                         :actual actual}]}))
+                  (recur (rest remaining) out rows))))))))))
 
 (defn sh08-ft-first-return-conflict [function-types node-table]
   (loop [remaining (keys function-types)]
@@ -23613,16 +23677,14 @@
             exhausted? (> (get raw-pass :loop-work-count 0) loop-work-left)
             returns (if exhausted?
                       {:status :accepted :function-types (get raw-pass :function-types)
-                       :constraints [] :diagnostics [] :work-count 0}
+                       :constraints [] :diagnostics []}
                       (sh08-ft-update-function-returns-with-context
                         (sh08-ft-update-param-types (get raw-pass :function-types) next-bindings)
-                        node-table (get raw-pass :type-table) context
-                        (- loop-work-left (get raw-pass :loop-work-count 0))))
+                        node-table (get raw-pass :type-table) context))
             pass (if exhausted? raw-pass
                    (assoc raw-pass
                    :constraints (sh08-ft-add-values-to-set (get returns :constraints) (get raw-pass :constraints))
-                   :diagnostics (sh08-ft-add-values-to-set (get returns :diagnostics) (get raw-pass :diagnostics))
-                   :loop-work-count (+ (get raw-pass :loop-work-count 0) (get returns :work-count))))
+                   :diagnostics (sh08-ft-add-values-to-set (get returns :diagnostics) (get raw-pass :diagnostics))))
             next-functions (get returns :function-types)
             return-conflict
             (if exhausted? nil (sh08-ft-first-return-conflict next-functions node-table))]
