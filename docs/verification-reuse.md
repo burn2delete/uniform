@@ -1171,3 +1171,12 @@ These controls test closure mechanics, not a new real producer proof. Earlier
 producer evidence retains its original consumed-source attribution; it is not
 retroactively evidence for this corrected closure. Renewed controls and
 independent current-source/result review remain required.
+
+The omitted import entered the current test through PR523's depth regression;
+the production facade itself did not acquire that dependency. The corrected
+control run on `baa6319d`, tree `a1bd36d5`, passed 3 tests / 103 assertions,
+natural exit 0 at 256 MiB, Bootstrap absent and clean bookends. These are
+injected cache-mechanics controls. The planner successor also preserves the
+lexical facade's existing paired owner when admitting its three exact nested
+paths; missing ownership and an unknown nested path remain refusals. Its
+renewed planner and control results are pending.

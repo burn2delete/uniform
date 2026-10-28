@@ -692,6 +692,10 @@
         plan (planner/build-plan {:changed-paths [source]})
         shard (first (:shards plan))]
     (is (= #{source "bootstrap/clojure/src/gravity/digest.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/incremental.clj"
@@ -705,6 +709,12 @@
     (is (false? (owned? ownership "c11-mir" closure)))
     (is (false? (owned? (update ownership :module-owners dissoc source)
                         "c2-artifact-identity" closure)))
+    (is (false? (owned? (update ownership :module-owners dissoc
+                                 "bootstrap/clojure/src/gravity/c2_lexical_validation.clj")
+                        "c2-artifact-identity" closure)))
+    (is (false? (owned? ownership "c2-artifact-identity"
+                        {:inputs [{:role :transitive
+                                   :path "bootstrap/clojure/src/gravity/c2_lexical_validation/unreviewed.clj"}]})))
     (is (= :unowned
            (:classification
             (planner/classify-path ownership
