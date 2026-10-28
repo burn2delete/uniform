@@ -993,15 +993,18 @@
                           (try
                             (wiring/run-child-unit! [c11] {} #(throw failure))
                             (catch clojure.lang.ExceptionInfo observed observed)))))
-        ;; The three reviewed leaves still reach the existing runtime observer.
+        (is (= :unreviewed-or-fresh-test-policy
+               (get-in (wiring/run-child-unit! [leaf] {} (constantly {:status :passed}))
+                       [:child-cache-receipt :reason])))
+        (is (empty? @observations))
+        ;; The two cache-eligible leaves still reach the existing runtime observer.
         ;; No saved result or successful compiler execution is supplied here.
-        (doseq [selection [['gravity.c2-artifact-identity-test]
-                           ['gravity.c11-mir-test]
+        (doseq [selection [['gravity.c11-mir-test]
                            ['gravity.compiler-pass-manifest-test]]]
           (let [result (wiring/run-child-unit! selection {} (constantly {:status :passed}))]
             (is (= :unknown-child-configuration
                    (get-in result [:child-cache-receipt :reason])))))
-        (is (= [:startup :runtime :startup :runtime :startup :runtime] @observations))))))
+        (is (= [:startup :runtime :startup :runtime] @observations))))))
 
 (deftest componentized-leaf-closures-bind-the-nested-implementation
   (doseq [[namespace directory expected-count]
