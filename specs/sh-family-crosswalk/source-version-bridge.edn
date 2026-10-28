@@ -1,6 +1,50 @@
 {:predecessor-review-receipt-sha256
  "4a3734f269e33467d5757ff54c44f1ad4515c92def2784237211fc27bb3b7355",
  :applying-main "4325a9f46292472a7f984c5adfef81209874bb5c",
+ :pr513-runtime-shape-ownership-successor
+ {:candidate-head "cbd52bec0f00ed4aa05a1db054d049f5028ad5f7",
+  :authority :preserved-source-lineage-not-acceptance,
+  :conservation
+  {:all-prior-entries-and-header-fields-preserved true,
+   :raw-file-identical-after-removing-exact-three-lines true,
+   :component-task-records-and-source-acceptance-unchanged true,
+   :all180-whole-criterion-acceptance :unassessed},
+  :candidate-base "d20c9adb648bf26e3d648e296683fe0203271486",
+  :added-entry
+  {:section :standalone-test-owners,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/runtime_shape_test.clj",
+   :value
+   {:namespace gravity.self-hosting.runtime-shape-test,
+    :slice "SH-19",
+    :owner :sh-runtime},
+   :raw
+   "  \"bootstrap/clojure/test/gravity/self_hosting/runtime_shape_test.clj\"\n  {:namespace gravity.self-hosting.runtime-shape-test\n   :slice \"SH-19\" :owner :sh-runtime}\n"},
+  :historical-operation
+  {:request-id "c48b77df-b7c4-4cc0-8e8c-3c884fc3092e",
+   :delivery-outcome :unknown,
+   :obsolete-pr374-instruction :withdrawn,
+   :late-delivery-action :retain-as-history-do-not-execute,
+   :not-retried true},
+  :source-path "docs/self-hosting-slice-ownership.edn",
+  :after
+  {:commit "cbd52bec0f00ed4aa05a1db054d049f5028ad5f7",
+   :sha256
+   "3fa75323704d99aaa2065f978b936f012fa758f19108508cea8cae99ed72f2cb"},
+  :predecessor-bridge-sha256
+  "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507",
+  :kind :single-ownership-entry-source-version,
+  :qualification
+  "New parent-authorized PR513-only transaction after lifecycle and exclusive-writer checks. This records only the runtime-shape namespace ownership metadata already present at the immutable candidate. No PR374/PR453 ownership additions, old transition execution, implementation acceptance, source authentication, whole-SH acceptance, native/seedless claim, or dashboard/global-manifest write. Current-main producer/test changes remain with ACC09's normal integration and retain their original evidence applicability.",
+  :predecessor-input-fingerprint
+  "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68",
+  :observed-main "1e784ac42b13a05cfcd0be35072c70239098d103",
+  :before
+  {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+   :sha256
+   "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"},
+  :pr "https://github.com/burn2delete/uniform/pull/513",
+  :candidate-tree "249ba74a90bd7a200c509bfbee9731edaffeb9ac"},
  :incoming-public-prs
  ["https://github.com/burn2delete/uniform/pull/491"
   "https://github.com/burn2delete/uniform/pull/493"
