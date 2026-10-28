@@ -2629,7 +2629,7 @@
       (is (= :accepted (:status context)) (pr-str context))
       (is (= {:list-prepend 2 :vector-append 1} (frequencies (vals (get-in context [:context :families])))))
       (let [checked (get-in context [:context :type-checks nested-id])]
-        (is (= 1 (:work-count checked) (:construction-work checked)))
+        (is (not-any? #(contains? checked %) [:work-count :construction-work]))
         (is (= (positional [nested]) (:result-type checked)))
         (is (not-any? #(contains? checked %) [:operand-work :result-work])))
       (is (true? (leaf 'body-call-joins-with-foreign-valid? core facts bindings {})))
@@ -8704,7 +8704,7 @@
     (is (true? (invoke 'body-ss-type? [carrier])))
     (is (true? (invoke 'body-is-value-type? [carrier])))
     (is (false? (invoke 'body-ds-type? [carrier])))
-    (let [produced (:result-type (invoke 'body-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
+    (let [produced (:result-type (invoke (quote body-ssin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} s]]))
           checked (invoke 'body-lc-validate-types [[produced]])
           nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
       (is (= carrier produced))
@@ -8761,7 +8761,6 @@
         (is (false? (invoke 'body-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'body-lc-validate-types [[wrong]]))))
         (is (zero? @callbacks))))))
-
 (deftest body-string-set-carrier-comparison-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} s :gravity.type/string
@@ -9540,7 +9539,7 @@
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
         work #(invoke 'body-lc-validate-types [%1])
-        produced (:result-type (invoke 'body-syin-type-work [[(finite []) s] 65536]))]
+        produced (:result-type (invoke (quote body-syin-validate-types) [[(finite []) s]]))]
     (is (= carrier produced))
     (is (true? (invoke 'body-syc-type? [produced])))
     (is (false? (invoke 'body-ss-type? [produced])))
@@ -9555,15 +9554,14 @@
     (is (= {:status :accepted} (work [:gravity.type/set])))
     (is (= {:status :accepted} (work [:gravity.type/never])))
     (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}]))))
-    (is (= :rejected (:status (invoke 'body-syin-type-work [[:gravity.type/set s] 65536]))))
-    (is (= :rejected (:status (invoke 'body-syin-type-work [[:gravity.type/unknown s] 65536]))))
+    (is (= :rejected (:status (invoke (quote body-syin-validate-types) [[:gravity.type/set s]]))))
+    (is (= :rejected (:status (invoke (quote body-syin-validate-types) [[:gravity.type/unknown s]]))))
     (doseq [value [s :gravity.type/never]]
-      (let [checked (invoke 'body-syin-type-work [[carrier value] 65536]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
+      (let [checked (invoke (quote body-syin-validate-types) [[carrier value]]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
         (is (= :accepted (:status checked)))
         (is (= expected (:result-type checked)))
         (is (nil? (:input-extent checked)))
-        (is (= checked (invoke 'body-syin-type-work [[carrier value] (:work-count checked)])))
-        (is (= :symbol-set-insertion-work-limit (:reason (invoke 'body-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
+        (is (not-any? #(contains? checked %) [:work-count :operand-work :result-work :construction-work]))))
     (is (= :accepted (:status (invoke 'body-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier (finite [s])] 65536]))))
@@ -9603,13 +9601,12 @@
                  (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
                    (is (= {:status :accepted} (work [value]))))
                  (is (= :unsupported-type (:reason (work [late])))))))
-
 (deftest body-symbol-set-carrier-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
         c7 (ns-resolve upstream 'invoke-c7)
-        carrier (:result-type (c7 'sh08-syin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/symbol] 65536]))]
+        carrier (:result-type (c7 (quote sh08-syin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} :gravity.type/symbol]]))]
     (doseq [arguments [[carrier :gravity.type/symbol]
                        [carrier :gravity.type/never]]]
       (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
@@ -9732,8 +9729,6 @@
       (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier needle] 65536])))))
 )
 )
-
-
 (defn- vector-first-symbol-loop-c8-cold-input []
   ;; Complete normalized DATA only. No C5/C6, artifact seal, or admission claim.
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)

@@ -4021,9 +4021,8 @@
       (if (if (p15-s23-sse-call-ids? node call)
             (if (vector? args) (if (= 2 (count args))
               (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
-        (let [validation (p15-s23-syin-type-work [(get types (get args 0) :gravity.type/unknown)
-                                                  (get types (get args 1) :gravity.type/unknown)] (- budget base))
-              work (+ base (get validation :work-count))]
+        (let [validation (p15-s23-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
+              work base]
           (if (= :accepted (get validation :status))
             (let [header (p15-s23-pl-source core node call edge (get env :nodes) (get env :bindings) types (get core :module) validation)]
               (if (if (map? header) (if (p15-s23-ksin-call-forms? node (get env :nodes) (get env :forms))
@@ -4032,8 +4031,7 @@
                 (let [descriptor (p15-s23-pl-finish header)]
                   {:status :accepted :work-count work :type (get descriptor :result-type) :descriptor descriptor})
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-            {:status :rejected :reason (if (= :symbol-set-insertion-work-limit (get validation :reason))
-                                        :loop-type-work-limit :unsupported-loop-member-grounding) :work-count work}))
+            {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
         {:status :rejected :reason :unsupported-loop-member-grounding :work-count base}))))
 
 (defn p15-s23-lsi-ground [transfer coordinate binding env budget]
@@ -5242,44 +5240,39 @@
 
 (defn p15-s23-pl-list? [type]
   (if (= :gravity.type/list type) true
-    (if (map? type) (= :gravity.type/list (get type :kind)) false)))
+    (if (p15-s23-lc-native-map? type) (= :gravity.type/list (get type :kind)) false)))
 
-(defn p15-s23-ssin-type-work [arguments budget]
-  ; The closed carrier retains only the String member domain, never cardinality.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2)
-      {:status :rejected :reason :string-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (if (map? receiver) (= :homogeneous (get receiver :shape)) false)
-            (if (< limit (+ 3 construction))
-              {:status :rejected :reason :string-set-insertion-work-limit :work-count (+ 3 construction)}
-              (if (if (p15-s23-ss-type? receiver) (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
-                {:status :accepted :collection-family :string-set-insertion :argument-types arguments
-                 :input-extent nil :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})
-                 :operand-work 3 :result-work 0 :construction-work construction :work-count (+ 3 construction)}
-                {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 3}))
-          (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (= :gravity.type/set (get receiver :kind))
-                  (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024)
-                {:status :rejected :reason :string-set-insertion-type-width :work-count 2}
-                (if (> work limit)
-                  {:status :rejected :reason :string-set-insertion-work-limit :work-count work}
-                  (let [valid? (loop [i 0]
-                                 (if (= i width) true
-                                   (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))]
-                    (if (if valid? (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
-                      {:status :accepted :collection-family :string-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :string-set-insertion-operand-type-required :work-count work})))))
-            {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 2})))
-        {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count 2}))))
+(defn p15-s23-ssin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (p15-s23-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? (p15-s23-ss-type? receiver)
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/string (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :string-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})}
+              {:status :rejected :reason :string-set-insertion-operand-type-required}))
+          {:status :rejected :reason :string-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :string-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn p15-s23-syin-selected? [arguments]
+  (if (= :accepted (get (p15-s23-lc-validate-types arguments) :status))
+
   ; Preserve existing routes for ambiguous Never and known legacy member values.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
@@ -5294,45 +5287,40 @@
           (if (= 0 (count members)) (= :gravity.type/symbol value)
             (if (= :gravity.type/symbol (get members 0))
               (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false))
-        false)) false))
+        false)) false)
+    false))
 
-(defn p15-s23-syin-type-work [arguments budget]
-  ; STD3: finite Symbol input is checked completely; the result retains no member facts.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (p15-s23-syc-type? receiver)
-            (let [work (+ 3 construction)]
-              (if (> work limit)
-                {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
-                (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-                  {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
-                   :input-extent nil :result-type (if (= :gravity.type/never value) :gravity.type/never
-                                                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
-                   :operand-work 3 :result-work 0 :construction-work construction :work-count work}
-                  {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 3})))
-            (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
-                      (if (keyword? (first fields)) (recur (rest fields)) false)))
-                  (if (= :gravity.type/set (get receiver :kind))
-                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024) {:status :rejected :reason :symbol-set-insertion-type-width :work-count 2}
-                (if (> work limit) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
-                  (if (loop [i 0] (if (= i width) true
-                        (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
-                    (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-                      {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work})
-                    {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work}))))
-            {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 2})))
-        {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count 2}))))
+(defn p15-s23-syin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (p15-s23-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? (p15-s23-syc-type? receiver)
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/symbol (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :symbol-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})}
+              {:status :rejected :reason :symbol-set-insertion-operand-type-required}))
+          {:status :rejected :reason :symbol-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :symbol-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn p15-s23-ksin-selected? [arguments]
+  (if (= :accepted (get (p15-s23-lc-validate-types arguments) :status))
+
   ; Preserve the String route for ambiguous empty-Set/Never and wrong families.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
@@ -5344,74 +5332,70 @@
         (let [members (get receiver :element-types)]
           (if (= 0 (count members)) (= :gravity.type/keyword value)
             (if (= :gravity.type/keyword (get members 0))
-              (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false))) false)) false))
+              (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false))) false)) false)
+    false))
 
-(defn p15-s23-ksin-type-work [arguments budget]
-  ; STD3: finite Keyword input is checked completely; the result retains no member facts.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
-                      (if (keyword? (first fields)) (recur (rest fields)) false)))
-                  (if (= :gravity.type/set (get receiver :kind))
-                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024) {:status :rejected :reason :keyword-set-insertion-type-width :work-count 2}
-                (if (> work limit) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count work}
-                  (if (loop [i 0] (if (= i width) true
-                        (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false)))
-                    (if (if (= :gravity.type/keyword value) true (= :gravity.type/never value))
-                      {:status :accepted :collection-family :keyword-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work})
-                    {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work}))))
-            {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count 2}))
-        {:status :rejected :reason :keyword-set-insertion-arity-mismatch :work-count 2}))))
+(defn p15-s23-ksin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (p15-s23-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? false
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/keyword (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :keyword-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)}
+              {:status :rejected :reason :keyword-set-insertion-operand-type-required}))
+          {:status :rejected :reason :keyword-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :keyword-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
-(defn p15-s23-pl-type-work [arguments budget]
-  (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
-    (if (if (< budget 2) false (p15-s23-syin-selected? arguments))
-      (p15-s23-syin-type-work arguments budget)
-      (if (p15-s23-ksin-selected? arguments)
-      (p15-s23-ksin-type-work arguments budget)
-      (p15-s23-ssin-type-work arguments budget)))
-  (if (= 2 (count arguments))
-    (let [checked (p15-s23-lc-validate-types arguments)]
-      (if (= :accepted (get checked :status))
-        (let [receiver (first arguments) value (get arguments 1) invoked? (= false (= :gravity.type/never value))
-              homogeneous? (p15-s23-hl-type? receiver) positional? (= :literal (get receiver :shape))
-              elements (get receiver :element-types) width (if (vector? elements) (count elements) 0)
-              construction (if (if invoked? positional? false) (+ 1 width) 0)
-              work construction]
-          (if (= false (p15-s23-pl-list? receiver))
-            {:status :rejected :reason :list-prepend-list-type-required}
-            (if (if homogeneous? (if invoked? (= false (= value (get receiver :element-type))) false) false)
-              {:status :rejected :reason :list-prepend-element-type-mismatch}
-              (if (if positional? (if invoked? (>= width 1024) false) false)
-                {:status :rejected :reason :list-prepend-type-width-limit}
-                (if (> work budget)
-                  {:status :rejected :reason :list-prepend-work-limit :work-count work}
-                  (let [result (if (= false invoked?) :gravity.type/never
-                                 (if positional?
-                                   {:kind :gravity.type/list :shape :literal
-                                    :element-types (loop [remaining elements out [value]]
-                                                     (if (= 0 (count remaining)) out
-                                                       (recur (rest remaining) (conj out (first remaining)))))}
-                                   receiver))
-                        validation (p15-s23-lc-validate-types [result])
-                        total work]
-                    (if (= :accepted (get validation :status))
-                      {:status :accepted :work-count total
-                       :construction-work construction :result-type result}
-                      {:status :rejected :reason :list-prepend-result-type-required
-                       :type-check-reason (get validation :reason) :work-count total})))))))
-        {:status :rejected :reason :list-prepend-operand-type-required
-         :type-check-reason (get checked :reason)}))
-    {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0})))
+(defn p15-s23-pl-validate-types [arguments]
+  (let [checked (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (p15-s23-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (first arguments) value (get arguments 1)]
+            (if (if (= :gravity.type/set receiver) true
+                  (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false))
+              (if (p15-s23-syin-selected? arguments) (p15-s23-syin-validate-types arguments)
+                (if (p15-s23-ksin-selected? arguments) (p15-s23-ksin-validate-types arguments)
+                  (p15-s23-ssin-validate-types arguments)))
+              (let [invoked? (= false (= :gravity.type/never value))
+                    homogeneous? (p15-s23-hl-type? receiver)
+                    positional? (if (map? receiver) (= :literal (get receiver :shape)) false)]
+                (if (= false (p15-s23-pl-list? receiver))
+                  {:status :rejected :reason :list-prepend-list-type-required}
+                  (if (if homogeneous? (if invoked? (= false (= value (get receiver :element-type))) false) false)
+                    {:status :rejected :reason :list-prepend-element-type-mismatch}
+                    (let [result (if (= false invoked?) :gravity.type/never
+                                   (if positional?
+                                     {:kind :gravity.type/list :shape :literal
+                                      :element-types (loop [remaining (get receiver :element-types) out [value]]
+                                                       (if (= 0 (count remaining)) out
+                                                         (recur (rest remaining) (conj out (first remaining)))))}
+                                     receiver))
+                          validation (p15-s23-lc-validate-types [result])]
+                      (if (= :accepted (get validation :status))
+                        {:status :accepted :result-type result}
+                        {:status :rejected :reason :list-prepend-result-type-required
+                         :type-check-reason (get validation :reason)})))))))
+          {:status :rejected :reason :list-prepend-arity-mismatch}))
+      {:status :rejected :reason :list-prepend-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn p15-s23-ksin-source-ids? [node call nodes bindings module]
   (if (p15-s23-sse-call-ids? node call)
@@ -5456,7 +5440,32 @@
                                 (if (= (get (get child :attributes) :symbol) (get form :value)) (recur (+ i 1)) false) false)
                               (recur (+ i 1))) false) false) false) false)))) false) false) false) false)) false))
 
+(defn p15-s23-pl-validation? [validation]
+  ; This is a closed semantic cell, not a transferable proof or cost report.
+  (let [header (bootstrap-native-carrier-header validation) kind (get header 0)]
+    (if (if (= :map kind) true
+          (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
+      (if (>= (get header 2) 0)
+        (if (loop [fields (keys validation)]
+              (if (= 0 (count fields)) true
+                (if (keyword? (first fields)) (recur (rest fields)) false)))
+          (if (= :accepted (get validation :status))
+            (let [fields (set (keys validation))]
+              (if (= #{:status :result-type} fields)
+                (= :accepted (get (p15-s23-lc-validate-types [(get validation :result-type)]) :status))
+                (if (= #{:status :collection-family :argument-types :input-extent :result-type} fields)
+                  (if (keyword? (get validation :collection-family))
+                    (if (contains? #{:string-set-insertion :symbol-set-insertion :keyword-set-insertion}
+                                   (get validation :collection-family))
+                      (if (if (= nil (get validation :input-extent)) true
+                            (if (integer? (get validation :input-extent))
+                              (>= (get validation :input-extent) 0) false))
+                        (if (= :accepted (get (p15-s23-lc-validate-types (get validation :argument-types)) :status))
+                          (= :accepted (get (p15-s23-lc-validate-types [(get validation :result-type)]) :status)) false)
+                        false) false) false) false))) false) false) false) false)))
 (defn p15-s23-pl-source [core node call edge nodes bindings types module validation]
+  (if (p15-s23-pl-validation? validation)
+
   (if (if (if (= :symbol-set-insertion (get validation :collection-family)) true (= :keyword-set-insertion (get validation :collection-family)))
         (p15-s23-ksin-source-ids? node call nodes bindings module) true)
     (if (if (vector? (get call :argument-node-ids))
@@ -5604,6 +5613,7 @@
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                       :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]}))) nil)) nil)
+    nil)
     nil))
 
 (defn p15-s23-pl-constraint [descriptor]
@@ -5710,13 +5720,10 @@
               (assoc (p15-s23-typed-node-error :typed-list-prepend-call-shape-required node) :work-count base)
             (if (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))))
               (let [receiver (get (get context :types) (get args 0))
-                  row-work (if (if (= :gravity.type/set receiver) true (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false)) (* 3 (count (get context :ledger))) 0)
-                  validation (p15-s23-pl-type-work [(get (get context :types) (get args 0) :gravity.type/unknown)
-                                                   (get (get context :types) (get args 1) :gravity.type/unknown)] (- budget base row-work))
-                  charge (if (contains? validation :work-count) (+ base row-work (get validation :work-count)) (+ base row-work))]
-              (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit} (get validation :reason))
-                (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
-                (if (= false (= :accepted (get validation :status)))
+                  row-work (if (if (= :gravity.type/set receiver) true (if (p15-s23-lc-native-map? receiver) (= :gravity.type/set (get receiver :kind)) false)) (* 3 (count (get context :ledger))) 0)
+                  validation (p15-s23-pl-validate-types [(get (get context :types) (get args 0) :gravity.type/unknown) (get (get context :types) (get args 1) :gravity.type/unknown)])
+                  charge (+ base row-work)]
+              (if (= false (= :accepted (get validation :status)))
                   (assoc (p15-s23-typed-node-error (get validation :reason) node) :work-count charge)
       (if (if (= :symbol-set-insertion (get validation :collection-family))
             (p15-s23-ksin-ledger-ids? context)
@@ -5800,7 +5807,7 @@
             (if (= :keyword-set-insertion (get validation :collection-family)) :unsupported-or-mismatched-typed-keyword-set-insertion
                                         (if (= :string-set-insertion (get validation :collection-family))
                                         :unsupported-or-mismatched-typed-string-set-insertion :unsupported-or-mismatched-typed-list-prepend))) node) :work-count charge)))
-      (assoc (p15-s23-typed-node-error :typed-conj-source-identities-required node) :work-count charge)))))
+      (assoc (p15-s23-typed-node-error :typed-conj-source-identities-required node) :work-count charge))))
               (assoc (p15-s23-typed-node-error :typed-conj-source-id-required node) :work-count base)))))))))
 
 (defn p15-s23-typed-compile-append [context node budget]
@@ -10835,7 +10842,9 @@
     (let [items (get arguments 0) needle (get arguments 1)]
       (if (= :gravity.type/integer needle) true
         (if (= :gravity.type/never needle)
-          (if (map? items)
+          ; Descriptor field count is schema, not a collection-size quota.
+          ; Match C7: reject the wrong shape before reading supplied fields.
+          (if (if (map? items) (= 3 (count items)) false)
             (if (if (= :gravity.type/set (get items :kind)) (= :literal (get items :shape)) false)
               (let [members (get items :element-types)]
                 (if (vector? members) (= :gravity.type/integer (get members 0)) false)) false) false) false))) false))
@@ -10864,6 +10873,11 @@
         {:status :rejected :reason :integer-set-contains-operand-type-required :work-count 2}))))
 
 (defn p15-s23-ksm-domain [arguments budget]
+  ; Supported membership entry: validate the entire original type graph
+  ; before internal selectors can read a carrier. This adds no work debit.
+  (let [ingress (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get ingress :status))
+
   (if (if (>= budget 2) (p15-s23-ism-selected? arguments) false)
     (p15-s23-ism-domain arguments budget)
   (if (if (>= budget 2) (p15-s23-sysm-selected? arguments) false)
@@ -10921,7 +10935,9 @@
                                  :work-count (+ 2 n)}))))))))
                 {:status :rejected :reason type-reason :work-count 2})))
             {:status :rejected :reason :keyword-set-contains-operand-type-required :work-count 2})))
-      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0})))))
+      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+      {:status :rejected :reason :keyword-set-contains-operand-type-required
+       :type-check-reason (get ingress :reason) :work-count 2})))
 
 (defn p15-s23-sysm-source-ids? [node call nodes bindings module]
   (if (p15-s23-sse-call-ids? node call)

@@ -1,5 +1,203 @@
 # Accounting removal evidence
 
+## ACC-05 PL inventory and finite successor - 2026-10-28 UTC
+
+Main `19db4a52c6c3a354374acca78354adc738280b5e`, tree
+`de6fa80413b146f593efe13a59d66d28d3b00462`, contains the integrated LR helper
+unit. The PL source inventory was originally recorded at `c2eaa507` with this
+identical full tree; that is retained provenance, not a new compiler execution.
+Read-only AST and whole-source symbol inspection agree on twelve definitions
+and nineteen calls, with no first-class helper aliases. Nine direct call sites
+inject helper costs into caller reports. The tenth external call is semantic
+only. The three dispatchers make the remaining nine calls.
+
+The debit consumers are C7 `lsi-insertion`, `pl-derive` and its three Set
+inferred-call wrappers, Effects `va-context` and `lsi-insertion`, and emitter
+`typed-compile-prepend` and `lsi-insertion`. Downstream C7
+`tc-products-with-source-forms` consumes the parent reports, so removal occurs
+at the helper-debit sites rather than deleting the parent's independent pool.
+Three `pl-source` builders consume status/result/family/argument/extent fields.
+Effects' `append-context.type-checks` is a semantic cache passed to
+`body-pl-call-valid?`; loop-row solving instead invokes a fresh insertion
+helper. Other construction/query `type-checks` contexts are distinct.
+
+Independent source/concept inspection requires a native closed semantic-cell
+guard before any family lookup, plus fresh current-argument derivation at the
+Effects cache consumer. Schema checking alone cannot reject a coherently
+forged cached result, descriptor, row and fact. Supported member domains,
+complete validation, Never behavior and source/equality checks must survive.
+STD3's persistent Set insertion and List prepend contracts retain real
+allocation/profile obligations. Their runtime value-work declarations remain
+separately unresolved and are not silently removed with compiler type costs.
+
+The old-family baseline harness has independent static acceptance at SHA-256
+`c60e05875f896191fe2d1e448816806f6f796b1b8191b73b2f6b9d490e26e1f4`.
+Its intended scope is three owners by four families: small accepted inputs,
+family-specific budget-one refusal and the old 1,030-member width refusal.
+An 11-form read at 256 MiB passed without evaluation. Actual semantic execution
+and implementation acceptance remain pending; none is inferred from this read.
+
+### Actual PL successor results and held disposition
+
+The preceding paragraph records the initial harness review. Subsequent actual
+results are below; the original artifacts retain their exact provenance.
+Independent source and retained-result inspection accepted the finite PL
+helper unit at `e8c8a14f92ccd6f5775139da603d42f9cadd86ee`, tree
+`2edb41b1b9771a5f0be6602edc6bb143414f4b07`. This is not a fresh execution of
+every selector on that reconciled head. Incoming PR508 changed only its Reader
+fixture, SH03 test and report; consumed PL production, owned tests, Bootstrap,
+contracts and dependencies are unchanged from the tested tuples.
+
+| Actual stage | Original source | Result and boundary | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Old four-family allowance baseline | `704eb24d`, tree `c7908747`; production identical to main `19db4a52` | 1 test / 36 assertions; natural 0 / 19,272 ms; actual 2 GiB; complete 105 stdout / 0 stderr bytes | `20d5cf3c3d71acef005b85fa9711fea41ee9604c474488df54d5ecca578ec556` |
+| First helper/cache/C7 panel | `58fa90a4`, tree `9c6706bf` | NONPASS: 14 tests / 1,392 passing assertions / 2 failures / 0 errors; natural 1 / 23,182 ms; complete 2,287 / 0 bytes. Both failures were one foreign-member-vector diagnostic oracle | `e354ae8b43db331ac2800282cdecf37dad6d3c541b09ce660d8891b16632ffbf` |
+| Corrected Symbol var plus boundary | `385677d1`, tree `b95a3a86` | 7 tests / 334 assertions; natural 0 / 14,412 ms; complete 966 / 0 bytes. Only the expected native outer-type reason changed to `malformed-type`; rejection and zero reads remain | `2db80c7d6542620c31115b9fb9e9cc0c633adec0bbaae55bd5dd00ba1d140147` |
+| Original consumer panel | `385677d1`, tree `b95a3a86` | NONPASS: 26 tests / 3,691 passing assertions / 88 failures / 24 errors; natural 1 / 47,877 ms; stdout 197,128 observed / 65,536 captured, truncated; stderr empty. No complete per-selector acceptance inferred | `688c6d5dc0841394005c5f0f71582be3f77c942e509b51dbce99269a76e9c6a1` |
+| Remaining-consumer localization | `385677d1`, tree `b95a3a86` | NONPASS: 20 tests / 2,285 passing assertions / 88 failures / 24 errors; natural 1 / 26,101 ms; complete 3,798 / 0 bytes and durable per-var counts. Only two existing Symbol-membership kernels fail | `fab36ed2eaeba54a8d2838e69a0add4d3e82f0af22cf4b80cad947a1460573fb` |
+| Minimal actual old membership diagnostic | `704eb24d`, tree `c7908747` | 1 test / 5 assertions; natural 0 / 12,864 ms; complete 104 / 0 bytes. Confirms one foreign `:kind` lookup, four count calls and zero sequence calls; it is evidence of the old gap, not validator safety | `1a076a138389984a23ba3462be263b0f330a5288d8a87af8206fcdce78d62a66` |
+| Three actual loop-insertion callers plus boundary | `e8c8a14f`, tree `2edb41b1` | 9 tests / 191 assertions; natural 0 / 26,025 ms; actual 2 GiB; complete 1,237 / 0 bytes | `91a28df4801b825c3a6a46975c19a3135b07d53fbb0f228843507528b31f2c3e` |
+
+Every actual child above used the existing 2 GiB / 120-second guarded route,
+clean identical bookends, complete cleanup and a dead root process. Capture
+truncation is retained explicitly for the first consumer batch. The materially
+changed localization harness preserved real failure/error counters, omitted
+six already fully captured runtime selectors and persisted bounded failure
+locations before proceeding to another var. Its compiler-free capture control
+preserved the expected one-test, 50-pass, two-failure, one-error fixture with
+zero opaque printing callbacks. An initial doubled test-counter control failed
+and was corrected before any diagnostic source execution.
+
+Successful unaffected selectors from the first panel retain `58fa90a4`
+provenance; only the changed Symbol var and boundary were freshly rerun at
+`385677d1`. The localization gives separate zero-failure per-var records for
+the other eighteen selected vars. No assertion totals are summed, no failed
+panel is relabeled passing and no globally fresh pass is claimed. Cheap source
+conservation passed 2 tests / 58 assertions without Bootstrap after its initial
+three failures exposed missing native preclassification changes. Source and
+all test forms read successfully without evaluation; old helper names have no
+remaining production or dynamic test references.
+
+The two residual kernels are
+`body-symbol-set-carrier-contains-development-kernel` and
+`current-gravity-symbol-set-carrier-contains-development-kernel`. Each has
+44 failures / 12 errors exclusively at its existing non-three-field foreign
+map block. Their membership classifiers, domains and type predicates are
+unchanged from `704eb24d`; the Effects and emitter closures also match after
+owner-prefix normalization. The minimal actual old emitter diagnostic binds
+that static finding to execution. Keep these genuine negative controls and
+their ACC-06 validation requirement open; they are not PL insertion debits.
+They hold the ready/merge workflow, so this successor remains draft.
+
+Fresh repository gates passed at `414b3c67f04460352d68a1a2bd27446f832d892c`,
+tree `dbc1bafd6f6c34a311483bf46a46447fddd0149c`. Boundary/LOC passed 11 tests /
+23 assertions with 2,035 source files, document validation passed 240 docs /
+19 indexes and roadmap validation passed. The bounded 256 MiB normal-broker
+child exited naturally 0 in 2,248 ms, complete 456 stdout / 0 stderr bytes,
+clean exact bookends and complete cleanup. Receipt SHA-256:
+`ced283379cae75342b1b41517ee541f458f61209acccf25f302501ab334f7f9a`.
+
+The unchanged CI-pinned lint policy at the same tuple reports 223 unchanged
+baseline warnings and zero blockers against main `656f545f`. It exited
+naturally 0 in 14,912 ms at 256 MiB, complete 76 stdout / 0 stderr bytes,
+clean exact bookends and complete cleanup. Receipt SHA-256:
+`c92d5aa9b2be9d5d3d8ce74b760a7c9870b3534128f5f5a53b28184936698c80`.
+These cheap passes do not change the two membership failures or authorize a
+ready transition. Public CI and draft readback remain separate pending stages.
+
+| Tested source/test path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `9c5e77a7bc179a21f5c76eea5009d90c29c9c85ac550728dc70e3c3f5d6b2a32` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `5f99401adaaed5464916339af2d981212afe93089190bc60d0e7a3709b2fad74` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `20d526a01ccdb9073284a7932932d7eb742e09e26779f9da221a1d6174082bd7` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `cafa971fec30e4dc57655e4e2f8ce2c08045a9e2ded21c840430198f1ee18e63` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj` | `8522e0775e0d5c80e4ea37689c3458e5a22c1a1c1a86a9a8b4b2b070386357de` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | `c6b39e601920db5429921020dc58a5727c39b8838681bd6f1e7df26424c95a02` |
+
+Actual authenticated-source replay, Core, public admission, C12 and release
+are unrun for this unit. Outer source/inference/lowering pools, runtime value
+work, physical profile requirements and the held runtime/Native chain remain
+separate open obligations. The original thirteen-row denominator is unchanged.
+
+### Membership hold resolution and composed native-root evidence
+
+The preceding draft hold is historical. Exact source/result review accepted
+its demonstrated root-entry resolution at `a674a3e991ce417727daac87af4684da6567c393`,
+tree `f3541519c4ffbe3d882ea68fb0eabb5e03d37909`. Main remains `656f545f` at
+reconciliation. No earlier failed record is rewritten or reclassified.
+
+First, Effects and emitter received the three-field descriptor-schema guard
+already present in C7. At `c71da7c3`, tree `92ac0fad`, the two unchanged failing
+kernels, minimal old case and boundary passed 9 tests / 1,008 assertions,
+natural 0 / 26,147 ms, actual 2 GiB, complete 1,186 stdout / 0 stderr bytes.
+Receipt SHA-256:
+`92f310c4483dd44e52bde4079c892ccb6ea409027338c8c751be926d42efb646`.
+This proves the tested zero field/sequence reads, not zero count callbacks or
+arbitrary three-field foreign-map safety. It did not alone close native ingress.
+
+The supported production ingress census then found fifteen definitions and
+sixteen direct calls: twelve internal dispatch calls and four external callers
+of the three `ksm-domain` roots. Each root now first invokes the existing
+canonical `lc-validate-types` on its original arguments. Accepted domain bodies
+are structurally identical to their original bodies; original vector arity and
+arguments are retained. Native classes, default comparators, view links,
+cycles and complete type children are checked before internal selectors or
+member access. The walk adds no debit. Failed ingress uses the existing
+operand-entry rejection with a defined `work-count` of 2 and canonical
+`type-check-reason`; valid domain and budget results remain unchanged.
+
+Former foreign-vector routing/throw positives now use supported native
+SubVectors and retain semantic result, exact argument and owning-consumer
+checks. Foreign classes receive separate zero-callback negatives. This is an
+explicit native-domain strengthening, not unchanged foreign admission or
+accounting-only deletion of a positive. Compiler-free conservation passed
+2 tests / 21 assertions and binds all three old accepted bodies, only the three
+root changes, seven migrated old test vars and two new native-root test vars.
+
+| Actual stage | Original source | Result and boundary | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Full native-root and composed PL panel | `90a80f5a`, tree `6090a861` | NONPASS: 18 tests / 2,700 passing assertions / 9 failures / 0 errors; natural 1 / 26,162 ms; actual 2 GiB; complete 4,139 stdout / 0 stderr bytes. All failures belong to one missed duplicate foreign-vector positive | `41f4bb58e6d87f9f5b7ee80e48b48b43f2ab878846df6a2979de30659904d601` |
+| Corrected native carrier var plus boundary | `a674a3e9`, tree `f3541519` | 7 tests / 581 assertions; zero failures/errors; natural 0 / 14,017 ms; actual 2 GiB; complete 981 stdout / 0 stderr bytes | `67d1a41476bb3c09cbb7de59dc1866d11db60ad2036ea3b2d553838cc0609e57` |
+
+Both used the unchanged guarded 120-second route with clean exact bookends and
+complete cleanup/root dead. Only the duplicate test fixture changed after the
+full panel; production, shared inputs and eleven unaffected nonboundary
+selector bodies remain identical. Their successful complete-native, five-family
+consumer, formerly failing membership and composed PL results retain
+`90a80f5a` provenance. The changed var and boundary have fresh `a674a3e9`
+provenance. There is no combined assertion total or fresh full-panel claim.
+
+| Native-root successor source/test path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `ea26756f3fb856601c4f9ee7b074a0928549f151dc32b4950104d5283778cbf7` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `63057a87073c7ae1d005bf57f2d416cda14b4cae976d1ec3b2cfc0eda3d4589c` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `037f4ab9a14b920f71aa266d51e9f03b99bbd3415f25ee83a1dba018dc3cecd7` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `b72337873f1ced345a5eb6c6c0ec3942a870e3adb7f7fb1a51418a0cca1b9b98` |
+
+The other two owned test files retain the original PL table's hashes. This root
+boundary does not certify arbitrary facts or the earlier Effects context
+classification, and does not close the existing membership cost models, outer
+pools, whole ACC-05/06, authentication or release. C12 remains unrun.
+
+The first published draft head `fa55744d`, tree `d1714479`, passed all seven
+routine jobs in CI run 40611569118; source-Core readiness and experimental
+prerelease were skipped. That is the old published tuple, not CI acceptance of
+this later source repair. Current-head CI, publication readback and
+independent integration review remain pending.
+
+Fresh composed repository gates passed at `71f5f8a393943c6f1406bc4d727f5b6dadba3982`,
+tree `6408a80f9f940a4413bf45da6b4c198abf192e25`: boundary/LOC 11 tests / 23
+assertions, 2,035-file census, docs 240/19 and roadmap. Natural exit 0 / 2,280 ms,
+256 MiB, complete 456 stdout / 0 stderr bytes, clean exact bookends and complete
+cleanup. Receipt SHA-256:
+`e87b92951c6f89772d0cb4d75f4abfb04e591568654b019abbdc11261c0ecf6f`.
+At the same tuple, CI-pinned changed-file lint passed against `656f545f` with
+223 unchanged baseline warnings and zero blockers, natural 0 / 14,505 ms,
+256 MiB, complete 76 / 0 bytes and clean cleanup. Receipt SHA-256:
+`d9fa2949a2c8691e85e976ef8655b0e027af72910e37a02d8ed94eb69944574b`.
+Public current-head CI/readback and independent integration review are still
+required; these repository checks do not substitute for them.
+
 ## ACC-06 LR validator successor - 2026-10-27 UTC
 
 The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree

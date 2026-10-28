@@ -33,6 +33,159 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-05 shared PL helper successor - 2026-10-28 UTC
+
+Accounting owns the existing C7, Effects and emitter files and their existing
+SH08, SH09 and runtime-iteration tests. This finite successor starts at main
+`19db4a52c6c3a354374acca78354adc738280b5e`, tree
+`de6fa80413b146f593efe13a59d66d28d3b00462`. Native retains the separate C6
+form-quota change. Held Native registration, SH fields and runtime successors
+are not prerequisites for this compiler-helper unit and are not edited.
+
+The complete source inventory is twelve `pl/ssin/syin/ksin-type-work` helpers,
+nineteen direct calls and nine first helper-debit consumers. The three PL
+dispatchers account for nine calls. The remaining ten calls are C7's derive,
+three inferred-call wrappers, loop insertion and semantic-only inferred-call
+validator; Effects' append context and loop insertion; and emitter's typed
+prepend and loop insertion. Three source builders read semantic helper fields.
+Effects also stores a successful helper result in its append context for later
+validation. That cache must not become independent result-type authority.
+
+- [x] Census definitions, all direct calls, result-field readers, returned
+  wrappers and the Effects cache escape; independently inspect the closure.
+- [x] Record the old four-family budget and width refusals on exact inputs.
+- [x] Replace the twelve helpers with budget-free semantic interfaces, remove
+  their exported cost fields and all nine injected helper debits, and migrate
+  direct and dynamic callers without an old-interface fallback.
+- [x] Retain complete native/type/member validation before reads, equality or
+  construction. Preserve bare, homogeneous and positional List distinctions,
+  String/Symbol carriers, finite-only Keyword insertion and ambiguous empty
+  Set/Never routing. Remove accounting-only member-width admission.
+- [x] Guard semantic result cells before their first field read and reject
+  obsolete or foreign fields. Independently rederive the Effects cached cell
+  from current typed arguments and compare the whole result before source,
+  descriptor, row and fact acceptance. Rejection diagnostics must not invoke
+  foreign receiver callbacks after operand validation fails.
+- [x] Pass cheap reader/interface/conservation controls and bounded actual
+  three-owner helpers, typed callers, Effects joins and emitter consumers,
+  including late-invalid members, coherent cache/source/row forgeries and zero
+  foreign callbacks. Obtain independent exact-source and retained-result review.
+- [x] Main-only conditional integration item (record below): reconcile current
+  main, pass repository and public CI gates, independently
+  review the outgoing payload and exact integration tuple, then merge normally.
+
+Retained outer source/context/inference/lowering pools and their own reports
+remain ACC-07/08/06 work. Runtime insertion value-work contracts and physical
+profile legality remain separate, unresolved dispositions; this finite helper
+unit does not close all ACC-05 or ACC-06. No percentage is inferred from counts.
+
+### Current finite PL disposition - 2026-10-28 00:43 UTC
+
+Independent source and retained-result review accepted this finite helper unit
+at `e8c8a14f`, tree `2edb41b1`, after normal reconciliation with main `656f545f`.
+The nine debit sites and three loop-insertion paths have actual acceptance
+evidence. The implementation does not publish zero helper charges or retain
+an old budget API. The Effects cache receives a fresh semantic derivation;
+fresh local helper results are not needlessly derived again at every source
+publisher. All source publishers first guard the supplied semantic cell.
+
+Publication remains draft. Two unchanged Symbol-membership kernel negative
+blocks fail at foreign-map classification in Effects and emitter. The complete
+diagnostic attributes all 88 failures and 24 errors to those blocks; the
+earlier truncated consumer batch remains nonpassing. A minimal actual old
+emitter run confirms the preexisting callback, and both membership closures
+are unchanged from that baseline. No failing negative control is removed or
+weakened. Resolve this existing membership validation requirement under ACC-06
+before the workflow permits ready/merge; do not turn its old callback into PL
+acceptance or claim the whole consumer batch passed.
+
+Repository gates passed at `414b3c67`: boundary/LOC 11/23, source census 2,035,
+docs 240/19, roadmap and changed-file lint with zero blockers. Public-content
+review, draft readback and eventual validated integration remain required.
+Only ACC-02 and ACC-03 are closed;
+the original thirteen criteria and eleven residual criteria are unchanged.
+
+### Required membership guard parity follow-through
+
+Independent diagnosis identifies the exact preexisting cause of the draft
+hold: `body-ism-selected?` and `p15-s23-ism-selected?` omit the three-field
+descriptor-schema guard already present in `sh08-ism-selected?`. Port only
+that existing guard, before `:kind` reads, to the two missing copies. This is
+necessary to satisfy the recorded unchanged consumer negatives; it is not a
+new member allowance, accounting requirement or additional cleanup criterion.
+
+- [x] Independently review the exact two-function parity diff and prove every
+  other production function unchanged. Preserve Integer/Never selection,
+  supported carriers, complete membership validation, budgets and reports.
+- [x] Run the two unchanged failing kernels and the minimal old case with
+  zero field/sequence callbacks, plus boundary controls, on the frozen repair.
+- [x] Independently review actual schema-parity results;
+  preserve all old failures and original successful PL evidence separately.
+
+The schema repair at `c71da7c3`, tree `92ac0fad`, passed 9 tests / 1,008
+assertions and independent retained-result review. It establishes zero field
+and sequence reads for those cases, not zero count callbacks or arbitrary
+foreign-map safety. At that schema-only checkpoint, native ingress remained open.
+
+### Membership native-ingress boundary
+
+The complete read-only census at `c71da7c3` finds fifteen classifier/domain
+definitions and sixteen direct calls: twelve internal dispatch calls and four
+external calls to the three `ksm-domain` roots. The external callers are C7
+derive/inferred-call, Effects `mc-context` and typed emitter membership. The
+four specific classifier/domain helpers per owner are internal to the root;
+they are not independent input-validation authorities.
+
+- [x] Put the existing canonical `lc-validate-types` walk first in each root,
+  before classification or carrier reads. Retain original arguments and vector
+  arity; do not normalize a new input domain, add a Native API, charge the walk,
+  introduce another allowance or change valid membership/budget results.
+- [x] Project failed native/type ingress as a rejected operand report, with
+  the canonical reason and the existing defined failure report for callers.
+  Do not invoke unsafe selectors again after preflight failure.
+- [x] Preserve legacy-family and throw-consumer positives using native vectors
+  or supported SubVectors. Separate former foreign-vector observer assumptions
+  into explicit zero-callback rejection controls; this is native-domain
+  strengthening, not accounting-only test deletion or unchanged foreign input
+  admission. Check complete children, cycles and invalid views.
+- [x] Obtain independent exact-source/result review and affected consumer
+  acceptance before clearing this native-ingress hold. Root validation does
+  not certify arbitrary facts or the earlier Effects context classification;
+  whole-plan ingress remains separate.
+
+### Current accepted PL composition - 2026-10-28 01:24 UTC
+
+Independent source/result review accepted the membership root boundary and
+composed PL consumers at `a674a3e9`, tree `f3541519`. The original full native
+panel at `90a80f5a` remains NONPASS (18 tests, 2,700 passing assertions and nine
+failures in one duplicated foreign observer fixture). Its eleven unaffected
+nonboundary selectors retain their successful original provenance. The
+test-only native-view correction plus boundary passed 7 tests / 581 assertions
+at `a674a3e9`; no summed or globally fresh pass is claimed.
+
+The demonstrated membership-root blocker is resolved. The first canonical walk
+checks the original complete native/type graph before internal classification;
+the original accepted domain bodies, vector arity, arguments, budgets and
+reports remain unchanged. No Native API, new cost charge or replacement quota
+is introduced. The earlier shape-only repair and all failed receipts remain
+separate history. This does not establish arbitrary-facts or whole-plan ingress.
+
+The PR remains draft until current-head CI, public readback and
+independent integration review. Only normal validated integration will complete
+this finite helper milestone; ACC-05 and ACC-06 as a whole remain open.
+
+### Main-only finite helper integration record
+
+The checked final lifecycle item above applies only to main containing the
+normally merged, independently reviewed PR509 and its exact merged-tree
+readback. An unmerged draft or branch receives no integration or closure credit.
+Pending current-head CI, public readback and integration-review requirements
+remain pending until their actual evidence exists; neither this conditional
+checkbox nor a worktree preflight substitutes for that evidence. After actual
+integration, PR509 records the observed merge/tree and CI receipts; no future
+identities or outcomes are asserted here. This finite milestone never closes
+the broader ACC-05/06 rows or changes the original thirteen-row assessment.
+
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
 Accounting retains sole ownership of the three existing C7, Effects and emitter
@@ -66,11 +219,13 @@ identity, source reconstruction and full-row/census contracts stay intact.
   C7 large 1/2, with original baseline 1/39 and compiler-free controls 2/41.
 - [x] Pass repository gates at `59efea4e`: boundary/LOC 11/23, source census
   2,035, docs 240/19 and roadmap, with complete clean bounded capture.
-- [ ] Finish exact current-main preflight and outgoing review, publish draft and
+- [x] Finish exact current-main preflight and outgoing review, publish draft and
   verify current-head CI/readback before ordinary validated integration.
 
-Fresh main readback remains `9c093bc6`; no incoming dependency change invalidates
-the accepted candidate. Local CI-pinned lint recognizes 223 unchanged baseline
+PR507 integrated this finite unit at `19db4a52`, tree `de6fa804`, identical to
+reviewed head `c2eaa507`. Main run 40603015619 passed seven routine jobs and the
+source-only prerelease; only the explicit unavailable Core gate failed, without
+genuine Core execution. Local CI-pinned lint recognizes 223 unchanged baseline
 warnings and zero blockers without a policy change. Each receipt and the
 controlled 401-byte reflection warning keep their exact scope in `evidence.md`.
 
