@@ -89,7 +89,7 @@
   (if (= #{:op :protected :handlers} (set (keys instruction)))
     (if (map? (get instruction :protected))
       (if (vector? (get instruction :handlers))
-        (if (if (> (count (get instruction :handlers)) 0) (<= (count (get instruction :handlers)) 65536) false)
+        (if (> (count (get instruction :handlers)) 0)
           (loop [remaining (get instruction :handlers)]
             (if (= 0 (count remaining)) true
               (let [handler (first remaining)]
@@ -303,12 +303,11 @@
   (if (map? function)
     (let [params (get function :params []) body (get function :instructions)]
       (if (if (vector? params) (vector? body) false)
-        (if (if (<= (count params) 65536)
-              (if (> (count body) 0) (<= (count body) 65536) false) false)
+        (if (> (count body) 0)
           (if (= arity (get function :arity (count params)) (count params))
             (if (if (contains? function :recur-target)
                   (if (string? (get function :recur-target))
-                    (if (> (count (get function :recur-target)) 0) (<= (count (get function :recur-target)) 256) false) false) true)
+                    (> (count (get function :recur-target)) 0) false) true)
               (loop [remaining params seen #{}]
                 (if (= 0 (count remaining))
                   (loop [instructions body]
@@ -547,8 +546,7 @@
   (if (string? (get instruction :target))
   (if (vector? (get instruction :bindings))
   (if (vector? (get instruction :body))
-  (if (if (<= (count (get instruction :bindings)) 65536)
-        (if (> (count (get instruction :body)) 0) (<= (count (get instruction :body)) 65536) false) false)
+  (if (> (count (get instruction :body)) 0)
     (if (loop [remaining targets]
           (if (= 0 (count remaining)) true
             (if (= (get instruction :target) (get (first remaining) :id)) false (recur (rest remaining)))))
@@ -569,9 +567,8 @@
         (if (= #{:op :target :args} (set (keys instruction)))
           (if (vector? (get instruction :args))
             (if (vector? (get target :names))
-              (if (<= (count (get target :names)) 65536)
-                (if (= (get target :id) (get instruction :target))
-                  (= (count (get target :names)) (count (get instruction :args))) false) false) false) false) false)) false) false))
+              (if (= (get target :id) (get instruction :target))
+                (= (count (get target :names)) (count (get instruction :args))) false) false) false) false)) false) false))
 
 (defn p15-s23-runtime-evaluate-loop [instruction environment output functions path targets pool]
   (let [initial (p15-s23-runtime-evaluate-bindings-in-context (get instruction :bindings) environment output functions path [] pool)
