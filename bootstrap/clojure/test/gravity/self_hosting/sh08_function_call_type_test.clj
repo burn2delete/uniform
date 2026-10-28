@@ -6244,7 +6244,7 @@
 
 (deftest list-return-updater-is-semantic-for-inactive-deferred-and-rejected-inputs
   (let [input (homogeneous-list-return-input :gravity.type/unknown :gravity.type/string 0)
-        {:keys [core record function nodes types forms]} input
+        {:keys [record function nodes types forms]} input
         functions {(:function-id function) function}
         run #(invoke-c7 'sh08-ft-update-function-returns-with-context [%1 nodes types %2])
         inactive (run {} (:context input))
