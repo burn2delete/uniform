@@ -23393,9 +23393,25 @@
        (+ total (count (get (first remaining) :parameter-binding-ids)))))))
 
 ; L5/C7: a closed normal equation T = Collection<...T...> has no solution in
-; this finite literal Vector/Set representation. Trace only aliases/unary constructors;
+; this finite literal Vector/Set/Map representation. Trace only single-dependency
+; constructors: unary Vector/Set or one-entry Map with a constant Keyword key.
 ; other constructor, call, match and transfer families remain separate work.
 ; The visited sets are graph identities, not work or round allowances.
+(defn sh08-ft-literal-constructor-child [node nodes types]
+  (let [kind (get (get node :attributes) :literal-kind) children (get node :children)]
+    (if (= :collection-literal (get node :core-form))
+      (if (contains? #{:vector :set} kind)
+        (if (= 1 (count children)) (first children) nil)
+        (if (if (= :map kind) (= 2 (count children)) false)
+          (let [key-node (get nodes (first children))]
+            ; The key is a fixed normal type, not a second evolving dependency.
+            (if (if (= :literal (get key-node :core-form))
+                  (if (= :keyword (get (get key-node :attributes) :literal-kind))
+                    (if (vector? (get key-node :children))
+                      (if (= 0 (count (get key-node :children)))
+                        (= :gravity.type/keyword (get types (first children))) false) false) false) false)
+              (get children 1) nil)) nil)) nil)))
+
 (defn sh08-ft-unary-literal-collection-link [initializer nodes bindings types context]
   (loop [id initializer seen #{} path [] constructed? false]
     (if (contains? seen id) nil
@@ -23409,11 +23425,9 @@
                   (= (get types id) (get bindings (get (get node :attributes) :binding-id) :gravity.type/unknown)) false) false)
             {:dependency-binding-id (get (get node :attributes) :binding-id)
              :constructor? constructed? :node-path next-path} nil)
-          (if (if (= :collection-literal (get node :core-form))
-                (if (contains? #{:vector :set} (get (get node :attributes) :literal-kind))
-                  (if (= 1 (count children))
-                    (= (get types id) (sh08-ft-collection-type node types)) false) false) false)
-            (recur (first children) (conj seen id) next-path true) nil)) nil)))))
+          (let [child (sh08-ft-literal-constructor-child node nodes types)]
+            (if (if (= child nil) false (= (get types id) (sh08-ft-collection-type node types)))
+              (recur child (conj seen id) next-path true) nil))) nil)))))
 
 (defn sh08-ft-lexical-equation-index [records blocked nodes]
   (loop [remaining records result {}]

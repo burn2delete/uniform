@@ -144,7 +144,7 @@
 (deftest malformed-data-does-not-establish-an-occurs-witness
   ;; No witness is not acceptance: public source/products retain their owning
   ;; resolution/verification checks. These direct helpers bypass that ingress.
-  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)]]
+  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases) (first occurs-model/map-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         check (fn [nodes lexical]
                 (invoke 'sh08-ft-first-constructor-cycle
@@ -161,7 +161,7 @@
         (is (nil? (check cyclic lexical))))))))
 
 (deftest declared-return-conflict-precedes-constructor-feedback
-  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)]]
+  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases) (first occurs-model/map-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         body {:node-id :body :core-form :literal :children []
               :attributes {:literal-kind :string}}
@@ -194,3 +194,40 @@
             (when (= :set-open-dependency (:name case))
               (is (= {:kind :gravity.type/set :element-types [:gravity.type/integer] :shape :literal}
                      (get-in inferred [:binding-types :x]))))))))))
+
+(deftest single-keyword-map-occurs-check-controls
+  (doseq [case occurs-model/map-cases]
+    (let [{:keys [nodes lexical definitions functions bindings context expected]}
+          (occurs-model/input case)
+          result (invoke 'sh08-ft-first-constructor-cycle
+                         [nodes lexical (or definitions []) (or functions {}) bindings
+                          (:type-table (pass nodes lexical bindings)) context])]
+      (testing (name (:name case))
+        (is (= expected (map? result)))
+        (when expected
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :type-conflict (:convergence-status inferred)))
+            (is (= :infinite-structural-type (get-in inferred [:diagnostics 0 :reason])))))
+        (when (contains? #{:map-acyclic :map-unresolved :map-never} (:name case))
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :converged (:convergence-status inferred)))
+            (is (empty? (:diagnostics inferred)))
+            (when (= :map-acyclic (:name case))
+              (is (= {:kind :gravity.type/map
+                      :member-types [:gravity.type/keyword :gravity.type/integer] :shape :literal}
+                     (get-in inferred [:binding-types :x]))))))))))
+
+(deftest map-key-and-value-require-observed-constructor-premises
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/map-cases))
+        types (:type-table (pass nodes lexical bindings))
+        key-id (:node-id (first nodes))
+        value-id (:node-id (second nodes))
+        map-id (:node-id (last nodes))
+        check (fn [types] (invoke 'sh08-ft-first-constructor-cycle
+                                  [nodes lexical [] {} bindings types {}]))]
+    (doseq [changed [(dissoc types key-id) (assoc types key-id :gravity.type/string)
+                     (dissoc types value-id) (assoc types value-id :gravity.type/never)
+                     (assoc types map-id {:kind :gravity.type/map
+                                          :member-types [:gravity.type/keyword :gravity.type/string]
+                                          :shape :literal})]]
+      (is (nil? (check changed))))))

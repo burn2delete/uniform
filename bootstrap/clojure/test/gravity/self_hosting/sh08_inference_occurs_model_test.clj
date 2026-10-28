@@ -67,6 +67,41 @@
    {:name :nonunary-set :equations [[:x [:set [:ref :x] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected false}])
 
+(def map-cases
+  [{:name :map-self-growth :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :map-set-nested-growth :equations [[:x [:map [:keyword :k] [:set [:ref :x]]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :map-vector-mutual-growth
+    :equations [[:x [:map [:keyword :k] [:ref :y]]] [:y [:vector [:ref :x]]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :map-acyclic :equations [[:x [:map [:keyword :k] [:ref :outside]]]]
+    :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+   {:name :map-unresolved :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {} :expected false}
+   {:name :map-never :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/never} :expected false}
+   {:name :map-dynamic-key :equations [[:x [:map [:ref :key] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer :key :gravity.type/keyword} :expected false}
+   {:name :map-string-key :equations [[:x [:map [:string "k"] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :map-odd-arity :equations [[:x [:map [:keyword :k]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :map-multiple-members
+    :equations [[:x [:map [:keyword :k] [:ref :x] [:keyword :j] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :map-definition-overlap :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :definitions [{:binding-id :x}] :expected false}
+   {:name :map-parameter-overlap :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :functions {:f {:parameter-binding-ids [:x]}} :expected false}
+   {:name :map-intrinsic-value :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :intrinsic-reference? true :expected false}
+   {:name :map-loop-transfer :equations [[:x [:map [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :context {:loop-core {}} :expected false}
+   {:name :map-leading-to-alias-cycle
+    :equations [[:x [:map [:keyword :k] [:ref :y]]] [:y [:ref :z]] [:z [:ref :y]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false}])
+
 (defn input
   "Materialize fixture syntax in postorder for the actual C7 test harness."
   [{:keys [equations context intrinsic-reference?] :as case}]
@@ -74,15 +109,18 @@
         emit (fn emit [term path]
                (let [id (keyword (str "occurs-" path))
                      [kind & operands] term
-                     children (if (= :ref kind) []
+                     children (if (#{:ref :keyword :string} kind) []
                                 (mapv (fn [i operand] (emit operand (str path "-" i)))
                                       (range) operands))
                      node (if (= :ref kind)
                             {:node-id id :core-form :reference :children []
                              :attributes {:binding-id (first operands)}}
+                            (if (#{:keyword :string} kind)
+                              {:node-id id :core-form :literal :children []
+                               :attributes {:literal-kind kind :value (first operands)}}
                             {:node-id id
-                             :core-form (if (#{:vector :set} kind) :collection-literal :call)
-                             :children children :attributes {:literal-kind kind}})]
+                             :core-form (if (#{:vector :set :map} kind) :collection-literal :call)
+                             :children children :attributes {:literal-kind kind}}))]
                  (swap! nodes conj node)
                  id))
         lexical (mapv (fn [i [binding term]]
@@ -100,6 +138,9 @@
     (:vector :set) (when (= 2 (count term))
               (when-let [edge (term-edge (second term))]
                 (assoc edge :constructor? true)))
+    :map (when (and (= 3 (count term)) (= :keyword (first (second term))))
+           (when-let [edge (term-edge (nth term 2))]
+             (assoc edge :constructor? true)))
     nil))
 
 (defn model-occurs?
@@ -128,12 +169,20 @@
 (defn- substitute [term bindings]
   (case (first term)
     :ref (get bindings (second term) :gravity.type/unknown)
+    :keyword :gravity.type/keyword
+    :string :gravity.type/string
     (:vector :set) (let [values (mapv #(substitute % bindings) (rest term))]
               (cond
                 (some #{:gravity.type/never} values) :gravity.type/never
                 (some #{:gravity.type/unknown} values) :gravity.type/unknown
                 :else {:kind (if (= :set (first term)) :gravity.type/set :gravity.type/vector)
                        :element-types values :shape :literal}))
+    :map (let [values (mapv #(substitute % bindings) (rest term))]
+           (cond
+             (odd? (count values)) :gravity.type/unknown
+             (some #{:gravity.type/never} values) :gravity.type/never
+             (some #{:gravity.type/unknown} values) :gravity.type/unknown
+             :else {:kind :gravity.type/map :member-types values :shape :literal}))
     :gravity.type/unknown))
 
 (defn- step [case bindings]
@@ -182,3 +231,18 @@
   (let [case (first set-cases)
         typed (get (step case (:bindings case)) :x)]
     (is (= {:kind :gravity.type/set :element-types [:gravity.type/integer] :shape :literal} typed))))
+
+(deftest single-keyword-map-model-and-substitution-controls
+  (doseq [case map-cases]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (let [states (take 9 (iterate #(step case %) (:bindings case)))]
+          (is (= 9 (count (set states))))))))
+  (doseq [case (filter #(#{:map-acyclic :map-unresolved :map-never} (:name %)) map-cases)]
+    (let [once (step case (:bindings case))]
+      (is (= once (step case once)))))
+  (let [case (first map-cases)]
+    (is (= {:kind :gravity.type/map
+            :member-types [:gravity.type/keyword :gravity.type/integer] :shape :literal}
+           (get (step case (:bindings case)) :x)))))
