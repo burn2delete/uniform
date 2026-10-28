@@ -10895,6 +10895,10 @@
     (is (= (:descriptor fresh) (:descriptor warm)))
     (is (not (contains? view :work-count)))
     (is (= (:work-count fresh) (:work-count warm)))
+    (let [large-prior (into prior (map (fn [i] [(keyword "pmk-inference" (str i)) :gravity.type/keyword])
+                                     (range 11000)))]
+      (is (< 65536 (+ 8 (* 6 (count early)) (* 6 (count large-prior)))))
+      (is (= warm (step early large-prior prepared 65536))))
     (is (= warm (step early prior prepared (:work-count warm))))
     (let [below (step early prior prepared (dec (:work-count warm)))]
     (is (= :rejected (:status below)))
@@ -11031,6 +11035,14 @@
     (is (= {:status :accepted :types expected} view))
     (is (= :gravity.type/string (get-in view [:types :known])))
     (is (= :gravity.type/keyword (get-in view [:types :unknown])))
+    (let [tail (last (keys large))
+          bad (assoc large tail opaque)
+          order (vec (keys bad))]
+      (is (= tail (last order)))
+      (is (= (dec (count bad)) (count (take-while #(not= tail %) order))))
+      (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+             (invoke-c7 'sh08-pmk-type-view [current bad])))
+      (is (empty? @callbacks)))
     (doseq [[types previous] [[[] large] [current []]
                               [current (assoc large :late-invalid opaque)]
                               [current (assoc large 42 :gravity.type/keyword)]]]
@@ -11046,6 +11058,37 @@
         (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
                (invoke-c7 'sh08-pmk-index-forms [bad])))
         (is (empty? @callbacks))))))
+
+(deftest sh08-private-map-keys-preparation-call-constraint-consumer
+  (let [{:keys [core node call edge nodes bindings types forms binding-types functions]}
+        (private-map-keys-typed-input)
+        context {:ordering-core core :ordering-bindings bindings :association-forms forms :loop-work-left 65536}
+        join (fn [source budget]
+               (invoke-c7 'sh08-ft-call-constraints-with-context
+                 [[call] [edge] nodes types binding-types functions
+                  (assoc context :association-forms source :loop-work-left budget)]))
+        source (vec (vals forms))
+        accepted (join source 65536)
+        raw (invoke-c7 'sh08-pmk-check-with-forms [core node call edge nodes bindings types source 65536])
+        low (invoke-c7 'sh08-pmk-check-with-forms [core node call edge nodes bindings types source 0])
+        low-joined (join source 0)]
+    (is (= :accepted (:status raw)))
+    (is (= [] (:diagnostics accepted)))
+    (is (pos? (:work-count raw)))
+    (is (= (:work-count raw) (:compatibility-work-count accepted)))
+    (is (= :rejected (:status low)))
+    (is (= :private-map-keys-work-limit (:reason low)))
+    (is (= (:work-count low) (:compatibility-work-count low-joined)))
+    (is (= ["C7-GENERIC" :private-map-keys-work-limit]
+           ((juxt :rule :reason) (first (:diagnostics low-joined)))))
+    (doseq [bad [(conj source (first source)) (conj source {:form-id 42})]]
+      (let [result (join bad 65536)]
+        (is (= 0 (:compatibility-work-count result)))
+        (is (= [{:call call :rule "C7-VERIFY" :reason :private-map-keys-source-mismatch
+                 :expected :fresh-private-map-key-domain-application :actual :mismatched-application}]
+               (:diagnostics result)))
+        (is (= binding-types (:binding-types result)))
+        (is (= [] (:constraints result)))))))
 
 (deftest sh08-private-map-keys-fixtures-file-parity-development-kernel
   (doseq [[disposition name] [["accepted" "local-runtime-private-map-keys"]
