@@ -149,7 +149,9 @@
 (defn- output! [output]
   (require! (and (map? output) (string? (:text output))
                  (false? (:truncated? output))
-                 (integer? (:bytes output)) (<= 0 (:bytes output))
+                 (every? #(and (integer? %) (<= 0 %))
+                         [(:bytes output) (:observed-bytes output) (:limit-bytes output)])
+                 (<= (:bytes output) (:limit-bytes output))
                  (= (:bytes output) (:observed-bytes output)
                     (alength (.getBytes ^String (:text output) StandardCharsets/UTF_8))))
             :complete-output))
