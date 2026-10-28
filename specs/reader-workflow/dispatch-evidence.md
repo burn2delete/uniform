@@ -88,3 +88,32 @@ test selector ran no tests; the corrected exact selector produced 1 / 554.
 Dispatch implementation, dispatch test and fixture bytes remain identical to
 `f27f0762`. The old independent review is not presented as acceptance of the
 changed projection inputs. Changed-input review and current-head CI are pending.
+
+## Current-main composition
+
+Independent metadata-delta review accepted exact `da033740` / tree `3715774c`
+with receipt SHA256
+`d5c4be019502c982c8de9b54f0df9d5527c1cfd9e1c10d74485592fd11cfde97`.
+It reproduced 29 tests / 543 assertions and byte-identical regeneration. This
+receipt does not confer mapping promotion, integration or full Reader acceptance.
+
+Main `43112981c2e6ee47e1cc1451dbe3b750f88ee874` was merged normally into the
+Reader branch. The source merge `e446f3268ecc8ce25408236631a41c5939e7a952`
+retains both the incoming private-collection test owner and Reader dispatch test
+owner. The composed ownership bytes are pinned to that real source merge; task
+and roadmap bytes retain their unchanged `2e0292c6` pins. The generated crosswalk
+retains incoming accepted mapping review as predecessor history and keeps the
+composed source-version disposition pending. Original Reader bridge fields and
+the earlier metadata review remain preserved under the composition record.
+
+Composition controls passed: Reader projection 5 / 34, dependency controls
+14 / 402, crosswalk controls 10 / 108. The extra assertion checks exact union of
+both standalone ownership maps. Dispatch implementation, tests and fixture are
+unchanged. During bridge preparation the intended data write completed before
+an extra trailing delimiter caused the ad hoc Clojure command to exit with an
+error. That nonpass is retained; no write was repeated. Subsequent documented
+generation and check commands passed and controls read the actual serialized
+bridge. The source merge alone was not treated as validation evidence.
+
+Fresh composed-head CI and independent integration review remain pending. No
+Reader semantic/compiler/broker execution or whole-task closure is inferred.

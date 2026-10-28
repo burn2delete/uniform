@@ -119,15 +119,17 @@
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
     (let [successor (edn/read-string
                      (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
-          source (first (:source-files successor))]
-      (is (= (:applying-main bridge) (get-in source [:before :commit])))
+          historical-source (first (:source-files successor))
+          source (first (:source-files (or (:current-main-composition successor) successor)))]
+      (is (= (:applying-main bridge) (get-in historical-source [:before :commit])))
       (is (= (get-in source [:after :commit])
              (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"]))))))
 
 (deftest reader-dispatch-successor-retains-exact-source-and-open-acceptance
   (let [view (sh-crosswalk/build)
-        bridge (edn/read-string
-                (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))]
+        historical (edn/read-string
+                    (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
+        bridge (or (:current-main-composition historical) historical)]
     (is (= :pending-independent-source-version-review (:status bridge)))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= sh-crosswalk/predecessor-mapping-review
@@ -149,7 +151,15 @@
       (is (= (re-seq predicates before) (re-seq predicates after)))
       (is (= (second (str/split before #"<!-- reader-implementation-tasks:end -->" 2))
              (second (str/split after #"<!-- reader-implementation-tasks:end -->" 2))))
-      (is (str/includes? after "normal Reader integration and independent acceptance remain open.")))))
+      (is (str/includes? after "normal Reader integration and independent acceptance remain open.")))
+    (when-let [incoming (:incoming-main bridge)]
+      (let [path "docs/self-hosting-slice-ownership.edn"
+            own (edn/read-string (sh-crosswalk/git-source
+                                 "2e0292c61603aad200df397e397e94e3c7d24818" path))
+            main (edn/read-string (sh-crosswalk/git-source incoming path))
+            current (edn/read-string (slurp path))]
+        (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main))
+               (:standalone-test-owners current)))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
