@@ -743,25 +743,6 @@
               digest (bootstrap/reader-canonical-hash hash-input)]
           (recur (rest remaining) (conj resolved digest)))))))
 
-(defn- resolve-digest-plan-direct
-  [runtime digest-requests]
-  (loop [remaining digest-requests resolved []]
-    (if (empty? remaining)
-      resolved
-      (let [request (first remaining)
-            envelope
-            ((:invoke runtime) 'sh07-b51-resolve-digest-preimage
-             [request digest-requests resolved])]
-        (when-not (exact-abi? envelope :accepted :digest-preimage-resolved)
-          (throw
-           (ex-info "B51-v18 direct digest request was rejected"
-                    {:id "SH07-B51-V18-DIRECT-DIGEST-BOUNDARY"
-                     :request request :envelope envelope})))
-        (recur (rest remaining)
-               (conj resolved
-                     (bootstrap/reader-canonical-hash
-                      (get-in envelope [:value :hash-input]))))))))
-
 (defn- c11-raw-pr-str-digest [value]
   (str "sha256:" (bootstrap/sha256-hex (pr-str value))))
 
@@ -1227,32 +1208,6 @@
             (assoc-in [:structural-runner-observation :thrown]
                       resolved-diagnostic))]
     (assoc carrier :predecessor-raw-outcome coherent-observation)))
-
-(defn- pin-independent-predecessor-observation
-  [runtime request]
-  (let [direct ((:invoke runtime) 'sh07-build-core-template [request])
-        structural
-        (try
-          {:returned
-           (bootstrap/sh07-core-run-structural-request-for-test request)
-           :thrown nil}
-          (catch clojure.lang.ExceptionInfo exception
-            {:returned nil :thrown (ex-data exception)}))]
-    {:direct-template-observation
-     {:entrypoint 'sh07-build-core-template
-      :request request :returned direct :thrown nil}
-     :structural-runner-observation
-     {:entrypoint 'sh07-core-run-structural-request-for-test
-      :request request :returned (:returned structural)
-      :thrown (:thrown structural)}}))
-
-(defn- pin-independent-private-no-form-raw-carrier [basename]
-  (let [runtime (direct-source-runtime 'sh07-build-core-template)]
-    (with-redefs
-      [predecessor-observation
-       (fn [request]
-         (pin-independent-predecessor-observation runtime request))]
-      (private-no-form-raw-carrier basename))))
 
 (def ^:private projection-cache (atom {}))
 
@@ -1727,13 +1682,14 @@
       (when (= form-id (:form-id form)) ordinal))
     (:forms request))))
 
-(defn- g13-authenticated-form [request form-id]
+(defn- g13-authenticated-form
   "Return the one raw form carrying form-id, or nil at the integrity boundary.
 
   This intentionally uses a fresh scan of the authenticated form vector.  The
   pending oracle must not borrow Root 1's indexed selector or its pattern
   enumerator when deriving the expected diagnostic.
   "
+  [request form-id]
   (let [matches (filterv #(= form-id (:form-id %)) (:forms request))]
     (when (= 1 (count matches))
       (first matches))))
@@ -1800,7 +1756,7 @@
   "Return the authenticated root/fragment coordinate for an enclosing form."
   [request enclosing]
   (when (map? enclosing)
-    (let [{:keys [root chain]} (g13-local-parent-chain request enclosing)
+    (let [{:keys [root] _chain :chain} (g13-local-parent-chain request enclosing)
           fragment (when root (g13-local-owner-fragment request root enclosing))]
       (when (and root fragment)
         {:fragment-id (:fragment-id fragment)
@@ -1959,7 +1915,7 @@
 (defn- g13-local-resource-pattern-scan
   "Count authenticated raw binding leaves while deferring pattern defects."
   [request fragment pattern-form]
-  (letfn [(walk [form path expected-parent descendant? visited first-by-name]
+  (letfn [(walk [form path expected-parent _descendant? visited first-by-name]
             (let [form-id (:form-id form)
                   canonical (g13-authenticated-form request form-id)
                   membership (count (filter #(= form-id %) (:form-ids fragment)))]
@@ -2059,8 +2015,9 @@
                  :partial-extractions [])
           (recur (rest remaining)))))))
 
-(defn- g13-local-resource-priority [slots]
+(defn- g13-local-resource-priority
   "Apply module-wide priority only after every slot has been collected."
+  [slots]
   (if (> (count slots) 1024)
     {:status :rejected :reason :module-slot-limit-exceeded
      :expected {:unit :module-slots :maximum 1024}
@@ -2097,7 +2054,7 @@
   This is intentionally separate from the production collector.  It only
   emits the first saturating resource offender needed by the pending oracle.
   "
-  [request indexes]
+  [request _indexes]
   (let [forms (:forms request)
         authenticated?
         (and (= (count forms)
@@ -2181,7 +2138,7 @@
                   owner-slots))
               {:status :rejected :reason :resource-census-owner-shape})))))))
 
-(defn- g13-owner-for-pattern [request indexes pattern-form]
+(defn- g13-owner-for-pattern [request _indexes pattern-form]
   (loop [current pattern-form visited #{}]
     (when (map? current)
       (let [form-id (:form-id current)
@@ -2203,7 +2160,7 @@
 (defn- g13-recur-fragment [request recur-form]
   (unique-form-fragment request recur-form))
 
-(defn- g13-recur-owner [request indexes recur-form]
+(defn- g13-recur-owner [request _indexes recur-form]
   ;; The source-owned recur coordinate intentionally names the recur form as
   ;; its enclosing source occurrence.  Derive it through the same independent
   ;; reciprocal parent walk used by the raw pending oracle.
@@ -2216,7 +2173,7 @@
                (= :symbol (:kind operator)))
       (:value operator))))
 
-(defn- g13-target-selection-oracle [request indexes fragment recur-form]
+(defn- g13-target-selection-oracle [_request indexes fragment recur-form]
   ;; Independently walk the authenticated reciprocal parent chain.  A target
   ;; is admitted only when the parent edge and fragment membership are unique;
   ;; loop/fn parents become catalog entries.  Selection is then the unique
@@ -6147,8 +6104,8 @@
             (is (= [] (:partial-products rejected)))))))))
 
 (deftest sh07-b51-v18-runtime-vector-check-preimage-is-exact-and-fail-closed
-  (let [{:keys [indexes enclosing owner pattern-form initializer fragment
-                pattern slot-coordinate]}
+  (let [{:keys [indexes enclosing owner fragment pattern slot-coordinate]
+         _pattern-form :pattern-form _initializer :initializer}
         (nested-slot-context)
         descriptor (first (:descriptors pattern))
         form (get-in indexes [:forms :by-primary (:form-id descriptor)])
@@ -8361,7 +8318,7 @@
         (invoke 'sh07-b51-v18-try-handler-descriptors
                 [matrix try-indexes try-form])
         clause (first (:descriptors handlers))
-        catch-type
+        _catch-type
         (form-by-id matrix (:error-type-form-id clause))
         catch-binding
         (get-in try-indexes [:bindings :by-primary
@@ -9611,7 +9568,8 @@
             (is (= :producer-legacy-outcome-kind (:reason produced))
                 produced)
             (is (= [] (:partial-products produced)) produced)))
-      (is true "legacy product bundle seams are dormant")))))
+      (is true "legacy product bundle seams are dormant"))
+      nil)))
 
 (deftest sh07-b51-v18-private-root1-builds-nonlegacy-and-no-form-plans
   (let [definitions (definitions-by-name @source-forms)
@@ -10691,7 +10649,7 @@
         #((:invoke runtime) 'sh07-b51-r6-reconstruct-products %)
         artifact-id (sha \a) revision-id (sha \b)
         projection-id (sha \c) alias-id (sha \d)
-        form-id (sha \e) syntax-id (sha \f) fragment-id (sha \9)
+        _form-id (sha \e) _syntax-id (sha \f) fragment-id (sha \9)
         source-path "literal-empty-root6.gravity"
         coverage
         {:root-form-count 0 :form-count 0 :local-binding-count 0
@@ -11951,15 +11909,15 @@
         (extraction-preimage 0 4 (id 40) (id 27))
         loop-extraction-preimage
         (extraction-preimage 1 5 (id 42) (id 29))
-        slot (assoc (dissoc let-slot-preimage :domain :schema-version)
+        _slot (assoc (dissoc let-slot-preimage :domain :schema-version)
                     :slot-id (id 40))
-        loop-slot
+        _loop-slot
         (assoc (dissoc loop-slot-preimage :domain :schema-version)
                :slot-id (id 42))
-        extraction
+        _extraction
         (assoc (dissoc let-extraction-preimage :domain :schema-version)
                :extraction-id (id 41))
-        loop-extraction
+        _loop-extraction
         (assoc (dissoc loop-extraction-preimage :domain :schema-version)
                :extraction-id (id 43))
         recur-mapping-preimage
@@ -12309,9 +12267,9 @@
         alias-id (sha \d)
         sh05-id (sha \4)
         macro-trace-id (sha \5)
-        macro-input-id (sha \6)
-        macro-output-id (sha \7)
-        macro-fn-id (sha \8)
+        _macro-input-id (sha \6)
+        _macro-output-id (sha \7)
+        _macro-fn-id (sha \8)
         source-path "literal-sh06-authority.gravity"
         coverage
         {:root-form-count 0 :form-count 0 :local-binding-count 0
