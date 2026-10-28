@@ -93,6 +93,19 @@ hashes, assembly hash, source map and redirected-input command receipts are
 retained for both revisions. Ordinary files are linted in separate invocations
 to prevent unrelated namespace state from corrupting diagnostic filenames.
 
+The C2 facade's private `definterposable` macro has one reviewed static
+`analyze-call` model. It retains both wrapper branches, operation keys, dynamic
+bindings, arguments and original body nodes, so body diagnostics and generated
+function arities remain checked at their source locations. CI never evaluates
+the production macro or its body. Before enabling the model, CI parses both
+immutable base and current source, verifies the exact macro-definition SHA and
+required wrapper declarations, and rejects unsupported definitions/invocations.
+The explicit hook configuration is identical for both revisions, with caches
+disabled. Root project configuration remains included. Hook/config/recipe
+changes invalidate inherited-warning allowances. Complete source observations,
+model hashes, configuration and process receipts remain in the static artifact.
+This model does not suppress errors or exempt the surrounding Bootstrap context.
+
 Cache tests retain their owner and permission checks: Java temporary
 files use a runner-owned private directory, rather than Linux's root-owned
 shared `/tmp`. No source security or runtime pin is relaxed for CI.

@@ -63,8 +63,35 @@
    :sha256-hex (constantly "bytes")
    :c2-reader-artifact-id (constantly "sha256:artifact")
    :c3-syntax-fail! (fn [& _] (throw (ex-info "unexpected failure" {})))
-   :source-span (fn [& _] source-span)
-   :max-reader-form-graph-depth 32})
+   :source-span (fn [& _] source-span)})
+
+(deftest integrity-recomputes-without-a-reported-depth-allowance
+  (doseq [depth [32 33 513 514 4096]]
+    (let [calls (atom 0)
+          operations (assoc base-operations
+                            :c2-lexical-product-validation
+                            (fn [& _] {:graph-valid? true :max-form-depth depth})
+                            :c2-incremental-hashes
+                            (fn [& _] (swap! calls inc) incremental-hashes))
+          report! (fn [artifact]
+                    (integrity/with-operations operations
+                      #(integrity/c3-c2-reader-integrity-report artifact)))]
+      (is (true? (:authentic? (report! accepted-artifact))))
+      (is (true? (:authentic? (report! accepted-artifact))))
+      (is (= 2 @calls))
+      (let [tampered (assoc accepted-artifact :incremental-reader-hashes {:form-tree "changed"})
+            report (report! tampered)]
+        (is (false? (:authentic? report)))
+        (is (false? (:incremental-hashes-valid? report)))
+        (is (some #{:incremental-hashes-valid?} (:failures report)))
+        (is (= 3 @calls)))
+      (integrity/with-operations
+        (assoc operations :c2-lexical-product-validation
+               (fn [& _] {:graph-valid? false :max-form-depth depth}))
+        #(let [report (integrity/c3-c2-reader-integrity-report accepted-artifact)]
+           (is (false? (:authentic? report)))
+           (is (false? (:lexical-graph-valid? report)))))
+      (is (= 3 @calls)))))
 
 (deftest integrity-report-recomputes-every-reader-product-check
   (integrity/with-operations
@@ -157,6 +184,7 @@
           [nil
            {:unknown identity}
            {:c2-incremental-hashes :not-a-function}
+           {:max-reader-form-graph-depth 32}
            {:max-reader-form-graph-depth 0}
            {:max-reader-form-graph-depth :unbounded}]]
     (is (thrown? clojure.lang.ExceptionInfo

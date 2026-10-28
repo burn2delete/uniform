@@ -13,7 +13,6 @@
 (def ^:private ^:dynamic *active-operation-keys* #{})
 (def ^:private ^:dynamic *bypass-next-operation-keys* #{})
 (def ^:private function-operation-keys operations/function-operation-keys)
-(def ^:private scalar-operation-keys operations/scalar-operation-keys)
 (def ^:private operation-keys operations/operation-keys)
 (def ^:private validate-operations! operations/validate-operations!)
 
@@ -47,8 +46,7 @@
     :entrypoint-requirements
     {'reader-canonical-hash #{:sha256-hex}
      'c2-incremental-hashes
-     #{:sha256-hex :c2-form-graph-metrics :c2-reader-fail! :source-span
-       :max-reader-form-graph-depth}
+     #{:sha256-hex :c2-form-graph-metrics :c2-reader-fail! :source-span}
      'c2-reader-product-integrity-record #{:sha256-hex}
      'c2-reader-artifact-id #{:sha256-hex}}}
    :artifact-inputs [:hosted-c2-reader-records]
@@ -110,12 +108,6 @@
 (defn- current-operation [key]
   (when-not (contains? *active-operation-keys* key) (get *operations* key)))
 
-(defn- operation-value [key]
-  (if (contains? *operations* key)
-    (get *operations* key)
-    (throw (ex-info (str "C2 artifact identity requires operation " key)
-                    {:operation key}))))
-
 (defn- invoke [key & args]
   (if-let [operation (current-operation key)]
     (apply operation args)
@@ -166,7 +158,6 @@
    {:c2-form-graph-metrics #(invoke :c2-form-graph-metrics %)
     :c2-reader-fail! (fn [& args] (apply invoke :c2-reader-fail! args))
     :source-span #(invoke :source-span %1 %2)
-    :max-reader-form-graph-depth (operation-value :max-reader-form-graph-depth)
     :c2-semantic-form-hash-input c2-semantic-form-hash-input
     :c2-token-hash-input c2-token-hash-input
     :c2-form-hash-input c2-form-hash-input
