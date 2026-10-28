@@ -1081,7 +1081,9 @@
 (defn- literal-require-gaps
   "Check literal repository ns dependencies, not dynamic reads or effect closure."
   [source text declared-paths available?]
-  (let [form (binding [*read-eval* false]
+  (let [form (binding [*read-eval* false *data-readers* {}
+                       *default-data-reader-fn*
+                       (fn [tag _] (throw (ex-info "Unsupported dependency source tag" {:tag tag})))]
                (read (java.io.PushbackReader. (java.io.StringReader. text))))]
     (when-not (and (seq? form) (= 'ns (first form)))
       (throw (ex-info "Expected an explicit namespace declaration" {:source source})))
@@ -1138,7 +1140,12 @@
                  (literal-require-gaps source "(ns fixture (:require (gravity digest)))"
                                       #{digest} available)))
     (is (thrown? RuntimeException
-                 (literal-require-gaps source "#=(throw (Exception.))" #{digest} available)))))
+                 (literal-require-gaps source "#=(throw (Exception.))" #{digest} available)))
+    (let [calls (atom 0)]
+      (binding [*data-readers* {'fixture/run (fn [_] (swap! calls inc))}]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (literal-require-gaps source "#fixture/run []" #{digest} available))))
+      (is (zero? @calls)))))
 
 (deftest reader-identity-lexical-inputs-invalidate-reuse
   ;; The identity test calls the lexical facade, which requires all three

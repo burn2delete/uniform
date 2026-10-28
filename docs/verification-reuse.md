@@ -1189,3 +1189,12 @@ That separate owner's registration remains an integration dependency; the
 candidate neither whitelists the namespace nor changes fail-closed catalog
 behavior. A direct owner-record control is added without weakening the full
 planner test, which must pass after the catalog dependency is integrated.
+
+The direct owner-record successor on `0863b599`, tree `4d0c1bc8`, passed
+4 tests / 118 assertions, natural exit 0 at 256 MiB, Bootstrap absent with clean
+source bookends. Docs passed 240 / 19. Static lint found zero errors and two
+existing planner warnings, which remain visible. The source reader successor
+also rejects caller-provided tagged readers without invoking their callbacks.
+Independent review, the catalog-dependent planner test, a separately reviewed
+real leaf producer proof for the expanded closure, and current-main integration
+remain open. This finite correction does not close whole RV2 or RV4.
