@@ -1136,3 +1136,21 @@ representation with real producer/hit/invalidation evidence, or a complete
 source-grounded necessity decision, remain open. RV4 still depends on that
 criterion and the separately held RV1 correction. The uncertain RV1 operation
 and candidate are untouched.
+
+### RV2: literal namespace dependency regression fence
+
+The three existing explicit leaf closures now have a non-evaluating regression
+control over the literal `:require` and `:use` declarations in their declared
+Clojure inputs. Every repository namespace must resolve to exactly one source
+or test path already present in that closure. A newly imported helper, missing
+helper, source/test shadow or unsupported dependency spelling fails the control.
+Synthetic mutation controls distinguish an unchanged declaration from an added
+undeclared dependency and its explicitly declared successor; reader evaluation
+is disabled. This control grants no cache admission and does not resolve
+dynamic loads, callbacks, initialization effects or transitive host behavior.
+
+Its finite acceptance is the three current declarations plus the mutation,
+unknown/shadow and non-evaluation negatives, independent exact review and
+integration. Validation and review are pending on this candidate. The held
+compatibility cohort and ACC13 Syntax seam are untouched; original RV1/RV2/RV4
+residual criteria remain open.

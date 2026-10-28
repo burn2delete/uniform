@@ -1078,6 +1078,68 @@
                 (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
                 (is (= 2 @calls))))))))))
 
+(defn- literal-require-gaps
+  "Check literal repository ns dependencies, not dynamic reads or effect closure."
+  [source text declared-paths available?]
+  (let [form (binding [*read-eval* false]
+               (read (java.io.PushbackReader. (java.io.StringReader. text))))]
+    (when-not (and (seq? form) (= 'ns (first form)))
+      (throw (ex-info "Expected an explicit namespace declaration" {:source source})))
+    (vec
+     (for [clause (drop 2 form)
+           :when (and (seq? clause) (#{:require :use} (first clause)))
+           spec (rest clause)
+           :let [namespace (cond (symbol? spec) spec
+                                 (and (vector? spec) (symbol? (first spec))) (first spec)
+                                 :else (throw (ex-info "Unreviewed namespace dependency form"
+                                                       {:source source :spec spec})))]
+           :when (str/starts-with? (str namespace) "gravity.")
+           :let [relative (str (-> (str namespace) (str/replace "." "/")
+                                   (str/replace "-" "_")) ".clj")
+                 candidates (filterv available?
+                                     (mapv #(str % relative)
+                                           ["bootstrap/clojure/src/" "bootstrap/clojure/test/"]))]
+           :when (or (not= 1 (count candidates))
+                     (not (contains? declared-paths (first candidates))))]
+       {:source source :namespace namespace :candidates candidates
+        :reason (if (= 1 (count candidates)) :undeclared-input :unresolved-or-shadowed-input)}))))
+
+(deftest reviewed-leaf-closures-cover-literal-repository-requires
+  ;; This is a regression fence for the three existing declarations. Passing
+  ;; does not authorize new closures, dynamic imports, callbacks or reuse.
+  (doseq [namespace '[gravity.c11-mir-test gravity.compiler-pass-manifest-test
+                      gravity.c2-artifact-identity-test]
+          :let [job (reviewed-closure-job namespace)
+                inputs (get-in job [:cache-closure :inputs])
+                declared (set (map :path inputs))]
+          {:keys [path]} inputs
+          :when (str/ends-with? path ".clj")]
+    (is (empty? (literal-require-gaps path (slurp path) declared #(.isFile (io/file %))))
+        (str namespace " consumes " path))))
+
+(deftest literal-require-guard-rejects-mutation-unknown-and-shadowed-inputs
+  (let [source "fixture.clj"
+        original "(ns fixture (:require [gravity.digest :as digest]))"
+        changed "(ns fixture (:require [gravity.digest :as digest] [gravity.new-helper :as helper]))"
+        digest "bootstrap/clojure/src/gravity/digest.clj"
+        helper "bootstrap/clojure/src/gravity/new_helper.clj"
+        available #{digest helper}
+        gaps #(literal-require-gaps source % #{digest} available)]
+    (is (empty? (gaps original)))
+    (is (= [{:source source :namespace 'gravity.new-helper :candidates [helper]
+             :reason :undeclared-input}] (gaps changed)))
+    (is (empty? (literal-require-gaps source changed #{digest helper} available)))
+    (is (= :unresolved-or-shadowed-input
+           (:reason (first (literal-require-gaps source changed #{digest} #{digest})))))
+    (is (= :unresolved-or-shadowed-input
+           (:reason (first (literal-require-gaps source original #{digest}
+                            #{digest "bootstrap/clojure/test/gravity/digest.clj"})))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (literal-require-gaps source "(ns fixture (:require (gravity digest)))"
+                                      #{digest} available)))
+    (is (thrown? RuntimeException
+                 (literal-require-gaps source "#=(throw (Exception.))" #{digest} available)))))
+
 (deftest reader-identity-digest-runner-input-invalidates-reuse
   (with-coordination-root
     (fn [base]
