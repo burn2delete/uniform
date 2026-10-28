@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "2e0292c61603aad200df397e397e94e3c7d24818", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -470,7 +470,7 @@
              (mapv #(dissoc % :mapping-review :coverage) (:requirements result))
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
-(def mapping-review
+(def predecessor-mapping-review
   {:status :accepted-mapping-only
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36"
@@ -494,6 +494,12 @@
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."})
+(def mapping-review
+  {:status :pending-source-version-review
+   :input-fingerprint "63c65ce6be9510fcf7c41dd5b77ea37ef0872d30c0adb11ffaacb9568a8085d5"
+   :predecessor-review predecessor-mapping-review
+   :source-version-bridge "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"
+   :qualification "Reader task/roadmap and standalone-test ownership source changed at 2e0292c6. Prior mapping acceptance remains historical; changed inputs await independent source-version review. No implementation acceptance or task credit."})
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))

@@ -1,0 +1,42 @@
+{:kind :reader-dispatch-source-version-bridge,
+ :status :pending-independent-source-version-review,
+ :predecessor-mapping-input-fingerprint
+ "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68",
+ :applying-input-fingerprint
+ "63c65ce6be9510fcf7c41dd5b77ea37ef0872d30c0adb11ffaacb9568a8085d5",
+ :source-files
+ [{:path "specs/reader-workflow/tasks.md",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"}}
+  {:path "docs/component-roadmaps/reader.md",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "f8d579d2f4411e6c340447a579768834fc3eeef7875de9f5af8deee28a1521e0"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"}}
+  {:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "34b466a8ed22d5e50ccb7f39eedfb3c8fcc3f5f9e21590e7a8b9d068e26407b1"}}],
+ :scope
+ "Absolute immutable evidence link, generated Reader row and standalone dispatch test owner. All stable task IDs, checkboxes, routing and acceptance criteria retained; implementation files unchanged from f27f0762.",
+ :implementation-review
+ {:commit "f27f076231c056909e83a6dd59f662542cd4864f",
+  :receipt-sha256
+  "9213fa159fabae82610edd7ec496f52e16735491897cd776342412cc5c49de80",
+  :scope :bootstrap-leaf-only},
+ :acceptance :no-new-implementation-or-integration-credit}

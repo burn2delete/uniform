@@ -117,8 +117,39 @@
     (is (:historical-reader-suffix-unchanged bridge))
     (is (= 3 (count (:accepted-current-scoped-evidence view))))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
-    (is (= (:applying-main bridge)
-           (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"])))))
+    (let [successor (edn/read-string
+                     (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
+          source (first (:source-files successor))]
+      (is (= (:applying-main bridge) (get-in source [:before :commit])))
+      (is (= (get-in source [:after :commit])
+             (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"]))))))
+
+(deftest reader-dispatch-successor-retains-exact-source-and-open-acceptance
+  (let [view (sh-crosswalk/build)
+        bridge (edn/read-string
+                (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))]
+    (is (= :pending-independent-source-version-review (:status bridge)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= sh-crosswalk/predecessor-mapping-review
+           (get-in view [:mapping-review :predecessor-review])))
+    (is (= (:applying-input-fingerprint bridge)
+           (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
+    (doseq [{:keys [path before after]} (:source-files bridge)]
+      (is (= (:commit after) (get-in view [:applying-source-pins path])))
+      (is (= (:sha256 before)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+      (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+      (is (= (:sha256 after)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path)))))
+    (let [path "specs/reader-workflow/tasks.md"
+          source (first (:source-files bridge))
+          before (sh-crosswalk/git-source (get-in source [:before :commit]) path)
+          after (slurp path)
+          predicates #"(?m)^- \[[ x]\] `reader/[^\n]+|^Done when \(yes/no\): [^\n]+"]
+      (is (= (re-seq predicates before) (re-seq predicates after)))
+      (is (= (second (str/split before #"<!-- reader-implementation-tasks:end -->" 2))
+             (second (str/split after #"<!-- reader-implementation-tasks:end -->" 2))))
+      (is (str/includes? after "normal Reader integration and independent acceptance remain open.")))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

@@ -56,3 +56,35 @@ projection records have not been relabeled as execution evidence. Existing
 C2/PR374/selected-Syntax work and historical failed operations are unchanged.
 Independent exact-source acceptance is pending. No release, migration,
 self-hosting, runtime admission or complete extension-policy support is claimed.
+
+## Independent leaf review and projection repair
+
+The exact `f27f076231c056909e83a6dd59f662542cd4864f` bootstrap leaf received
+independent review from existing reviewer `01a183df-0570-76e0-adfa-796c573e66f7`.
+Receipt SHA256:
+`9213fa159fabae82610edd7ec496f52e16735491897cd776342412cc5c49de80`.
+The reviewer accepted only the declared leaf, reproduced 6 tests / 70 assertions
+and 6 / 11, and passed 2 / 35 additional adversarial controls. Committing provider
+result/exception regression coverage was suggested as follow-through, not a
+blocking finding. Full Reader and current-composition acceptance remain open.
+
+The old head's CI projection failure is retained as a nonpass. The task row had
+a relative evidence link and lacked its generated roadmap/source-span update.
+The repair uses an absolute immutable HTTPS evidence link, regenerates the
+Reader table, records the standalone test owner, and pins those three files to
+real source commit `2e0292c61603aad200df397e397e94e3c7d24818`. The SH crosswalk
+is regenerated with a pending source-version review disposition and preserves
+the complete predecessor mapping review. No mapping checker is weakened and
+no implementation or task acceptance is inferred.
+
+Focused repair controls passed: Reader projection/check tests 5 / 34;
+dependency controls 14 / 402; crosswalk source/serialization/negative controls
+10 / 107; ownership inventory 1 / 554; `git diff --check`. The initial crosswalk
+test expected the old Reader pin as current and failed once. It now checks the
+historical predecessor plus the successor's exact Git bytes/hashes, unchanged
+task predicates and retained historical suffix. An initial unknown ownership
+test selector ran no tests; the corrected exact selector produced 1 / 554.
+
+Dispatch implementation, dispatch test and fixture bytes remain identical to
+`f27f0762`. The old independent review is not presented as acceptance of the
+changed projection inputs. Changed-input review and current-head CI are pending.

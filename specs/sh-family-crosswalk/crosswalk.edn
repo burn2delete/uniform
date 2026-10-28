@@ -2,11 +2,11 @@
  "254a5b50ea5e2825c424248c9216802cc866c0fd",
  :requirements
  [{:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -68,11 +68,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -140,11 +140,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -212,11 +212,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -284,11 +284,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -345,11 +345,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
    :shared-completion-rule nil,
    :completion-prerequisites [],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -414,11 +414,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -490,11 +490,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -566,11 +566,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -642,11 +642,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -718,11 +718,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -794,11 +794,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -870,11 +870,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -950,11 +950,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1027,11 +1027,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1104,11 +1104,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1181,11 +1181,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification :legacy-project-accounting-wording,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1258,11 +1258,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
    :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1338,11 +1338,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1405,11 +1405,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1468,11 +1468,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1534,11 +1534,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification :legacy-project-accounting-wording,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1601,11 +1601,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1663,11 +1663,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1729,11 +1729,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1792,11 +1792,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1855,11 +1855,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1922,11 +1922,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -1985,11 +1985,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification :legacy-project-accounting-wording,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2059,11 +2059,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2122,11 +2122,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -2184,11 +2184,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2247,11 +2247,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2314,11 +2314,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2388,11 +2388,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification :legacy-project-accounting-wording,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2451,11 +2451,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -2516,11 +2516,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2583,11 +2583,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2646,11 +2646,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2709,11 +2709,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2776,11 +2776,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence
    :historical-supported-slice-current-closure-unassessed,
    :context-source
@@ -2843,11 +2843,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -2905,11 +2905,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3021,11 +3021,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3137,11 +3137,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3253,11 +3253,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3369,11 +3369,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3485,11 +3485,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3604,11 +3604,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3695,11 +3695,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3790,11 +3790,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3885,11 +3885,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -3980,11 +3980,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4079,11 +4079,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4170,11 +4170,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4244,11 +4244,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4318,11 +4318,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4406,11 +4406,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4487,11 +4487,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4568,11 +4568,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4649,11 +4649,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4726,11 +4726,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4803,11 +4803,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4880,11 +4880,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -4957,11 +4957,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5045,11 +5045,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5126,11 +5126,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5210,11 +5210,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5294,11 +5294,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5378,11 +5378,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5462,11 +5462,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5557,11 +5557,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5645,11 +5645,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5715,11 +5715,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5785,11 +5785,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5855,11 +5855,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5929,11 +5929,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -5999,11 +5999,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6069,11 +6069,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6149,11 +6149,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6229,11 +6229,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6317,11 +6317,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6397,11 +6397,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6481,11 +6481,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6565,11 +6565,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6632,11 +6632,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6699,11 +6699,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6759,11 +6759,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6832,11 +6832,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6898,11 +6898,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -6968,11 +6968,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7029,11 +7029,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7085,11 +7085,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7157,11 +7157,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7223,11 +7223,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7279,11 +7279,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7362,11 +7362,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7418,11 +7418,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7478,11 +7478,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7534,11 +7534,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7590,11 +7590,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7649,11 +7649,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification :legacy-project-accounting-wording,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7709,11 +7709,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7772,11 +7772,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7839,11 +7839,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7906,11 +7906,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -7969,11 +7969,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8036,11 +8036,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8109,11 +8109,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8175,11 +8175,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8265,11 +8265,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8331,11 +8331,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8397,11 +8397,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8457,11 +8457,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8516,11 +8516,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8578,11 +8578,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8633,11 +8633,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8716,11 +8716,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8789,11 +8789,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8856,11 +8856,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8923,11 +8923,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -8972,11 +8972,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9021,11 +9021,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9081,11 +9081,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9134,11 +9134,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9194,11 +9194,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9261,11 +9261,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9319,11 +9319,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9405,11 +9405,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9465,11 +9465,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9517,11 +9517,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9584,11 +9584,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9643,11 +9643,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9706,11 +9706,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9769,11 +9769,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9832,11 +9832,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9905,11 +9905,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -9978,11 +9978,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10062,11 +10062,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10118,11 +10118,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10185,11 +10185,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10241,11 +10241,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10308,11 +10308,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10374,11 +10374,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10441,11 +10441,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10500,11 +10500,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10551,11 +10551,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10599,11 +10599,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10648,11 +10648,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10701,11 +10701,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10764,11 +10764,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10819,11 +10819,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10877,11 +10877,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -10943,11 +10943,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11010,11 +11010,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11076,11 +11076,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11135,11 +11135,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11202,11 +11202,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11269,11 +11269,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11325,11 +11325,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11391,11 +11391,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11458,11 +11458,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11518,11 +11518,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11585,11 +11585,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11645,11 +11645,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11717,11 +11717,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11790,11 +11790,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11849,11 +11849,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11916,11 +11916,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -11983,11 +11983,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12050,11 +12050,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12117,11 +12117,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12184,11 +12184,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12243,11 +12243,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12310,11 +12310,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12363,11 +12363,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12423,11 +12423,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12481,11 +12481,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12530,11 +12530,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12590,11 +12590,11 @@
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:source-policy-qualification nil,
-   :mapping-review :independently-reviewed,
+   :mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
    :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
-   :coverage :owner-and-independent-reviewed,
+   :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
    :context-source
    {:path "docs/self-hosting-milestone-completion-plan.md",
@@ -12643,40 +12643,48 @@
   :sha256
   "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507"},
  :mapping-review
- {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
-  :source-version-review
-  {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4",
-   :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb",
-   :receipt-sha256
-   "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70",
-   :scope
-   "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
-  :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
-  :locator-and-current-main-review
-  {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
-   :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
-   :reviewed-tree "bddcb3d9e7130eca8868ff2be1b98afdacc5747d",
-   :audit-commit "90b6f524a2f498fbb21bf9d63b7aef7c368922c3",
-   :receipt-sha256
-   "6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f",
-   :locator-receipt-sha256
-   "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f",
-   :composition-receipt-sha256
-   "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904",
-   :scope
-   "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."},
-  :status :accepted-mapping-only,
-  :receipt-sha256
-  "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
-  :qualification
-  "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
-  :predecessor-input-fingerprint
-  "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e",
-  :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008",
-  :review-text-sha256
-  "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
+ {:status :pending-source-version-review,
   :input-fingerprint
-  "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+  "63c65ce6be9510fcf7c41dd5b77ea37ef0872d30c0adb11ffaacb9568a8085d5",
+  :predecessor-review
+  {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
+   :source-version-review
+   {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4",
+    :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb",
+    :receipt-sha256
+    "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70",
+    :scope
+    "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
+   :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
+   :locator-and-current-main-review
+   {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+    :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
+    :reviewed-tree "bddcb3d9e7130eca8868ff2be1b98afdacc5747d",
+    :audit-commit "90b6f524a2f498fbb21bf9d63b7aef7c368922c3",
+    :receipt-sha256
+    "6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f",
+    :locator-receipt-sha256
+    "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f",
+    :composition-receipt-sha256
+    "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904",
+    :scope
+    "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."},
+   :status :accepted-mapping-only,
+   :receipt-sha256
+   "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
+   :qualification
+   "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
+   :predecessor-input-fingerprint
+   "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e",
+   :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008",
+   :review-text-sha256
+   "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
+   :input-fingerprint
+   "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+  :source-version-bridge
+  "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
+  :qualification
+  "Reader task/roadmap and standalone-test ownership source changed at 2e0292c6. Prior mapping acceptance remains historical; changed inputs await independent source-version review. No implementation acceptance or task credit."},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -14981,7 +14989,7 @@
   "reader"
   [{:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
@@ -14995,13 +15003,13 @@
      "- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation\n\nCurrent evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.\n\nDone when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id
     "reader/finite-remaining-work/contract-coverage-reconciliation",
     :checked false}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
@@ -15015,13 +15023,13 @@
      "- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure\n\nCurrent evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.\n\nDone when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id
     "reader/finite-remaining-work/decode-and-source-identity-closure",
     :checked true}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
@@ -15035,37 +15043,37 @@
      "- [x] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure\n\nCurrent evidence/status: Accepted; the [finite current lexical/origin reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-lexical-origin-closure-20261027/docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md) records the complete enabled collection/literal/abbreviation/metadata population, exact/deferred facts, trivia filtering, graph/origin joins and malformed numeric rejection. Exact `8a0d6a90` / tree `79ed93ab` passed seven genuine Reader calls in two tests / 6,241 assertions with fresh Reader/envelope checks; pure source-identity controls passed 9 tests / 146 assertions. Separate compiler-free composed-tree controls passed 20 tests / 169 assertions on `3b7c1280`. The earlier escape-offset baseline remains a nonpass. PR478/482/492 retain their original complementary evidence. New suffix grammars, extension authorization/effects, quota/authentication closure, release and downstream acceptance remain open.\n\nDone when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id
     "reader/finite-remaining-work/lexical-products-and-origins-closure",
     :checked true}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
      :start-byte 4422,
-     :end-byte 4833,
+     :end-byte 5157,
      :start-line 42,
      :end-line 46,
      :sha256
-     "617e72d76b63149f625c7d78a1f17fac4780b95dae2fe2527451e0e4647cf2af",
+     "998df90d9d51633518ebb2dd4320364345274b6df9581b2043af24ed1f775433",
      :raw
-     "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
+     "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here. The [bootstrap dispatch development increment](https://github.com/burn2delete/uniform/blob/f27f076231c056909e83a6dd59f662542cd4864f/specs/reader-workflow/dispatch-evidence.md) executes two implementation-owned handlers with focused grant/rejection controls; normal Reader integration and independent acceptance remain open.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id "reader/finite-remaining-work/extension-policy-closure",
     :checked false}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
-     :start-byte 4835,
-     :end-byte 5419,
+     :start-byte 5159,
+     :end-byte 5743,
      :start-line 48,
      :end-line 52,
      :sha256
@@ -15074,18 +15082,18 @@
      "- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure\n\nCurrent evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.\n\nDone when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id
     "reader/finite-remaining-work/authentication-and-quota-removal-closure",
     :checked false}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
-     :start-byte 5421,
-     :end-byte 6525,
+     :start-byte 5745,
+     :end-byte 6849,
      :start-line 54,
      :end-line 58,
      :sha256
@@ -15094,17 +15102,17 @@
      "- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff\n\nCurrent evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.\n\nDone when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id "reader/finite-remaining-work/fresh-syntax-handoff",
     :checked true}
    {:path "specs/reader-workflow/tasks.md",
     :file-sha256
-    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/reader-workflow/tasks.md",
-     :start-byte 6527,
-     :end-byte 6978,
+     :start-byte 6851,
+     :end-byte 7302,
      :start-line 60,
      :end-line 64,
      :sha256
@@ -15113,7 +15121,7 @@
      "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome."},
     :owner-source "docs/component-roadmaps/reader.md",
     :component "reader",
-    :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
     :id "reader/finite-remaining-work/component-release-evidence",
     :checked false}],
   "release"
@@ -16097,7 +16105,7 @@
   "docs/component-roadmaps/platform.md"
   "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364",
   "docs/component-roadmaps/reader.md"
-  "f8d579d2f4411e6c340447a579768834fc3eeef7875de9f5af8deee28a1521e0",
+  "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4",
   "docs/component-roadmaps/release.md"
   "7f8373d1affd818225e6d69301edfbe918ff530daab1ea2d17a24e58f3b2877a",
   "docs/component-roadmaps/resolve.md"
@@ -16139,7 +16147,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6",
+  "34b466a8ed22d5e50ccb7f39eedfb3c8fcc3f5f9e21590e7a8b9d068e26407b1",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16173,7 +16181,7 @@
   "specs/platform-workflow/tasks.md"
   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
   "specs/reader-workflow/tasks.md"
-  "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+  "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
   "specs/release-workflow/tasks.md"
   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
   "specs/resolve-workflow/tasks.md"
@@ -16192,11 +16200,11 @@
  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
   "4325a9f46292472a7f984c5adfef81209874bb5c",
   "docs/component-roadmaps/reader.md"
-  "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/self-hosting-slice-ownership.edn"
-  "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "2e0292c61603aad200df397e397e94e3c7d24818",
   "specs/reader-workflow/tasks.md"
-  "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
@@ -16214,7 +16222,7 @@
   :status
   "Read only component ledgers; preserve scoped historical/current receipts.",
   :missing-coverage
-  "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed.",
+  "Task entailment and owner review pending; do not infer complete coverage from a nonempty route.",
   :denial
   "Restricted C12 work remains with its existing owner; no execution or transfer authorized by this mapping."},
  :task-authority-lineage
