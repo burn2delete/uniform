@@ -65,3 +65,30 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 - [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md#requirements): Consume package/schema/lock compatibility classifications and migration metadata. Compatibility decision authority remains a governance gap in the central mapping.
 - [GOV10](../../docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md#requirements): Publication/retrieval verifies package identity, signatures, provenance, SBOM, capability/profile/target metadata and policy-bound yanks/advisories. Namespace adjudication and emergency policy authority remain proposed governance work, not Build authority.
 - [SAFE14](../../docs/phase-02-safety/043-safe14-supply-chain-safety.md#requirements): Resolve pinned lockfile dependencies, record generator/source/build-effect provenance and produce reproducible builds or accepted attestations. Auth retains artifact trust and grants; build evidence cannot silently expand dependency authority.
+
+## Yank and revocation task interface
+
+Bind the existing proposed requirement `behavior/pkg5/yank-revocation-admission`
+to the existing first Build task
+`build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`
+under `build-implementation-tasks`. PKG5 lines 44, 61, 108 and 119 require
+policy checks, recorded signature/revocation status, the explicit historical
+rebuild exception and diagnostic `PKG5006`. All five IDs and Open statuses stay.
+This refines closing evidence; it does not implement a resolver or accept the
+requirement. Build/package maintainer remains the semantic owner role.
+
+[The exact amendment](yank-interface.edn) changes only the preserved PR445
+requirement's task-reference and task-gap fields. It is a replayable amendment
+receipt, not a task/status ledger. Its isolated applied manifest remains
+separate from the original; main does not acquire the full draft manifest.
+All four facet identities/bytes, historical support, atomicity/nonoverlap and
+implementation assessment are conserved. The old missing-interface reason is
+retained inside the amended gap qualification. No other requirement or alias
+is changed; GOV10 source-binding repair is excluded.
+
+Check the four source spans, current task hash/marker/ID, acceptance predicates,
+wrong hash/marker/ID controls, unchanged task population/status and the generated
+Build/SH projections. Preserve predecessor SH review as history and leave the
+changed-source mapping pending independent review. The 577-interface inventory
+is not recomputed; accepted isolated 586 and proposed-unverified 470 remain
+distinct. No live resolver, compiler, runtime or broker action is required.
