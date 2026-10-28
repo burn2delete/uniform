@@ -78,6 +78,12 @@ compiler replay and does not write the dashboard.
 
 ## Exact Reader leaf closure
 
+The current Reader identity catalog policy requires fresh execution while the
+expanded lexical closure lacks a real producer evidence bundle. Its explicit
+input declaration is retained for audit and regression checks, but the planner
+does not authorize narrowed cache reuse. The earlier producer and reuse results
+below retain only their original source/input scope.
+
 The opt-in is only `gravity.c2-artifact-identity-test`. Its leaf production closure is
 `bootstrap/clojure/src/gravity/c2_artifact_identity.clj` and
 `c2_artifact_identity/{artifacts,canonical,incremental,operations,projections}.clj`.
@@ -1136,3 +1142,179 @@ representation with real producer/hit/invalidation evidence, or a complete
 source-grounded necessity decision, remain open. RV4 still depends on that
 criterion and the separately held RV1 correction. The uncertain RV1 operation
 and candidate are untouched.
+
+### RV2: literal namespace dependency regression fence
+
+The three existing explicit leaf closures now have a non-evaluating regression
+control over the literal `:require` and `:use` declarations in their declared
+Clojure inputs. Every repository namespace must resolve to exactly one source
+or test path already present in that closure. A newly imported helper, missing
+helper, source/test shadow or unsupported dependency spelling fails the control.
+Synthetic mutation controls distinguish an unchanged declaration from an added
+undeclared dependency and its explicitly declared successor; reader evaluation
+is disabled. This control grants no cache admission and does not resolve
+dynamic loads, callbacks, initialization effects or transitive host behavior.
+
+Its finite acceptance is the three current declarations plus the mutation,
+unknown/shadow and non-evaluation negatives, independent exact review and
+integration. Validation and review are pending on this candidate. The held
+compatibility cohort and ACC13 Syntax seam are untouched; original RV1/RV2/RV4
+residual criteria remain open.
+
+The first actual control run on `c2da65a2`, tree `b7925f8a`, failed: two
+tests, 66 passes, one failure, zero errors, natural exit 1 at 256 MiB with
+Bootstrap absent and clean source bookends. It identified a concrete missing
+dependency: the current Reader identity test requires and calls
+`gravity.c2-lexical-validation`. Its facade and three implementation namespaces
+were absent from the explicit closure. The correction binds those four files
+and permits only the three exact nested lexical paths for this existing test.
+No production implementation or other namespace admission changes.
+
+Additional injected cache controls require miss/hit conservation followed by
+comment-only mutation invalidation, a changed renewed key, and missing-file
+rejection for each lexical input, without executing any compiler or leaf body.
+These controls test closure mechanics, not a new real producer proof. Earlier
+producer evidence retains its original consumed-source attribution; it is not
+retroactively evidence for this corrected closure. Renewed controls and
+independent current-source/result review remain required.
+
+The omitted import entered the current test through PR523's depth regression;
+the production facade itself did not acquire that dependency. The corrected
+control run on `baa6319d`, tree `a1bd36d5`, passed 3 tests / 103 assertions,
+natural exit 0 at 256 MiB, Bootstrap absent and clean bookends. These are
+injected cache-mechanics controls. The planner successor also preserves the
+lexical facade's existing paired owner when admitting its three exact nested
+paths; missing ownership and an unknown nested path remain refusals. Its
+renewed planner and control results are pending.
+
+The next exact-source run on `fdab1acd`, tree `1145c8a3`, retained three
+passing controls (103 assertions) but the planner composition test errored on
+main's existing unknown `private-collection-chain-test` catalog entry. Overall:
+4 tests, 103 passes, 0 failures, 1 error, natural exit 1, Bootstrap absent.
+That separate owner's registration remains an integration dependency; the
+candidate neither whitelists the namespace nor changes fail-closed catalog
+behavior. A direct owner-record control is added without weakening the full
+planner test, which must pass after the catalog dependency is integrated.
+
+The direct owner-record successor on `0863b599`, tree `4d0c1bc8`, passed
+4 tests / 118 assertions, natural exit 0 at 256 MiB, Bootstrap absent with clean
+source bookends. Docs passed 240 / 19. Static lint found zero errors and two
+existing planner warnings, which remain visible. The source reader successor
+also rejects caller-provided tagged readers without invoking their callbacks.
+Independent review, the catalog-dependent planner test, a separately reviewed
+real leaf producer proof for the expanded closure, and current-main integration
+remain open. This finite correction does not close whole RV2 or RV4.
+
+Final focused controls passed on `05af79b50728003d2d83d7b94caf329125a5a685`,
+tree `71b903903dc4e0ec894821f4bb67625b21be3032`: 4 tests / 120 assertions,
+natural exit 0, actual 268435456-byte heap, Bootstrap absent, no compiler
+launched and identical clean bookends. This includes tagged-reader callback
+nonexecution. The final log SHA-256 is
+`76c423cfccf416fde13efa79876f7168c56b30b266f524094dc6a9f283b529c1`.
+The two lint warnings match baseline `cbf5c210`; no suppression was added.
+This documentation-only successor retains that source attribution. The full
+catalog-dependent planner test, independent review and real leaf producer
+evidence remain pending; no historical failure is replaced by these passes.
+
+Current-main composition at `ef9e14dc0846c160a599704ae513a2cde14bfe3d`,
+tree `bece619a8a39c8a4ad59e4bca1a841f86da259dc`, normally merges the
+preserved `8406358d` Reader correction with main `2855b6cc`. PR537 supplies
+the already integrated PC registration and independently adopted SH ownership
+source-version metadata. The full affected planner suite passed 63 tests /
+619 assertions, including the catalog-dependent Reader identity closure check;
+the three literal-import and injected lexical invalidation controls passed
+3 tests / 105 assertions. Both results had zero failures/errors, natural exit
+0 at 268435456-byte heap, Bootstrap absent and identical clean source bookends.
+Guarded semantic launcher call counts were zero. The planner's existing
+namespace-listing child was metadata-only; cache/classpath operations remained
+injected and isolated test fixtures did not acquire the shared host broker.
+The new control log SHA-256 is
+`d91d6e8eaad031e02c89466879e43dc9a1d6e65e5892e49fedd735356b5532a9`.
+An initial harness invocation lacked the test classpath and exited before
+loading the controls; its separate failed receipt is retained.
+
+This closes the affected catalog/planner control gap on that composition only.
+The original missing-input/catalog failures, `05af79b5` control attribution,
+`8406358d` static review and separate unpublished `e912852e` variant remain
+history. Independent exact composition review and current-head CI/integration
+remain required. Real expanded-closure producer miss/hit/per-input invalidation
+with actual runtime/classpath/source identities remains OPEN and subject to its
+separate review and runtime admission. No semantic job, runtime admission or
+whole RV1/RV2/RV4 acceptance follows from this compiler-free result.
+
+### Reader identity fresh-only correction
+
+The independent final integration assessment of `baa6bc48` is HOLD: its active
+expanded cache declaration requires real producer miss/hit/per-input
+invalidation evidence with actual runtime, classpath and source identities.
+Planner controls, injected operations and successful CI do not discharge that
+gate, and earlier smaller-closure evidence cannot be promoted.
+
+The separable correction sets `:freshness-required? true` for only
+`gravity.c2-artifact-identity-test` and marks its planner cache closure
+unauthorized. Its four lexical inputs, literal dependency fence, paired owners,
+unknown-path refusals and declared-input validation remain. Parent request
+policy preserves the catalog's fresh flag despite false caller options. Child
+selection reads that actual catalog policy and executes fresh without preparing
+cache or effective-runtime state. Other namespaces retain their policies.
+
+The new compiler-free controls must demonstrate repeated non-cacheable parent
+misses without storage, repeated fresh child operations without cache/runtime
+setup, and rejection of each deleted lexical input before execution. The
+existing hypothetical admitted-policy cache-mechanics controls remain tests of
+the retained declaration, not production cache admission or real producer proof.
+This fresh-only successor requires its own exact independent review and CI;
+the original HOLD remains valid on its original candidate. Future cache
+admission and whole RV1/RV2/RV4 acceptance remain OPEN.
+
+### PR529 supersession and remaining RV2 evidence
+
+[PR529](https://github.com/burn2delete/uniform/pull/529), source
+`8406358dd2b353964299b5f4ad5543b067efbf4c`, tree
+`a64144d9499c516d9cc7b126e0930623e294913f`, is superseded by the integrated
+fresh-only correction in [PR538](https://github.com/burn2delete/uniform/pull/538).
+The actual merge is `9b74ed2cb07465a2f47d2a87f618033fab4f7302`, tree
+`2a70190954586219858ba384adb750bab02ac86a`, identical to independently
+accepted source `db1026230c926515975d31e3f8cfc214fda53954`. This is semantic
+supersession of the finite correction; PR529 itself was not merged. The
+original branch, static review, `05af79b5` controls, missing-input/catalog
+failures, `baa6bc48` active-cache HOLD and separate `e912852e` variant remain
+preserved at their original identities.
+
+| Original PR529 outcome | Disposition in merged PR538 |
+| --- | --- |
+| Bind the consumed lexical facade and its three implementation files to the Reader identity declaration. | Incorporated. The complete C2 input declaration is retained unchanged; it is audit metadata while fresh execution is required. See the [merged dependency contract](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/contracts/stage0-incremental-test-dependencies.edn). |
+| Admit only the three named nested lexical paths under the existing paired owner; reject missing/wrong owners, wrong roles and unknown paths. | Incorporated. The ownership validator and paired-owner regressions remain. The planner retains the closure but marks narrowed reuse unauthorized under the fresh policy. |
+| Check literal imports for the three existing declarations and reject undeclared/missing/shadowed helpers or unsupported forms without evaluation or tagged-reader callbacks. | Incorporated. The literal-import parser and its positive/negative controls are retained. This fence still grants no cache admission or dynamic/effect closure proof. |
+| Preserve injected miss/hit, comment-mutation/key invalidation and deletion controls for all four lexical inputs. | Incorporated as hypothetical admitted-policy mechanics, not real producer evidence. The original control bodies and source attribution remain; the fresh successor also checks deleted inputs through input revalidation without a broker or execution. |
+| Pass the actual catalog-dependent Reader planner check without bypassing unknown-catalog refusal. | Incorporated. PR537 supplies the separately integrated PC registration; the retained full planner suite passes 63 tests / 620 assertions. No unknown namespace is whitelisted. |
+| Obtain exact independent source/result/composition review, current-head CI and integration. | Completed for the fresh-only successor only. Exact changed-head review, committed readback and separate final integration acceptance bind `db1026230` and its tree. [CI40771247212](https://github.com/burn2delete/uniform/actions/runs/40771247212) passed seven routine jobs with two optional skips. Focused fresh/dependency/compatibility controls passed 6 / 171 and the language boundary passed 6 / 11, with zero broker or semantic launches. |
+| Make the expanded declaration available for narrowed cache reuse. | Intentionally disabled by the safer successor: catalog `:freshness-required? true`, planner authorization false, parent non-cacheable/no storage, and child fresh selection before cache/runtime preparation. This does not satisfy the real reuse outcome. |
+| Demonstrate a real expanded-closure producer and independently accept reuse/invalidation with actual runtime/classpath/source identities. | Unimplemented and OPEN under original RV2 and RV4 below. Earlier smaller-closure results and injected controls cannot discharge this obligation. |
+
+The stable task truth remains **RV2** and **RV4** in the governing table at the
+top of this document; no new task population or completion percentage is
+created. The current residual for the expanded Reader declaration is:
+
+- Independently review an exact real-producer method for the four retained
+  lexical inputs and the complete consumed runner/contract/runtime closure.
+- Subject to separate runtime admission, observe a real cold miss/producer,
+  unchanged-selection hit with original producer provenance, and unrelated
+  documentation/existing-test-body reuse only when every consumed input is
+  unchanged. Record the applying revision separately from the producer.
+- For each lexical facade/operations/primitives/product input, prove mutation
+  invalidates the old key/result and requires a fresh real producer; retain
+  missing-input, ownership, shadow, inventory and fresh-policy rejection.
+- Bind actual runtime, ordered classpath, source/contract identities, clean
+  head/tree and complete result bookends, then obtain independent result and
+  exact integration/admission review before clearing the fresh gate. No
+  historical tuple is relabeled as this expanded-closure execution.
+
+These are the original RV2 producer/reuse obligations and RV4 evidence
+obligations, not an optional follow-up. The [fresh-only correction](#reader-identity-fresh-only-correction)
+and [merged controls](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj)
+preserve a non-admitting boundary while they remain open. The broader RV2
+compatibility read/effect/representation or necessity decision, RV1's
+transitive mutation/equivalence or necessity decision, and whole RV4 remain
+open. Superseding PR529 neither executes those cases nor transfers restricted
+warm evidence or uncertain operations.
