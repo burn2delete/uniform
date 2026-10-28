@@ -1198,3 +1198,14 @@ also rejects caller-provided tagged readers without invoking their callbacks.
 Independent review, the catalog-dependent planner test, a separately reviewed
 real leaf producer proof for the expanded closure, and current-main integration
 remain open. This finite correction does not close whole RV2 or RV4.
+
+Final focused controls passed on `05af79b50728003d2d83d7b94caf329125a5a685`,
+tree `71b903903dc4e0ec894821f4bb67625b21be3032`: 4 tests / 120 assertions,
+natural exit 0, actual 268435456-byte heap, Bootstrap absent, no compiler
+launched and identical clean bookends. This includes tagged-reader callback
+nonexecution. The final log SHA-256 is
+`76c423cfccf416fde13efa79876f7168c56b30b266f524094dc6a9f283b529c1`.
+The two lint warnings match baseline `cbf5c210`; no suppression was added.
+This documentation-only successor retains that source attribution. The full
+catalog-dependent planner test, independent review and real leaf producer
+evidence remain pending; no historical failure is replaced by these passes.
