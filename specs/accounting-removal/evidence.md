@@ -1947,3 +1947,28 @@ prerelease skipped. Independent review accepted the merge and exact tree.
 This is a finite anchor-width result, not arbitrary foreign-container safety,
 authenticated source, runtime, C12 or whole ACC-04 acceptance. BKA header
 accounting, outer pools, runtime policy, PMK and ANE remain open.
+
+## PR511 private collection chain integration
+
+PR511 merged as `0ea44f0c0fe0c5e89ecbbed8148552810164b7dd` over
+`38daf99ecd4abf1c5904d03e3a9a4cdec72af2a3`. The fetched main tree
+`e89fd1934a641b2b029f02cb0663524ac1f93455` equals independently reviewed
+candidate `afb7c4560b3441303a4c1aee34d43073756fc61f`; the branch is retained.
+The six C7, Effects and emitter changes remove the paired 128-link admissions
+while preserving canonical-ID cycle checks, full source/link schemas,
+mutation and immutable-binding controls and fresh proof reconstruction.
+
+The post-PR521 composition at `afb7c456` passed 14 tests and 266 assertions
+with natural exit zero, actual 2 GiB, complete capture, clean identical
+bookends and completed cleanup. Its separate repository gates passed 11
+tests and 23 assertions plus the source census, docs and roadmap. Earlier
+old-source baseline and three owner results retain their original source and
+receipt identities; they are not relabeled as new executions. Exact-head CI
+`40632122067` passed all seven routine jobs, with Core and prerelease skipped.
+Independent review accepted the exact merge and candidate tree.
+
+Prior ready-transition denials remain historical; the owner subsequently
+completed the same supported transition following new authorization. This
+increment does not establish full typed long-chain, authenticated-source,
+runtime, Core, C12, release or whole ACC-06 acceptance. Independent work
+pools and other private collection limits remain open.

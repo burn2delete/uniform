@@ -736,3 +736,16 @@ ACC-04 remains partial. BKA header accounting and runtime policy, PMK and ANE
 families, outer pools, metadata carrier safety and the original row's complete
 consumer acceptance remain open. DSE's preserved unrun work and the separate
 unknown historical mode operation are not replayed or reclassified here.
+
+## ACC-06 private collection chain integration
+
+PR511 integrated the finite private collection binding-chain change at
+`0ea44f0c`. C7, Effects and emitter no longer impose the paired 128-link
+traversal and link-domain admissions. Cycle detection, complete source and
+link validation, immutable binding, mutation and proof checks remain. The
+current-main composition passed its selected 14-test/266-assertion panel.
+
+ACC-06 remains open: recursive validation and construction allowances,
+source/conversion pools, other private collection width/source limits and
+PE/PC dependencies still require their own coherent owner work. This finite
+result does not establish authenticated-source, runtime, Core, C12 or release.
