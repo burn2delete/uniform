@@ -28342,7 +28342,8 @@
                   domain (invoke (quote p15-s23-ssin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
@@ -33692,7 +33693,8 @@ else
                   domain (invoke (quote p15-s23-ksin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
@@ -35841,7 +35843,8 @@ else
                   domain (invoke (quote p15-s23-syin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]

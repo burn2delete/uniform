@@ -18204,7 +18204,7 @@
     (let [limit (+ prefix (dec (:work-count measured)))
           rejected (check core types limit)]
       (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :list-prepend-work-limit]
+      (is (= ["C7-GENERIC" :string-set-insertion-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= (+ prefix (:work-count (invoke-c7 'sh08-ssin-inferred-call
                        [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
@@ -19280,7 +19280,7 @@
     (let [limit (+ prefix (dec (:work-count measured)))
           rejected (check core types limit)]
       (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :list-prepend-work-limit]
+      (is (= ["C7-GENERIC" :keyword-set-insertion-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= (+ prefix (:work-count (invoke-c7 'sh08-ksin-inferred-call
                        [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
@@ -19853,7 +19853,7 @@
     (let [limit (+ prefix (dec (:work-count measured)))
           rejected (check core types limit)]
       (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :list-prepend-work-limit]
+      (is (= ["C7-GENERIC" :symbol-set-insertion-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= (+ prefix (:work-count (invoke-c7 'sh08-syin-inferred-call
                        [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
@@ -22647,8 +22647,11 @@
                     coherent (-> facts
                                  (assoc-in [:append-context :type-checks id] changed)
                                  (assoc-in [:append-context :conj-rows id] row)
+                                 (assoc-in [:append-context :call-facts id] fact)
                                  (assoc-in [:type-table (:operator-node-id call)] descriptor)
                                  (assoc-in [:type-table id] (:result-type descriptor))
                                  (assoc :constraint-ledger [row] :call-type-facts [fact]))]
+                (is (= row (get-in coherent [:append-context :conj-rows id])))
+                (is (= fact (get-in coherent [:append-context :call-facts id])))
                 (is (false? (valid? coherent))))
               (is (false? (valid? (assoc-in facts [:append-context :type-checks id] changed)))))))))))
