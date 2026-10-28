@@ -3354,7 +3354,8 @@
    :fresh-c13-recomputation])
 
 (defn sh16-c13-c12-checks []
-  [:exact-proof-reference-anchor-and-payload
+  [:bounded-c11-input-carriers
+   :exact-proof-reference-anchor-and-payload
    :exact-c8-c9-c10-lineage
    :path-neutral-semantic-identity
    :separate-physical-provenance
