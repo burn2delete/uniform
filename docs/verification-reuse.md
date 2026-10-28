@@ -1266,3 +1266,55 @@ the retained declaration, not production cache admission or real producer proof.
 This fresh-only successor requires its own exact independent review and CI;
 the original HOLD remains valid on its original candidate. Future cache
 admission and whole RV1/RV2/RV4 acceptance remain OPEN.
+
+### PR529 supersession and remaining RV2 evidence
+
+[PR529](https://github.com/burn2delete/uniform/pull/529), source
+`8406358dd2b353964299b5f4ad5543b067efbf4c`, tree
+`a64144d9499c516d9cc7b126e0930623e294913f`, is superseded by the integrated
+fresh-only correction in [PR538](https://github.com/burn2delete/uniform/pull/538).
+The actual merge is `9b74ed2cb07465a2f47d2a87f618033fab4f7302`, tree
+`2a70190954586219858ba384adb750bab02ac86a`, identical to independently
+accepted source `db1026230c926515975d31e3f8cfc214fda53954`. This is semantic
+supersession of the finite correction; PR529 itself was not merged. The
+original branch, static review, `05af79b5` controls, missing-input/catalog
+failures, `baa6bc48` active-cache HOLD and separate `e912852e` variant remain
+preserved at their original identities.
+
+| Original PR529 outcome | Disposition in merged PR538 |
+| --- | --- |
+| Bind the consumed lexical facade and its three implementation files to the Reader identity declaration. | Incorporated. The complete C2 input declaration is retained unchanged; it is audit metadata while fresh execution is required. See the [merged dependency contract](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/contracts/stage0-incremental-test-dependencies.edn). |
+| Admit only the three named nested lexical paths under the existing paired owner; reject missing/wrong owners, wrong roles and unknown paths. | Incorporated. The ownership validator and paired-owner regressions remain. The planner retains the closure but marks narrowed reuse unauthorized under the fresh policy. |
+| Check literal imports for the three existing declarations and reject undeclared/missing/shadowed helpers or unsupported forms without evaluation or tagged-reader callbacks. | Incorporated. The literal-import parser and its positive/negative controls are retained. This fence still grants no cache admission or dynamic/effect closure proof. |
+| Preserve injected miss/hit, comment-mutation/key invalidation and deletion controls for all four lexical inputs. | Incorporated as hypothetical admitted-policy mechanics, not real producer evidence. The original control bodies and source attribution remain; the fresh successor also checks deleted inputs through input revalidation without a broker or execution. |
+| Pass the actual catalog-dependent Reader planner check without bypassing unknown-catalog refusal. | Incorporated. PR537 supplies the separately integrated PC registration; the retained full planner suite passes 63 tests / 620 assertions. No unknown namespace is whitelisted. |
+| Obtain exact independent source/result/composition review, current-head CI and integration. | Completed for the fresh-only successor only. Exact changed-head review, committed readback and separate final integration acceptance bind `db1026230` and its tree. [CI40771247212](https://github.com/burn2delete/uniform/actions/runs/40771247212) passed seven routine jobs with two optional skips. Focused fresh/dependency/compatibility controls passed 6 / 171 and the language boundary passed 6 / 11, with zero broker or semantic launches. |
+| Make the expanded declaration available for narrowed cache reuse. | Intentionally disabled by the safer successor: catalog `:freshness-required? true`, planner authorization false, parent non-cacheable/no storage, and child fresh selection before cache/runtime preparation. This does not satisfy the real reuse outcome. |
+| Demonstrate a real expanded-closure producer and independently accept reuse/invalidation with actual runtime/classpath/source identities. | Unimplemented and OPEN under original RV2 and RV4 below. Earlier smaller-closure results and injected controls cannot discharge this obligation. |
+
+The stable task truth remains **RV2** and **RV4** in the governing table at the
+top of this document; no new task population or completion percentage is
+created. The current residual for the expanded Reader declaration is:
+
+- Independently review an exact real-producer method for the four retained
+  lexical inputs and the complete consumed runner/contract/runtime closure.
+- Subject to separate runtime admission, observe a real cold miss/producer,
+  unchanged-selection hit with original producer provenance, and unrelated
+  documentation/existing-test-body reuse only when every consumed input is
+  unchanged. Record the applying revision separately from the producer.
+- For each lexical facade/operations/primitives/product input, prove mutation
+  invalidates the old key/result and requires a fresh real producer; retain
+  missing-input, ownership, shadow, inventory and fresh-policy rejection.
+- Bind actual runtime, ordered classpath, source/contract identities, clean
+  head/tree and complete result bookends, then obtain independent result and
+  exact integration/admission review before clearing the fresh gate. No
+  historical tuple is relabeled as this expanded-closure execution.
+
+These are the original RV2 producer/reuse obligations and RV4 evidence
+obligations, not an optional follow-up. The [fresh-only correction](#reader-identity-fresh-only-correction)
+and [merged controls](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj)
+preserve a non-admitting boundary while they remain open. The broader RV2
+compatibility read/effect/representation or necessity decision, RV1's
+transitive mutation/equivalence or necessity decision, and whole RV4 remain
+open. Superseding PR529 neither executes those cases nor transfers restricted
+warm evidence or uncertain operations.
