@@ -489,7 +489,9 @@
           [["bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
             'gravity.self-hosting.runtime-module-reads-test]
            ["bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
-            'gravity.self-hosting.module-census-test]]]
+            'gravity.self-hosting.module-census-test]
+           ["bootstrap/clojure/test/gravity/self_hosting/runtime_shape_test.clj"
+            'gravity.self-hosting.runtime-shape-test]]]
     (let [context (planner/planning-context)
           owner (get-in context [:ownership :standalone-test-owners path])
           entry (get-in context [:standalone-test-index :by-namespace namespace])]
@@ -525,6 +527,28 @@
         (is (= :unsupported (:execution data)))
         (is (= "SH-06" (:slice data)))
         (is (= :sh-resolution (:owner data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))))
+
+(deftest private-collection-chain-catalog-requires-the-owner-wrapper
+  (let [path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+        namespace 'gravity.self-hosting.private-collection-chain-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])]
+    (is (= {:namespace namespace :slice "SH-08" :owner :sh-types}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (= {:deterministic? true :performance? false :proof? false
+            :freshness-required? true} (:test-policy entry)))
+    (is (nil? (:cache-closure entry)))
+    (doseq [request [#(planner/build-namespace-plan [namespace])
+                     #(planner/build-plan {:changed-paths [path]})
+                     #(planner/build-plan {:direct-slices ["SH-08"]})
+                     #(planner/build-plan {:iteration-slices ["SH-08"]})]]
+      (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= "SH-08" (:slice data)))
+        (is (= :sh-types (:owner data)))
         (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
                (:required-guards data)))))))
 

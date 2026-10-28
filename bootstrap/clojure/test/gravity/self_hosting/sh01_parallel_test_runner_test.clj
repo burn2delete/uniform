@@ -929,7 +929,8 @@
 
 (deftest runtime-module-read-owner-wrapper-is-required-before-scheduling
   (doseq [namespace ['gravity.self-hosting.runtime-module-reads-test
-                    'gravity.self-hosting.module-census-test]]
+                    'gravity.self-hosting.module-census-test
+                    'gravity.self-hosting.runtime-shape-test]]
     (let [starts (atom 0)]
       (doseq [impact-plan [{:namespaces [namespace]}
                           (plan [{:namespace namespace :slice "SH-19"
@@ -956,7 +957,9 @@
     (doseq [namespace ['gravity.self-hosting.runtime-module-reads-test
                       "gravity.self-hosting.runtime-module-reads-test"
                       'gravity.self-hosting.module-census-test
-                      "gravity.self-hosting.module-census-test"]
+                      "gravity.self-hosting.module-census-test"
+                      'gravity.self-hosting.runtime-shape-test
+                      "gravity.self-hosting.runtime-shape-test"]
             marker [nil :supported]]
       (let [job (cond-> {:namespace namespace :slice "SH-19" :resource-class :normal}
                   marker (assoc :execution marker))]
@@ -993,6 +996,34 @@
             (is (= :unsupported (:execution data)))
             (is (= "SH-06" (:slice data)))
             (is (= :sh-resolution (:owner data)))))))
+    (is (zero? @starts))))
+
+(deftest private-collection-chain-generic-entrypoints-never-launch
+  (let [starts (atom 0)
+        options {:working-directory "/tmp"
+                 :worker (fn [_] (swap! starts inc) {:exit-code 0})
+                 :process-launcher (fn [& _] (swap! starts inc) {:exit-code 0})}]
+    (doseq [namespace ['gravity.self-hosting.private-collection-chain-test
+                      "gravity.self-hosting.private-collection-chain-test"]
+            marker [nil :supported]
+            resource [:normal :exclusive]]
+      (let [job (cond-> {:namespace namespace :slice "SH-19" :owner :sh-runtime
+                        :resource-class resource}
+                  marker (assoc :execution marker))
+            impact-plan {:namespaces [namespace] :shards [job]}]
+        (doseq [operation [#(runner/schedule-plan impact-plan)
+                           #(runner/execute-plan impact-plan options)
+                           #(runner/run-namespace-process job options)
+                           #(runner/run-normal-batch-process
+                              [{:namespace 'gravity.self-hosting.ordinary-test
+                                :slice "SH-01" :resource-class :normal} job] options)]]
+          (let [data (exception-data operation)]
+            (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+            (is (= :unsupported (:execution data)))
+            (is (= "SH-08" (:slice data)))
+            (is (= :sh-types (:owner data)))
+            (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+                   (:required-guards data)))))))
     (is (zero? @starts))))
 
 (deftest malformed-and-empty-plans-fail-closed

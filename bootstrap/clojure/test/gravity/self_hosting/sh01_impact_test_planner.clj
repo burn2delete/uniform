@@ -1143,10 +1143,13 @@
   (let [namespace (symbol (str namespace))
         owner (cond
                 (contains? '#{gravity.self-hosting.runtime-module-reads-test
-                              gravity.self-hosting.module-census-test} namespace)
+                              gravity.self-hosting.module-census-test
+                              gravity.self-hosting.runtime-shape-test} namespace)
                 {:slice "SH-19" :owner :sh-runtime}
                 (= 'gravity.self-hosting.resolution-parent-mutation-test namespace)
-                {:slice "SH-06" :owner :sh-resolution})]
+                {:slice "SH-06" :owner :sh-resolution}
+                (= 'gravity.self-hosting.private-collection-chain-test namespace)
+                {:slice "SH-08" :owner :sh-types})]
     (when owner
       (merge owner
              {:id "SH01-IMPACT-EXTERNAL-WRAPPER"

@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "1733af7b23a5a5b76c71f40068ee00c4838bf4f8", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -478,7 +478,7 @@
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
-   :input-fingerprint "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"
+   :input-fingerprint "674ebdffddf0ce422463063950f5d68cad45c014bc0f6101f712395d7e6520c5"
    :source-version-review
    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"
@@ -493,6 +493,20 @@
     :locator-receipt-sha256 "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f"
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
+   :pr513-runtime-shape-ownership-review
+   {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005"
+    :reviewed-commit "cbc2c6dd99abea1820f7c37bcfdcd1ccba2fb1a5"
+    :reviewed-tree "4488dfdb7687448f36c6f34c8cecf316b9dd21e1"
+    :audit-commit "97a1750b97bbe7bad1c2b171feed38775f631246"
+    :receipt-sha256 "7153744e8bec066be08f390bafc423a2cc57f2358bd9b8c7977ba6038c80cd41"
+    :scope "PR513-only three-line runtime-shape namespace ownership source-version successor and unchanged guards. Metadata-only adoption for identical0a03d2a7 payload; all180 whole criteria remain unassessed. Later main composition and final integration remain with ACC09 and independent review."}
+   :pr513-private-collection-ownership-review
+   {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005"
+    :reviewed-commit "590e2aba68d34d8c386100e1c1572d078e183975"
+    :reviewed-tree "1457112b1dd9b35b3f1dd3fb20af7a331b720311"
+    :audit-commit "414b6c01a98d84d2e52b96756022a972b7300572"
+    :receipt-sha256 "f2cd531c4ea6ab081ddbba43e5e9813f38c3c0d220f8b9a858aae605f0b4f42c"
+    :scope "PC-entry-only ownership source-version successor. Metadata-only adoption for identical674ebdff payload; runtime bridge and all180 unassessed whole criteria preserved. ACC09 retains later main composition and final integration gates."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."})
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))

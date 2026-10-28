@@ -12641,7 +12641,7 @@
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
-  "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507"},
+  "66b6a8006f89b436eb718b2f77dfbc3a669513ce0f01247f497f55702a307a30"},
  :mapping-review
  {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
   :source-version-review
@@ -12652,6 +12652,15 @@
    :scope
    "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
   :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
+  :pr513-private-collection-ownership-review
+  {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+   :reviewed-commit "590e2aba68d34d8c386100e1c1572d078e183975",
+   :reviewed-tree "1457112b1dd9b35b3f1dd3fb20af7a331b720311",
+   :audit-commit "414b6c01a98d84d2e52b96756022a972b7300572",
+   :receipt-sha256
+   "f2cd531c4ea6ab081ddbba43e5e9813f38c3c0d220f8b9a858aae605f0b4f42c",
+   :scope
+   "PC-entry-only ownership source-version successor. Metadata-only adoption for identical674ebdff payload; runtime bridge and all180 unassessed whole criteria preserved. ACC09 retains later main composition and final integration gates."},
   :locator-and-current-main-review
   {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
    :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
@@ -12668,6 +12677,15 @@
   :status :accepted-mapping-only,
   :receipt-sha256
   "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
+  :pr513-runtime-shape-ownership-review
+  {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+   :reviewed-commit "cbc2c6dd99abea1820f7c37bcfdcd1ccba2fb1a5",
+   :reviewed-tree "4488dfdb7687448f36c6f34c8cecf316b9dd21e1",
+   :audit-commit "97a1750b97bbe7bad1c2b171feed38775f631246",
+   :receipt-sha256
+   "7153744e8bec066be08f390bafc423a2cc57f2358bd9b8c7977ba6038c80cd41",
+   :scope
+   "PR513-only three-line runtime-shape namespace ownership source-version successor and unchanged guards. Metadata-only adoption for identical0a03d2a7 payload; all180 whole criteria remain unassessed. Later main composition and final integration remain with ACC09 and independent review."},
   :qualification
   "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
   :predecessor-input-fingerprint
@@ -12676,7 +12694,7 @@
   :review-text-sha256
   "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
   :input-fingerprint
-  "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+  "674ebdffddf0ce422463063950f5d68cad45c014bc0f6101f712395d7e6520c5"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16139,7 +16157,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6",
+  "32b1f116a2e162d2f38274b118b9333d2f0374eb77b770ddbebdedc31d2f53a9",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16194,7 +16212,7 @@
   "docs/component-roadmaps/reader.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
-  "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "1733af7b23a5a5b76c71f40068ee00c4838bf4f8",
   "specs/reader-workflow/tasks.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
