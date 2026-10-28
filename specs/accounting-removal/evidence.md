@@ -1805,3 +1805,39 @@ Independent dependency review accepted reuse of the 16/1,093 receipt at `01e9`
 provenance with fresh composed repository gates/preflight. No broader Reader,
 Resolve or planner acceptance is inferred, and no unchanged semantic run is
 repeated merely because main advanced.
+
+## PR509 exact integration readback - 2026-10-27 MDT
+
+Normal squash integration completed at
+`4a998729ec03513b137d7b40d4bb3d8be285a9f4`, with parent
+`4e443579a95e3273c7b3cd4b931ff84eb6acbe46`. Fresh remote fetch and complete
+tree comparison confirm tree `d07eb74722f8bd43b5bdcb6adc2c1bee1f71c3e6`,
+identical to independently reviewed head `a4504d43`. The branch is retained.
+All consumed source/test inputs remain those of accepted semantic source
+`a674a3e991ce417727daac87af4684da6567c393`, tree
+`f3541519c4ffbe3d882ea68fb0eabb5e03d37909`; the intervening reconciliation
+added only the incoming MIR task record. No semantic rerun was claimed for it.
+
+Independent exact-source, retained-result, outgoing-public-content and
+current-main integration review accepted the finite helper/native-root scope.
+Literal preflight was clean, all-pass and had no diagnostics (receipt SHA256
+`139e7658b3341007b4e28d8b951acb1aea33a7602507d9b88d3c2760857e963d`).
+Reconciled-head CI run `40618144784` completed successfully with all seven
+routine jobs passing; Core readiness and experimental prerelease were skipped
+(receipt SHA256
+`724413a0c1ace48ff0147fa13a4044d9f9b952e6210b1b9d40eaff458bbb888a`).
+
+Main-push run `40619016852` is terminal: seven routine jobs and the source-only
+experimental prerelease passed. Its overall conclusion is NONPASS because the
+explicit unavailable Core-readiness stage exits with
+`C6-VERIFY/:actual-selected-current-reader-products`. The actual failed log
+states that no genuine compiler execution was attempted. This is not a new
+compiler failure or source/Core acceptance (status receipt SHA256
+`b5f795ed1762477bf3495a072f0928040bd6aa95ba9cf4fcba7ad3d80b94b4c2`).
+
+The original failed/truncated helper and consumer batches, corrected-var
+results and reused unaffected selectors keep the distinct identities recorded
+above. Nothing is summed into a fresh whole-panel pass. ACC-05 and ACC-06
+remain open as original criteria; runtime value-work policies, outer pools,
+whole-plan ingress, authenticated-source replay, Core, C12, public admission
+and release receive no acceptance from this finite merge.
