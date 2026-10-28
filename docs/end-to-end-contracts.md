@@ -155,6 +155,60 @@ observation failure remain separate nonpasses. Genuine C3 and C5 consumption of
 the complete source is the next open integration boundary; no downstream run
 or source authority is inferred from this receipt.
 
+#### Selected Syntax: source and diagnostic consumer contract
+
+The next selected-development join must preserve user-source identity separately
+from the selected compiler implementation binding. PR523 merged at
+`e0f1f50a8009dfd9f9c7487b863a17d7449406b2`, after CI prerequisite PR525 at
+`ef280ef40b9ae807097015b6c6f29f124b866c9d`. This removes the hosted C2/C3 depth
+policy and repairs three source-resolver expressions; it does not execute the
+selected Syntax positive. Main `cbf5c210544a0033e9c755d7ef8358f01f1ad57c`
+still builds Syntax with its existing current-binding route. The separately
+reviewed selected-operation proposal at
+`b83e8b1c24201e052bce4bc6617d5f3b4c9ffe96`, tree
+`878ec677a73c122468d6d501527c4bcbbb82cd81`, is not that main composition.
+
+This is the finite applicability contract for the existing Reader/ACC13
+consumer, not another implementation task or permission to replace its harness:
+
+| Producer -> consumer | Required source-backed edge | Rejection or comparison oracle |
+| --- | --- | --- |
+| Source unit -> C3 descriptor | `sh04-syntax-semantic-source-id` hashes logical stem, encoding, byte hash and Reader options. `sh04-syntax-source-descriptor` carries the form ID, token range, byte/scalar/line/column span and Reader-produced source origin. | Compare the actual returned descriptor with its actual C2 source unit, seed and form record. An implementation binding or source hash alone cannot establish these coordinates or origins. |
+| Reader expansions -> Syntax envelope | `sh04-syntax-reader-expansion-history` derives roots from the current Reader identity view; a nonempty origin history contributes `:reader-expansion-history-id` to the summary and authenticated descriptor. | `sh04-syntax-reader-expansions-current?` checks history presence/value, the normal envelope verifier and current source-node origins. Removing or substituting history requires rejection, not just a new outer digest. |
+| C3 -> SH05 | `sh05-default-macro-request` retains `:origin-chain` and `:call-site-span`; its semantic span substitutes the co-canonical source ID for the physical diagnostic source. | Preserve actual-path diagnostics while comparing semantic identity only within the declared co-canonical domain. Physical paths and semantic source IDs are not interchangeable oracles. |
+| SH05 -> C5 | The C5 artifact retains its actual SH05 parent. Its verifier checks `:fresh-upstream-sh05-verification?`, `:authenticated-resolution-request-current?` and `:provenance-current?`, including the request's actual source path. | A changed parent or source provenance must fail normal fresh verification. Equality of a supplied report or an independently reconstructed substitute parent does not prove this join. |
+| Rejected generated reference -> diagnostic | `sh06-resolution-diagnostic-origin` transports an existing origin only after exact failed-reference, span, namespace/profile/target, parent and source-revision checks, with one uniquely matching source syntax. | Require the original rule and diagnostic fields unchanged except for the justified origin chain. Module/import errors borrowing a reference's display span, ambiguous owners or altered causal fields must not acquire that chain. |
+
+The implementation edges are in the existing SH03-SH07 components:
+[source ID and span](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00852-sh04-syntax-resolve-template.clj),
+[source descriptor](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00853-sh04-syntax-reader-binding.clj),
+[expansion history](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00854-sh04-syntax-rich-object.clj),
+[summary and envelope](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj),
+[Macro request](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00858-sh05-macro-execute.clj),
+[fresh C5 verification](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00879-sh06-resolution-artifact-verification-bounded-02.clj)
+and [causal diagnostic origin](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-03.clj).
+The existing `sh06-generated-diagnostic-origin-transport-development-kernel`
+test covers the bounded transport oracle with interposed authenticated-parent
+and request premises; it does not establish a selected-development execution
+receipt or authenticate the modeled parent.
+
+Two oracle limits matter. A physical-only provenance substitution may leave
+semantic IDs equal and must still fail its owning physical check. Conversely,
+requiring every C5 rejection to contain a generated origin would be incorrect:
+only the exact causal-reference case above permits that transport. The selected
+consumer must exercise these checks through actual owner products and normal
+verifiers, without supplying authoritative reports or replacing owner functions.
+
+The prepared 192-byte `.gravity` fixture is one construction case, not paired
+extension coverage. The logical-stem function strips `.gravity` and `.qst`, but
+semantic identity also consumes bytes and Reader options. OWN-01's declared
+paired-source criterion therefore remains applicable: record both actual paths,
+spans and origins, and justify any semantic equality from their actual inputs.
+No second extension, relocated source or generated-node family is accepted by
+static inspection. Genuine selected binding, AE, immediate-parent construction,
+per-field rejection and relocation remain with the existing Reader/ACC13 writers;
+the first new compiler run also awaits resolution of admission safety.
+
 ### OWN-02 - Authenticated Source-to-Core population
 
 Accountable join: ownership maintainer with Expand/Resolve/Core owners; confirm

@@ -1874,3 +1874,150 @@ Two changed authenticated-composition assertions were not run. Runtime Set
 value work, outer accounting pools, authenticated source, public runtime, Core,
 C12 and release remain outside this finite result. ACC-05 remains partial; no
 other original criterion receives closure credit.
+
+## ACC-13 C3 finite Guest comparison
+
+At local candidate `5b5f0a05efb1453b479d6ab967e42fd30b0663a6`, tree
+`0c9b0fa57d98d0d7f9554e5a6cfd06bb91ee1f82`, the reviewed C3 source change
+replaces the duplicate lookup of a validated SHA-256 string with membership in
+the graph's already-maintained depth map. The original prior-reference checks
+remain. The owner compiled the old and changed Guest plans and compared their
+complete reports using explicit normalized data, actual builder and digest
+resolution and fresh resolved verification.
+
+The independently reviewed original run exited naturally in 26.244 seconds
+with actual 2 GiB, complete captures, equal clean source bookends and completed
+cleanup. It recorded 48 full old/new result comparisons, 12 finite ABBA
+observations and four rejected foreign-input cases with zero hash, equality,
+stringification or metadata callbacks. Its 107-byte stderr contained a Clojure
+namespace replacement warning; it was not empty. Receipt SHA-256:
+`40575aeff708a5f19b529465e4994789351f9a59fef0b97255d239a02e78bfcd`.
+The independent result review is limited to this retained comparison.
+
+The earlier PR512 head was `9a362cbf29c179f47bf80108d47e234d36033ec1`.
+Automatic approval review blocked the later candidate push before execution;
+after new relevant authorization, the original owner used the same supported
+route successfully. PR512 now publishes the reviewed `5b5f0a05` candidate as
+a draft, without integration. No authenticated C2/Syntax binding, genuine C5,
+whole-source speedup, public integration or ACC-13 completion follows from
+the normalized comparison. Existing B51 authority, source pin and C12 holds
+remain separate.
+
+## PR517 finite B51 test artifact restoration
+
+PR517 merged as `068de7405b6096d62e1b1636b973e0f250bdc1a6` over
+`a394d4f04313414ee0d397882e2fd2cb0c4b47c7`. The merged tree
+`936e808632488816fd9185f10728054f75d6fdee` exactly matches independently
+reviewed head `f00ac77455cfdd3419c2e6ee8bafc07c449a67d2`; its remote branch
+is retained. The single-file restoration preserves 121 test names and 1,584
+ordered assertions, with an effective conservation mutation control. The
+fresh composed fixture and host UTF-8 selection passed 2 tests and 155
+assertions, natural exit zero in 9.054 seconds; strict changed-file lint and
+seven routine CI jobs also passed. Core readiness and prerelease were skipped.
+
+The original truncated source, authentic historical restoration, intervening
+failed lint CI and corrected test candidate retain their own provenance. The
+full 121-case suite, current seven-shard assembly, public B51 roots, source
+authentication, Core, C12 and quota-source migration remain unassessed. This
+finite test artifact repair does not close ACC-12 or ACC-13.
+
+## PR521 BKA anchor-width integration
+
+PR521 merged as `38daf99ecd4abf1c5904d03e3a9a4cdec72af2a3` over
+`068de7405b6096d62e1b1636b973e0f250bdc1a6`. Its fetched tree
+`17a65169831d60c20938a918ea11b8c146f1a0f0` exactly matches independently
+reviewed head `f74e4b357782597118f4a74d82e9605f747c7815`; the branch is
+retained. The three producer guards remove only the upper anchor-width cap;
+the nonempty, exact-schema and full keyword/type checks remain.
+
+At the original source candidate `47bce8564e698b6f74b7e2e701564447206b10f6`,
+the independently reviewed normalized owner/consumer panel passed 12 tests
+and 448 assertions, with zero failures or errors, natural exit zero in 20.627
+seconds, actual 2 GiB, complete capture, clean identical bookends and
+completed cleanup. Receipt SHA-256:
+`7b18760a8d44ae9efd5d6eae5dc5fc8e4a2248ccaf61832fc8baecc4bcdbacf7`.
+The earlier old-source baseline remains a separate 1-test/9-assertion result.
+Reconciliation introduced the unrelated SH07 test restoration while conserving
+the consumed source, selected tests, contracts, dependencies and lint tooling;
+the semantic result retains its original candidate provenance. Reconciled
+repository gates passed 11 tests/23 assertions, the source census, docs and
+roadmap; exact-head CI `40630208940` passed seven routine jobs, with Core and
+prerelease skipped. Independent review accepted the merge and exact tree.
+
+This is a finite anchor-width result, not arbitrary foreign-container safety,
+authenticated source, runtime, C12 or whole ACC-04 acceptance. BKA header
+accounting, outer pools, runtime policy, PMK and ANE remain open.
+
+## PR511 private collection chain integration
+
+PR511 merged as `0ea44f0c0fe0c5e89ecbbed8148552810164b7dd` over
+`38daf99ecd4abf1c5904d03e3a9a4cdec72af2a3`. The fetched main tree
+`e89fd1934a641b2b029f02cb0663524ac1f93455` equals independently reviewed
+candidate `afb7c4560b3441303a4c1aee34d43073756fc61f`; the branch is retained.
+The six C7, Effects and emitter changes remove the paired 128-link admissions
+while preserving canonical-ID cycle checks, full source/link schemas,
+mutation and immutable-binding controls and fresh proof reconstruction.
+
+The post-PR521 composition at `afb7c456` passed 14 tests and 266 assertions
+with natural exit zero, actual 2 GiB, complete capture, clean identical
+bookends and completed cleanup. Its separate repository gates passed 11
+tests and 23 assertions plus the source census, docs and roadmap. Earlier
+old-source baseline and three owner results retain their original source and
+receipt identities; they are not relabeled as new executions. Exact-head CI
+`40632122067` passed all seven routine jobs, with Core and prerelease skipped.
+Independent review accepted the exact merge and candidate tree.
+
+Prior ready-transition denials remain historical; the owner subsequently
+completed the same supported transition following new authorization. This
+increment does not establish full typed long-chain, authenticated-source,
+runtime, Core, C12, release or whole ACC-06 acceptance. Independent work
+pools and other private collection limits remain open.
+
+A later PR513 compiler-free metadata gate rejected the new
+`gravity.self-hosting.private-collection-chain-test` namespace as an unknown
+non-slice namespace. Its owners are coordinating the required impact-catalog
+registration; that gate remains nonpassing and does not replace the original
+PR511 semantic or CI receipts.
+
+## PR522 operative documentation integration
+
+PR522 merged as `4a798d86b78f14599f7acfbdb809cbd08e74ef1e` over
+`3a8b90c190c5756e1cce551c0a92503b5bbc5d3a`. The fetched tree
+`4b356262cc2c7226818edc96976c7c13fab75e0a` equals independently reviewed
+head `8639657fb6a55e66f1a5de6f21d500464aee8b77`; the source branch is
+retained. The two documentation spans remove conflicting quota/work-limit
+instructions and require coherent source-owner migration while preserving
+source identity, type, effect, transfer, index and extent legality checks.
+
+The independently reviewed documentation gate passed 240 documents, 19 phase
+indexes and roadmap at the earlier composed `763521e2` head. Its unchanged
+consumed inputs were verified at the final candidate; no fresh execution is
+claimed. The earlier cancelled CI remains nonpassing history. Final-head CI
+`40634871650` passed seven routine jobs, with Core and prerelease skipped.
+The live membership/vector-index accounting consumers and original ACC-12
+dependencies remain open; this documentation-only result does not establish
+source, B51, Core, C12 or release acceptance.
+
+## PR524 BKA header and first-debit integration
+
+PR524 merged as `d63e6096d61d8662bcff0f20b33ad80c633fbfa8` over
+`4a798d86b78f14599f7acfbdb809cbd08e74ef1e`. The merged tree
+`6119e7a642ec1d157396e7c96e26f374bf9889ea` matches the independently reviewed
+candidate `f8a77dd856e0c2160d08b2df53b6088c5f477966`. The source branch is
+retained. C7, Effects and emitter removed BKA header allowance and first-debit
+accounting while retaining source and semantic validation. Native authority
+views are validated before the profile and target vectors are traversed.
+
+The corrected normalized three-owner panel passed 18 tests and 692 assertions
+with natural exit zero, actual 2 GiB, complete capture, identical clean
+bookends and completed cleanup. It retained the final-field mutation warning
+in stderr. Its receipt SHA-256 is
+`eac8892a2dc42dc655abf5aacc472576d248c8d3120daab6b3271d7b4b6997cf`.
+The earlier candidate panel failed with six failures and one error and
+truncated stdout; it remains a separate nonpassing result. Final-head CI
+`40637458409` passed seven routine jobs, with Core and prerelease skipped.
+Independent review accepted the merge and exact tree.
+
+Other work pools and BKA runtime policy remain open, as do PMK, ANE and the
+separate DSE and historical mode boundaries. No authenticated-source, runtime,
+Core, C12, release or whole ACC-04 acceptance follows from this finite result.

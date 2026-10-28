@@ -121,7 +121,10 @@
         ;; production-path allowance for stale compatibility declarations.
         (case (:namespace test-entry)
           gravity.c2-artifact-identity-test
-          (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
+          (or (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
+              (contains? #{"bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"} path))
           gravity.c11-mir-test
           (boolean (re-matches #"bootstrap/clojure/src/gravity/c11_mir/[^/]+\.clj" path))
           gravity.compiler-pass-manifest-test
