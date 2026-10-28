@@ -10888,19 +10888,23 @@
                (invoke-c7 'sh08-lq-step [node current seeds skeletons (assoc ctx :prior-type-table previous) budget]))
         cold (step early {} prepared 65536)
         warm (step early prior prepared 65536)
-        view (invoke-c7 'sh08-pmk-type-view [early prior 65536])
+        view (invoke-c7 'sh08-pmk-type-view [early prior])
         fresh (invoke-c7 'sh08-lq-derive [core node call edge nodes bindings (:types view) forms 65536])]
     (is (= :deferred (:status cold)))
     (is (= :accepted (:status warm) (:status view) (:status fresh)))
     (is (= (:descriptor fresh) (:descriptor warm)))
-    (is (= (+ (:work-count view) (:work-count fresh)) (:work-count warm)))
+    (is (not (contains? view :work-count)))
+    (is (= (:work-count fresh) (:work-count warm)))
     (is (= warm (step early prior prepared (:work-count warm))))
     (let [below (step early prior prepared (dec (:work-count warm)))]
     (is (= :rejected (:status below)))
     (is (= :private-map-keys-work-limit (:reason below)))
-    (is (<= (:work-count view) (:work-count below))))
-    (let [below (step early prior prepared (dec (:work-count view)))]
-    (is (= ["C7-GENERIC" :private-map-keys-work-limit (:work-count view)] ((juxt :rule :reason :work-count) below))))
+    (is (pos? (:work-count below))))
+    (let [malformed (step early [:not-a-type-table] prepared 65536)]
+      (is (= ["C7-VERIFY" :private-map-keys-source-mismatch
+              :valid-current-and-prior-inference-type-tables :malformed-inference-type-table]
+             ((juxt :rule :reason :expected :actual) malformed)))
+      (is (not (contains? malformed :work-count))))
     (doseq [bad [:gravity.type/string :gravity.type/vector {:kind :gravity.type/not-a-type}]]
     (is (= :rejected (:status (step (assoc early :input-0 bad) prior prepared 65536)))))
     (is (= :accepted (:status (step (assoc early :input-0 :gravity.type/unknown) prior prepared 65536))))
@@ -10972,7 +10976,9 @@
                                                         :capabilities [] :thrown-error-effects []}]) callers))
         bindings (vec (vals bindings)) source-forms (vec (vals forms))
         direct {:status :accepted :throws {:helper-form []} :constraints [] :diagnostics [] :work-count 0}
-        check #(invoke-c7 'sh08-tc-products-with-source-forms [core types functions bindings direct source-forms %])
+        check-forms (fn [source budget]
+                      (invoke-c7 'sh08-tc-products-with-source-forms [core types functions bindings direct source budget]))
+        check #(check-forms source-forms %)
         scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
         initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 100 (count (:error-handlers core)))
                    (* 70 (count (:call-edges core))) (count bindings) (count (:definitions core))
@@ -10981,7 +10987,11 @@
         owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
         accepted (check 65536)
         index-work (* 3 (count source-forms)) budget (+ initial index-work)
-        rejected (check budget)]
+        rejected (check budget)
+        extra (mapv (fn [i] {:form-id (keyword "pmk-extra" (str i))}) (range 22000))
+        many-forms (into source-forms extra)
+        indexed (invoke-c7 'sh08-pmk-index-forms [many-forms])
+        wide (check-forms many-forms 65536)]
     (is (= :accepted (:status result) (:status scoped) (:status owners)))
     (is (true? (:active? scoped)))
     (is (pos? (:work-count owners)))
@@ -10990,7 +11000,52 @@
     (is (= :rejected (:status rejected)))
     (is (= ["C7-GENERIC" :private-map-keys-work-limit]
            ((juxt :rule :reason) (first (:diagnostics rejected)))))
-    (is (= (+ budget (:work-count owners)) (:work-count rejected)))))
+    (is (pos? (:work-count rejected)))
+    (is (< 65536 (* 3 (count many-forms))))
+    (is (= :accepted (:status indexed) (:status wide)))
+    (is (= #{:status :forms} (set (keys indexed))))
+    (is (= (count many-forms) (count (:forms indexed))))
+    (is (= accepted wide))
+    (doseq [bad [(conj many-forms (first source-forms))
+                 (conj many-forms {:form-id 42})]]
+      (let [raw (invoke-c7 'sh08-pmk-index-forms [bad])
+            outer (check-forms bad 65536)]
+        (is (= {:status :rejected :reason :private-map-keys-source-mismatch} raw))
+        (is (= :rejected (:status outer)))
+        (is (seq (:diagnostics outer)))
+        (is (pos? (:work-count outer))))))))
+
+(deftest sh08-private-map-keys-preparation-semantic-cells
+  (let [current {:known :gravity.type/string :unknown :gravity.type/unknown :nil-value nil}
+        prior {:known :gravity.type/integer :unknown :gravity.type/keyword :nil-value :gravity.type/bool}
+        extra (into {} (map (fn [i] [(keyword "pmk-prior" (str i)) :gravity.type/keyword]) (range 11000)))
+        large (into prior extra)
+        view (invoke-c7 'sh08-pmk-type-view [current large])
+        expected (invoke-c7 'sh08-pe-type-view [current large])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "PMK preparation hash" {})))
+                 (equals [_] (swap! callbacks conj :equals) (throw (ex-info "PMK preparation equals" {})))
+                 (toString [] (swap! callbacks conj :format) (throw (ex-info "PMK preparation format" {}))))]
+    (is (< 65536 (+ 8 (* 6 (count current)) (* 6 (count large)))))
+    (is (= {:status :accepted :types expected} view))
+    (is (= :gravity.type/string (get-in view [:types :known])))
+    (is (= :gravity.type/keyword (get-in view [:types :unknown])))
+    (doseq [[types previous] [[[] large] [current []]
+                              [current (assoc large :late-invalid opaque)]
+                              [current (assoc large 42 :gravity.type/keyword)]]]
+      (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+             (invoke-c7 'sh08-pmk-type-view [types previous])))
+      (is (empty? @callbacks)))
+    (let [forms [{:form-id :first} {:form-id :second}]
+          indexed (invoke-c7 'sh08-pmk-index-forms [forms])]
+      (is (= {:status :accepted :forms {:first (first forms) :second (second forms)}} indexed))
+      (is (= indexed (invoke-c7 'sh08-pmk-index-forms [(:forms indexed)])))
+      (doseq [bad [(conj forms opaque) (conj forms {:form-id opaque})
+                   (conj forms (first forms)) nil]]
+        (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+               (invoke-c7 'sh08-pmk-index-forms [bad])))
+        (is (empty? @callbacks))))))
 
 (deftest sh08-private-map-keys-fixtures-file-parity-development-kernel
   (doseq [[disposition name] [["accepted" "local-runtime-private-map-keys"]
