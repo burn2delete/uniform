@@ -1376,7 +1376,7 @@
                 (if (= (c3-sha256-id? syntax-id) false)
                   (c3-graph-rejected syntax "C3-ID"
                                      :unresolved-syntax-id index)
-                  (if (c3-vector-contains? observed syntax-id)
+                  (if (contains? depths syntax-id)
                     (c3-graph-rejected syntax "C3-ID"
                                        :duplicate-syntax-id index)
                     (if (= (c3-all-unique? references []) false)
