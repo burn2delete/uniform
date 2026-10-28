@@ -3563,16 +3563,31 @@
           malformed [7 nil {} [7] [nil] (vec (repeat 257 {}))]]
     (is (false? (leaf 'body-import-tables-valid?
                      (assoc {:module-type-producers [] :imported-function-types []} field malformed)))))
-  (let [entry {:request {:canonical-core-artifact {:nodes []}} :facts {:function-type-table []}}]
-    (is (true? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table (vec (repeat 256 {}))} [])))
-    (is (false? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table []}
-                      [(assoc-in entry [:request :canonical-core-artifact :nodes] [{}])])) )
-    (is (false? (leaf 'body-aggregate-valid? {:nodes []} {:function-type-table (vec (repeat 256 {}))}
-                      [(assoc-in entry [:facts :function-type-table] [{}])]))))
   (let [core {:nodes [(node 2 :def [1]) (node 1 :literal [])] :call-edges []}
         facts {:function-type-table [] :type-table {}}]
     (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 2))))
     (is (= 3 (:work-count (leaf 'body-derive-nodes-with-foreign core facts {} 3))))) )
+
+(deftest body-module-vectors-have-no-cumulative-quota
+  (let [entry {:request {:canonical-core-artifact {:nodes [{}]}}
+               :facts {:function-type-table [{}]}}]
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes (vec (repeat 65537 {}))}
+                     {:function-type-table []} [])))
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes []}
+                     {:function-type-table (vec (repeat 257 {}))} [])))
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes (vec (repeat 65536 {}))}
+                     {:function-type-table (vec (repeat 256 {}))} [entry])))))
+
+(deftest body-module-vectors-check-caller-and-every-producer
+  (let [core {:nodes []} facts {:function-type-table []}
+        prefix (vec (repeat 300 {:request {:canonical-core-artifact core} :facts facts}))]
+    (is (true? (leaf 'body-module-vectors-valid? core facts prefix)))
+    (doseq [bad [nil 7 {} '() '(1)] field [:nodes :functions]]
+      (let [bad-core (if (= field :nodes) {:nodes bad} core)
+            bad-facts (if (= field :functions) {:function-type-table bad} facts)
+            entry {:request {:canonical-core-artifact bad-core} :facts bad-facts}]
+        (is (false? (leaf 'body-module-vectors-valid? bad-core bad-facts prefix)))
+        (is (false? (leaf 'body-module-vectors-valid? core facts (conj prefix entry))))))))
 
 (deftest body-effect-foreign-summary-development-kernel
   (let [coordinate {:binding-id (sha 50) :producer-sh06-artifact-id (sha 60)
