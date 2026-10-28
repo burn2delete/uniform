@@ -9979,10 +9979,10 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
         (is (= :accepted (:status result) (:status checked)))
-        (is (= result (derive (:work-count result))))
-        (is (= :bare-keyword-anchor-set-equality-work-limit (:reason (derive (dec (:work-count result))))))
-        (is (= checked (check established (:work-count checked))))
-        (is (= :bare-keyword-anchor-set-equality-work-limit (:reason (check established (dec (:work-count checked))))))
+        (is (= result (derive 0)))
+        (is (not (contains? result :work-count)))
+        (is (= checked (check established 0)))
+        (is (= {:status :accepted} checked))
         (is (= :converged (:convergence-status inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (= descriptor (get-in inferred [:type-table :operator])))
@@ -20258,9 +20258,7 @@
   ;; each real consumer. Oversized function vectors are rejection sentinels,
   ;; not admitted Core; count/base reservation must retain the local cap.
   (doseq [[family callee reason input]
-          [[:anchor 'sh08-bka-inferred-call :bare-keyword-anchor-set-equality-work-limit
-            (atomic-equality-input [:gravity.type/set :gravity.type/set])]
-           [:list-set 'sh08-lset-inferred-call :list-set-conversion-work-limit
+          [[:list-set 'sh08-lset-inferred-call :list-set-conversion-work-limit
             (list-set-input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})]
            [:map-keys 'sh08-mkeys-inferred-call :map-keys-work-limit
             (map-keys-input {:kind :gravity.type/map :shape :literal :member-types []})]]]
@@ -21741,7 +21739,9 @@
   (let [stem (name family)
         input ((pr359-descriptor-helper (if (= family :ane) 'atomic-inequality-input 'atomic-equality-input)) arguments)
         {:keys [core node call edge nodes bindings types forms module]} input
-        derived (pr359-descriptor-c7 (symbol (str "sh08-" stem "-derive")) core node call edge nodes bindings types forms 65536)
+        derived (apply pr359-descriptor-c7 (symbol (str "sh08-" stem "-derive"))
+                       (if (= family :bka) [core node call edge nodes bindings types forms]
+                         [core node call edge nodes bindings types forms 65536]))
         descriptor (:descriptor derived)
         context {:core core :nodes nodes :forms forms :bindings bindings
                  :types (assoc types :operator descriptor :call (:type derived))
@@ -21759,8 +21759,8 @@
              (apply pr359-descriptor-body 'body-ane-source (conj args (pr359-descriptor-body 'body-ane-type-work arguments 65536))))
        (pr359-descriptor-emit 'p15-s23-ane-finish
              (apply pr359-descriptor-emit 'p15-s23-ane-source (conj args (pr359-descriptor-emit 'p15-s23-ane-type-work arguments 65536))))]
-      [(:descriptor (apply pr359-descriptor-body (symbol (str "body-" (name family) "-header")) (conj args 65536)))
-       (:descriptor (apply pr359-descriptor-emit (symbol (str "p15-s23-" (name family) "-header")) (conj args 65536)))])))
+      [(:descriptor (apply pr359-descriptor-body (symbol (str "body-" (name family) "-header")) args))
+       (:descriptor (apply pr359-descriptor-emit (symbol (str "p15-s23-" (name family) "-header")) args))])))
 
 (deftest pr359-descriptor-complete-descriptors-and-typed-consumers-agree
   (doseq [[family arguments] pr359-descriptor-cases]
@@ -22813,9 +22813,170 @@
                          []]]
           (let [changed (assoc types (if (zero? anchor-index) :arg0 :arg1)
                                (assoc anchor :element-types members))
-                args [core node call edge nodes bindings changed module 65536]]
+                args [core node call edge nodes bindings changed module]]
             (doseq [[invoke name] [[pr359-descriptor-c7 'sh08-bka-header]
                                   [pr359-descriptor-body 'body-bka-header]
                                   [pr359-descriptor-emit 'p15-s23-bka-header]]]
               (is (= :rejected (:status (apply invoke name args)))))))
         (is (empty? @callbacks))))))
+
+(deftest bare-keyword-anchor-header-semantic-cell-development-kernel
+  (doseq [anchor-index [0 1]]
+    (let [anchor {:kind :gravity.type/set :shape :literal
+                  :element-types (vec (repeat 1030 :gravity.type/keyword))}
+          arguments (assoc [:gravity.type/set :gravity.type/set] anchor-index anchor)
+          {:keys [core node call edge nodes bindings types forms module]} (atomic-equality-input arguments)
+          source-args [core node call edge nodes bindings types module]
+          headers [(apply pr359-descriptor-c7 'sh08-bka-header source-args)
+                   (apply pr359-descriptor-body 'body-bka-header source-args)
+                   (apply pr359-descriptor-emit 'p15-s23-bka-header source-args)]
+          descriptor (:descriptor (first headers))
+          result (pr359-descriptor-c7 'sh08-bka-derive core node call edge nodes bindings types forms)
+          established (assoc types :operator descriptor :call :gravity.type/bool)
+          checked (pr359-descriptor-c7 'sh08-bka-inferred-call core node call edge nodes bindings established)
+          context {:core core :nodes nodes :forms forms :bindings bindings :types established
+                   :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                   :call-facts {:call (pr359-descriptor-c7 'sh08-bka-call-fact descriptor module)}
+                   :ledger [(pr359-descriptor-c7 'sh08-bka-constraint descriptor)]
+                   :locals {:arg0 'left :arg1 'right} :parameter-types types}
+          facts {:type-table established :constraint-ledger (:ledger context)
+                 :call-type-facts (:call-facts context) :equality-context {:forms forms}}
+          evidence-args [core (:ledger context) (:call-facts context) node call edge nodes bindings established 65536]
+          compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :call 65536)
+          prepare #(pr359-descriptor-body 'body-ae-context
+                                         {:canonical-core-artifact core
+                                          :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+                                         % bindings 65536)]
+      (is (every? #(= :accepted (:status %)) headers))
+      (is (apply = headers))
+      (is (= :accepted (:status result)))
+      (is (= descriptor (:descriptor result)))
+      (is (= {:status :accepted} checked))
+      (doseq [cell (conj headers result checked)]
+        (is (not (contains? cell :work-count))))
+      (doseq [field [:profile-validation-work :result-type-work :anchor-domain-work]]
+        (is (not (contains? descriptor field)))
+        (is (not (some #{field} (:invalidation descriptor)))))
+      (doseq [budget [0 1 65536 1048576]]
+        (is (= result (pr359-descriptor-c7 'sh08-kse-derive core node call edge nodes bindings types forms budget)))
+        (is (= checked (pr359-descriptor-c7 'sh08-kse-inferred-call core node call edge nodes bindings established budget))))
+      (let [constraints (pr359-descriptor-c7 'sh08-ft-call-constraints-with-context
+                                            [call] [edge] nodes established {} {}
+                                            {:ordering-core core :ordering-bindings bindings :loop-work-left 0})]
+        (is (= [] (:diagnostics constraints)))
+        (is (= 0 (:compatibility-work-count constraints))))
+      (doseq [evidence [(apply pr359-descriptor-body 'body-bka-evidence evidence-args)
+                        (apply pr359-descriptor-emit 'p15-s23-bka-evidence evidence-args)]]
+        (is (= :accepted (:status evidence)))
+        (is (= descriptor (:descriptor evidence)))
+        ;; The independent row/fact/call/edge pool is still live in this unit.
+        (is (pos? (:work-count evidence))))
+      (is (true? (pr359-descriptor-body 'body-bka-call-valid? core facts bindings node call edge nodes)))
+      (is (= :accepted (:status (prepare facts))))
+      (is (= :complete (:status (compile context))))
+      (doseq [field [:profile-validation-work :result-type-work :anchor-domain-work]]
+        (let [changed (assoc descriptor field 0)
+              changed-context (-> context
+                                  (assoc-in [:types :operator] changed)
+                                  (assoc :ledger [(pr359-descriptor-c7 'sh08-bka-constraint changed)]
+                                         :call-facts {:call (pr359-descriptor-c7 'sh08-bka-call-fact changed module)}))
+              changed-facts (assoc facts :type-table (:types changed-context)
+                                   :constraint-ledger (:ledger changed-context) :call-type-facts (:call-facts changed-context))]
+          (is (= :rejected (:status (compile changed-context))))
+          (is (= :rejected (:status (prepare changed-facts))))))
+      (let [argument (if (zero? anchor-index) :arg0 :arg1)
+            invalid (assoc anchor :element-types (assoc (:element-types anchor) 1029 :gravity.type/string))
+            bad-types (assoc established argument invalid)
+            rejected (pr359-descriptor-c7 'sh08-bka-header core node call edge nodes bindings bad-types module)]
+        (is (= :rejected (:status rejected)))
+        (is (not (contains? rejected :work-count)))
+        (is (= :rejected (:status (compile (assoc context :types bad-types)))))
+        (is (= :rejected (:status (prepare (assoc facts :type-table bad-types)))))))))
+
+(deftest bare-keyword-anchor-authority-vector-validation-development-kernel
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "anchor authority hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "anchor authority equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "anchor authority printing"))))
+        anchor {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        {:keys [core node call edge nodes bindings types module]} (atomic-equality-input [:gravity.type/set anchor])
+        binding-id (:operator-binding-id call)
+        cyclic (recursive-validation-view [:meta] 0 1)
+        _ (recursive-validation-link! cyclic "v" cyclic)
+        metadata (recursive-validation-foreign-map {:inert true} callbacks)
+        foreign (recursive-validation-foreign-vector callbacks)
+        owners [[pr359-descriptor-c7 'sh08-bka-header]
+                [pr359-descriptor-body 'body-bka-header]
+                [pr359-descriptor-emit 'p15-s23-bka-header]]]
+    (doseq [[invoke header] owners field [:profile-set :target-set]]
+      (let [required (if (= field :profile-set) (:profile module) :all)
+            long (vec (repeat 33000 required))
+            view (with-meta (recursive-validation-view [opaque required opaque] 1 2) metadata)]
+        (doseq [values [long view]]
+          (let [changed (assoc-in bindings [binding-id field] values)]
+            (is (= :accepted (:status (invoke header core node call edge nodes changed types module))))))
+        (doseq [[expected values] [[:rejected (assoc long 32999 opaque)]
+                                  [:rejected (assoc long 32999 "not-an-authority-keyword")]
+                                  ;; A different keyword is valid authority DATA;
+                                  ;; earlier members still carry the permission.
+                                  [:accepted (assoc long 32999 :not-allowed)]
+                                  [:rejected [:not-allowed]]
+                                  [:rejected foreign]
+                                  [:rejected cyclic]
+                                  [:rejected (recursive-validation-view [required] 0 2)]]]
+          (let [changed (assoc-in bindings [binding-id field] values)
+                result (invoke header core node call edge nodes changed types module)]
+            (is (= expected (:status result)))))
+        (is (empty? @callbacks))))))
+
+(deftest bare-keyword-anchor-throw-consumer-development-kernel
+  ;; The actual scoped-call consumer has a separate outer allowance. BKA's
+  ;; semantic result carries no helper report for that consumer to debit.
+  (doseq [anchor-index [0 1]]
+    (let [anchor {:kind :gravity.type/set :shape :literal
+                  :element-types (vec (repeat 1030 :gravity.type/keyword))}
+          input (atomic-equality-input (assoc [:gravity.type/set :gravity.type/set] anchor-index anchor))
+          record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                  :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+          function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                    :source {:form-id :predicate-form :syntax-id :predicate-function}
+                    :evaluation {:kind :function-creation :order []}}
+          ordered (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                        (get-in input [:core :nodes]))
+          node (last ordered) call (:call input)
+          edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+          core (assoc (:core input) :nodes (conj ordered function) :function-records [record]
+                      :call-edges [edge] :root-core-node-ids [:predicate-fn])
+          nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+          derived (pr359-descriptor-c7 'sh08-bka-derive core node call edge nodes (:bindings input) (:types input) (:forms input))
+          descriptor (:descriptor derived)
+          types (assoc (:types input) :operator descriptor :call :gravity.type/bool)
+          bindings (vec (vals (:bindings input)))
+          functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                           :parameters [] :return :gravity.type/bool :latent-effects []
+                                           :capabilities [] :thrown-error-effects []}}
+          direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+          scope (pr359-descriptor-c7 'sh08-tc-scope-with-types core (:throws direct) 65536 types)
+          check #(pr359-descriptor-c7 'sh08-tc-products core % functions bindings direct 65536)
+          accepted (check types)]
+      (is (= :accepted (:status derived) (:status accepted)))
+      (is (= :accepted (:status scope)))
+      (is (true? (:active? scope)))
+      (is (contains? (:scope scope) :predicate-function))
+      (is (not (contains? derived :work-count)))
+      (is (= [] (get-in accepted [:throws :predicate-function])))
+      (is (= [] (:diagnostics accepted)))
+      (is (pos? (:work-count accepted)))
+      (doseq [changed [(assoc descriptor :anchor-domain-work 0)
+                       (assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc-in descriptor [:equality-policy :identity] :observed)]]
+        (let [changed-types (assoc types :operator changed)
+              own (pr359-descriptor-c7 'sh08-bka-inferred-call core node call edge nodes (:bindings input) changed-types)
+              rejected (check changed-types)]
+          (is (= :rejected (:status own)))
+          (is (= :bare-keyword-anchor-set-equality-source-mismatch (:reason own)))
+          (is (not (contains? own :work-count)))
+          (is (= :rejected (:status rejected)))
+          (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
+                 ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
