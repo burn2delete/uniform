@@ -638,3 +638,40 @@ claimed. The broader held PR359 remains unchanged.
 The old 50% remains a historical unmeasured estimate, not a recalculated score.
 Two original rows closing does not establish a weighted completion denominator;
 no percentage is derived from rows, PRs, tests or assertions.
+
+## ACC-05 integrated helper result and remaining ownership - 2026-10-27 MDT
+
+This assessment supersedes the earlier dated ACC-05 helper-publication status,
+without changing the original thirteen criteria. PR509 is integrated as
+`4a998729ec03513b137d7b40d4bb3d8be285a9f4`, tree
+`d07eb74722f8bd43b5bdcb6adc2c1bee1f71c3e6`. The merged tree exactly matches
+the independently reviewed current-main candidate `a4504d43`. Its twelve
+budget-free PL validation helpers, nineteen original direct calls, nine removed
+helper debits, semantic-cache reconstruction and required native membership-root
+repair are accepted within their recorded source/result scope. Historical
+failed batches remain failed; unchanged selectors retain their original source
+identities rather than becoming a newly executed combined result.
+
+ACC-05 remains partial. The remaining original obligations have concrete source
+owners and must not be counted as completed helper work:
+
+| Remaining obligation | Source and accountable implementation owner | Acceptance boundary |
+| --- | --- | --- |
+| Insertion descriptor accounting | ACC-05: the three `pl-source` builders still publish nested insertion `:budget`, `:value-work-model`, Symbol work-representation policy and `:representation-work` invalidation premises | Coherent producer/constraint/fact/consumer migration, complete descriptor equality and stale-field rejection; retain actual allocation, storage, type, source, profile and effect semantics |
+| Runtime value and construction accounting | ACC-09: String insertion helper, shared Keyword/String/Symbol/Integer membership helper, and Symbol/Keyword inline `conj` consumers | Remove admission budgets, content/width refusals and prospective construction reservations across the actual call closure; preserve complete native/domain/Unicode/distinctness validation before hit/miss and construction, input/result semantics and real effects |
+| Outer source/inference/lowering pools | Existing ACC-06/07/08 interfaces: C7 PL derive/inferred-call/loop insertion, Effects append/loop contexts and emitter typed prepend/loop insertion | Remove each actual outer allowance/debit family coherently; preserve source/authentication, Never, type, effect, profile and termination obligations |
+
+The dedicated ACC-06 owner currently has the serialized C7/Effects/emitter
+writer slot for six PC chain definitions. ACC-05 does not reclaim those files
+or duplicate ACC-09's runtime writer. The next ACC-05 compiler transaction is
+the remaining insertion-descriptor contract, after that exact source slot is
+released and its full producer/consumer migration is independently reviewed.
+Runtime membership's pre-read native-ingress interface is a real unresolved
+dependency; a budget is not evidence of class, callback or cycle safety. Held
+Native registration and source-admission operations are not restarted here.
+
+Only ACC-02 and ACC-03 are closed. Eleven original criteria remain open or
+partial; the historical 50% remains an unmeasured estimate. No score is derived
+from the helper, test or PR counts above. The existing accounting owner retains
+the sole canonical-ledger writer; dedicated row owners submit exact source and
+acceptance evidence for reconciliation here.
