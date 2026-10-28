@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh04-syntax-selection-test
   (:require [clojure.test :refer [deftest is]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.bootstrap :as b]))
 
@@ -108,3 +109,21 @@
              (select-keys (diagnostic #(b/sh04-syntax-current-binding! "<sh04-selection-test>" invocation))
                           [:id :missing-fields]))))
     (is (= before (realized? cache)))))
+
+(deftest legacy-public-result-fields-do-not-gain-a-nil-context
+  ;; Source-shape conservation only; this does not substitute a fake builder.
+  (let [resource (io/resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj")
+        forms ((owner 'read-forms) (str resource) (slurp resource))
+        constructor (first (filter #(and (seq? %) (= 'defn- (first %))
+                                          (= 'sh04-syntax-build-from-fresh-c2! (second %))) forms))
+        body (last (last constructor))
+        result (last body)
+        legacy-fields #{:resolved-result :summary :descriptor :envelope :plan-binding
+                        :rich-syntax :raw-template-results :stream-template-result
+                        :stream-digest-requests :stream-resolved-digests :stream-verification
+                        :serialization :deserialization :serialization-id :reader-binding
+                        :reader-source-revision :reader-authentication-provenance}]
+    (is (= 'let (first body)))
+    (is (= 'cond-> (first result)))
+    (is (= legacy-fields (set (keys (second result)))))
+    (is (= '[operation-context (assoc :operation-context operation-context)] (vec (drop 2 result))))))

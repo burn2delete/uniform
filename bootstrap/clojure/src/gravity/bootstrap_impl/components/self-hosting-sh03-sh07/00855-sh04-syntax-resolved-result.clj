@@ -199,12 +199,11 @@
                  [:gravity-reader-boundary
                   :authenticated-envelope-descriptor])
          :semantic-source-id semantic-source-id}]
-    {:resolved-result resolved-stream
+    (cond-> {:resolved-result resolved-stream
      :summary summary
      :descriptor descriptor
      :envelope envelope
      :plan-binding (dissoc binding :plan :source-text)
-     :operation-context operation-context
      :rich-syntax rich-syntax
      :raw-template-results (mapv :raw-result all-products)
      :stream-template-result stream-template-result
@@ -217,7 +216,8 @@
      :reader-binding reader-binding
      :reader-source-revision reader-source-revision
      :reader-authentication-provenance
-     reader-authentication-provenance})))
+     reader-authentication-provenance}
+      operation-context (assoc :operation-context operation-context)))))
 
 (defn sh04-syntax-resolved-result!
   [source-path c2-artifact]
