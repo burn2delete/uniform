@@ -43,9 +43,8 @@
      state-5
      (semantic-late-sh03-reader-adapt-products!-forms state-4)
      state-6
-     (semantic-late-sh03-reader-adapt-products!-boundary state-5)]
-    (clojure.core/let
-     [{:keys
+     (semantic-late-sh03-reader-adapt-products!-boundary state-5)
+     {:keys
        [source-path
         result
         source-unit
@@ -90,4 +89,4 @@
       :sh02-reader-envelope-descriptor envelope-descriptor,
       :sh03-reader-result result,
       :parsed-values (mapv :form parsed-records),
-      :deferred-literal-records (:deferred-literal-records adapted-evidence)})))))
+      :deferred-literal-records (:deferred-literal-records adapted-evidence)}))))
