@@ -71,6 +71,8 @@
         envelope]}
       state-6]
      {:root-form-ids root-form-ids,
+      ;; Observations remain outside the authenticated SH03 product contract.
+      :extension-dispatch-observations (:extension-dispatch-observations state-6),
       :sh03-reader-raw-result (:raw-result resolved),
       :form-tree form-tree,
       :sh03-semantic-value-table-id (:semantic-value-table-id descriptor),
