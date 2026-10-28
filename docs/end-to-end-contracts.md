@@ -504,6 +504,40 @@ injected pass report, synthetic final artifact or relaxed source guard closes
 them. Runtime writer/acceptance ownership must be confirmed; accounting removal
 does not transfer Unicode, collision, callback or semantic safety responsibility.
 
+#### Preserved v3 successor checkpoint
+
+The 2026-10-28 Native handoff records a separate development candidate
+`f66d9ff4554815b89ee7d51ee73b7961f0c33a44`, tree
+`1ee9986eb613abe6c0218603d78d5f4279a4ac9d`. Its preservation receipt SHA-256
+is `016db5b4ad2e69dce363edf8eb3da7158f63a5f67d3f4c7769bdae8f3a65876e`.
+This is an attributed owner checkpoint, not a current-main admission result.
+Its `00724a` fresh constructor distinguishes version 3 from the version-2 Bool
+branch join: it selects the versioned Reader ingress, authenticates the source
+binding, invokes the pinned Gravity builder and replay verifier, then requires
+the trusted flat-Bool sequence family. Static inspection of that route does not
+establish a successful call.
+
+The preserved physical input composition names C6 source SHA-256
+`7d14fef9a3ca0f47fd7ec301d96cd6c0b57c4c6a3f91a0839c673e8c702a6396`
+(186745 bytes) and C11 source SHA-256
+`4ca2bf8c551c9b0e7aefbeab84e7f7c9b5742bdeee10f68e74aff3470d35b3dd`
+(597279 bytes). These owner-reported inputs are distinct from the historical
+v2 tuples in OWN-03/04. The retained MIR identity handoff observes program
+identities only; it explicitly claims neither Core construction nor execution
+of the C11 builder/verifier. Program identity observation is not join acceptance.
+
+The next semantic completion criterion remains genuine v3 Core construction
+with complete source/runtime bookends and an external zero exit, independent
+positive review, then a separately fresh public Core report using actual policy
+state. Only that accepted product can supply genuine flat C11 construction,
+fresh Native/Gravity verification and actual type-fact, source, target and
+policy negatives for the versioned final consumer. Existing producer owners
+retain their source and private harnesses. Historical v2 acceptance does not
+discharge these gates or reopen the accepted OWN-04 Bool development adapter.
+The recorded pre-admission capacity and child-timeout nonpasses remain
+nonpasses; unresolved terminal/cleanup and runtime holds remain in force.
+This checkpoint authorizes no execution and confers no OWN-06 closure.
+
 ## Exact evidence and outstanding boundaries
 
 Locally inspected main and open PR metadata at the baseline above. Draft heads:
