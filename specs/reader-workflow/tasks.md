@@ -41,7 +41,7 @@ Done when (yes/no): All collection/literal/abbreviation/metadata families emit f
 
 - [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure
 
-Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.
+Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here. The [bootstrap dispatch development increment](dispatch-evidence.md) executes two implementation-owned handlers with focused grant/rejection controls; normal Reader integration and independent acceptance remain open.
 
 Done when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler.
 
