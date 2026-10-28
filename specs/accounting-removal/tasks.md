@@ -675,3 +675,25 @@ partial; the historical 50% remains an unmeasured estimate. No score is derived
 from the helper, test or PR counts above. The existing accounting owner retains
 the sole canonical-ledger writer; dedicated row owners submit exact source and
 acceptance evidence for reconciliation here.
+
+## ACC-05 insertion descriptor integration - 2026-10-28 UTC
+
+PR518 integrated the finite insertion-descriptor transaction at
+`1e784ac42b13a05cfcd0be35072c70239098d103`. Its merged tree
+`61b636e8b99808ea3e5c55878d80a62228bce59e` matches the independently
+reviewed candidate `7fe81d4cf43ab78ede1055ad6d8e9bcd25d9bf36`. This
+supersedes the pending insertion-descriptor row and slot statement in the
+preceding assessment; their other remaining obligations still apply.
+
+The C7, Effects and emitter String, Symbol and Keyword Set insertion
+descriptors no longer carry the accounting-only reservation, value-work model,
+Symbol work-representation policy or corresponding invalidation premise.
+Allocation and storage policy, complete type and member validation, source,
+effect and profile relations, and strict reconstructed descriptor equality
+remain. Coherent old fields and tags are rejected. The focused normalized owner
+and consumer batch passed 20 tests and 2,958 assertions; the two updated
+authenticated-composition assertions remain unrun. Runtime Set work and the
+outer inference, validation and lowering pools remain with their existing
+owners, and ACC-05 remains partial. ACC-06 and the other original row states
+are unchanged. No authenticated-source, Core, C12, release or overall
+completion is inferred.
