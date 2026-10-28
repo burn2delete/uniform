@@ -3782,8 +3782,17 @@
                                                   (call 'cycle [(say "unreachable" (lit false)) (local 'value)])))
           result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle [(lit true) (lit left)]) {} "" {'cycle f} ['cycle 'intervening])]
       (is (= ["" :rejected] (subvec result 1))))
+    (let [target (apply str (repeat 257 "x"))
+          f (function target '[flag value]
+              (branch (local 'flag) (again target [(lit false) (local 'value)]) (local 'value)))
+          result (activate f [true left])]
+      (is (= [left "" :normal] result)) (is (identical? left (first result)))
+      (let [wrong (assoc f :instructions [(again "wrong" [(say "unreachable" (lit false)) (local 'value)])])
+            result (activate wrong [true left])]
+        (is (= ["" :rejected] (subvec result 1)))
+        (is (= "P15S23X002" (:diagnostic (first result))))))
     (doseq [bad [(assoc swap :recur-target nil) (assoc swap :recur-target 42) (assoc swap :recur-target "")
-                 (assoc swap :recur-target (apply str (repeat 257 "x"))) (assoc swap :params nil) (assoc swap :arity nil)
+                 (assoc swap :params nil) (assoc swap :arity nil)
                  (assoc swap :params '[flag left left]) (assoc swap :instructions [42])]]
       (let [result (invoke 'p15-s23-runtime-evaluate-in-context
                      (call 'bad [(say "unreachable" (lit true)) (lit left) (lit right)]) {} "" {'bad bad} ['main])]
@@ -20882,9 +20891,21 @@
     (doseq [handlers [nil 42 {} [] [42] [{:type :gravity.type/i32 :name 'caught :body local}]
                       [(handler :gravity.type/string local) {:type :gravity.type/string :name 42 :body local}]
                       [(assoc (handler :gravity.type/string local) :extra true)]
-                      [(handler :gravity.type/string 42)] (vec (repeat 65537 (handler :gravity.type/string local)))]]
+                      [(handler :gravity.type/string 42)]]]
       (let [result (eval (recover (say "unreachable" (throw-value payload)) handlers))]
         (is (= ["" :rejected] (subvec result 1))) (is (= "P15S23X002" (:diagnostic (first result))))))
+    (let [handlers (vec (repeat 65537 (handler :gravity.type/string local)))
+          result (eval (recover (say "protected" (throw-value payload)) handlers))]
+      (is (= [payload "protected\n" :normal] result))
+      (is (identical? payload (first result)))
+      (doseq [bad [(assoc (peek handlers) :type :gravity.type/i32)
+                   (assoc (peek handlers) :name 42)
+                   (assoc (peek handlers) :body 42)
+                   (assoc (peek handlers) :extra true)]]
+        (let [result (eval (recover (say "unreachable" (throw-value payload))
+                                   (assoc handlers 65536 bad)))]
+          (is (= ["" :rejected] (subvec result 1)))
+          (is (= "P15S23X002" (:diagnostic (first result)))))))
     (let [normal (execute (recover (throw-value payload) [(handler :gravity.type/string local)]))
           thrown (execute (recover (throw-value payload) [(handler :gravity.type/bool local)]))]
       (is (= :complete (:status normal))) (is (identical? payload (:entrypoint-result normal)))
