@@ -107,13 +107,26 @@
       (let [target (io/file config relative)]
         (io/make-parents target)
         (spit target (slurp (io/file macros/config-directory relative)))))
-    (let [project-config (io/file root ".clj-kondo/config.edn")]
+    (let [project-config (io/file root ".clj-kondo/config.edn")
+          retained (io/file root "project-config.edn")]
       (io/make-parents project-config)
-      (spit project-config "{:linters {:unresolved-namespace {:level :error}}}"))
-    (let [findings (findings! (str header "(definterposable generated :key [value] (missing-alias/call value))\n")
-                              (.getPath config))]
-      (is (some #(and (= :unresolved-namespace (:type %)) (= :error (:level %))) findings))
-      (is (not-any? #(= :unresolved-symbol (:type %)) findings)))))
+      (spit project-config "{:linters {:unresolved-namespace {:level :error}}}")
+      ;; upload-artifact omits hidden files. Retain exact fixture bytes visibly.
+      (spit retained (slurp project-config))
+      (spit (io/file root "project-config-provenance.edn")
+            (pr-str {:runtime-path (.getPath project-config) :retained-path (.getPath retained)
+                     :sha256 (context/sha256 (java.nio.file.Files/readAllBytes (.toPath project-config)))}))
+      (try
+        (let [findings (findings! (str header "(definterposable generated :key [value] (missing-alias/call value))\n")
+                                  (.getPath config))]
+          (is (some #(and (= :unresolved-namespace (:type %)) (= :error (:level %))) findings))
+          (is (not-any? #(= :unresolved-symbol (:type %)) findings)))
+        (finally
+          (java.nio.file.Files/delete (.toPath project-config))
+          (java.nio.file.Files/delete (.toPath (.getParentFile project-config)))
+          (is (not (.exists project-config)))
+          (is (= (:sha256 (lint/read-one! (io/file root "project-config-provenance.edn")))
+                 (context/sha256 (java.nio.file.Files/readAllBytes (.toPath retained))))))))))
 
 (deftest rejected-recipes-retain-both-source-observations
   (let [valid (.getBytes header "UTF-8")
