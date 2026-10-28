@@ -83,7 +83,7 @@
          #'sh04-development-syntax-verification-context!
          #'sh04-syntax-verification-binding!
          #'sh04-development-syntax-contract #'sh04-development-syntax-diagnostics
-         #'sh04-syntax-resolve-source-path #'sh04-syntax-plan-identities
+         #'sh04-syntax-source-relative-path #'sh04-syntax-resolve-source-path #'sh04-syntax-plan-identities
          #'sh04-syntax-public-function-shapes #'sh04-syntax-public-function-hashes
          #'p15-s23-stage2-compiler-artifact-plan #'p15-s23-c11-mir-digest
          #'read-forms #'c-backend-canonical-value #'sha256-hex
