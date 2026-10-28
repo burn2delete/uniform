@@ -70,7 +70,8 @@ validation. That cache must not become independent result-type authority.
   three-owner helpers, typed callers, Effects joins and emitter consumers,
   including late-invalid members, coherent cache/source/row forgeries and zero
   foreign callbacks. Obtain independent exact-source and retained-result review.
-- [ ] Reconcile current main, pass repository and public CI gates, independently
+- [x] Main-only conditional integration item (record below): reconcile current
+  main, pass repository and public CI gates, independently
   review the outgoing payload and exact integration tuple, then merge normally.
 
 Retained outer source/context/inference/lowering pools and their own reports
@@ -172,6 +173,18 @@ separate history. This does not establish arbitrary-facts or whole-plan ingress.
 The PR remains draft until current-head CI, public readback and
 independent integration review. Only normal validated integration will complete
 this finite helper milestone; ACC-05 and ACC-06 as a whole remain open.
+
+### Main-only finite helper integration record
+
+The checked final lifecycle item above applies only to main containing the
+normally merged, independently reviewed PR509 and its exact merged-tree
+readback. An unmerged draft or branch receives no integration or closure credit.
+Pending current-head CI, public readback and integration-review requirements
+remain pending until their actual evidence exists; neither this conditional
+checkbox nor a worktree preflight substitutes for that evidence. After actual
+integration, PR509 records the observed merge/tree and CI receipts; no future
+identities or outcomes are asserted here. This finite milestone never closes
+the broader ACC-05/06 rows or changes the original thirteen-row assessment.
 
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
