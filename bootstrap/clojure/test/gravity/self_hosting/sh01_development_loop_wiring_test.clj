@@ -1140,6 +1140,45 @@
     (is (thrown? RuntimeException
                  (literal-require-gaps source "#=(throw (Exception.))" #{digest} available)))))
 
+(deftest reader-identity-lexical-inputs-invalidate-reuse
+  ;; The identity test calls the lexical facade, which requires all three
+  ;; focused implementations. A comment preserves behavior but changes evidence.
+  (doseq [relative ["bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"]]
+    (with-coordination-root
+      (fn [base]
+        (let [root (.resolve base "repository")
+              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+              _ (Files/createDirectories root no-file-attributes)
+              _ (copy-reviewed-closure! root job)
+              selected-context (assoc (context base) :working-directory (str root)
+                                      :revalidate-snapshot? true)
+              classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'explicit-classpath-identities)
+              calls (atom 0)]
+          (with-redefs-fn
+            {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+            (fn []
+              (let [plan (impact-plan (:namespace job))
+                    attached (wiring/attach-request selected-context plan {} job)
+                    operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+                (is (true? (get-in attached [:development-cache-request :test-policy :deterministic?])))
+                (is (= :passed (:status (wiring/run-unit! selected-context attached operation))))
+                (is (true? (:cache-hit? (wiring/run-unit! selected-context attached operation))))
+                (is (= 1 @calls))
+                (spit (str (.resolve root relative)) "\n; consumed lexical implementation changed\n" :append true)
+                (is (= :explicit-closure
+                       (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+                (let [renewed (wiring/attach-request selected-context plan {} job)]
+                  (is (not= (cache/cache-key (:development-cache-request attached))
+                            (cache/cache-key (:development-cache-request renewed)))))
+                (Files/delete (.resolve root relative))
+                (is (= :explicit-closure
+                       (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+                (is (= 1 @calls))))))))))
+
 (deftest reader-identity-digest-runner-input-invalidates-reuse
   (with-coordination-root
     (fn [base]

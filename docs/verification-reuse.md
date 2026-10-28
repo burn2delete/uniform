@@ -1154,3 +1154,20 @@ unknown/shadow and non-evaluation negatives, independent exact review and
 integration. Validation and review are pending on this candidate. The held
 compatibility cohort and ACC13 Syntax seam are untouched; original RV1/RV2/RV4
 residual criteria remain open.
+
+The first actual control run on `c2da65a2`, tree `b7925f8a`, failed: two
+tests, 66 passes, one failure, zero errors, natural exit 1 at 256 MiB with
+Bootstrap absent and clean source bookends. It identified a concrete missing
+dependency: the current Reader identity test requires and calls
+`gravity.c2-lexical-validation`. Its facade and three implementation namespaces
+were absent from the explicit closure. The correction binds those four files
+and permits only the three exact nested lexical paths for this existing test.
+No production implementation or other namespace admission changes.
+
+Additional injected cache controls require miss/hit conservation followed by
+comment-only mutation invalidation, a changed renewed key, and missing-file
+rejection for each lexical input, without executing any compiler or leaf body.
+These controls test closure mechanics, not a new real producer proof. Earlier
+producer evidence retains its original consumed-source attribution; it is not
+retroactively evidence for this corrected closure. Renewed controls and
+independent current-source/result review remain required.

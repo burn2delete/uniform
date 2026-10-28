@@ -156,6 +156,10 @@
         :root "bootstrap/clojure/test" :suffix ".class"}]
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj" :role :production}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj" :role :transitive}
