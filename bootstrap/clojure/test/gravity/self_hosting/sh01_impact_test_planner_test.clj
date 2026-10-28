@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-impact-test-planner-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.sh01-component-test-dependencies
@@ -528,6 +529,28 @@
         (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
                (:required-guards data)))))))
 
+(deftest private-collection-chain-catalog-requires-the-owner-wrapper
+  (let [path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+        namespace 'gravity.self-hosting.private-collection-chain-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])]
+    (is (= {:namespace namespace :slice "SH-08" :owner :sh-types}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (= {:deterministic? true :performance? false :proof? false
+            :freshness-required? true} (:test-policy entry)))
+    (is (nil? (:cache-closure entry)))
+    (doseq [request [#(planner/build-namespace-plan [namespace])
+                     #(planner/build-plan {:changed-paths [path]})
+                     #(planner/build-plan {:direct-slices ["SH-08"]})
+                     #(planner/build-plan {:iteration-slices ["SH-08"]})]]
+      (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= "SH-08" (:slice data)))
+        (is (= :sh-types (:owner data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
@@ -692,6 +715,10 @@
         plan (planner/build-plan {:changed-paths [source]})
         shard (first (:shards plan))]
     (is (= #{source "bootstrap/clojure/src/gravity/digest.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+             "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/incremental.clj"
@@ -700,15 +727,42 @@
            (set (map :path production))))
     (is (= [namespace] (:namespaces plan)))
     (is (= closure (:cache-closure shard)))
-    (is (true? (:cache-closure-authorized? shard)))
+    (is (true? (get-in shard [:test-policy :freshness-required?])))
+    (is (false? (:cache-closure-authorized? shard)))
     (is (true? (owned? ownership "c2-artifact-identity" closure)))
     (is (false? (owned? ownership "c11-mir" closure)))
     (is (false? (owned? (update ownership :module-owners dissoc source)
                         "c2-artifact-identity" closure)))
+    (is (false? (owned? (update ownership :module-owners dissoc
+                                 "bootstrap/clojure/src/gravity/c2_lexical_validation.clj")
+                        "c2-artifact-identity" closure)))
+    (is (false? (owned? ownership "c2-artifact-identity"
+                        {:inputs [{:role :transitive
+                                   :path "bootstrap/clojure/src/gravity/c2_lexical_validation/unreviewed.clj"}]})))
     (is (= :unowned
            (:classification
             (planner/classify-path ownership
               "bootstrap/clojure/src/gravity/c2_artifact_identity/unreviewed.clj"))))))
+
+(deftest reader-lexical-nested-inputs-retain-their-own-paired-owner
+  ;; Inspect the owning record directly; this does not bypass catalog checks
+  ;; in build-plan or change the full planner integration test above.
+  (let [owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner 'closure-owned?)
+        ownership (edn/read-string (slurp "docs/self-hosting-slice-ownership.edn"))
+        lexical "bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+        identity "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"]
+    (doseq [name ["operations" "primitives" "product"]
+            :let [input {:path (str "bootstrap/clojure/src/gravity/c2_lexical_validation/" name ".clj")
+                         :role :transitive}
+                  closure {:inputs [input]}]]
+      (is (true? (owned? ownership "c2-artifact-identity" closure)))
+      (is (false? (owned? ownership "c11-mir" closure)))
+      (is (false? (owned? (update ownership :module-owners dissoc lexical)
+                          "c2-artifact-identity" closure)))
+      (is (false? (owned? (update ownership :module-owners dissoc identity)
+                          "c2-artifact-identity" closure)))
+      (is (false? (owned? ownership "c2-artifact-identity"
+                          {:inputs [(assoc input :role :production)]}))))))
 
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"

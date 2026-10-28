@@ -156,6 +156,10 @@
         :root "bootstrap/clojure/test" :suffix ".class"}]
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj" :role :production}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj" :role :transitive}
@@ -176,9 +180,15 @@
        {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
        {:path "deps.edn" :role :classpath}]}
      :test-policy {:deterministic? true :performance? false
-                   :proof? false :freshness-required? false}}]}]
+                   :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "resolution-parent-mutation"
+ [{:test-id "private-collection-chain"
+   :path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+   :namespace gravity.self-hosting.private-collection-chain-test
+   :jvm-group "private-collection-chain"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "resolution-parent-mutation"
    :path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
    :namespace gravity.self-hosting.resolution-parent-mutation-test
    :jvm-group "resolution-parent-mutation"
