@@ -178,7 +178,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? false}}]}]
  :standalone-tests
- [{:test-id "resolution-parent-mutation"
+ [{:test-id "private-collection-chain"
+   :path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+   :namespace gravity.self-hosting.private-collection-chain-test
+   :jvm-group "private-collection-chain"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "resolution-parent-mutation"
    :path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
    :namespace gravity.self-hosting.resolution-parent-mutation-test
    :jvm-group "resolution-parent-mutation"
