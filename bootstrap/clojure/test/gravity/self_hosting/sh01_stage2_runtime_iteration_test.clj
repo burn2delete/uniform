@@ -36228,9 +36228,10 @@ else
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:insertion-semantics :carrier-schema])))
         (is (= [:independently-established-symbol-only :guarded-atomic-symbol-value]
                ((juxt :member-domain :member-equality) (:insertion-semantics descriptor))))
-        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
-               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:insertion-semantics descriptor))))
+        (is (not (contains? (:insertion-semantics descriptor) :representation-unit-policy)))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record) (:transitive record)))
         (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
@@ -36528,9 +36529,10 @@ else
         (is (nil? (:result-extent descriptor)))
         (is (= [:homogeneous-symbol-set-only :gravity/homogeneous-symbol-set-type-v1 :none]
                ((juxt :result-evidence :carrier-schema :cardinality-analysis) (:insertion-semantics descriptor))))
-        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
-               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:insertion-semantics descriptor))))
+        (is (not (contains? (:insertion-semantics descriptor) :representation-unit-policy)))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record) (:transitive record)))
         (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
