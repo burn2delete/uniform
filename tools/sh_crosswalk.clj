@@ -471,9 +471,14 @@
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def mapping-review
-  {:status :pending-source-version-review
+  {:status :accepted-mapping-only
    :input-fingerprint "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"
-   :qualification "PR530 ownership source-version reconciliation only; independent exact-input successor review pending. All180 current whole-criterion acceptance states remain unassessed."
+   :reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005"
+   :reviewed-commit "ac5f4c6ea4105da0cf2626634e31424623d66b1e"
+   :reviewed-tree "b824c0d40abb35d47ed1625beac8088b1f916e27"
+   :receipt-sha256 "fdb720fd1a9682753dcc2a334b414f9dea906ebaf788629f405c5b88c1ccd6b8"
+   :audit-commit "9ac62964ac00eef5730785ba18062bcd508b238e"
+   :qualification "Independently reviewed PR530 ownership source-version metadata adoption only, bound to this exact input fingerprint. All180 current whole-criterion acceptance states remain unassessed; no semantic, implementation, release or seedless credit."
    :predecessor-review
 {:status :accepted-mapping-only
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
