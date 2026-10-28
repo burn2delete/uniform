@@ -1230,15 +1230,24 @@
     (with-coordination-root
       (fn [base]
         (let [root (.resolve base "repository")
-              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)]
+              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+              selected-context (assoc (context base) :working-directory (str root)
+                                                    :revalidate-snapshot? true)
+              classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'explicit-classpath-identities)
+              verify-inputs (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                        'verify-inputs!)]
           (Files/createDirectories root no-file-attributes)
           (copy-reviewed-closure! root job)
-          (Files/delete (.resolve root relative))
-          (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-                 (:id (exception-data
-                        #(wiring/attach-request
-                           (assoc (context base) :working-directory (str root))
-                           (impact-plan (:namespace job)) {} job))))))))))
+          (with-redefs-fn
+            {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+            (fn []
+              (let [attached (wiring/attach-request selected-context
+                               (impact-plan (:namespace job)) {} job)]
+                (Files/delete (.resolve root relative))
+                (is (= :explicit-closure
+                       (:input-kind (exception-data
+                                      #(verify-inputs selected-context :control [attached])))))))))))))
 
 (deftest reader-identity-catalog-policy-prevents-parent-cache-reuse
   (with-coordination-root
