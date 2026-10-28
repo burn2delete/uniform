@@ -12964,7 +12964,7 @@
       (if (if (= 3 (count type)) (= :literal (get type :shape)) false)
         (if (vector? (get type :element-types))
           (let [members (get type :element-types) length (count members)]
-            (if (if (> length 0) (<= length 1024) false)
+            (if (> length 0)
               (loop [index 0]
                 (if (= index length) true
                   (if (keyword? (get members index))
