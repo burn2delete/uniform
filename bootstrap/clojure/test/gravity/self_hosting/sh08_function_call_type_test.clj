@@ -22753,7 +22753,6 @@
       (let [{:keys [core node call edge nodes bindings facts request]} (make-input receiver value 0)
             prepared (pr359-prepend-body 'body-va-context request facts bindings 65536)
             facts (assoc facts :append-context (:context prepared))
-            id (:node-id node)
             descriptor (get-in facts [:type-table (:operator-node-id call)])
             valid? #(pr359-prepend-body 'body-pl-call-valid? core % bindings node call edge nodes)]
         (is (= :accepted (:status prepared)))
