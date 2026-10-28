@@ -49,6 +49,9 @@ all original diagnostic data, message and cause. Neither function constructs or
 authenticates the supplied parent. A real generated rejection must be obtained
 through the normal owner route before claiming diagnostic composition; the
 valid 192-byte construction stimulus does not itself produce that failure.
+Source nodes require one source origin; C2 seed/form and returned syntax spans
+must agree on all byte, scalar, line and column fields. Ambiguity controls
+duplicate the matching stream even when its owner is not the final node.
 
 ## Cheap validation
 
@@ -75,6 +78,12 @@ an isolated namespace, with hash and source-revision collaborators injected as
 premises. They exercise the real leaf's rejection logic without loading the
 Bootstrap aggregate. They do not prove parent authentication or compiler
 construction. No original Reader control or source checkout is modified.
+The injected preparation checks cover two explicit checkout roots and changed
+source identities. Test-source lookup itself is checkout-relative, as required
+by the command above; this does not limit the library's explicit input root.
+An execution receipt must independently bind `loaded-owner`, the actual
+`prepare-inputs!` output and the runtime context. The injectable lookup seam is
+not evidence that an arbitrary caller supplied those normal owners.
 
 ## Source reconciliation and remaining acceptance
 

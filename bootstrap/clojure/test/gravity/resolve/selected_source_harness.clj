@@ -156,6 +156,8 @@
 
 (defn source-nodes [c3]
   (filterv #(not= :generated-form (get-in % [:form :kind])) (:syntax-object-stream c3)))
+(def span-keys [:byte-start :byte-end :scalar-start :scalar-end
+                :line-start :column-start :line-end :column-end])
 (defn expansion-facts [node]
   (:value (first (filter #(= :authenticated-reader-products (:fact-kind %)) (:facts node)))))
 
@@ -182,17 +184,19 @@
         (ensure! (and form (= source (:source span)) (= semantic-id (:file span))
                       (= semantic-id (get-in node [:source :source-id]))
                       (= [(:open-token form) (:close-token form)] (get-in node [:source :token-range]))
-                      (= (select-keys (:span seed) [:byte-start :byte-end :scalar-start :scalar-end])
-                         (select-keys span [:byte-start :byte-end :scalar-start :scalar-end]))
-                      (= (select-keys (:span seed) [:byte-start :byte-end])
-                         (select-keys (:span form) [:byte-start :byte-end]))
+                      (every? #(contains? (:span seed) %) span-keys)
+                      (every? #(contains? (:span form) %) span-keys)
+                      (= (select-keys (:span seed) span-keys)
+                         (select-keys span span-keys)
+                         (select-keys (:span form) span-keys))
                       (<= (:byte-start span) (:byte-end span))
                       (= start {:scalar (:scalar-start span) :line (:line-start span) :column (:column-start span)})
                       (= end {:scalar (:scalar-end span) :line (:line-end span) :column (:column-end span)})
                       (= (get-in node [:form :raw])
                          (strict-text (java.util.Arrays/copyOfRange data (int (:byte-start span)) (int (:byte-end span)))))
                       (= span (:span origin))
-                      (= 'gravity.bootstrap.reader (get-in origin [:producer :name])))
+                      (= 'gravity.bootstrap.reader (get-in origin [:producer :name]))
+                      (= [origin] (:origin node)))
                  :source-coordinate-and-origin)))
     :checked))
 
@@ -230,12 +234,15 @@
                      (assoc-in diagnostic [:facts :rule-specific] {:reason :missing-module-artifact})]]
       (ensure! (not= diagnostic changed) :diagnostic-mutation-noop)
       (ensure! (nil? (recover source sh05 request changed)) :noncausal-origin-rejected))
-    (ensure! (nil? (recover source (update sh05 :expanded-syntax-stream #(conj % (last %))) request diagnostic))
+    ;; Duplicating the entire stream duplicates its actual matching owner even
+    ;; when that owner is not the last node.
+    (ensure! (nil? (recover source (update sh05 :expanded-syntax-stream #(into % %)) request diagnostic))
              :ambiguous-origin-rejected)
     {:status :checked :authority :kernel-only-parent-authentication-is-a-premise}))
 
 (defn check-transported-diagnostic! [original carried expected-origin]
-  (ensure! (and (= expected-origin (:origin-chain (ex-data carried)))
+  (ensure! (and (seq expected-origin)
+                (= expected-origin (:origin-chain (ex-data carried)))
                 (= (ex-data original) (dissoc (ex-data carried) :origin-chain))
                 (= (.getMessage ^Throwable original) (.getMessage ^Throwable carried))
                 (identical? original (.getCause ^Throwable carried)))

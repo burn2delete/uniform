@@ -37,6 +37,15 @@
              [:origin (assoc-in c3 [:syntax-object-stream 0 :origin 0 :span :byte-end] 99)]
              [:reader (assoc-in c3 [:syntax-object-stream 0 :origin 0 :producer :name] 'other)]
              [:form-span (assoc-in c3 [:c2-reader-artifact :form-tree 0 :span :byte-end] 4)]
+             [:form-line (assoc-in c3 [:c2-reader-artifact :form-tree 0 :span :line-start] 99)]
+             [:form-column (assoc-in c3 [:c2-reader-artifact :form-tree 0 :span :column-end] 99)]
+             [:form-scalar (assoc-in c3 [:c2-reader-artifact :form-tree 0 :span :scalar-start] 99)]
+             [:seed-line (assoc-in c3 [:c2-reader-artifact :syntax-seed-stream 0 :span :line-end] 99)]
+             [:seed-column (assoc-in c3 [:c2-reader-artifact :syntax-seed-stream 0 :span :column-start] 99)]
+             [:missing-coordinate (update-in c3 [:c2-reader-artifact :form-tree 0 :span] dissoc :line-start)]
+             [:extra-origin (update-in c3 [:syntax-object-stream 0 :origin] conj {:kind :generated})]
+             [:duplicate-origin (update-in c3 [:syntax-object-stream 0 :origin] #(conj % (first %)))]
+             [:reordered-origin (update-in c3 [:syntax-object-stream 0 :origin] #(into [{:kind :generated}] %))]
              [:seed (assoc-in c3 [:c2-reader-artifact :syntax-seed-stream 0 :span :byte-end] 4)]
              [:actual-path (assoc-in c3 [:c2-reader-artifact :source-unit-record :path] "/other.gravity")]
              [:missing-seed (assoc-in c3 [:c2-reader-artifact :syntax-seed-stream] [])]]]
@@ -118,6 +127,9 @@
         owner (fn [name] (is (= 'sh06-resolution-diagnostic-origin name)) operation)]
     (try
       (is (= :checked (:status (h/check-diagnostic-controls! owner input))))
+      (let [unrelated {:syntax/id (id :unrelated) :span {:byte-start 9 :byte-end 12} :origin []}
+            changed (update-in input [:sh05 :expanded-syntax-stream] conj unrelated)]
+        (is (= :checked (:status (h/check-diagnostic-controls! owner changed)))))
       (doseq [[label changed]
               [[:reference (assoc-in input [:request :references 0 :symbol] 'changed)]
                [:physical (assoc-in input [:request :provenance :actual-source-path] "/other.gravity")]
@@ -135,6 +147,9 @@
         original (ex-info "original" diagnostic)
         carried (ex-info "original" (assoc diagnostic :origin-chain expected-origin) original)]
     (is (= :checked (h/check-transported-diagnostic! original carried expected-origin)))
+    (is (= :diagnostic-conservation
+           (reason #(h/check-transported-diagnostic! original
+                      (ex-info "original" (assoc diagnostic :origin-chain []) original) []))))
     (doseq [changed [(ex-info "changed" (ex-data carried) original)
                      (ex-info "original" (assoc (ex-data carried) :remediation "changed") original)
                      (ex-info "original" (ex-data carried))
@@ -171,3 +186,34 @@
     (is (= :input-drift (reason #(h/recheck-inputs! (assoc-in input [:inputs :fixture :sha256] "changed")))))
     (is (= :regular-absolute-input (reason #(h/file-input! h/fixture-relative)))))
   (is (nil? (find-ns 'gravity.bootstrap))))
+
+(deftest preparation-is-root-explicit-and-checks-Git-bookends
+  ;; Inject only the harness's file/Git readers. No owner is replaced or called.
+  (doseq [root ["/portable-one" "/portable-two"]]
+    (let [reads (atom [])
+          identity {:head "exact-head" :tree "exact-tree"}
+          git (fn [actual-root & args]
+                (is (= root actual-root))
+                (case (vec args)
+                  ["rev-parse" "HEAD"] (:head identity)
+                  ["rev-parse" "HEAD^{tree}"] (:tree identity)
+                  ["status" "--porcelain" "--untracked-files=all"] ""))
+          file (fn [path]
+                 (swap! reads conj path)
+                 {:path path :sha256 h/fixture-sha :bytes 192 :text "injected fixture"})]
+      (with-redefs [h/git! git h/file-input! file]
+        (let [prepared (h/prepare-inputs! root identity)]
+          (is (= (mapv #(str (io/file root %)) [h/fixture-relative h/reader-relative h/syntax-relative]) @reads))
+          (is (= (str (io/file root h/reader-relative)) (:reader-source-path prepared)))
+          (is (= (str (io/file root h/syntax-relative))
+                 (get-in prepared [:invocation :syntax-source-selection :source-path])))
+          (is (= identity (:source prepared)))
+          (is (= :unrun (:execution prepared)))
+          (is (= :not-established (:admission prepared)))
+          (is (nil? (h/recheck-inputs! prepared)))
+          (is (= :source-head-drift
+                 (reason #(h/recheck-inputs! (assoc-in prepared [:source :head] "changed")))))))))
+  (with-redefs [h/git! (fn [& _] "dirty")
+                h/file-input! (fn [& _] (throw (ex-info "unexpected file read" {:reason :unexpected-read}))) ]
+    (is (= :source-head (reason #(h/prepare-inputs! "/portable" {:head "head" :tree "tree"}))))
+    (is (= :exact-source-tuple (reason #(h/prepare-inputs! "/portable" {:head "head"}))))))
