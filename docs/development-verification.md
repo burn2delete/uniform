@@ -301,8 +301,8 @@ Run `sh22-ordered-map-lookup-preserves-stored-false-and-nil` in
 `gravity.self-hosting.sh22-standard-library-test`. Real G/Q `:ordered-map-assoc`
 results feed `:ordered-map-get`: stored false/Nil yield `Some` with an explicit
 `:value`, while an absent key yields `None` without `:value`. Check insertion,
-replacement/order, original-value preservation, full-256 replacement versus
-new-entry rejection, complete malformed/duplicate validation before a hit and
+replacement/order, original-value preservation, replacement in a 256-entry map
+and insertion of a 257th entry, complete malformed/duplicate validation before a hit and
 fresh producer/consumer verification with result substitutions. The same
 original-delegating lookup observer must record a valid lookup as well as zero
 calls for rejected carriers. Existing collection/boundary and result-verifier
