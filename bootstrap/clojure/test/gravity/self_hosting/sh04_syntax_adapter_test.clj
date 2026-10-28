@@ -565,7 +565,7 @@
     (is (= :safe (get-in plan [:module :safety])))
     (is (= 'gravity.bootstrap.syntax
            (get-in plan [:module :module])))
-    (is (= "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553"
+    (is (= (str "sha256:" (bootstrap/sha256-hex (slurp (path syntax-source-relative-path))))
            (get-in plan [:source :sha256])))))
 
 (deftest sh04-gravity-build-verify-and-serialize-are-stable-and-path-neutral
@@ -616,7 +616,7 @@
                         (:resolved-digests relocated-stream)])]
     (is (= #{:artifact :schema-version :status :syntax-template
              :reader-binding :reader-source-revision :ownership-product
-             :digest-requests :diagnostics :bounds :execution-boundary
+             :digest-requests :diagnostics :execution-boundary
              :containment}
            (set (keys raw))))
     (is (= :accepted (:status raw)))
@@ -1244,6 +1244,11 @@
             (assoc :syntax-id id-b)
             (assoc-in [:origin 0 :input-syntax-ids] [id-a])
             (assoc :prior-syntax-ids [id-a]))
+        fanout-ids (mapv :syntax-id (subvec syntaxes-2049 0 33))
+        fanout-node (-> (generated-object base 33 (first fanout-ids))
+                        (assoc-in [:origin 0 :input-syntax-ids] fanout-ids)
+                        (assoc :prior-syntax-ids fanout-ids))
+        fanout (conj (subvec syntaxes-2049 0 33) fanout-node)
         cases
         [[:exact-depth chain-64 :passed nil]
          [:over-depth chain-65 :passed nil]
@@ -1257,7 +1262,11 @@
          [:duplicate-id [base duplicate-id] :failed "C3-ID"]
          [:self-reference [self-reference] :failed "C3-ORIGIN"]
          [:unresolved-id [unresolved] :failed "C3-ID"]
-         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]]
+         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]
+         [:reference-fanout fanout :passed nil]
+         [:late-fanout-dangling
+          (assoc fanout 33 (assoc-in fanout-node [:origin 0 :input-syntax-ids 32] dangling-id))
+          :failed "C3-ORIGIN"]]
         stream-300
         (invoke-syntax
          'c3-syntax-stream-build-template
@@ -1332,8 +1341,56 @@
         origin (first (:origin descriptor))
         origins-32 (vec (repeat 32 origin))
         origins-33 (conj origins-32 origin)
+        scopes-65 (mapv #(keyword (str "scope-" %)) (range 65))
+        imports-65 (mapv #(symbol (str "library" %)) (range 65))
+        introduced-65 (mapv #(symbol (str "introduced" %)) (range 65))
+        renames-65 (into {} (map-indexed (fn [i target] [(symbol (str "from" i)) target]) introduced-65))
+        hygiene-wide (-> (:hygiene descriptor)
+                         (assoc :introduced-identifiers introduced-65 :renames renames-65))
+        invalidations-33 (mapv #(keyword (str "pass-" %)) (range 33))
+        generated-origin (-> origin
+                             (assoc :kind :generated
+                                    :span {:kind :generated :producer-id (get-in origin [:producer :identity]) :ordinal 0}
+                                    :generation-reason :container-validation
+                                    :input-syntax-ids [(stable-test-id :input 0)]
+                                    :build-effects (vec (repeat 33 :build/read))))
         cases
-        [[:marks-at-limit
+        [[:namespace-containers
+          (-> descriptor
+              (assoc-in [:namespace :imports] imports-65)
+              (assoc-in [:namespace :aliases] (zipmap imports-65 imports-65)))
+          :accepted nil]
+         [:late-duplicate-import
+          (assoc-in descriptor [:namespace :imports] (conj imports-65 (first imports-65)))
+          :rejected "C3-SHAPE"]
+         [:lexical-scopes
+          (assoc-in descriptor [:hygiene :lexical-scopes] scopes-65)
+          :accepted nil]
+         [:late-invalid-scope
+          (assoc-in descriptor [:hygiene :lexical-scopes] (conj scopes-65 nil))
+          :rejected "C3-HYGIENE"]
+         [:renames-and-introduced
+          (assoc descriptor :hygiene hygiene-wide)
+          :accepted nil]
+         [:late-invalid-introduced
+          (assoc descriptor :hygiene (update hygiene-wide :introduced-identifiers conj :invalid))
+          :rejected "C3-HYGIENE"]
+         [:late-invalid-rename
+          (assoc descriptor :hygiene (assoc-in hygiene-wide [:renames 'last] 'missing))
+          :rejected "C3-HYGIENE"]
+         [:origin-build-effects
+          (assoc descriptor :origin [origin generated-origin])
+          :accepted nil]
+         [:late-invalid-origin-effects
+          (assoc descriptor :origin [origin (assoc generated-origin :build-effects :invalid)])
+          :rejected "C3-ORIGIN"]
+         [:fact-invalidation
+          (assoc descriptor :facts [(assoc (fact-record 0) :invalidated-by invalidations-33)])
+          :accepted nil]
+         [:late-invalid-invalidation
+          (assoc descriptor :facts (conj facts-65 (assoc (fact-record 65) :invalidated-by :invalid)))
+          :rejected "C3-FACT-STALE"]
+         [:marks-at-limit
           (assoc-in descriptor [:hygiene :marks] marks-64)
           :accepted nil]
          [:marks-over-limit
@@ -1389,6 +1446,20 @@
                (get-in result
                        [:containment :downstream-artifacts-forbidden]))
             (str label " " result))))))
+
+(deftest sh04-compatibility-facade-consumes-current-result-shape
+  (let [plan (compile-plan (path "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity") :jvm)
+        invoke (fn [name arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh04-syntax-facade :compiler-artifact-plan? true}
+                  plan name arguments))
+        accepted (invoke-syntax 'c3-syntax-build-template [@accepted-descriptor])
+        rejected (invoke-syntax 'c3-syntax-build-template [{}])]
+    (doseq [result [accepted rejected]]
+      (is (true? (invoke 'c3-compatible-syntax-result? [result])))
+      (is (= :compatible (:status (invoke 'c3-package-syntax-result [result]))))
+      (is (false? (invoke 'c3-compatible-syntax-result? [(assoc result :bounds {})])))
+      (is (false? (invoke 'c3-compatible-syntax-result? [(dissoc result :reader-source-revision)]))))))
 
 (deftest sh04-public-c3-preserves-exact-spans-metadata-and-pair-identity
   (let [artifacts @public-artifacts]

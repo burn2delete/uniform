@@ -1078,8 +1078,8 @@
                     :stable-identity-preimage
                     :source-or-generated-span
                     :origin-chain-valid
-                    :hygiene-visible-and-bounded
-                    :metadata-bounded
+                    :hygiene-visible-and-valid
+                    :metadata-valid
                     :facts-versioned
                     :immutable-value
                     :digest-request-exact-replay]
