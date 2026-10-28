@@ -11013,7 +11013,7 @@
         (is (= {:status :rejected :reason :private-map-keys-source-mismatch} raw))
         (is (= :rejected (:status outer)))
         (is (seq (:diagnostics outer)))
-        (is (pos? (:work-count outer))))))))
+        (is (pos? (:work-count outer)))))))
 
 (deftest sh08-private-map-keys-preparation-semantic-cells
   (let [current {:known :gravity.type/string :unknown :gravity.type/unknown :nil-value nil}
