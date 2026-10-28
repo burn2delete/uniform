@@ -9217,7 +9217,9 @@
     (let [items (get arguments 0) needle (get arguments 1)]
       (if (= :gravity.type/integer needle) true
         (if (= :gravity.type/never needle)
-          (if (map? items)
+          ; Descriptor field count is schema, not a collection-size quota.
+          ; Match C7: reject the wrong shape before reading supplied fields.
+          (if (if (map? items) (= 3 (count items)) false)
             (if (if (= :gravity.type/set (get items :kind)) (= :literal (get items :shape)) false)
               (let [members (get items :element-types)]
                 (if (vector? members) (= :gravity.type/integer (get members 0)) false)) false) false) false))) false))

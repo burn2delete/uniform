@@ -104,6 +104,23 @@ review, draft readback and eventual validated integration remain required.
 Only ACC-02 and ACC-03 are closed;
 the original thirteen criteria and eleven residual criteria are unchanged.
 
+### Required membership guard parity follow-through
+
+Independent diagnosis identifies the exact preexisting cause of the draft
+hold: `body-ism-selected?` and `p15-s23-ism-selected?` omit the three-field
+descriptor-schema guard already present in `sh08-ism-selected?`. Port only
+that existing guard, before `:kind` reads, to the two missing copies. This is
+necessary to satisfy the recorded unchanged consumer negatives; it is not a
+new member allowance, accounting requirement or additional cleanup criterion.
+
+- [ ] Independently review the exact two-function parity diff and prove every
+  other production function unchanged. Preserve Integer/Never selection,
+  supported carriers, complete membership validation, budgets and reports.
+- [ ] Run the two unchanged failing kernels and the minimal old case with
+  zero field/sequence callbacks, plus boundary controls, on the frozen repair.
+- [ ] Independently review actual results before clearing the membership hold;
+  preserve all old failures and original successful PL evidence separately.
+
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
 Accounting retains sole ownership of the three existing C7, Effects and emitter
