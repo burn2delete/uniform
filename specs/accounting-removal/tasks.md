@@ -697,3 +697,58 @@ outer inference, validation and lowering pools remain with their existing
 owners, and ACC-05 remains partial. ACC-06 and the other original row states
 are unchanged. No authenticated-source, Core, C12, release or overall
 completion is inferred.
+
+## ACC-13 C3 comparison and remaining boundary
+
+The ACC-13 owner has independently reviewed a finite C3 graph-membership
+change and its direct Guest comparison. The local candidate is not integrated.
+The comparison uses explicit normalized input and leaves the original source
+authentication, selected-current Syntax binding and genuine C5 route open.
+Draft PR512 now contains the reviewed candidate. Its owner's earlier push was
+blocked by automatic approval review before execution; the same operation
+subsequently succeeded through the supported route after new authorization.
+The candidate is published but not integrated.
+
+ACC-13 remains partial. Source-byte limits, other Syntax, macro, schema and
+carrier mechanisms, current source admission and their actual owner acceptance
+remain open. This comparison does not close ACC-12 or authorize a held B51
+endpoint, C12 or release.
+
+## ACC-12 B51 test artifact restoration
+
+PR517 restored the truncated SH07 B51 test artifact on main at `068de740`.
+The independently reviewed repair conserves the historical test names and
+assertions, with focused fixture and host UTF-8 checks passing on the composed
+head. The full suite, current seven-shard assembly, B51 public roots, source
+authentication and quota-source migration remain unassessed. ACC-12 remains
+partial; the separately owned ACC-13 B51 route remains open.
+
+## ACC-04 BKA anchor-width integration
+
+PR521 integrated the finite BKA anchor-width removal at `38daf99e`. C7,
+Effects and emitter no longer reject an otherwise valid keyword anchor solely
+because it exceeds 1,024 members. Nonemptiness, the exact Set schema, complete
+keyword-member and type validation, source and descriptor reconstruction
+remain. The selected normalized producer, consumer and typed-emitter controls
+passed; no authenticated-source or runtime acceptance is implied.
+
+ACC-04 remains partial. BKA header accounting and runtime policy, PMK and ANE
+families, outer pools, metadata carrier safety and the original row's complete
+consumer acceptance remain open. DSE's preserved unrun work and the separate
+unknown historical mode operation are not replayed or reclassified here.
+
+## ACC-06 private collection chain integration
+
+PR511 integrated the finite private collection binding-chain change at
+`0ea44f0c`. C7, Effects and emitter no longer impose the paired 128-link
+traversal and link-domain admissions. Cycle detection, complete source and
+link validation, immutable binding, mutation and proof checks remain. The
+current-main composition passed its selected 14-test/266-assertion panel.
+
+ACC-06 remains open: recursive validation and construction allowances,
+source/conversion pools, other private collection width/source limits and
+PE/PC dependencies still require their own coherent owner work. This finite
+result does not establish authenticated-source, runtime, Core, C12 or release.
+The later PR513 metadata gate found that the new PC test namespace was absent
+from its impact catalog. That separate catalog registration is open with the
+existing metadata owners; the failed gate is not a PC semantic pass.
