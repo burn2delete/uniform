@@ -1841,3 +1841,36 @@ above. Nothing is summed into a fresh whole-panel pass. ACC-05 and ACC-06
 remain open as original criteria; runtime value-work policies, outer pools,
 whole-plan ingress, authenticated-source replay, Core, C12, public admission
 and release receive no acceptance from this finite merge.
+
+## PR518 insertion descriptor integration - 2026-10-28 UTC
+
+PR518 merged as `1e784ac42b13a05cfcd0be35072c70239098d103` over
+`d20c9adb648bf26e3d648e296683fe0203271486`. The fetched merged tree
+`61b636e8b99808ea3e5c55878d80a62228bce59e` exactly matches reviewed head
+`7fe81d4cf43ab78ede1055ad6d8e9bcd25d9bf36`; the source branch is retained.
+Independent source, test, retained-result and integration review accepted this
+finite nine-branch descriptor change. Genuine allocation/storage, type,
+member, source, effect, profile and complete descriptor/fact equality checks
+remain. Tests require rejection of coherently reconstructed stale accounting
+fields and tags in the selected owners and consumers.
+
+The focused owner batch at the reviewed head passed 20 tests and 2,958
+assertions, with zero failures or errors, natural exit zero in 33.771 seconds,
+actual 2 GiB, complete capture, identical clean bookends and completed cleanup.
+Its receipt SHA-256 is
+`855be07d766f8c2e81e823ff0526a0075a2b9c0c752a307853808ad51ec96f83`.
+The separate compiler-free source-conservation controls passed 2 tests and 12
+assertions. Final compiler-free repository gates passed LOC 5/12, 2,035 source
+files, docs 240/19, roadmap and changed-file lint with zero blockers; their
+receipt SHA-256 is
+`8f245b3ece870eee60077a01492e43c53a0561f4c47da22e9b766a8e3f69f8cc`.
+A sandboxed first gate attempt failed at broker admission before its child
+started; that result is retained separately from the supported successful run.
+PR CI `40626387706` passed all seven routine jobs; Core readiness and
+experimental prerelease were skipped. Main-push CI `40627419194` was queued at
+the time of this record; no result is implied.
+
+Two changed authenticated-composition assertions were not run. Runtime Set
+value work, outer accounting pools, authenticated source, public runtime, Core,
+C12 and release remain outside this finite result. ACC-05 remains partial; no
+other original criterion receives closure credit.

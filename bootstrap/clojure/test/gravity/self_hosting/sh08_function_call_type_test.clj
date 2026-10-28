@@ -19692,7 +19692,7 @@
         (is (= :add-supplied-value (get-in descriptor [:insertion-semantics :absent-class])))
         (is (= :none (get-in descriptor [:insertion-semantics :normalization]) (get-in descriptor [:insertion-semantics :coercion]) (get-in descriptor [:insertion-semantics :resolution-authority])))
         (is (= :original-namespace-and-name (get-in descriptor [:insertion-semantics :symbol-equality])))
-        (is (= :jvm-utf16-symbol-display-for-work-only (get-in descriptor [:insertion-semantics :representation-unit-policy])))
+        (is (not (contains? (:insertion-semantics descriptor) :representation-unit-policy)))
         (is (= (if (= expected :gravity.type/never) [] [:memory/allocate]) (:direct-effects descriptor)))
         (is (= :normal-operand-completion (get-in descriptor [:allocation-policy :condition])))
         (is (= :may-retain-input-storage-and-member-values (get-in descriptor [:storage-policy :retention])))
@@ -22701,3 +22701,121 @@
         (is (= :unsupported-type (:type-check-reason result)))))
     (is (empty? @callbacks))
     (is (zero? @opaque-callbacks))))
+;; Exercise complete reconstruction and coherent stale-accounting rejection.
+(defn- pl-contract-legacy-descriptors [descriptor]
+  (let [kind (:kind descriptor)
+        model ({:gravity.type/applied-symbol-set-insertion :gravity/symbol-set-insertion-logical-content-work-v1
+                :gravity.type/applied-keyword-set-insertion :gravity/keyword-set-insertion-logical-content-work-v1
+                :gravity.type/applied-string-set-insertion :gravity/string-set-insertion-logical-content-work-v1} kind)
+        budget #(assoc-in % [:insertion-semantics :budget]
+                          :full-remaining-membership-and-construction-reservation)
+        work #(assoc-in % [:insertion-semantics :value-work-model] model)
+        representation #(assoc-in % [:insertion-semantics :representation-unit-policy]
+                                  :jvm-utf16-symbol-display-for-work-only)
+        invalidation #(update % :invalidation
+                              (fn [items] (vec (mapcat (fn [item]
+                                                        (if (= item :member-equality)
+                                                          [item :representation-work] [item])) items))))
+        all (cond-> (-> descriptor budget work invalidation)
+              (= kind :gravity.type/applied-symbol-set-insertion) representation)]
+    (cond-> [(budget descriptor) (work descriptor) (invalidation descriptor) all]
+      (= kind :gravity.type/applied-symbol-set-insertion) (conj (representation descriptor)))))
+
+(deftest pl-insertion-contract-parity-and-coherent-stale-fields
+  (doseq [[receiver value] pr359-prepend-cases]
+    (let [{:keys [input derived descriptor consumers context]} (pr359-prepend-case-data receiver value)
+          {:keys [core node call edge nodes bindings module]} input
+          semantics (:insertion-semantics descriptor)
+          compile #(pr359-prepend-emit 'p15-s23-typed-compile-node % :call 65536)
+          c7-valid? #(pr359-prepend-c7 'sh08-pl-inferred-call-valid?
+                       core node call edge nodes bindings (assoc (:types context) :operator %))
+          coherent (fn [changed]
+                     (-> context
+                         (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (pr359-prepend-c7 'sh08-pl-call-fact changed module)}
+                                :ledger [(pr359-prepend-c7 'sh08-pl-constraint changed)])))]
+      (is (= :accepted (:status derived)))
+      (is (every? #(= descriptor %) consumers))
+      (is (= :complete (:status (compile context))))
+      (when semantics
+        (is (not-any? #(contains? semantics %) [:budget :value-work-model :representation-unit-policy]))
+        (is (not-any? #{:representation-work} (:invalidation descriptor)))
+        (is (true? (c7-valid? descriptor)))
+        (doseq [changed (pl-contract-legacy-descriptors descriptor)]
+          (is (not= descriptor changed))
+          (is (false? (c7-valid? changed)))
+          (is (= :rejected (:status (compile (coherent changed))))))))))
+
+(deftest pl-insertion-effects-rederive-and-reject-coherent-stale-fields
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (let [make-input (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'prepend-effect-input)]
+    (doseq [[receiver value] pr359-prepend-cases]
+      (let [{:keys [core node call edge nodes bindings facts request]} (make-input receiver value 0)
+            prepared (pr359-prepend-body 'body-va-context request facts bindings 65536)
+            facts (assoc facts :append-context (:context prepared))
+            descriptor (get-in facts [:type-table (:operator-node-id call)])
+            valid? #(pr359-prepend-body 'body-pl-call-valid? core % bindings node call edge nodes)]
+        (is (= :accepted (:status prepared)))
+        (is (true? (valid? facts)))
+        (when (:insertion-semantics descriptor)
+          (doseq [changed (pl-contract-legacy-descriptors descriptor)]
+            (let [row (pr359-prepend-body 'body-pl-constraint changed)
+                  fact (pr359-prepend-body 'body-pl-call-fact changed (:module core))
+                  coherent (-> facts
+                               (dissoc :append-context)
+                               (assoc-in [:type-table (:operator-node-id call)] changed)
+                               (assoc :constraint-ledger [row] :call-type-facts [fact]))
+                  fresh (pr359-prepend-body 'body-va-context request coherent bindings 65536)]
+              (is (not= descriptor changed))
+              (is (= :accepted (:status fresh)))
+              (is (false? (valid? (assoc coherent :append-context (:context fresh))))))))))))
+
+(deftest bare-keyword-anchor-cardinality-and-consumer-development-kernel
+  (doseq [size [1025 1030] anchor-index [0 1]]
+    (let [anchor {:kind :gravity.type/set :shape :literal
+                  :element-types (vec (repeat size :gravity.type/keyword))}
+          arguments (assoc [:gravity.type/set :gravity.type/set] anchor-index anchor)
+          {:keys [input derived descriptor context]} (pr359-descriptor-case-data :bka arguments)
+          {:keys [core node call edge nodes bindings types forms module]} input
+          evidence-args [core (:ledger context) (:call-facts context) node call edge nodes bindings (:types context) 65536]
+          facts {:type-table (:types context) :constraint-ledger (:ledger context)
+                 :call-type-facts (:call-facts context) :equality-context {:forms forms}}
+          compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :call 65536)]
+      (is (= :accepted (:status derived)))
+      (is (= :gravity.type/bool (:type derived)))
+      (is (= size (get (:operand-counts descriptor) anchor-index)))
+      (is (= anchor (:anchor-type descriptor)))
+      (is (= [descriptor descriptor]
+             (pr359-descriptor-consumer-descriptors :bka arguments input)))
+      (doseq [result [(apply pr359-descriptor-body 'body-bka-evidence evidence-args)
+                      (apply pr359-descriptor-emit 'p15-s23-bka-evidence evidence-args)]]
+        (is (= :accepted (:status result)))
+        (is (= descriptor (:descriptor result))))
+      (is (true? (pr359-descriptor-body 'body-bka-call-valid? core facts bindings node call edge nodes)))
+      (is (= :complete (:status (compile context))))
+      (doseq [changed [(assoc descriptor :anchor-domain-work 0)
+                       (assoc descriptor :anchor-type (assoc anchor :element-types []))
+                       (assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc descriptor :anchor-operand-index (- 1 anchor-index))]]
+        (let [changed-context (-> context
+                                  (assoc-in [:types :operator] changed)
+                                  (assoc :ledger [(pr359-descriptor-c7 'sh08-bka-constraint changed)]
+                                         :call-facts {:call (pr359-descriptor-c7 'sh08-bka-call-fact changed module)}))]
+          (is (= :rejected (:status (compile changed-context))))))
+      (let [callbacks (atom [])
+            opaque (proxy [Object] []
+                     (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "unexpected hash" {})))
+                     (equals [_] (swap! callbacks conj :equals) (throw (ex-info "unexpected equals" {})))
+                     (toString [] (swap! callbacks conj :format) (throw (ex-info "unexpected format" {}))))]
+        (doseq [members [(assoc (:element-types anchor) (dec size) :gravity.type/string)
+                         (assoc (:element-types anchor) (dec size) :gravity.type/unknown)
+                         (assoc (:element-types anchor) (dec size) opaque)
+                         []]]
+          (let [changed (assoc types (if (zero? anchor-index) :arg0 :arg1)
+                               (assoc anchor :element-types members))
+                args [core node call edge nodes bindings changed module 65536]]
+            (doseq [[invoke name] [[pr359-descriptor-c7 'sh08-bka-header]
+                                  [pr359-descriptor-body 'body-bka-header]
+                                  [pr359-descriptor-emit 'p15-s23-bka-header]]]
+              (is (= :rejected (:status (apply invoke name args)))))))
+        (is (empty? @callbacks))))))
