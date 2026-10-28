@@ -36,7 +36,9 @@
                  :classpath-identities [{:path "classpath/entry-0000" :sha256 h}
                                         {:path "classpath/entry-0001" :sha256 (hash-value :second)}]
                  :child-runtime-identity runtime
-                 :runtime-tool-inputs [{:id :java :sha256 h}]}
+                 :runtime-tool-inputs (mapv #(hash-map :id % :sha256 h)
+                                            [:clojure-runtime :java-runtime
+                                             :java-executable :test-command-executable])}
         consumed (hash-value (array-map
                               :schema (:schema closure)
                               :dependency-contract-schema
@@ -186,3 +188,20 @@
       (finally
         (doseq [path paths] (java.nio.file.Files/deleteIfExists path))
         (java.nio.file.Files/delete directory)))))
+
+(deftest complete-runtime-tool-and-aggregate-identities-are-required
+  (doseq [id [:clojure-runtime :java-runtime :java-executable :test-command-executable]]
+    (is (= :runtime-tool-inputs
+           (field #(check (update-in (fixture) [:method :binding :runtime-tool-inputs]
+                                      (fn [inputs] (filterv (fn [entry] (not= id (:id entry)))
+                                                            inputs))))))
+        (str id)))
+  (is (= :runtime-digest
+         (field #(check (assoc-in (fixture) [:method :binding :child-runtime-identity :sha256]
+                                   (hash-value :wrong))))))
+  (is (= :closure-digest
+         (field #(check (assoc-in (fixture) [:method :binding :consumed-input-identity]
+                                   (hash-value :wrong))))))
+  (is (= :classpath-order
+         (field #(check (update-in (fixture) [:method :binding :classpath-identities]
+                                    (fn [entries] (vec (reverse entries)))))))))

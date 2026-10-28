@@ -85,6 +85,8 @@
         closure (:cache-closure entry)
         inputs (:inputs binding)]
     (require! (= 1 (count entries)) :catalog-selection)
+    (require! (= :gravity/stage0-explicit-test-cache-closure-v1 (:schema closure))
+              :closure-schema)
     (require! (= :gravity/stage0-incremental-test-dependencies-v2
                  (:schema contract)) :contract-schema)
     (require! (true? (get-in entry [:test-policy :freshness-required?])) :fresh-policy)
@@ -119,6 +121,12 @@
         (require! (and (vector? identities) (seq identities)
                        (= (count identities) (count (distinct (map key identities))))) field)
         (doseq [identity identities] (identity! identity key field))))
+    (require! (every? (set (map :id (:runtime-tool-inputs binding)))
+                      [:clojure-runtime :java-runtime :java-executable :test-command-executable])
+              :runtime-tool-inputs)
+    (require! (= (mapv :path (:classpath-identities binding))
+                 (mapv #(format "classpath/entry-%04d" %)
+                       (range (count (:classpath-identities binding))))) :classpath-order)
     (let [runtime (:child-runtime-identity binding)
           fingerprints (:fingerprints runtime)]
       (keys! runtime #{:id :sha256 :fingerprints} :child-runtime)
