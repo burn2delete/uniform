@@ -742,4 +742,35 @@
     :acceptance-predicate-unchanged true,
     :raw-unchanged true}],
   :predecessor-bridge-commit
-  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}}
+  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}
+ :pr530-ownership-successor
+ {:candidate "979f0a469b1b0f76aee90a1cb0fe6ae23d5c120e",
+ :authority :source-conservation-only,
+ :added-entry
+ {:section :standalone-test-owners,
+  :path
+  "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj",
+  :value
+  {:namespace gravity.self-hosting.private-collection-chain-test,
+   :slice "SH-08",
+   :owner :sh-types}},
+ :predecessor-bridge-sha256
+ "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507",
+ :kind :pr530-ownership-source-version,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+   :sha256
+   "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"},
+  :after
+  {:commit "979f0a469b1b0f76aee90a1cb0fe6ae23d5c120e",
+   :sha256
+   "472432fb5dc87ec3adc497b372a73d2199926d7327fc847223bde64eaa210de3"}},
+ :prior-ownership-entries-unchanged true,
+ :qualification
+ "PC test ownership registration only. No runtime-shape import, semantic execution, new mapping acceptance or whole-SH acceptance. All180 current whole-criterion states remain unassessed; independent successor review is pending.",
+ :predecessor-input-fingerprint
+ "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68",
+ :task-authorities-and-history-unchanged true,
+ :candidate-tree "14825393391799cb186ae7dd9485bd1dd8ab3958"}}
