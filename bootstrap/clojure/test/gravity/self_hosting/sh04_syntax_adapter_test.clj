@@ -104,13 +104,32 @@
 
 (defn- parsed-values
   [source-path]
-  (let [artifact (bootstrap/compiler-c2-reader-file-artifact source-path)]
+  ;; Controlled fixtures use the existing selected-current source constructor.
+  ;; This is development-unadmitted C2 construction, not frozen file admission.
+  (let [reader-path (.getCanonicalPath
+                     (io/file (path bootstrap/sh03-reader-source-relative-path)))
+        source-text (str (.decode
+                          (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                            (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                            (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+                          (java.nio.ByteBuffer/wrap (source-bytes source-path))))
+        artifact (bootstrap/compiler-c2-reader-source-artifact
+                  source-path source-text
+                  (bootstrap/reader-project-context-for-source source-path)
+                  nil nil reader-path
+                  {:reader-source-path reader-path
+                   :authenticated-envelope-options {:source :development-current}})]
     (when-not (= :gravity/stage0-c2-reader-document-artifact
                  (:kind artifact))
       (throw (ex-info "SH-04 fixture did not pass the Gravity reader"
                       {:id "SH04-FIXTURE-READER"
                        :path source-path
                        :kind (:kind artifact)})))
+    (when-not (= :development-unadmitted
+                 (get-in artifact [:gravity-reader-boundary :authenticated-envelope
+                                   :source-rule :admission-status]))
+      (throw (ex-info "SH-04 fixture requires selected-current development construction"
+                      {:id "SH04-FIXTURE-READER-ADMISSION"})))
     (:parsed-semantic-values artifact)))
 
 (defn- fixture-value
