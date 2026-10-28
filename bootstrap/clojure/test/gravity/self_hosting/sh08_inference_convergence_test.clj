@@ -4,7 +4,8 @@
   use the current SH08 harness and characterize internal DATA, not source
   authentication or acceptance of a replacement convergence algorithm.
   C7 and D9 require inference evidence without unsupported proof claims."
-  (:require [clojure.test :refer [deftest is]]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [gravity.self-hosting.sh08-inference-occurs-model-test :as occurs-model]))
 
 (def ^:private harness 'gravity.self-hosting.sh08-function-call-type-test)
 
@@ -108,3 +109,65 @@
            (get-in result [:diagnostics 0 :reason])))
     (is (= [:gravity.type/integer :gravity.type/string]
            ((juxt :expected :actual) (first (:diagnostics result)))))))
+
+(deftest unary-vector-occurs-check-matches-closed-equation-controls
+  (doseq [case occurs-model/cases]
+    (let [{:keys [nodes lexical definitions functions bindings context expected]}
+          (occurs-model/input case)
+          result (invoke 'sh08-ft-first-constructor-cycle
+                         [nodes lexical (or definitions []) (or functions {}) bindings
+                          (:type-table (pass nodes lexical bindings)) context])]
+      (testing (name (:name case))
+        (is (= expected (map? result)))
+        (when expected
+          (is (seq (:links result)))
+          (is (some :constructor? (:links result)))
+          (is (= (:binding-id result)
+                 (:dependency-binding-id (last (:links result))))))))))
+
+(deftest seeded-constructor-feedback-fails-before-round-exhaustion
+  (doseq [case (filter :expected occurs-model/cases)]
+    (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
+          result (infer nodes lexical bindings)]
+      (is (= :type-conflict (:convergence-status result)))
+      (is (= "C7-TYPE-MISMATCH" (get-in result [:diagnostics 0 :rule])))
+      (is (= :infinite-structural-type (get-in result [:diagnostics 0 :reason])))
+      (is (= :finite-normal-structural-type (get-in result [:diagnostics 0 :expected]))))))
+
+(deftest unresolved-and-nonreturning-feedback-retain-existing-semantics
+  (doseq [case (filter #(contains? #{:unresolved :never :alias-fixed-point} (:name %)) occurs-model/cases)]
+    (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
+          result (infer nodes lexical bindings)]
+      (is (= :converged (:convergence-status result)))
+      (is (empty? (:diagnostics result))))))
+
+(deftest malformed-data-does-not-establish-an-occurs-witness
+  ;; No witness is not acceptance: public source/products retain their owning
+  ;; resolution/verification checks. These direct helpers bypass that ingress.
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/cases))
+        check (fn [nodes lexical]
+                (invoke 'sh08-ft-first-constructor-cycle
+                        [nodes lexical [] {} bindings (:type-table (pass nodes lexical bindings)) {}]))]
+    (testing "supplied visibility excludes the forward/self dependency"
+      (is (nil? (check nodes (mapv #(assoc % :visible-prior-binding-ids []) lexical)))))
+    (testing "parent before child leaves no observed constructor type"
+      (is (nil? (check (vec (reverse nodes)) lexical))))
+    (testing "duplicate node identity cannot establish an equation graph"
+      (is (nil? (check (conj nodes (first nodes)) lexical))))
+    (testing "cyclic syntax cannot establish a constructor path"
+      (let [id (:initializer-node-id (first lexical))
+            cyclic [(assoc (last nodes) :children [id])]]
+        (is (nil? (check cyclic lexical)))))))
+
+(deftest declared-return-conflict-precedes-constructor-feedback
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/cases))
+        body {:node-id :body :core-form :literal :children []
+              :attributes {:literal-kind :string}}
+        nodes (conj nodes body)
+        function {:function-id :fn :body-core-node-id :body
+                  :parameter-binding-ids [] :parameters [] :return :gravity.type/integer}
+        result (invoke 'sh08-ft-infer-acyclic-with-context
+                       [nodes (into {} (map (juxt :node-id identity)) nodes)
+                        lexical [] [] [] {:fn function} bindings 64 {}])]
+    (is (= :type-conflict (:convergence-status result)))
+    (is (= :function-result-type-mismatch (get-in result [:diagnostics 0 :reason])))))

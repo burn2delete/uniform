@@ -23392,6 +23392,85 @@
        (rest remaining)
        (+ total (count (get (first remaining) :parameter-binding-ids)))))))
 
+; L5/C7: a closed normal equation T = Vector<...T...> has no solution in
+; this finite literal-vector representation. Trace only aliases/unary vectors;
+; other constructor, call, match and transfer families remain separate work.
+; The visited sets are graph identities, not work or round allowances.
+(defn sh08-ft-unary-vector-link [initializer nodes bindings types context]
+  (loop [id initializer seen #{} path [] constructed? false]
+    (if (contains? seen id) nil
+      (let [node (get nodes id) children (get node :children)
+            next-path (conj path id)]
+        (if (if (vector? children)
+              (if (= :gravity.type/never (get types id)) false (sh08-ft-known? (get types id))) false)
+        (if (= :reference (get node :core-form))
+          (if (if (= 0 (count children))
+                (if (= false (contains? (get context :ordering-operators {}) id))
+                  (= (get types id) (get bindings (get (get node :attributes) :binding-id) :gravity.type/unknown)) false) false)
+            {:dependency-binding-id (get (get node :attributes) :binding-id)
+             :constructor? constructed? :node-path next-path} nil)
+          (if (if (= :collection-literal (get node :core-form))
+                (if (= :vector (get (get node :attributes) :literal-kind))
+                  (if (= 1 (count children))
+                    (= (get types id) (sh08-ft-collection-type node types)) false) false) false)
+            (recur (first children) (conj seen id) next-path true) nil)) nil)))))
+
+(defn sh08-ft-lexical-equation-index [records blocked nodes]
+  (loop [remaining records result {}]
+    (if (= 0 (count remaining)) result
+      (let [record (first remaining) id (get record :binding-id)
+            initializer (get record :initializer-node-id)]
+        (if (if (= id nil) true
+              (if (contains? result id) true
+                (if (contains? blocked id) true (= false (contains? nodes initializer)))))
+          nil
+          (recur (rest remaining) (assoc result id record)))))))
+
+(defn sh08-ft-constructor-cycle [root initializers nodes bindings types context]
+  (loop [id root seen #{} links [] constructed? false]
+    (if (contains? seen id)
+      (if (if (= id root) constructed? false)
+        {:binding-id root :links links} nil)
+      (let [type (get bindings id :gravity.type/unknown)]
+        (if (if (contains? initializers id)
+              (if (= :gravity.type/never type) false (sh08-ft-known? type)) false)
+          (let [record (get initializers id) initializer (get record :initializer-node-id)
+                link (sh08-ft-unary-vector-link initializer nodes bindings types context)]
+            (if (if (map? link)
+                  (if (contains? record :visible-prior-binding-ids)
+                    (if (vector? (get record :visible-prior-binding-ids))
+                      (contains? (set (get record :visible-prior-binding-ids)) (get link :dependency-binding-id)) false)
+                    true) false)
+              (recur (get link :dependency-binding-id) (conj seen id)
+                (conj links (assoc link :binding-id id :initializer-node-id initializer))
+                (if constructed? true (get link :constructor?))) nil)) nil)))))
+
+(defn sh08-ft-first-constructor-cycle
+  [node-sequence lexical-bindings definitions functions bindings types context]
+  ; Match seeding and loop transfer may replace an apparent lexical equation.
+  ; Do not claim a closed dependency through those contexts or through another
+  ; producer of the same binding ID. Intrinsic operator references are skipped
+  ; by unary-vector-link, rather than mistaken for ordinary aliases. Supplied
+  ; lexical visibility must permit each edge. Minimal records without source
+  ; visibility describe internal equations only, not authenticated source.
+  (if (if (> (count (get context :boolean-matches)) 0) true (map? (get context :loop-core))) nil
+    (let [nodes (sh08-ft-node-index node-sequence)
+          blocked (loop [remaining definitions result #{}]
+                    (if (= 0 (count remaining)) result
+                      (recur (rest remaining) (conj result (get (first remaining) :binding-id)))))
+          blocked (loop [remaining (keys functions) result blocked]
+                    (if (= 0 (count remaining)) result
+                      (recur (rest remaining)
+                        (set (sh08-ft-add-values-to-set
+                          (get (get functions (first remaining)) :parameter-binding-ids) (vec result))))))
+          initializers (sh08-ft-lexical-equation-index lexical-bindings blocked nodes)]
+      (if (if (= initializers nil) true (= false (= (count nodes) (count node-sequence)))) nil
+        (loop [remaining lexical-bindings]
+          (if (= 0 (count remaining)) nil
+            (let [cycle (sh08-ft-constructor-cycle (get (first remaining) :binding-id)
+                          initializers nodes bindings types context)]
+              (if (map? cycle) cycle (recur (rest remaining))))))))))
+
 (defn sh08-ft-inference-round-bound
   [node-sequence function-records calls lexical-bindings]
   (+ 2
@@ -23461,13 +23540,28 @@
                    :loop-work-count (+ (get raw-pass :loop-work-count 0) (get returns :work-count))))
             next-functions (get returns :function-types)
             return-conflict
-            (if exhausted? nil (sh08-ft-first-return-conflict next-functions node-table))]
+            (if exhausted? nil (sh08-ft-first-return-conflict next-functions node-table))
+            constructor-cycle
+            (if (if exhausted? false
+                  (if (= :rejected (get returns :status)) false
+                    (if (= return-conflict nil) (= 0 (count (get pass :diagnostics))) false)))
+              (sh08-ft-first-constructor-cycle node-sequence lexical-bindings definitions
+                current-functions current-bindings (get pass :type-table) source-context) nil)]
         (if exhausted?
           (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :resource-limit
             :round-count round :round-bound maximum-rounds :type-join-work-left (- loop-work-left (get pass :loop-work-count 0)))
         (if (= :rejected (get returns :status))
           (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :type-conflict
             :round-count round :round-bound maximum-rounds :type-join-work-left (- loop-work-left (get pass :loop-work-count 0)))
+        (if (map? constructor-cycle)
+          (assoc pass :function-types next-functions :binding-types next-bindings
+            :convergence-status :type-conflict :round-count round :round-bound maximum-rounds
+            :type-join-work-left (- loop-work-left (get pass :loop-work-count 0))
+            :diagnostics (conj (get pass :diagnostics)
+              {:node (get (sh08-ft-node-index node-sequence)
+                       (get (first (get constructor-cycle :links)) :initializer-node-id))
+               :rule "C7-TYPE-MISMATCH" :reason :infinite-structural-type
+               :expected :finite-normal-structural-type :actual constructor-cycle}))
         (if (= return-conflict nil)
           (if (if (= next-functions current-functions)
                 (if (= next-bindings current-bindings)
@@ -23509,7 +23603,7 @@
                    :rule "C7-TYPE-MISMATCH"
                    :reason :function-result-type-mismatch
                    :expected (get return-conflict :expected)
-                   :actual (get return-conflict :actual)})))))))))))
+                   :actual (get return-conflict :actual)}))))))))))))
 
 (defn sh08-ft-infer-acyclic
   [node-sequence node-table lexical-bindings definitions calls edges
