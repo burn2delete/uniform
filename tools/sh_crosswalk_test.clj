@@ -120,5 +120,22 @@
     (is (= (:applying-main bridge)
            (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"])))))
 
+(deftest pkg5-task-source-successor-preserves-population-and-review-history
+  (let [view (sh-crosswalk/build)
+        bridge (:pkg5-interface-successor (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn")))
+        lineage (get (edn/read-string (slurp "specs/sh-family-crosswalk/task-authority-lineage.edn")) "build")
+        rows (:retained-records lineage)]
+    (is (= 5 (count rows)))
+    (is (empty? (:added-ids lineage)))
+    (is (= 4 (count (filter :unchanged rows))))
+    (is (= ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"] (:changed-records lineage)))
+    (is (every? #(= "Open" (get-in % [:after :status])) rows))
+    (is (:historical-suffix-unchanged lineage))
+    (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
+      (is (= (:applying-task-source bridge) (get-in view [:applying-source-pins path]))))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :accepted-mapping-only (get-in view [:mapping-review :predecessor-review :status])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
