@@ -90,6 +90,12 @@
         (is (= (:links input) (:links result)))
         (is (true? (invoke owner "pc-links-domain?" [(:links input)]))))))
   (let [input (chain-input 130)
+        reconstructed (unroll owner input)
+        expected {:presence-proof {:kind :private-first-entry-key-presence
+                                   :get-call-core-node-id :get :first-call-core-node-id :first
+                                   :receiver-links (:links reconstructed) :vector-links []
+                                   :entries [] :selected-type :gravity.type/keyword}}
+        descriptor-check #(invoke owner "pc-descriptor-work" [% expected 131072])
         last-index 129
         last-record (get-in input [:core :lexical-bindings last-index])
         bid (:binding-id last-record)
@@ -103,6 +109,22 @@
                     (assoc-in [:core :lexical-bindings last-index :initializer-form-id] (:start input))
                     (assoc-in [:core :lexical-bindings last-index :initializer-syntax-id] (:start input))
                     (assoc-in [:nodes (:let-core-node-id last-record) :children 0] (:start input)))}]
+    ;; This is the real descriptor equality consumer with expected links freshly
+    ;; reconstructed from the current core. Complete typed products and source
+    ;; forms have separate composition checks; this normalized proof is scoped
+    ;; to the long-link domain and equality boundary.
+    (is (= :accepted (:status reconstructed)))
+    (is (= 130 (count (get-in expected [:presence-proof :receiver-links]))))
+    (is (= :accepted (:status (descriptor-check expected))))
+    (doseq [bad [(update-in expected [:presence-proof :receiver-links] pop)
+                 (update-in expected [:presence-proof :receiver-links] #(vec (reverse %)))
+                 (update-in expected [:presence-proof :receiver-links] #(conj % (last %)))
+                 (assoc-in expected [:presence-proof :receiver-links last-index :reference-source :syntax-id] :forged)
+                 (assoc-in expected [:presence-proof :receiver-links last-index :binding-record :mutability] :mutable)
+                 (assoc-in expected [:presence-proof :unknown] true)]]
+      (let [result (descriptor-check bad)]
+        (is (= :rejected (:status result)))
+        (is (= :map-get-source-mismatch (:reason result)))))
     (doseq [[label bad] changed]
       (testing (name label)
         (let [result (unroll owner bad)]
