@@ -119,6 +119,72 @@ are unrun for this unit. Outer source/inference/lowering pools, runtime value
 work, physical profile requirements and the held runtime/Native chain remain
 separate open obligations. The original thirteen-row denominator is unchanged.
 
+### Membership hold resolution and composed native-root evidence
+
+The preceding draft hold is historical. Exact source/result review accepted
+its demonstrated root-entry resolution at `a674a3e991ce417727daac87af4684da6567c393`,
+tree `f3541519c4ffbe3d882ea68fb0eabb5e03d37909`. Main remains `656f545f` at
+reconciliation. No earlier failed record is rewritten or reclassified.
+
+First, Effects and emitter received the three-field descriptor-schema guard
+already present in C7. At `c71da7c3`, tree `92ac0fad`, the two unchanged failing
+kernels, minimal old case and boundary passed 9 tests / 1,008 assertions,
+natural 0 / 26,147 ms, actual 2 GiB, complete 1,186 stdout / 0 stderr bytes.
+Receipt SHA-256:
+`92f310c4483dd44e52bde4079c892ccb6ea409027338c8c751be926d42efb646`.
+This proves the tested zero field/sequence reads, not zero count callbacks or
+arbitrary three-field foreign-map safety. It did not alone close native ingress.
+
+The supported production ingress census then found fifteen definitions and
+sixteen direct calls: twelve internal dispatch calls and four external callers
+of the three `ksm-domain` roots. Each root now first invokes the existing
+canonical `lc-validate-types` on its original arguments. Accepted domain bodies
+are structurally identical to their original bodies; original vector arity and
+arguments are retained. Native classes, default comparators, view links,
+cycles and complete type children are checked before internal selectors or
+member access. The walk adds no debit. Failed ingress uses the existing
+operand-entry rejection with a defined `work-count` of 2 and canonical
+`type-check-reason`; valid domain and budget results remain unchanged.
+
+Former foreign-vector routing/throw positives now use supported native
+SubVectors and retain semantic result, exact argument and owning-consumer
+checks. Foreign classes receive separate zero-callback negatives. This is an
+explicit native-domain strengthening, not unchanged foreign admission or
+accounting-only deletion of a positive. Compiler-free conservation passed
+2 tests / 21 assertions and binds all three old accepted bodies, only the three
+root changes, seven migrated old test vars and two new native-root test vars.
+
+| Actual stage | Original source | Result and boundary | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Full native-root and composed PL panel | `90a80f5a`, tree `6090a861` | NONPASS: 18 tests / 2,700 passing assertions / 9 failures / 0 errors; natural 1 / 26,162 ms; actual 2 GiB; complete 4,139 stdout / 0 stderr bytes. All failures belong to one missed duplicate foreign-vector positive | `41f4bb58e6d87f9f5b7ee80e48b48b43f2ab878846df6a2979de30659904d601` |
+| Corrected native carrier var plus boundary | `a674a3e9`, tree `f3541519` | 7 tests / 581 assertions; zero failures/errors; natural 0 / 14,017 ms; actual 2 GiB; complete 981 stdout / 0 stderr bytes | `67d1a41476bb3c09cbb7de59dc1866d11db60ad2036ea3b2d553838cc0609e57` |
+
+Both used the unchanged guarded 120-second route with clean exact bookends and
+complete cleanup/root dead. Only the duplicate test fixture changed after the
+full panel; production, shared inputs and eleven unaffected nonboundary
+selector bodies remain identical. Their successful complete-native, five-family
+consumer, formerly failing membership and composed PL results retain
+`90a80f5a` provenance. The changed var and boundary have fresh `a674a3e9`
+provenance. There is no combined assertion total or fresh full-panel claim.
+
+| Native-root successor source/test path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `ea26756f3fb856601c4f9ee7b074a0928549f151dc32b4950104d5283778cbf7` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `63057a87073c7ae1d005bf57f2d416cda14b4cae976d1ec3b2cfc0eda3d4589c` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `037f4ab9a14b920f71aa266d51e9f03b99bbd3415f25ee83a1dba018dc3cecd7` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `b72337873f1ced345a5eb6c6c0ec3942a870e3adb7f7fb1a51418a0cca1b9b98` |
+
+The other two owned test files retain the original PL table's hashes. This root
+boundary does not certify arbitrary facts or the earlier Effects context
+classification, and does not close the existing membership cost models, outer
+pools, whole ACC-05/06, authentication or release. C12 remains unrun.
+
+The first published draft head `fa55744d`, tree `d1714479`, passed all seven
+routine jobs in CI run 40611569118; source-Core readiness and experimental
+prerelease were skipped. That is the old published tuple, not CI acceptance of
+this later source repair. Current-head gates, publication readback and
+independent integration review remain pending.
+
 ## ACC-06 LR validator successor - 2026-10-27 UTC
 
 The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree

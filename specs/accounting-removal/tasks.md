@@ -124,7 +124,7 @@ new member allowance, accounting requirement or additional cleanup criterion.
 The schema repair at `c71da7c3`, tree `92ac0fad`, passed 9 tests / 1,008
 assertions and independent retained-result review. It establishes zero field
 and sequence reads for those cases, not zero count callbacks or arbitrary
-foreign-map safety. The native-ingress requirement below remains open.
+foreign-map safety. At that schema-only checkpoint, native ingress remained open.
 
 ### Membership native-ingress boundary
 
@@ -135,22 +135,43 @@ derive/inferred-call, Effects `mc-context` and typed emitter membership. The
 four specific classifier/domain helpers per owner are internal to the root;
 they are not independent input-validation authorities.
 
-- [ ] Put the existing canonical `lc-validate-types` walk first in each root,
+- [x] Put the existing canonical `lc-validate-types` walk first in each root,
   before classification or carrier reads. Retain original arguments and vector
   arity; do not normalize a new input domain, add a Native API, charge the walk,
   introduce another allowance or change valid membership/budget results.
-- [ ] Project failed native/type ingress as a rejected operand report, with
+- [x] Project failed native/type ingress as a rejected operand report, with
   the canonical reason and the existing defined failure report for callers.
   Do not invoke unsafe selectors again after preflight failure.
-- [ ] Preserve legacy-family and throw-consumer positives using native vectors
+- [x] Preserve legacy-family and throw-consumer positives using native vectors
   or supported SubVectors. Separate former foreign-vector observer assumptions
   into explicit zero-callback rejection controls; this is native-domain
   strengthening, not accounting-only test deletion or unchanged foreign input
   admission. Check complete children, cycles and invalid views.
-- [ ] Obtain independent exact-source/result review and affected consumer
+- [x] Obtain independent exact-source/result review and affected consumer
   acceptance before clearing this native-ingress hold. Root validation does
   not certify arbitrary facts or the earlier Effects context classification;
   whole-plan ingress remains separate.
+
+### Current accepted PL composition - 2026-10-28 01:24 UTC
+
+Independent source/result review accepted the membership root boundary and
+composed PL consumers at `a674a3e9`, tree `f3541519`. The original full native
+panel at `90a80f5a` remains NONPASS (18 tests, 2,700 passing assertions and nine
+failures in one duplicated foreign observer fixture). Its eleven unaffected
+nonboundary selectors retain their successful original provenance. The
+test-only native-view correction plus boundary passed 7 tests / 581 assertions
+at `a674a3e9`; no summed or globally fresh pass is claimed.
+
+The demonstrated membership-root blocker is resolved. The first canonical walk
+checks the original complete native/type graph before internal classification;
+the original accepted domain bodies, vector arity, arguments, budgets and
+reports remain unchanged. No Native API, new cost charge or replacement quota
+is introduced. The earlier shape-only repair and all failed receipts remain
+separate history. This does not establish arbitrary-facts or whole-plan ingress.
+
+The PR remains draft until final current-head gates, CI, public readback and
+independent integration review. Only normal validated integration will complete
+this finite helper milestone; ACC-05 and ACC-06 as a whole remain open.
 
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
