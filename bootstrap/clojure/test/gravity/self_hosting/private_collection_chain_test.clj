@@ -105,7 +105,9 @@
                     (assoc-in [:nodes (:let-core-node-id last-record) :children 0] (:start input)))}]
     (doseq [[label bad] changed]
       (testing (name label)
-        (is (= :rejected (:status (unroll owner bad))))))
+        (let [result (unroll owner bad)]
+          (is (= :rejected (:status result)))
+          (is (= :map-get-source-mismatch (:reason result))))))
     (doseq [bad [(assoc-in (:links input) [last-index :binding-record :mutability] :mutable)
                  (assoc-in (:links input) [last-index :binding-record :binding-id] nil)
                  (assoc-in (:links input) [last-index :reference-source :syntax-id] nil)
