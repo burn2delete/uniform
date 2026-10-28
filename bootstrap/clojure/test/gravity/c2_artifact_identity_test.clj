@@ -1,6 +1,7 @@
 (ns gravity.c2-artifact-identity-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.c2-artifact-identity :as identity]))
+            [gravity.c2-artifact-identity :as identity]
+            [gravity.c2-lexical-validation :as lexical]))
 
 (defn- sha256-hex
   [value]
@@ -111,8 +112,7 @@
             (fn [& args]
               (throw (ex-info "C2-HASH" {:reader-fail-args args})))
             :source-span (fn [path form-index]
-                           {:source path :form-index form-index})
-            :max-reader-form-graph-depth 8}
+                           {:source path :form-index form-index})}
            extra))))
 
 (deftest canonical-value-is-typed-and-order-stable
@@ -417,37 +417,43 @@
     (is (= [id path subject extra]
            (-> ex ex-data :args)))))
 
-(deftest incremental-hashes-reject-reader-depth-overflow-with-c2-hash
-  (let [failures (atom [])
-        operations
-        (graph-operations
-         {:acyclic? true :max-form-depth 9}
-         {:max-reader-form-graph-depth 8
-          :c2-reader-fail!
-          (fn [& args]
-            (swap! failures conj args)
-            (throw (ex-info "depth" {:args args})))})
-        ex (try
-             (identity/with-operations
-              operations
-              #(identity/c2-incremental-hashes
-                (base-source-unit false)
-                simple-token-stream-a simple-form-tree-a [] [] []))
-             nil
-             (catch clojure.lang.ExceptionInfo error error))
-        [id path subject extra] (first @failures)]
-    (is (instance? clojure.lang.ExceptionInfo ex))
-    (is (= "C2-HASH" id))
-    (is (= source-a path))
-    (is (= source-id (:source-id subject)))
-    (is (= source-span-a (:source-span subject)))
-    (is (= {:missing-fields [:bounded-reader-form-depth]
-            :facts {:observed-form-depth 9
-                    :maximum-form-depth 8
-                    :failure-kind :reader-resource-depth-limit}}
-           extra))
-    (is (= [id path subject extra]
-           (-> ex ex-data :args)))))
+(deftest incremental-hashes-accept-deep-acyclic-graphs-and-keep-fresh-callbacks
+  (doseq [depth [8 9 513 514]]
+    (let [forms (mapv (fn [index]
+                        (assoc (first simple-form-tree-a)
+                               :form-id (keyword (str "form-" index))
+                               :parent-form-id (when (pos? index) (keyword (str "form-" (dec index))))
+                               :children (if (< index (dec depth))
+                                           [(keyword (str "form-" (inc index)))] [])))
+                      (range depth))
+          calls (atom [])
+          operations
+          (graph-operations nil
+            {:c2-form-graph-metrics
+             (fn [value] (swap! calls conj :metrics) (lexical/c2-form-graph-metrics value))
+             :reader-canonical-hash
+             (fn [value] (swap! calls conj :hash) (identity/reader-canonical-hash value))})
+          hash! (fn [value]
+                  (identity/with-operations operations
+                    #(identity/c2-incremental-hashes
+                       (base-source-unit false) simple-token-stream-a value [] [] [])))
+          first-hashes (hash! forms)
+          second-hashes (hash! forms)]
+      (is (= depth (:max-form-depth (lexical/c2-form-graph-metrics forms))))
+      (is (= :stable (:status first-hashes)))
+      (is (= first-hashes second-hashes))
+      (is (= (vec (repeat 2 [:metrics :hash :hash :hash :hash :hash]))
+             (mapv vec (partition 6 @calls))))
+      (is (not= (:form-tree first-hashes)
+                (:form-tree (hash! (assoc-in forms [(dec depth) :value] 'changed)))))
+      (reset! calls [])
+      (let [cycle (assoc-in forms [(dec depth) :children] [:form-0])
+            error (try (hash! cycle) nil (catch clojure.lang.ExceptionInfo ex ex))]
+        (is (= ["C2-HASH" source-a]
+               (vec (take 2 (:reader-fail-args (ex-data error))))))
+        (is (= :reader-form-cycle
+               (get-in (last (:reader-fail-args (ex-data error))) [:facts :failure-kind])))
+        (is (= [:metrics] @calls))))))
 
 (deftest product-integrity-record-is-exact-and-path-neutral
   (let [source-unit (base-source-unit false)
@@ -553,6 +559,7 @@
                       []
                       {:unknown identity}
                       {:sha256-hex :not-a-function}
+                      {:max-reader-form-graph-depth 8}
                       {:max-reader-form-graph-depth 0}
                       {:max-reader-form-graph-depth -1}
                       {:max-reader-form-graph-depth :unbounded}]]
@@ -563,14 +570,12 @@
   (let [failure
         (try
           (identity/with-operations
-           {:sha256-hex sha256-hex
-            :c2-form-graph-metrics
-            (constantly {:acyclic? true :max-form-depth 0})}
+           {:sha256-hex sha256-hex}
            #(identity/c2-incremental-hashes
              (base-source-unit false) [] [] [] [] []))
           nil
           (catch clojure.lang.ExceptionInfo ex (ex-data ex)))]
-    (is (= :max-reader-form-graph-depth (:operation failure))))
+    (is (= :c2-form-graph-metrics (:operation failure))))
   (let [calls (atom [])
         operations
         (hash-operations
@@ -648,8 +653,7 @@
              :c2-diagnostic-hash-input
              :c2-incremental-hashes
              :c2-reader-product-integrity-record
-             :c2-reader-artifact-id
-             :max-reader-form-graph-depth}
+             :c2-reader-artifact-id}
            (get-in contract [:operation-interposition :accepted-keys])))
     (is (true? (get-in contract
                        [:operation-interposition :partial-overrides?])))

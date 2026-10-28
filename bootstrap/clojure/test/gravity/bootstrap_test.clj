@@ -12712,46 +12712,13 @@
     (is (true? (:all-forms-reachable? validation)))
     (is (false? (:acyclic? cyclic-validation)))
     (is (false? (:graph-valid? cyclic-validation)))
-    (doseq [[label candidate]
-            [[:deep forms] [:cycle cyclic-forms]]]
-      (let [diagnostic
-            (diagnostic-data
-             #(bootstrap/c2-incremental-hashes
-               source-unit tokens candidate [] [] []))]
-        (is (= "C2-HASH" (:id diagnostic)) (str label))
-        (is (not (str/includes? (str diagnostic) "StackOverflowError"))
-            (str label)))))
-  (let [nested-source
-        (str (apply str (repeat 3000 "["))
-             (apply str (repeat 3000 "]")))]
-    (doseq [suffix [".gravity" ".qst"]]
-      (let [path (str "/p/over-depth" suffix)
-            c2-diagnostic
-            (diagnostic-data
-             #(bootstrap/compiler-c2-reader-source-artifact
-               path nested-source))
-            c3-diagnostic
-            (diagnostic-data
-             #(bootstrap/compiler-c3-syntax-source-artifact
-               path nested-source))
-            p15-diagnostic
-            (diagnostic-data
-             #(bootstrap/p15-s23-source-syntax-c2-artifact
-               path nested-source))]
-        (doseq [diagnostic [c2-diagnostic c3-diagnostic p15-diagnostic]]
-          (is (= "C2-HASH" (:id diagnostic)))
-          (is (= :reader-resource-depth-limit
-                 (get-in diagnostic [:facts :failure-kind])))
-          (is (not (str/includes? (str diagnostic) "StackOverflowError"))))
-        (with-temp-source
-          suffix nested-source
-          (fn [public-path]
-            (let [result (run-thin-bin "bin/gravity"
-                                       "compiler-c3-syntax" public-path)]
-              (is (not (zero? (:exit result))))
-              (is (str/includes? (:err result) "C2-HASH"))
-              (is (not (str/includes? (:err result)
-                                      "StackOverflowError"))))))))))
+    (is (= :stable
+           (:status (bootstrap/c2-incremental-hashes source-unit tokens forms [] [] []))))
+    (let [diagnostic
+          (diagnostic-data
+           #(bootstrap/c2-incremental-hashes source-unit tokens cyclic-forms [] [] []))]
+      (is (= "C2-HASH" (:id diagnostic)))
+      (is (= :reader-form-cycle (get-in diagnostic [:facts :failure-kind]))))))
 
 (deftest c2-reader-defers-syntax-valid-semantic-errors-for-both-extensions
   (let [source (str "(ns semantic.defer (:profile :unknown-profile)"
