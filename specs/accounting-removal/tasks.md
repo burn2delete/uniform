@@ -749,3 +749,6 @@ ACC-06 remains open: recursive validation and construction allowances,
 source/conversion pools, other private collection width/source limits and
 PE/PC dependencies still require their own coherent owner work. This finite
 result does not establish authenticated-source, runtime, Core, C12 or release.
+The later PR513 metadata gate found that the new PC test namespace was absent
+from its impact catalog. That separate catalog registration is open with the
+existing metadata owners; the failed gate is not a PC semantic pass.

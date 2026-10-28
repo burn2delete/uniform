@@ -1972,3 +1972,9 @@ completed the same supported transition following new authorization. This
 increment does not establish full typed long-chain, authenticated-source,
 runtime, Core, C12, release or whole ACC-06 acceptance. Independent work
 pools and other private collection limits remain open.
+
+A later PR513 compiler-free metadata gate rejected the new
+`gravity.self-hosting.private-collection-chain-test` namespace as an unknown
+non-slice namespace. Its owners are coordinating the required impact-catalog
+registration; that gate remains nonpassing and does not replace the original
+PR511 semantic or CI receipts.
