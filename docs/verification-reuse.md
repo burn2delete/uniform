@@ -1209,3 +1209,29 @@ The two lint warnings match baseline `cbf5c210`; no suppression was added.
 This documentation-only successor retains that source attribution. The full
 catalog-dependent planner test, independent review and real leaf producer
 evidence remain pending; no historical failure is replaced by these passes.
+
+Current-main composition at `ef9e14dc0846c160a599704ae513a2cde14bfe3d`,
+tree `bece619a8a39c8a4ad59e4bca1a841f86da259dc`, normally merges the
+preserved `8406358d` Reader correction with main `2855b6cc`. PR537 supplies
+the already integrated PC registration and independently adopted SH ownership
+source-version metadata. The full affected planner suite passed 63 tests /
+619 assertions, including the catalog-dependent Reader identity closure check;
+the three literal-import and injected lexical invalidation controls passed
+3 tests / 105 assertions. Both results had zero failures/errors, natural exit
+0 at 268435456-byte heap, Bootstrap absent and identical clean source bookends.
+Guarded semantic launcher call counts were zero. The planner's existing
+namespace-listing child was metadata-only; cache/classpath operations remained
+injected and isolated test fixtures did not acquire the shared host broker.
+The new control log SHA-256 is
+`d91d6e8eaad031e02c89466879e43dc9a1d6e65e5892e49fedd735356b5532a9`.
+An initial harness invocation lacked the test classpath and exited before
+loading the controls; its separate failed receipt is retained.
+
+This closes the affected catalog/planner control gap on that composition only.
+The original missing-input/catalog failures, `05af79b5` control attribution,
+`8406358d` static review and separate unpublished `e912852e` variant remain
+history. Independent exact composition review and current-head CI/integration
+remain required. Real expanded-closure producer miss/hit/per-input invalidation
+with actual runtime/classpath/source identities remains OPEN and subject to its
+separate review and runtime admission. No semantic job, runtime admission or
+whole RV1/RV2/RV4 acceptance follows from this compiler-free result.
