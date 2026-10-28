@@ -65,7 +65,7 @@
    :c3-syntax-fail! (fn [& _] (throw (ex-info "unexpected failure" {})))
    :source-span (fn [& _] source-span)})
 
-(deftest integrity-recomputes-deep-graphs-without-a-depth-allowance
+(deftest integrity-recomputes-without-a-reported-depth-allowance
   (doseq [depth [32 33 513 514 4096]]
     (let [calls (atom 0)
           operations (assoc base-operations
