@@ -761,3 +761,19 @@ result does not establish authenticated-source, runtime, Core, C12 or release.
 The later PR513 metadata gate found that the new PC test namespace was absent
 from its impact catalog. That separate catalog registration is open with the
 existing metadata owners; the failed gate is not a PC semantic pass.
+
+## ACC-04 BKA header integration
+
+PR524 integrated the finite BKA header and first-debit migration at
+`d63e6096`. The three owners now derive the header and inferred-call result
+without the removed header allowance and cost report. Existing keyword and
+native-view validation precedes authority-vector traversal; source, descriptor,
+type and permission checks remain. Rejected results do not acquire fabricated
+cost reports. This supersedes the BKA-header accounting item in the earlier
+anchor-width assessment.
+
+ACC-04 remains open: independent row, fact, call, edge, child and outer pools,
+runtime policy, PMK and ANE still require their own coherent migrations and
+acceptance. DSE and the separate historical mode operation remain unresolved.
+This finite integration does not establish authenticated-source, runtime, Core,
+C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.
