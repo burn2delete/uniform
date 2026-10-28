@@ -1128,7 +1128,7 @@
     (let [inherited (leaf 'body-node-record node nil (assoc-in graph [:input :transitive] #{:error/throw}) (:type type-result))]
       (is (= #{:memory/allocate} (:direct inherited)))
       (is (= #{:memory/allocate :error/throw} (:transitive inherited))))
-    (is (true? (valid (assoc-in facts [:list-query-context :type-checks :present-get :work-count] 0))))
+    (is (true? (valid (assoc-in facts [:list-query-context :type-checks :present-get :status] :rejected))))
     (is (true? (valid (assoc-in facts [:list-query-context :type-checks] {}))))
     (doseq [changed [((ns-resolve upstream 'private-map-keys-cross-family-descriptor) descriptor)
                      (assoc descriptor :entry-proof-work 0)
@@ -2153,7 +2153,7 @@
             (is (false? (leaf 'body-call-joins-with-foreign-valid? changed-core changed-facts changed-bindings {})))
             (is (empty? @callbacks))))
         (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains] {}))))
-        (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains (ids :call) :work-count] 0))))
+        (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains (ids :call) :status] :rejected))))
         (doseq [mutate [#(assoc % :call-type-facts [])
                         #(update % :call-type-facts into (:call-type-facts %))
                         #(assoc-in % [:call-type-facts 0 :dispatch] :direct-keyword-set-equality)
