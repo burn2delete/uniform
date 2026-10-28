@@ -120,7 +120,8 @@
     (let [successor (edn/read-string
                      (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
           historical-source (first (:source-files successor))
-          source (first (:source-files (or (:current-main-composition successor) successor)))]
+          source (first (:source-files (or (:normal-dispatch-seam successor)
+                                          (:current-main-composition successor) successor)))]
       (is (= (:applying-main bridge) (get-in historical-source [:before :commit])))
       (is (= (get-in source [:after :commit])
              (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"]))))))
@@ -129,7 +130,8 @@
   (let [view (sh-crosswalk/build)
         historical (edn/read-string
                     (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
-        bridge (or (:current-main-composition historical) historical)]
+        bridge (or (:normal-dispatch-seam historical)
+                   (:current-main-composition historical) historical)]
     (is (= :pending-independent-source-version-review (:status bridge)))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= sh-crosswalk/predecessor-mapping-review
@@ -158,7 +160,8 @@
                                  "2e0292c61603aad200df397e397e94e3c7d24818" path))
             main (edn/read-string (sh-crosswalk/git-source incoming path))
             current (edn/read-string (slurp path))]
-        (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main))
+        (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main)
+                      (:new-standalone-owners bridge))
                (:standalone-test-owners current)))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]

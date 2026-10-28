@@ -7,6 +7,7 @@
             [gravity.c2-source-identity :as source]
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest]
+            [gravity.source-unit :as source-unit]
             [gravity.reader.dispatch :as reader-dispatch]))
 
 (def ^:private component-root
@@ -57,17 +58,19 @@
   (letfn [(normalize [value] (canonical/reader-canonical-value normalize value))]
     (canonical/reader-canonical-hash digest/sha256-hex normalize value)))
 
-(defn- unit [text]
+(defn- unit
+  ([text] (unit "fixtures/registered.gravity" text))
+  ([path text]
   (source/with-operations
     {:sha256-hex digest/sha256-hex :reader-canonical-hash canonical-hash
-     :gravity-source-extension (constantly ".gravity")
-     :gravity-source-kind (constantly :gravity)}
+     :gravity-source-extension source-unit/gravity-source-extension
+     :gravity-source-kind source-unit/gravity-source-kind}
     #(source/c2-source-unit-record
-      "fixtures/registered.gravity" text
+      path text
       {:retain-comments true :enabled-features #{:standard-reader}
        :extension-policy (canonical-hash standard-reader-policy)}
       {:project-root-id (str "sha256:" (apply str (repeat 64 "a")))
-       :project-relative-path "fixtures/registered.gravity"})))
+       :project-relative-path path}))))
 
 (defn- span [start end]
   {:byte-start start :byte-end end
@@ -96,7 +99,7 @@
      :index {:by-value-id {"value/0" entry}}}))
 
 (defn- execute [{:keys [source-unit bytes content-id boundaries forms index]}]
-  (sh03-reader-host-values! "fixtures/registered.gravity" bytes content-id
+  (sh03-reader-host-values! (:path source-unit) bytes content-id
                            boundaries forms index source-unit))
 
 (defn- failure [f]
@@ -198,3 +201,16 @@
                       (try (semantic-late-sh03-reader-adapt-products!-identities {})
                            nil (catch clojure.lang.ExceptionInfo error error))))
       (is (= [:closure-check] @calls)))))
+
+(deftest both-source-kinds-retain-declared-source-identity
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        text (String. ^bytes (:bytes input) java.nio.charset.StandardCharsets/UTF_8)
+        other (assoc input :source-unit (unit "fixtures/registered.qst" text))
+        a (execute input) b (execute other)
+        observation #(first (:extension-dispatch-observations %))]
+    (is (= ".qst" (get-in other [:source-unit :extension])))
+    (is (= :qst-theory-source (get-in other [:source-unit :source-kind])))
+    (is (= (:values a) (:values b)))
+    (is (not= (:source-id (observation a)) (:source-id (observation b))))
+    (is (= (:source-content-hash (observation a))
+           (:source-content-hash (observation b))))))

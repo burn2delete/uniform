@@ -12645,7 +12645,7 @@
  :mapping-review
  {:status :pending-source-version-review,
   :input-fingerprint
-  "8f9bca309f67fcdf293603bc1ad5392c138942cac159adb1de950c47ce73e587",
+  "98c5fa7283ba55654d8cd4f5bce73bbcd687115d64adbccd0f2cd8fbb7362959",
   :predecessor-review
   {:reviewed-tree "b824c0d40abb35d47ed1625beac8088b1f916e27",
    :reviewed-commit "ac5f4c6ea4105da0cf2626634e31424623d66b1e",
@@ -12696,7 +12696,7 @@
   :source-version-bridge
   "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
   :qualification
-  "Reader metadata source 2e0292c6 reconciled with main43112981 in e446f326; both standalone ownership records retained. Incoming and Reader predecessor reviews remain historical; composed inputs await independent source-version review. No implementation acceptance or task credit."},
+  "Normal Reader dispatch fixture ownership added at 4d96671d; prior Reader/task/roadmap and all predecessor reviews retained. Changed ownership source awaits independent source-version review. No implementation acceptance or task credit."},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16159,7 +16159,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "d8b3c24d7c619ab28bfc2a7bd70dde086c27b0b851e563d28cbfd3c79a5f631f",
+  "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16214,7 +16214,7 @@
   "docs/component-roadmaps/reader.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/self-hosting-slice-ownership.edn"
-  "e446f3268ecc8ce25408236631a41c5939e7a952",
+  "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7",
   "specs/reader-workflow/tasks.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"

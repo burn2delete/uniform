@@ -44,7 +44,7 @@ introduced into this standard-tag seam; the prior leaf grant controls remain.
 definitions from their normal production files, including source-slice checks,
 UTF-8 decoding, semantic-reference checks, the atomic decoder, the host-value
 walk and identity-stage definition. It uses the real source-unit constructor
-with explicit project identity and fixture extension classification.
+with explicit project identity and the actual co-canonical extension classifier.
 
 Parsed graphs and semantic-value tables are injected fixtures. No Gravity
 parser/producer, authenticated envelope, source-rule admission or fresh Gravity
@@ -55,7 +55,7 @@ with changed policy/hash refusal, unknown tags before any handler, original
 source-slice joins, missing semantic references and source/payload hash changes.
 
 - `clojure -J-Xmx512m -M:dev-test --namespace gravity.reader.normal-dispatch-test --namespace gravity.reader.dispatch-test`:
-  12 tests / 121 assertions, zero failures/errors.
+  13 tests / 126 assertions, zero failures/errors.
 - `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test`:
   6 tests / 11 assertions, zero failures/errors.
 - `git diff --check`: passed.
@@ -65,8 +65,13 @@ repair, the commands above passed. That load failure is not execution evidence.
 
 ## Remaining gates
 
-Independent exact-source/negative-control review and changed-source projection
-checks are pending. The task remains open. Required future evidence includes
+Source-bound projection controls passed: crosswalk 10 / 108, dependency controls
+14 / 402, focused ownership inventory 1 / 554, Reader projection and SH generation
+checks. The ownership pin references real source commit `4d96671d`; the new bridge
+retains all prior versions and pending/unassessed mapping states.
+
+Independent exact-source/negative-control review is pending. The task remains
+open. Required future evidence includes
 genuine normal Reader parsing and authenticated execution at the new source,
 fresh reconstruction, sealed policy/implementation/execution binding, custom
 registered handlers and explicitly granted providers in the normal pipeline,
