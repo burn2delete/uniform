@@ -12051,7 +12051,7 @@
   (loop [current id links [] seen #{} used 0]
     (if (= false (sh08-pc-id? current))
       {:status :rejected :reason :map-get-source-mismatch :work-count used}
-      (if (if (contains? seen current) true (>= (count links) 128))
+      (if (contains? seen current)
         {:status :rejected :reason :map-get-source-mismatch :work-count used}
         (let [prefix (+ used 32)]
           (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
@@ -12805,7 +12805,7 @@
                           (recur (rest remaining)) false) false) false)))) false) false)))]) false))
 
 (defn sh08-pc-links-domain? [links]
-  (if (if (vector? links) (<= (count links) 128) false)
+  (if (vector? links)
     (loop [remaining links]
       (if (= 0 (count remaining)) true
         (let [link (first remaining) record (get link :binding-record)]
