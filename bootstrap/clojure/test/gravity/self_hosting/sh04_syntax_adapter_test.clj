@@ -1196,7 +1196,7 @@
                        [:containment :downstream-artifacts-forbidden]))
             basename)))))
 
-(deftest sh04-graph-validation-is-bounded-and-fails-closed
+(deftest sh04-graph-validation-covers-complete-input-and-fails-closed
   (let [descriptor
         @accepted-descriptor
         base-build (build-and-resolve! descriptor)
@@ -1246,16 +1246,18 @@
             (assoc :prior-syntax-ids [id-a]))
         cases
         [[:exact-depth chain-64 :passed nil]
-         [:over-depth chain-65 :failed "C3-ORIGIN"]
+         [:over-depth chain-65 :passed nil]
          [:accepted-300 accepted-300 :passed nil]
          [:exact-nodes exact-nodes :passed nil]
-         [:over-nodes over-nodes :failed "C3-SHAPE"]
+         [:over-nodes over-nodes :passed nil]
+         [:late-malformed (assoc over-nodes 2048 (assoc (last over-nodes) :immutable? false)) :failed "C3-SHAPE"]
+         [:late-duplicate (assoc over-nodes 2048 (first over-nodes)) :failed "C3-ID"]
+         [:late-dangling (assoc chain-65 64 (assoc (last chain-65) :prior-syntax-ids [dangling-id])) :failed "C3-ORIGIN"]
          [:dangling [base dangling] :failed "C3-ORIGIN"]
          [:duplicate-id [base duplicate-id] :failed "C3-ID"]
          [:self-reference [self-reference] :failed "C3-ORIGIN"]
          [:unresolved-id [unresolved] :failed "C3-ID"]
          [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]]
-        bounds (invoke-syntax 'c3-bounds-record [])
         stream-300
         (invoke-syntax
          'c3-syntax-stream-build-template
@@ -1277,7 +1279,6 @@
           (:reader-binding descriptor)
           (:reader-source-revision descriptor)
           over-root-ids])]
-    (is (= 2048 (:maximum-syntax-objects bounds)))
     (doseq [[label objects expected-status expected-rule] cases]
       (let [invocation
             (captured-invocation 'c3-syntax-graph-verify-template [objects])
@@ -1302,22 +1303,19 @@
     (doseq [[label result expected-status]
             [[:stream-300 stream-300 :accepted]
              [:stream-at-limit stream-at-limit :accepted]
-             [:stream-over-limit stream-over-limit :rejected]]]
+             [:stream-over-limit stream-over-limit :accepted]]]
       (is (= expected-status (:status result)) (str label " " result))
       (is (= (= expected-status :rejected)
              (get-in result
                      [:containment :downstream-artifacts-forbidden]))
           (str label " " result)))
-    (is (= "C3-SHAPE" (result-rule stream-over-limit)))
-    (is (= :syntax-node-limit
-           (get-in stream-over-limit [:diagnostics 0 :facts :reason])))
+    (is (nil? (result-rule stream-over-limit)))
     (let [graph-over
           (invoke-syntax 'c3-syntax-graph-verify-template [over-nodes])]
-      (is (= "C3-SHAPE" (result-rule graph-over)))
-      (is (= :syntax-node-limit
-             (get-in graph-over [:diagnostics 0 :facts :reason]))))))
+      (is (= :passed (:status graph-over)))
+      (is (= 2049 (:object-count graph-over))))))
 
-(deftest sh04-width-bounds-accept-the-limit-and-reject-the-next-value
+(deftest sh04-container-validation-covers-members-beyond-former-ceilings
   (let [descriptor
         @accepted-descriptor
         marks-64 (mapv #(keyword (str "mark-" %)) (range 64))
@@ -1340,30 +1338,45 @@
           :accepted nil]
          [:marks-over-limit
           (assoc-in descriptor [:hygiene :marks] marks-65)
+          :accepted nil]
+         [:late-duplicate-mark
+          (assoc-in descriptor [:hygiene :marks] (conj marks-65 :mark-0))
           :rejected "C3-HYGIENE"]
          [:captures-at-limit
           (assoc-in descriptor [:hygiene :captures] captures-32)
           :accepted nil]
          [:captures-over-limit
           (assoc-in descriptor [:hygiene :captures] captures-33)
+          :accepted nil]
+         [:late-invalid-capture
+          (assoc-in descriptor [:hygiene :captures] (conj captures-33 {}))
           :rejected "C3-CAPTURE"]
          [:metadata-at-limit
           (assoc descriptor :metadata metadata-64)
           :accepted nil]
          [:metadata-over-limit
           (assoc descriptor :metadata metadata-65)
+          :accepted nil]
+         [:late-invalid-metadata-key
+          (assoc descriptor :metadata (assoc metadata-65 "invalid" 1))
           :rejected "C3-METADATA"]
          [:facts-at-limit
           (assoc descriptor :facts facts-64)
           :accepted nil]
          [:facts-over-limit
           (assoc descriptor :facts facts-65)
+          :accepted nil]
+         [:late-invalid-fact
+          (assoc descriptor :facts (conj facts-65 (assoc (fact-record 65) :version 2)))
           :rejected "C3-FACT-STALE"]
          [:origins-at-limit
           (assoc descriptor :origin origins-32)
           :accepted nil]
          [:origins-over-limit
           (assoc descriptor :origin origins-33)
+          :accepted nil]
+         [:late-invalid-origin
+          (assoc descriptor :origin (conj origins-33 {}))
           :rejected "C3-ORIGIN"]]]
     (doseq [[label candidate expected-status expected-rule] cases]
       (let [invocation
