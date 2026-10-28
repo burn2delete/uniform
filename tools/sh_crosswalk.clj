@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "cbd52bec0f00ed4aa05a1db054d049f5028ad5f7", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/self-hosting-slice-ownership.edn" "1733af7b23a5a5b76c71f40068ee00c4838bf4f8", "specs/reader-workflow/tasks.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -471,14 +471,14 @@
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def mapping-review
-  {:status :accepted-mapping-only
+  {:status :pending-source-version-review
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36"
    :reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55"
    :receipt-sha256 "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c"
    :review-text-sha256 "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942"
    :predecessor-input-fingerprint "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e"
-   :input-fingerprint "0a03d2a7e6768cafb6105b55df7bdc957d6d5524459951416c31a89a82843158"
+   :input-fingerprint "674ebdffddf0ce422463063950f5d68cad45c014bc0f6101f712395d7e6520c5"
    :source-version-review
    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4"
     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb"

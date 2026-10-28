@@ -786,4 +786,75 @@
     :acceptance-predicate-unchanged true,
     :raw-unchanged true}],
   :predecessor-bridge-commit
-  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}}
+  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}
+ :pr513-private-collection-ownership-successor
+ {:candidate-head "1733af7b23a5a5b76c71f40068ee00c4838bf4f8",
+ :paired-registration
+ {:contract-sha256
+  "4df1c1d350c4558894aafe05d2b122b97632c230bb00849710be914ef2a99433",
+  :complete-cache-closure-claim false,
+  :contract "contracts/stage0-incremental-test-dependencies.edn",
+  :controls
+  {:original 51666,
+   :tests 10,
+   :assertions 598,
+   :exit 0,
+   :receipt-sha256
+   "49b449393ada457b3cfd1b9b4ca96d2698a0c1996ef8f8866d76c54ca292b234"},
+  :policy :fresh-only-generic-and-direct-unsupported,
+  :deletions 3,
+  :commit "1733af7b23a5a5b76c71f40068ee00c4838bf4f8",
+  :files 5,
+  :insertions 64},
+ :authority :preserved-source-lineage-not-acceptance,
+ :consumed-main "0ea44f0c0fe0c5e89ecbbed8148552810164b7dd",
+ :conservation
+ {:all-prior-entries-and-header-fields-preserved true,
+  :raw-file-identical-after-reversing-exact-entry-insertion true,
+  :runtime-shape-successor-and-review-preserved true,
+  :component-task-records-and-source-acceptance-unchanged true,
+  :all180-whole-criterion-acceptance :unassessed},
+ :added-entry
+ {:section :standalone-test-owners,
+  :path
+  "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj",
+  :value
+  {:namespace gravity.self-hosting.private-collection-chain-test,
+   :slice "SH-08",
+   :owner :sh-types},
+  :exact-replacement
+  {:before "{\"",
+   :after
+   "{\"bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj\"\n  {:namespace gravity.self-hosting.private-collection-chain-test\n   :slice \"SH-08\" :owner :sh-types}\n  \""}},
+ :historical-operation
+ {:request-id "c48b77df-b7c4-4cc0-8e8c-3c884fc3092e",
+  :delivery-outcome :unknown,
+  :obsolete-pr374-instruction :withdrawn,
+  :late-delivery-action :retain-as-history-do-not-execute,
+  :not-retried true},
+ :source-path "docs/self-hosting-slice-ownership.edn",
+ :candidate-parent "0658d4363bbf0f9bd9c85a3e30dee757aaa2b40a",
+ :after
+ {:commit "1733af7b23a5a5b76c71f40068ee00c4838bf4f8",
+  :blob "5073dc50f63508304bf13e4068faa91e193a70dd",
+  :sha256
+  "32b1f116a2e162d2f38274b118b9333d2f0374eb77b770ddbebdedc31d2f53a9"},
+ :predecessor-bridge-sha256
+ "e5fde232e9d35dbdb04527297c0588112ff5f9ecd58ecb9095c6d7bac8d5a053",
+ :kind :single-ownership-entry-source-version,
+ :qualification
+ "New parent-authorized PC-entry-only transaction after reviewed paired registration and ACC09 exact clean-base/exclusive-writer handoff. Only the ownership input version changes; the existing runtime-shape bridge/review, every other active pin and all predecessor pin lineage survive. Registration and compiler-free controls do not establish semantic execution, complete cache closure, implementation acceptance, source authentication, whole-SH acceptance, native/seedless completion or release. No PR374/PR453 source transition, historical delivery adjudication, dashboard/global-manifest write or 80638 unchanged retry. Later current-main composition and final integration remain with ACC09 and independent review.",
+ :predecessor-input-fingerprint
+ "0a03d2a7e6768cafb6105b55df7bdc957d6d5524459951416c31a89a82843158",
+ :before
+ {:commit "cbd52bec0f00ed4aa05a1db054d049f5028ad5f7",
+  :sha256
+  "3fa75323704d99aaa2065f978b936f012fa758f19108508cea8cae99ed72f2cb"},
+ :pr "https://github.com/burn2delete/uniform/pull/513",
+ :historical-failed-gate
+ {:original 80638,
+  :result :nonpass,
+  :preserved true,
+  :unchanged-retry false},
+ :candidate-tree "390f74a9ddb43d412e7f9737233f6b9f88aa9560"}
+}
