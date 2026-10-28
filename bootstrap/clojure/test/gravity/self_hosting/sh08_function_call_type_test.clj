@@ -19751,7 +19751,7 @@
         (reset! reads 0)
         (let [result (invoke-c7 'sh08-pl-validate-types [[receiver value]])]
           (is (= :rejected (:status result)))
-          (is (= :unsupported-type (:type-check-reason result)))
+          (is (= :malformed-type (:type-check-reason result)))
           (is (zero? @reads)))))
     (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
                                    (count [] 1)
