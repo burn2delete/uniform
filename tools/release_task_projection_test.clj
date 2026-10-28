@@ -52,6 +52,25 @@
                       "SH27 equivalence" "supplied rebuild records or plans do not prove execution"]]
       (is (str/includes? (:acceptance row) required)))))
 
+(deftest governance-consumers-reference-existing-open-record
+  (let [rows (release-task-projection/records tasks)
+        row (first rows)
+        plan (slurp "specs/release-workflow/plan.md")]
+    (is (= 5 (count rows)))
+    (is (= "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance" (:id row)))
+    (is (= "Open" (:status row)))
+    (is (= "Component outcome receipts, positive/negative programs and explicit unsupported surface" (:acceptance row)))
+    (is (str/includes? plan (:id row)))
+    (doseq [required ["Ownerless changes" "Missing required sections" "Accidental experimental use"
+                      "removal before the approved window" "on/off fixtures" "expiry, rollback"
+                      "broader evolution workflow" "FL-P17-T01" "does not amend task acceptance"]]
+      (is (str/includes? plan required)))
+    (doseq [id ["231-gov1-language-evolution-process" "236-gov6-rfc-process"
+                "237-gov7-experimental-feature-policy" "238-gov8-deprecation-and-stabilization-policy"]]
+      (is (str/includes? plan (str "../../docs/phase-17-governance-and-evolution/" id ".md#conformance-criteria"))))
+    (is (str/includes? plan "no candidate requirement gains implementation credit"))
+    (is (release-task-projection/check-projection tasks roadmap))))
+
 (deftest relative-link-provenance
   (doseq [row (release-task-projection/records tasks)]
     (let [projected (release-task-projection/rebase-links (:evidence row)
