@@ -6889,7 +6889,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; The outer precharge and owner traversal remain independently metered.
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
     (is (= :gravity.type/bool (:type derived)))
@@ -9916,7 +9916,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-kse-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; The outer precharge and owner traversal remain independently metered.
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
@@ -16301,7 +16301,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; The outer precharge and owner traversal remain independently metered.
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
     (is (= :gravity.type/bool (:type derived)))
@@ -18185,7 +18185,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ssin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; Five nodes: outer precharge 118 plus owner traversal 5; insertion adds no debit.
         prefix 123
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
@@ -18194,6 +18194,11 @@
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (is (not (contains? measured :work-count)))
     (is (= prefix (:work-count accepted)))
+    ;; The surrounding owner traversal still rejects before all five nodes fit.
+    (let [rejected (check core types (dec prefix))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :typed-throw-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected))))))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/string)))]
@@ -19256,7 +19261,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ksin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; Five nodes: outer precharge 118 plus owner traversal 5; insertion adds no debit.
         prefix 123
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
@@ -19265,6 +19270,11 @@
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (is (not (contains? measured :work-count)))
     (is (= prefix (:work-count accepted)))
+    ;; The surrounding owner traversal still rejects before all five nodes fit.
+    (let [rejected (check core types (dec prefix))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :typed-throw-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected))))))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/keyword)))]
@@ -19816,7 +19826,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-syin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; Five nodes: outer precharge 118 plus owner traversal 5; insertion adds no debit.
         prefix 123
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
@@ -19825,6 +19835,11 @@
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (is (not (contains? measured :work-count)))
     (is (= prefix (:work-count accepted)))
+    ;; The surrounding owner traversal still rejects before all five nodes fit.
+    (let [rejected (check core types (dec prefix))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :typed-throw-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected))))))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/symbol)))]
