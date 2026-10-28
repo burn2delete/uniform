@@ -42,6 +42,31 @@
    {:name :opaque-call :equations [[:x [:call [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected false}])
 
+(def set-cases
+  [{:name :set-self-growth :equations [[:x [:set [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :mixed-nested-growth :equations [[:x [:set [:vector [:ref :x]]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :mixed-mutual-growth
+    :equations [[:x [:vector [:ref :y]]] [:y [:set [:ref :x]]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :set-unresolved :equations [[:x [:set [:ref :x]]]]
+    :bindings {} :expected false}
+   {:name :set-never :equations [[:x [:set [:ref :x]]]]
+    :bindings {:x :gravity.type/never} :expected false}
+   {:name :set-open-dependency :equations [[:x [:set [:ref :outside]]]]
+    :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+   {:name :set-leading-to-alias-cycle
+    :equations [[:x [:set [:ref :y]]] [:y [:ref :z]] [:z [:ref :y]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer}
+    :expected false}
+   {:name :set-intrinsic-reference :equations [[:x [:set [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :intrinsic-reference? true :expected false}
+   {:name :set-match-reseeding :equations [[:x [:set [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :context {:boolean-matches [{}]} :expected false}
+   {:name :nonunary-set :equations [[:x [:set [:ref :x] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}])
+
 (defn input
   "Materialize fixture syntax in postorder for the actual C7 test harness."
   [{:keys [equations context intrinsic-reference?] :as case}]
@@ -56,7 +81,7 @@
                             {:node-id id :core-form :reference :children []
                              :attributes {:binding-id (first operands)}}
                             {:node-id id
-                             :core-form (if (= :vector kind) :collection-literal :call)
+                             :core-form (if (#{:vector :set} kind) :collection-literal :call)
                              :children children :attributes {:literal-kind kind}})]
                  (swap! nodes conj node)
                  id))
@@ -72,7 +97,7 @@
 (defn- term-edge [term]
   (case (first term)
     :ref {:dependency (second term) :constructor? false}
-    :vector (when (= 2 (count term))
+    (:vector :set) (when (= 2 (count term))
               (when-let [edge (term-edge (second term))]
                 (assoc edge :constructor? true)))
     nil))
@@ -103,11 +128,12 @@
 (defn- substitute [term bindings]
   (case (first term)
     :ref (get bindings (second term) :gravity.type/unknown)
-    :vector (let [values (mapv #(substitute % bindings) (rest term))]
+    (:vector :set) (let [values (mapv #(substitute % bindings) (rest term))]
               (cond
                 (some #{:gravity.type/never} values) :gravity.type/never
                 (some #{:gravity.type/unknown} values) :gravity.type/unknown
-                :else {:kind :gravity.type/vector :element-types values :shape :literal}))
+                :else {:kind (if (= :set (first term)) :gravity.type/set :gravity.type/vector)
+                       :element-types values :shape :literal}))
     :gravity.type/unknown))
 
 (defn- step [case bindings]
@@ -142,3 +168,17 @@
                  :bindings (zipmap ids (repeat :gravity.type/integer))}]
       (is (true? (model-occurs? cycle)))
       (is (false? (model-occurs? (assoc-in cycle [:equations 0 1] [:ref :outside])))))))
+
+(deftest unary-set-and-mixed-substitution-controls
+  (doseq [case set-cases]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (let [states (take 9 (iterate #(step case %) (:bindings case)))]
+          (is (= 9 (count (set states))))))))
+  (doseq [case (filter #(#{:set-unresolved :set-never :set-open-dependency} (:name %)) set-cases)]
+    (let [once (step case (:bindings case))]
+      (is (= once (step case once)))))
+  (let [case (first set-cases)
+        typed (get (step case (:bindings case)) :x)]
+    (is (= {:kind :gravity.type/set :element-types [:gravity.type/integer] :shape :literal} typed))))

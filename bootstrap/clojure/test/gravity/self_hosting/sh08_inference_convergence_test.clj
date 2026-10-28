@@ -144,7 +144,8 @@
 (deftest malformed-data-does-not-establish-an-occurs-witness
   ;; No witness is not acceptance: public source/products retain their owning
   ;; resolution/verification checks. These direct helpers bypass that ingress.
-  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/cases))
+  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)]]
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         check (fn [nodes lexical]
                 (invoke 'sh08-ft-first-constructor-cycle
                         [nodes lexical [] {} bindings (:type-table (pass nodes lexical bindings)) {}]))]
@@ -157,10 +158,11 @@
     (testing "cyclic syntax cannot establish a constructor path"
       (let [id (:initializer-node-id (first lexical))
             cyclic [(assoc (last nodes) :children [id])]]
-        (is (nil? (check cyclic lexical)))))))
+        (is (nil? (check cyclic lexical))))))))
 
 (deftest declared-return-conflict-precedes-constructor-feedback
-  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/cases))
+  (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)]]
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         body {:node-id :body :core-form :literal :children []
               :attributes {:literal-kind :string}}
         nodes (conj nodes body)
@@ -170,4 +172,25 @@
                        [nodes (into {} (map (juxt :node-id identity)) nodes)
                         lexical [] [] [] {:fn function} bindings 64 {}])]
     (is (= :type-conflict (:convergence-status result)))
-    (is (= :function-result-type-mismatch (get-in result [:diagnostics 0 :reason])))))
+    (is (= :function-result-type-mismatch (get-in result [:diagnostics 0 :reason]))))))
+
+(deftest unary-set-and-mixed-occurs-check-controls
+  (doseq [case occurs-model/set-cases]
+    (let [{:keys [nodes lexical definitions functions bindings context expected]}
+          (occurs-model/input case)
+          result (invoke 'sh08-ft-first-constructor-cycle
+                         [nodes lexical (or definitions []) (or functions {}) bindings
+                          (:type-table (pass nodes lexical bindings)) context])]
+      (testing (name (:name case))
+        (is (= expected (map? result)))
+        (when expected
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :type-conflict (:convergence-status inferred)))
+            (is (= :infinite-structural-type (get-in inferred [:diagnostics 0 :reason])))))
+        (when (contains? #{:set-unresolved :set-never :set-open-dependency} (:name case))
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :converged (:convergence-status inferred)))
+            (is (empty? (:diagnostics inferred)))
+            (when (= :set-open-dependency (:name case))
+              (is (= {:kind :gravity.type/set :element-types [:gravity.type/integer] :shape :literal}
+                     (get-in inferred [:binding-types :x]))))))))))
