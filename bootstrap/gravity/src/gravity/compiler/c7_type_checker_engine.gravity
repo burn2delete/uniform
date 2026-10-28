@@ -6638,13 +6638,10 @@
                                           (if vector?
                                             (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion} (get (get types (first (get node :children))) :kind))
                                               (if (= :gravity.type/applied-symbol-set-insertion (get (get types (first (get node :children))) :kind))
-            (sh08-syin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))
+            (sh08-syin-inferred-call core node call edge nodes binding-index types)
             (if (= :gravity.type/applied-keyword-set-insertion (get (get types (first (get node :children))) :kind))
-                                                (sh08-ksin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))
-                                                (sh08-ssin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))))
+                                                (sh08-ksin-inferred-call core node call edge nodes binding-index types)
+                                                (sh08-ssin-inferred-call core node call edge nodes binding-index types)))
                                               (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality} (get (get types (first (get node :children))) :kind))
                                               (sh08-kse-inferred-call core node call edge nodes binding-index types
                                                 (- budget initial (get owners :work-count) work))
@@ -6749,7 +6746,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :nonnegative-integer-quotient-work-limit :vector-slice-work-limit :string-character-vector-work-limit :count-quotient-scaling-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :bare-keyword-anchor-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :list-set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit :vector-first-work-limit :map-get-work-limit :vector-empty-work-limit :vector-rest-work-limit :map-keys-work-limit :private-map-keys-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :nonnegative-integer-quotient-work-limit :vector-slice-work-limit :string-character-vector-work-limit :count-quotient-scaling-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :bare-keyword-anchor-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :list-set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit :vector-first-work-limit :map-get-work-limit :vector-empty-work-limit :vector-rest-work-limit :map-keys-work-limit :private-map-keys-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -8946,65 +8943,56 @@
                          :work-count work)))
               (assoc (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil) :work-count base)))))))))
 
-(defn sh08-syin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count base}
-      (if (if (vector? args) (if (= 2 (count args))
+(defn sh08-syin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
+    (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :symbol-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :symbol-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :symbol-set-insertion-arity-mismatch})))
 
-(defn sh08-ksin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count base}
-      (if (if (vector? args) (if (= 2 (count args))
+(defn sh08-ksin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
+    (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-ksin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-ksin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :keyword-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :keyword-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :keyword-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :keyword-set-insertion-arity-mismatch})))
 
-(defn sh08-ssin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :string-set-insertion-work-limit :work-count base}
-      (if (if (vector? args) (if (= 2 (count args))
+(defn sh08-ssin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
+    (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-ssin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-ssin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :string-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :string-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :string-set-insertion-arity-mismatch})))
 
 (defn sh08-pl-inferred-call-valid? [core node call edge nodes bindings types]
   (let [args (get call :argument-node-ids)]

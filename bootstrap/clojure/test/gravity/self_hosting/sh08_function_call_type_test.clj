@@ -6889,7 +6889,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; The outer precharge and owner traversal remain independently metered.
         prefix 123
         accepted (check core types 65536)]
     (is (= :gravity.type/bool (:type derived)))
@@ -9916,7 +9916,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-kse-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; The outer precharge and owner traversal remain independently metered.
         prefix 123
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
@@ -16301,7 +16301,7 @@
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        ;; The outer precharge and owner traversal remain independently metered.
         prefix 123
         accepted (check core types 65536)]
     (is (= :gravity.type/bool (:type derived)))
@@ -18043,7 +18043,7 @@
             result (derive input 65536) descriptor (:descriptor result)
             expected (if (= :gravity.type/never value) :gravity.type/never carrier)
             established (assoc types :operator descriptor :call expected)
-            checked (invoke-c7 'sh08-ssin-inferred-call [core node call edge nodes bindings established 65536])
+            checked (invoke-c7 'sh08-ssin-inferred-call [core node call edge nodes bindings established])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes established {} (:module core) {}])
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
@@ -18088,8 +18088,8 @@
         (is (= descriptor (:applied-string-set-insertion (first facts))))
         (is (= result (derive input (:work-count result))))
         (is (= ["C7-GENERIC" :list-prepend-work-limit] ((juxt :rule :reason) (derive input (dec (:work-count result))))))
-        (is (= checked (invoke-c7 'sh08-ssin-inferred-call [core node call edge nodes bindings established (:work-count checked)])))
-        (is (= :string-set-insertion-work-limit (:reason (invoke-c7 'sh08-ssin-inferred-call [core node call edge nodes bindings established (dec (:work-count checked))]))))
+        (is (= {:status :accepted} checked))
+        (is (not (contains? checked :work-count)))
         (is (= :string-set-insertion-positional-evidence-unsupported
                (:reason (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {}
                                                   (assoc shape-context :vector-coordinate-demand {:coordinate 0})]))))
@@ -18105,7 +18105,7 @@
                          (assoc descriptor :operand-type-work 0)]]
           (when (not= descriptor changed)
             (is (= :rejected (:status (invoke-c7 'sh08-ssin-inferred-call
-                                       [core node call edge nodes bindings (assoc established :operator changed) 65536]))))))
+                                       [core node call edge nodes bindings (assoc established :operator changed)]))))))
         (is (= :rejected (:status (derive (assoc-in input [:core :module :target] :llvm) 65536))))))
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/dynamic :gravity.type/nil
                  (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
@@ -18133,7 +18133,7 @@
       (doseq [bad-id [opaque [opaque] {:opaque opaque}]]
         (let [bad-call (assoc call :argument-node-ids [bad-id :arg1])]
           (is (= :rejected (:status (invoke-c7 'sh08-pl-derive [core node bad-call edge nodes bindings types forms 65536]))))
-          (is (= :rejected (:status (invoke-c7 'sh08-ssin-inferred-call [core node bad-call edge nodes bindings types 65536]))))
+          (is (= :rejected (:status (invoke-c7 'sh08-ssin-inferred-call [core node bad-call edge nodes bindings types]))))
           (is (zero? @callbacks)))))
     (let [input (list-prepend-input (finite [s]) s)
           {:keys [core node call edge nodes bindings types forms]} input
@@ -18184,7 +18184,7 @@
                                        :capabilities [] :thrown-error-effects []}}
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
-        measured (invoke-c7 'sh08-ssin-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        measured (invoke-c7 'sh08-ssin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
@@ -18192,26 +18192,21 @@
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
-    (let [limit (+ prefix (dec (:work-count measured)))
-          rejected (check core types limit)]
-      (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :string-set-insertion-work-limit]
-             ((juxt :rule :reason) (first (:diagnostics rejected)))))
-      (is (= (+ prefix (:work-count (invoke-c7 'sh08-ssin-inferred-call
-                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
-             (:work-count rejected))))
+    (is (not (contains? measured :work-count)))
+    (is (= prefix (:work-count accepted)))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/string)))]
              [core (assoc types :arg0 :gravity.type/unknown)]
              [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
       (let [c (first (:calls changed-core))
-            own (invoke-c7 'sh08-ssin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            own (invoke-c7 'sh08-ssin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types])
             rejected (check changed-core changed-types 65536)]
         (is (= :rejected (:status own)))
+        (is (not (contains? own :work-count)))
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
-        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+        (is (= prefix (:work-count rejected)))))))
 
 (deftest sh08-string-set-carrier-private-values-development-kernel
   ;; Original private inference algorithms over normalized DATA; no admission claim.
@@ -19116,7 +19111,7 @@
             result (derive input 65536) descriptor (:descriptor result)
             expected (if (= :gravity.type/never value) :gravity.type/never carrier)
             established (assoc types :operator descriptor :call expected)
-            checked (invoke-c7 'sh08-ksin-inferred-call [core node call edge nodes bindings established 65536])
+            checked (invoke-c7 'sh08-ksin-inferred-call [core node call edge nodes bindings established])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes established {} (:module core) {}])
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
@@ -19161,8 +19156,8 @@
         (is (= descriptor (:applied-keyword-set-insertion (first facts))))
         (is (= result (derive input (:work-count result))))
         (is (= ["C7-GENERIC" :list-prepend-work-limit] ((juxt :rule :reason) (derive input (dec (:work-count result))))))
-        (is (= checked (invoke-c7 'sh08-ksin-inferred-call [core node call edge nodes bindings established (:work-count checked)])))
-        (is (= :keyword-set-insertion-work-limit (:reason (invoke-c7 'sh08-ksin-inferred-call [core node call edge nodes bindings established (dec (:work-count checked))]))))
+        (is (= {:status :accepted} checked))
+        (is (not (contains? checked :work-count)))
         (is (= :keyword-set-insertion-positional-evidence-unsupported
                (:reason (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {}
                                                   (assoc shape-context :vector-coordinate-demand {:coordinate 0})]))))
@@ -19178,7 +19173,7 @@
                          (assoc descriptor :operand-type-work 0)]]
           (when (not= descriptor changed)
             (is (= :rejected (:status (invoke-c7 'sh08-ksin-inferred-call
-                                       [core node call edge nodes bindings (assoc established :operator changed) 65536]))))))
+                                       [core node call edge nodes bindings (assoc established :operator changed)]))))))
         (is (= :rejected (:status (derive (assoc-in input [:core :module :target] :llvm) 65536))))))
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/dynamic :gravity.type/nil
                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/keyword}
@@ -19205,7 +19200,7 @@
       (doseq [bad-id [opaque [opaque] {:opaque opaque}]]
         (let [bad-call (assoc call :argument-node-ids [bad-id :arg1])]
           (is (= :rejected (:status (invoke-c7 'sh08-pl-derive [core node bad-call edge nodes bindings types forms 65536]))))
-          (is (= :rejected (:status (invoke-c7 'sh08-ksin-inferred-call [core node bad-call edge nodes bindings types 65536]))))
+          (is (= :rejected (:status (invoke-c7 'sh08-ksin-inferred-call [core node bad-call edge nodes bindings types]))))
           (is (zero? @callbacks)))))
     (let [input (list-prepend-input (finite [s]) s)
           {:keys [core node call edge nodes bindings types forms]} input
@@ -19260,7 +19255,7 @@
                                        :capabilities [] :thrown-error-effects []}}
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
-        measured (invoke-c7 'sh08-ksin-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        measured (invoke-c7 'sh08-ksin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
@@ -19268,26 +19263,21 @@
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
-    (let [limit (+ prefix (dec (:work-count measured)))
-          rejected (check core types limit)]
-      (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :keyword-set-insertion-work-limit]
-             ((juxt :rule :reason) (first (:diagnostics rejected)))))
-      (is (= (+ prefix (:work-count (invoke-c7 'sh08-ksin-inferred-call
-                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
-             (:work-count rejected))))
+    (is (not (contains? measured :work-count)))
+    (is (= prefix (:work-count accepted)))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/keyword)))]
              [core (assoc types :arg0 :gravity.type/unknown)]
              [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
       (let [c (first (:calls changed-core))
-            own (invoke-c7 'sh08-ksin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            own (invoke-c7 'sh08-ksin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types])
             rejected (check changed-core changed-types 65536)]
         (is (= :rejected (:status own)))
+        (is (not (contains? own :work-count)))
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
-        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+        (is (= prefix (:work-count rejected)))))))
 
 (deftest sh08-keyword-set-insertion-id-guard-development-kernel
   (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
@@ -19656,7 +19646,7 @@
             result (derive input 65536) descriptor (:descriptor result)
             expected (if (= :gravity.type/never value) :gravity.type/never carrier)
             established (assoc types :operator descriptor :call expected)
-            checked (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings established 65536])
+            checked (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings established])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes established {} (:module core) {}])
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
@@ -19703,8 +19693,8 @@
         (is (= descriptor (:applied-symbol-set-insertion (first facts))))
         (is (= result (derive input (:work-count result))))
         (is (= ["C7-GENERIC" :list-prepend-work-limit] ((juxt :rule :reason) (derive input (dec (:work-count result))))))
-        (is (= checked (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings established (:work-count checked)])))
-        (is (= :symbol-set-insertion-work-limit (:reason (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings established (dec (:work-count checked))]))))
+        (is (= {:status :accepted} checked))
+        (is (not (contains? checked :work-count)))
         (is (= :symbol-set-insertion-positional-evidence-unsupported
                (:reason (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {}
                                                   (assoc shape-context :vector-coordinate-demand {:coordinate 0})]))))
@@ -19723,7 +19713,7 @@
                          (assoc descriptor :operand-type-work 0)]]
           (when (not= descriptor changed)
             (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call
-                                       [core node call edge nodes bindings (assoc established :operator changed) 65536]))))))
+                                       [core node call edge nodes bindings (assoc established :operator changed)]))))))
         (is (= :rejected (:status (derive (assoc-in input [:core :module :target] :llvm) 65536))))))
     (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
                                    (count [] 1)
@@ -19768,7 +19758,7 @@
       (doseq [bad-id [opaque [opaque] {:opaque opaque}]]
         (let [bad-call (assoc call :argument-node-ids [bad-id :arg1])]
           (is (= :rejected (:status (invoke-c7 'sh08-pl-derive [core node bad-call edge nodes bindings types forms 65536]))))
-          (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node bad-call edge nodes bindings types 65536]))))
+          (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node bad-call edge nodes bindings types]))))
           (is (zero? @callbacks)))))
     (let [input (list-prepend-input (finite [s]) s)
           {:keys [core node call edge nodes bindings types forms]} input
@@ -19825,7 +19815,7 @@
                                        :capabilities [] :thrown-error-effects []}}
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
-        measured (invoke-c7 'sh08-syin-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        measured (invoke-c7 'sh08-syin-inferred-call [core node (:call input) edge nodes (:bindings input) types])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
         accepted (check core types 65536)]
@@ -19833,26 +19823,21 @@
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
-    (let [limit (+ prefix (dec (:work-count measured)))
-          rejected (check core types limit)]
-      (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :symbol-set-insertion-work-limit]
-             ((juxt :rule :reason) (first (:diagnostics rejected)))))
-      (is (= (+ prefix (:work-count (invoke-c7 'sh08-syin-inferred-call
-                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
-             (:work-count rejected))))
+    (is (not (contains? measured :work-count)))
+    (is (= prefix (:work-count accepted)))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/symbol)))]
              [core (assoc types :arg0 :gravity.type/unknown)]
              [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
       (let [c (first (:calls changed-core))
-            own (invoke-c7 'sh08-syin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            own (invoke-c7 'sh08-syin-inferred-call [changed-core node c edge nodes (:bindings input) changed-types])
             rejected (check changed-core changed-types 65536)]
         (is (= :rejected (:status own)))
+        (is (not (contains? own :work-count)))
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
-        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+        (is (= prefix (:work-count rejected)))))))
 
 (deftest sh08-symbol-set-insertion-id-guard-development-kernel
   (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
@@ -19961,9 +19946,35 @@
     (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:insertion-semantics :carrier-schema])))
     (is (= :accepted (:status construction)))
     (is (= {:kind :gravity.type/list :shape :literal :element-types [carrier]} (:type construction)))
-    (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set) 65536]))))
-    (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1) 65536]))))
+    (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set)]))))
+    (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1)]))))
     (is (= :gravity.type/unknown (invoke-c7 'sh08-ft-loop-kernel-normal-join [[finite carrier]])))))
+(deftest sh08-insertion-inferred-call-ignores-unrelated-function-count
+  ;; Normalized helper inputs only; this is not authenticated Core admission.
+  (let [unrelated (mapv (fn [i] {:function-syntax-id (keyword (str "unrelated-" i))
+                                 :function-core-node-id (keyword (str "unrelated-node-" i))})
+                        (range 65471))
+        owner {:function-syntax-id :owner :function-core-node-id :owner-node}]
+    (doseq [[element checker] [[:gravity.type/string 'sh08-ssin-inferred-call]
+                               [:gravity.type/keyword 'sh08-ksin-inferred-call]
+                               [:gravity.type/symbol 'sh08-syin-inferred-call]]]
+      (let [receiver {:kind :gravity.type/set :shape :literal :element-types [element]}
+            {:keys [core node call edge nodes bindings types forms]} (list-prepend-input receiver element)
+            node (assoc-in node [:evaluation :owner-function-syntax-id] :owner)
+            edge (assoc edge :caller-function-syntax-id :owner :caller-function-core-node-id :owner-node)
+            nodes (assoc nodes :call node)
+            core (assoc core :function-records [owner] :call-edges [edge]
+                        :nodes (mapv #(if (= :call (:node-id %)) node %) (:nodes core)))
+            derived (invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms 65536])
+            established (assoc types :operator (:descriptor derived) :call (:type derived))
+            expanded (assoc core :function-records (into [owner] unrelated))
+            result (invoke-c7 checker [expanded node call edge nodes bindings established])
+            bad (assoc-in established [:operator :operation] 'forged)]
+        (is (= :accepted (:status derived)))
+        (is (= {:status :accepted} result))
+        (is (not (contains? result :work-count)))
+        (is (= :rejected (:status (invoke-c7 checker [expanded node call edge nodes bindings bad]))))))))
+
 (deftest sh08-symbol-set-carrier-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol carrier (:result-type (invoke-c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
