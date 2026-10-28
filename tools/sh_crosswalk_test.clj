@@ -135,9 +135,11 @@
     (is (= :pending-independent-source-version-review (:status bridge)))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= sh-crosswalk/predecessor-mapping-review
-           (get-in view [:mapping-review :predecessor-review])))
+           (get-in view [:mapping-review :predecessor-review :predecessor-review])))
     (is (= (:applying-input-fingerprint bridge)
-           (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
+           (get-in view [:mapping-review :reader-normal-source-review :input-fingerprint])))
+    (is (not= (:applying-input-fingerprint bridge)
+              (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
     (doseq [{:keys [path before after]} (:source-files bridge)]
       (is (= (:commit after) (get-in view [:applying-source-pins path])))
       (is (= (:sha256 before)
@@ -163,6 +165,25 @@
         (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main)
                       (:new-standalone-owners bridge))
                (:standalone-test-owners current)))))))
+
+(deftest pkg5-task-source-successor-preserves-population-and-review-history
+  (let [view (sh-crosswalk/build)
+        bridge (:pkg5-interface-successor (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn")))
+        lineage (get (edn/read-string (slurp "specs/sh-family-crosswalk/task-authority-lineage.edn")) "build")
+        rows (:retained-records lineage)]
+    (is (= 5 (count rows)))
+    (is (empty? (:added-ids lineage)))
+    (is (= 4 (count (filter :unchanged rows))))
+    (is (= ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"] (:changed-records lineage)))
+    (is (every? #(= "Open" (get-in % [:after :status])) rows))
+    (is (:historical-suffix-unchanged lineage))
+    (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
+      (is (= (:applying-task-source bridge) (get-in view [:applying-source-pins path]))))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
+    (is (= "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57"
+           (get-in view [:mapping-review :pkg5-source-review :receipt-sha256])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
