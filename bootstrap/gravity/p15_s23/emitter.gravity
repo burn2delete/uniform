@@ -10873,6 +10873,11 @@
         {:status :rejected :reason :integer-set-contains-operand-type-required :work-count 2}))))
 
 (defn p15-s23-ksm-domain [arguments budget]
+  ; Supported membership entry: validate the entire original type graph
+  ; before internal selectors can read a carrier. This adds no work debit.
+  (let [ingress (p15-s23-lc-validate-types arguments)]
+    (if (= :accepted (get ingress :status))
+
   (if (if (>= budget 2) (p15-s23-ism-selected? arguments) false)
     (p15-s23-ism-domain arguments budget)
   (if (if (>= budget 2) (p15-s23-sysm-selected? arguments) false)
@@ -10930,7 +10935,9 @@
                                  :work-count (+ 2 n)}))))))))
                 {:status :rejected :reason type-reason :work-count 2})))
             {:status :rejected :reason :keyword-set-contains-operand-type-required :work-count 2})))
-      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0})))))
+      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+      {:status :rejected :reason :keyword-set-contains-operand-type-required
+       :type-check-reason (get ingress :reason) :work-count 2})))
 
 (defn p15-s23-sysm-source-ids? [node call nodes bindings module]
   (if (p15-s23-sse-call-ids? node call)

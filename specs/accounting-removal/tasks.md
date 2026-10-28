@@ -113,13 +113,44 @@ that existing guard, before `:kind` reads, to the two missing copies. This is
 necessary to satisfy the recorded unchanged consumer negatives; it is not a
 new member allowance, accounting requirement or additional cleanup criterion.
 
-- [ ] Independently review the exact two-function parity diff and prove every
+- [x] Independently review the exact two-function parity diff and prove every
   other production function unchanged. Preserve Integer/Never selection,
   supported carriers, complete membership validation, budgets and reports.
-- [ ] Run the two unchanged failing kernels and the minimal old case with
+- [x] Run the two unchanged failing kernels and the minimal old case with
   zero field/sequence callbacks, plus boundary controls, on the frozen repair.
-- [ ] Independently review actual results before clearing the membership hold;
+- [x] Independently review actual schema-parity results;
   preserve all old failures and original successful PL evidence separately.
+
+The schema repair at `c71da7c3`, tree `92ac0fad`, passed 9 tests / 1,008
+assertions and independent retained-result review. It establishes zero field
+and sequence reads for those cases, not zero count callbacks or arbitrary
+foreign-map safety. The native-ingress requirement below remains open.
+
+### Membership native-ingress boundary
+
+The complete read-only census at `c71da7c3` finds fifteen classifier/domain
+definitions and sixteen direct calls: twelve internal dispatch calls and four
+external calls to the three `ksm-domain` roots. The external callers are C7
+derive/inferred-call, Effects `mc-context` and typed emitter membership. The
+four specific classifier/domain helpers per owner are internal to the root;
+they are not independent input-validation authorities.
+
+- [ ] Put the existing canonical `lc-validate-types` walk first in each root,
+  before classification or carrier reads. Retain original arguments and vector
+  arity; do not normalize a new input domain, add a Native API, charge the walk,
+  introduce another allowance or change valid membership/budget results.
+- [ ] Project failed native/type ingress as a rejected operand report, with
+  the canonical reason and the existing defined failure report for callers.
+  Do not invoke unsafe selectors again after preflight failure.
+- [ ] Preserve legacy-family and throw-consumer positives using native vectors
+  or supported SubVectors. Separate former foreign-vector observer assumptions
+  into explicit zero-callback rejection controls; this is native-domain
+  strengthening, not accounting-only test deletion or unchanged foreign input
+  admission. Check complete children, cycles and invalid views.
+- [ ] Obtain independent exact-source/result review and affected consumer
+  acceptance before clearing this native-ingress hold. Root validation does
+  not certify arbitrary facts or the earlier Effects context classification;
+  whole-plan ingress remains separate.
 
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 

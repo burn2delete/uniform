@@ -6864,10 +6864,8 @@
 
 (deftest sh08-keyword-set-contains-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) backing [:gravity.type/keyword]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [backing [:gravity.type/keyword]
+        members (subvec (into [:gravity.type/nil] backing) 1)
         nested {:kind :gravity.type/set :shape :literal :element-types members}
         input (map-contains-input [nested :gravity.type/keyword])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -6893,9 +6891,8 @@
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
-        _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 1 @reads) "the owning consumer performs one measured Set domain walk")
+    (is (= :gravity.type/bool (:type derived)))
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -16279,10 +16276,8 @@
 
 (deftest sh08-character-set-contains-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) backing [:gravity.type/character]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [backing [:gravity.type/character]
+        members (subvec (into [:gravity.type/nil] backing) 1)
         nested {:kind :gravity.type/set :shape :literal :element-types members}
         input (map-contains-input [nested :gravity.type/character])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -16308,9 +16303,8 @@
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
-        _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 1 @reads) "the owning consumer performs one measured Set domain walk")
+    (is (= :gravity.type/bool (:type derived)))
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -16449,10 +16443,8 @@
 
 (deftest sh08-string-set-contains-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) backing [:gravity.type/string]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [backing [:gravity.type/string]
+        members (subvec (into [:gravity.type/nil] backing) 1)
         nested {:kind :gravity.type/set :shape :literal :element-types members}
         input (map-contains-input [nested :gravity.type/string])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -16478,9 +16470,8 @@
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
-        _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 1 @reads) "the owning consumer performs one measured Set domain walk")
+    (is (= :gravity.type/bool (:type derived)))
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -19372,10 +19363,8 @@
 
 (deftest sh08-integer-set-contains-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) backing [:gravity.type/integer]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [backing [:gravity.type/integer]
+        members (subvec (into [:gravity.type/nil] backing) 1)
         nested {:kind :gravity.type/set :shape :literal :element-types members}
         input (map-contains-input [nested :gravity.type/integer])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -19401,9 +19390,8 @@
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
-        _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 1 @reads) "Integer needle selects its domain without a member-prefix probe")
+    (is (= :gravity.type/bool (:type derived)))
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -19519,14 +19507,12 @@
       (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
       (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
     (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
-      (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
-                                     (count [] 1)
-                                     (nth [_] (swap! reads inc) legacy))
+      (let [members (subvec [:gravity.type/nil legacy] 1)
             receiver {:kind :gravity.type/set :shape :literal :element-types members}
             domain (invoke-c7 'sh08-ksm-domain [[receiver legacy] 65536])]
         (is (= :accepted (:status domain)))
         (is (= 3 (:work-count domain)))
-        (is (= 1 @reads) "a known legacy needle does not probe the new Symbol receiver route")))
+        (is (= [receiver legacy] (:argument-types domain)))))
     (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
       (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
       (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))
@@ -19540,10 +19526,8 @@
 
 (deftest sh08-symbol-set-contains-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) backing [:gravity.type/symbol]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [backing [:gravity.type/symbol]
+        members (subvec (into [:gravity.type/nil] backing) 1)
         nested {:kind :gravity.type/set :shape :literal :element-types members}
         input (map-contains-input [nested :gravity.type/symbol])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -19569,9 +19553,8 @@
         measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
         ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
         prefix 123
-        _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 2 @reads) "one classified prefix probe precedes one complete measured Symbol domain walk")
+    (is (= :gravity.type/bool (:type derived)))
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -22655,3 +22638,68 @@
                 (is (= fact (get-in coherent [:append-context :call-facts id])))
                 (is (false? (valid? coherent))))
               (is (false? (valid? (assoc-in facts [:append-context :type-checks id] changed)))))))))))
+(deftest membership-root-native-carriers-preserve-complete-results
+  (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
+          [member family] [[:gravity.type/keyword nil] [:gravity.type/character :character]
+                           [:gravity.type/string :string] [:gravity.type/integer :integer]
+                           [:gravity.type/symbol :symbol]]
+          make-map [array-map hash-map sorted-map]]
+    (let [members (with-meta (subvec [:gravity.type/nil member] 1) {:inert :member-view})
+          receiver (with-meta (make-map :kind :gravity.type/set :shape :literal :element-types members)
+                     {:inert :type-metadata})
+          arguments (with-meta (subvec [nil receiver member] 1) {:inert :argument-view})
+          expected (cond-> {:status :accepted :work-count 3 :argument-types arguments :set-member-count 1}
+                     family (assoc :membership-family family))
+          result (invoke (symbol (str prefix "ksm-domain")) arguments 65536)]
+      (is (= expected result))
+      (is (identical? arguments (:argument-types result)))
+      (is (= result (invoke (symbol (str prefix "ksm-domain")) arguments 3)))
+      (is (= :rejected (:status (invoke (symbol (str prefix "ksm-domain")) arguments 2))))))
+  (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
+          arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/never]
+                     [:gravity.type/never :gravity.type/never]]]
+    (is (= {:status :accepted :work-count 2 :argument-types arguments
+            :set-member-count (when (map? (first arguments)) 0)}
+           (invoke (symbol (str prefix "ksm-domain")) arguments 65536))))
+  (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
+          arguments [[] [:gravity.type/set] [:gravity.type/set :gravity.type/symbol :gravity.type/symbol]
+                     nil (list :gravity.type/set :gravity.type/symbol)]]
+    (is (= {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}
+           (invoke (symbol (str prefix "ksm-domain")) arguments 65536)))))
+
+(deftest membership-root-preflight-rejects-before-foreign-callbacks
+  (let [callbacks (atom []) opaque-callbacks (atom 0)
+        foreign-type (recursive-validation-foreign-map
+                       {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]} callbacks)
+        foreign-vector (recursive-validation-foreign-vector callbacks)
+        opaque (ru-cardinality-opaque opaque-callbacks)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types %)
+        custom-order (sorted-map-by (fn [left right] (swap! callbacks conj :compare) (compare left right))
+                                   :kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol])
+        invalid-view (recursive-validation-view [:gravity.type/symbol] 0 2)
+        inputs [[foreign-type :gravity.type/symbol]
+                [(finite foreign-vector) :gravity.type/symbol]
+                [(finite [:gravity.type/symbol opaque]) :gravity.type/symbol]
+                [(finite [:gravity.type/symbol]) opaque]
+                [(recursive-validation-cyclic-type) :gravity.type/symbol]
+                [(finite invalid-view) :gravity.type/symbol]
+                [custom-order :gravity.type/symbol]
+                foreign-vector]]
+    (reset! callbacks [])
+    (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
+            arguments inputs
+            budget [0 1 2 65536]]
+      (let [result (invoke (symbol (str prefix "ksm-domain")) arguments budget)]
+        (is (= :rejected (:status result)))
+        (is (= :keyword-set-contains-operand-type-required (:reason result)))
+        (is (keyword? (:type-check-reason result)))
+        (is (empty? @callbacks))
+        (is (zero? @opaque-callbacks))))
+    (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
+            member [:gravity.type/keyword :gravity.type/character :gravity.type/string :gravity.type/integer :gravity.type/symbol]]
+      (let [members (assoc (vec (repeat 1024 member)) 1023 :gravity.type/unknown)
+            result (invoke (symbol (str prefix "ksm-domain")) [(finite members) member] 65536)]
+        (is (= :rejected (:status result)))
+        (is (= :unsupported-type (:type-check-reason result)))))
+    (is (empty? @callbacks))
+    (is (zero? @opaque-callbacks))))
