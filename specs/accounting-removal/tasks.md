@@ -169,7 +169,7 @@ reports remain unchanged. No Native API, new cost charge or replacement quota
 is introduced. The earlier shape-only repair and all failed receipts remain
 separate history. This does not establish arbitrary-facts or whole-plan ingress.
 
-The PR remains draft until final current-head gates, CI, public readback and
+The PR remains draft until current-head CI, public readback and
 independent integration review. Only normal validated integration will complete
 this finite helper milestone; ACC-05 and ACC-06 as a whole remain open.
 

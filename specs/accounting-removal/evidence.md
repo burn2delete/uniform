@@ -182,8 +182,21 @@ pools, whole ACC-05/06, authentication or release. C12 remains unrun.
 The first published draft head `fa55744d`, tree `d1714479`, passed all seven
 routine jobs in CI run 40611569118; source-Core readiness and experimental
 prerelease were skipped. That is the old published tuple, not CI acceptance of
-this later source repair. Current-head gates, publication readback and
+this later source repair. Current-head CI, publication readback and
 independent integration review remain pending.
+
+Fresh composed repository gates passed at `71f5f8a393943c6f1406bc4d727f5b6dadba3982`,
+tree `6408a80f9f940a4413bf45da6b4c198abf192e25`: boundary/LOC 11 tests / 23
+assertions, 2,035-file census, docs 240/19 and roadmap. Natural exit 0 / 2,280 ms,
+256 MiB, complete 456 stdout / 0 stderr bytes, clean exact bookends and complete
+cleanup. Receipt SHA-256:
+`e87b92951c6f89772d0cb4d75f4abfb04e591568654b019abbdc11261c0ecf6f`.
+At the same tuple, CI-pinned changed-file lint passed against `656f545f` with
+223 unchanged baseline warnings and zero blockers, natural 0 / 14,505 ms,
+256 MiB, complete 76 / 0 bytes and clean cleanup. Receipt SHA-256:
+`d9fa2949a2c8691e85e976ef8655b0e027af72910e37a02d8ed94eb69944574b`.
+Public current-head CI/readback and independent integration review are still
+required; these repository checks do not substitute for them.
 
 ## ACC-06 LR validator successor - 2026-10-27 UTC
 
