@@ -109,8 +109,9 @@ and GOV8 to the existing first Open Release task, with concrete required
 artifacts and rejected release cases. These are Release consumer interfaces;
 the accountable policy owner and full evolution lifecycle remain unresolved.
 FL-P17-T01 remains Open. All five Release records, the generated roadmap,
-their acceptance text and SH crosswalk source pins remain byte-identical to
-the input commit. No implementation or independent acceptance is inferred.
+their acceptance text and SH crosswalk source pins were byte-identical to
+the input commit in the initial correction. No implementation or independent
+acceptance is inferred.
 
 The direct package-link census changes from 236 to 240 original contracts.
 This is navigation coverage only. It does not resolve PR445's 577 proposed
@@ -149,3 +150,12 @@ was removed in full; the final increment only adds the plan interfaces and
 their structural checks. No compiler, broker, runtime or release execution
 was performed. Independent review and integration of this correction remain
 pending; the broader requirement reconciliation remains unfinished.
+
+Current-main composition: ordinary merge `f60cf2e90752bb2e5df74697cab95dc5b799c0bd`
+incorporated main `2855b6cc8683be1100dc0be45ef4cbd01c7043c3` without textual
+conflicts. The same dependency suite (14 tests/402 assertions), Release suite
+(6 tests/98 assertions) and projection check passed on that composition.
+Comparison with that main confirms no changes to Release task authority,
+generated roadmap or SH crosswalk; the four-file correction remains isolated.
+The incorporated main's cleanup changes retain their original authority and
+are not claimed as this increment's work.
