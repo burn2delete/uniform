@@ -55,6 +55,18 @@ recomputation and tamper rejection without a depth allowance, not authenticated
 deep-source construction. Controlled host-stack failure checks preserve the
 owning diagnostic, source span/options and error class.
 
+## CI prerequisite repair
+
+The first hosted static gate exposed three inherited source-resolver expressions
+which called java.io.File/pathSeparator instead of reading that static field.
+The C6, C11 and compiler-source resolver corrections change only those three
+expressions; their owners' other code, source paths, pins and guards are retained.
+Compiler-free checks passed one test / 13 assertions covering exact replacement
+bytes, source-form counts, the real field value and synthetic classpath splitting.
+They did not load Bootstrap or execute backend emission or source constructors.
+The original hosted failure remains nonpassing evidence; it is not a C2 semantic
+failure or a passing CI receipt for a successor.
+
 ## Remaining boundaries
 
 This closes the hosted C2 depth-policy slice only. It does not establish new
