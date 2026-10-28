@@ -1001,7 +1001,8 @@
              (closure-owned? ownership (:development-component-id entry)
                              (:cache-closure test-entry)))
         (assoc :cache-closure (:cache-closure test-entry)
-               :cache-closure-authorized? true))])))
+               :cache-closure-authorized?
+               (not (get-in test-entry [:test-policy :freshness-required?]))))])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.

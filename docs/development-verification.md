@@ -8279,10 +8279,12 @@ not semantic cache keys. Selection, fail-fast behavior and timeout remain
 keyed. Effective configuration and consumed inputs are revalidated before
 execution, after execution and before admitting a hit.
 
-`gravity.c2-artifact-identity-test`, `gravity.c11-mir-test` and
-`gravity.compiler-pass-manifest-test` use re-audited explicit production
-closures, including their five, six and fifteen nested implementation files
-respectively. The [Reader identity reuse acceptance record](verification-reuse.md)
+`gravity.c11-mir-test` and `gravity.compiler-pass-manifest-test` use re-audited
+explicit production closures, including their six and fifteen nested
+implementation files respectively. `gravity.c2-artifact-identity-test` retains
+its expanded input declaration for audit but requires fresh execution until
+real expanded-closure producer evidence permits renewed cache admission.
+The [Reader identity reuse acceptance record](verification-reuse.md)
 distinguishes unrelated documentation/test bodies from consumed tests and
 governing contracts. The runner never infers `require`
 edges. Declared paths, roles, modes and bytes, runner/contracts, both supported

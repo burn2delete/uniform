@@ -78,6 +78,12 @@ compiler replay and does not write the dashboard.
 
 ## Exact Reader leaf closure
 
+The current Reader identity catalog policy requires fresh execution while the
+expanded lexical closure lacks a real producer evidence bundle. Its explicit
+input declaration is retained for audit and regression checks, but the planner
+does not authorize narrowed cache reuse. The earlier producer and reuse results
+below retain only their original source/input scope.
+
 The opt-in is only `gravity.c2-artifact-identity-test`. Its leaf production closure is
 `bootstrap/clojure/src/gravity/c2_artifact_identity.clj` and
 `c2_artifact_identity/{artifacts,canonical,incremental,operations,projections}.clj`.
@@ -1235,3 +1241,28 @@ remain required. Real expanded-closure producer miss/hit/per-input invalidation
 with actual runtime/classpath/source identities remains OPEN and subject to its
 separate review and runtime admission. No semantic job, runtime admission or
 whole RV1/RV2/RV4 acceptance follows from this compiler-free result.
+
+### Reader identity fresh-only correction
+
+The independent final integration assessment of `baa6bc48` is HOLD: its active
+expanded cache declaration requires real producer miss/hit/per-input
+invalidation evidence with actual runtime, classpath and source identities.
+Planner controls, injected operations and successful CI do not discharge that
+gate, and earlier smaller-closure evidence cannot be promoted.
+
+The separable correction sets `:freshness-required? true` for only
+`gravity.c2-artifact-identity-test` and marks its planner cache closure
+unauthorized. Its four lexical inputs, literal dependency fence, paired owners,
+unknown-path refusals and declared-input validation remain. Parent request
+policy preserves the catalog's fresh flag despite false caller options. Child
+selection reads that actual catalog policy and executes fresh without preparing
+cache or effective-runtime state. Other namespaces retain their policies.
+
+The new compiler-free controls must demonstrate repeated non-cacheable parent
+misses without storage, repeated fresh child operations without cache/runtime
+setup, and rejection of each deleted lexical input before execution. The
+existing hypothetical admitted-policy cache-mechanics controls remain tests of
+the retained declaration, not production cache admission or real producer proof.
+This fresh-only successor requires its own exact independent review and CI;
+the original HOLD remains valid on its original candidate. Future cache
+admission and whole RV1/RV2/RV4 acceptance remain OPEN.

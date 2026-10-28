@@ -1148,6 +1148,8 @@
       (is (zero? @calls)))))
 
 (deftest reader-identity-lexical-inputs-invalidate-reuse
+  ;; Hypothetical admitted-policy mechanics only. The actual catalog policy
+  ;; remains fresh until real expanded-closure producer evidence is reviewed.
   ;; The identity test calls the lexical facade, which requires all three
   ;; focused implementations. A comment preserves behavior but changes evidence.
   (doseq [relative ["bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
@@ -1218,6 +1220,72 @@
                           (cache/cache-key (:development-cache-request renewed))))
                 (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
                 (is (= 2 @calls))))))))))
+
+(deftest reader-identity-declared-lexical-input-deletion-refuses-before-execution
+  ;; Audit the retained declaration without enabling the real catalog policy.
+  (doseq [relative ["bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"]]
+    (with-coordination-root
+      (fn [base]
+        (let [root (.resolve base "repository")
+              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)]
+          (Files/createDirectories root no-file-attributes)
+          (copy-reviewed-closure! root job)
+          (Files/delete (.resolve root relative))
+          (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                 (:id (exception-data
+                        #(wiring/attach-request
+                           (assoc (context base) :working-directory (str root))
+                           (impact-plan (:namespace job)) {} job))))))))))
+
+(deftest reader-identity-catalog-policy-prevents-parent-cache-reuse
+  (with-coordination-root
+    (fn [base]
+      (let [namespace 'gravity.c2-artifact-identity-test
+            plan ((requiring-resolve 'gravity.self-hosting.sh01-impact-test-planner/build-plan)
+                  {:changed-paths ["bootstrap/clojure/src/gravity/c2_artifact_identity.clj"]})
+            job (first (:shards plan))
+            attached (wiring/attach-request (context base) plan
+                       {:freshness-required? false :fresh? false} job)
+            request (:development-cache-request attached)
+            calls (atom 0)
+            operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+        (is (= namespace (:namespace job)))
+        (is (true? (get-in job [:test-policy :freshness-required?])))
+        (is (false? (:cache-closure-authorized? job)))
+        (is (true? (get-in request [:test-policy :freshness-required?])))
+        (doseq [_ (range 2)]
+          (let [outcome (cache/lookup-or-run! request operation)]
+            (is (= :miss (get-in outcome [:receipt :decision])))
+            (is (= :freshness-required-test (get-in outcome [:receipt :reason])))
+            (is (false? (get-in outcome [:receipt :cacheable?])))
+            (is (false? (get-in outcome [:receipt :stored?])))))
+        (is (= 2 @calls))))))
+
+(deftest reader-identity-catalog-policy-prevents-child-cache-reuse
+  (let [calls (atom 0)
+        forbidden (fn [& _] (throw (ex-info "Fresh selection must not prepare cache/runtime state" {})))
+        resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)]
+    (with-redefs-fn
+      {(resolve-wiring 'supported-resource-loaders?) (constantly true)
+       (resolve-wiring 'child-startup-resources-absent?) forbidden
+       (resolve-wiring 'effective-child-runtime) forbidden
+       #'wiring/prepare-context forbidden}
+      (fn []
+        (doseq [_ (range 2)]
+          (let [result (wiring/run-child-unit!
+                        ['gravity.c2-artifact-identity-test] {}
+                        #(do (swap! calls inc) {:status :passed :exit-code 0}))]
+            (is (true? (:tests-executed? result)))
+            (is (false? (:child-cache-hit? result)))
+            (is (= :fresh (get-in result [:child-cache-receipt :decision])))
+            (is (= :unreviewed-or-fresh-test-policy
+                   (get-in result [:child-cache-receipt :reason])))
+            (is (false? (get-in result [:child-cache-receipt :cacheable?])))
+            (is (false? (get-in result [:child-cache-receipt :stored?])))))
+        (is (= 2 @calls))))))
 
 (deftest project-startup-resource-absence-is-explicit-and-link-safe
   (with-coordination-root

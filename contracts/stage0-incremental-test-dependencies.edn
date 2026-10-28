@@ -180,7 +180,7 @@
        {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
        {:path "deps.edn" :role :classpath}]}
      :test-policy {:deterministic? true :performance? false
-                   :proof? false :freshness-required? false}}]}]
+                   :proof? false :freshness-required? true}}]}]
  :standalone-tests
  [{:test-id "private-collection-chain"
    :path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
