@@ -474,6 +474,41 @@
    :version 1
    :invalidated-by [:macro-expansion]})
 
+(def ^:private graph-colliding-native-ids
+  ["sha256:00000000000000000000000000000000000000000000000000000000888bbfb1"
+   "sha256:00000000000000000000000000000000000000000000000000000000b387775b"])
+
+(defn- graph-membership-cases [base cardinality]
+  (let [objects (mapv #(assoc base :syntax-id (stable-test-id :membership %))
+                      (range cardinality))
+        first-object (first objects)
+        last-object (peek objects)
+        first-id (:syntax-id first-object)
+        last-id (:syntax-id last-object)
+        last-index (dec cardinality)
+        collision-prefix (mapv #(assoc base :syntax-id (stable-test-id :collision-prefix %)) (range 16))
+        colliding (into collision-prefix (map #(assoc base :syntax-id %) graph-colliding-native-ids))]
+    [[:valid objects :passed nil]
+     [:early-duplicate [first-object first-object] :failed :duplicate-syntax-id]
+     [:late-duplicate (conj objects first-object) :failed :duplicate-syntax-id]
+     [:late-shape (assoc-in objects [last-index :immutable?] false) :failed :invalid-syntax-object]
+     [:late-unresolved (assoc-in objects [last-index :syntax-id] {:digest-ref 1}) :failed :unresolved-syntax-id]
+     [:forward-reference (assoc-in objects [0 :prior-syntax-ids] [last-id]) :failed :reference-not-prior]
+     [:self-reference (assoc-in objects [last-index :prior-syntax-ids] [last-id]) :failed :reference-not-prior]
+     [:prior-reference (assoc-in objects [last-index :prior-syntax-ids] [first-id]) :passed nil]
+     [:native-hash-collision colliding :passed nil]
+     [:native-hash-collision-duplicate
+      (conj colliding (nth colliding 16))
+      :failed :duplicate-syntax-id]]))
+
+(deftype GraphForeignReference [calls]
+  Object
+  (hashCode [_] (swap! calls update :hash inc) 7)
+  (equals [_ _] (swap! calls update :equals inc) false)
+  (toString [_] (swap! calls update :string inc) "foreign-reference")
+  clojure.lang.IMeta
+  (meta [_] (swap! calls update :meta inc) nil))
+
 (defn- generated-product!
   [base-build descriptor index]
   (let [base (:syntax base-build)
@@ -1342,6 +1377,27 @@
           (invoke-syntax 'c3-syntax-graph-verify-template [over-nodes])]
       (is (= :passed (:status graph-over)))
       (is (= 2049 (:object-count graph-over))))))
+
+(deftest sh04-graph-membership-preserves-validation-and-native-collision-equality
+  (let [base (:syntax (build-and-resolve! @accepted-descriptor))
+        [left right] graph-colliding-native-ids
+        collision-map (into clojure.lang.PersistentHashMap/EMPTY [[left 1] [right 2]])]
+    (is (not= left right))
+    (is (= (clojure.lang.Util/hasheq left) (clojure.lang.Util/hasheq right)))
+    (is (= [2 1 2] [(count collision-map) (get collision-map left) (get collision-map right)]))
+    (doseq [[label objects expected-status expected-reason] (graph-membership-cases base 16)]
+      (let [result (invoke-syntax 'c3-syntax-graph-verify-template [objects])]
+        (is (= expected-status (:status result)) (name label))
+        (is (= expected-reason (get-in result [:diagnostics 0 :facts :reason])) (name label))
+        (when (= expected-status :passed)
+          (is (= (count objects) (:object-count result)) (name label)))))
+    (doseq [field [:syntax-id :prior-syntax-ids]]
+      (let [calls (atom {:hash 0 :equals 0 :string 0 :meta 0})
+            foreign (GraphForeignReference. calls)
+            object (assoc base field (if (= field :syntax-id) foreign [foreign]))
+            result (captured-invocation 'c3-syntax-graph-verify-template [[object]])]
+        (is (or (:host-error result) (= :failed (get-in result [:result :status]))) (name field))
+        (is (= {:hash 0 :equals 0 :string 0 :meta 0} @calls) (name field))))))
 
 (deftest sh04-container-validation-covers-members-beyond-former-ceilings
   (let [descriptor
