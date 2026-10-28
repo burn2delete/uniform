@@ -87,6 +87,12 @@ not evidence that an arbitrary caller supplied those normal owners.
 
 ## Source reconciliation and remaining acceptance
 
+The subsequent [reconciliation receipt](reconciliation.edn) records the successful
+same-actor fetch recovery, main `68a127520c2465a90a4a9b06742cb58ebaffca77`
+composition, affected cheap checks and independent unchanged-input review.
+It supersedes pending reconciliation/CI statements in the initial
+[preparation evidence](evidence.edn) without rewriting their historical failures.
+
 This branch preserved `b83e8b1c24201e052bce4bc6617d5f3b4c9ffe96` and merged main
 `43112981c2e6ee47e1cc1451dbe3b750f88ee874` at
 `65b7e166fb5e231aebd1b0a03c20d11008de1f4f`, tree
