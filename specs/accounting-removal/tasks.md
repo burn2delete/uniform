@@ -53,20 +53,20 @@ validation. That cache must not become independent result-type authority.
 
 - [x] Census definitions, all direct calls, result-field readers, returned
   wrappers and the Effects cache escape; independently inspect the closure.
-- [ ] Record the old four-family budget and width refusals on exact inputs.
-- [ ] Replace the twelve helpers with budget-free semantic interfaces, remove
+- [x] Record the old four-family budget and width refusals on exact inputs.
+- [x] Replace the twelve helpers with budget-free semantic interfaces, remove
   their exported cost fields and all nine injected helper debits, and migrate
   direct and dynamic callers without an old-interface fallback.
-- [ ] Retain complete native/type/member validation before reads, equality or
+- [x] Retain complete native/type/member validation before reads, equality or
   construction. Preserve bare, homogeneous and positional List distinctions,
   String/Symbol carriers, finite-only Keyword insertion and ambiguous empty
   Set/Never routing. Remove accounting-only member-width admission.
-- [ ] Guard semantic result cells before their first field read and reject
+- [x] Guard semantic result cells before their first field read and reject
   obsolete or foreign fields. Independently rederive the Effects cached cell
   from current typed arguments and compare the whole result before source,
   descriptor, row and fact acceptance. Rejection diagnostics must not invoke
   foreign receiver callbacks after operand validation fails.
-- [ ] Pass cheap reader/interface/conservation controls and bounded actual
+- [x] Pass cheap reader/interface/conservation controls and bounded actual
   three-owner helpers, typed callers, Effects joins and emitter consumers,
   including late-invalid members, coherent cache/source/row forgeries and zero
   foreign callbacks. Obtain independent exact-source and retained-result review.
@@ -77,6 +77,30 @@ Retained outer source/context/inference/lowering pools and their own reports
 remain ACC-07/08/06 work. Runtime insertion value-work contracts and physical
 profile legality remain separate, unresolved dispositions; this finite helper
 unit does not close all ACC-05 or ACC-06. No percentage is inferred from counts.
+
+### Current finite PL disposition - 2026-10-28 00:43 UTC
+
+Independent source and retained-result review accepted this finite helper unit
+at `e8c8a14f`, tree `2edb41b1`, after normal reconciliation with main `656f545f`.
+The nine debit sites and three loop-insertion paths have actual acceptance
+evidence. The implementation does not publish zero helper charges or retain
+an old budget API. The Effects cache receives a fresh semantic derivation;
+fresh local helper results are not needlessly derived again at every source
+publisher. All source publishers first guard the supplied semantic cell.
+
+Publication remains draft. Two unchanged Symbol-membership kernel negative
+blocks fail at foreign-map classification in Effects and emitter. The complete
+diagnostic attributes all 88 failures and 24 errors to those blocks; the
+earlier truncated consumer batch remains nonpassing. A minimal actual old
+emitter run confirms the preexisting callback, and both membership closures
+are unchanged from that baseline. No failing negative control is removed or
+weakened. Resolve this existing membership validation requirement under ACC-06
+before the workflow permits ready/merge; do not turn its old callback into PL
+acceptance or claim the whole consumer batch passed.
+
+Fresh repository gates, public-content review, draft readback and eventual
+validated integration remain required. Only ACC-02 and ACC-03 are closed;
+the original thirteen criteria and eleven residual criteria are unchanged.
 
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 

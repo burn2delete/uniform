@@ -37,6 +37,72 @@ family-specific budget-one refusal and the old 1,030-member width refusal.
 An 11-form read at 256 MiB passed without evaluation. Actual semantic execution
 and implementation acceptance remain pending; none is inferred from this read.
 
+### Actual PL successor results and held disposition
+
+The preceding paragraph records the initial harness review. Subsequent actual
+results are below; the original artifacts retain their exact provenance.
+Independent source and retained-result inspection accepted the finite PL
+helper unit at `e8c8a14f92ccd6f5775139da603d42f9cadd86ee`, tree
+`2edb41b1b9771a5f0be6602edc6bb143414f4b07`. This is not a fresh execution of
+every selector on that reconciled head. Incoming PR508 changed only its Reader
+fixture, SH03 test and report; consumed PL production, owned tests, Bootstrap,
+contracts and dependencies are unchanged from the tested tuples.
+
+| Actual stage | Original source | Result and boundary | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Old four-family allowance baseline | `704eb24d`, tree `c7908747`; production identical to main `19db4a52` | 1 test / 36 assertions; natural 0 / 19,272 ms; actual 2 GiB; complete 105 stdout / 0 stderr bytes | `20d5cf3c3d71acef005b85fa9711fea41ee9604c474488df54d5ecca578ec556` |
+| First helper/cache/C7 panel | `58fa90a4`, tree `9c6706bf` | NONPASS: 14 tests / 1,392 passing assertions / 2 failures / 0 errors; natural 1 / 23,182 ms; complete 2,287 / 0 bytes. Both failures were one foreign-member-vector diagnostic oracle | `e354ae8b43db331ac2800282cdecf37dad6d3c541b09ce660d8891b16632ffbf` |
+| Corrected Symbol var plus boundary | `385677d1`, tree `b95a3a86` | 7 tests / 334 assertions; natural 0 / 14,412 ms; complete 966 / 0 bytes. Only the expected native outer-type reason changed to `malformed-type`; rejection and zero reads remain | `2db80c7d6542620c31115b9fb9e9cc0c633adec0bbaae55bd5dd00ba1d140147` |
+| Original consumer panel | `385677d1`, tree `b95a3a86` | NONPASS: 26 tests / 3,691 passing assertions / 88 failures / 24 errors; natural 1 / 47,877 ms; stdout 197,128 observed / 65,536 captured, truncated; stderr empty. No complete per-selector acceptance inferred | `688c6d5dc0841394005c5f0f71582be3f77c942e509b51dbce99269a76e9c6a1` |
+| Remaining-consumer localization | `385677d1`, tree `b95a3a86` | NONPASS: 20 tests / 2,285 passing assertions / 88 failures / 24 errors; natural 1 / 26,101 ms; complete 3,798 / 0 bytes and durable per-var counts. Only two existing Symbol-membership kernels fail | `fab36ed2eaeba54a8d2838e69a0add4d3e82f0af22cf4b80cad947a1460573fb` |
+| Minimal actual old membership diagnostic | `704eb24d`, tree `c7908747` | 1 test / 5 assertions; natural 0 / 12,864 ms; complete 104 / 0 bytes. Confirms one foreign `:kind` lookup, four count calls and zero sequence calls; it is evidence of the old gap, not validator safety | `1a076a138389984a23ba3462be263b0f330a5288d8a87af8206fcdce78d62a66` |
+| Three actual loop-insertion callers plus boundary | `e8c8a14f`, tree `2edb41b1` | 9 tests / 191 assertions; natural 0 / 26,025 ms; actual 2 GiB; complete 1,237 / 0 bytes | `91a28df4801b825c3a6a46975c19a3135b07d53fbb0f228843507528b31f2c3e` |
+
+Every actual child above used the existing 2 GiB / 120-second guarded route,
+clean identical bookends, complete cleanup and a dead root process. Capture
+truncation is retained explicitly for the first consumer batch. The materially
+changed localization harness preserved real failure/error counters, omitted
+six already fully captured runtime selectors and persisted bounded failure
+locations before proceeding to another var. Its compiler-free capture control
+preserved the expected one-test, 50-pass, two-failure, one-error fixture with
+zero opaque printing callbacks. An initial doubled test-counter control failed
+and was corrected before any diagnostic source execution.
+
+Successful unaffected selectors from the first panel retain `58fa90a4`
+provenance; only the changed Symbol var and boundary were freshly rerun at
+`385677d1`. The localization gives separate zero-failure per-var records for
+the other eighteen selected vars. No assertion totals are summed, no failed
+panel is relabeled passing and no globally fresh pass is claimed. Cheap source
+conservation passed 2 tests / 58 assertions without Bootstrap after its initial
+three failures exposed missing native preclassification changes. Source and
+all test forms read successfully without evaluation; old helper names have no
+remaining production or dynamic test references.
+
+The two residual kernels are
+`body-symbol-set-carrier-contains-development-kernel` and
+`current-gravity-symbol-set-carrier-contains-development-kernel`. Each has
+44 failures / 12 errors exclusively at its existing non-three-field foreign
+map block. Their membership classifiers, domains and type predicates are
+unchanged from `704eb24d`; the Effects and emitter closures also match after
+owner-prefix normalization. The minimal actual old emitter diagnostic binds
+that static finding to execution. Keep these genuine negative controls and
+their ACC-06 validation requirement open; they are not PL insertion debits.
+They hold the ready/merge workflow, so this successor remains draft.
+
+| Tested source/test path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `9c5e77a7bc179a21f5c76eea5009d90c29c9c85ac550728dc70e3c3f5d6b2a32` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `5f99401adaaed5464916339af2d981212afe93089190bc60d0e7a3709b2fad74` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `20d526a01ccdb9073284a7932932d7eb742e09e26779f9da221a1d6174082bd7` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `cafa971fec30e4dc57655e4e2f8ce2c08045a9e2ded21c840430198f1ee18e63` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj` | `8522e0775e0d5c80e4ea37689c3458e5a22c1a1c1a86a9a8b4b2b070386357de` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | `c6b39e601920db5429921020dc58a5727c39b8838681bd6f1e7df26424c95a02` |
+
+Actual authenticated-source replay, Core, public admission, C12 and release
+are unrun for this unit. Outer source/inference/lowering pools, runtime value
+work, physical profile requirements and the held runtime/Native chain remain
+separate open obligations. The original thirteen-row denominator is unchanged.
+
 ## ACC-06 LR validator successor - 2026-10-27 UTC
 
 The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree
