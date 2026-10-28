@@ -1318,3 +1318,66 @@ compatibility read/effect/representation or necessity decision, RV1's
 transitive mutation/equivalence or necessity decision, and whole RV4 remain
 open. Superseding PR529 neither executes those cases nor transfers restricted
 warm evidence or uncertain operations.
+
+### RV2/RV4: offline Reader producer evidence driver
+
+`gravity.build.producer-evidence`, under `bootstrap/clojure/test/gravity/build/`,
+checks retained public Reader producer captures without starting a producer,
+loading Bootstrap, acquiring a broker, probing processes, or reading cache
+state. This is the next bounded implementation of the existing RV2/RV4 evidence
+criterion. The current catalog freshness policy and production runners are
+unchanged. No real expanded-closure producer or reuse result is supplied here.
+
+The driver reads exactly three explicitly supplied local files: a capture-specific
+method manifest, the dependency contract, and the capture envelope. The caller
+supplies the method's SHA-256 from independent exact-artifact review. The method
+pins the other two files by their raw byte digests. Replacing a capture and
+recomputing its own hash cannot satisfy the independently pinned method. The
+capture-specific manifest is instantiated after capture; it is not the separate
+pre-execution method review or runtime admission required above.
+
+The closed `:gravity/reader-producer-method-v1` map has `:contract-sha256`,
+`:capture-sha256` and `:binding`. The binding contains:
+
+- `:source`: exact Git `:commit`, `:tree`, complete `:repository-identity` and
+  `:clean? true`;
+- `:inputs`: every declared Reader input, including all four lexical files,
+  consumed runners, tests and contracts, in declaration order, retaining
+  `:path`, `:role` and the runner's framed `:sha256` identity;
+- `:inventories` and `:shadow-inputs`: the pinned runner's complete material,
+  including absent-path identities, used to recompute the existing explicit
+  `:consumed-input-identity` without changing its encoding;
+- `:classpath-identities`: the actual ordered child classpath identities;
+  `:runtime-tool-inputs`: identified runtime/tool bytes; and
+  `:child-runtime-identity`: the actual-child runtime fingerprints, including
+  basis, basis file, configuration, JVM arguments, environment and properties.
+
+The `:gravity/reader-producer-capture-v1` envelope repeats the binding in
+`:binding-before` and `:binding-after`, retains `:producer-provenance` separately
+from `:applying-source`, and holds the complete emitted batch report as
+`:report-edn`. Its `:terminal` requires natural exit zero, no timeout, complete
+stdout/stderr, completed cleanup and a dead process root. The report must select
+exactly the Reader identity namespace, attempt it successfully, reconcile its
+nonzero test/assertion totals and retain untruncated namespace output. Missing,
+changed, mismatched, tagged, trailing or incomplete evidence is rejected with
+`PRODUCER-EVIDENCE-INVALID` and a stable `:field`; malformed EDN/UTF-8 also fails.
+
+Invoke only on explicitly supplied unrestricted artifacts:
+
+```bash
+clojure -J-Xmx256m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.build.producer-evidence \
+  REVIEWED_METHOD_SHA256 METHOD_EDN CONTRACT_EDN CAPTURE_EDN
+```
+
+A successful result says `:status :consistent`, `:cache-admission? false`,
+`:real-evidence-accepted? false` and `:producer-executed-by-driver? false`.
+The checker compares supplied observations; it does not independently measure
+or authenticate a child, discover effects/resources, establish that the supplied
+shadow inventory is complete, or prove that terminal observations occurred.
+Independent source/method and retained-result review must establish those facts.
+The controls use explicitly synthetic captures and do not count as real evidence.
+Real cold miss/producer, unchanged-selection hit with original provenance,
+unrelated documentation/test-body reuse, each lexical input's real invalidation,
+actual runtime attribution and final independent admission remain OPEN under
+RV2/RV4. Broader RV1 and compatibility closure obligations are unchanged.

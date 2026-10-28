@@ -128,3 +128,20 @@ the complete predecessor bridge/lineage and prior review. Both projection
 checks and whitespace passed. Independent exact-candidate receipts belong to
 the PR record. No resolver,
 compiler, producer, authentication, runtime or broker execution occurred.
+
+Independent source/interface review accepted exact candidate
+`023a28488f8f161c68cbe57aa29fa48247197d62`, tree
+`e8b660791bdaf3e865528f943725b5d1dd307b41`. Receipt SHA256:
+`c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57`.
+The reviewer reproduced the focused controls, streaming manifest comparison,
+full SH conservation and byte-identical pin-validating regeneration. Acceptance
+is limited to the task-interface amendment; manifest adoption and implementation
+remain open.
+
+Main then advanced through Reader540 and RV543 to
+`114281c40e1ada82bc7fd3faac834c9f9805d8bb`. The normal merge conflicted in the
+shared SH generator and projection. Resolution retains the incoming Reader
+dispatch pins, ownership and complete review history, adds the Build pins and
+retains the accepted PKG5 source-review receipt and its predecessor mapping.
+The composed source fingerprint is new; mapping promotion remains pending.
+Changed-composition review and exact-head CI are separate remaining gates.
