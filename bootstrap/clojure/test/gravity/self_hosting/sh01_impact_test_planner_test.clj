@@ -489,7 +489,9 @@
           [["bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
             'gravity.self-hosting.runtime-module-reads-test]
            ["bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
-            'gravity.self-hosting.module-census-test]]]
+            'gravity.self-hosting.module-census-test]
+           ["bootstrap/clojure/test/gravity/self_hosting/runtime_shape_test.clj"
+            'gravity.self-hosting.runtime-shape-test]]]
     (let [context (planner/planning-context)
           owner (get-in context [:ownership :standalone-test-owners path])
           entry (get-in context [:standalone-test-index :by-namespace namespace])]
