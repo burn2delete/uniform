@@ -33,6 +33,51 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-05 shared PL helper successor - 2026-10-28 UTC
+
+Accounting owns the existing C7, Effects and emitter files and their existing
+SH08, SH09 and runtime-iteration tests. This finite successor starts at main
+`19db4a52c6c3a354374acca78354adc738280b5e`, tree
+`de6fa80413b146f593efe13a59d66d28d3b00462`. Native retains the separate C6
+form-quota change. Held Native registration, SH fields and runtime successors
+are not prerequisites for this compiler-helper unit and are not edited.
+
+The complete source inventory is twelve `pl/ssin/syin/ksin-type-work` helpers,
+nineteen direct calls and nine first helper-debit consumers. The three PL
+dispatchers account for nine calls. The remaining ten calls are C7's derive,
+three inferred-call wrappers, loop insertion and semantic-only inferred-call
+validator; Effects' append context and loop insertion; and emitter's typed
+prepend and loop insertion. Three source builders read semantic helper fields.
+Effects also stores a successful helper result in its append context for later
+validation. That cache must not become independent result-type authority.
+
+- [x] Census definitions, all direct calls, result-field readers, returned
+  wrappers and the Effects cache escape; independently inspect the closure.
+- [ ] Record the old four-family budget and width refusals on exact inputs.
+- [ ] Replace the twelve helpers with budget-free semantic interfaces, remove
+  their exported cost fields and all nine injected helper debits, and migrate
+  direct and dynamic callers without an old-interface fallback.
+- [ ] Retain complete native/type/member validation before reads, equality or
+  construction. Preserve bare, homogeneous and positional List distinctions,
+  String/Symbol carriers, finite-only Keyword insertion and ambiguous empty
+  Set/Never routing. Remove accounting-only member-width admission.
+- [ ] Guard semantic result cells before their first field read and reject
+  obsolete or foreign fields. Independently rederive the Effects cached cell
+  from current typed arguments and compare the whole result before source,
+  descriptor, row and fact acceptance. Rejection diagnostics must not invoke
+  foreign receiver callbacks after operand validation fails.
+- [ ] Pass cheap reader/interface/conservation controls and bounded actual
+  three-owner helpers, typed callers, Effects joins and emitter consumers,
+  including late-invalid members, coherent cache/source/row forgeries and zero
+  foreign callbacks. Obtain independent exact-source and retained-result review.
+- [ ] Reconcile current main, pass repository and public CI gates, independently
+  review the outgoing payload and exact integration tuple, then merge normally.
+
+Retained outer source/context/inference/lowering pools and their own reports
+remain ACC-07/08/06 work. Runtime insertion value-work contracts and physical
+profile legality remain separate, unresolved dispositions; this finite helper
+unit does not close all ACC-05 or ACC-06. No percentage is inferred from counts.
+
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
 Accounting retains sole ownership of the three existing C7, Effects and emitter
@@ -66,11 +111,13 @@ identity, source reconstruction and full-row/census contracts stay intact.
   C7 large 1/2, with original baseline 1/39 and compiler-free controls 2/41.
 - [x] Pass repository gates at `59efea4e`: boundary/LOC 11/23, source census
   2,035, docs 240/19 and roadmap, with complete clean bounded capture.
-- [ ] Finish exact current-main preflight and outgoing review, publish draft and
+- [x] Finish exact current-main preflight and outgoing review, publish draft and
   verify current-head CI/readback before ordinary validated integration.
 
-Fresh main readback remains `9c093bc6`; no incoming dependency change invalidates
-the accepted candidate. Local CI-pinned lint recognizes 223 unchanged baseline
+PR507 integrated this finite unit at `19db4a52`, tree `de6fa804`, identical to
+reviewed head `c2eaa507`. Main run 40603015619 passed seven routine jobs and the
+source-only prerelease; only the explicit unavailable Core gate failed, without
+genuine Core execution. Local CI-pinned lint recognizes 223 unchanged baseline
 warnings and zero blockers without a policy change. Each receipt and the
 controlled 401-byte reflection warning keep their exact scope in `evidence.md`.
 

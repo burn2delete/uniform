@@ -1,5 +1,42 @@
 # Accounting removal evidence
 
+## ACC-05 PL inventory and finite successor - 2026-10-28 UTC
+
+Main `19db4a52c6c3a354374acca78354adc738280b5e`, tree
+`de6fa80413b146f593efe13a59d66d28d3b00462`, contains the integrated LR helper
+unit. The PL source inventory was originally recorded at `c2eaa507` with this
+identical full tree; that is retained provenance, not a new compiler execution.
+Read-only AST and whole-source symbol inspection agree on twelve definitions
+and nineteen calls, with no first-class helper aliases. Nine direct call sites
+inject helper costs into caller reports. The tenth external call is semantic
+only. The three dispatchers make the remaining nine calls.
+
+The debit consumers are C7 `lsi-insertion`, `pl-derive` and its three Set
+inferred-call wrappers, Effects `va-context` and `lsi-insertion`, and emitter
+`typed-compile-prepend` and `lsi-insertion`. Downstream C7
+`tc-products-with-source-forms` consumes the parent reports, so removal occurs
+at the helper-debit sites rather than deleting the parent's independent pool.
+Three `pl-source` builders consume status/result/family/argument/extent fields.
+Effects' `append-context.type-checks` is a semantic cache passed to
+`body-pl-call-valid?`; loop-row solving instead invokes a fresh insertion
+helper. Other construction/query `type-checks` contexts are distinct.
+
+Independent source/concept inspection requires a native closed semantic-cell
+guard before any family lookup, plus fresh current-argument derivation at the
+Effects cache consumer. Schema checking alone cannot reject a coherently
+forged cached result, descriptor, row and fact. Supported member domains,
+complete validation, Never behavior and source/equality checks must survive.
+STD3's persistent Set insertion and List prepend contracts retain real
+allocation/profile obligations. Their runtime value-work declarations remain
+separately unresolved and are not silently removed with compiler type costs.
+
+The old-family baseline harness has independent static acceptance at SHA-256
+`c60e05875f896191fe2d1e448816806f6f796b1b8191b73b2f6b9d490e26e1f4`.
+Its intended scope is three owners by four families: small accepted inputs,
+family-specific budget-one refusal and the old 1,030-member width refusal.
+An 11-form read at 256 MiB passed without evaluation. Actual semantic execution
+and implementation acceptance remain pending; none is inferred from this read.
+
 ## ACC-06 LR validator successor - 2026-10-27 UTC
 
 The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree
