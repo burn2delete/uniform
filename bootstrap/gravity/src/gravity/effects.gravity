@@ -13058,7 +13058,9 @@
                                    0)]
                 (if (body-bka-anchor? anchor-type)
                   (let [result-type :gravity.type/bool]
-                    (if (if (body-nq-ids? node call nodes bindings module)
+                    (if (if (if (body-bka-binding? binding module)
+                              (body-nq-ids? node call nodes bindings module)
+                              false)
                           (if (map? edge)
                             (if (integer? (get edge :ordinal))
                               (if (>= (get edge :ordinal) 0)
@@ -13113,9 +13115,7 @@
                                            :caller-function-syntax-id
                                            (get caller :function-syntax-id)}]
                         (if (body-all?
-                              [(=
-                                 false
-                                 (= :invalid-bare-keyword-anchor-set-equality-owner caller))
+                              [(= false (= :invalid-bare-keyword-anchor-set-equality-owner caller))
                                (= :call (get node :core-form))
                                (= :reference (get operator :core-form))
                                (=
@@ -13127,7 +13127,6 @@
                                  (get node :attributes))
                                (= expected-call call)
                                (= expected-edge edge)
-                               (body-bka-binding? binding module)
                                (= '= (get binding :name))
                                (=
                                  [bid]

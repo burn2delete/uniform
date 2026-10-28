@@ -9413,7 +9413,9 @@
                                    0)]
                 (if (sh08-bka-anchor? anchor-type)
                   (let [result-type :gravity.type/bool]
-                    (if (if (sh08-nq-ids? node call nodes bindings module)
+                    (if (if (if (sh08-bka-binding? binding module)
+                              (sh08-nq-ids? node call nodes bindings module)
+                              false)
                           (if (map? edge)
                             (if (integer? (get edge :ordinal))
                               (if (>= (get edge :ordinal) 0)
@@ -9468,9 +9470,7 @@
                                            :caller-function-syntax-id
                                            (get caller :function-syntax-id)}]
                         (if (sh08-ft-all-true?
-                              [(=
-                                 false
-                                 (= :invalid-bare-keyword-anchor-set-equality-owner caller))
+                              [(= false (= :invalid-bare-keyword-anchor-set-equality-owner caller))
                                (= :call (get node :core-form))
                                (= :reference (get operator :core-form))
                                (=
@@ -9482,7 +9482,6 @@
                                  (get node :attributes))
                                (= expected-call call)
                                (= expected-edge edge)
-                               (sh08-bka-binding? binding module)
                                (= '= (get binding :name))
                                (=
                                  [bid]

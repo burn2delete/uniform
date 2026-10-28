@@ -22971,7 +22971,12 @@
       (doseq [changed [(assoc descriptor :anchor-domain-work 0)
                        (assoc-in descriptor [:source :syntax-id] :forged)
                        (assoc-in descriptor [:equality-policy :identity] :observed)]]
-        (let [rejected (check (assoc types :operator changed))]
+        (let [changed-types (assoc types :operator changed)
+              own (pr359-descriptor-c7 'sh08-bka-inferred-call core node call edge nodes (:bindings input) changed-types)
+              rejected (check changed-types)]
+          (is (= :rejected (:status own)))
+          (is (= :bare-keyword-anchor-set-equality-source-mismatch (:reason own)))
+          (is (not (contains? own :work-count)))
           (is (= :rejected (:status rejected)))
-          (is (= ["C7-VERIFY" :bare-keyword-anchor-set-equality-source-mismatch]
+          (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
                  ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
