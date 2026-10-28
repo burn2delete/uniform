@@ -449,8 +449,10 @@
       (reset! calls [])
       (let [cycle (assoc-in forms [(dec depth) :children] [:form-0])
             error (try (hash! cycle) nil (catch clojure.lang.ExceptionInfo ex ex))]
+        (is (= ["C2-HASH" source-a]
+               (vec (take 2 (:reader-fail-args (ex-data error))))))
         (is (= :reader-form-cycle
-               (get-in (ex-data error) [:reader-fail-args 3 :facts :failure-kind])))
+               (get-in (last (:reader-fail-args (ex-data error))) [:facts :failure-kind])))
         (is (= [:metrics] @calls))))))
 
 (deftest product-integrity-record-is-exact-and-path-neutral
