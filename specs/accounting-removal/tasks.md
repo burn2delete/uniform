@@ -98,8 +98,10 @@ weakened. Resolve this existing membership validation requirement under ACC-06
 before the workflow permits ready/merge; do not turn its old callback into PL
 acceptance or claim the whole consumer batch passed.
 
-Fresh repository gates, public-content review, draft readback and eventual
-validated integration remain required. Only ACC-02 and ACC-03 are closed;
+Repository gates passed at `414b3c67`: boundary/LOC 11/23, source census 2,035,
+docs 240/19, roadmap and changed-file lint with zero blockers. Public-content
+review, draft readback and eventual validated integration remain required.
+Only ACC-02 and ACC-03 are closed;
 the original thirteen criteria and eleven residual criteria are unchanged.
 
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC

@@ -89,6 +89,22 @@ that static finding to execution. Keep these genuine negative controls and
 their ACC-06 validation requirement open; they are not PL insertion debits.
 They hold the ready/merge workflow, so this successor remains draft.
 
+Fresh repository gates passed at `414b3c67f04460352d68a1a2bd27446f832d892c`,
+tree `dbc1bafd6f6c34a311483bf46a46447fddd0149c`. Boundary/LOC passed 11 tests /
+23 assertions with 2,035 source files, document validation passed 240 docs /
+19 indexes and roadmap validation passed. The bounded 256 MiB normal-broker
+child exited naturally 0 in 2,248 ms, complete 456 stdout / 0 stderr bytes,
+clean exact bookends and complete cleanup. Receipt SHA-256:
+`ced283379cae75342b1b41517ee541f458f61209acccf25f302501ab334f7f9a`.
+
+The unchanged CI-pinned lint policy at the same tuple reports 223 unchanged
+baseline warnings and zero blockers against main `656f545f`. It exited
+naturally 0 in 14,912 ms at 256 MiB, complete 76 stdout / 0 stderr bytes,
+clean exact bookends and complete cleanup. Receipt SHA-256:
+`c92d5aa9b2be9d5d3d8ce74b760a7c9870b3534128f5f5a53b28184936698c80`.
+These cheap passes do not change the two membership failures or authorize a
+ready transition. Public CI and draft readback remain separate pending stages.
+
 | Tested source/test path | SHA-256 |
 | --- | --- |
 | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `9c5e77a7bc179a21f5c76eea5009d90c29c9c85ac550728dc70e3c3f5d6b2a32` |
