@@ -1180,3 +1180,12 @@ injected cache-mechanics controls. The planner successor also preserves the
 lexical facade's existing paired owner when admitting its three exact nested
 paths; missing ownership and an unknown nested path remain refusals. Its
 renewed planner and control results are pending.
+
+The next exact-source run on `fdab1acd`, tree `1145c8a3`, retained three
+passing controls (103 assertions) but the planner composition test errored on
+main's existing unknown `private-collection-chain-test` catalog entry. Overall:
+4 tests, 103 passes, 0 failures, 1 error, natural exit 1, Bootstrap absent.
+That separate owner's registration remains an integration dependency; the
+candidate neither whitelists the namespace nor changes fail-closed catalog
+behavior. A direct owner-record control is added without weakening the full
+planner test, which must pass after the catalog dependency is integrated.

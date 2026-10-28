@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-impact-test-planner-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.sh01-component-test-dependencies
@@ -719,6 +720,26 @@
            (:classification
             (planner/classify-path ownership
               "bootstrap/clojure/src/gravity/c2_artifact_identity/unreviewed.clj"))))))
+
+(deftest reader-lexical-nested-inputs-retain-their-own-paired-owner
+  ;; Inspect the owning record directly; this does not bypass catalog checks
+  ;; in build-plan or change the full planner integration test above.
+  (let [owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner 'closure-owned?)
+        ownership (edn/read-string (slurp "docs/self-hosting-slice-ownership.edn"))
+        lexical "bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+        identity "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"]
+    (doseq [name ["operations" "primitives" "product"]
+            :let [input {:path (str "bootstrap/clojure/src/gravity/c2_lexical_validation/" name ".clj")
+                         :role :transitive}
+                  closure {:inputs [input]}]]
+      (is (true? (owned? ownership "c2-artifact-identity" closure)))
+      (is (false? (owned? ownership "c11-mir" closure)))
+      (is (false? (owned? (update ownership :module-owners dissoc lexical)
+                          "c2-artifact-identity" closure)))
+      (is (false? (owned? (update ownership :module-owners dissoc identity)
+                          "c2-artifact-identity" closure)))
+      (is (false? (owned? ownership "c2-artifact-identity"
+                          {:inputs [(assoc input :role :production)]}))))))
 
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
