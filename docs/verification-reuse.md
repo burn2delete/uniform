@@ -1381,3 +1381,43 @@ Real cold miss/producer, unchanged-selection hit with original provenance,
 unrelated documentation/test-body reuse, each lexical input's real invalidation,
 actual runtime attribution and final independent admission remain OPEN under
 RV2/RV4. Broader RV1 and compatibility closure obligations are unchanged.
+
+#### Complete captured output and frozen operational requirements
+
+The offline checker follows the existing batch runner's captured-output format:
+`:bytes`, `:observed-bytes` and `:limit-bytes` must be nonnegative integers,
+retained bytes cannot exceed the recorded capture limit, and complete output
+requires equal retained/observed/UTF-8 byte counts with `:truncated? false`.
+The initial driver omitted the capture-limit checks and could accept a missing
+or negative limit on an otherwise complete-looking record. The correction
+rejects those records through `PRODUCER-EVIDENCE-INVALID` / `:complete-output`,
+even when a synthetic method is repinned to the malformed capture. This is
+validation of the actual host capture record, not a compiler work allowance.
+Focused stdout/stderr controls retain valid exact-limit multibyte UTF-8 output,
+reject missing/mismatched metadata, and round-trip the public result with
+unchanged input byte hashes and a recorded serialized output hash.
+
+The existing RV2/RV4 operational evidence requirements remain fixed at this
+seam; the capture-specific method pins the source, declaration, runtime,
+ordered classpath, producer/applying provenance and terminal observations
+already specified above. A successful offline check never substitutes for the
+following observations:
+
+| Existing required observation | Exact evidence still required |
+| --- | --- |
+| Real cold miss and producer | Separately reviewed/admitted operational method; actual child execution and its original producer provenance, input/key identities, complete report and natural terminal bookends. The current driver accepts only fresh non-cacheable reports and does not validate an admitted miss. |
+| Unchanged-selection hit | Same consumed input, runtime and ordered classpath identities; no newly executed tests; original producer provenance retained and applying source recorded separately. The current driver rejects a hit report. |
+| Unrelated documentation/existing-test-body reuse | Exact applying source delta; unchanged consumed declarations, runner/contracts, inventories, shadows and runtime/classpath; original result/provenance retained. A declared test or contract mutation is not unrelated. |
+| Each lexical input's invalidation | Separate facade, operations, primitives and product mutations; changed identity/key and refusal of the old result, followed by a separately observed real fresh producer. Hypothetical repinning or synthetic failure checks are not these observations. |
+| Failure, missing input and tampering | Nonpassing terminal/report outcomes, absent or changed bytes, wrong owners/shadows/inventories, and mismatched provenance must refuse admission. No successful report or hash hides a failed or incomplete process. |
+
+The next operational gate is independent review of the exact public expanded-
+closure capture method and its observer/serializer, including how it obtains
+actual runtime and terminal facts and represents the later miss/hit cases,
+followed by separate runtime admission. No producer is authorized by this pure
+correction. Fresh-only policy stays active; real execution/result review and
+any later cache admission remain OPEN. The original 8/86 controls retain their
+source attribution; the changed output guard receives focused new controls
+rather than a repeated broad suite. Merged-commit CI40783760547 is terminal
+cancelled and supplies no successful result; it was not rerun or cancelled by
+this correction.

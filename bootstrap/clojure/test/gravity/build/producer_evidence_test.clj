@@ -205,3 +205,52 @@
   (is (= :classpath-order
          (field #(check (update-in (fixture) [:method :binding :classpath-identities]
                                     (fn [entries] (vec (reverse entries)))))))))
+
+(defn- fixture-with-output [stream output]
+  (let [f (fixture)
+        report (assoc-in (:report f) [:namespace-results 0 stream] output)]
+    (assoc-in f [:capture :report-edn] (pr-str report))))
+
+(deftest complete-output-requires-valid-capture-metadata
+  (let [output {:text "ok" :bytes 2 :observed-bytes 2 :limit-bytes 2 :truncated? false}]
+    (doseq [stream [:stdout :stderr]]
+      (is (= :consistent (:status (check (fixture-with-output stream output)))))
+      (doseq [key [:text :bytes :observed-bytes :limit-bytes :truncated?]]
+        (is (= :complete-output
+               (field #(check (fixture-with-output stream (dissoc output key)))))
+            (str stream " missing " key)))
+      (doseq [[key value] [[:limit-bytes -1] [:limit-bytes 1] [:limit-bytes 2.0]
+                            [:limit-bytes "2"] [:bytes -1] [:bytes 1]
+                            [:observed-bytes -1] [:observed-bytes 3]
+                            [:truncated? true]]]
+        (is (= :complete-output
+               (field #(check (fixture-with-output stream (assoc output key value)))))
+            (str stream " wrong " key " " value))))))
+
+(deftest serialized-output-remains-bound-to-reviewed-input-bytes
+  (let [output {:text "\u00e9" :bytes 2 :observed-bytes 2 :limit-bytes 2 :truncated? false}
+        {:keys [method capture]} (fixture-with-output :stdout output)
+        capture-bytes (bytes capture)
+        method (assoc method :capture-sha256 (hash-bytes capture-bytes))
+        method-bytes (bytes method)
+        method-pin (hash-bytes method-bytes)
+        pins [(hash-bytes method-bytes) (hash-bytes contract-bytes) (hash-bytes capture-bytes)]
+        result (evidence/verify-capture! method-pin method-bytes contract-bytes capture-bytes)
+        serialized (bytes result)
+        readback (edn/read-string (String. serialized "UTF-8"))]
+    (is (= :consistent (:status readback)))
+    (is (= pins [(:method-sha256 readback) (:contract-sha256 readback)
+                 (:capture-sha256 readback)]))
+    (is (= result readback))
+    (is (= (hash-bytes serialized) (hash-bytes (bytes readback))))
+    (is (= pins [(hash-bytes method-bytes) (hash-bytes contract-bytes)
+                 (hash-bytes capture-bytes)]))
+    (is (false? (:real-evidence-accepted? readback)))
+    (is (false? (:cache-admission? readback)))
+    (is (= :capture-digest
+           (field #(evidence/verify-capture!
+                    method-pin method-bytes contract-bytes
+                    (bytes (assoc-in capture [:terminal :exit-code] 1))))))
+    (is (= :terminal
+           (field #(check (assoc-in (fixture-with-output :stdout output)
+                                      [:capture :terminal :exit-code] 1)))))))
