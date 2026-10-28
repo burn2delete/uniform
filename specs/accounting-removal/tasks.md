@@ -704,12 +704,21 @@ The ACC-13 owner has independently reviewed a finite C3 graph-membership
 change and its direct Guest comparison. The local candidate is not integrated.
 The comparison uses explicit normalized input and leaves the original source
 authentication, selected-current Syntax binding and genuine C5 route open.
-The current draft PR512 remains at its earlier published head; its owner's
-later candidate push was blocked by automatic approval review before execution.
-Resolve that exact publication hold through its original owner and supported
-approval process; do not infer publication from the local result.
+Draft PR512 now contains the reviewed candidate. Its owner's earlier push was
+blocked by automatic approval review before execution; the same operation
+subsequently succeeded through the supported route after new authorization.
+The candidate is published but not integrated.
 
 ACC-13 remains partial. Source-byte limits, other Syntax, macro, schema and
 carrier mechanisms, current source admission and their actual owner acceptance
 remain open. This comparison does not close ACC-12 or authorize a held B51
 endpoint, C12 or release.
+
+## ACC-12 B51 test artifact restoration
+
+PR517 restored the truncated SH07 B51 test artifact on main at `068de740`.
+The independently reviewed repair conserves the historical test names and
+assertions, with focused fixture and host UTF-8 checks passing on the composed
+head. The full suite, current seven-shard assembly, B51 public roots, source
+authentication and quota-source migration remain unassessed. ACC-12 remains
+partial; the separately owned ACC-13 B51 route remains open.

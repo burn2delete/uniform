@@ -1894,10 +1894,29 @@ namespace replacement warning; it was not empty. Receipt SHA-256:
 `40575aeff708a5f19b529465e4994789351f9a59fef0b97255d239a02e78bfcd`.
 The independent result review is limited to this retained comparison.
 
-PR512's published head remains `9a362cbf29c179f47bf80108d47e234d36033ec1`;
-the later local candidate has not been published or integrated. Automatic
-approval review blocked its owner's push before execution, and that owner retains
-the exact publication hold. No authenticated C2/Syntax binding, genuine C5,
+The earlier PR512 head was `9a362cbf29c179f47bf80108d47e234d36033ec1`.
+Automatic approval review blocked the later candidate push before execution;
+after new relevant authorization, the original owner used the same supported
+route successfully. PR512 now publishes the reviewed `5b5f0a05` candidate as
+a draft, without integration. No authenticated C2/Syntax binding, genuine C5,
 whole-source speedup, public integration or ACC-13 completion follows from
 the normalized comparison. Existing B51 authority, source pin and C12 holds
 remain separate.
+
+## PR517 finite B51 test artifact restoration
+
+PR517 merged as `068de7405b6096d62e1b1636b973e0f250bdc1a6` over
+`a394d4f04313414ee0d397882e2fd2cb0c4b47c7`. The merged tree
+`936e808632488816fd9185f10728054f75d6fdee` exactly matches independently
+reviewed head `f00ac77455cfdd3419c2e6ee8bafc07c449a67d2`; its remote branch
+is retained. The single-file restoration preserves 121 test names and 1,584
+ordered assertions, with an effective conservation mutation control. The
+fresh composed fixture and host UTF-8 selection passed 2 tests and 155
+assertions, natural exit zero in 9.054 seconds; strict changed-file lint and
+seven routine CI jobs also passed. Core readiness and prerelease were skipped.
+
+The original truncated source, authentic historical restoration, intervening
+failed lint CI and corrected test candidate retain their own provenance. The
+full 121-case suite, current seven-shard assembly, public B51 roots, source
+authentication, Core, C12 and quota-source migration remain unassessed. This
+finite test artifact repair does not close ACC-12 or ACC-13.
