@@ -471,7 +471,7 @@
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def mapping-review
-  {:status :pending-source-version-review
+  {:status :accepted-mapping-only
    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008"
    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36"
    :reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55"
@@ -493,6 +493,13 @@
     :locator-receipt-sha256 "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f"
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
+   :pr513-runtime-shape-ownership-review
+   {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005"
+    :reviewed-commit "cbc2c6dd99abea1820f7c37bcfdcd1ccba2fb1a5"
+    :reviewed-tree "4488dfdb7687448f36c6f34c8cecf316b9dd21e1"
+    :audit-commit "97a1750b97bbe7bad1c2b171feed38775f631246"
+    :receipt-sha256 "7153744e8bec066be08f390bafc423a2cc57f2358bd9b8c7977ba6038c80cd41"
+    :scope "PR513-only three-line runtime-shape namespace ownership source-version successor and unchanged guards. Metadata-only adoption for identical0a03d2a7 payload; all180 whole criteria remain unassessed. Later main composition and final integration remain with ACC09 and independent review."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."})
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
