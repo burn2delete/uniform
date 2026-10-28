@@ -697,3 +697,19 @@ outer inference, validation and lowering pools remain with their existing
 owners, and ACC-05 remains partial. ACC-06 and the other original row states
 are unchanged. No authenticated-source, Core, C12, release or overall
 completion is inferred.
+
+## ACC-13 C3 comparison and remaining boundary
+
+The ACC-13 owner has independently reviewed a finite C3 graph-membership
+change and its direct Guest comparison. The local candidate is not integrated.
+The comparison uses explicit normalized input and leaves the original source
+authentication, selected-current Syntax binding and genuine C5 route open.
+The current draft PR512 remains at its earlier published head; its owner's
+later candidate push was blocked by automatic approval review before execution.
+Resolve that exact publication hold through its original owner and supported
+approval process; do not infer publication from the local result.
+
+ACC-13 remains partial. Source-byte limits, other Syntax, macro, schema and
+carrier mechanisms, current source admission and their actual owner acceptance
+remain open. This comparison does not close ACC-12 or authorize a held B51
+endpoint, C12 or release.

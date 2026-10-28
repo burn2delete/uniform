@@ -1874,3 +1874,30 @@ Two changed authenticated-composition assertions were not run. Runtime Set
 value work, outer accounting pools, authenticated source, public runtime, Core,
 C12 and release remain outside this finite result. ACC-05 remains partial; no
 other original criterion receives closure credit.
+
+## ACC-13 C3 finite Guest comparison
+
+At local candidate `5b5f0a05efb1453b479d6ab967e42fd30b0663a6`, tree
+`0c9b0fa57d98d0d7f9554e5a6cfd06bb91ee1f82`, the reviewed C3 source change
+replaces the duplicate lookup of a validated SHA-256 string with membership in
+the graph's already-maintained depth map. The original prior-reference checks
+remain. The owner compiled the old and changed Guest plans and compared their
+complete reports using explicit normalized data, actual builder and digest
+resolution and fresh resolved verification.
+
+The independently reviewed original run exited naturally in 26.244 seconds
+with actual 2 GiB, complete captures, equal clean source bookends and completed
+cleanup. It recorded 48 full old/new result comparisons, 12 finite ABBA
+observations and four rejected foreign-input cases with zero hash, equality,
+stringification or metadata callbacks. Its 107-byte stderr contained a Clojure
+namespace replacement warning; it was not empty. Receipt SHA-256:
+`40575aeff708a5f19b529465e4994789351f9a59fef0b97255d239a02e78bfcd`.
+The independent result review is limited to this retained comparison.
+
+PR512's published head remains `9a362cbf29c179f47bf80108d47e234d36033ec1`;
+the later local candidate has not been published or integrated. Automatic
+approval review blocked its owner's push before execution, and that owner retains
+the exact publication hold. No authenticated C2/Syntax binding, genuine C5,
+whole-source speedup, public integration or ACC-13 completion follows from
+the normalized comparison. Existing B51 authority, source pin and C12 holds
+remain separate.
