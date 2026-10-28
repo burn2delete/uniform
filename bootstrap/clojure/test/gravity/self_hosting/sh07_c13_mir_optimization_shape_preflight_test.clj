@@ -28,6 +28,7 @@
     build-c13-invalidation-entry
     build-c13-check-elision-gate
     c13-build-bounded-identity-optimized-mir
+    sh16-c13-build-literal-bool-translation-validation
     verify-c13-mir-optimization-passes
     sh16-optimization-policy
     sh16-optimize
