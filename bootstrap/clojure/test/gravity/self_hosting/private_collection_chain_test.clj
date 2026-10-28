@@ -134,7 +134,22 @@
                  (assoc-in (:links input) [last-index :binding-record :binding-id] nil)
                  (assoc-in (:links input) [last-index :reference-source :syntax-id] nil)
                  (assoc-in (:links input) [last-index :unknown] true)]]
-      (is (false? (invoke owner "pc-links-domain?" [bad]))))))
+      (is (false? (invoke owner "pc-links-domain?" [bad]))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque ID hashed")))
+                   (equals [_other] (swap! callbacks inc) (throw (AssertionError. "opaque ID compared")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque ID printed"))))
+          reference-id (get-in input [:links last-index :reference-core-node-id])
+          bad-input (assoc-in input [:nodes reference-id :attributes :binding-id] opaque)
+          result (unroll owner bad-input)
+          bad-links (assoc-in (:links input) [last-index :binding-record :binding-id] opaque)
+          bad-descriptor (assoc-in expected [:presence-proof :receiver-links last-index :reference-core-node-id] opaque)]
+      (is (= :rejected (:status result)))
+      (is (= :map-get-source-mismatch (:reason result)))
+      (is (false? (invoke owner "pc-links-domain?" [bad-links])))
+      (is (= :rejected (:status (descriptor-check bad-descriptor))))
+      (is (zero? @callbacks)))))
 
 (deftest pc-chain-c7 (check-owner :c7))
 (deftest pc-chain-effects (check-owner :effects))
