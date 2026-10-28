@@ -1450,6 +1450,7 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00848-c3-artifact-identity-leaf-call.clj", :reader-line 148311, :owner :foundation, :first-form "*c3-artifact-identity-leaf-call?*"}
  {:resource "gravity/bootstrap_impl/components/compiler/00849-c3-artifact-identity-call.clj", :reader-line 148313, :owner :compiler, :first-form "c3-artifact-identity-call"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00850-sh03-c3-precomputed-c2-verify.clj", :reader-line 148346, :owner :self-hosting-sh03-sh07, :first-form "sh03-c3-precomputed-c2-verify!"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/sh04-development-syntax-binding.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh04-development-syntax-contract"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00851-sh04-syntax-build-binding.clj", :reader-line 148547, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-build-binding!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00852-sh04-syntax-resolve-template.clj", :reader-line 148752, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-resolve-template!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00853-sh04-syntax-reader-binding.clj", :reader-line 148881, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-reader-binding"}

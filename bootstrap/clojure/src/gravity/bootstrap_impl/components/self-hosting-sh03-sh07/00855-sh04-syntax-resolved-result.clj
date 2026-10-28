@@ -5,7 +5,8 @@
    (sh04-syntax-build-from-fresh-c2! source-path c2-artifact integrity-report nil))
   ([source-path c2-artifact integrity-report invocation]
   (let [ae-options (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))
-        binding (sh04-syntax-current-binding! source-path)
+        binding (sh04-syntax-current-binding! source-path invocation)
+        operation-context (sh04-development-syntax-context! source-path invocation)
         source-unit (:source-unit-record c2-artifact)
         semantic-source-id
         (sh04-syntax-semantic-source-id source-path source-unit)
@@ -203,6 +204,7 @@
      :descriptor descriptor
      :envelope envelope
      :plan-binding (dissoc binding :plan :source-text)
+     :operation-context operation-context
      :rich-syntax rich-syntax
      :raw-template-results (mapv :raw-result all-products)
      :stream-template-result stream-template-result
