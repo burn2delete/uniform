@@ -1920,3 +1920,30 @@ failed lint CI and corrected test candidate retain their own provenance. The
 full 121-case suite, current seven-shard assembly, public B51 roots, source
 authentication, Core, C12 and quota-source migration remain unassessed. This
 finite test artifact repair does not close ACC-12 or ACC-13.
+
+## PR521 BKA anchor-width integration
+
+PR521 merged as `38daf99ecd4abf1c5904d03e3a9a4cdec72af2a3` over
+`068de7405b6096d62e1b1636b973e0f250bdc1a6`. Its fetched tree
+`17a65169831d60c20938a918ea11b8c146f1a0f0` exactly matches independently
+reviewed head `f74e4b357782597118f4a74d82e9605f747c7815`; the branch is
+retained. The three producer guards remove only the upper anchor-width cap;
+the nonempty, exact-schema and full keyword/type checks remain.
+
+At the original source candidate `47bce8564e698b6f74b7e2e701564447206b10f6`,
+the independently reviewed normalized owner/consumer panel passed 12 tests
+and 448 assertions, with zero failures or errors, natural exit zero in 20.627
+seconds, actual 2 GiB, complete capture, clean identical bookends and
+completed cleanup. Receipt SHA-256:
+`7b18760a8d44ae9efd5d6eae5dc5fc8e4a2248ccaf61832fc8baecc4bcdbacf7`.
+The earlier old-source baseline remains a separate 1-test/9-assertion result.
+Reconciliation introduced the unrelated SH07 test restoration while conserving
+the consumed source, selected tests, contracts, dependencies and lint tooling;
+the semantic result retains its original candidate provenance. Reconciled
+repository gates passed 11 tests/23 assertions, the source census, docs and
+roadmap; exact-head CI `40630208940` passed seven routine jobs, with Core and
+prerelease skipped. Independent review accepted the merge and exact tree.
+
+This is a finite anchor-width result, not arbitrary foreign-container safety,
+authenticated source, runtime, C12 or whole ACC-04 acceptance. BKA header
+accounting, outer pools, runtime policy, PMK and ANE remain open.

@@ -722,3 +722,17 @@ assertions, with focused fixture and host UTF-8 checks passing on the composed
 head. The full suite, current seven-shard assembly, B51 public roots, source
 authentication and quota-source migration remain unassessed. ACC-12 remains
 partial; the separately owned ACC-13 B51 route remains open.
+
+## ACC-04 BKA anchor-width integration
+
+PR521 integrated the finite BKA anchor-width removal at `38daf99e`. C7,
+Effects and emitter no longer reject an otherwise valid keyword anchor solely
+because it exceeds 1,024 members. Nonemptiness, the exact Set schema, complete
+keyword-member and type validation, source and descriptor reconstruction
+remain. The selected normalized producer, consumer and typed-emitter controls
+passed; no authenticated-source or runtime acceptance is implied.
+
+ACC-04 remains partial. BKA header accounting and runtime policy, PMK and ANE
+families, outer pools, metadata carrier safety and the original row's complete
+consumer acceptance remain open. DSE's preserved unrun work and the separate
+unknown historical mode operation are not replayed or reclassified here.
