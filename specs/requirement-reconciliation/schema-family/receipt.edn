@@ -1,4 +1,11 @@
 {:task-base-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+ :ci
+ {:run 40800243836,
+  :static-job 123206336962,
+  :projection-job 123206336833,
+  :static-successor :pending-ci,
+  :aggregate-projection :blocked-source-version-composition,
+  :local-sh-crosswalk :rejected-fingerprint-drift},
  :composition-hold-occurrence-ids
  ["S4/source/e29a6b2dd7cc56e9433a1855820806a0ff357c6dccbed5dd7b6a95f748db4ec1"
   "S4/source/862dbdb4528d678f7211c3cc1cc13fef29a633f201fc07a52ba676158db9cdc5"
@@ -29,14 +36,20 @@
   :whitespace :pass,
   :boundary-tests 6,
   :documents 240,
+  :aggregate-projection :blocked-source-version-composition,
   :roadmap :pass,
   :domains-tests 6,
-  :phase-indexes 19,
-  :projection :pass},
+  :domains-projection :pass,
+  :phase-indexes 19},
  :guarded-task-interface-fields 56,
  :source-facets 538,
  :scope-key
  "requirement-reconciliation/phase-10-schema-data-and-interop",
+ :predecessor
+ {:head "e9c85cca018bedf30cc6c6f090058180de8b9738",
+  :tree "38a834c1c71834b7a8950397ff4b527ad7eeeee8",
+  :receipt-sha256
+  "28bf3c39d19d060f91b0cfd14871eeee837d6428536fe87bebed83d49c63744b"},
  :kind :gravity/schema-family-candidate-receipt,
  :source-occurrences 511,
  :independent-review :pending-coordinator-routing,
@@ -123,10 +136,10 @@
   {:path
    "specs/requirement-reconciliation/schema-family/build-proposal.clj",
    :sha256
-   "47142a7b6e6b9b77fafaca032a347408d7787918b8534f2e4af7481f2e5f13b3"}
+   "f3bbb75729db8927621673a93c85de48d913524aa3c33312b89030014777e256"}
   {:path "specs/requirement-reconciliation/schema-family/evidence.md",
    :sha256
-   "43f288a0e6a92a61730ff9b2b528965584ba7989851eaf25794231234721defb"}
+   "7bf8435b59499df3ee23e55b15c0d685e29c10d0cdca077b75872a747600c143"}
   {:path "specs/domains-workflow/tasks.md",
    :sha256
    "28c21ce9b7d89cf1089a2f53df2d9213c14e2086494a6d41c6d798aad2c8a055"}

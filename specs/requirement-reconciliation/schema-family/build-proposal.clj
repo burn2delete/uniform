@@ -1,4 +1,4 @@
-(ns schema-family
+(ns build-proposal
   "Bounded S1-S9 proposal; reads immutable PR445 inputs and never adopts them."
   (:require [clojure.edn :as edn] [clojure.java.shell :as shell]
             [clojure.string :as str] [clojure.pprint :as pp]))
@@ -29,7 +29,8 @@
     (first (filter #(and (seq? %) (= 'defn (first %)) (= 'source-occurrences (second %)))
              (take-while #(not= ::eof %) (repeatedly #(read r false ::eof)))))))
 (require! occurrence-form "Missing preserved occurrence API")
-(binding [*ns* (the-ns 'schema-family)] (eval occurrence-form))
+(def source-occurrences
+  (binding [*ns* (the-ns 'build-proposal)] (var-get (eval occurrence-form))))
 (def source-ids (set (map #(str "S" %) (range 1 10))))
 (def sources (filterv #(source-ids (:id %)) (:original-documents manifest)))
 (def lineage (edn/read-string (slurp lineage-path)))
@@ -152,7 +153,7 @@
       (require! (= (:raw-sha256 f) (sha256 (raw-slice f))) "Wrong raw UTF-8 span hash"))
     (doseq [{:keys [path sha256 marker id]} (:task-references u)
             :let [text (slurp path)]]
-      (require! (= sha256 (schema-family/sha256 text)) "Wrong task source hash")
+      (require! (= sha256 (build-proposal/sha256 text)) "Wrong task source hash")
       (require! (and (str/includes? text (str "<!-- " marker ":start -->"))
                     (str/includes? text (str "<!-- " marker ":end -->"))
                     (str/includes? text (str "`" id "`"))) "Missing task marker or literal ID")))

@@ -112,3 +112,28 @@ is not an adoption input. The current proposal is the file in this candidate.
 New tooling names describe schema-family proposal construction. No source,
 protocol or diagnostic identity is renamed; original source documents and
 other families' occurrence populations are outside this patch.
+
+## CI successor correction
+
+Candidate `e9c85cca018bedf30cc6c6f090058180de8b9738` remains immutable history.
+CI run `40800243836` reported two blocking static findings in job
+`123206336962`: namespace/file mismatch at row 1 and unresolved dynamic
+`source-occurrences` at row 56. The successor uses the actual `build-proposal`
+namespace and binds the preserved pure occurrence API through a normal `def`.
+No lint settings, rejection controls or occurrence implementation change.
+The bounded controls still pass with the same proposal digest. Local clj-kondo
+is unavailable; fresh CI owns static verification of the correction.
+
+Projection job `123206336833` also rejected changed task-source spans. A local
+SH crosswalk check independently rejects source/routing fingerprint drift.
+Those failures are preserved, not reported as passing aggregate projections.
+The reconciliation owner was sent the exact predecessor/successor sources for
+composition. Old task digest at the task base is
+`ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4`;
+candidate task digest is
+`28c21ce9b7d89cf1089a2f53df2d9213c14e2086494a6d41c6d798aad2c8a055`.
+The generated Domains roadmap digest is
+`9fbc26c26af46074f31ca9753d9160608a46e8dea270bb14cbdecae4ad26328e`.
+The existing SH review is not applicable to those new task bytes. Exact
+source-version metadata, predecessor history and review must be composed by
+the canonical owner before this draft's aggregate projection gate can pass.
