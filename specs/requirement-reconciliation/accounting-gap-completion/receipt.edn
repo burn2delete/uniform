@@ -1,0 +1,36 @@
+{:kind :accounting-historical-gap-completion-receipt
+ :date "2026-10-28"
+ :scope [:accounting-policy :accounting-removal]
+ :worktree-input {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+                  :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
+ :partition {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3"
+             :sha256 "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a"
+             :accounting-policy-count 6 :accounting-removal-count 2}
+ :proposal {:path "specs/requirement-reconciliation/accounting-gap-completion/proposal.edn"
+            :sha256 "e4ad4ec7b54f9d638c149f1ffd3edef9d2ab0e3e7819227744132113adc0f3dc"}
+ :checker {:path "tools/accounting_gap_completion.clj"
+           :sha256 "2926a33425dd5e1e143886fb2df59340fc2f05aff704b18fcdd74e93190ce685"}
+ :task-source {:path "specs/accounting-removal/tasks.md"
+               :before-sha256 "f26670d438f5f4d57a1aab5ba6d5382d573c1f30684eed33042e091c210f7d51"
+               :after-sha256 "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663"
+               :existing-task-ids ["ACC-01" "ACC-12"] :new-criteria 8}
+ :coordination {:active-ACC05-amendment-id-intersection []
+                :actual-implementation-owner-work :unchanged
+                :writer-or-denied-operation-transfer :none}
+ :counts {:assigned 8 :completed-concrete-mapping-proposals 8 :independently-accepted-mappings 0
+          :unresolved-assigned 0 :new-task-count 0 :task-count-delta 0 :projection-field-edits 40}
+ :unresolved-ids []
+ :conservation {:original-histories 577 :existing-witnesses 13 :retirements 3
+                :original-contracts 240 :task-status-changes 0
+                :outside-inserted-task-section :byte-identical
+                :outside-eight-projected-rows :identical
+                :semantic-and-implementation-fields :identical}
+ :checks {:positive-and-eleven-negative-controls :pass
+          :standalone-lint {:errors 0 :warnings 0}
+          :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+          :documents {:count 240 :phase-indexes 19 :result :pass}
+          :full-language-roadmap :pass :whitespace :pass}
+ :review-and-adoption :pending-canonical-owner
+ :canonical-checkout-writes :none :implementation-acceptance :not-conferred
+ :unrun [:compiler :runtime :broker :host-policy-probes :source-authentication
+         :integration :historical-heavy-acceptance]}
