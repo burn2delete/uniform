@@ -1346,3 +1346,26 @@ SH12/522, census4/13, boundary6/11, generated SH check and pinned changed-file
 lint pass. An initial scratch assertion counted only the30 clause/context
 spans against33; the original total also includes one policy and two criterion
 witnesses. The explicit per-category count was corrected before writes.
+
+## Conditional Platform Product architecture allocation
+
+`current-decision-allocation-product1.edn` binds the existing conditional
+architecture decision to four current architecture-record producers and seven
+conditional implementation consumers. Original roadmap contexts, current scope,
+criteria, dependency, role and task-context witnesses are checked. Original nil
+facet metadata is retained; no original-document facet or occurrence is invented.
+No ISA, kernel model, application inventory, physical deliverable or product is
+chosen. External prerequisites stay conditional on the eventual adopted boundary;
+this allocation grants no purchase, fabrication or service authority.
+
+The earlier independent PASS retains only its frozen metadata-field proposal
+scope. Actual current composition review remains pending. All833 remain Open:
+770 concrete allocations,63 unallocated,386 qualified source reviews and81 pending.
+Historical493 accepted/68 pending, all561 bindings, provisional3/182 tasks and
+all prior769 allocations are conserved. No criterion or task is added.
+
+SH12/522,census4/13,boundary6/11,generated SH check,pinned changed-file lint and
+all1262 current UTF8 file/raw spans pass. Full facets, granularity, legacy ACC,
+independent final counting and integration remain open. The next Foundation
+composition's source guard was checked before this metadata commit and refused
+its uncommitted predecessor; no Foundation task was written by that check.

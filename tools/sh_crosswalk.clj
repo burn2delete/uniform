@@ -1146,6 +1146,27 @@
   :sha256
   "48a7180a033f83670c46d8f71a8f5c7936636c9d1d6a76dc1bca691a23def743"},
  :total-concrete-links 769}
+    :product1-current-allocation
+    {:current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn",
+ :architecture-decision-producers 4,
+ :remaining-allocation-work 63,
+ :task-count-delta 0,
+ :new-task-criteria 0,
+ :implementation-credit :none,
+ :pending-allocation-review 81,
+ :source-commit "7543e6ec966d96678843a176d8d30820ee4c07a8",
+ :conditional-consumers 7,
+ :new-concrete-links 1,
+ :status :pending-independent-current-composition-review,
+ :qualified-source-reviews-preserved 386,
+ :historical-adoptions-preserved 493,
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-product1.edn",
+  :sha256
+  "7f306ae45e364a849d5cd861b028d7d0dabdad11d671660a8d7dac838d48720d"},
+ :total-concrete-links 770}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
