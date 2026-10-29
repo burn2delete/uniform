@@ -23,6 +23,7 @@
                     acceptance/source-closure-paths (fn [_] [(path "deps.edn")])
                     request/runner-binding! (fn [_] {:fixture true})
                     request/git-binding! (fn [root _] {:root root :fixture true})
+                    request/verify-git-binding! (fn [_] nil)
                     request/environment (constantly env)]
         (let [r (request/prepare! options)
               input (:prepared-input r)]

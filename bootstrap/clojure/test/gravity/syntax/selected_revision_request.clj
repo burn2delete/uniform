@@ -310,4 +310,5 @@
                  :terminal-evidence :not-established :genuine-consumer-acceptance :open}]
     ;; Validate the exact argv/input/config graph without resolving any owner.
     (read-prepared! (:path input) (:sha256 input))
+    (verify-git-binding! git-binding)
     (assoc request :request-file (create-edn! (path "request.edn") request))))
