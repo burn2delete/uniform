@@ -859,3 +859,37 @@ Domains passed 7/213, Runtime 4/67, Types 4/41, census 4/13, SH 12/495 and
 boundary 6/11; both documentation validators passed. Complete-facet,
 granularity, legacy ACC scope, final counting and independent acceptance remain
 separate work.
+
+## Sixty-five tooling decision allocations
+
+Task source `9d07f448301bd9453c795d2af7031c8873820a00` adds source-qualified
+criteria to fifteen existing CLI and Developer Tools fields, with zero new task
+identities. All 990 attached source-facet memberships match the fourteen owning
+documents' UTF8 bytes and hashes. Runnable documentation failures remain
+rejections under T7 and TEST7. Compiler facts, actual service outputs, target
+limitations, authority, redaction, provenance and conditional human review stay
+explicit. The selected `tooling65-current-composition.edn` has SHA256
+`af0c876fc5cea9254b155e8d7dab02d70cc5a2579b926a13743270df6fce7c1b`.
+
+Allocation source `f1b78d6d368ea6b636e131d258ec342decc88fba` adds exactly 65
+allocation fields after complete-record hashes and absence guards. Removing
+those fields recovers all predecessor records and 369 existing allocations.
+Legacy accountable-task fields remain unchanged; proposed redirects are retained
+as history, while actual task-links control work routing. All 833 identities
+and Open states are preserved. `current-decision-allocation-tooling65.edn` has
+SHA256 `b7f1949a88d462552bc9e17732ccd3045defc61c9d6e87975fa36c0f5cdaaeee`.
+Concrete allocation is 434, including 131 explicitly pending independent
+current-composition review; 399 decisions remain to allocate. The provisional
+task count remains 3 Accepted / 182, with no implementation credit.
+
+`current-criterion-bindings-561-tooling65.edn`, SHA256
+`224064bc18e93029a2bca96bb51d67a3586808209756dc8136bf804ff0edadbb`,
+preserves all 561 historical identities and all 1,262 current span hashes.
+Historical acceptance remains 430, with 131 pending and zero unbound.
+CLI passed 5/88, Developer Tools 4/80, census 4/13, boundary 6/11; both document
+validators passed. Initial component tests exposed stale generated projections;
+regeneration followed by those tests passed. Pinned clj-kondo 2025.10.23 with
+repro/cache-false reports zero findings for the changed SH source. Full-facet
+entailment, granularity, legacy ACC scope, independent acceptance and the final
+count remain separate obligations.
+SH passed 12 tests / 495 assertions, and the generated SH projection check passed.
