@@ -1,0 +1,3362 @@
+{:historical-ids 561,
+ :implementation-credit :none,
+ :new-envelope-or-routing-acceptance :not-conferred,
+ :all-current-file-and-raw-hashes :verified,
+ :refined-references 170,
+ :source-commit "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
+ :refinements
+ [{:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "905a686f0f993c80dcf5c22cb140d5f4dca30ad340f239b72daece6ee1152eee",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 94787},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 61,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5229e6abd8dfc0a2ce9ba0c57c0f6c29be7690608f118fe88b40cb868686231b",
+    :start-byte-in-previous-source 92687,
+    :end-byte-in-previous-source 93703},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "905a686f0f993c80dcf5c22cb140d5f4dca30ad340f239b72daece6ee1152eee",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 94787},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 61,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "120fdcb221234002a7b04cf4123413ddbddaf012d6b027e92a0e899b9b881eaa",
+    :start-byte-in-previous-source 93705,
+    :end-byte-in-previous-source 94787},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "41857bf3016848dd98b538ed212063d82cb783fe2f382ea0e6b07ca595de2587",
+    :start-byte-in-previous-source 4644,
+    :end-byte-in-previous-source 6059},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "dbe02b81857d4e11a967bd41d7eb46a2f2fefea4f3eb47c5ea853e1b49933d3c",
+    :start-byte-in-previous-source 6060,
+    :end-byte-in-previous-source 7726},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "40d0bd0471b94b99141cff43ca16581ef5e8696df86c69b450a71cc8a1b9a2f5",
+    :start-byte-in-previous-source 2732,
+    :end-byte-in-previous-source 3741},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "7987836afa8cbdd313ee30ad05b8f2127f6b934a91a53c9eeaf264a8d0ba9f6b",
+    :start-byte-in-previous-source 3743,
+    :end-byte-in-previous-source 4642},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "924fe0aac80bd36af66919e0775efe8244490e323850998dcebb9a5519a3fbac",
+    :start-byte-in-previous-source 117651,
+    :end-byte-in-previous-source 118478},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "cc5bde20bb6eb787b4bf923ec90ec72232f569275955733923917bc001cc4623",
+    :start-byte-in-previous-source 10679,
+    :end-byte-in-previous-source 12669},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "fd2d17e989d02ce1845103b45ae9a744f8250078265860af5176fb1448e24ee9",
+    :start-byte-in-previous-source 12669,
+    :end-byte-in-previous-source 14589},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "4375022762310c306d856707aa246db38585a3d7bb85ff98326374fcbdcac555",
+    :start-byte-in-previous-source 14589,
+    :end-byte-in-previous-source 16352},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "89d59abc32d2260517d1f5704b70d515b7a4e1471f4947f82bd9cf59c796e232",
+    :start-byte-in-previous-source 16352,
+    :end-byte-in-previous-source 18204},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "7af58dc655325c7bb717e341db9fb2d4ee51ca75f34c8fe1d7ac1849960119b8",
+    :start-byte-in-previous-source 18204,
+    :end-byte-in-previous-source 20261},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "a0037616fd00d77b02d8a55f1c8106c4945c943a2eff617e7b8d8d9966819167",
+    :start-byte-in-previous-source 20261,
+    :end-byte-in-previous-source 21951},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5872f841ece627e7a673a77530cdb6e646b5964faa4e234ce0e26f6210a4cf44",
+    :start-byte-in-previous-source 21951,
+    :end-byte-in-previous-source 23563},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "12050b75d9bf2d67ad05d2e8597e3e80494e321c259575fa801a24c289d897d2",
+    :start-byte-in-previous-source 23563,
+    :end-byte-in-previous-source 25225},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "954a1bdefa42cb859b5a5672ea19d7a196a4eaba472c66ffe74c8f4fa9045d98",
+    :start-byte-in-previous-source 25225,
+    :end-byte-in-previous-source 26812},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "6dfe29d629ac378c6599c5229e7e65f73f6c010b7f1a14f00fc542f46e8e3b91",
+    :start-byte-in-previous-source 26812,
+    :end-byte-in-previous-source 28524},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "c6ff9a5e0afb24b838de5920495db109129ffbcda8d97d329e9e5cb305bd3a7d",
+    :start-byte-in-previous-source 28524,
+    :end-byte-in-previous-source 30248},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "1d0f0f31b57618e5b1748552b40f24dd65dd5a4944a809420bc7efe0dc983a29",
+    :start-byte-in-previous-source 30248,
+    :end-byte-in-previous-source 32060},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d3c9646f9b5e6897af9962dfdf2ed7348775a09cae7b8f40fcfc4d1e143f5998",
+    :start-byte-in-previous-source 32060,
+    :end-byte-in-previous-source 33727},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "7cc623412b014219f867e3672c94d5b6f8b3f5c05da2611f0fe807cb81f9d78b",
+    :start-byte-in-previous-source 33727,
+    :end-byte-in-previous-source 35264},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "e7d82d533c0433bf3fa9719ad5ff972fa6ecd7e14889ababe5ac3163da8a3ba2",
+    :start-byte-in-previous-source 35264,
+    :end-byte-in-previous-source 37005},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f6591de6733341ed66bdfe4f18f3ed7cd026b158f075808f01592467a95075ce",
+    :start-byte-in-previous-source 37005,
+    :end-byte-in-previous-source 38742},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "cf57fa56f021819f34946e22978ab680f5c3055e1fb9bb29fa407afce7020ec7",
+    :start-byte-in-previous-source 38742,
+    :end-byte-in-previous-source 40440},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5c2e6f41f168537814d7416f86bb4cc699b7e755b8a9c2c6aa47c0de56c40069",
+    :start-byte-in-previous-source 40440,
+    :end-byte-in-previous-source 42201},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0984cc9a9a963048c43a870aefdc95bd81100d39d6bef130d1878b8257625c6c",
+    :start-byte-in-previous-source 42201,
+    :end-byte-in-previous-source 43784},
+   :current-task-ids
+   ["math/independent-proof-and-certificate-checking"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "90dce7116061afe5f9fd7d89680b4e1fa45bdc80a515b764b251cc8007cdd697",
+    :start-byte-in-previous-source 43784,
+    :end-byte-in-previous-source 45482},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "ec8a898f69e875580cd817f772fa78f039acca029f78ca72f07d6c55ad07e7d7",
+    :start-byte-in-previous-source 45482,
+    :end-byte-in-previous-source 47148},
+   :current-task-ids ["math/eml-normalization-and-search"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "8e0aba254c740382231a5025d9af4f73f604b11c841269a3d8ba8746daebdc7e",
+    :start-byte-in-previous-source 47148,
+    :end-byte-in-previous-source 48768},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5832af17ff6f7cdb1896c6f615e0f51de83989c4b73908c3e07887ff8931a75b",
+    :start-byte-in-previous-source 48768,
+    :end-byte-in-previous-source 50416},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5770d9c69de951619ce6f36aeb17990e5f26b4ac90fb6ab5606a6b0a4a758dcf",
+    :start-byte-in-previous-source 50416,
+    :end-byte-in-previous-source 52090},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "8a2a5dd007b24e6b4a7548e1f26ca69249ceb5c2fbb5b1090cd831da034d1e3c",
+    :start-byte-in-previous-source 52090,
+    :end-byte-in-previous-source 53792},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "79465d76c95a7b1275fff57dcaa90e526f000cda53ec683ef2b617c22e4568fe",
+    :start-byte-in-previous-source 53792,
+    :end-byte-in-previous-source 55390},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f572398057fde399b03c7f3e0e75c5c083889f9279ae08b08cb08f1534f42b60",
+    :start-byte-in-previous-source 55390,
+    :end-byte-in-previous-source 57119},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "be464a68060c3117aaa539fac35f306f23bcf05c412258674a219b1bf5193361",
+    :start-byte-in-previous-source 57119,
+    :end-byte-in-previous-source 58846},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "2de2c6402b3abfe29ed37ea93d7b4704c1cc754745ec66adbe722cde5cae2741",
+    :start-byte-in-previous-source 58846,
+    :end-byte-in-previous-source 60502},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "9815e8bf19888ead99e5b9ac0669df0c8e557e4e9373bc6a6b8d09e3ca47c748",
+    :start-byte-in-previous-source 60502,
+    :end-byte-in-previous-source 62194},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "3619b9cb0409f1f189039ce79ae03be6eca6457cd8d900f18daadc573544691c",
+    :start-byte-in-previous-source 62194,
+    :end-byte-in-previous-source 63987},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f70d5e8db78c03c0a09ca447e9de0dbca31b11d9bebafac54181003015651459",
+    :start-byte-in-previous-source 63987,
+    :end-byte-in-previous-source 65625},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "b33ac6933403991abe567651c1218e7aabcf475db9582b4e3b1df189a8c26dd4",
+    :start-byte-in-previous-source 65625,
+    :end-byte-in-previous-source 67114},
+   :current-task-ids
+   ["math/independent-proof-and-certificate-checking"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "09753f3f0d08769344fd710ac8fcb113789070f060d1c08bd663f965f358f7ae",
+    :start-byte-in-previous-source 67114,
+    :end-byte-in-previous-source 68896},
+   :current-task-ids ["math/interval-and-real-proof-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f3da6094a9b3a99e9a7b3309db8c8668a2789e8f7ee883f783917574cc559fa8",
+    :start-byte-in-previous-source 68896,
+    :end-byte-in-previous-source 70757},
+   :current-task-ids ["math/certified-implementation-synthesis"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "49d8492aa6b1aee6e3a697b0bcdf3d4ea7ff7829355bfc163ce8efbfe15ebc8e",
+    :start-byte-in-previous-source 70757,
+    :end-byte-in-previous-source 72493},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "fd17d91a4738f0adbae68b4504c35c46306a2201a769b5f7f252b966c8d1c77a",
+    :start-byte-in-previous-source 72493,
+    :end-byte-in-previous-source 74333},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "23830a00e561003f94018a5cd5fa4f74611a92e858cb769489a2b971ff47c52d",
+    :start-byte-in-previous-source 74333,
+    :end-byte-in-previous-source 76052},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d3e04035ca1ea42d99f78fc005c1d4417a6899c4458b82a1505bbdb8a7031221",
+    :start-byte-in-previous-source 7727,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d81d6f64853a84733a1d3b27fd7992172da97177a72751e569e033e440efe88b",
+    :start-byte-in-previous-source 76052,
+    :end-byte-in-previous-source 77757},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "7b0b249bf6943868fccb8cb661aa938a3080d30b32ec3f1b667a0fc85ddff7f1",
+    :start-byte-in-previous-source 77757,
+    :end-byte-in-previous-source 79389},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "249d7d3b8f35b71acb6b8cc9f24c95e89b77798ccaf381a4db1cefe71aaf571c",
+    :start-byte-in-previous-source 79389,
+    :end-byte-in-previous-source 81045},
+   :current-task-ids
+   ["math/independent-proof-and-certificate-checking"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0a8afb63e1495007ac8b5b5678e7d58c7dece5f791f77ca6d082e045aff912ab",
+    :start-byte-in-previous-source 81045,
+    :end-byte-in-previous-source 82766},
+   :current-task-ids ["math"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "962c03dbcf3fd908ffae40f544fdcf630ca0a062378226b8ed4c939e91c9f645",
+    :start-byte-in-previous-source 82766,
+    :end-byte-in-previous-source 84389},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d2c322b1739148897bedb177aa7ca6567ae5e3ab1cb7899eb9035b8d4d868c9e",
+    :start-byte-in-previous-source 84389,
+    :end-byte-in-previous-source 86060},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "9e30cd3b83073a7eba56ad91c920493e02d0846b4ea2e2fcf93092385ff720c1",
+    :start-byte-in-previous-source 86060,
+    :end-byte-in-previous-source 87650},
+   :current-task-ids
+   ["math/independent-proof-and-certificate-checking"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "87f2dca37af671a1e79038d4aa4abcf4e5cc26cb6d7ffaeb3267c0480b503b1b",
+    :start-byte-in-previous-source 87650,
+    :end-byte-in-previous-source 89387},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "74932effb2c5d723cb29ea92bcbeff06dd290b0ef63b9715e00ef653338c42b4",
+    :start-byte-in-previous-source 89387,
+    :end-byte-in-previous-source 91061},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 9703},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 10,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f8e970958e6884db35b011796a61b1aa857ea92f2adbe5dd16d0051dbc75eb68",
+    :start-byte-in-previous-source 636,
+    :end-byte-in-previous-source 92685},
+   :current-task-ids
+   ["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"],
+   :current-witnesses 59,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "math",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "math",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "e4c35ff1a888f49672791b26c2d7c60941328761900b68369b1002af2316ae60",
+    :start-byte-in-previous-source 91061,
+    :end-byte-in-previous-source 92686},
+   :current-task-ids ["math/symbolic-rule-and-trace-production"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f34163ba551326d577156ec23b3165757d74622b338aaeb00afef767b162b1af",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 126519},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 17,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d71a6006da2f4fb53ac4cc5d60490b5096061f7f146aae7e2d3d9575573f0088",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 129801},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 20,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "c1f033600eb51e7e7bc210434fdf29a63ba1186af91d265cb4527760b64ff9b1",
+    :start-byte-in-previous-source 126521,
+    :end-byte-in-previous-source 127606},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "9bc78ee25146a2a2bb47b89a99e4bc0f11eacfc2a38da29a5cb68c37e52fdd2d",
+    :start-byte-in-previous-source 123147,
+    :end-byte-in-previous-source 124690},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f34163ba551326d577156ec23b3165757d74622b338aaeb00afef767b162b1af",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 126519},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 17,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d71a6006da2f4fb53ac4cc5d60490b5096061f7f146aae7e2d3d9575573f0088",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 129801},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 20,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "9c7d3be93d54a38484d30909e15b48e83ed6502a3c5d614231af7d948e7b8718",
+    :start-byte-in-previous-source 127608,
+    :end-byte-in-previous-source 128691},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "1bef00e651743ac5c929800678a89027734f2513709c8b3bd22a99b82d0c0e67",
+    :start-byte-in-previous-source 121719,
+    :end-byte-in-previous-source 123145},
+   :current-task-ids ["schema/compatibility-and-migration"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "128731047746cec1788d874c526e9ce81c150a8367c5af06c62ae0c15af4c2c2",
+    :start-byte-in-previous-source 120031,
+    :end-byte-in-previous-source 121717},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "708be837bf05d04576b6ff3fa2da311b99cb2aea8f7c6914ace836d4c785229c",
+    :start-byte-in-previous-source 118480,
+    :end-byte-in-previous-source 120029},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "f34163ba551326d577156ec23b3165757d74622b338aaeb00afef767b162b1af",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 126519},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 17,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d71a6006da2f4fb53ac4cc5d60490b5096061f7f146aae7e2d3d9575573f0088",
+    :start-byte-in-previous-source 112568,
+    :end-byte-in-previous-source 129801},
+   :current-task-ids
+   ["schema"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"],
+   :current-witnesses 20,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "5b836d1427e2310b26b3924cbc261eb6d89259a4d6fb06902e990f0c88c53b5c",
+    :start-byte-in-previous-source 128693,
+    :end-byte-in-previous-source 129801},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}
+  {:prior-task-id "schema",
+   :path "specs/domains-workflow/tasks.md",
+   :prior-source
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "schema",
+    :marker "domains-implementation-tasks",
+    :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+    :file-sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+    :raw-sha256
+    "d5a94a8dc7ba719a5a7dafcc3f6631b4f120967c7e364ca458900a66667a064f",
+    :start-byte-in-previous-source 124692,
+    :end-byte-in-previous-source 126519},
+   :current-task-ids ["schema/checked-consumer-projection"],
+   :current-witnesses 1,
+   :kind :split-prior-criterion-into-leaf-fragments}],
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+  :sha256
+  "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn",
+  :sha256
+  "ce86c5aacc8c7cea39e2785a51889c762f0e4661010813dcafcbc73c368c41d1"},
+ :kind :granularity13-historical-predicate-and-context-routing,
+ :prior-predicate-acceptance :preserved-only-in-original-scope,
+ :new-current-spans 4819}

@@ -1537,6 +1537,44 @@ preserves the exact prior vector and its1262 verified spans. SH12/522,census4/13
 boundary6/11,generated SH check and pinned changed-file lint pass. Full facets,
 granularity,legacy ACC,independent final counting and integration remain open.
 
+## Current thirteen-sibling source repartition
+
+Task source `90392ba9eb4b43443941065593950af0188d9354` separates Math into
+six tasks, Schema into three, and the grouped library adapters into seven.
+The old IDs retain their primary leaf; thirteen additional leaves are Open.
+Coarse historical envelopes and shared policy context remain explicit outside
+the counted task blocks. Math producers consume a separate independent checker.
+The library refinement binds twenty existing STD12/STD13 decision aliases at
+eleven actual public API consumer criterion groups while retaining their
+Domain or Runtime producers. It introduces no additional decisions.
+
+Routing source `74851dc3a03642f2e8c22a12eab0df7c13fb30f0` refreshes 321
+decision allocations. All 833 stable IDs, Open states, and nonallocation fields
+are preserved. All thirteen new IDs have direct criterion links. Existing 530
+qualified predicate reviews retain only their recorded scopes; they do not
+accept the new task envelopes, consumer routing, or repartition.
+
+The current 561-binding snapshot authenticates 4,819 current UTF8 file/raw
+spans, including 170 refined references. Frozen references retain original
+source provenance with distinct previous-source byte coordinates. Criterion
+witnesses are authenticated; legacy context envelopes without their own source
+commit remain preserved history and receive no independent authentication
+claim. A separate all-833 check authenticates 931 exact current owning criterion
+witnesses. These conservation checks confer no implementation acceptance.
+
+Owner checks pass: task application 3 tests / 316 assertions, routing 3 / 1,208,
+Domains projection 8 / 275, Stdlib projection 6 / 97, SH crosswalk 12 / 529,
+census 5 / 18, and language boundary 6 / 11. The generated SH check passes;
+pinned changed SH source lint reports zero findings. Domain and Stdlib lint
+retain only their previously recorded warnings. The structural documentation
+and full-language roadmap validators passed for the task-source change.
+
+The expected provisional census is 195 tasks: 3 Accepted, 190 Open, 1 Partial,
+and 1 unassessed, with 192 remaining. Derived census refresh and independent
+review remain separate. The historical 561 mapping adoptions and prior source
+predicate reviews do not confer whole-facet entailment, granularity acceptance,
+legacy ACC adjudication, final count acceptance, release, or self-hosting credit.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten
