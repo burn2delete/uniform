@@ -11,7 +11,7 @@
 (def argv ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
            "gravity.self-hosting.authenticated-artifact-pipeline-test" "--exact"
            "real-owner-gravity-prefix-passes-fresh-replay" "--fail-fast"])
-(def port-names #{:clock :admit :reserve :acquire :validate :release :start :supervise :finish :observe :publish})
+(def port-names #{:clock :admit :reserve :acquire :acquire-guard :validate :release :start :supervise :finish :observe :publish})
 (def identity-fields [:id :source :selector :argv :cwd :runtime :config :port-identities :outputs :limits :guards :coverage])
 
 (defn- require! [ok reason]
@@ -25,6 +25,7 @@
   (require! (and (string? (:id request)) (seq (:id request))) :missing-request-id)
   (require! (and (= source (:source request)) (= selector (:selector request)) (= argv (:argv request))) :wrong-operation)
   (require! (and (= port-names (set (keys ports))) (every? fn? (vals ports))
+                 (not (identical? (:acquire ports) (:acquire-guard ports)))
                  (= port-names (set (keys (:port-identities request))))
                  (every? some? (vals (:port-identities request)))) :unbound-ports)
   {:request request :ports ports :bound-ports ports})
@@ -38,9 +39,13 @@
                 (seq (:participants coverage)) (= (:participants coverage) (:covered-participants coverage))))
       (conj :authoritative-participant-root-coverage)
       (not (and (vector? (:guards request)) (vector? (:ordered-guards coverage))
-                (= #{:broker :exclusive :canonical} (set (map :kind (:guards request))))
-                (= 3 (count (:guards request)))
-                (every? #(and (:root %) (:source-id %)) (:guards request))
+                (= 1 (count (filter #(= :broker (:acquisition %)) (:guards request))))
+                (some #(and (= :canonical (:kind %)) (= :non-broker (:acquisition %))) (:guards request))
+                (every? #(and (:root %) (:source-id %)
+                              (case (:acquisition %)
+                                :broker (#{:normal :memory-heavy :exclusive} (:resource-class %))
+                                :non-broker (= (:acquire-function %) (get-in request [:port-identities :acquire-guard]))
+                                false)) (:guards request))
                 (= (:guards request) (:ordered-guards coverage))))
       (conj :source-bound-ordered-guards)
       (not (and (string? (:cwd request)) (.startsWith ^String (:cwd request) "/")
@@ -73,7 +78,7 @@
   (let [unbound (missing request)]
     (if (seq unbound)
       {:status :refused :reason :unbound-configuration :missing unbound}
-      (let [{:keys [clock admit reserve acquire validate release start supervise finish observe publish]} ports
+      (let [{:keys [clock admit reserve acquire acquire-guard validate release start supervise finish observe publish]} ports
             limits (:limits request)
             _ (require! (every? pos-int? (map limits [:whole-ms :capture-bytes :capture-chars :capture-wait-ms :cleanup-ms])) :invalid-limits)
             deadline (+ (clock) (:whole-ms limits))
@@ -114,7 +119,8 @@
             (require! (true? (reserve (:outputs request) (remaining))) :outputs-already-reserved)
             (reset! reserved? true)
             (doseq [guard (:guards request)]
-              (let [lease (acquire guard (remaining))]
+              (let [acquire-fn (if (= :broker (:acquisition guard)) acquire acquire-guard)
+                    lease (acquire-fn guard (remaining))]
                 (require! (some? lease) :guard-acquisition-refused)
                 (swap! held conj [guard lease])
                 (require! (identical? lease (validate guard lease)) :invalid-live-guard)))
