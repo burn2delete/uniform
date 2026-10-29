@@ -131,6 +131,16 @@ calls deduplicated? Are invalid transitions rejected? Integration: MIR/Schema,
 Runtime durability, AI review steps, Stdlib workflows. Decision owner: workflow
 maintainer; recommendation: versioned event log as replay input, explicit
 provider boundary for storage rather than a hidden database choice.
+
+DOM9 acceptance also requires declared CRDT identity/order/merge/update and
+serialization laws, causal history, offline authorization, conflict visibility,
+tombstone/compaction and migration policy. Classify coordination as free,
+required or deferred; reject nonmonotonic rules without an explicit mechanism.
+The checkout fixture must not double-charge on replay. The local-first cart
+fixture must converge after partition/heal, duplicate/reordered delivery,
+restart and migration, and reject invalid merge laws or hidden intent loss.
+Dependencies: Schema state/event versions, Runtime durable storage/replay and
+Auth grants. These criteria add no acceptance credit or provider selection.
 <!-- domains-task-projection/workflow:end -->
 
 ## AI
@@ -194,6 +204,17 @@ rendering follow typed semantics? Are unsafe or unauthorized actions rejected?
 Integration: Types/MIR, Lower/Emit, Runtime and Stdlib UI. Decision owner: UI
 maintainer; recommendation: explicit adapter contract rather than browser host
 semantics defining the language. Backend choice remains an explicit decision.
+
+DOM6 browser acceptance requires the ticket-list slice, typed API/schema drift
+checks and source-mapped loading, validation and unsafe-sink failures. DOM7
+mobile acceptance separately requires an adopted platform adapter with permission,
+lifecycle, main-thread/actor, null/error and taint contracts; background timeout,
+retry and cancellation; local schema/migration/encryption/retention/conflict
+policy; and keychain/keystore grants and redaction. The offline ticket fixture
+must exercise permission denial, offline edit, sync retry and crash source maps
+on a named simulator/device. Dependencies: Schema generated clients and local
+migrations, Auth grants, Runtime lifecycle and Backend mobile artifacts. Browser
+evidence cannot establish mobile conformance; both remain Open.
 <!-- domains-task-projection/ui:end -->
 
 ## Rollup and nonclaims
