@@ -78,7 +78,12 @@
                    (filter #(= :tagged-literal (:kind %)) form-tree))
         _ (when (seq tags)
             (reader-dispatch/validate-standard-tags!
-             source-unit standard-reader-policy tags))]
+             source-unit standard-reader-policy tags)
+            (reader-dispatch/validate-standard-source! source-unit source-bytes)
+            (when-not (and (= source-content-id (:bytes-hash source-unit))
+                           (= source-path (:path source-unit)))
+              (sh03-reader-boundary-fail!
+               source-path :sh03-reader-dispatch-source-binding source-unit {})))]
     (loop [remaining (reverse form-tree)
            values {}
            observations []]
@@ -97,6 +102,13 @@
                   (when-not (= 1 (count child-values))
                     (sh03-reader-boundary-fail!
                      source-path :sh03-reader-tag-payload form {}))
+                  (reader-dispatch/validate-standard-form! form)
+                  (when-not (and (integer? (get-in form [:span :byte-start]))
+                                 (integer? (get-in form [:span :byte-end]))
+                                 (<= 0 (get-in form [:span :byte-start])
+                                     (get-in form [:span :byte-end]) (alength ^bytes source-bytes)))
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-tag-source-span form {}))
                   (reader-dispatch/dispatch-standard-tag
                    source-unit standard-reader-policy tag form (first child-values))))
               value
@@ -155,6 +167,21 @@
           (recur (rest remaining) (assoc values (:form-id form) value)
                  (cond-> observations dispatch-result
                    (conj (:observation dispatch-result)))))))))
+
+(defn reader-standard-dispatch-products-match?
+  [source-path source-bytes source-content-id scalar-boundaries raw-forms
+   semantic-index source-unit form-id-map form-tree observations]
+  ;; Only the registered pure standard handlers enter this reconstruction.
+  ;; The caller retains original-byte/graph authentication and closure checks.
+  (let [fresh (sh03-reader-host-values!
+               source-path source-bytes source-content-id scalar-boundaries
+               raw-forms semantic-index source-unit)
+        forms-by-id (into {} (map (juxt :form-id identity) form-tree))]
+    (and (= (:extension-dispatch-observations fresh) observations)
+         (every? (fn [[raw-id value]]
+                   (let [form (get forms-by-id (get form-id-map raw-id))]
+                     (and form (= value (:value form)))))
+                 (:values fresh)))))
 
 (defn sh03-reader-legacy-trivia-hash
   [token-ids tokens-by-id]

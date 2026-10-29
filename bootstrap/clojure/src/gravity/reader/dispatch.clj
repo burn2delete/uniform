@@ -115,10 +115,17 @@
       (when-not (and (set/subset? (:capabilities handler) (:capabilities entry))
                      (set/subset? (:capabilities entry) (:capabilities policy)))
         (reject! :missing-capability))
-      (exact! seed #{:source-id :form-id :span :datum})
+      (native-map! seed clojure.lang.Keyword)
+      (when-not (contains? #{#{:source-id :form-id :span :datum}
+                             #{:source-id :form-id :span :datum :source-path :origin}}
+                           (set (keys seed)))
+        (reject! :fields))
       (text! (:source-id seed))
       (text! (:form-id seed))
       (text! (:datum seed))
+      (when (contains? seed :origin)
+        (when-not (= :source (:origin seed)) (reject! :origin))
+        (text! (:source-path seed)))
       (when (seq (:effects handler))
         (exact! provider #{:id :grant :invoke})
         (text! (:id provider))
@@ -137,7 +144,7 @@
       (let [result ((:execute handler) seed
                     (when (seq (:effects handler)) provider))]
         {:value result
-         :invocation {:artifact :gravity/reader-extension-invocation
+         :invocation (cond-> {:artifact :gravity/reader-extension-invocation
                       :policy-id (:id policy) :tag tag :handler (:handler entry)
                       :policy-selection {:entry entry
                                          :enabled? true
@@ -151,13 +158,65 @@
                       :provider-id (when (seq (:effects handler)) (:id provider))
                       :grant-id (when (seq (:effects handler))
                                   (get-in provider [:grant :id]))
-                      :status :invoked}}))))
+                      :status :invoked}
+                       (contains? seed :origin)
+                       (assoc :origin (:origin seed) :source-path (:source-path seed)))}))))
 
 (defn- canonical-hash [value]
   ;; Use exactly the existing hosted C2 policy encoding, not a new policy id.
   (letfn [(normalize [value]
             (canonical/reader-canonical-value normalize value))]
     (canonical/reader-canonical-hash digest/sha256-hex normalize value)))
+
+(defn- identity-value! [value]
+  ;; Validate native identity inputs before the hosted canonicalizer can print
+  ;; or traverse them. No caller object, lazy sequence or metadata callback is
+  ;; an identity input. Persistent native containers cannot form ancestor cycles.
+  (loop [pending [value]]
+    (when (seq pending)
+      (let [item (peek pending) remaining (pop pending) kind (class item)
+            scalar? (or (nil? item)
+                        (#{String Boolean Character clojure.lang.Keyword clojure.lang.Symbol
+                           Long Integer Short Byte clojure.lang.BigInt java.math.BigInteger
+                           java.math.BigDecimal clojure.lang.Ratio Double Float
+                           java.util.UUID java.util.Date} kind))
+            native-map? (#{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap} kind)
+            native-sequence? (#{clojure.lang.PersistentVector clojure.lang.PersistentHashSet
+                               clojure.lang.PersistentList clojure.lang.PersistentList$EmptyList} kind)]
+        (when-not (or scalar? native-map? native-sequence?) (reject! :source-identity))
+        (when (and (instance? clojure.lang.IMeta item) (some? (meta item)))
+          (reject! :source-identity))
+        (cond
+          (= String kind) (do (text! item) (recur remaining))
+          native-map?
+          (recur (into remaining (mapcat identity item)))
+          native-sequence?
+          (recur (into remaining item))
+          :else (recur remaining))))))
+
+(defn validate-standard-source!
+  "Bind the standard adapter's source identity to the original byte snapshot.
+  This checks content/identity joins; it does not authenticate a producer or
+  reconstruct the parsed graph. Those checks remain with the normal owner."
+  [source-unit source-bytes]
+  (native-map! source-unit clojure.lang.Keyword)
+  (identity-value! source-unit)
+  (let [inputs (:identity-inputs source-unit)]
+    (native-map! inputs clojure.lang.Keyword)
+    (identity-value! inputs)
+    (when-not (and (= :gravity/source-unit (:artifact source-unit))
+                   (= (class (byte-array 0)) (class source-bytes))
+                   (= :utf-8 (:encoding source-unit) (:encoding inputs))
+                   (= (:bytes-hash source-unit) (:bytes-hash inputs)
+                      (str "sha256:" (digest/sha256-bytes-hex source-bytes)))
+                   (= (:reader-options source-unit) (:reader-options inputs))
+                   (= (:enabled-features source-unit) (:enabled-features inputs))
+                   (= (:project-root source-unit) (:project-root-id inputs)
+                      (get-in source-unit [:project-root-record :project-root-id]))
+                   (= (:project-relative-path source-unit) (:project-relative-path inputs))
+                   (= (:source-id source-unit) (canonical-hash inputs)))
+      (reject! :source-identity)))
+  source-unit)
 
 (defn- standard-policy! [source-unit reader-policy]
   (native-map! source-unit clojure.lang.Keyword)
@@ -220,7 +279,28 @@
         (reject! :span))))
   (doseq [value [(:byte-start span) (:byte-end span)]]
     (when-not (#{Long Integer clojure.lang.BigInt java.math.BigInteger} (class value))
-      (reject! :span))))
+      (reject! :span)))
+  (when-not (and (<= 0 (:byte-start span))
+                 (< (:byte-start span) (:byte-end span))
+                 (= (:byte-start span) (get-in span [:start :byte]))
+                 (= (:byte-end span) (get-in span [:end :byte]))
+                 (<= 0 (get-in span [:start :char]))
+                 (< (get-in span [:start :char]) (get-in span [:end :char]))
+                 (<= (get-in span [:start :line]) (get-in span [:end :line]))
+                 (or (< (get-in span [:start :line]) (get-in span [:end :line]))
+                     (<= (get-in span [:start :column]) (get-in span [:end :column])))
+                 (every? pos? (for [position [(:start span) (:end span)]
+                                   key [:line :column]] (get position key))))
+    (reject! :span)))
+
+(defn validate-standard-form!
+  "Check native source-form provenance before hashing or span inspection."
+  [form]
+  (native-map! form clojure.lang.Keyword)
+  (when-not (= :source (:origin form)) (reject! :origin))
+  (text! (:form-id form))
+  (span! (:span form))
+  form)
 
 (defn dispatch-standard-tag
   "Normal SH03 host-decoding seam, after the existing source/result checks.
@@ -231,11 +311,11 @@
   [source-unit reader-policy tag form payload]
   (let [policy (validate-standard-tags! source-unit reader-policy [tag])
         policy-id (:id policy)]
-    (native-map! form clojure.lang.Keyword)
-    (text! (:form-id form))
+    (validate-standard-form! form)
+    (text! (:path source-unit))
     (text! payload)
-    (span! (:span form))
     (let [seed {:source-id (:source-id source-unit) :form-id (:form-id form)
+                :source-path (:path source-unit) :origin (:origin form)
                 :span (:span form) :datum payload}
           input-hash (canonical-hash {:domain :gravity/reader-extension-input-v1
                                       :policy-id policy-id :tag tag :seed seed})

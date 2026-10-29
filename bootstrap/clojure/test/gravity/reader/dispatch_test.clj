@@ -124,6 +124,21 @@
          (is (empty? @calls))
          (is (empty? @effects)))))))
 
+(deftest partial-or-invalid-source-provenance-rejects-before-effects
+  (observe-handlers
+   (fn [calls]
+     (doseq [[provenance reason]
+              [[{:origin :source} :fields]
+               [{:source-path "fixture.gravity"} :fields]
+               [{:origin :generated :source-path "fixture.gravity"} :origin]
+               [{:origin :source :source-path nil} :text]]]
+       (let [effects (atom [])
+             selected (merge (assoc seed :datum input-path) provenance)
+             result (failure #(reader/dispatch policy 'resource selected (provider effects)))]
+         (is (= reason (:reason result)))
+         (is (empty? @calls))
+         (is (empty? @effects)))))))
+
 (deftest untrusted-containers-and-callables-do-not-become-handlers
   (let [calls (atom 0)
         foreign (proxy [java.util.HashMap] []
