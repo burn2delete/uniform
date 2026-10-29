@@ -159,3 +159,19 @@ as history, not successful evidence. This repair remains draft pending exact
 source/contract/control review and current-head CI. It has not been used to
 confer eligibility or merge. Full Reader/authentication/adapter/fresh
 reconstruction and mapping closure remain open.
+
+CI `40794677581` at correction source `98e47ad3` failed static validation on
+three diagnostics: namespace/file mismatches in the two tools and a redundant
+nested `let` in the Git-output capture. The successor aligns the tool namespace
+names with their filenames and joins the adjacent binding vectors in original
+order. The known library caller in the focused test updates its namespace
+lookup; CLI paths and the `gravity/worktree-preflight-v1` report schema stay
+unchanged. No lint policy/configuration or identity check is weakened. The old
+failed run remains evidence, and successor review/CI are required.
+
+Independent correction review at `98e47ad3` found no semantic fail-open and
+passed 24 tests / 179 assertions, including additional metadata refusals, but
+requested changes for those three static blockers. Receipt SHA256:
+`83e4fc3c02a484fd1a6a8082722200a4333f9d2268f8afb4eed9c407910bd8c4`.
+The successor again passes preflight 17 / 144 and boundary 6 / 11; the prior
+receipt covers unchanged semantic code only and does not accept the successor.

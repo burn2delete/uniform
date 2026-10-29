@@ -1,4 +1,4 @@
-(ns gravity.worktree-preflight
+(ns check-worktree-preflight
   "Read-only Git worktree and integration preflight.
 
   This is a tooling boundary, not compiler authority.  It invokes Git without
@@ -14,7 +14,7 @@
 
 (binding [*command-line-args* nil]
   (load-file "tools/workstream_composition.clj"))
-(alias 'composition 'gravity.workstream-composition)
+(alias 'composition 'workstream-composition)
 (def default-base-ref "origin/main")
 (def default-worktree-scan "candidate")
 (def worktree-scan-modes #{"candidate" "all"})
@@ -73,9 +73,10 @@
             (fn [{:keys [thread result]}]
               (.join ^Thread thread)
               (let [{:keys [value error]} @result]
-                (if error (throw error) value)))]
-        (let [out (await-stream stdout) err (await-stream stderr)]
-          {:exit exit :stdout (:text out) :stdout-bytes (:bytes out) :stderr (:text err)})))
+                (if error (throw error) value)))
+            out (await-stream stdout)
+            err (await-stream stderr)]
+        {:exit exit :stdout (:text out) :stdout-bytes (:bytes out) :stderr (:text err)}))
     (catch java.io.IOException error
       (throw (failure "WORKTREE-GIT-UNAVAILABLE"
                       (str "cannot execute git: " (.getMessage error)))))))

@@ -12,7 +12,7 @@
 (binding [*command-line-args* nil]
   (load-file "tools/check_worktree_preflight.clj"))
 
-(def ^:private preflight-ns (find-ns 'gravity.worktree-preflight))
+(def ^:private preflight-ns (find-ns 'check-worktree-preflight))
 (def ^:private run-preflight-var (ns-resolve preflight-ns 'run-preflight))
 (def ^:private schema-var (ns-resolve preflight-ns 'schema))
 
@@ -90,7 +90,7 @@
   ((ns-resolve 'gravity.workstream-governance 'canonical-json) value))
 
 (defn- text-sha [value]
-  ((ns-resolve 'gravity.workstream-composition 'sha256) value))
+  ((ns-resolve 'workstream-composition 'sha256) value))
 
 (defn- write-composition-ledger! [root record migration]
   (let [id (get record "id")

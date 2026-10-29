@@ -1,4 +1,4 @@
-(ns gravity.workstream-composition
+(ns workstream-composition
   "Verify committed lifecycle metadata separately from immutable source content.
   The caller still pins the complete integration commit and tree."
   (:import [java.nio.charset StandardCharsets]
