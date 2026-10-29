@@ -118,3 +118,44 @@ After repair, focused dispatch controls passed 13 tests / 126 assertions and
 the language-boundary gate passed 6 tests / 11 assertions. Local `clj-kondo`
 is unavailable; hosted exact-head CI and independent delta review remain
 required. The failed run and withheld integration disposition remain history.
+
+## Candidate identity correction
+
+The registered implementation `aaafbf95`, registration source `13febdf3` and
+parent-disposition source `49ea4e4b` are distinct immutable facts. Applying the
+original single-tuple preflight to the latter with the first identity rejected
+`WORKTREE-CANDIDATE-COMMIT-MISMATCH` and
+`WORKTREE-CANDIDATE-TREE-MISMATCH`. No metadata exception or merge followed.
+
+Current main `b2a78697` adds PR550's producer-snapshot capture correction. Its
+three incoming files merge without conflicts; the Reader dispatch source and
+fixtures are unchanged. The parent-requested correction adds a separately
+pinned source commit/tree and workstream id to the complete integration
+base/head/tree tuple. Only the existing selected shard and its canonical
+manifest entry may differ after source freeze. Ownership, contracts, dependency
+and authority fields, prior lifecycle history, other records, source and tools
+remain bound. SHA256 joins, retained migration evidence, strict UTF-8, regular
+Git blobs and integration-eligible state are checked. Actual clean named
+worktree and complete expected-head checks remain mandatory.
+
+The contract distinction is explicit in Workstream Governance, Sharded
+Workstream Ledger and AGENTS.md. No JSON schema, lifecycle transition or
+authority ceiling changes. Source evidence does not cover changed metadata or
+the checking tools; exact-source independent review is required before use.
+
+Focused preflight controls passed 17 tests / 144 assertions: one complete
+source/metadata composition and fourteen negative scenarios, plus the existing
+worktree controls. The new negatives include changed source, invalid metadata
+hash/UTF-8/index/history/ownership, unrelated metadata, wrong base/head/tree,
+wrong source tuple, incomplete options and dirty worktree. These are synthetic
+temporary Git fixtures and confer no project lifecycle authority. Boundary
+controls passed 6 tests / 11 assertions; canonical governance, document,
+roadmap and whitespace checks passed.
+
+The first positive fixture incorrectly changed ownership after source freeze;
+the check rejected it (4 assertion failures / 1 error). The fixture was corrected
+to preserve ownership; the gate was not weakened. That failed run is retained
+as history, not successful evidence. This repair remains draft pending exact
+source/contract/control review and current-head CI. It has not been used to
+confer eligibility or merge. Full Reader/authentication/adapter/fresh
+reconstruction and mapping closure remain open.

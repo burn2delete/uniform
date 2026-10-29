@@ -58,6 +58,13 @@ normal governance validation reads the compact v2 manifest and its shards. The
 migration proof is a frozen snapshot: later terminal publications advance the
 manifest aggregate digest without rewriting the v1 source or its proof.
 
+The record's `candidate_commit` pins immutable source content. Later lifecycle
+metadata has its own complete commit/tree identity; it never embeds its own
+commit hash. The governed-composition preflight in
+[Workstream Governance](workstream-governance.md#immutable-source-and-later-lifecycle-metadata)
+binds both tuples and verifies the exact permitted shard/manifest delta. It does
+not exempt metadata from review or permit changes to source or unrelated rows.
+
 ## Validation
 
 ```bash

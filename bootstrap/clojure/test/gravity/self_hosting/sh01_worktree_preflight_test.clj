@@ -86,6 +86,133 @@
    :candidate-commit (git! root "rev-parse" "HEAD")
    :candidate-tree (git! root "rev-parse" "HEAD^{tree}")})
 
+(defn- canonical-json [value]
+  ((ns-resolve 'gravity.workstream-governance 'canonical-json) value))
+
+(defn- text-sha [value]
+  ((ns-resolve 'gravity.workstream-composition 'sha256) value))
+
+(defn- write-composition-ledger! [root record migration]
+  (let [id (get record "id")
+        path (str "contracts/workstream-active/" id ".json")
+        text (str (canonical-json record) "\n")
+        aggregate (text-sha (canonical-json [record]))
+        manifest {"schema_version" 2 "contract_id" "gravity/workstream-ledger-v2"
+                  "governance_contract" "contracts/workstream-governance.json"
+                  "active_root" "contracts/workstream-active"
+                  "record_root" "contracts/workstream-records"
+                  "record_count" 1 "active_count" 1 "terminal_count" 0
+                  "aggregate_sha256" aggregate "migration" migration
+                  "records" [{"id" id "path" path "sha256" (text-sha text)
+                              "ordinal" 0 "state" (get record "state") "terminal" false
+                              "invariant_family" (get record "invariant_family")
+                              "dependencies" []}]}]
+    (.mkdirs (.toFile (.resolve root "contracts/workstream-active")))
+    (spit (str (.resolve root path)) text)
+    (spit (str (.resolve root "contracts/workstream-ledger.json"))
+          (str (canonical-json manifest) "\n"))))
+
+(defn- with-composition [f]
+  (with-repository
+    (fn [{:keys [root base]}]
+      (let [draft (-> (slurp "tools/fixtures/workstream_governance/accepted/minimal-ledger.json")
+                      ((ns-resolve 'gravity.workstream-governance 'read-strict-json))
+                      (get "workstreams") first
+                      (assoc "owned_paths" ["tracked.txt"]))
+            migration-source (str (canonical-json {"schema_version" 1 "contract_id" "gravity/workstream-ledger-v1"
+                                                   "governance_contract" "contracts/workstream-governance.json"
+                                                   "workstreams" [draft]}) "\n")
+            migration {"source_schema_version" 1 "source_contract_id" "gravity/workstream-ledger-v1"
+                       "source_path" "contracts/workstream-ledger-v1.json"
+                       "source_sha256" (text-sha migration-source)
+                       "decoded_record_count" 1 "parity" "exact"
+                       "decoded_aggregate_sha256" (text-sha (canonical-json [draft]))}]
+        (write-composition-ledger! root draft migration)
+        (spit (str (.resolve root "contracts/workstream-ledger-v1.json")) migration-source)
+        (git! root "add" "contracts")
+        (git! root "commit" "-qm" "immutable fixture source")
+        (let [source (git! root "rev-parse" "HEAD")
+              source-tree (git! root "rev-parse" "HEAD^{tree}")
+              record (-> draft
+                         (assoc "base_commit" base "candidate_commit" source
+                                "clean_worktree" true "state" "integration-eligible")
+                         (assoc "owned_paths" ["tracked.txt"]
+                                "evidence" {"accepted_fixtures" ["synthetic positive"]
+                                            "rejected_fixtures" ["synthetic negative"]
+                                            "stable_diagnostics" ["FIXTURE"]
+                                            "validation_commands" [{"command" "synthetic fixture evidence"
+                                                                    "exit_code" 0 "result" "passed"}]}
+                                "reviews" [{"kind" "independent" "result" "accepted"
+                                            "reviewer" "synthetic-fixture-reviewer"}])
+                         (update "history" into
+                                 (map-indexed (fn [i state]
+                                                {"state" state "at" (str "2026-08-23T00:00:0" (inc i) "Z")
+                                                 "actor" "synthetic-fixture-author"
+                                                 "reason" "Synthetic lifecycle fixture; no project authority."})
+                                              ["frozen" "review-pending" "accepted" "integration-eligible"])))]
+          (write-composition-ledger! root record migration)
+          (git! root "add" "contracts")
+          (git! root "commit" "-qm" "later fixture lifecycle metadata")
+          (f {:root root :base base :source source :source-tree source-tree
+              :record record :migration migration
+              :options (assoc (expected-options root "origin/main" base)
+                              :source-commit source :source-tree source-tree
+                              :workstream-id "example-candidate")}))))))
+
+(deftest governed-source-and-lifecycle-composition-bind-complete-identities
+  (with-composition
+    (fn [{:keys [root source options]}]
+      (let [[document code] (run-preflight root options)]
+        (is (zero? code) (pr-str (:diagnostics document)))
+        (is (= source (get-in document [:source-composition :source-commit])))
+        (is (= (:candidate-commit options) (get-in document [:source-composition :integration-commit])))
+        (is (true? (get-in document [:source-composition :content-conserved])))
+        (is (re-matches #"[0-9a-f]{64}" (get-in document [:source-composition :manifest-sha256])))))))
+
+(deftest governed-composition-rejects-altered-content-and-tuples
+  (doseq [scenario [:source :metadata-hash :metadata-authority :metadata-history
+                    :metadata-index :metadata-foreign :metadata-utf8 :base :head :tree
+                    :source-commit :source-tree :partial :dirty]]
+    (testing (name scenario)
+      (with-composition
+        (fn [{:keys [root record migration options]}]
+          (case scenario
+            :source (spit (str (.resolve root "tracked.txt")) "altered source\n")
+            :metadata-hash (spit (str (.resolve root "contracts/workstream-active/example-candidate.json")) "{}\n")
+            :metadata-authority (write-composition-ledger! root (assoc record "owned_paths" ["different.txt"]) migration)
+            :metadata-history (write-composition-ledger! root (assoc-in record ["history" 0 "actor"] "changed-history") migration)
+            :metadata-index (let [path (str (.resolve root "contracts/workstream-ledger.json"))
+                                  manifest ((ns-resolve 'gravity.workstream-governance 'read-strict-json) (slurp path))]
+                              (spit path (canonical-json (assoc-in manifest ["records" 0 "state"] "draft"))))
+            :metadata-foreign (spit (str (.resolve root "contracts/unrelated.json")) "{}\n")
+            :metadata-utf8 (Files/write (.resolve root "contracts/workstream-active/example-candidate.json")
+                                        (byte-array [(unchecked-byte 255)])
+                                        (make-array java.nio.file.OpenOption 0))
+            :dirty (spit (str (.resolve root "tracked.txt")) "uncommitted\n")
+            nil)
+          (when (#{:source :metadata-hash :metadata-authority :metadata-history
+                   :metadata-index :metadata-foreign :metadata-utf8} scenario)
+            (git! root "add" ".")
+            (git! root "commit" "-qm" "altered composition fixture"))
+          (let [current (if (#{:source :metadata-hash :metadata-authority :metadata-history
+                              :metadata-index :metadata-foreign :metadata-utf8} scenario)
+                          (merge options (expected-options root "origin/main" (:candidate-base options)))
+                          options)
+                bad (apply str (repeat 40 "0"))
+                selected (case scenario
+                           :base (assoc current :candidate-base bad)
+                           :head (assoc current :candidate-commit bad)
+                           :tree (assoc current :candidate-tree bad)
+                           :source-commit (assoc current :source-commit (:candidate-commit current)
+                                                        :source-tree (:candidate-tree current))
+                           :source-tree (assoc current :source-tree bad)
+                           :partial (dissoc current :source-tree)
+                           current)
+                [document code] (run-preflight root selected)]
+            (is (= 1 code) (str scenario " " (pr-str document)))
+            (is (false? (get-in document [:preconditions :all-pass])))
+            (is (seq (:diagnostics document)))))))))
+
 (deftest clean-named-branch-and-identities-are-reported
   (with-repository
     (fn [{:keys [root base]}]
