@@ -3590,6 +3590,25 @@
           rejected (leaf 'build-body-effect-result typed verification wrong-binding)]
       (is (= :rejected (:status rejected)))
       (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+      (is (= :untrusted-sh08-body-effect-input (get-in rejected [:diagnostics 0 :reason]))))
+    ;; Reuse this PMK triplet at the compiled public C8 boundary, rather than
+    ;; crediting a broader fixture's composition to this selector.
+    (when-not (and (= :accepted (:status typed) (:status result))
+                   (= :passed (:status verification)) (= 1 (count calls)))
+      (throw (ex-info "PMK products failed before public C8 composition" {})))
+    (let [bundle (compile-c8-module-bundle (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+          invoke (fn [function args]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function
+                     {:engine :body-effect-pmk-public-composition} bundle function args))
+          actual (invoke 'sh09-build-authenticated-body-effect-result [typed verification binding])
+          checked (invoke 'sh09-verify-authenticated-body-effect-result [typed verification binding actual])
+          wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+          rejected (invoke 'sh09-build-authenticated-body-effect-result [typed verification wrong-binding])]
+      (is (= result actual))
+      (is (= :accepted (:status actual)))
+      (is (= :passed (:status checked)))
+      (is (= :rejected (:status rejected)))
+      (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
       (is (= :untrusted-sh08-body-effect-input (get-in rejected [:diagnostics 0 :reason]))))))
 
 (deftest body-module-vectors-have-no-cumulative-quota

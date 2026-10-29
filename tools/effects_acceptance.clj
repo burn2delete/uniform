@@ -100,6 +100,12 @@
         public (definitions (read-text consumer-path) 'defn)]
     (require! (= (symbol test-namespace) (second (first (forms (read-text test-path))))) :namespace)
     (doseq [s selectors] (require! (contains? tests (symbol s)) :missing-selector))
+    (let [nodes (set (tree-seq coll? seq (get tests 'body-private-map-keys-authenticated-builder-composition)))]
+      (doseq [route '[(compile-c8-module-bundle (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+                     (invoke 'sh09-build-authenticated-body-effect-result [typed verification binding])
+                     (invoke 'sh09-verify-authenticated-body-effect-result [typed verification binding actual])
+                     (invoke 'sh09-build-authenticated-body-effect-result [typed verification wrong-binding])]]
+        (require! (contains? nodes route) :public-consumer-selector-route)))
     (doseq [[name arity] consumers]
       (require! (= arity (count (nth (get (merge effects public) name) 2 nil))) :consumer-arity))
     (require! (= '(defn sh09-build-authenticated-body-effect-result [typed verification binding]

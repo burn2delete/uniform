@@ -13,6 +13,12 @@ public C8, upstream C7 tests and the development runner match. Effects and the
 owning test differ only by the original PR533 change. This observation is not
 current-main composed execution or a merge authorization.
 
+The successor normally reconciled main
+`dfa4c5b653d8049ac78dd30962172e0d91c768e2` (tree
+`000c3e4cce476c196b61814a4732a48b9be95540`). Effects, C7, public C8 and the
+five selector names were unchanged; Reader/bootstrap dependencies changed, so
+their old composition evidence is not credited to this new dependency tuple.
+
 ## Concrete gaps and corrections
 
 The existing development runner sorts qualified test names, selects exact vars
@@ -46,6 +52,13 @@ and verifier, checks PMK allocation and rejects a changed request binding with
 `C8-VERIFY` / `:untrusted-sh08-body-effect-input`. It has not run. No ANE domain
 or descriptor migration is introduced.
 
+That same selector now passes the exact PMK triplet through the existing
+`compile-c8-module-bundle` public C8 build/verify entrypoints, compares the
+public result to the leaf result and preserves the same wrong-binding refusal.
+It stops before public compilation if upstream PMK products failed. The
+nonlaunching adapter checks these exact selector-to-consumer call forms;
+synthetic controls reject a missing public compiler call or lost negative input.
+
 ## Actual owner selectors and affected consumers
 
 All selectors below belong to `gravity.self-hosting.sh09-body-effect-test`.
@@ -55,7 +68,7 @@ All selectors below belong to `gravity.self-hosting.sh09-body-effect-test`.
 | `body-module-vectors-have-no-cumulative-quota` | Gravity leaf helper; caller and combined producer vectors beyond removed ceilings | Held; Clojure body control previously passed |
 | `body-module-vectors-check-caller-and-every-producer` | Gravity leaf helper; malformed nodes/function vectors in caller and late producer | Held; Clojure body control previously passed |
 | `body-private-map-keys-development-kernel` | C7 PMK typed input -> Effects LP/LQ context, call joins, node allocation; forged family, type/fact/source, missing/duplicated entries and native callback negatives | Held |
-| `body-private-map-keys-authenticated-builder-composition` | Actual PMK source -> C5/C6/C7 -> `build-body-effect-result` -> `verify-body-effect-result`; mismatched request binding refusal | Held; new test |
+| `body-private-map-keys-authenticated-builder-composition` | Actual PMK source -> C5/C6/C7 -> Effects builder/verifier -> compiled public C8 builder/verifier; mismatched request binding refusal at both boundaries | Held; public composition added |
 | `body-effect-public-forwarding-source-boundary` | Reader checks exact public C8 build/verify forwarding forms and exports | Source-only; not public compiled module composition |
 
 `verify-body-effect-result` reconstructs via `build-body-effect-result`, which
@@ -63,8 +76,8 @@ calls `body-module-vectors-valid?`. The public C8 consumer exports
 `sh09-build-authenticated-body-effect-result` (arity 3) and
 `sh09-verify-authenticated-body-effect-result` (arity 4), forwarding to those
 two Effects exports. Their source wiring is covered by the selected boundary
-test. Compiling/executing the public C8 bundle remains a separate, held consumer
-composition step; the general existing authenticated paired test uses a broader
+test. Compiling/executing the public C8 bundle is now covered by the same held
+PMK selector; the general existing authenticated paired test uses a broader
 fixture and is not silently included in this PMK-only selection.
 
 The changed helper's malformed-vector diagnostic is behind authenticated-input
@@ -107,7 +120,7 @@ The adapter contains no compiler launch or broker acquisition.
 | Existing host resource admission, runtime/classpath provenance and source authentication for an actual launch | Present execution safeguards | Not inspected, acquired, assumed or proven here; launcher must establish them |
 | Exact selector/source/consumer binding and honest failure attribution | Concrete driver gap | Nonlaunching adapter and synthetic positive/negative controls supplied |
 | PMK authenticated builder selector | Concrete coverage gap | Implemented, unrun; needs genuine owner execution |
-| Public compiled C8 PMK composition | Concrete remaining consumer evidence | Source forwarding known; compiled execution unrun/held |
+| Public compiled C8 PMK composition | Concrete coverage gap corrected | Same PMK selector now exercises public builder/verifier and wrong binding; execution unrun/held |
 | Historical unknown message/operation and failed process inspection | Historical unresolved evidence | Preserved and unrepeatable; no demonstrated current interference, so no blanket capacity gate inferred |
 | Stopped metadata writes or rejected actions elsewhere | Historical stopped operations | Remain stopped; this package performs no retry or alternate route |
 | Current-main composed validation and independent acceptance | Integration prerequisite | Source reconciliation and independently reviewed real composition required before merge |
@@ -115,7 +128,7 @@ The adapter contains no compiler launch or broker acquisition.
 The exact next permitted action is compiler-free preparation and review of this
 package. The first genuine acceptance action, once separately authorized with
 real launch prerequisites established, is the five exact selectors emitted by
-`prepare`, using the existing development runner and its machine sink. Follow
-that with separately scoped public C8 PMK composition and independent composed
-review. No full ACC-08, integration, release, self-hosting or seed-retirement
+`prepare`, using the existing development runner and its machine sink, including
+the public C8 PMK composition in the same selector. Independent composed
+review remains required. No full ACC-08, integration, release, self-hosting or seed-retirement
 credit follows from the synthetic harness or routine CI.

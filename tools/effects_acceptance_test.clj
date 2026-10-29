@@ -13,7 +13,13 @@
   (merge (zipmap acceptance/resource-paths (repeat "; synthetic resource\n"))
     {acceptance/test-path
      (str "(ns " acceptance/test-namespace ")\n"
-          (apply str (map #(str "(deftest " % " (is true))\n") acceptance/selectors)))
+          (apply str (map #(if (= % "body-private-map-keys-authenticated-builder-composition")
+                            (str "(deftest " % "
+                              (compile-c8-module-bundle (path \"bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity\"))
+                              (invoke 'sh09-build-authenticated-body-effect-result [typed verification binding])
+                              (invoke 'sh09-verify-authenticated-body-effect-result [typed verification binding actual])
+                              (invoke 'sh09-build-authenticated-body-effect-result [typed verification wrong-binding]))\n")
+                            (str "(deftest " % " (is true))\n")) acceptance/selectors)))
      acceptance/effects-path
      "(defn build-body-effect-result [typed verification binding]
         (if (body-module-vectors-valid? core facts (get producers :entries))
@@ -69,6 +75,8 @@
   (doseq [[path from to expected]
           [[acceptance/test-path (first acceptance/selectors) "unrelated" :missing-selector]
            [acceptance/test-path acceptance/test-namespace "unrelated" :namespace]
+           [acceptance/test-path "typed verification wrong-binding" "typed verification binding" :public-consumer-selector-route]
+           [acceptance/test-path "compile-c8-module-bundle" "unrelated" :public-consumer-selector-route]
            [acceptance/consumer-path "effects/build-body-effect-result" "effects/unrelated" :consumer-route]
            [acceptance/effects-path "body-module-vectors-valid?" "unrelated" :builder-route]
            [acceptance/effects-path "core facts" "facts core" :builder-route]
