@@ -13776,6 +13776,22 @@
    :later-added-predicates :pending-separate-review,
    :applicability
    "specs/requirement-reconciliation/safety-stdlib-current-applicability.edn"},
+  :policy-product2-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/policy-product2-qualified-review-adoption.edn",
+   :remaining-allocation-work 25,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :qualified-source-review-adoptions 474,
+   :pending-allocation-review 31,
+   :source-commit "eac630f380023ab9d91eb548594f21d566b7a39c",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :historical-adoptions-preserved 561,
+   :total-concrete-links 808,
+   :applicability
+   "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+   :reviewed-records 2},
   :status :pending-source-version-review,
   :safety107-current-composition
   {:allocation-source-commit

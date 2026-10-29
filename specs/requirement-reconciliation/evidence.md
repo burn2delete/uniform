@@ -1562,6 +1562,35 @@ task status remains3/182. Full facets, granularity, legacy ACC, independent
 final counting and integration remain open; no implementation or count credit
 is conferred by these allocations.
 
+### Accounting-policy1 and Product1 independent review adoption
+
+The coordinator supplied completed independent reviews of frozen candidate
+`f117fd1e311703cac73dc5fa2359d5b8a98a2db8`, tree
+`42a70f9d066ed6a4351e45014456873f2486f0b0`. Accounting-policy1 passed605
+checks with12 negative controls (receipt SHA256
+`37053e4150fcc88ea27e84feb8e256d4571571c650b2c3e42a498d74a178da32`);
+Product1 passed720 assertions (receipt SHA256
+`b394fb0eeadd8f9d65f4676ee2a5523c07d5b8c25d2b508589fb737137728223`).
+These are actual one-record current-composition reviews, separate from their
+earlier proposal-only reviews. Checker and frozen input hashes were verified.
+
+`policy-product2-qualified-current-applicability.edn` binds source
+`00b355c662aebd41ff920cd0143bf2bc7d277799`: both decision records are
+unchanged, current criterion/context witnesses apply, all50 registry task/plan
+files reconstruct the frozen bytes by inverting only the ten later declared
+field appends, and all240 original contracts remain byte-identical. Later
+Governance/AI clauses gain no review acceptance from these receipts.
+
+Adoption `eac630f3` changes only those two allocation review dispositions:
+474 qualified reviews,31 pending Governance/Performance/AI reviews,808 allocated
+and25 Bootstrap allocations remaining. Project accounting is removed while
+actual provider billing/policy remains required. Four architecture producers
+feed seven conditional product consumers without selecting hardware or a
+product. Historical561 acceptance and the full1262-span binding vector survive
+unchanged. All833 decisions remain Open; provisional3/182 task status, full
+facet/granularity/ACC/final-count/integration holds and implementation nonclaims
+remain unchanged.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,

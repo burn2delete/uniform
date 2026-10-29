@@ -1352,6 +1352,22 @@
  :new-task-fields 10,
  :historical-adoptions-preserved 561,
  :total-concrete-links 808}
+    :policy-product2-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/policy-product2-qualified-review-adoption.edn",
+ :remaining-allocation-work 25,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 474,
+ :pending-allocation-review 31,
+ :source-commit "eac630f380023ab9d91eb548594f21d566b7a39c",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 808,
+ :applicability
+ "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+ :reviewed-records 2}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
