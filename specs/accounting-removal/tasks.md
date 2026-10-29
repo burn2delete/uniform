@@ -33,6 +33,131 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## Source-bound accounting and development criteria
+
+These criteria refine the existing ACC-01 and ACC-12 closing evidence; they are
+not additional tasks or status records. Every existing checkbox, partial result,
+restriction and historical receipt below retains its scope. Mapping a criterion
+does not prove that its required source, runtime, review or integration evidence
+has been produced. Standing development policy applies now; final ACC-12
+dependencies do not become prerequisites for ordinary edits or focused tests.
+
+<!-- accounting-source-criteria:start -->
+
+### accounting-source-inventory
+
+Task: ACC-01
+
+Source requirement: policy/accounting/source-grounded-inventory
+
+Acceptance: Inventory every in-scope compiler, emitter, development-runtime, adapter, schema, test and operative contract producer/consumer, including transitive callsites and unnamed literal maxima. Pin source commit, path, raw condition and owner; give each guard a source-grounded remove, retain-semantic, retain-host/external or historical disposition. Record unclassified guards and unknown owners as open work. A search-hit list, zero telemetry or renamed allowance is insufficient.
+
+Negative evidence: Reject an inventory that omits a transitive consumer, unnamed ceiling, enforcing schema/test/contract or unresolved classification, or calls a work/cost allowance a semantic limit without identifying the actual independent rule.
+
+Outputs: Source-pinned producer/consumer/field/refusal/test/contract census, per-guard rationale and explicit unresolved-owner/classification list, independently reviewed against actual source.
+
+Dependencies: Current AGENTS accounting-removal authority; actual owner source and call graph. No preparation-only or per-run permission gate for ordinary census work.
+
+### accounting-artificial-refusal-removal
+
+Task: ACC-12
+
+Source requirement: policy/accounting/remove-artificial-refusals
+
+Acceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.
+
+Negative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.
+
+Outputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.
+
+Dependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.
+
+### accounting-semantic-validation-preservation
+
+Task: ACC-12
+
+Source requirement: policy/accounting/preserve-semantic-validation
+
+Acceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.
+
+Negative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.
+
+Outputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.
+
+Dependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.
+
+### accounting-host-external-boundaries
+
+Task: ACC-12
+
+Source requirement: policy/accounting/host-external-boundary-separation
+
+Acceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.
+
+Negative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.
+
+Outputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.
+
+Dependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.
+
+### accounting-beyond-limit-late-invalid
+
+Task: ACC-12
+
+Source requirement: policy/accounting/beyond-limit-and-late-invalid-evidence
+
+Acceptance: For each removed artificial condition, demonstrate ordinary valid inputs beyond its former limit and equally late/deep/wide invalid inputs through the genuine affected producer/consumer paths and required runtime composition. The valid case must succeed for its declared semantics and the late invalid case must reject for the retained semantic rule with stable diagnostics and source/extents. Direct helpers, normalized owner fixtures, flags or recorded counts prove only their named scope; missing source authentication or required composition remains open.
+
+Negative evidence: Reject closure based on only small/early fixtures, a helper substituted for the required consumer/runtime route, a skipped or held path counted as a pass, lost late-invalid checking, fabricated extents or unreported callback effects.
+
+Outputs: Exact input/source/owner and command/result receipts for beyond-limit acceptance and equally late semantic rejection, actual composition identity and explicit failed/skipped/held/unrun stages. This mapping does not launch those paths.
+
+Dependencies: ACC-01 old-condition census, the applicable coherent owner removal, preserved semantic validation and permitted genuine producer/consumer/runtime evidence. Restricted acceptance paths stay open.
+
+### accounting-closure-evidence
+
+Task: ACC-12
+
+Source requirement: policy/accounting/closure-evidence-record
+
+Acceptance: Before claiming accounting-removal completion, retain independently reviewed exact base/candidate/commit/tree and current-main integration evidence for the actual tested scope, with passed, failed and unrun stages, required owner acceptance, source/dependency invalidation and remaining host/semantic/restricted boundaries. All in-scope classifications and required removals must be resolved; a search count, helper result, draft PR, historical estimate or mapping witness cannot close the backlog. Accounting closure is not Gravity, release, self-hosting or seed-retirement completion.
+
+Negative evidence: Reject stale or mismatched source/tree, author self-acceptance, failed/unrun stages relabeled passing, unknown owners hidden from the census, a partial result promoted to whole closure, or an absent independent review/integration receipt.
+
+Outputs: Source-pinned closure bundle, independent review and exact integration receipts, per-stage result/limit inventory and explicit remaining-open list; preserve historical failed attempts and their original dates/commits.
+
+Dependencies: Every other applicable ACC item's required evidence and existing coordinator integration authority; no unsupported runtime, source-authentication or release claim.
+
+### development-autonomy-conflict-coordination
+
+Task: ACC-12
+
+Source requirement: policy/development/autonomy-and-conflict-coordination
+
+Acceptance: Operative accounting-related contracts, tooling and coordination must allow authorized ordinary development without task-count, failed-attempt allowance, preparation-only stage or discretionary per-run permission prerequisites. Managers continue independently within standing goals while coordinating actual conflicting writers and incompatible interfaces. Preserve the coordinator's independent acceptance/integration role and historical attempts; never retry, transfer or route around denied/restricted actions. Removal of a project quota does not grant new access or operation authority.
+
+Negative evidence: Reject policy/tool changes that reintroduce those ordinary-development quotas, impose migration/admission proofs before an ordinary edit or focused test, ignore a genuine writer/interface conflict, confer author acceptance, or use a different actor/endpoint to replay a denied action.
+
+Outputs: Exact operative policy/tool source review and focused allowed/refused coordination fixtures or source-bound decision records distinguishing ordinary development, real conflict and denied-action cases. Missing execution evidence is recorded, not invented.
+
+Dependencies: Standing AGENTS decisions apply immediately; current writer/interface ownership and coordinator authority. This criterion has no dependency on completing ACC-12 before ordinary work proceeds.
+
+### development-exact-candidate-admission
+
+Task: ACC-12
+
+Source requirement: policy/development/exact-candidate-admission
+
+Acceptance: Governed candidate integration eligibility binds exact base/candidate commit and tree, clean named worktree, owned paths, governing contracts, positive/negative fixtures, stable diagnostics, successful scoped validation, independent acceptance, residual host boundaries and coordinator disposition. Use the ledger's exact tuple immediately before integration; refuse dirty/detached, missing/divergent base, identity mismatch, held/rejected/superseded/abandoned dependencies and unsupported credit. Compare ancestry and tree identity; already-identical/tree-equivalent work is not merged or replayed again. These admission requirements are not ordinary edit/test prerequisites.
+
+Negative evidence: Refuse stale or forged tuples, dirty/detached worktrees, owner/path conflicts, missing or self-authored acceptance, missing negative/diagnostic evidence, inadmissible dependencies and repeat integration of equivalent trees. A structural validator pass or self-audit does not grant semantic acceptance, release or self-hosting authority.
+
+Outputs: Exact governed preflight/ledger input and refusal/conformance records, independent acceptance and coordinator integration disposition with scoped nonclaims; ordinary-development cases remain separately legal under standing authority.
+
+Dependencies: Applicable workstream governance/ledger contracts and exact immutable candidate evidence at integration time; no admission replay or live integration is performed by this mapping.
+
+<!-- accounting-source-criteria:end -->
+
 ## ACC-05 shared PL helper successor - 2026-10-28 UTC
 
 Accounting owns the existing C7, Effects and emitter files and their existing
