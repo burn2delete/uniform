@@ -13711,6 +13711,24 @@
     :sha256
     "7f306ae45e364a849d5cd861b028d7d0dabdad11d671660a8d7dac838d48720d"},
    :total-concrete-links 770},
+  :performance-ai17-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/performance-ai17-qualified-review-adoption.edn",
+   :remaining-allocation-work 0,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :qualified-source-review-adoptions 491,
+   :pending-allocation-review 39,
+   :source-memberships 468,
+   :source-commit "c55255b582504bf44f4dbe661b3674daeb785963",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :current-criteria 22,
+   :historical-adoptions-preserved 561,
+   :total-concrete-links 833,
+   :applicability
+   "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+   :reviewed-records 17},
   :governance-ai31-current-composition
   {:allocation-source-commit
    "370a7b5d26814243b1a8fecbfd2ebf0b904db489",

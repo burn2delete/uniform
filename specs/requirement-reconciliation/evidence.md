@@ -1645,6 +1645,35 @@ granularity,13 proposed sibling replacements,legacy ACC scope,complete facet
 entailment,independent final counting andcoordinator integration remain open.
 The refreshed SH projection and12/529 source-lineage assertions also pass.
 
+### Performance/AI17 actual-composition review adopted
+
+The completed independent review of frozen `63284c85`, tree
+`3f50a43e51df88cda74c80155d2dbe45225588d8`, passed3 tests and2065
+assertions including stale/already-allocated/forged/coherently-removed-obligation
+and missing-predecessor controls. Receipt SHA256 is
+`d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653`.
+The reviewer checked authorship overlap, reviewed the17 selected predicates
+and468 source memberships, and excluded Governance14 semantics and additional
+acceptance of the reviewer's own Runtime dependency predicates.
+
+At `cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d`, the applicability join
+authenticates the receipt, checker, frozen artifacts and nine source documents;
+all17 decision records are unchanged. The22 criteria and declared dependency
+contexts bind to actual current tasks. Reversing only the eight authenticated
+Bootstrap25 field appends recovers all50 registry task/plan files at the frozen
+candidate, and all240 original contracts remain unchanged. Governance14 and
+later Bootstrap25 clauses inherit no acceptance.
+
+Adoption `c55255b5` adds17 qualified current reviews:491 qualified,39 pending
+(Governance14 and Bootstrap25),all833 allocated and Open,zero unallocated.
+Tool authority remains a conjunction; prompt sanitizer/delimiter exceptions
+never promote authority; generated code reenters the normal pipeline;
+workflow compensation/replay state, retrieval taint/sharing, complete evaluation
+gates and target-intrinsic proof/fallback contracts retain their exact scopes.
+The561 historical bindings and1262 current spans are unchanged. Source-only
+reviews confer no implementation, task-count, policy-selection or whole-facet
+credit; granularity,ACC,full entailment,final counting andintegration remain open.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,

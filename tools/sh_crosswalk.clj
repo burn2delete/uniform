@@ -1394,6 +1394,24 @@
  :allocation
  "specs/requirement-reconciliation/current-decision-allocation-bootstrap25.edn",
  :total-concrete-links 833}
+    :performance-ai17-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/performance-ai17-qualified-review-adoption.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 491,
+ :pending-allocation-review 39,
+ :source-memberships 468,
+ :source-commit "c55255b582504bf44f4dbe661b3674daeb785963",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :current-criteria 22,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :applicability
+ "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+ :reviewed-records 17}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
