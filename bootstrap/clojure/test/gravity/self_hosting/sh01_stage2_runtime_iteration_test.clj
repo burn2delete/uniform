@@ -13616,7 +13616,7 @@
                              (mapv :type (get-in functions ['classify-source-id :parameters]))))
                       (is (= [:gravity.type/bool] (mapv :type (get-in functions ['classify-choice :parameters]))))
                       (is (nil? (:recursive-proof facts)))
-                      (is (= #{1 2} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= #{[:gravity.type/keyword] [{:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]}
                              (set (map :argument-types predicates))))
                       (is (= 1 (count lookups)))
@@ -13806,7 +13806,7 @@
                              (mapv :type (get-in functions ['classify-runtime-fields :parameters]))))
                       (is (= [:gravity.type/bool] (mapv :type (get-in functions ['classify-choice :parameters]))))
                       (is (nil? (:recursive-proof facts)))
-                      (is (= #{1 2} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= #{[:gravity.type/string] [{:kind :gravity.type/nil-or :value-type :gravity.type/string}]}
                              (set (map :argument-types predicates))))
                       (is (= 2 (count lookups)))
@@ -14044,7 +14044,7 @@
                       (is (nil? proof))
                       (is (= 1 (count (filter #(= :direct-vector-predicate (:dispatch %)) (:call-type-facts facts)))))
                       (is (= 1 (count (filter #(= :direct-integral-ordering (:dispatch %)) (:call-type-facts facts)))))
-                      (is (= #{1 2} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= 0 (count (filter #(contains? (:type-input %) :indexed-private-self) (vals (:functions assembled))))))))
                   (println (pr-str {:ay-integer-predicate-positive name :extension extension :function-table-entry-invocations (count results)}))
                   {:name name :input input :module module :definitions definitions :assembled assembled :predicates predicates
@@ -14178,7 +14178,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1 3} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:vector-literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -14190,7 +14190,7 @@
                               :gravity.type/keyword] parameters))
                       (is (= :gravity/sh08-indexed-private-self-value-proof-v1 (:domain proof)))
                       (is (= 1 (get-in proof [:parameter-value-premise :entry-values :normal-entry-count])))
-                      (is (= #{1 8} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= 1 (count (filter #(contains? (:type-input %) :indexed-private-self) (vals (:functions assembled))))))))
                   (println (pr-str {:ax-vector-predicate-positive name :extension extension :runtime-activations (count results)}))
                   {:name name :input input :module module :definitions definitions :assembled assembled :predicates predicates

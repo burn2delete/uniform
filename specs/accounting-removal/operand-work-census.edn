@@ -1,0 +1,120 @@
+{:nonclaims
+ [:complete-Set-conversion-accounting-removal
+  :width-guard-removal
+  :runtime-policy-removal
+  :independent-acceptance
+  :source-authentication
+  :PR502-closure],
+ :owners
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :consumer sh08-st-inferred-call,
+   :historical-and-candidate-form-sha256
+   "40cc102fbbf3a35657ee61b9ce5cb87cb8811586d2d0b4bc81c39282729f3070",
+   :source sh08-st-source,
+   :base-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :candidate-sha256
+   "d696d6e07565f91742f8e8dff77bfa24584aeca7add426c0f0e3cb627095ccb0",
+   :consumer-unchanged true,
+   :complete-equality
+   (= descriptor (get types (get call :operator-node-id))),
+   :predicate-source-count 11}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :consumer body-st-call-valid?,
+   :historical-and-candidate-form-sha256
+   "83c7366847c6cd217947472106d3dd1af4cda5b23fb197c3d6f94b2f26305f25",
+   :source body-st-source,
+   :base-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :candidate-sha256
+   "68cee01b64fce4df0ccb3df6baafafb9166850ad823b838cd1f63ad2e8cfe3ab",
+   :consumer-unchanged true,
+   :complete-equality (= descriptor (body-st-finish header)),
+   :predicate-source-count 11}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :consumer p15-s23-typed-compile-set-conversion,
+   :historical-and-candidate-form-sha256
+   "fcbb32a0de200ce8ae5cd9bab86840203d80eec58f7c29c7a36fe307b6963f1f",
+   :source p15-s23-st-source,
+   :base-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :candidate-sha256
+   "585885a91ee9744936da9356dd56c087b336b96ced062c5a91805aa7288fd25e",
+   :consumer-unchanged true,
+   :complete-equality
+   (=
+    descriptor
+    (get (get context :types) (get call :operator-node-id))),
+   :predicate-source-count 11}],
+ :C7-tests
+ [{:name sh08-keyword-vector-set-conversion-development-kernel,
+   :base-form-sha256
+   "5540a58f9684b82d40be1698cc992dbf49fd9714d1c893fbe644c1257c8e2360",
+   :candidate-form-sha256
+   "cf203f28a19832f162a93d0ade4f8cf993dcef268036e190cbbe1ed3aebd4b65",
+   :all-independent-semantic-assertions-preserved true,
+   :retired-assertions
+   [(is (= result (set-conversion-derived input (:work-count result))))
+    (is
+     (=
+      :set-conversion-work-limit
+      (:reason
+       (set-conversion-derived input (dec (:work-count result))))))],
+   :retired-width-only-case (vector-type 1025),
+   :obsolete-field-values [0 1],
+   :input-policy-semantic-fields-preserved true}
+  {:name sh08-set-conversion-development-kernel,
+   :base-form-sha256
+   "6cf1b488168034b8dd22754209474b6ba51dbefe1ce0201945605227222b827f",
+   :candidate-form-sha256
+   "360a16b22b87a2af2cf0d0e9ded105a7951a1db1c1467301723434982876f8e5",
+   :all-independent-semantic-assertions-preserved true,
+   :retired-assertions
+   [(is (= result (set-conversion-derived input (:work-count result))))
+    (is
+     (=
+      :set-conversion-work-limit
+      (:reason
+       (set-conversion-derived input (dec (:work-count result))))))],
+   :retired-width-only-case (vector-type 1025),
+   :obsolete-field-values [0 1],
+   :input-policy-semantic-fields-preserved false}],
+ :source-parity
+ {:complete-bodies-identical-under-listed-symbol-correspondence true,
+  :aliases
+  {body-io-child-types sh08-ft-ordered-child-types,
+   body-st-binding? sh08-st-binding?,
+   body-all? sh08-ft-all-true?,
+   body-st-keyword-policy sh08-st-keyword-policy,
+   p15-s23-io-child-types sh08-ft-ordered-child-types,
+   p15-s23-st-binding? sh08-st-binding?,
+   p15-s23-typed-all sh08-ft-all-true?,
+   p15-s23-st-keyword-policy sh08-st-keyword-policy},
+  :helper-equivalence-inferred false},
+ :kind :operand-work-descriptor-retirement,
+ :generator
+ {:language :clojure,
+  :sha256
+  "46073b610fb7fad95a18d682952c4754e3c3bf497fd171e4ec0e45e43530630e",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :unique-definitions true,
+  :historical-full-form-parity true,
+  :unchanged-consumers-and-equality true,
+  :no-tracked-production-field-references true,
+  :Bootstrap-loaded false,
+  :genuine-acceptance :UNRUN},
+ :base "8f9af1be55f99a076992086ac95f91364a22924e",
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :runtime-test-adaptation
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+  :base-sha256
+  "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+  :candidate-sha256
+  "2b34e1d3649fd844f117fbbb94d70f1196ad32183b4ea94a031d15ad071cf0ab",
+  :only-change :five-cost-total-assertions-to-field-absence,
+  :assertions-replaced 5},
+ :owner :ACC-01}

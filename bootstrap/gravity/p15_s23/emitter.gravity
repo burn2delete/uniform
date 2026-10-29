@@ -11510,7 +11510,7 @@
        :operation 'set :semantic-owner 'gravity.collections :intrinsic (if invoked? :gravity.collections/persistent-set-from-string-vector :gravity.collections/persistent-set-construction)
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :construction-policy (if invoked? {:operation :persistent-set-from-string-vector :operand-evaluation :once :operand-position :non-tail
                          :construction :persistent-set :payload-evaluation :none :input-preserved? true
                          :duplicates :gravity-string-value-equality :order :unspecified :normalization :none
