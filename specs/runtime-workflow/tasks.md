@@ -27,7 +27,7 @@ Status: Open
 
 Evidence baseline: [Development evaluator](../../bootstrap/gravity/src/gravity/runtime.gravity) and [native manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj)
 
-Closing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement
+Closing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement; before user code, validate selected provider existence, artifact versions, grant scopes, compiled contracts, profile/target compatibility and enabled safety/audit requirements; reject a missing required provider unless a declared fallback applies, with positive fallback and negative mismatch fixtures under [L15 runtime providers](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md)
 
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 

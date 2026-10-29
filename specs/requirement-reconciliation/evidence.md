@@ -80,7 +80,35 @@ retains all 180 predicates, 18 sequence rows, other component task authorities
 and prior review history. Platform/SH/dependency controls pass 30 tests / 633
 assertions; the boundary gate passes 6 tests / 11 assertions.
 
-## Validation boundary
+## Core language source-family intake
+
+Independent receipt
+`dd5c77771b5fc8d87709930ead86882ff641defc25ceeccb9009d62167fa05be`
+accepts the immutable phase-01 patch
+`132214cfc974b466c44748a89b9ec6a7fb888aae8253bf470e8e2d772444d7c4`
+for source conservation and the finite L15 task interface. Its proposal is
+retained unchanged. All 19 sources, 2,783 occurrences, 2,069 facets, 161
+inherited records and 28 proposed field edits remain visible, including 36
+missing interfaces and 11 unresolved accounting facets. Those proposed field
+edits are not blindly replayed over later normalized or retired records.
+
+The accepted L15 startup amendment was applied to the existing Runtime task
+only after its complete old file and hash matched. Required provider existence,
+versions, scopes, contracts, profile/target and safety/audit checks precede user
+code; missing providers reject unless a declared fallback applies. The same
+five Runtime IDs and Open statuses remain. Actual implementation is unassessed.
+The generated roadmap is refreshed; composed source-version rebinding is pending.
+
+Applying the real task amendment exposed four failures in the existing Runtime
+CLI fixture: it copied evidence links but omitted the new closing-criterion
+contract link. The exact fixture correction supplied in the Safety candidate
+copies both fields, preserving validation. Runtime 4 tests / 67 assertions then
+passed. The imported pure occurrence function is explicitly declared for static
+analysis; no runtime behavior or linter setting changes.
+Core source/guard tests passed 3 tests / 191 assertions; both document
+validators, whitespace and the boundary gate (6 tests / 11 assertions) passed.
+
+## Input validation boundary
 
 The input preparation checked all 240 original source hashes against the
 original source commit, unique IDs, the complete 1-240 sequence, 18 source
