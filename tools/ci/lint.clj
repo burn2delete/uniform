@@ -132,9 +132,8 @@
                              (throw error))
                            (finally
                              (spit (io/file output "lint-macro-contract.edn") (str (pr-str @observations) "\n")))))
-        context-requested? (some #(or (= context/bootstrap %)
-                                      (str/starts-with? % (str context/source-root "gravity/bootstrap_impl/"))) paths)
-        current-plan (when context-requested? (context/plan! context/local-bytes!))
+        context-requested? (some context/context-path? paths)
+        current-plan (when context-requested? (context/selected-plan! context/local-bytes! paths))
         context-paths (set (:paths current-plan))
         _ (doseq [path paths :when (and context-requested?
                                         (str/ends-with? path ".clj")
@@ -149,7 +148,7 @@
                       (run "lint-context-base-archive"
                            ["git" "archive" "--format=zip" (str "--output=" archive)
                             base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory)))
+                      (context/archived-plan! archive inventory paths)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
@@ -165,7 +164,7 @@
                                 (let [log (run (str id "-" index) (lint-argv [path]) #{0 2 3})]
                                   (findings! log #{path} #(get (set/map-invert copied) % %))))
                               (map-indexed vector files))))
-        whole-context? (some #{context/bootstrap context/manifest context/loader} paths)
+        whole-context? (some context/whole-context-path? paths)
         baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths)))
                        (contextual "lint-context-baseline" base-plan
                                    (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
