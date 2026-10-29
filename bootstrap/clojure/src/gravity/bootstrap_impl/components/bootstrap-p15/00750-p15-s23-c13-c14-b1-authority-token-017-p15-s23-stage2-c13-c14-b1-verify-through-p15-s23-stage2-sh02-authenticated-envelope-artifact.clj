@@ -1,6 +1,14 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
 (defn p15-s23-stage2-c13-c14-b1-verify!
-  [packet checked-core context]
+  ([packet checked-core context interface-header]
+   (let [report (p15-s23-stage2-c13-c14-b1-verification-report
+                 packet checked-core context interface-header)]
+     (when-not (= :passed (:status report))
+       (p15-s23-b3-llvm-fail!
+        "B1-INPUT" (p15-s23-c11-ingress-source-path context) packet
+        {:missing-fact :c13-c14-b1-verification-status}))
+     :passed))
+  ([packet checked-core context]
   (let [report
         (p15-s23-stage2-c13-c14-b1-verification-report
          packet checked-core context)]
@@ -8,10 +16,21 @@
       (p15-s23-b3-llvm-fail!
        "B1-INPUT" (p15-s23-c11-ingress-source-path context) packet
        {:missing-fact :c13-c14-b1-verification-status}))
-    :passed))
+    :passed)))
 
 (defn p15-s23-stage2-c13-c14-b1-authentic?
   ([packet] false)
+  ([packet checked-core context interface-header]
+   (try
+     (= :passed
+        (p15-s23-stage2-c13-c14-b1-verify!
+         packet checked-core context interface-header))
+     (catch InterruptedException interrupted
+       (.interrupt (Thread/currentThread)) (throw interrupted))
+     (catch StackOverflowError _ false)
+     (catch AssertionError _ false)
+     (catch LinkageError _ false)
+     (catch Exception _ false)))
   ([packet checked-core context]
    (try
      (= :passed
