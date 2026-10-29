@@ -1,0 +1,94 @@
+{:no-new-worker-or-reviewer true,
+ :pending-independent-entailment-ids
+ ["schema/artifact-validation"
+  "schema/configuration-reload"
+  "schema/database-mapping"
+  "schema/graphql-generation"
+  "schema/release-evidence-gating"],
+ :assigned-ids
+ ["schema/artifact-validation"
+  "schema/configuration-reload"
+  "schema/database-mapping"
+  "schema/graphql-generation"
+  "schema/release-evidence-gating"],
+ :task-count-delta 0,
+ :checks
+ {:domains-assertions 103,
+  :boundary-assertions 11,
+  :negative-controls 20,
+  :whitespace :pass,
+  :docs 240,
+  :boundary-tests 6,
+  :domains-tests 6,
+  :domains-projection :pass,
+  :full-language-roadmap :pass,
+  :phase-indexes 19,
+  :clj-kondo
+  {:version "2025.10.23",
+   :errors 0,
+   :warnings 0,
+   :config "tools/ci/kondo"},
+  :aggregate-sh-projection
+  :not-renewed-central-source-version-composition-required},
+ :retention
+ {:historical-gap-records 577,
+  :criterion-witnesses 13,
+  :retirements 3,
+  :residuals 561,
+  :all-historical-records-sha256
+  "bce24c22b3ab964eacbc1c7cc38875cba6fbaab13a33bbf7fa25217543cb4112",
+  :terminal-history-sha256
+  "2e685a9cb4b0fed8d027fcf26d5055891ef369d72708b50b7c88191c6dd46488",
+  :no-other-history-edits true},
+ :canonical-partition
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :path
+  "specs/requirement-reconciliation/historical-gap-partition.edn",
+  :sha256
+  "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+  :candidate-source "43598c5b87feb4d88928549bb20fc4089768718b"},
+ :field-predecessor
+ {:predecessor-ref "43598c5b87feb4d88928549bb20fc4089768718b",
+  :predecessor-source-sha256
+  "4a58cf37f621a1d8bbac8cad6e1ce06eab21949784667076ad1034b4664bfd68",
+  :id "schema",
+  :field :projection,
+  :before-sha256
+  "b9afa81873e742484b007edc7030974c5106712d30edc78f8a14ced4f787ca29",
+  :after-sha256
+  "c37a0b2b4edf66db23acd01c6a1889f58963e9956c642f78c46ed52ffed27fd8"},
+ :independently-accepted-mappings 0,
+ :kind :schema-five-historical-gap-completion-receipt,
+ :unresolved-interface-placement-ids [],
+ :independent-review :pending-existing-routing,
+ :base-tree "e126e2b326911141fe6db796cebf2542d7ba32f7",
+ :base "f6e2fdfcfaed66bda3e15ac3e1d9216f4a568c17",
+ :criterion-count-delta 5,
+ :constructed-finite-open-interface-mappings 5,
+ :artifacts
+ [{:path "tools/schema_gap_completion.clj",
+   :sha256
+   "4da9b1834f1e2f9e19b0d0f708d07db38322509720405e3f7a409685c5d99991"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/gap-completion-input.edn",
+   :sha256
+   "d7651bffc08bf002b122a0a63154a8b86d4b02535f98f8541c22a968b7a2d419"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/gap-completion.edn",
+   :sha256
+   "526ff988f53d34613bef2130ea3ceea78a95f65017d8928d5c19fd2d0c64a684"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/gap-completion.md",
+   :sha256
+   "dfa947d2891346b4675d3f803d18b06a861151782d94edb8b2cfd1c36c002669"}
+  {:path "specs/domains-workflow/tasks.md",
+   :sha256
+   "7f67d299cb01671756a442e7165a0b61e5c710c79081daf05c13664d0b9b0fb6"}
+  {:path "specs/domains-workflow/plan.md",
+   :sha256
+   "b74ca52e18958423750ed23c37ab83d1027d693274d04897884b8c4bee8418f9"}
+  {:path "docs/component-roadmaps/domains.md",
+   :sha256
+   "a26628f3c2a6f47b6256b46ae45584a49bf43e38e98a9637e287505dff9775cb"}],
+ :implementation-acceptance :unassessed,
+ :canonical-adoption :pending}

@@ -73,3 +73,12 @@ full inherited records; a different current predecessor requires reconciliation.
 The [evidence](../requirement-reconciliation/schema-family/evidence.md) records
 the 21 occurrence composition holds and remaining interface qualifications.
 The canonical reconciliation owner alone adopts aggregate semantic changes.
+
+The follow-up [five-gap completion patch](../requirement-reconciliation/schema-family/gap-completion.edn)
+adds finite Open criteria inside that same `schema` record for the exact
+phase-10 historical-gap partition. It retains each historical row, every
+affected facet and the conditional producer/consumer dependencies. Its guarded
+schema-field operation preserves other components' later row changes; central
+review and adoption remain separate from authoring these interfaces. The
+[completion evidence](../requirement-reconciliation/schema-family/gap-completion.md)
+reports constructed mappings, pending review and zero additional task records.
