@@ -144,13 +144,13 @@
   "1b2ed2f28dfd3389ffe21fba0450578f1e2f44f712bfcbfd04cc5b288f6cfe7a",
   :all-other-main-bytes-and-definitions-unchanged true,
   :candidate-raw-reference-count 0,
-  :removed-lines 28},
+  :removed-lines 29},
  :kind :fresh-main-loop-accounting-retirement,
  :main-candidate-independent-disposition :pending,
  :generator
  {:language :clojure,
   :sha256
-  "6d90b2f9bdbec0bbde7736fd9bc45c13bf76f5d5036cafc0eaecfecdbebeb87c",
+  "4e5a42e2b5bd34238dfb51bcd6288c6f30ac56702172aa75d421cf55c38ee39e",
   :preserved-locally true},
  :integration-preflight :UNRUN,
  :base-tree "d343460804f202f08c9751c1c82eb634f6c38cf4",
