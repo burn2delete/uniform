@@ -129,7 +129,19 @@ source-coverage execution, independent acceptance and composed integration remai
 pending. Remaining structural/core/inference limits are explicit open work; the
 original machine snapshot and its state totals remain unchanged.
 
-Other authored-base identities include C7 coordinator/receipt/source validation,
+The three physical check/receipt/coordinator guard-order definitions now have
+source successor PR615 at `bb3a9acfbb5dd683d6df0403867a179a5fdc51bc`, tree
+`4c78e092a77a7dac53732d5bf0439d5fdf964493`, parent PR614 `c506514d`.
+Complete historical forms, two exact guard-only reorderings, unchanged current
+catalog/native provider/dependencies and caller argument lists are pinned. Both
+original carrier/receipt physical-entry kernels are restored, with every prior
+test byte conserved. A third kernel adds physical duplicate, hostile key,
+malformed native map, metadata/comparator and true-only/catalog controls.
+Genuine execution and independent acceptance remain pending. Earlier coordinator
+equality/authority checks are unchanged; receipt DATA establishes no fresh
+receipt, witness or B47/source authority. Original machine counts are unchanged.
+
+Other authored-base identities include remaining C7 source validation,
 conditional List-element work in Effects/emitter and selected schema/caller
 cells. Each requires its
 actual source/contract/caller disposition. The machine table names every unit;
