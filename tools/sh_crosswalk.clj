@@ -1125,6 +1125,27 @@
   "specs/requirement-reconciliation/gpu2-source-metadata-allocation-overlay.edn",
   :sha256
   "060dc7f6789a45907513e5503aaa3f059a0819d15eb25f4cf410b9d57c086cdc"}}
+    :accounting-policy1-current-allocation
+    {:current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
+ :remaining-allocation-work 64,
+ :task-count-delta 0,
+ :new-task-criteria 0,
+ :implementation-credit :none,
+ :source-spans 15,
+ :pending-allocation-review 80,
+ :source-commit "71b7adb71e229358f2fcf32136f42732be9dbc4e",
+ :new-concrete-links 1,
+ :status :pending-independent-current-composition-review,
+ :qualified-source-reviews-preserved 386,
+ :source-contexts 15,
+ :historical-adoptions-preserved 493,
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-accounting-policy1.edn",
+  :sha256
+  "48a7180a033f83670c46d8f71a8f5c7936636c9d1d6a76dc1bca691a23def743"},
+ :total-concrete-links 769}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

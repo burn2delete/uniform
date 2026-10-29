@@ -1321,3 +1321,28 @@ and pinned changed-file lint pass. The first SH test observed the previous
 generated view before regeneration completed; the ordered rerun passes.
 Scratch helper-loading errors occurred before mutation and were corrected.
 Final facet, granularity, legacy ACC, counting and integration gates remain open.
+
+## Mixed accounting policy decision allocation
+
+`current-decision-allocation-accounting-policy1.edn` binds the single existing
+`decision/accounting-mixed-source-contexts` decision to the current AI external
+spend and Runtime policy criteria. Fifteen P10/R8 source clauses, their fifteen
+owning contexts, current AGENTS policy authority and two exact criteria are
+checked. No facet/occurrence IDs, new criterion, task, policy allowance or
+implementation result is invented. Project work/input/call/time/retry accounting
+remains removed; real external provider billing/account policy, effect/grant,
+schema/taint/secret/review and replay/failure semantics remain applicable.
+
+The earlier independent receipt passes only its frozen proposal's source-policy
+consistency. Actual current allocation review remains pending. All833 decisions
+remain Open:769 allocated,64 unallocated,386 qualified reviews and80 pending.
+All prior768 allocations,493 accepted historical mappings,68 pending historical
+mappings and provisional3/182 task status are conserved. No architecture or
+product selection is made. Full-facet, granularity, ACC and final counting work
+remain open.
+
+All561 current historical bindings and1262 current UTF8 file/raw spans pass.
+SH12/522, census4/13, boundary6/11, generated SH check and pinned changed-file
+lint pass. An initial scratch assertion counted only the30 clause/context
+spans against33; the original total also includes one policy and two criterion
+witnesses. The explicit per-category count was corrected before writes.

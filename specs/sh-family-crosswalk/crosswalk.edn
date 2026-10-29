@@ -13192,6 +13192,27 @@
      :independent-receipt-sha256
      "994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e"}],
    :new-open-tasks 1},
+  :accounting-policy1-current-allocation
+  {:current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
+   :remaining-allocation-work 64,
+   :task-count-delta 0,
+   :new-task-criteria 0,
+   :implementation-credit :none,
+   :source-spans 15,
+   :pending-allocation-review 80,
+   :source-commit "71b7adb71e229358f2fcf32136f42732be9dbc4e",
+   :new-concrete-links 1,
+   :status :pending-independent-current-composition-review,
+   :qualified-source-reviews-preserved 386,
+   :source-contexts 15,
+   :historical-adoptions-preserved 493,
+   :allocation
+   {:path
+    "specs/requirement-reconciliation/current-decision-allocation-accounting-policy1.edn",
+    :sha256
+    "48a7180a033f83670c46d8f71a8f5c7936636c9d1d6a76dc1bca691a23def743"},
+   :total-concrete-links 769},
   :compiler-testing34-current-composition
   {:allocation-source-commit
    "e3f51140beb4665f1f612b1c195ac3967697eeff",
