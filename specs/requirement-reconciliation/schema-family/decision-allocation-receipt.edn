@@ -1,0 +1,130 @@
+{:assigned-decision-ids
+ ["interface/language/types/project-schema-static-type"
+  "interface/safety/safe10/runtime-authority"
+  "interface/schema/authorize-runtime-migration"
+  "interface/schema/check-binary-reference-layout"
+  "interface/schema/check-canonical-identity-input"
+  "interface/schema/check-client-operation"
+  "interface/schema/compatibility-diff"
+  "interface/schema/decode-canonical-value"
+  "interface/schema/decode-declared-format"
+  "interface/schema/emit-binary-codec-binding-input"
+  "interface/schema/emit-database-structure"
+  "interface/schema/emit-explicit-binary-layout"
+  "interface/schema/emit-graphql-resolver-adapter"
+  "interface/schema/emit-graphql-sdl"
+  "interface/schema/emit-http-boundary-validators"
+  "interface/schema/emit-openapi-document"
+  "interface/schema/emit-typed-api-client"
+  "interface/schema/emit-typed-migration-plan"
+  "interface/schema/emit-typed-row-adapter"
+  "interface/schema/encode-canonical-value"
+  "interface/schema/encode-declared-format"
+  "interface/schema/expand-authoritative-schema"
+  "interface/schema/generate-source-validator"
+  "interface/schema/run-http-contract-tests"
+  "interface/schema/validate-migration-change"],
+ :counts
+ {:accepted430-unchanged true,
+  :unplaced-decision-ids [],
+  :implementation-decisions-open 833,
+  :new-criterion-groups 9,
+  :decisions-needing-proposed-supplements 17,
+  :new-task-count 0,
+  :assigned-decisions 25,
+  :existing-exact-criterion-bindings 8,
+  :completed-duplicate-decisions 0,
+  :task-field-amendments 3,
+  :pending-independent-review-ids
+  ["interface/language/types/project-schema-static-type"
+   "interface/safety/safe10/runtime-authority"
+   "interface/schema/authorize-runtime-migration"
+   "interface/schema/check-binary-reference-layout"
+   "interface/schema/check-canonical-identity-input"
+   "interface/schema/check-client-operation"
+   "interface/schema/compatibility-diff"
+   "interface/schema/decode-canonical-value"
+   "interface/schema/decode-declared-format"
+   "interface/schema/emit-binary-codec-binding-input"
+   "interface/schema/emit-database-structure"
+   "interface/schema/emit-explicit-binary-layout"
+   "interface/schema/emit-graphql-resolver-adapter"
+   "interface/schema/emit-graphql-sdl"
+   "interface/schema/emit-http-boundary-validators"
+   "interface/schema/emit-openapi-document"
+   "interface/schema/emit-typed-api-client"
+   "interface/schema/emit-typed-migration-plan"
+   "interface/schema/emit-typed-row-adapter"
+   "interface/schema/encode-canonical-value"
+   "interface/schema/encode-declared-format"
+   "interface/schema/expand-authoritative-schema"
+   "interface/schema/generate-source-validator"
+   "interface/schema/run-http-contract-tests"
+   "interface/schema/validate-migration-change"]},
+ :canonical-writes :none,
+ :unresolved-facet-metadata-ids
+ {"interface/schema/emit-http-boundary-validators" [],
+  "interface/schema/generate-source-validator" [],
+  "interface/schema/emit-binary-codec-binding-input" [],
+  "interface/schema/expand-authoritative-schema" [],
+  "interface/schema/compatibility-diff" [],
+  "interface/schema/emit-graphql-sdl" [],
+  "interface/schema/emit-openapi-document" [],
+  "interface/schema/check-canonical-identity-input" [],
+  "interface/schema/emit-typed-row-adapter" [],
+  "interface/schema/validate-migration-change" [],
+  "interface/schema/emit-explicit-binary-layout" [],
+  "interface/schema/emit-database-structure" [],
+  "interface/safety/safe10/runtime-authority" [],
+  "interface/language/types/project-schema-static-type" [],
+  "interface/schema/check-binary-reference-layout" [],
+  "interface/schema/emit-typed-migration-plan" [],
+  "interface/schema/run-http-contract-tests" [],
+  "interface/schema/authorize-runtime-migration" [],
+  "interface/schema/emit-typed-api-client" [],
+  "interface/schema/encode-declared-format" [],
+  "interface/schema/decode-declared-format" [],
+  "interface/schema/encode-canonical-value" [],
+  "interface/schema/check-client-operation" [],
+  "interface/schema/decode-canonical-value" [],
+  "interface/schema/emit-graphql-resolver-adapter" []},
+ :source-sha256
+ "448b46b360669a80328bd98abc24f39b39577091c81a396284c46bcaa65f13fe",
+ :unique-attached-facets 463,
+ :checks
+ {:preserved-open-decision-id-status-pairs 833,
+  :negative-controls 18,
+  :whitespace :pass,
+  :docs {:documents 240, :phase-indexes 19, :result :pass},
+  :boundary {:tests 6, :assertions 11, :result :pass},
+  :accepted430-manifest :unchanged,
+  :full-language-roadmap :pass,
+  :simulated-decisions 25,
+  :clj-kondo
+  {:version "2025.10.23",
+   :config "tools/ci/kondo",
+   :errors 0,
+   :warnings 0}},
+ :partition-sha256
+ "179e01ed0cd699663660404602543cde1c8e4317535eca1edbec90d4fcf7bb74",
+ :kind :schema-current-decision-allocation-receipt,
+ :independent-review :pending,
+ :base "86747916c4c876d707a1548113409fb939d854c9",
+ :artifacts
+ [{:path
+   "specs/requirement-reconciliation/schema-family/decision-allocation.edn",
+   :sha256
+   "aa85833123ac630b7addabd2fe60b6ba4e8f59acdbd6552fc6977c452faeb79e"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/decision-allocation-plan.edn",
+   :sha256
+   "8f26903ddb6a30b9deda537c9f698e740a4c7bcd0cedad831032cd8bb30db5ab"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/decision-allocation.md",
+   :sha256
+   "7fa91a10af52c651007257d6a15348a48a7721a96a8ce5df1677f8641f492e9e"}
+  {:path "tools/schema_decision_allocation.clj",
+   :sha256
+   "3016a31dca56d688735f738101ede9b625bcfaf85ed26dfe13bf060ff88ed302"}],
+ :implementation-acceptance :not-inferred,
+ :canonical-adoption :pending}
