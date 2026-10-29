@@ -1,8 +1,8 @@
 # OWN immediate-parent cache admission
 
 Base: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
-Governing contract: `docs/end-to-end-contracts.md`, OWN-02; C16 artifact
-identity and C18 incrementality. This report grants no OWN completion credit.
+Governing contract: `docs/end-to-end-contracts.md`, OWN-02; C16 incremental
+compilation and C18 compiler verification. This report grants no OWN completion credit.
 
 ## Repair and evidence
 
