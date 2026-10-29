@@ -3568,6 +3568,30 @@
     (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 2))))
     (is (= 3 (:work-count (leaf 'body-derive-nodes-with-foreign core facts {} 3))))) )
 
+(deftest body-private-map-keys-authenticated-builder-composition
+  ;; Genuine source -> C7 -> authenticated C8 builder, PMK family only.
+  ;; Held until this exact selector is separately authorized to execute.
+  (let [products (fresh-products "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-private-map-keys.gravity")
+        {:keys [typed verification binding request]} products
+        result (build-leaf products)
+        facts (:identity-input typed)
+        calls (filter #(= :direct-private-map-keys (:dispatch %)) (:call-type-facts facts))]
+    (is (= :accepted (:status typed) (:status result)) (pr-str (:diagnostics result)))
+    (is (= :passed (:status verification)))
+    (is (= 1 (count calls)))
+    (is (= request (get-in binding [:digest-resolution :preimage :request])))
+    (is (= :passed (:status (leaf 'verify-body-effect-result typed verification binding result))))
+    (let [call (first calls)
+          record (get-in result [:effect-graph :nodes (:call-core-node-id call)])]
+      (is (= #{:memory/allocate} (:direct record)))
+      (is (= :sh09-private-map-keys-allocation-v1 (get-in record [:allocation :rule-version]))))
+    ;; An unbound source triplet must not be credited as a PMK/shape refusal.
+    (let [wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+          rejected (leaf 'build-body-effect-result typed verification wrong-binding)]
+      (is (= :rejected (:status rejected)))
+      (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+      (is (= :untrusted-sh08-body-effect-input (get-in rejected [:diagnostics 0 :reason]))))))
+
 (deftest body-module-vectors-have-no-cumulative-quota
   (let [entry {:request {:canonical-core-artifact {:nodes [{}]}}
                :facts {:function-type-table [{}]}}]
