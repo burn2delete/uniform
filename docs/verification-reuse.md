@@ -1932,7 +1932,9 @@ ordered classpath and source bookends must still come from the separately
 reviewed existing owner harness; the preparation-base literal is never an
 applying/executed revision claim.
 
-These are **unrun genuine comparisons**. Compiler-free source reading,
+At preparation time these were **unrun genuine comparisons**. The retained
+operation record below updates that status without replaying any case.
+Compiler-free source reading,
 compilation of helper definitions against forbidden fake producer ports, and
 injected alias/dispatch/Throwable/restoration controls establish only harness
 mechanics. They do not load Bootstrap, authenticate input, run Reader/C5 or
@@ -1947,3 +1949,63 @@ fresh positive/public verification and changed case separately, preserve all
 errors and nonpasses, and review actual results before any acceptance. Do not
 run this namespace generically, borrow a proof transaction, replay an uncertain
 operation or infer RV1/RV2/RV4 closure or fragment equivalence from preparation.
+
+#### Retained operand results and stopped live-callee operation
+
+The original operation and independent result-review receipts dated
+2026-10-29 retain four finite operand results and one nonpassing live-callee
+operation, published with [PR578](https://github.com/burn2delete/uniform/pull/578).
+All five bind executed source `c25e4805d95ae36bdbd98664e6389556f3fc7690`,
+tree `fa0a8e5aa9c4f74f15265b676f8ac28ae1dfd4e9`, with identical clean
+source/runtime/classpath bookends. These are original execution identities,
+not an applying-source claim for later source increments.
+
+Each of the four completed operand fixtures records one test, 24 passing
+assertions, zero failures/errors and a new genuine positive/public C5 PASS.
+Its changed case rejects with `C5-UNRESOLVED` at
+`:final-authenticated-resolution-artifact`, preserves exact run storage,
+publishes no final C5 value and permits no subsequent Resolve consumption.
+Aliases and dispatch state are restored. The first template/resolved verifier
+outcomes distinguish the changed operands; the second run's verifiers pass.
+
+| Operand fixture | Changed first template / resolved verifier | Final operation receipt SHA-256 | Independent result-review SHA-256 |
+| --- | --- | --- | --- |
+| `actual-macro-template-operand-mutation-after-resolve` | FAIL / PASS | `505c8ec17f195167e1fe0cef30afc8c95a4b0c366ff40e8cff4bce999b0f95aa` | `1ce50390f4a1e4c0d0f468575d2d550f1e4a05733627c28be7c5ec2cd2abc8af` |
+| `actual-macro-resolved-operand-mutation-after-resolve` | PASS / FAIL | `cf7742be976132aa8769d84cb9968c326a3943ce1a31a3a0203ef61c562d8930` | `070ed275f9c365e87bf6fb8a2500d1f6a194fd20a2be9fe593151fb42d82094e` |
+| `actual-macro-request-operand-mutation-after-resolve` | FAIL / PASS | `5fb1dcee432b22b8fd5a4a54d5dde7d48e4df80d5b40b14ac9643a9d0a962fcc` | `2158f7e2dba7e435d72018e6a591bde3f5983a3583049a6f347ee525e7dab00a` |
+| `actual-macro-digest-operand-mutation-after-resolve` | PASS / FAIL | `3272ce806f5bde490efb4517308262d514d2ddff149f22d4515ce8d8a8dec5fe` | `35a00d622e346cf1f1bde3ccc15180032364fb78be6fbc04ec6213851bf0042c` |
+
+The request fixture changes the actual first digest-request ordinal from 0 to
+1. Its template header checks ordinal/purpose while the resolved verifier
+checks a different subset; claiming both verifiers failed would be incorrect.
+The digest fixture changes the actual first resolved-digest element through
+aliased storage. These results retain only their independently reviewed
+mutation/observation scope; no verifier call is elided by them.
+
+The first three operations used historical common-normal then host-exclusive
+admission with the canonical heavy lock. Those semantic observations remain
+retained; they establish no reusable nesting exception. The digest operation
+used the separately reviewed one-common-exclusive plus canonical-lock method,
+with no host-root acquisition. Original terminal cleanup/capture/release fields
+remain observations under each original method, not proof of current capacity,
+global host clearance or permission for another operation.
+
+`actual-macro-live-callee-swap-after-resolve` is terminal NONPASS from original
+owner session 6343: child timeout at 120 seconds, exit 124, no child or normal
+parent receipt, no observed assertion counts, positive/public C5 or mutation
+result. It establishes neither semantic PASS nor semantic FAIL. Its outer
+cleanup-complete field is false, cleanup-failed true and timeout containment
+unproven. Nested clean/root-dead observations do not override those flags;
+reported lock/lease release is not containment or capacity clearance. Its
+final operation receipt is
+`ce4ba8414e64660c37a6693d999221508d00225d8460be78206a41899a5ca9cf`;
+independent NONPASS review is
+`78600e07102c23dc5aee1f6fa7791da12be532e1d052e0923a76398a78e002a7`.
+
+The live-plan and same-function closed-state selectors remain UNRUN. No retry,
+recovery, selector reroute, bounds increase or process/holder probe follows
+from this record. Historical next-action fields retain their original time
+scope; they do not supersede the later live-callee stop. PR493 and all four
+completed results are retained without replay. Reader/DSE/R4 denials and the
+unknown 22232 operation remain untouched. Whole RV1, RV2 and RV4 acceptance,
+fragment equivalence, runtime/cache admission and elision remain open.
