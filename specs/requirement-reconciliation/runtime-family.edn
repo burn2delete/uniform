@@ -4,7 +4,7 @@
    :field-path [:acceptance],
    :marker "runtime-implementation-tasks",
    :after-source-sha256
-   "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+   "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
    :before-source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
    :after
@@ -19,7 +19,7 @@
    :field-path [:acceptance],
    :marker "runtime-implementation-tasks",
    :after-source-sha256
-   "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+   "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
    :before-source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
    :after
@@ -34,7 +34,7 @@
    :field-path [:acceptance],
    :marker "runtime-implementation-tasks",
    :after-source-sha256
-   "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+   "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
    :before-source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
    :after
@@ -49,11 +49,11 @@
    :field-path [:acceptance],
    :marker "runtime-implementation-tasks",
    :after-source-sha256
-   "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+   "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
    :before-source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
    :after
-   "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+   "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
    :id
    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
    :before
@@ -64,7 +64,7 @@
    :field-path [:acceptance],
    :marker "runtime-implementation-tasks",
    :after-source-sha256
-   "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+   "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
    :before-source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
    :after
@@ -33035,7 +33035,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -33132,7 +33132,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -33430,7 +33430,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -33537,7 +33537,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -33642,7 +33642,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -33740,16 +33740,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -33805,7 +33805,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -33842,7 +33842,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -33900,7 +33900,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -33964,7 +33964,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34032,7 +34032,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34087,7 +34087,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -34180,7 +34180,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34241,7 +34241,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34318,7 +34318,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34385,7 +34385,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34431,7 +34431,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34490,7 +34490,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34529,7 +34529,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34572,7 +34572,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34612,7 +34612,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34649,7 +34649,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -34689,7 +34689,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -34726,7 +34726,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34767,7 +34767,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34822,7 +34822,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -34881,7 +34881,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -35003,16 +35003,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -35072,16 +35072,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids [],
@@ -35116,16 +35116,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids [],
@@ -35224,16 +35224,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -35360,16 +35360,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -35478,16 +35478,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -35553,16 +35553,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids [],
@@ -35614,16 +35614,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids [],
@@ -35657,16 +35657,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids [],
@@ -35727,7 +35727,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -35767,7 +35767,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -35803,7 +35803,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -35846,7 +35846,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -35939,7 +35939,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -35991,7 +35991,7 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -36043,16 +36043,16 @@
     :task-reference
     {:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"},
     :entailment :proposed-source-qualified-interface,
     :acceptance
-    "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; replay returns recorded model/tool/retrieval/memory/review decisions or rejects a missing record. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject live calls during replay, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
+    "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
     :qualification
     "Only the retained R1-R12 facets bind this interface. Other source contexts, historical decisions and additional task interfaces are conserved. This is task acceptance scope, not implementation acceptance.",
     :unresolved-facet-ids
@@ -37428,7 +37428,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -38811,7 +38811,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -43780,7 +43780,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -45009,7 +45009,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -46683,7 +46683,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -48123,12 +48123,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -48577,7 +48577,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -48820,7 +48820,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -49450,7 +49450,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -50283,7 +50283,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -51176,7 +51176,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -51781,7 +51781,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -52977,7 +52977,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -53699,7 +53699,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -54774,7 +54774,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -55594,7 +55594,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -56009,7 +56009,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -56656,7 +56656,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -56913,7 +56913,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -57238,7 +57238,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -57506,7 +57506,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -57729,7 +57729,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
@@ -57999,7 +57999,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
@@ -58182,7 +58182,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -58430,7 +58430,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -58893,7 +58893,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -59483,7 +59483,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -61229,12 +61229,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -61531,12 +61531,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -61847,12 +61847,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -63340,12 +63340,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -64627,12 +64627,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -65698,12 +65698,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -66036,12 +66036,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -66626,12 +66626,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -66915,12 +66915,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}
   {:task-gaps [],
@@ -67595,7 +67595,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -67833,7 +67833,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -68002,7 +68002,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
@@ -68267,7 +68267,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -69362,7 +69362,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -69778,7 +69778,7 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -70271,12 +70271,12 @@
    :task-references
    [{:path "specs/runtime-workflow/tasks.md",
      :sha256
-     "221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1",
+     "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
      :marker "runtime-implementation-tasks",
      :id
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
      :acceptance-sha256
-     "9d0f8f4292888f460c9b181bafb8e15860d562d3c8bf15d5ddc0a02d555ebf12",
+     "80006eb0a02ed6f1b0567a94d6c6416537fc182e1afa9fd49b6910c708893027",
      :observed-status "Open"}],
    :equivalence-proposals []}],
  :scope-decisions

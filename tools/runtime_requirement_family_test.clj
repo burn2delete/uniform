@@ -1,5 +1,6 @@
 (binding [*command-line-args* nil] (load-file "tools/runtime_requirement_family.clj"))
-(require '[clojure.test :refer [deftest is run-tests]] '[runtime-requirement-family])
+(require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
+         '[runtime-requirement-family] '[runtime-task-projection])
 (def p (runtime-requirement-family/read-edn runtime-requirement-family/proposal-path))
 (def manifest-path (first *command-line-args*))
 (runtime-requirement-family/require! manifest-path "Pass the preserved applying manifest path")
@@ -38,5 +39,28 @@
                (update p :edits conj (first (:edits p)))
                (assoc-in p [:task-amendments 0 :before] "Stale predecessor")]]
     (is (rejects? #(runtime-requirement-family/check bad m)))))
+
+(deftest replay-task-retains-source-exception-and-rejections
+  ;; These are task-interface controls, not a simulated runtime or execution proof.
+  (let [id "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+        acceptance (fn [text] (:acceptance (first (filter #(= id (:id %)) (runtime-task-projection/records text)))))
+        current (acceptance (slurp runtime-task-projection/task-path))
+        rejected (acceptance (runtime-requirement-family/git-source
+                              "769050c60259b463556cd5741d905180c98117e9" runtime-task-projection/task-path))
+        required ["accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies"
+                  "Reject undeclared repeated external calls"
+                  "live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration"
+                  "repetitions without required authority"
+                  "R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record"]
+        covers? (fn [text] (and (every? #(str/includes? text %) required)
+                               (not (str/includes? text "Reject live calls during replay,"))))]
+    (is (str/includes? (slurp "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md")
+                       "calls twice unless the graph declares them replay-safe."))
+    (is (covers? current))
+    (is (not (covers? rejected)) "Original over-restrictive clause must fail")
+    (doseq [clause required]
+      (is (not (covers? (str/replace current clause ""))) clause))
+    (is (not (covers? (str current " Reject live calls during replay,")))
+        "A blanket refusal cannot silently override the allowed R6 fixture")))
 
 (let [r (run-tests)] (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

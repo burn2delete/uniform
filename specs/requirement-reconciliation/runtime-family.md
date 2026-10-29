@@ -105,3 +105,39 @@ No new reviewer or ledger is created here. Central acceptance must reconcile the
 new task-source hashes, delivered normalization deltas and source-qualified
 bindings before canonical adoption. All implementation stays Open/unassessed;
 aggregate adoption, nonoverlap and counts remain with the canonical owner.
+
+## Affected successor: R6 replay exception
+
+Independent reviewer `01a18528-c7af-75c1-a399-5eb23dbbe8e4` required changes to
+original candidate `769050c60259b463556cd5741d905180c98117e9`; receipt SHA256
+`e6b6e7aec1a01958c24c92af34b083b169728a6380b304ff3208b4ede57f409`.
+The reported 1,301 conservation assertions passed, but that does not accept the
+task semantics: the unconditional live-call refusal dropped R6's graph-declared
+replay-safe repetition exception. The failed result remains history.
+
+This successor of `db5a0c198968b3aafe17ccc1fe9a6bf73fdfa7c9` changes only the
+fourth task's replay qualification, its generated roadmap cell, applying task
+hashes/acceptance in the bounded proposal, and this receipt plus focused tests.
+R6 now has an explicit allowed fixture for an authorized graph-declared
+replay-safe repetition where no R7/R8 recorded-output obligation applies.
+Undeclared repetitions, repetitions without authority, and live nondeterministic
+calls in R7/R8 recorded-output segments still reject; a graph declaration cannot
+override those segments' required records or create authority.
+
+The 12 document bodies, 876 occurrences, 1,021 facets, 43 semantic IDs and 44
+unresolved mixed-accounting facets are unchanged. All five tasks remain Open.
+The preceding applying task SHA256
+`221b129f96156493c03e73e0ef3e8987f50425fcb15925c6a229144ea54539a1`
+changes to
+`64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06`.
+Successor proposal SHA256:
+`a6b2ee0fd88a46d20da8d70afa182d54c4ad6b69b86dbb7959adc1edb4214a3f`.
+
+Observed affected checks: family suite 3 tests/29 assertions, including refusal
+of the original blanket clause and mutation controls for each retained replay
+condition; changed-file clj-kondo zero errors/warnings; Runtime projection
+4 tests/67 assertions; language boundary 6 tests/11 assertions; whitespace passed.
+These check the task interface and source conservation, not runtime execution.
+The same reviewer must review this frozen affected successor. Aggregate SH pins
+remain a central PR554 composition dependency, including accepted L15 startup
+clauses; no shared crosswalk edit, stale review adoption or new credit is made.
