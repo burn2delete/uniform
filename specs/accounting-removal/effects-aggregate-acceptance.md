@@ -112,6 +112,68 @@ No map reconstructed from stdout, expected status, synthetic control or CI can
 replace that actual sink. An absent result or changed snapshot fails binding.
 The adapter contains no compiler launch or broker acquisition.
 
+## Exact request process-port binding
+
+`validation-request` binds the frozen argv, CWD, source/runtime/classpath and
+five-selector tuple to the complete source hash and named ports of the existing
+`sh01-parallel-test-runner`. The names include public `start-process` and its
+internal `process-result`, `terminate-process-tree!` and `restore-interrupt!`
+boundaries. Internal ports are source-pinned bindings, not new public runner
+APIs. The adapter neither resolves nor loads them and supplies no default real
+ports. Actual installation must match this exact reviewed source at admission.
+The actual caller must hold its existing memory-heavy admission before invoking
+the start port and retain it through cleanup. The new child wrapper does not
+acquire a second lease; its prepared root argument is identity data only.
+
+`observe-validation!` accepts explicit ports for source reread, the monotonic
+clock, start, result/capture, cleanup, publication and interrupt restoration.
+It rehashes the actual port source through that reread port before start.
+Sink parsing is owned by the adapter, not replaceable by a caller consumer.
+The frozen schema, selection, canonical CWD, ordered classpath pins and exact
+Java/heap/operation/identity-file argv are validated before the start port.
+The request hash is appended as the final child argument, avoiding a hash
+self-reference in the frozen argv template. The new child wrapper echoes it
+beside the actual machine-sink map in one `EFFECTS_VALIDATION_RESULT` envelope;
+`read-validation-result` refuses missing or duplicate envelopes. This format is
+distinct from the preserved older frozen operation's untagged output.
+The deadline starts before start. Elapsed startup time is subtracted from the
+normal result port's timeout; a late returned zero result is refused. Timeout,
+nonzero/error exit, failed/forced/truncated capture and incomplete cleanup cannot
+reach result consumption. A missing payload or wrong request hash cannot publish.
+Cleanup is attempted once when needed, and its failure/uncertainty is preserved.
+Publication is attempted once; an exception remains `:unknown`, never retried.
+
+The frozen execution budget is 3,600,000 ms. Each stream retains at most
+1,048,576 bytes and characters, with a 5,000 ms capture wait and 100 ms post-close
+wait. The existing cleanup timeout is 1,500 ms with a 100 ms post-cleanup wait.
+The accounted reclamation base is therefore 11,800 ms: 1,500 + 100 +
+2 * (5,000 + 100). The 100 ms graceful-termination phase is inside the
+1,500 ms cleanup deadline, not added again. Normal cleanup also allows a
+100 ms `onExit` wait per observed handle; the full accounting is the base plus
+100 ms times the observed handle count, without inventing a handle-count cap.
+The adapter binds both the source grace constant and the actual reap-call form.
+These are host process/capture bounds, not compiler accounting.
+The adapter refuses results returned after the execution deadline, even where
+normal cleanup/capture overhead contributed to that elapsed time.
+
+These are cooperative bounds on returning ports. Uninterruptible native start,
+wait, close, filesystem IO and JVM initialization have no invented hard bound.
+ProcessHandle enumeration, native handle operations and scheduler delays also
+have no hard bound; enumeration precedes the runner's cleanup deadline.
+Result consumption and publication IO are outside the runner's process deadline.
+ProcessHandle cleanup covers observed owned handles only: discovery failure,
+survivors, failed cleanup or unproven timeout containment refuse consumption.
+An unobserved cross-session escape cannot be disproved by this mechanism; an
+external supervisor's containment remains a real launch prerequisite when the
+execution policy requires that stronger guarantee. No broker/root configuration
+or live capacity observation is added.
+
+`tools/effects_process_binding_test.clj` exercises only fake process/clock ports.
+It does not rerun the unchanged 6/44 source-control file, whose Git-fixture test
+would spawn Git. Neither Bootstrap nor the normal runner namespace is loaded.
+The old frozen operation and the new immutable request/port hashes are retained
+as separate local artifacts; the old tuple is not silently relabeled current.
+
 ## Remaining prerequisites and evidence classification
 
 | Item | Classification | Present disposition |

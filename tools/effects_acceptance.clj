@@ -154,6 +154,200 @@
        :identity before :runner result :outcome (if passed? :passed :failed)
        :semantic-acceptance false})))
 
+(def process-port-path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj")
+(def process-port-symbols
+  {:start 'gravity.self-hosting.sh01-parallel-test-runner/start-process
+   :result 'gravity.self-hosting.sh01-parallel-test-runner/process-result
+   :cleanup 'gravity.self-hosting.sh01-parallel-test-runner/terminate-process-tree!
+   :restore-interrupt 'gravity.self-hosting.sh01-parallel-test-runner/restore-interrupt!})
+(def process-bounds
+  {:execution-ms 3600000 :capture-wait-ms 5000
+   :output-limit-bytes 1048576 :output-limit-chars 1048576
+   :cleanup-ms 1500 :post-cleanup-wait-ms 100 :post-close-wait-ms 100
+   :cleanup-grace-ms 100
+   :observed-handle-reap-wait-ms 100 :accounted-reclamation-base-ms 11800})
+(defn- canonical [value]
+  (cond
+    (map? value) (into (sorted-map-by #(compare (pr-str %1) (pr-str %2)))
+                       (map (fn [[k v]] [k (canonical v)]) value))
+    (set? value) (vec (sort-by pr-str (map canonical value)))
+    (sequential? value) (mapv canonical value)
+    :else value))
+(defn identity-text [value] (pr-str (canonical value)))
+(defn request-hash [value] (sha256 (identity-text value)))
+(defn- absolute-path? [value]
+  (and (string? value) (.isAbsolute (java.io.File. value))
+       (= value (str (.normalize (.toPath (java.io.File. value)))))))
+(defn- file-pin? [pin]
+  (and (absolute-path? (:path pin)) (integer? (:bytes pin)) (pos? (:bytes pin))
+       (string? (:sha256 pin)) (boolean (re-matches #"[0-9a-f]{64}" (:sha256 pin)))))
+(defn- validate-frozen! [frozen cwd]
+  (validate-identity! (:source frozen))
+  (require! (= [:effects/frozen-owner-operation-v1 :nonlaunching-operation-frozen]
+               ((juxt :schema :status) frozen)) :frozen-command)
+  (require! (and (absolute-path? cwd) (= cwd (:cwd frozen))) :working-directory)
+  (require! (and (vector? (:command frozen))
+                 (absolute-path? (get-in frozen [:broker :coordination-root]))
+                 (= :memory-heavy (get-in frozen [:broker :class]))) :frozen-command)
+  (let [plan (:selection frozen) cp (:classpath frozen) files (get-in frozen [:runtime :files])
+        identity-file (:identity-file frozen)]
+    (require! (= [:effects/aggregate-selection-v1 :none :unrun-held (command)]
+                 ((juxt :schema :authority :execution :command) plan)) :plan)
+    (require! (= (:source frozen) (:identity plan)) :source-identity)
+    (require! (= [test-namespace selectors consumers] ((juxt :namespace :selectors :consumers) plan)) :selector)
+    (require! (and (vector? cp) (= 6 (count cp)) (every? file-pin? (drop 3 cp))) :frozen-classpath)
+    (doseq [[entry relative] (map vector (take 3 cp) ["tools" "bootstrap/clojure/test" "bootstrap/clojure/src"])]
+      (require! (= [(str cwd "/" relative) (get-in frozen [:source :dependency-trees relative])]
+                   ((juxt :path :tree) entry)) :frozen-classpath))
+    (require! (and (= 4 (count files)) (every? file-pin? files)
+                   (str/ends-with? (:path (first files)) "/bin/java")
+                   (file-pin? (:operation frozen)) (file-pin? identity-file)
+                   (= (request-hash (:source frozen)) (:sha256 identity-file))) :frozen-runtime)
+    (require! (= [(:path (first files)) "-Xmx2g" "-cp"
+                  (str/join java.io.File/pathSeparator (map :path cp)) "clojure.main"
+                  (get-in frozen [:operation :path]) (:path identity-file)
+                  (get-in frozen [:broker :coordination-root])]
+                 (:command frozen)) :frozen-command)))
+
+(defn validation-request
+  "Pure binding to the existing normal runner's ports. Does not resolve/load them.
+  Runtime pins are expected inputs, requiring live recheck at actual admission."
+  [frozen cwd port-source]
+  (validate-frozen! frozen cwd)
+  (let [declared (into {} (for [f (forms port-source)
+                              :when (and (seq? f) (#{'def 'defn 'defn-} (first f)))]
+                          [(second f) f]))]
+    (doseq [sym (vals process-port-symbols)]
+      (require! (contains? declared (symbol (name sym))) :missing-process-port))
+    (doseq [[sym expected] {'default-capture-limit-bytes '(* 1024 1024)
+                          'default-capture-limit-chars '(* 1024 1024)
+                          'default-capture-wait-ms 5000
+                          'process-cleanup-grace-ms 100
+                          'process-cleanup-timeout-ms 1500
+                          'process-post-cleanup-wait-ms 100
+                          'capture-post-close-wait-ms 100}]
+      (require! (= expected (last (get declared sym))) :process-port-bounds)))
+  (require! (some #{'(.get (.onExit handle) 100 TimeUnit/MILLISECONDS)}
+                  (tree-seq coll? seq (get (definitions port-source 'defn-) 'reap-process-handle!)))
+            :process-port-bounds)
+  (require! (= (:accounted-reclamation-base-ms process-bounds)
+               (+ (:cleanup-ms process-bounds) (:post-cleanup-wait-ms process-bounds)
+                  (* 2 (+ (:capture-wait-ms process-bounds) (:post-close-wait-ms process-bounds)))))
+            :process-port-bounds)
+  {:schema :effects/selected-process-request-v1 :frozen frozen :cwd cwd
+   :request-hash-argument :append
+   :bounds process-bounds
+   :port-source {:path process-port-path :sha256 (sha256 port-source) :symbols process-port-symbols}
+   :exclusions [:uninterruptible-native-start-wait-close-or-filesystem
+                :JVM-initialization :unobserved-cross-session-descendant-escape
+                :ProcessHandle-enumeration-and-native-handle-operations
+                :unbounded-result-consumer-or-publication-IO]
+   :authority :none :execution :unrun-held})
+
+(defn- restore-if-interrupted! [restore throwable]
+  (loop [cause throwable]
+    (cond
+      (nil? cause) false
+      (instance? InterruptedException cause) (do (restore throwable) true)
+      :else (recur (.getCause ^Throwable cause)))))
+
+(def result-prefix "EFFECTS_VALIDATION_RESULT ")
+(defn read-validation-result
+  "Read the single child machine-sink envelope, never infer it from test output."
+  [output]
+  (let [rows (filter #(str/starts-with? % result-prefix) (str/split-lines (:stdout output "")))]
+    (require! (= 1 (count rows)) :missing-runner-result)
+    (with-open [reader (java.io.PushbackReader. (java.io.StringReader. (subs (first rows) (count result-prefix))))]
+      (let [options {:readers {} :default (fn [& _] (reject! :runner-result)) :eof ::eof}
+            payload (edn/read options reader)]
+        (require! (and (map? payload) (= ::eof (edn/read options reader))) :runner-result)
+        payload))))
+
+(defn observe-validation!
+  "Execute only caller-supplied ports. No default real launcher or broker exists.
+  The caller must bind/recheck these named normal ports under actual admission.
+  now returns monotonic milliseconds; only clean zero output reaches the sink reader."
+  [request expected-hash {:keys [now start result cleanup publish restore-interrupt read-port-source]}]
+  (require! (= expected-hash (request-hash request)) :request-hash)
+  (require! (= :effects/selected-process-request-v1 (:schema request)) :process-request)
+  (require! (= [:none :unrun-held] ((juxt :authority :execution) request)) :process-request)
+  (require! (= :append (:request-hash-argument request)) :process-request)
+  (validate-frozen! (:frozen request) (:cwd request))
+  (require! (= process-bounds (:bounds request)) :process-port-bounds)
+  (require! (= process-port-symbols (get-in request [:port-source :symbols])) :missing-process-port)
+  (require! (every? fn? [now start result cleanup publish restore-interrupt read-port-source]) :process-ports)
+  (require! (= process-port-path (get-in request [:port-source :path])) :missing-process-port)
+  (require! (= (get-in request [:port-source :sha256]) (sha256 (read-port-source process-port-path))) :process-port-source)
+  (let [began (now) deadline (+ began (:execution-ms process-bounds))
+        process (atom nil) cleaned (atom nil) cleanup-attempted? (atom false) publication (atom :not-attempted)
+        clean! (fn [] (if @cleanup-attempted? @cleaned
+                         (when @process
+                           (reset! cleanup-attempted? true)
+                           (reset! cleaned {:complete? false :reason :cleanup-in-progress})
+                           (let [c (try (cleanup @process)
+                                     (catch InterruptedException e
+                                       (restore-interrupt e)
+                                       {:complete? false :reason :cleanup-interrupted})
+                                     (catch Exception e
+                                       {:complete? false :reason (if (restore-if-interrupted! restore-interrupt e)
+                                                                   :cleanup-interrupted :cleanup-failed)}))]
+                             (reset! cleaned (if (map? c) c {:complete? false :reason :cleanup-no-evidence}))
+                             @cleaned))))
+        fail (fn [why] {:status :refused :reason why :request-hash expected-hash
+                        :cleanup @cleaned :publication @publication
+                        :start-outcome (if @process :returned-handle :no-returned-handle)
+                        :elapsed-ms (- (now) began) :semantic-acceptance false})]
+    (try
+      (let [p (start (conj (get-in request [:frozen :command]) expected-hash) (:cwd request))]
+        (reset! process p)
+        (let [remaining (- deadline (now))
+              r (when (pos? remaining)
+                  (result p (assoc (select-keys process-bounds
+                                    [:capture-wait-ms :output-limit-bytes :output-limit-chars])
+                                  :timeout-ms remaining)))
+              _ (when (some? (:cleanup r))
+                  (reset! cleanup-attempted? true)
+                  (reset! cleaned (:cleanup r)))
+              _ (when (:wait-interrupted? r) (throw (InterruptedException. "Process wait interrupted")))
+              c (clean!)
+              capture-ok? (every? #(= :complete %) [(:stdout-capture-status r) (:stderr-capture-status r)])
+              why (cond
+                    (or (not (pos? remaining)) (>= (now) deadline) (= :timeout (:status r))) :timeout
+                    (or (not= true (:complete? c)) (:root-alive? c)
+                        (not= 0 (:descendants-alive c)) (:discovery-error c)
+                        (:timeout-containment-unproven? r) (:cleanup-failed? r)
+                        (= false (:cleanup-complete? r))
+                        (#{:failed :unproven-timeout} (:cleanup-status r))) :incomplete-cleanup
+                    (or (not capture-ok?) (:capture-failed? r)
+                        (:stdout-capture-forced-close? r) (:stderr-capture-forced-close? r)
+                        (:output-truncated? r)) :failed-capture
+                    (or (not= :passed (:status r)) (not= 0 (:exit-code r))) :child-failure)]
+          (if why (fail why)
+            (let [payload (read-validation-result r)
+                  _ (require! (some? payload) :missing-runner-result)
+                  _ (require! (= expected-hash (:request-hash payload)) :request-hash)
+                  observation (bind-result (get-in request [:frozen :selection])
+                                (:before payload) (:after payload) (:runner payload))
+                  receipt {:status :observed :request-hash expected-hash
+                           :observation observation :cleanup c
+                           :containment :observed-process-handles-only
+                           :semantic-acceptance false}]
+              (reset! publication :unknown)
+              (let [published? (try (publish receipt)
+                                 (catch InterruptedException e (throw e))
+                                 (catch Exception e
+                                   (throw (ex-info "Publication outcome unknown" {:reason :publication-failed} e))))]
+                (reset! publication (if (= true published?) :confirmed :failed))
+                (require! (= true published?) :publication-failed))
+              receipt))))
+      (catch InterruptedException e
+        (try (clean!) (finally (restore-interrupt e)))
+        (fail :interrupted))
+      (catch clojure.lang.ExceptionInfo e
+        (clean!) (fail (if (restore-if-interrupted! restore-interrupt e) :interrupted (:reason (ex-data e)))))
+      (catch Exception e
+        (clean!) (fail (if (restore-if-interrupted! restore-interrupt e) :interrupted :process-port-failure))))))
+
 (defn -main [& args]
   (try
     (if (and (= 3 (count args)) (= "--snapshot" (second args)))
