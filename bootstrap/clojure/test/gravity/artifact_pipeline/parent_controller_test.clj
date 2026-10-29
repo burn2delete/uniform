@@ -67,7 +67,7 @@
   (let [f (fixture)]
     (is (thrown? clojure.lang.ExceptionInfo (execute f {} nil (assoc (:observation f) :cwd "/foreign"))))
     (is (empty? @(:events f)))
-    (doseq [field [:coverage :runtime :guards :outputs]]
+    (doseq [field [:config :coverage :runtime :guards :outputs]]
       (let [request (dissoc (:request f) field)]
         (is (= :refused (:status (execute f {} request (select-keys request controller/identity-fields)))))
         (is (empty? @(:events f)))))))

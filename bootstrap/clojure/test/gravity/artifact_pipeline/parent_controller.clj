@@ -32,6 +32,8 @@
 (defn- missing [request]
   (let [coverage (:coverage request)]
     (cond-> []
+      (nil? (:config request))
+      (conj :source-bound-owner-configuration)
       (not (and (map? coverage) (:authority-source coverage) (:decision-id coverage)
                 (seq (:participants coverage)) (= (:participants coverage) (:covered-participants coverage))))
       (conj :authoritative-participant-root-coverage)
@@ -39,7 +41,9 @@
                 (every? #(and (:root %) (:source-id %)) (:guards request))
                 (= (:guards request) (:ordered-guards coverage))))
       (conj :source-bound-ordered-guards)
-      (not (and (:cwd request) (map? (:runtime request))
+      (not (and (string? (:cwd request)) (.startsWith ^String (:cwd request) "/")
+                (map? (:runtime request))
+                (every? #(and (vector? %) (seq %)) (map (:runtime request) [:classpath :jars :executables]))
                 (every? some? (map (:runtime request) [:classpath :jars :executables :configuration]))))
       (conj :runtime-configuration)
       (not (and (= #{:attempt :stdout :stderr :final} (set (keys (:outputs request))))

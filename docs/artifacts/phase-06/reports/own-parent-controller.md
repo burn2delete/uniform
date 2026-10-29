@@ -78,7 +78,7 @@ records. A metadata receipt alone is never execution acceptance.
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Thirteen tests and 287 assertions passed, with no real port resolution and
+Thirteen tests and 289 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture
