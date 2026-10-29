@@ -111,8 +111,15 @@
       (require! (= :task-source-records (:collection e)) "Unexpected task collection")
       (require! (= (:source-sha256 e) (sha256 (get task-texts (:path e)))) "Stale task-source amendment")
       (require! (= (:before e) (task-record (get task-texts (:path e)) (:marker e) (:id e))) "Task amendment before differs")
-      (require! (and (:before-present? e) (str/starts-with? (:after e) (:before e))
-                     (not= (:before e) (:after e))) "Task amendment loses existing acceptance")
+      (let [expected (case (:insertion e)
+                       :work-before-source-basis
+                       (do (require! (= "platform-implementation-tasks" (:marker e)) "Work insertion has wrong task owner")
+                           (require! (= 1 (count (re-seq #"\n\nSource basis:" (:before e)))) "Work insertion lacks exact evidence boundary")
+                           (str/replace-first (:before e) "\n\nSource basis:" (str (:addition e) "\n\nSource basis:")))
+                       :record-tail (str (:before e) (:addition e))
+                       (throw (ex-info "Unknown task insertion" {})))]
+        (require! (and (:before-present? e) (seq (:addition e)) (= expected (:after e)))
+                  "Task amendment loses existing acceptance"))
       (require! (str/starts-with? (:after e) (str "- [ ] `" (:id e) "`")) "Task status or ID changed"))
     (reduce apply-field records (:edits p))
     {:documents (count documents) :occurrences (count occurrences) :facets (count facets)
@@ -138,6 +145,11 @@
         (let [rows ((ns-resolve namespace 'records) after)
               before-rows ((ns-resolve namespace 'records) original)
               view ((ns-resolve namespace 'project) after (slurp roadmap))]
+          (when (= "platform" component)
+            (let [old (into {} (map (juxt :id identity) before-rows)) new (into {} (map (juxt :id identity) rows))]
+              (doseq [e edits]
+                (require! (= (get-in old [(:id e) :evidence]) (get-in new [(:id e) :evidence])) "Platform source basis changed")
+                (require! (str/ends-with? (get-in new [(:id e) :work]) (:addition e)) "Platform acceptance landed outside work field"))))
           (require! (= (mapv #(select-keys % [:id :status :checked?]) rows)
                        (mapv #(select-keys % [:id :status :checked?]) before-rows)) "Projected task authority changed")
           (require! (= view ((ns-resolve namespace 'project) after view)) "Task projection not stable")
@@ -169,6 +181,10 @@
                    (reject! :lost-split-lineage #(validate (assoc p :inherited-decisions [])))
                    (reject! :lost-historical-support #(validate (assoc-in p [:units 0 :historical-support] [{:scope :invented}])))
                    (reject! :task-loses-existing-negative #(validate (update-in p [:task-edits 0 :after] subs 5)))
+                   (reject! :platform-acceptance-in-source-basis
+                            #(validate (update p :task-edits
+                                         (fn [es] (mapv (fn [e] (if (= :work-before-source-basis (:insertion e))
+                                                                 (assoc e :after (str (:before e) (:addition e))) e)) es)))))
                    (reject! :stale-before #(validate (assoc-in p [:edits 0 :before-present?] true)))
                    (reject! :duplicate-application #(let [rows (into {} (map (juxt :id identity) (:requirements m)))
                                                          applied (reduce apply-field rows (:edits p))]

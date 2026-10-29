@@ -19893,11 +19893,14 @@
  :task-edits
  [{:path "specs/legality-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P1/P2/P3/P4/P5/P12: validate one active profile (retaining the explicit implementation-seed exception), reusable support sets/exclusions, and post-expansion/pre-optimization admission; emit portable manifests with dependencies/target/providers. Reject hidden runtime services, impure core generation, unsupported facets and generated-profile violations. Core values remain independent of concrete allocation identity; meta raw memory/FFI requires an explicitly allowed audited implementation-provider boundary. Formal admission rejects unmodeled effects/nondeterminism/unsafe code; assumptions remain explicit. Effect allowances and capability grants are separate checks with an explicit provider mapping, never an intersection of differently typed labels.",
    :field-path [:text],
    :marker "legality-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :insertion :record-tail,
    :after
    "- [ ] `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` Complete profile restrictions and generated-form checks\n\nStatus: Open\n\nEvidence baseline: [Profile contract](../../bootstrap/clojure/src/gravity/profile_validation/contract.clj)\n\nClosing evidence: Allowed profile matrix and hidden-allocation/reflection/effect rejection before lowering P1/P2/P3/P4/P5/P12: validate one active profile (retaining the explicit implementation-seed exception), reusable support sets/exclusions, and post-expansion/pre-optimization admission; emit portable manifests with dependencies/target/providers. Reject hidden runtime services, impure core generation, unsupported facets and generated-profile violations. Core values remain independent of concrete allocation identity; meta raw memory/FFI requires an explicitly allowed audited implementation-provider boundary. Formal admission rejects unmodeled effects/nondeterminism/unsafe code; assumptions remain explicit. Effect allowances and capability grants are separate checks with an explicit provider mapping, never an intersection of differently typed labels.",
    :status :open,
@@ -19908,11 +19911,14 @@
    :collection :task-source-records}
   {:path "specs/legality-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P12: proof consumers check theorem/source/certificate/hash-chain/trusted-kernel/assumption/profile/target agreement; unverified imports are ignored or rejected only as policy states. Proof production and symbolic lowering are separate Math producer interfaces; a profile check alone cannot close them.",
    :field-path [:text],
    :marker "legality-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :insertion :record-tail,
    :after
    "- [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries\n\nStatus: Open\n\nEvidence baseline: [Safety contract](../../bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj)\n\nClosing evidence: Every dangerous operation classified and unclassified operations rejected P12: proof consumers check theorem/source/certificate/hash-chain/trusted-kernel/assumption/profile/target agreement; unverified imports are ignored or rejected only as policy states. Proof production and symbolic lowering are separate Math producer interfaces; a profile check alone cannot close them.",
    :status :open,
@@ -19923,11 +19929,14 @@
    :collection :task-source-records}
   {:path "specs/runtime-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P4: execute deterministic cleanup for linear host resources despite GC; managed objects remain GC-managed and only an explicit boundary can rely on finalizer timing. Reject GC-only cleanup where deterministic release is required; preserve exactly-once flow evidence from Legality separately from executed terminal operations. Translate host errors through the declared Gravity failure channel with source/generated origins.",
    :field-path [:text],
    :marker "runtime-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :insertion :record-tail,
    :after
    "- [ ] `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` Finish managed/native execution, startup, panic and cleanup\n\nStatus: Open\n\nEvidence baseline: [Development evaluator](../../bootstrap/gravity/src/gravity/runtime.gravity) and [native manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj)\n\nClosing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement P4: execute deterministic cleanup for linear host resources despite GC; managed objects remain GC-managed and only an explicit boundary can rely on finalizer timing. Reject GC-only cleanup where deterministic release is required; preserve exactly-once flow evidence from Legality separately from executed terminal operations. Translate host errors through the declared Gravity failure channel with source/generated origins.",
    :status :open,
@@ -19938,11 +19947,14 @@
    :collection :task-source-records}
   {:path "specs/runtime-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P4/P5: host-object/native FFI records bind runtime/version/symbol, Gravity and foreign types, rooting/ownership/lifetime, nullability, failure mapping, affinity, ABI, effects/grants and safe wrappers. Insufficient host metadata permits opaque provider-only handles, not unrestricted manipulation; raw native imports are not directly safe-callable. Exercise positive boundaries and missing metadata, ungranted call, invalid lifetime and untranslated failure rejection.",
    :field-path [:text],
    :marker "runtime-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :insertion :record-tail,
    :after
    "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers P4/P5: host-object/native FFI records bind runtime/version/symbol, Gravity and foreign types, rooting/ownership/lifetime, nullability, failure mapping, affinity, ABI, effects/grants and safe wrappers. Insufficient host metadata permits opaque provider-only handles, not unrestricted manipulation; raw native imports are not directly safe-callable. Exercise positive boundaries and missing metadata, ungranted call, invalid lifetime and untranslated failure rejection.",
    :status :open,
@@ -19953,11 +19965,14 @@
    :collection :task-source-records}
   {:path "specs/runtime-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P4: map actual lowered/generated host failures to Gravity source and generated origins where supported or required; record unavailable mappings honestly and reject missing required mappings. Compiler diagnostic emission alone is not this runtime consumer evidence.",
    :field-path [:text],
    :marker "runtime-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :insertion :record-tail,
    :after
    "- [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration\n\nStatus: Open\n\nEvidence baseline: [Capability runtime contract](../../docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md)\n\nClosing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation P4: map actual lowered/generated host failures to Gravity source and generated origins where supported or required; record unavailable mappings honestly and reject missing required mappings. Compiler diagnostic emission alone is not this runtime consumer evidence.",
    :status :open,
@@ -19968,11 +19983,14 @@
    :collection :task-source-records}
   {:path "specs/domains-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "\n\nP2/P12 profile interface: check portable/core and exact/symbolic/interval/bitvector/rounded/certified mode eligibility and explicit conversions/assumptions; reject hidden target-default or provider-dependent core math. Formal symbolic lowering emits symbolic IR, theorem/assumption/trusted-kernel records and checked conclusions; imported proof validation and actual arithmetic remain distinct interfaces. Dependencies consume Types/Legality facts and declared proof-provider outputs, not completion of another component.",
    :field-path [:text],
    :marker "domains-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :insertion :record-tail,
    :after
    "- [ ] `math` Math\n\nStatus: Open\n\nProjected task block:\nOutcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared\nnumeric semantics and checked justification for transformations. Remaining\nfinite tasks, all open: implement numeric-mode/domain checking; implement EFIR\nlowering and evaluation; connect EML/certificate checking to justified rewrites;\nimplement certified approximation/interval and symbolic operations; run the\ncontract conformance matrix with rejected unproved transformations.\n\nYes/no acceptance: do domain and branch errors reject? Do proof-dependent\nrewrites require checked evidence? Do strict-mode results match the selected\nsemantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib\nnumeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as\nadjacent proof/search representation, never ordinary runtime equality authority.\n\nP2/P12 profile interface: check portable/core and exact/symbolic/interval/bitvector/rounded/certified mode eligibility and explicit conversions/assumptions; reject hidden target-default or provider-dependent core math. Formal symbolic lowering emits symbolic IR, theorem/assumption/trusted-kernel records and checked conclusions; imported proof validation and actual arithmetic remain distinct interfaces. Dependencies consume Types/Legality facts and declared proof-provider outputs, not completion of another component.",
    :status :open,
@@ -19982,11 +20000,14 @@
    :collection :task-source-records}
   {:path "specs/domains-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "\n\nP9 profile interface: emit typed step input/output/effect/grant/retry/timeout/cancellation/idempotency/compensation and event/replay records; validate versioned messages and persisted state with migration/taint/retention/order/delivery policy. Execute recovery separately from admitted step construction; replay must consume recorded nondeterminism without repeating external actions. Reject schema drift without migration, untyped external failure, unrecorded replay inputs and missing required compensation. Service-boundary admission consumes Schema/Auth and Runtime facts, not their whole-task completion.",
    :field-path [:text],
    :marker "domains-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :insertion :record-tail,
    :after
    "- [ ] `workflow` Workflow\n\nStatus: Open\n\nProjected task block:\nOutcome: a workflow executes and replays without repeating recorded external\neffects. Remaining tasks, all open: implement graph validation/lowering;\nimplement event-log schema and durable transitions; connect retry/compensation/\ntimer providers; execute crash/restart/replay and unrecorded-nondeterminism\nrejection fixtures. Yes/no acceptance: is replay deterministic? Are external\ncalls deduplicated? Are invalid transitions rejected? Integration: MIR/Schema,\nRuntime durability, AI review steps, Stdlib workflows. Decision owner: workflow\nmaintainer; recommendation: versioned event log as replay input, explicit\nprovider boundary for storage rather than a hidden database choice.\n\nP9 profile interface: emit typed step input/output/effect/grant/retry/timeout/cancellation/idempotency/compensation and event/replay records; validate versioned messages and persisted state with migration/taint/retention/order/delivery policy. Execute recovery separately from admitted step construction; replay must consume recorded nondeterminism without repeating external actions. Reject schema drift without migration, untyped external failure, unrecorded replay inputs and missing required compensation. Service-boundary admission consumes Schema/Auth and Runtime facts, not their whole-task completion.",
    :status :open,
@@ -19996,11 +20017,14 @@
    :collection :task-source-records}
   {:path "specs/domains-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "\n\nP10 profile interface: keep model admission/execution, tool schema/grant/review admission, generated-program compiler validation, prompt-role/taint checks, memory retention/deletion/privacy and secret-sink gates distinct. Emit prompt/model/provider/tool/policy/review/input/output/error/retry/generated-code digests and replay records. An evaluation hook emits separately identified results and grants no action authority. Reject prompt policy escalation, unvalidated outputs, missing applicable review, ungranted destructive tools and unauthorized secret disclosure. Provider billing limits remain external; no compiler work quota is introduced. Runtime model/tool/memory and Schema/Auth/generated-code APIs supply interface facts.",
    :field-path [:text],
    :marker "domains-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :insertion :record-tail,
    :after
    "- [ ] `ai` AI\n\nStatus: Open\n\nProjected task block:\nOutcome: the declared AI workflow executes through schema, capability, taint\nand human-review boundaries. Remaining tasks, all open: implement declaration\nlowering; connect model/tool/memory providers with explicit policies; implement\nstructured-output and taint validation; connect human review and replay;\nexecute evaluations plus prompt-injection, missing-review, cross-tenant and\nunvalidated-output rejection fixtures. Yes/no acceptance: does untrusted output\nremain data? Are actions denied without grants/review? Are evaluations bound to\nexact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,\nStdlib AI. Decision owner: AI maintainer; recommendation: provider-independent\nartifacts and explicit model identity, never a vendor SDK side path.\n\nP10 profile interface: keep model admission/execution, tool schema/grant/review admission, generated-program compiler validation, prompt-role/taint checks, memory retention/deletion/privacy and secret-sink gates distinct. Emit prompt/model/provider/tool/policy/review/input/output/error/retry/generated-code digests and replay records. An evaluation hook emits separately identified results and grants no action authority. Reject prompt policy escalation, unvalidated outputs, missing applicable review, ungranted destructive tools and unauthorized secret disclosure. Provider billing limits remain external; no compiler work quota is introduced. Runtime model/tool/memory and Schema/Auth/generated-code APIs supply interface facts.",
    :status :open,
@@ -20010,11 +20034,14 @@
    :collection :task-source-records}
   {:path "specs/domains-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "\n\nP11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.",
    :field-path [:text],
    :marker "domains-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :insertion :record-tail,
    :after
    "- [ ] `gpu` GPU\n\nStatus: Open\n\nProjected task block:\nOutcome: kernels execute on the adopted target with validated memory/barrier\nbehavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU\nIR/checking; lower kernel and host dispatch; execute numeric/result and illegal\nmemory-space/barrier fixtures. Yes/no acceptance: do kernels produce the\nspecified results? Are invalid synchronization and target features rejected?\nIntegration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner:\naccelerator maintainer; recommendation: one named reference target first,\nadditional targets only by their own conformance evidence. Target choice is\nnot silently adopted by this roadmap.\n\nP11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.",
    :status :open,
@@ -20024,13 +20051,16 @@
    :collection :task-source-records}
   {:path "specs/platform-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed",
    :field-path [:text],
    :marker "platform-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :insertion :work-before-source-basis,
    :after
-   "- [ ] `hardware` Hardware / `hardware`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact\n\nSource basis: [Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md); P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed",
+   "- [ ] `hardware` Hardware / `hardware`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed\n\nSource basis: [Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)",
    :status :open,
    :id "hardware",
    :before
@@ -20038,13 +20068,16 @@
    :collection :task-source-records}
   {:path "specs/platform-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed",
    :field-path [:text],
    :marker "platform-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :insertion :work-before-source-basis,
    :after
-   "- [ ] `firmware` Firmware / `firmware`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator\n\nSource basis: [Firmware contract](../../docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md); P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed",
+   "- [ ] `firmware` Firmware / `firmware`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed\n\nSource basis: [Firmware contract](../../docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md)",
    :status :open,
    :id "firmware",
    :before
@@ -20052,13 +20085,16 @@
    :collection :task-source-records}
   {:path "specs/platform-workflow/tasks.md",
    :before-present? true,
+   :addition
+   "; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed",
    :field-path [:text],
    :marker "platform-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :insertion :work-before-source-basis,
    :after
-   "- [ ] `kernel` Kernel / `kernel`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance\n\nSource basis: [Kernel contract](../../docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md); P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed",
+   "- [ ] `kernel` Kernel / `kernel`\n\nStatus: Open\n\nDeclared completion and remaining work: Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed\n\nSource basis: [Kernel contract](../../docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md)",
    :status :open,
    :id "kernel",
    :before
@@ -20066,11 +20102,14 @@
    :collection :task-source-records}
   {:path "specs/lower-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces.",
    :field-path [:text],
    :marker "lower-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :insertion :record-tail,
    :after
    "- [ ] `lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs` lower/1: Validate lowering inputs\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces.",
    :status :open,
@@ -20081,11 +20120,14 @@
    :collection :task-source-records}
   {:path "specs/resolve-workflow/tasks.md",
    :before-present? true,
+   :addition
+   " P1/P2/P4/P13: validate direct/facade-required/artifact-only/rejected edges after expansion/resolution; artifact consumption never implies source import. Check facade symbols/effects/grants/memory/runtime/error/safety/provider/provenance evidence against the actual producer/consumer matrix. Record all dependency edges and missing evidence; reject macro-hidden edges and package widening. Core imports require core support or already-present authority-free artifact data; kernel native facades must establish no-GC/no-hidden-allocation/no-throw and supported atomics.",
    :field-path [:text],
    :marker "resolve-implementation-tasks",
    :authority :proposed-interface-amendment,
    :source-sha256
    "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :insertion :record-tail,
    :after
    "- [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Record dependency versions and initialization edges; reject unapproved cycles and illegal cross-profile imports, preserving effect/capability metadata. P1/P2/P4/P13: validate direct/facade-required/artifact-only/rejected edges after expansion/resolution; artifact consumption never implies source import. Check facade symbols/effects/grants/memory/runtime/error/safety/provider/provenance evidence against the actual producer/consumer matrix. Record all dependency edges and missing evidence; reject macro-hidden edges and package widening. Core imports require core support or already-present authority-free artifact data; kernel native facades must establish no-GC/no-hidden-allocation/no-throw and supported atomics.",
    :status :open,
