@@ -93,6 +93,7 @@
                   (str (io/file root "bootstrap/clojure/test"))] jars)
         runtime (runtime-files java-home jars)
         source-files (mapv fingerprint (acceptance/source-closure-paths root))
+        policy (fingerprint (str (io/file coordination-root "policy.edn")))
         _ (h/ensure! (.mkdirs directory) :create-request-directory)
         path #(str (io/file directory %))
         outputs {:result (path "result.edn") :parent-receipt (path "parent-receipt.edn")
@@ -107,13 +108,13 @@
                    :host-profile host-profile :environment env :outputs outputs
                    :runtime {:executable executable :java-home java-home}
                    :closure {:source-files source-files :runtime-files runtime
-                             :config-files [guard-input (fingerprint (str (io/file root "deps.edn")))]
+                             :config-files [guard-input policy (fingerprint (str (io/file root "deps.edn")))]
                              :classpath cp :cwd root})
         _ (acceptance/guard-configuration! prepared)
         input (create-edn! (path "inputs.edn") prepared)
         request {:selector acceptance/selector :source source :prepared-input input
                  :cwd root :argv (child-argv prepared input) :outputs outputs
-                 :host-profile host-profile :guard-proposal guard
+                 :host-profile host-profile :guard-proposal guard :guard-policy-input policy
                  :profile-basis {:status :proposal-not-C3-measurement
                                  :origin :prior-prepared-2GiB-120s-child-300s-whole-profile
                                  :compiler-accounting false}

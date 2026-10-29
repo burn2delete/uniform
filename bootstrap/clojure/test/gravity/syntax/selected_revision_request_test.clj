@@ -10,12 +10,13 @@
                            (make-array java.nio.file.attribute.FileAttribute 0))))
         path #(str (io/file directory %))
         _ (.mkdirs (io/file directory "jdk/bin"))
-        _ (doseq [p ["jdk/bin/java" "clojure.jar" "deps.edn"]] (spit (path p) "fixture"))
+        _ (.mkdirs (io/file directory "broker"))
+        _ (doseq [p ["jdk/bin/java" "clojure.jar" "deps.edn" "broker/policy.edn"]] (spit (path p) "fixture"))
         source {:head "fixture-head" :tree "fixture-tree"}
         env {:Java-options (zipmap request/environment-keys (repeat nil)) :inherited-sha256 "fixture"}
         options {:root (str directory) :source source :directory (path "request")
                  :java-home (path "jdk") :jars [(path "clojure.jar")]
-                 :coordination-root "/fixture/shared-C"}]
+                 :coordination-root (path "broker")}]
     (try
       (with-redefs [h/prepare-inputs! (fn [root source] {:root root :source source})
                     h/recheck-inputs! (fn [_] nil)
