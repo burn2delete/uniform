@@ -273,3 +273,24 @@ main documentation remain unchanged. Separate correction/source checks,
 docs/roadmap and whitespace pass. Original review history is preserved;
 independent successor disposition, exact-head CI and fresh-main integration
 remain pending. Immutable inventory counts and snapshots remain unchanged.
+
+## Recursive type control follow-up
+
+Main-based test-only PR622 at `47a0f75617aff8da5136e084b837b4f853190433`,
+tree `d9888ed279ddf2c99acbd3272bd6b74aa61fd051`, base main `e047157d`,
+restores the complete original List-construction unmetered-types kernel,
+raw body/comments included. It also restores the original depth-192
+Symbol-carrier positive alongside current depth-127/129 and late-invalid cases.
+Width 4097, late invalid type at index 4096, nested Never, Map parity, extra
+fields, cyclic maps and opaque zero-callback controls remain. Every other test
+byte and all production are unchanged. Nine immediate source pins explicitly
+retain five historical differences, without helper-equivalence or whole-callgraph
+claims. Source checks, boundary 6/11, unchanged lint 71 warnings/zero errors,
+docs/roadmap and whitespace pass. Genuine execution, independent acceptance and
+composition remain pending. Immutable inventory counts are unchanged.
+
+PR620 exact head `585c2dab` routine CI completed with seven successes and two
+configured skips. Its genuine Record/Union helper execution and independent
+acceptance remain open. The original child PR616 census has no removed-line
+count field, so the PR619 line-count defect does not require a child-census
+mutation; the reviewed child remains unchanged.
