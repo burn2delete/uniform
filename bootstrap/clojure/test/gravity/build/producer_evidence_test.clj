@@ -329,3 +329,89 @@
                        (update provenance :classpath-identities #(vec (reverse %)))]]
         (is (= :producer-provenance
                (field #(check (assoc-in f [:capture :producer-provenance] changed)))))))))
+
+(defn- fresh-supplied [capture]
+  (select-keys capture [:binding-before :binding-after :producer-provenance :applying-source :terminal]))
+
+(deftest fresh-return-serialization-retains-explicit-supplied-provenance
+  (doseq [snapshot (cons {:repository-identity h} (source-shaped-snapshots))
+          returned-provenance? [false true]]
+    (let [{:keys [method capture report]} (fixture-with-snapshot snapshot)
+          supplied (fresh-supplied capture)
+          report (cond-> report
+                   returned-provenance?
+                   (assoc :test-producer-provenance (:producer-provenance supplied)
+                          :test-applying-revision (select-keys (:applying-source supplied) [:commit :tree])
+                          :test-applying-repository-snapshot snapshot))
+          input-pins (mapv hash-value [supplied report])
+          capture-bytes (evidence/serialize-fresh-capture contract-bytes supplied report)
+          readback (edn/read-string (String. capture-bytes "UTF-8"))
+          method (assoc method :capture-sha256 (hash-bytes capture-bytes))
+          result (evidence/verify-capture! (hash-value method) (bytes method) contract-bytes capture-bytes)]
+      (is (= supplied (fresh-supplied readback)))
+      (is (= report (edn/read-string (:report-edn readback))))
+      (is (= snapshot (get-in readback [:producer-provenance :repository-snapshot])))
+      (is (= input-pins (mapv hash-value [supplied report])))
+      (is (= (hash-bytes capture-bytes) (:capture-sha256 result)))
+      (is (= :consistent (:status result)))
+      (is (false? (:real-evidence-accepted? result)))
+      (is (false? (:cache-admission? result))))))
+
+(deftest returned-provenance-must-match-supplied-fresh-observations
+  (let [{:keys [capture report] :as f} (fixture-with-snapshot (last (source-shaped-snapshots)))
+        supplied (fresh-supplied capture)]
+    (doseq [[key wrong] [[:test-producer-provenance nil]
+                         [:test-producer-provenance {:revision {:commit "wrong"}}]
+                         [:test-applying-revision nil]
+                         [:test-applying-revision {:commit "wrong" :tree "wrong"}]
+                         [:test-applying-repository-snapshot nil]
+                         [:test-applying-repository-snapshot {:repository-identity (hash-value :wrong)}]]]
+      (let [bad-report (assoc report key wrong)]
+        (is (= :report-provenance
+               (field #(evidence/serialize-fresh-capture contract-bytes supplied bad-report))))
+        (is (= :report-provenance
+               (field #(check (assoc-in f [:capture :report-edn] (pr-str bad-report))))))))))
+
+(deftest fresh-serializer-refuses-missing-identities-and-incomplete-terminal
+  (let [{:keys [capture report]} (fixture-with-snapshot (last (source-shaped-snapshots)))
+        supplied (fresh-supplied capture)]
+    (doseq [key (keys supplied)]
+      (is (= :supplied-observations
+             (field #(evidence/serialize-fresh-capture contract-bytes (dissoc supplied key) report)))))
+    (doseq [[path wrong expected]
+            [[[:producer-provenance] nil :producer-snapshot]
+             [[:producer-provenance :revision :commit] (apply str (repeat 40 "c")) :producer-provenance]
+             [[:producer-provenance :consumed-input-identity] (hash-value :wrong) :producer-provenance]
+             [[:producer-provenance :child-runtime-identity :sha256] (hash-value :wrong) :producer-provenance]
+             [[:producer-provenance :classpath-identities]
+              (vec (reverse (get-in supplied [:producer-provenance :classpath-identities]))) :producer-provenance]
+             [[:binding-before :source :clean?] false :source]
+             [[:binding-after :source :commit] (apply str (repeat 40 "c")) :bookends]
+             [[:applying-source :commit] (apply str (repeat 40 "c")) :applying-source]
+             [[:terminal :natural-exit?] false :terminal]]]
+      (is (= expected
+             (field #(evidence/serialize-fresh-capture contract-bytes (assoc-in supplied path wrong) report)))
+          (pr-str path)))
+    (doseq [key (keys (:terminal supplied))]
+      (is (= :terminal
+             (field #(evidence/serialize-fresh-capture contract-bytes
+                                                      (update supplied :terminal dissoc key) report)))))
+    (is (= :complete-output
+           (field #(evidence/serialize-fresh-capture contract-bytes supplied
+                                                      (assoc-in report [:namespace-results 0 :stdout :truncated?] true)))))))
+
+(deftest fresh-serializer-does-not-execute-functions-or-admit-other-results
+  (let [{:keys [capture report]} (fixture)
+        supplied (fresh-supplied capture)
+        calls (atom 0)
+        operation (fn [] (swap! calls inc))]
+    (is (= :supplied-observations
+           (field #(evidence/serialize-fresh-capture contract-bytes operation report))))
+    (is (= :report
+           (field #(evidence/serialize-fresh-capture contract-bytes supplied operation))))
+    (is (zero? @calls))
+    (doseq [changed [(assoc report :status :failed :exit-code 1)
+                     (assoc-in report [:child-cache-receipt :decision] :miss)
+                     (assoc report :child-cache-hit? true :tests-executed? false)]]
+      (is (= :report
+             (field #(evidence/serialize-fresh-capture contract-bytes supplied changed)))))))

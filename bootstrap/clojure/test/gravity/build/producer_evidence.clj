@@ -207,6 +207,58 @@
                      (= 0 (:exit-code member))) :member)
       (output! (:stdout member)) (output! (:stderr member)))))
 
+(defn- capture! [binding capture]
+  (keys! capture #{:schema :binding-before :binding-after :producer-provenance
+                   :applying-source :terminal :report-edn} :capture)
+  (require! (= :gravity/reader-producer-capture-v1 (:schema capture)) :capture-schema)
+  (require! (= binding (:binding-before capture) (:binding-after capture)) :bookends)
+  (require! (= (:source binding) (:applying-source capture)) :applying-source)
+  (producer-snapshot! (get-in capture [:producer-provenance :repository-snapshot])
+                      (get-in binding [:source :repository-identity]))
+  (require! (= {:revision (select-keys (:source binding) [:commit :tree])
+                :repository-snapshot
+                {:repository-identity (get-in binding [:source :repository-identity])}
+                :consumed-input-identity (:consumed-input-identity binding)
+                :classpath-identities (:classpath-identities binding)
+                :child-runtime-identity (:child-runtime-identity binding)}
+               (assoc (:producer-provenance capture) :repository-snapshot
+                      {:repository-identity (get-in binding [:source :repository-identity])}))
+            :producer-provenance)
+  (require! (= {:exit-code 0 :natural-exit? true :timed-out? false
+                :stdout-complete? true :stderr-complete? true
+                :cleanup-complete? true :root-dead? true}
+               (:terminal capture)) :terminal)
+  (require! (string? (:report-edn capture)) :report-edn)
+  (let [report (read-edn (:report-edn capture))
+        producer (:producer-provenance capture)]
+    (report! report)
+    ;; Fresh returns may omit these fields. If present, preserve and compare
+    ;; them rather than silently replacing a producer with applying metadata.
+    (doseq [[key expected] [[:test-producer-provenance producer]
+                            [:test-applying-revision
+                             (select-keys (:applying-source capture) [:commit :tree])]
+                            [:test-applying-repository-snapshot (:repository-snapshot producer)]]]
+      (require! (or (not (contains? report key)) (= expected (get report key)))
+                :report-provenance)))
+  capture)
+
+(defn serialize-fresh-capture
+  "Serialize a fresh return and explicit supplied observations as capture v1.
+
+  Calls no observer, operation, cache or broker. Returns only new capture
+  bytes, not a review pin, measured facts, authentication or admission."
+  [contract-bytes supplied report]
+  (keys! supplied #{:binding-before :binding-after :producer-provenance
+                    :applying-source :terminal} :supplied-observations)
+  (require! (map? report) :report)
+  (let [contract (read-edn (decode contract-bytes))
+        binding (:binding-before supplied)
+        capture (assoc supplied :schema :gravity/reader-producer-capture-v1
+                       :report-edn (pr-str report))]
+    (binding! binding contract)
+    (capture! binding capture)
+    (.getBytes (pr-str capture) StandardCharsets/UTF_8)))
+
 (defn verify-capture!
   "Check pinned method, dependency contract and retained capture bytes offline.
 
@@ -225,28 +277,7 @@
           binding (:binding method)
           capture (read-edn (decode capture-bytes))]
       (binding! binding contract)
-      (keys! capture #{:schema :binding-before :binding-after :producer-provenance
-                       :applying-source :terminal :report-edn} :capture)
-      (require! (= :gravity/reader-producer-capture-v1 (:schema capture)) :capture-schema)
-      (require! (= binding (:binding-before capture) (:binding-after capture)) :bookends)
-      (require! (= (:source binding) (:applying-source capture)) :applying-source)
-      (producer-snapshot! (get-in capture [:producer-provenance :repository-snapshot])
-                          (get-in binding [:source :repository-identity]))
-      (require! (= {:revision (select-keys (:source binding) [:commit :tree])
-                    :repository-snapshot
-                    {:repository-identity (get-in binding [:source :repository-identity])}
-                    :consumed-input-identity (:consumed-input-identity binding)
-                    :classpath-identities (:classpath-identities binding)
-                    :child-runtime-identity (:child-runtime-identity binding)}
-                   (assoc (:producer-provenance capture) :repository-snapshot
-                          {:repository-identity (get-in binding [:source :repository-identity])}))
-                :producer-provenance)
-      (require! (= {:exit-code 0 :natural-exit? true :timed-out? false
-                    :stdout-complete? true :stderr-complete? true
-                    :cleanup-complete? true :root-dead? true}
-                   (:terminal capture)) :terminal)
-      (require! (string? (:report-edn capture)) :report-edn)
-      (report! (read-edn (:report-edn capture)))
+      (capture! binding capture)
       {:schema :gravity/reader-producer-evidence-check-v1
        :status :consistent :authority :non-authoritative
        :method-sha256 expected-method-sha256
