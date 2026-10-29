@@ -976,11 +976,11 @@
              [node (assoc-in forms [(first child-ids) :value] "wrong")]
              [node (assoc-in forms [payload :child-form-ids] [payload])]]]
       (is (= "C7-VERIFY" (:rule (invoke-c7 'sh08-qd-node [changed-node changed-forms])))))
-    (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
-           ((juxt :rule :reason) (invoke-c7 'sh08-qd-node-with-budget [node forms 1]))))
-    (let [wide (quoted-data-input (vec (repeat 1025 true)))]
-      (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
-             ((juxt :rule :reason) (invoke-c7 'sh08-qd-node [(:node wide) (:forms wide)])))))
+    (let [wide (quoted-data-input (vec (repeat 4097 true)))
+          result (invoke-c7 'sh08-qd-node [(:node wide) (:forms wide)])]
+      (is (= :accepted (:status result)))
+      (is (= 4097 (count (get-in result [:data :children]))))
+      (is (= 4098 (get-in result [:data :shape-size]))))
     (let [invented {:node-id (sha 888) :core-form :call :source {:form-id (first child-ids)}}
           products (invoke-c7 'sh08-qd-products [[node invented] (vec (vals forms)) {}])]
       (is (= ["C7-VERIFY" :quoted-payload-is-executable]
@@ -994,26 +994,44 @@
         (is (= "C7-ANNOTATION" (:rule result)))
         (is (= (if (= kind :tagged) :unsupported-quoted-data-kind :unsupported-quoted-numeric-representation) (:reason result)))))))
 
-(deftest sh08-quoted-data-work-budget-development-kernel
+(deftest sh08-quoted-data-independent-diagnostics-development-kernel
   (let [first-input (quoted-data-input [true 1]) second-input (quoted-data-input 'next-data 9000)
         {:keys [node forms payload]} first-input
         last-child (second (get-in forms [payload :child-form-ids]))
         invalid (assoc-in forms [last-child :kind] :decimal)
         source-forms (vec (vals (merge invalid (:forms second-input))))
         nodes [node (:node second-input)]
-        exhausted (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 3])
-        spare (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 4])]
-    (is (= [:unsupported-quoted-numeric-representation :quoted-data-work-limit] (mapv :reason (:diagnostics exhausted))))
-    (is (= 3 (:work-count exhausted)))
-    (is (= {} (:type-table exhausted)))
-    (is (= [:unsupported-quoted-numeric-representation] (mapv :reason (:diagnostics spare))))
-    (is (= 4 (:work-count spare)))
-    (is (= :gravity.type/symbol (get (:type-table spare) (get-in second-input [:node :node-id]))))
+        result (invoke-c7 'sh08-qd-products [nodes source-forms {}])]
+    (is (= [:unsupported-quoted-numeric-representation] (mapv :reason (:diagnostics result))))
+    (is (= :gravity.type/symbol (get (:type-table result) (get-in second-input [:node :node-id]))))
     (let [invented {:node-id :invented :core-form :call :source {:form-id last-child}}
-          collided (invoke-c7 'sh08-qd-products-with-budget
-                              [[node invented (:node second-input)] (vec (vals (merge forms (:forms second-input)))) {} 3])]
-      (is (= [:quoted-payload-is-executable :quoted-data-work-limit] (mapv :reason (:diagnostics collided))))
-      (is (= 3 (:work-count collided))))))
+          collided (invoke-c7 'sh08-qd-products
+                              [[node invented (:node second-input)] (vec (vals (merge forms (:forms second-input)))) {}])]
+      (is (= [:quoted-payload-is-executable] (mapv :reason (:diagnostics collided))))
+      (is (= :gravity.type/symbol (get (:type-table collided) (get-in second-input [:node :node-id])))))))
+
+(deftest sh08-quoted-data-deep-and-malformed-development-kernel
+  (let [value (reduce (fn [value _] [value]) :leaf (range 192))
+        {:keys [node forms payload]} (quoted-data-input value)
+        result (invoke-c7 'sh08-qd-node [node forms])
+        data (:data result)
+        leaf (loop [item data]
+               (if (empty? (:children item)) item (recur (first (:children item)))))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "quoted rendering"))))]
+    (is (= :accepted (:status result)))
+    (is (= 193 (:shape-size data)))
+    (is (= :leaf (:value leaf)))
+    (is (= (vec (repeat 192 0)) (get-in leaf [:origin :data-path])))
+    (is (nil? (invoke-c7 'sh08-qd-executable-data [data #{}])))
+    (is (= leaf (invoke-c7 'sh08-qd-executable-data [data #{(get-in leaf [:origin :form-id])}])))
+    (doseq [changed [(assoc-in forms [payload :child-form-ids] :uncountable)
+                     (assoc-in forms [payload :child-form-ids] [payload])
+                     (assoc-in forms [payload :child-form-ids] (vec (repeat 2 payload)))
+                     (assoc forms :unused opaque)]]
+      (is (= :rejected (:status (invoke-c7 'sh08-qd-node [node changed])))))
+    (is (empty? @callbacks))))
 
 (defn- pattern-alias-kernel-input []
   ;; Normalized pass input; genuine C5/C6 source products are tested separately.
