@@ -1660,3 +1660,62 @@ five finite unresolved fragment candidates above. RV2's fresh-only cache
 boundary and remaining real miss/hit/invalidation, and whole RV4 acceptance,
 are unchanged. Source review does not grant runtime, source-authentication,
 integration, release, self-hosting or performance acceptance.
+
+### RV1: executable Macro fragment mutation preparation
+
+The next source increment adds seven distinct exact test vars to the existing
+`gravity.self-hosting.resolution-parent-mutation-test`. Its preparation base is
+`149503152d7edab3f7e638c000a553f62c54e679`; this is not a tested runtime tuple.
+The entire earlier file prefix, including
+`actual-current-parent-mutation-is-rejected-after-resolve` and
+`observe-construction`, remains byte-for-byte unchanged. The existing namespace
+policy remains fresh-only and generic execution still requires the owner
+wrapper. There is no call removal, cached PASS or new public-verification path.
+
+| Exact new selector | After the first actual Resolve return |
+| --- | --- |
+| `actual-macro-template-operand-mutation-after-resolve` | Replace the actual first run's raw expansion-template artifact reference through aliased run backing storage. |
+| `actual-macro-resolved-operand-mutation-after-resolve` | Replace the actual resolved expansion's artifact ID with a distinct SHA256-shaped value through that storage. |
+| `actual-macro-request-operand-mutation-after-resolve` | Change the first actual digest request's ordinal through that storage. |
+| `actual-macro-digest-operand-mutation-after-resolve` | Change the first actual resolved digest to a distinct SHA256-shaped value through that storage. |
+| `actual-macro-live-callee-swap-after-resolve` | Replace the execution Var's observer with one that forwards the template-verifier call to the original execution boundary using the distinct expansion entrypoint, whose arity differs. |
+| `actual-macro-live-plan-swap-with-unchanged-advertised-hash-after-resolve` | Forward to the original execution boundary with the actual template function definition replaced by the expansion definition in the passed plan, retaining every advertised binding field outside the plan. |
+| `actual-macro-same-function-closed-state-change-after-resolve` | Keep the observer function object identical but change its captured state so it forwards the changed callee to the original execution boundary. This is distinct from the Var-root swap. |
+
+Every selector constructs a new genuine current Reader/C3/Macro parent and a
+positive C5 artifact, then requires an actual independent public C5 PASS before
+its changed case. No prior artifact or report is supplied as that positive.
+The tests reuse `observe-construction` for the exact mutation time. Operand
+cases retain the native run keyset and assert both actual Macro verifier calls
+and a failed actual verifier result, rather than passing from a shape-only
+refusal. Dispatch cases forward to the original implementation; their expected
+original arity failure must occur at template execution before any resolved
+verifier call. No result or exception is fabricated by an observer.
+
+Each case requires a post-mutation failed Macro report, `C5-UNRESOLVED` at
+`:final-authenticated-resolution-artifact`, the failed fresh-upstream check,
+no published C5 value, and no subsequent Resolve consumption. It records its
+case ID, original parent/binding, invocation, actual positive public report,
+operand before/after, dispatch arguments and events, error identity fields and
+restoration results. Aliases and dispatch state are restored in `finally`;
+`with-redefs-fn` restores the original execution roots even after failed setup.
+No filesystem fixture is edited. Execution commit/tree, complete dependencies,
+ordered classpath and source bookends must still come from the separately
+reviewed existing owner harness; the preparation-base literal is never an
+applying/executed revision claim.
+
+These are **unrun genuine comparisons**. Compiler-free source reading,
+compilation of helper definitions against forbidden fake producer ports, and
+injected alias/dispatch/Throwable/restoration controls establish only harness
+mechanics. They do not load Bootstrap, authenticate input, run Reader/C5 or
+establish these tests' expected genuine refusals. The original whole-source
+negative controls remain separate and unchanged.
+
+Before an actual run, admit one exact selector and its exact clean commit/tree
+through the existing owner wrapper with the existing host guards. Review the
+actual test and harness dependency closure, source/producer inputs, observation
+and restoration code, bounded capture and completion conditions. Attribute the
+fresh positive/public verification and changed case separately, preserve all
+errors and nonpasses, and review actual results before any acceptance. Do not
+run this namespace generically, borrow a proof transaction, replay an uncertain
+operation or infer RV1/RV2/RV4 closure or fragment equivalence from preparation.
