@@ -442,8 +442,9 @@ helper mappings remain explicit rather than being treated as missing features.
   delta. Boundary 6/11, docs/roadmap and whitespace pass. Read-only preflight
   now passes ancestry/expected identities but NOT clean-worktree/all-pass because
   the same lint cache remains untracked. No cleanup/exclusion/alternate checkout
-  or main merge occurred. Fresh independent composition disposition, current-
-  head CI and coordinator integration/preflight remain separate pending gates.
+  or main merge occurred. Exact reconciled-head CI now has seven successes/two
+  configured skips. Fresh independent composition disposition and coordinator
+  integration/preflight remain separate pending gates.
 - Exact PR623 `c5e9fccd` source-only PASS is consumed, receipt SHA256
   `94f70e5279164d8f10ddcced4d0bc8301bc59c2e9c9a30e04259101890e01a86`.
   [Receipt/input verification](list-construction-review-consumption.edn) covers
@@ -465,6 +466,28 @@ helper mappings remain explicit rather than being treated as missing features.
   clean integration preflight remain separate pending gates. Corrected PR626
   `70eba308` also has seven CI successes/two skips; predecessor static NONPASS
   and original query five failures remain preserved.
+- Exact corrected PR626 `70eba308`, tree `5adafde0`, has independent scoped
+  SOURCE PASS, receipt SHA256
+  `096b93e4afec7ea29d51a49fd3ae971a1bf5bec76b59522e8f84db6482f9c963`.
+  [Consumption](reader-contract-review-consumption.edn) verifies the receipt,
+  tree and fourteen input pins. Independent reader checks pass 14 tests/666
+  assertions and reproduce the original query's 257 passes/five failures.
+  Six corruption controls refuse; pinned lint and the canonical classifier
+  produce zero current findings/blocking warnings. The full run-comparison API
+  remains author-attributed, not independently rerun. Genuine owner execution,
+  changed-main composition, lifecycle and integration remain separate.
+- ACC-01's dependent [PR631](https://github.com/burn2delete/uniform/pull/631)
+  at `508e9360b4068f938e3126f7cc15fab09a031800`, tree
+  `3846fdd250f63a08ab22e58f15cc1e8d71188e35`, restores the missing DSE case in
+  the canonical descriptor-reconstruction test path. It is based on immutable
+  PR568 `f4c9fdcd`, not a replacement DSE implementation or owner activation.
+  The complete original positive body and all eleven original negative mutants
+  survive, with three explicit raw substitutions for the negative test and
+  current eight-argument derive/header helpers. Its census pins nine direct
+  definitions across five files; only the new test and two evidence files change.
+  Source correspondence, boundary 6/11, zero-finding lint, docs/roadmap and
+  whitespace pass. Both genuine tests are UNRUN; independent review, parent
+  acceptance and integration remain open. No denied selector was retried.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
@@ -532,8 +555,10 @@ stored as unevaluated source data, not inferred from identical assertions.
 - Descriptor reconstruction: all four `pr359-descriptor-*` test bodies match
   after relocation, but the shared case template removes exactly the original
   `[:dse [:gravity.type/set :gravity.type/set]]` case. Therefore the first two
-  tests no longer exercise that DSE case. It remains a separate PR568 obligation,
-  not coverage supplied by identical test bodies. The private/public Map tests
+  tests no longer exercise that DSE case. PR631 now supplies separate genuine
+  test definitions for it on exact PR568, with execution and independent review
+  pending; identical relocated bodies alone never supplied this coverage.
+  The private/public Map tests
   retain their complete bodies. Helpers migrate BKA header/derive calls to the
   accepted budget-free PR524 interfaces and defer the Effects require.
 
@@ -599,7 +624,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. PR610 removes only the Set source descriptor operand-work field; full-equality consumers remain unchanged and genuine acceptance is pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid control definitions, pending genuine execution and independent acceptance. PR618 removes the orphan cold quote-work field and its consumer-only requirements, with source/cut/mode checks preserved and genuine acceptance pending. The dispatch source map pins five Effects DSE-dispatch units, including two explicit guard differences and an additional selector difference; independent mapping disposition is pending. PR623 removes only the LC header operand ceiling with native validation conserved, pending genuine execution. DSE joins, remaining predicate/query headers, LC context and nil/List work accounting and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. PR610 removes only the Set source descriptor operand-work field with unchanged full-equality consumers and genuine acceptance pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid controls, pending genuine execution and independent acceptance. PR618 coherently retires cold quote-work schema/charge requirements while preserving source/cut/mode checks, with genuine acceptance pending. The dispatch source map pins three emitter DSE forwarding/caller units and two exact inline direct-call helper bodies, pending independent disposition. PR623 removes only the LC header operand ceiling with native validation conserved, pending genuine execution. Direct-call source/type/arity/order acceptance, remaining join accounting and descriptor consumers remain open. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores nine GIS3/native tests; PR595 restores five join tests; PR599 restores the exact ordinary construction test and adds the explicit qualified/fresh-verifier controls. PR610 reconciles two Set kernels with absent metadata and coherent obsolete-field forgeries, retiring their payment/width-only refusal assertions while preserving independent semantic checks. PR613 reconciles three imported/shape controls and appends native carrier extent/callback/cycle/class controls; all other parent test bytes are conserved. PR614 restores the complete original structural-vector kernel and adds prefix/state controls. PR615 restores both complete original carrier/receipt physical-entry kernels and adds hostile/malformed entry-order controls. PR618 appends the cold quote-metadata producer/helper controls. PR620 restores both complete original Record/Union descriptor-row and union-branch-definition kernels byte for byte on main, with all prior test and production bytes conserved and 31 source dependencies pinned (six historical differences remain explicit). PR621 additionally restores the complete original imported-producer kernel on PR618 with unchanged production/prior tests and explicit source-wrapper differences. PR622 restores the complete original recursive-type kernel and the missing historical depth-192 Symbol-carrier case, preserving existing late-invalid controls and all production. PR623 migrates both direct LC callers, retires payment/counter assertions, restores the width-1024 positive and appends actual derive/step/late-invalid/source controls. Genuine execution remains unrun. Broader opaque-ordering, other public-verifier and remaining old-only cases still need test-level mapping, not a whole-file incorporation claim. |
-| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
+| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case. PR631 restores that case in this canonical path on exact PR568: original complete positive body, all negative mutants and three explicit negative-body substitutions. Two genuine tests remain UNRUN and independently unreviewed; the other five cases and private/public Map tests remain their existing relocated dispositions. BKA API changes and deferred dependency load are explicit. Selected-case incorporation and DSE acceptance remain pending. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
 | `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | The unchanged original reader-only controls pass 2/223 on pinned current source, including precedence and full private constraint/fact source bodies. PR626 restores this entire reader-test file byte for byte and reruns it at pinned main e047157d with 2/223 passing. Together with PR359's finite evidence this supports a proposed incorporation decision, still awaiting independent acceptance. |
 | `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj` | ACC-02 remains closed. The six-test mapping record identifies this file's two current tests, retained assertion expressions, changed boundary fixtures and added refinement/transfer controls. Proposed incorporation still needs independent disposition; old receipts are not replayed as current acceptance. |
