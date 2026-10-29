@@ -41,7 +41,9 @@ conditions concrete in the existing six task sources:
 - Lower: declared native feature/numeric/layout eligibility and fallback.
 - Resolve: direct/facade/artifact-only compatibility and dependency evidence.
 
-Each task amendment retains its entire original record as an exact prefix.
+Each task amendment retains every original field verbatim. Platform additions
+extend the declared-work field before the unchanged source-basis field; other
+additions extend the existing closing-evidence or projected-task block.
 All statuses stay Open. Dependencies name consumed facts; they do not require
 whole components to finish. Product ISA, OS, application and physical-delivery
 choices remain outside this original-source family.
@@ -85,8 +87,21 @@ logs are not part of the published patch. [profile_requirements.clj](profile_req
 Git occurrence API's three helper declarations, original source and canonical
 task sources. It never loads compiler/proof entrypoints or writes canonical
 files. It previews all six task projectors in memory, preserving status and
-stable IDs. Seventeen negative controls reject stale/duplicate application,
+stable IDs. Eighteen negative controls reject stale/duplicate application,
 missing/renamed tasks, wrong hash/marker/ID, lost occurrence/facet/negative
 condition/context, changed alias context or inherited lineage, and false
-acceptance. [controls.edn](controls.edn) records actual results and proposed
+acceptance, including acceptance text inserted into Platform source-basis fields.
+[controls.edn](controls.edn) records actual results and proposed
 source/view hashes. Independent semantic review remains separate.
+
+## Correction history
+
+Predecessor `6831737b2e65b229cc1ce1614c769e87929ed472` received one
+blocking CI finding in static job `123206237127`: `check.clj` did not match
+namespace `profile-requirements`. Commit
+`30afc0cd12b9753cb52a2e6e8f65d470fe0574b0` renamed the checker without a
+linter exception. A subsequent field-level review found Platform additions
+were appended to Source basis; the current patch inserts them into declared
+work and checks both parsed work and unchanged evidence. The dedicated negative
+control reproduces and rejects the former placement. Old candidates and their
+receipts remain in Git history; their identities confer no current acceptance.
