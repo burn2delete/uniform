@@ -27,7 +27,7 @@ Concrete exit evidence: Implement syntax-object invocation and macro environment
 
 Status: Open; partial source evidence above is not closure
 
-Concrete exit evidence: Preserve definition/call/generated origins, explicit capture and unsafe declarations; reject undeclared authority capture or missing unsafe metadata.
+Concrete exit evidence: Preserve definition/call/generated origins, explicit capture and unsafe declarations; reject undeclared authority capture or missing unsafe metadata. Decision allocation interface/safety/safe12/hygiene (Open). Role: macro expansion/hygiene maintainer. Prevent accidental or malicious privileged/user binding capture, allowing only marked traced capture with capability/policy checks for authority-bearing values. Refusals and conditional cases: Reject accidental or malicious capture of unsafe helpers, capability/provider/secret/raw-memory/compiler-internal or user bindings. Allow intentional capture only through marked operations in the expansion trace; authority-bearing capture additionally requires explicit capability and policy acceptance. Required outputs: Hygiene/capture records, marked intentional-capture trace, authority-policy verdict and privileged/user capture refusal diagnostics. Consume actual dependency interface outputs: auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
 
 - [ ] `expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects` expand/3: Authorize compile-time effects
 

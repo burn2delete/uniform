@@ -28,7 +28,7 @@ Done when (yes/no): Implement every required form kind with stable semantic iden
 
 Current evidence/status: Open; partial source evidence above is not closure
 
-Done when (yes/no): Record generated producer/input origins, explicit metadata changes, hygiene marks and intentional captures; reject accidental capture.
+Done when (yes/no): Record generated producer/input origins, explicit metadata changes, hygiene marks and intentional captures; reject accidental capture. Decision allocation interface/compiler/c3/origin-preservation (Open). Role: compiler syntax maintainer. Transform syntax into new linked values retaining source maps/origin chains; generated forms identify producer/version/inputs/step/span and remain under caller profile unless an explicit transition applies. Refusals and conditional cases: Reject mutated syntax values, broken links to prior syntax IDs, lost source maps/origin chains or generated forms missing producer/version, input syntax IDs, expansion step or span. Reject generated-profile escape unless the producing contract explicitly defines the transition. Required outputs: Immutable linked syntax values, origin/source maps, generated syntax report and caller-profile validation diagnostics. Consume actual dependency interface outputs: expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
 
 - [ ] `syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts` syntax/3: Invalidate facts
 
