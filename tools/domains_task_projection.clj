@@ -7,12 +7,25 @@
 
 (def task-path "specs/domains-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/domains.md")
-(def outcome-order ["math" "schema" "query" "workflow" "ai" "gpu" "ui" "automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual"])
-(def outcome-headings {"math" "Math" "schema" "Schema" "query" "Query" "workflow" "Workflow"
+(def outcome-order ["math" "math/eml-normalization-and-search" "math/certified-implementation-synthesis"
+                    "math/interval-and-real-proof-production" "math/symbolic-rule-and-trace-production"
+                    "math/independent-proof-and-certificate-checking"
+                    "schema" "schema/compatibility-and-migration" "schema/checked-consumer-projection"
+                    "query" "workflow" "ai" "gpu" "ui" "automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual"])
+(def outcome-headings {"math" "Math"
+                       "math/eml-normalization-and-search" "EML normalization and search"
+                       "math/certified-implementation-synthesis" "Certified implementation synthesis"
+                       "math/interval-and-real-proof-production" "Interval and real proof production"
+                       "math/symbolic-rule-and-trace-production" "Symbolic rule and trace production"
+                       "math/independent-proof-and-certificate-checking" "Independent math proof and certificate checking"
+                       "schema" "Schema"
+                       "schema/compatibility-and-migration" "Schema compatibility and migration"
+                       "schema/checked-consumer-projection" "Checked schema consumer projection"
+                       "query" "Query" "workflow" "Workflow"
                        "ai" "AI" "gpu" "GPU" "ui" "UI"
                        "automation" "Typed automation and action audit" "blockchain" "Deterministic chain and programmable accounts" "crypto" "Cryptographic and protected-computation boundaries" "formal" "Formal proof verification and integration" "native" "Native performance slice" "services" "Backend service integration" "simulation" "Deterministic simulation slice" "storage" "Storage durability and recovery" "visual" "Checked visual workflow lowering"})
 (def record-pattern
-  #"(?s)^- \[([ x])\] `([a-z]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Outcome: .+)$")
+  #"(?s)^- \[([ x])\] `([a-z]+(?:/[a-z-]+)?)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Outcome: .+)$")
 (def open-tasks-pattern #"Remaining(?:\s+finite)?\s+tasks,\s+all open:")
 (def link-pattern task-projection-links/link-pattern)
 (defn fail [message] (task-projection/fail message))

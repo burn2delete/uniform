@@ -4,9 +4,9 @@ Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](ev
 
 ## Implementation tasks
 
-The original seven literal project keys retain their full remaining-work,
-acceptance, integration and decision text. Nine additional integration task
-records name source-backed application slices within Domains. All remain Open.
+The seven original keys retain stable lineage. Math and Schema now name their
+primary semantic leaves, with seven explicit sibling producer/checker tasks.
+Nine application integration records remain distinct. All23 records are Open.
 These are task interfaces, not additional compiler components or accepted
 products. Aggregate release and application-sector claims remain separate.
 
@@ -16,45 +16,17 @@ products. Aggregate release and application-sector claims remain separate.
 Status: Open
 
 Projected task block:
-Outcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared
-numeric semantics and checked justification for transformations. Remaining
-finite tasks, all open: implement numeric-mode/domain checking; implement EFIR
-lowering and evaluation; connect EML/certificate checking to justified rewrites;
-implement certified approximation/interval and symbolic operations; run the
-contract conformance matrix with rejected unproved transformations.
+Outcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) Typed numeric/EFIR semantic graph with family, domain/codomain, mode/precision/branch/source facts and a verifier result. Remaining tasks, all open: Compile declared numeric/elementary inputs to verified EFIR; retain legal conversion, domain, mode and target/provider facts.
 
-Yes/no acceptance: do domain and branch errors reject? Do proof-dependent
-rewrites require checked evidence? Do strict-mode results match the selected
-semantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib
-numeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as
-adjacent proof/search representation, never ordinary runtime equality authority.
+Yes/no acceptance: Compile declared numeric/elementary inputs to verified EFIR; retain legal conversion, domain, mode and target/provider facts. Reject invalid family/conversion/domain/mode or a missing required fact; tree shape alone proves no equality. Required outputs: Typed numeric/EFIR semantic graph with family, domain/codomain, mode/precision/branch/source facts and a verifier result. Integration: consume actual interface artifacts from types/current-evidence-and-remaining-work/types2-check-declared-abstractions, domain-ir-boundaries; these are not whole-component completion prerequisites. Decision owner: existing numeric/EFIR maintainer. The retained MATH11 clauses are the math-side suite and result contract. Actual language, differential, formal, performance and library suite execution is supplied by the existing Release Testing tasks; their names or manifests do not establish passing results. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
 
 SAFE9 acceptance: execute checked/panic/wrapping/saturating/arbitrary-precision/proof-required integer modes, exceptional divisor/shift/minimum-negation cases and explicit float conversion behavior; reject implicit narrowing, hidden target defaults and unapproved relaxed math. Inspect strict/relaxed floating contracts including NaN, infinity, signed zero, rounding and fusion; elementary providers expose domain/range/accuracy/target evidence. Invalidated numeric proofs restore checks or reprove; target instructions preserve mode or are guarded/rejected. Explicit wrapping/saturating narrowing retains the source conflict with checked/proven narrowing until adjudicated. P2/P12 profile interface: check portable/core and exact/symbolic/interval/bitvector/rounded/certified mode eligibility and explicit conversions/assumptions; reject hidden target-default or provider-dependent core math. Formal symbolic lowering emits symbolic IR, theorem/assumption/trusted-kernel records and checked conclusions; imported proof validation and actual arithmetic remain distinct interfaces. Dependencies consume Types/Legality facts and declared proof-provider outputs, not completion of another component.
-
-Foundation requirement gravity/approximation-certificate-checkability: Produce and independently check an approximation certificate bound to the exact EFIR expression, domain, error measure/bound, rounding, branch policy, target and checker assumptions; preserve its checked result through the selected consumer. Refusals: Reject a changed domain, error bound, rounding mode, branch, target, checker or expression; a named checker and benchmark agreement alone cannot establish checkability. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs.
 
 Foundation requirement gravity/elementary-math-semantic-carrier: Lower analyzable elementary expressions into EFIR with domain/numeric-mode/source anchors, use EML only for declared proof/normalization/search work, and retain checked evidence for any semantic rewrite. Refusals: Reject declaring expressions equal solely because their EML trees or spellings match, dropping EFIR analysis facts or replacing strict semantics with an unproved approximate provider. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts; pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.
 
 Criterion profile-gap/formal/numeric-semantics (Open): Input: Formal numeric expressions with exact integer/rational/real, bitvector, symbolic, interval, correctly rounded or certified mode and explicit conversion/assumption/provider data. Accept: Admit only declared formal math modes; verify explicit conversions and assumptions and preserve rounding/precision/certificate facts through symbolic or target lowering. Policy cases do not imply that all arithmetic providers are implemented. Reject: Relaxed or target-default math, hidden conversion assumptions, missing proof-mode or certificate, and incompatible backend numeric assumptions. Required outputs: Formal numeric/mode/rounding records, conversion and assumption checks, accepted/rejected P12-MATH-MODE/P12-ASSUMPTION/P12-BACKEND fixtures with theorem/proof/provider/kernel/span/target context. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping formal/numeric-semantics; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/formal/profile-proof-contract (Open): Input: Formal source and theorem/refinement/pre-postcondition claims with quantified inputs or explicit assumptions, trust roots, proof provider/kernel and selected profile/target. Accept: Check deterministic source admission; lower eligible source to symbolic IR; produce proof objects/theorem summaries and explicit assumptions/trusted-kernel/input hashes/certificate chain/conclusion; validate imported source digest/schema/trust/assumptions/theorem/profile/target/hash-chain before policy-permitted use. Reject: Runtime effects or unmodeled nondeterminism/failure, unsafe/raw FFI, hidden target assumptions, untrusted provider, theorem mismatch, failed proof or incompatible imported certificate. Unverified imports follow the declared ignore-or-reject policy, never silent proof acceptance. Required outputs: Symbolic IR, proof object, assumption and trusted-kernel manifests, checked theorem/certificate chain/import verification, positive/negative source/proof/import cases and origin-rich formal diagnostics. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping formal/profile-proof-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/math/numeric-profile-eligibility (Open): Input: Numeric family/mode/conversion/provider request with active profile/target, allocation support, precision/rounding/NaN/branch/unit and proof facts. Accept: Emit and check the concrete profile support matrix for fixed/arbitrary integers, rationals, proof reals, floats, complex, intervals, symbolic and enabled units. Keep numeric families explicit in types/EFIR/runtime artifacts; admit explicit exact/checked/rounded/saturating/wrapping/proof/unsafe conversion classes only under their actual declared legality; preserve domain/codomain/precision/branch/source annotations. Symbolic equality requires proof rather than tree shape. Reject: Unavailable family/mode/provider, hidden allocation in constrained/core contexts, implicit narrowing/truncation/overflow/precision or rounding/NaN-policy loss, ambiguous branch/unit conversion and symbolic equality without valid evidence. Keep independent source conflicts on particular conversion modes open rather than choosing an undocumented policy. Required outputs: Numeric-kind lattice, conversion-rule table, machine-readable support matrix/mode/provider records, EFIR annotations and conformance cases for every supported conversion/family; MATH1-FAMILY/CONVERSION/NARROW/PRECISION/ROUNDING/BRANCH/ALLOCATION/EQUALITY/PROFILE diagnostics with span/family/mode/profile/target/provider/proof. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping math/numeric-profile-eligibility; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.
 
-Math source-specific implementation criteria (proposed adoption, all Open).
-These stable criterion IDs refine the existing literal `math` task; they do not add
-project tasks or mark any implementation accepted. Each dependency names an input
-interface and can be satisfied by its exact available artifact, not completion of
-the whole component. Each declared supported case needs actual positive and negative
-execution evidence before closure; unavailable combinations remain explicit.
-
 Current AGENTS accounting-removal policy governs historical fuel/depth/node/time/candidate-count passages: no project work allowance or otherwise-valid-input quota is an admission requirement. Preserve deterministic choices, semantic legality, complete proof/partition/trace evidence and truthful unresolved outcomes. Declared runtime performance objectives, error bounds, target representability and actual host restrictions remain distinct; no replacement work allowance is proposed.
-
-Criterion `math/approximation-certificate-production` (MATH5; Open).
-Implement: Produce a content-identified approximation certificate and independent-checker transcript/proof references bound to its exact EFIR implementation contract.
-Boundary: Each supported approximation family/domain/mode/precision/target; approximation, coefficient, roundoff, reconstruction and target error ledgers remain acceptance facets.
-Done when: For each declared polynomial, rational, piecewise, table, SIMD/GPU/hardware or fused family, parse the emitted certificate, recompute semantic identity, check domain coverage, separate approximation/coefficient/reduction/evaluation/reconstruction/roundoff/target error and combine within the precision contract.
-Negative fixtures: Reject incomplete domain coverage, poles, branch/exception drift, relative-error-only claims near zero, unsupported target assumptions or a synthesizer attestation substituted for independent checking.
-Outputs: Certificate, target-assumption manifest, exceptional-path coverage and independent checker transcript references.
-Dependencies: math/efir-verification, math/interval-bound-ledger. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH5-CHECKER is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
 Criterion `math/conformance-execution-report` (MATH11; Open).
 Implement: Run the math suite, actually parse/check emitted evidence, compare expected results/rejections and emit exact-source provenance-bearing results and failures.
@@ -84,16 +56,6 @@ Negative fixtures: Reject omitted required families, fixtures lacking mode/domai
 Outputs: Content-addressed fixture corpus and MATH1-MATH10 profile/target/artifact/diagnostic/oracle matrix.
 Dependencies: declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
 Diagnostics: MATH11-FIXTURE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/correctly-rounded-synthesis` (MATH10; Open).
-Implement: Synthesize and check an implementation meeting exact accepted-output intervals for the requested representation and rounding modes, or reject infeasibility without silent downgrade.
-Boundary: Tie/subnormal/zero/exception cells, coefficient/evaluation/FMA/intermediate/reduction/reconstruction/lowering constraints, and multi-format/multi-rounding intersection or separate certified kernels.
-Done when: For each declared input/output representation and rounding mode prove every generated result lies in the exact accepted-result interval, including ties/subnormals/signed zero/exceptions and coefficient, evaluation, FMA, intermediate, reduction, reconstruction and backend assumptions; use a proved intersection or separately certified kernels.
-Negative fixtures: Reject unresolved rounding cells, unsupported modes, unchecked/infeasible constraints and silent downgrade to faithful/libm/approximate behavior.
-Outputs: Rounding-target manifest, accepted-result interval ledger, synthesis transcript, kernel digests and independent certificate.
-Dependencies: math/efir-verification, math/numeric-mode-resolution, math/interval-bound-ledger. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH10-SYNTHESIS is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
 Criterion `math/efir-content-identity` (MATH3; Open).
@@ -146,26 +108,6 @@ Dependencies: math/efir-domain-inference, math/efir-precision-attachment. Types/
 Diagnostics: MATH3-SOURCE is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
-Criterion `math/egraph-equality-saturation` (MATH9; Open).
-Implement: Build and merge e-graph equality classes only under checked equality premises and conservative compatible analysis joins.
-Boundary: Unproved edges cannot justify code, proofs, side conditions or further equality; conflict requires rejection/restriction/candidate status.
-Done when: Merge only checked compatible equalities; join facts valid for selected members across domain/codomain/branch/mode/floating/exception/provider effects/checks/proof/origins, keeping discovery-only edges distinct.
-Negative fixtures: Reject or restrict conflicting analysis joins; reject an unproved edge used for code, proof, a side condition or further accepted equality.
-Outputs: Guarded equality edges, conservative e-class analyses and explanation report.
-Dependencies: math/symbolic-rule-promotion, math/symbolic-guarded-rewrite. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/egraph-extraction` (MATH9; Open).
-Implement: Extract a legal representative using the declared versioned runtime cost model, deterministic ties and replayable selection explanation.
-Boundary: Hidden semantic constraints or unproved edges cannot enter extraction; optimization fuel/stopping passages remain separately scoped.
-Done when: Select a legal representative with explicit runtime/proof/stability/allocation/check/provider/code-size objective and deterministic ties; reconstruct its equality path and relevant rejected choices without rerunning saturation.
-Negative fixtures: Reject extraction through unproved edges, hidden semantic constraints in heuristic weights, changed cost-model identity, nondeterministic ties or an unreplayable explanation.
-Outputs: Extracted representative, versioned runtime-cost model, tie policy and independent explanation replay.
-Dependencies: math/egraph-equality-saturation, math/symbolic-independent-trace-replay. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
 Criterion `math/elementary-registration` (MATH2; Open).
 Implement: Validate an elementary declaration and produce its registry entry with a semantic EFIR anchor.
 Boundary: Built-in and user-defined elementary functions; required fields define semantic domain/codomain/branch/exception/modes/form and provider requirements, not the literal sigmoid example.
@@ -184,76 +126,6 @@ Negative fixtures: Reject lost anchors, untyped raw syntax offered as verified E
 Outputs: Typed-core/MIR elementary subgraph report with source/generated-origin map.
 Dependencies: math/elementary-registration. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
 Diagnostics: MATH10-DETECT is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-candidate-promotion` (MATH4; Open).
-Implement: Prevent lowering from using a candidate before accepted exact proof or accepted bounded-approximation evidence.
-Boundary: Generated/typed/domain/branch/proof-requested/proved/bounded/rejected states; bounded candidates require the applicable MATH5 certificate, not just a state label.
-Done when: Retain generated/typed/domain-checked/branch-checked/proof-requested/proved/bounded/rejected states; allow lowering only after the applicable independent proof or MATH5 certificate is accepted for the exact candidate.
-Negative fixtures: Reject generated or merely labeled-proved candidates, stale evidence, missing bounded certificates and tree-identity equality.
-Outputs: Candidate lifecycle decision with accepted exact-proof or bounded-certificate reference.
-Dependencies: math/semantic-equality-proof-gate, math/efir-verification. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-CANDIDATE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-candidate-search` (MATH4; Open).
-Implement: Return ranked search/normalization candidates with proof obligations and rejection reasons without making search output an accepted compiler rewrite.
-Boundary: Same declared source/profile/target/provider/search inputs select the same accepted candidate or report a deterministic tie; search-stopping policy remains separately visible.
-Done when: Given identical source/profile/target/provider/manifest inputs emit replayable candidate ordering and explicit obligations; discovery grants no rewrite authority.
-Negative fixtures: Reject hidden search choices, domain/branch-invalid candidates promoted as accepted and nondeterministic selection without an explicit tie.
-Outputs: Ranked candidates, outstanding proof obligations, deterministic ties and rejection reasons.
-Dependencies: math/eml-construction, math/eml-search-manifest. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-SEARCH is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-construction` (MATH3; Open).
-Implement: Lower verified EFIR into the optional EML representation while preserving source/node correspondence and semantic facts.
-Boundary: Exp-minus-log basis with arithmetic/variables/constants/domain guards/branch facts; EML is optional proof/search input and never a mandatory runtime representation.
-Done when: Lower verified EFIR through exp-minus-log basis with constants/variables/arithmetic/guards, preserving EFIR identity, source map, domain/codomain, mode, precision, branch choices and explicit complex intermediates.
-Negative fixtures: Reject unverified input, lost source/node correspondence, missing branch assumptions or making EML the required runtime representation.
-Outputs: Optional EML expression/DAG, EFIR node correspondence and semantic context.
-Dependencies: math/efir-verification. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-EFIR is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-guarded-normalization` (MATH4; Open).
-Implement: Normalize EML through guarded registered transformations while preserving the final domain, branch, numeric mode and pending proof obligations.
-Boundary: Basis introduction, domain/branch transport and complex simplification; complex intermediates require permission, recorded choices, valid final domain and applicable proof/error evidence.
-Done when: Introduce the basis, transport domains/branches and simplify complex intermediates only with permission, recorded choices and applicable final-domain/equality/error evidence.
-Negative fixtures: Reject log-exp identities outside their domain/periodic guards, forbidden complex intermediates or dropped numeric/precision/proof facts.
-Outputs: Guarded normalized candidate with transported domain/branch facts and pending obligations.
-Dependencies: math/eml-construction, math/symbolic-rule-promotion. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-BRANCH is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-independent-trace-replay` (MATH4; Open).
-Implement: Independently and deterministically check a recorded EML normalization trace.
-Boundary: Replay of recorded rules/premises/choices; rerunning the heuristic search is not the checker.
-Done when: Replay each recorded rule, premise, assumption, choice and before/after identity using the independent checker; reproduce preserved and invalidated facts without rerunning heuristic search.
-Negative fixtures: Reject missing/reordered/substituted steps, changed rule/provider/target facts, unsupported assumptions or optimizer self-attestation.
-Outputs: Independent deterministic trace-check report bound to exact input and rule versions.
-Dependencies: math/eml-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-TRACE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-search-manifest` (MATH4; Open).
-Implement: Emit the declared search-space/objective/ranking/pruning inputs into the build artifact when search affects generated code.
-Boundary: Grammar/domain/provider/target/source/profile inputs and tie policy; fuel/depth/time accounting passages remain individually unresolved against AGENTS.
-Done when: Record every semantic and heuristic input affecting generated code, including source/profile/target/provider identities and deterministic ranking/ties, so accepted candidate choice can be reproduced.
-Negative fixtures: Reject omitted objective/pruning/ranking inputs, hidden provider/target choice or a changed manifest reused for the same recorded decision.
-Outputs: Build-bound search grammar/domain/objective/ranking/pruning/provider/target manifest.
-Dependencies: math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-SEARCH is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/eml-trace-production` (MATH4; Open).
-Implement: Emit a normalization trace that identifies every applied rule, before/after form, premises, assumptions, origins, invalidations and proof obligation.
-Boundary: Trace artifact-production contract; target/provider/heuristic choices that affect the run are recorded, not hidden in a process.
-Done when: Emit each applied step and relevant heuristic/target/provider choice with exact EFIR/EML identity and generated origins, retaining pending obligations and branch/complex facts.
-Negative fixtures: Reject missing rule versions, lost assumptions/origins, absent invalidations or a trace concealing an unproved replacement.
-Outputs: Normalization trace with rule/premise/before-after/assumption/source/invalidation/proof entries.
-Dependencies: math/eml-construction. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH4-TRACE is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
 Criterion `math/floating-backend-eligibility` (MATH8; Open).
@@ -294,106 +166,6 @@ Negative fixtures: Reject strict-mode unproved fast math, hidden flags, stale ce
 Outputs: Transform decision with manifest, source span, proof/certificate/opt-in and selected instruction.
 Dependencies: math/floating-policy-resolution, math/semantic-equality-proof-gate. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
 Diagnostics: MATH8-FMA is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/fused-kernel-generation` (MATH10; Open).
-Implement: Fuse elementary operations only with whole-expression domain/branch/numeric and combined-error evidence.
-Boundary: Independent per-call certificates do not prove fused intermediate/roundoff behavior.
-Done when: Generate a kernel for the verified combined graph, preserving intermediate exceptional behavior, precision, source diagnostics and combined roundoff/reconstruction obligations.
-Negative fixtures: Reject fusion justified only by separate per-call certificates, incompatible branches or unapproved FMA/reassociation.
-Outputs: Fused implementation candidate and whole-expression error/branch/domain evidence.
-Dependencies: math/efir-verification, math/floating-transform-legality. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH10-FUSION is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/implementation-candidate-generation` (MATH10; Open).
-Implement: Generate executable elementary implementation candidates tied to verified EFIR and the requested semantic/target contract.
-Boundary: Declared libm/intrinsic/symbolic/polynomial/rational/table/fused/vector/GPU/generated families; generation alone grants no acceptance.
-Done when: Generate declared library, intrinsic, symbolic, polynomial, rational, table, piecewise, fused, vector/GPU, generated or residual-checked candidates while keeping each unaccepted until its obligations pass.
-Negative fixtures: Reject missing semantic anchors, target/mode mismatch, hidden allocation/effects or generation mislabeled as proof/selection.
-Outputs: Executable candidate set with EFIR/source/target/semantic contract and required proof references.
-Dependencies: math/efir-verification, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH10-CANDIDATE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-bound-ledger` (MATH6; Open).
-Implement: Produce separate real and roundoff bound ledgers whose entries expose their method, assumptions and invalidation conditions.
-Boundary: Exact arithmetic/Taylor/minimax/Bernstein/monotonicity/Lipschitz/symbolic/external-prover/roundoff methods; changed consumed assumptions invalidate the entries.
-Done when: Record exact interval, Taylor/minimax/Bernstein/monotonicity/Lipschitz/symbolic/external-proof or roundoff derivations and combine only under current consumed assumptions.
-Negative fixtures: Reject conflated real/roundoff error, missing method/premises, insufficient bounds or reuse after branch/target/mode/coefficient/layout changes.
-Outputs: Separate exact-real and floating-roundoff bound ledgers with method and invalidation conditions.
-Dependencies: math/interval-claim-production, math/interval-domain-check. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-BOUND is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-claim-production` (MATH6; Open).
-Implement: Produce a proof claim bound to exact source EFIR/EML, domain, branch, numeric mode, precision and requested property.
-Boundary: Exact equivalence, bounded error, coverage, denominator, range-reduction or monotonic claims; a pending claim is not a proved result.
-Done when: Emit equality, bounded-error, coverage, denominator, range-reduction or monotonicity claims with the actual requested property and source origins.
-Negative fixtures: Reject omitted or mismatched input identities, a pending claim presented as proof, or a widened domain/property without corresponding evidence.
-Outputs: Pending claim with exact EFIR/EML/input/domain/branch/mode/precision/property identity.
-Dependencies: math/efir-verification, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-CLAIM is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-domain-check` (MATH6; Open).
-Implement: Parse and validate an interval domain with exact endpoints, boundary openness, exclusions and bound provenance.
-Boundary: Closed-by-default versus explicit open/half-open intervals; reject empty domains except an explicit no-usable-domain claim.
-Done when: Parse rational endpoints or equivalently exact checked enclosures with closed default/open/half-open policy, exclusions, symbolic predicates and complex projection provenance.
-Negative fixtures: Reject reversed/empty domains except explicit no-usable-domain claims, inexact unproved endpoints, hidden exclusions or missing bound provenance.
-Outputs: Validated exact interval-domain map and bound provenance.
-Dependencies: declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-DOMAIN is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-enclosure` (MATH1; Open).
-Implement: Execute the required interval arithmetic operations with an inclusion-preserving result and applicable domain/branch/nonzero-denominator evidence.
-Boundary: Required arithmetic, powers, root/exp/log, trig/hyperbolic, comparisons, polynomial/rational and piecewise operations; floating evaluation needs certified outward rounding.
-Done when: Execute supported add/subtract/multiply/divide, integer/rational powers, sqrt/exp/log, trig/hyperbolic, abs/comparison, polynomial/rational and min/max/piecewise cases against exact or independent enclosure references.
-Negative fixtures: Reject denominator cells containing zero without proof, invalid roots/branches or target-floating enclosure without certified outward rounding.
-Outputs: Inclusion-preserving operation results and outward-rounding/nonzero/branch evidence.
-Dependencies: math/interval-domain-check, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-ROUNDING is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-partition-production` (MATH6; Open).
-Implement: Produce a complete domain partition with cell order, split decisions, local assumptions, statuses and unresolved cells.
-Boundary: Heuristic construction is permitted; stopping/fuel accounting is retained for policy review without hiding cells.
-Done when: Produce cells whose union covers the claimed domain with explicit boundary/exclusion policy, recorded heuristic split inputs and truthful unresolved regions.
-Negative fixtures: Reject omitted cells, coverage gaps, incompatible boundary overlap or unresolved cells hidden as proved.
-Outputs: Domain partition tree, ordered split decisions/local assumptions/statuses and unresolved-cell report.
-Dependencies: math/interval-domain-check, math/interval-claim-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-PARTITION is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-partition-replay` (MATH6; Open).
-Implement: Replay the emitted partition deterministically and reject incomplete or unreplayable partitions.
-Boundary: Partition proof artifact, not a second run of the adaptive search.
-Done when: Replay emitted cell order, split points, local assumptions and statuses from the original claim, verifying complete coverage without rerunning adaptive search.
-Negative fixtures: Reject a missing/substituted cell, changed split input/domain/claim or unreplayable ordering.
-Outputs: Independent deterministic partition/coverage replay report.
-Dependencies: math/interval-partition-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-PARTITION is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/interval-residual-check-emission` (MATH6; Open).
-Implement: Emit the exact preserved runtime predicate for unresolved cells only when the numeric mode permits it, otherwise reject total-proof acceptance.
-Boundary: Cell domains, placement, failure behavior, cost classification and SAFE15 preservation record; predicate execution belongs to the applicable runtime/check consumer.
-Done when: Emit the exact residual predicate only in a mode permitting it, retaining domain, placement, observable failure and performance classification; runtime execution remains a consumer obligation.
-Negative fixtures: Reject unresolved total-proof acceptance, omitted checks, predicate/domain drift or residual checks in a total compile-time-proof mode.
-Outputs: Unresolved-cell runtime predicates, check placement/failure policy and SAFE15 preservation record.
-Dependencies: math/interval-partition-replay, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-UNRESOLVED is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/legal-implementation-ranking` (MATH10; Open).
-Implement: Rank only semantically eligible implementations under the declared cost/benchmark/autotuning policy and record choice, rejected candidates and fallback.
-Boundary: Provider representation/mode/domain/branch/exception/target/version/certificate eligibility precedes performance ranking; benchmarks never prove semantics.
-Done when: Filter by representation/mode/domain/branch/exceptions/target/provider/version/certificate/effect/allocation legality before benchmarking or autotuning; record rejected alternatives, deterministic ties and legal target-mismatch fallback.
-Negative fixtures: Reject a faster but illegal provider, benchmark-only correctness, changed target fingerprints, unreplayable tuning or weaker fallback semantics.
-Outputs: Semantic eligibility comparison, versioned runtime objective, replayable ranking/selection and fallback.
-Dependencies: math/implementation-candidate-generation, math/floating-backend-eligibility. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH10-PROVIDER-COMPARE is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
 Criterion `math/numeric-family-type-check` (MATH1; Open).
@@ -446,16 +218,6 @@ Dependencies: math/numeric-family-type-check. Types/Legality supplies checked nu
 Diagnostics: MATH1-ALLOCATION is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
-Criterion `math/real-proof-provider-import` (MATH6; Open).
-Implement: Import a real-proof provider result only through an accepted checker validating claim/input identities, method, domain, branch, trust, replay and current assumptions.
-Boundary: Opaque provider output may guide search but cannot certify transformations or erase checks.
-Done when: Check exact claim/input hashes, domain/branch/method/trust/replay/proof-object/current assumptions and invalidation conditions independently of the provider or optimizer.
-Negative fixtures: Reject opaque attestations used to certify, unsupported trust/method, stale inputs, branch mismatch or invalidated assumptions.
-Outputs: Accepted-checker import report and SAFE15 proof reference.
-Dependencies: math/interval-claim-production, math/interval-partition-replay. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH6-PROVIDER is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
 Criterion `math/semantic-equality-proof-gate` (MATH1; Open).
 Implement: Reject a claimed symbolic/elementary equality unless applicable proof/certificate evidence establishes equality over the declared domain.
 Boundary: Equality claim acceptance; syntax/tree identity is insufficient. EFIR rewrite and EML candidate interfaces retain separate producer/consumer facets pending central equivalence review.
@@ -464,66 +226,6 @@ Negative fixtures: Reject equality by syntax/EFIR/EML tree identity, optimizer a
 Outputs: Claim-to-proof/certificate acceptance decision over the declared domain.
 Dependencies: math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
 Diagnostics: MATH1-EQUALITY is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-counterexample-production` (MATH9; Open).
-Implement: Preserve a rejected rule and reproducible counterexample with the original failed assumptions.
-Boundary: Later accepted narrower rules retain distinct provenance rather than overwriting the broad rejection.
-Done when: Reproduce a failing broad rule such as sqrt(x*x)=x at negative x, bind inputs/rule version/domain/reason and preserve it when a separately justified narrower rule is introduced.
-Negative fixtures: Reject overwritten rejection history, missing failed assumptions or a narrowed rule used to retroactively validate the original broad claim.
-Outputs: Rejected rule/application and reproducible counterexample with original assumptions.
-Dependencies: math/symbolic-rule-registration. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-COUNTEREXAMPLE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-guarded-rewrite` (MATH9; Open).
-Implement: Match and apply a registered symbolic rewrite only when its typed semantic side conditions hold and output obligations remain explicit.
-Boundary: Guarded pattern matching and independent domain/branch/mode premises; no tree-shape equality shortcut.
-Done when: Match registered typed patterns, discharge domain/branch/nonzero/periodic/exception/mode/floating/provider side conditions and preserve effects/checks/source/generated origins.
-Negative fixtures: Reject an undischarged condition promoted to accepted rewrite, tree-shape equality shortcut or erased runtime check/provider effect.
-Outputs: Typed guarded rewrite result with explicit pending/discharged obligations and anchors.
-Dependencies: math/symbolic-rule-promotion, math/semantic-equality-proof-gate. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-independent-trace-replay` (MATH9; Open).
-Implement: Independently check the symbolic rewrite trace without trusting or rerunning the heuristic optimizer.
-Boundary: Exact registered rules, premises, semantic identities and proof artifacts.
-Done when: Reconstruct the transformation from exact input, registered rule versions, side-condition results and proof artifacts without trusting or rerunning the optimizer/saturation scheduler.
-Negative fixtures: Reject missing/substituted/reordered steps, changed guards or versions, unproved edges and optimizer-generated pass status without checker replay.
-Outputs: Independent rule/edge/premise/identity replay and proof-status report.
-Dependencies: math/symbolic-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-rule-promotion` (MATH9; Open).
-Implement: Keep candidate, proved, bounded, rejected and deprecated rules distinct and select only a rule whose required proof or approximation certificate is accepted.
-Boundary: Deprecated rules remain readable but unselected; a narrowed later rule does not validate a rejected broad rule.
-Done when: Distinguish declared/candidate/guarded/proved/bounded/rejected/deprecated, permitting code changes only for current proved or bounded evidence; retain deprecated readability and broad-rule rejection history.
-Negative fixtures: Reject selection of a candidate, deprecated/rejected rule, missing MATH5 bounded certificate or stale evidence under changed domain/branch/mode.
-Outputs: Rule-state transition with exact proof or bounded-approximation certificate.
-Dependencies: math/symbolic-rule-registration, math/semantic-equality-proof-gate. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-rule-registration` (MATH9; Open).
-Implement: Validate and register a versioned semantic rewrite-rule artifact with pattern/replacement, domain/branch/mode guards, proof obligations and provenance.
-Boundary: Standard/package/provider/generated rules; package import obeys trust policy and semantic content identity.
-Done when: Validate pattern/replacement, typed variables, domain/codomain, branch/modes, side conditions, proof status/refs, invalidation rules and source provenance before registry insertion.
-Negative fixtures: Reject incomplete rule shape, missing branch/mode guards, semantic content changes under an unchanged version identity or untrusted package import.
-Outputs: Versioned content-addressed rule artifact and package trust/source provenance.
-Dependencies: math/efir-content-identity. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-RULE-SHAPE is an example; require the applicable owning code and its context for each negative case.
-Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
-
-Criterion `math/symbolic-trace-production` (MATH9; Open).
-Implement: Emit a symbolic rewrite trace retaining before/after identities, rule/version, side conditions, evidence, source origins and invalidations.
-Boundary: Proof/diagnostic back-edges survive rewrite execution and extraction.
-Done when: Emit each actual rule application and relevant heuristic/target/provider/runtime-cost choice with exact graph/node/trace identities and proof or candidate status.
-Negative fixtures: Reject lost diagnostic/source back-edges, hidden choices, missing proof/side-condition results or accepted status assigned to a discovery-only step.
-Outputs: Rewrite trace with before/after/rule/version/premises/evidence/origins/preserved-invalidated facts.
-Dependencies: math/symbolic-rule-registration. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
-Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
 Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
 
 Criterion `domain/numeric-provider-binding`: Bind external numeric libraries/providers to typed FFI, numeric-mode/domain/error and approximation contracts. Accepted fixture: Bind numeric providers with implementation/version, typed FFI, numeric mode/domain/range/error and approximation contracts. Negative fixture: Reject mode mismatches, unsafe/opaque FFI and provider-dependent results presented as portable semantics. Required evidence: numeric provider/FFI manifests and mode/reference boundary fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-llvm, legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
@@ -586,22 +288,342 @@ Dependencies: Types source/destination families; Explicit numeric mode and conve
 Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
 
 
+- [ ] `math/eml-normalization-and-search` EML normalization and search
+
+Status: Open
+
+Projected task block:
+Outcome: EML normalization/search candidates and source/domain-bound transformation traces. Remaining tasks, all open: Normalize/search under explicit rules, conditions and deterministic recorded inputs; emit replayable traces and candidates.
+
+Yes/no acceptance: Normalize/search under explicit rules, conditions and deterministic recorded inputs; emit replayable traces and candidates. Reject unproved equality, dropped side conditions and a searched candidate presented as a checked runtime implementation. Required outputs: EML normalization/search candidates and source/domain-bound transformation traces. Integration: consume actual interface artifacts from math, pass-evidence; these are not whole-component completion prerequisites. Decision owner: existing EML/search maintainer. Search emits candidates and traces, not accepted runtime implementations. Promotion consumes independent proof or certificate verdicts while preserving source/domain/branch/mode facts. No project fuel, node, depth, time or candidate-count allowance is an admission requirement. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Criterion `math/eml-candidate-promotion` (MATH4; Open).
+Implement: Prevent lowering from using a candidate before accepted exact proof or accepted bounded-approximation evidence.
+Boundary: Generated/typed/domain/branch/proof-requested/proved/bounded/rejected states; bounded candidates require the applicable MATH5 certificate, not just a state label.
+Done when: Retain generated/typed/domain-checked/branch-checked/proof-requested/proved/bounded/rejected states; allow lowering only after the applicable independent proof or MATH5 certificate is accepted for the exact candidate.
+Negative fixtures: Reject generated or merely labeled-proved candidates, stale evidence, missing bounded certificates and tree-identity equality.
+Outputs: Candidate lifecycle decision with accepted exact-proof or bounded-certificate reference.
+Dependencies: math/semantic-equality-proof-gate, math/efir-verification. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-CANDIDATE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/eml-candidate-search` (MATH4; Open).
+Implement: Return ranked search/normalization candidates with proof obligations and rejection reasons without making search output an accepted compiler rewrite.
+Boundary: Same declared source/profile/target/provider/search inputs select the same accepted candidate or report a deterministic tie; search-stopping policy remains separately visible.
+Done when: Given identical source/profile/target/provider/manifest inputs emit replayable candidate ordering and explicit obligations; discovery grants no rewrite authority.
+Negative fixtures: Reject hidden search choices, domain/branch-invalid candidates promoted as accepted and nondeterministic selection without an explicit tie.
+Outputs: Ranked candidates, outstanding proof obligations, deterministic ties and rejection reasons.
+Dependencies: math/eml-construction, math/eml-search-manifest. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-SEARCH is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/eml-construction` (MATH3; Open).
+Implement: Lower verified EFIR into the optional EML representation while preserving source/node correspondence and semantic facts.
+Boundary: Exp-minus-log basis with arithmetic/variables/constants/domain guards/branch facts; EML is optional proof/search input and never a mandatory runtime representation.
+Done when: Lower verified EFIR through exp-minus-log basis with constants/variables/arithmetic/guards, preserving EFIR identity, source map, domain/codomain, mode, precision, branch choices and explicit complex intermediates.
+Negative fixtures: Reject unverified input, lost source/node correspondence, missing branch assumptions or making EML the required runtime representation.
+Outputs: Optional EML expression/DAG, EFIR node correspondence and semantic context.
+Dependencies: math/efir-verification. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-EFIR is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/eml-guarded-normalization` (MATH4; Open).
+Implement: Normalize EML through guarded registered transformations while preserving the final domain, branch, numeric mode and pending proof obligations.
+Boundary: Basis introduction, domain/branch transport and complex simplification; complex intermediates require permission, recorded choices, valid final domain and applicable proof/error evidence.
+Done when: Introduce the basis, transport domains/branches and simplify complex intermediates only with permission, recorded choices and applicable final-domain/equality/error evidence.
+Negative fixtures: Reject log-exp identities outside their domain/periodic guards, forbidden complex intermediates or dropped numeric/precision/proof facts.
+Outputs: Guarded normalized candidate with transported domain/branch facts and pending obligations.
+Dependencies: math/eml-construction, math/symbolic-rule-promotion. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-BRANCH is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/eml-search-manifest` (MATH4; Open).
+Implement: Emit the declared search-space/objective/ranking/pruning inputs into the build artifact when search affects generated code.
+Boundary: Grammar/domain/provider/target/source/profile inputs and tie policy; fuel/depth/time accounting passages remain individually unresolved against AGENTS.
+Done when: Record every semantic and heuristic input affecting generated code, including source/profile/target/provider identities and deterministic ranking/ties, so accepted candidate choice can be reproduced.
+Negative fixtures: Reject omitted objective/pruning/ranking inputs, hidden provider/target choice or a changed manifest reused for the same recorded decision.
+Outputs: Build-bound search grammar/domain/objective/ranking/pruning/provider/target manifest.
+Dependencies: math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-SEARCH is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/eml-trace-production` (MATH4; Open).
+Implement: Emit a normalization trace that identifies every applied rule, before/after form, premises, assumptions, origins, invalidations and proof obligation.
+Boundary: Trace artifact-production contract; target/provider/heuristic choices that affect the run are recorded, not hidden in a process.
+Done when: Emit each applied step and relevant heuristic/target/provider choice with exact EFIR/EML identity and generated origins, retaining pending obligations and branch/complex facts.
+Negative fixtures: Reject missing rule versions, lost assumptions/origins, absent invalidations or a trace concealing an unproved replacement.
+Outputs: Normalization trace with rule/premise/before-after/assumption/source/invalidation/proof entries.
+Dependencies: math/eml-construction. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-TRACE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+- [ ] `math/certified-implementation-synthesis` Certified implementation synthesis
+
+Status: Open
+
+Projected task block:
+Outcome: Generated approximation/implementation candidates with exact expression/domain/error/rounding/target certificate inputs. Remaining tasks, all open: Produce a candidate and complete certificate inputs, including required domain partition and backend assumptions.
+
+Yes/no acceptance: Produce a candidate and complete certificate inputs, including required domain partition and backend assumptions. Reject candidate promotion from benchmark agreement, missing certificate subjects or unsupported target/numeric assumptions. Required outputs: Generated approximation/implementation candidates with exact expression/domain/error/rounding/target certificate inputs. Integration: consume actual interface artifacts from math, opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors; these are not whole-component completion prerequisites. Decision owner: existing approximation/synthesis maintainer. This task produces candidates, certificates and complete checker inputs. Independent checker verdicts are consumed from math/independent-proof-and-certificate-checking; producer success cannot certify itself. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Foundation requirement gravity/approximation-certificate-checkability: Produce and independently check an approximation certificate bound to the exact EFIR expression, domain, error measure/bound, rounding, branch policy, target and checker assumptions; preserve its checked result through the selected consumer. Refusals: Reject a changed domain, error bound, rounding mode, branch, target, checker or expression; a named checker and benchmark agreement alone cannot establish checkability. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs.
+
+Criterion `math/approximation-certificate-production` (MATH5; Open).
+Implement: Produce a content-identified approximation certificate and independent-checker transcript/proof references bound to its exact EFIR implementation contract.
+Boundary: Each supported approximation family/domain/mode/precision/target; approximation, coefficient, roundoff, reconstruction and target error ledgers remain acceptance facets.
+Done when: For each declared polynomial, rational, piecewise, table, SIMD/GPU/hardware or fused family, parse the emitted certificate, recompute semantic identity, check domain coverage, separate approximation/coefficient/reduction/evaluation/reconstruction/roundoff/target error and combine within the precision contract.
+Negative fixtures: Reject incomplete domain coverage, poles, branch/exception drift, relative-error-only claims near zero, unsupported target assumptions or a synthesizer attestation substituted for independent checking.
+Outputs: Certificate, target-assumption manifest, exceptional-path coverage and independent checker transcript references.
+Dependencies: math/efir-verification, math/interval-bound-ledger. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH5-CHECKER is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/correctly-rounded-synthesis` (MATH10; Open).
+Implement: Synthesize and check an implementation meeting exact accepted-output intervals for the requested representation and rounding modes, or reject infeasibility without silent downgrade.
+Boundary: Tie/subnormal/zero/exception cells, coefficient/evaluation/FMA/intermediate/reduction/reconstruction/lowering constraints, and multi-format/multi-rounding intersection or separate certified kernels.
+Done when: For each declared input/output representation and rounding mode prove every generated result lies in the exact accepted-result interval, including ties/subnormals/signed zero/exceptions and coefficient, evaluation, FMA, intermediate, reduction, reconstruction and backend assumptions; use a proved intersection or separately certified kernels.
+Negative fixtures: Reject unresolved rounding cells, unsupported modes, unchecked/infeasible constraints and silent downgrade to faithful/libm/approximate behavior.
+Outputs: Rounding-target manifest, accepted-result interval ledger, synthesis transcript, kernel digests and independent certificate.
+Dependencies: math/efir-verification, math/numeric-mode-resolution, math/interval-bound-ledger. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH10-SYNTHESIS is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/fused-kernel-generation` (MATH10; Open).
+Implement: Fuse elementary operations only with whole-expression domain/branch/numeric and combined-error evidence.
+Boundary: Independent per-call certificates do not prove fused intermediate/roundoff behavior.
+Done when: Generate a kernel for the verified combined graph, preserving intermediate exceptional behavior, precision, source diagnostics and combined roundoff/reconstruction obligations.
+Negative fixtures: Reject fusion justified only by separate per-call certificates, incompatible branches or unapproved FMA/reassociation.
+Outputs: Fused implementation candidate and whole-expression error/branch/domain evidence.
+Dependencies: math/efir-verification, math/floating-transform-legality. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH10-FUSION is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/implementation-candidate-generation` (MATH10; Open).
+Implement: Generate executable elementary implementation candidates tied to verified EFIR and the requested semantic/target contract.
+Boundary: Declared libm/intrinsic/symbolic/polynomial/rational/table/fused/vector/GPU/generated families; generation alone grants no acceptance.
+Done when: Generate declared library, intrinsic, symbolic, polynomial, rational, table, piecewise, fused, vector/GPU, generated or residual-checked candidates while keeping each unaccepted until its obligations pass.
+Negative fixtures: Reject missing semantic anchors, target/mode mismatch, hidden allocation/effects or generation mislabeled as proof/selection.
+Outputs: Executable candidate set with EFIR/source/target/semantic contract and required proof references.
+Dependencies: math/efir-verification, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH10-CANDIDATE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/legal-implementation-ranking` (MATH10; Open).
+Implement: Rank only semantically eligible implementations under the declared cost/benchmark/autotuning policy and record choice, rejected candidates and fallback.
+Boundary: Provider representation/mode/domain/branch/exception/target/version/certificate eligibility precedes performance ranking; benchmarks never prove semantics.
+Done when: Filter by representation/mode/domain/branch/exceptions/target/provider/version/certificate/effect/allocation legality before benchmarking or autotuning; record rejected alternatives, deterministic ties and legal target-mismatch fallback.
+Negative fixtures: Reject a faster but illegal provider, benchmark-only correctness, changed target fingerprints, unreplayable tuning or weaker fallback semantics.
+Outputs: Semantic eligibility comparison, versioned runtime objective, replayable ranking/selection and fallback.
+Dependencies: math/implementation-candidate-generation, math/floating-backend-eligibility. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH10-PROVIDER-COMPARE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+- [ ] `math/interval-and-real-proof-production` Interval and real proof production
+
+Status: Open
+
+Projected task block:
+Outcome: Outward enclosures, domain partitions and proof/counterexample traces tied to exact inputs and assumptions. Remaining tasks, all open: Execute declared interval/real-proof operations and produce their enclosure/partition/trace artifacts.
+
+Yes/no acceptance: Execute declared interval/real-proof operations and produce their enclosure/partition/trace artifacts. Reject inward or unsound rounding, uncovered domains, hidden assumptions and a claimed proof without its subject-bound trace. Required outputs: Outward enclosures, domain partitions and proof/counterexample traces tied to exact inputs and assumptions. Integration: consume actual interface artifacts from math; these are not whole-component completion prerequisites. Decision owner: existing interval/real-proof maintainer. Produce actual enclosure, partition and unresolved-cell/residual-check artifacts. Independent replay and proof import are supplied by math/independent-proof-and-certificate-checking. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Criterion `math/interval-bound-ledger` (MATH6; Open).
+Implement: Produce separate real and roundoff bound ledgers whose entries expose their method, assumptions and invalidation conditions.
+Boundary: Exact arithmetic/Taylor/minimax/Bernstein/monotonicity/Lipschitz/symbolic/external-prover/roundoff methods; changed consumed assumptions invalidate the entries.
+Done when: Record exact interval, Taylor/minimax/Bernstein/monotonicity/Lipschitz/symbolic/external-proof or roundoff derivations and combine only under current consumed assumptions.
+Negative fixtures: Reject conflated real/roundoff error, missing method/premises, insufficient bounds or reuse after branch/target/mode/coefficient/layout changes.
+Outputs: Separate exact-real and floating-roundoff bound ledgers with method and invalidation conditions.
+Dependencies: math/interval-claim-production, math/interval-domain-check. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-BOUND is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-claim-production` (MATH6; Open).
+Implement: Produce a proof claim bound to exact source EFIR/EML, domain, branch, numeric mode, precision and requested property.
+Boundary: Exact equivalence, bounded error, coverage, denominator, range-reduction or monotonic claims; a pending claim is not a proved result.
+Done when: Emit equality, bounded-error, coverage, denominator, range-reduction or monotonicity claims with the actual requested property and source origins.
+Negative fixtures: Reject omitted or mismatched input identities, a pending claim presented as proof, or a widened domain/property without corresponding evidence.
+Outputs: Pending claim with exact EFIR/EML/input/domain/branch/mode/precision/property identity.
+Dependencies: math/efir-verification, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-CLAIM is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-domain-check` (MATH6; Open).
+Implement: Parse and validate an interval domain with exact endpoints, boundary openness, exclusions and bound provenance.
+Boundary: Closed-by-default versus explicit open/half-open intervals; reject empty domains except an explicit no-usable-domain claim.
+Done when: Parse rational endpoints or equivalently exact checked enclosures with closed default/open/half-open policy, exclusions, symbolic predicates and complex projection provenance.
+Negative fixtures: Reject reversed/empty domains except explicit no-usable-domain claims, inexact unproved endpoints, hidden exclusions or missing bound provenance.
+Outputs: Validated exact interval-domain map and bound provenance.
+Dependencies: declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-DOMAIN is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-enclosure` (MATH1; Open).
+Implement: Execute the required interval arithmetic operations with an inclusion-preserving result and applicable domain/branch/nonzero-denominator evidence.
+Boundary: Required arithmetic, powers, root/exp/log, trig/hyperbolic, comparisons, polynomial/rational and piecewise operations; floating evaluation needs certified outward rounding.
+Done when: Execute supported add/subtract/multiply/divide, integer/rational powers, sqrt/exp/log, trig/hyperbolic, abs/comparison, polynomial/rational and min/max/piecewise cases against exact or independent enclosure references.
+Negative fixtures: Reject denominator cells containing zero without proof, invalid roots/branches or target-floating enclosure without certified outward rounding.
+Outputs: Inclusion-preserving operation results and outward-rounding/nonzero/branch evidence.
+Dependencies: math/interval-domain-check, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-ROUNDING is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-partition-production` (MATH6; Open).
+Implement: Produce a complete domain partition with cell order, split decisions, local assumptions, statuses and unresolved cells.
+Boundary: Heuristic construction is permitted; stopping/fuel accounting is retained for policy review without hiding cells.
+Done when: Produce cells whose union covers the claimed domain with explicit boundary/exclusion policy, recorded heuristic split inputs and truthful unresolved regions.
+Negative fixtures: Reject omitted cells, coverage gaps, incompatible boundary overlap or unresolved cells hidden as proved.
+Outputs: Domain partition tree, ordered split decisions/local assumptions/statuses and unresolved-cell report.
+Dependencies: math/interval-domain-check, math/interval-claim-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-PARTITION is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-residual-check-emission` (MATH6; Open).
+Implement: Emit the exact preserved runtime predicate for unresolved cells only when the numeric mode permits it, otherwise reject total-proof acceptance.
+Boundary: Cell domains, placement, failure behavior, cost classification and SAFE15 preservation record; predicate execution belongs to the applicable runtime/check consumer.
+Done when: Emit the exact residual predicate only in a mode permitting it, retaining domain, placement, observable failure and performance classification; runtime execution remains a consumer obligation.
+Negative fixtures: Reject unresolved total-proof acceptance, omitted checks, predicate/domain drift or residual checks in a total compile-time-proof mode.
+Outputs: Unresolved-cell runtime predicates, check placement/failure policy and SAFE15 preservation record.
+Dependencies: math/interval-partition-replay, math/numeric-mode-resolution. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-UNRESOLVED is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+- [ ] `math/symbolic-rule-and-trace-production` Symbolic rule and trace production
+
+Status: Open
+
+Projected task block:
+Outcome: Registered symbolic rules and domain-guarded rewrite traces/counterexamples. Remaining tasks, all open: Apply registered rules only under preserved domain/branch/assumption conditions and emit exact rewrite evidence.
+
+Yes/no acceptance: Apply registered rules only under preserved domain/branch/assumption conditions and emit exact rewrite evidence. Reject unproved rules, wrong-domain rewrites and identity/tree-shape equality claims. Required outputs: Registered symbolic rules and domain-guarded rewrite traces/counterexamples. Integration: consume actual interface artifacts from math; these are not whole-component completion prerequisites. Decision owner: existing symbolic math maintainer. Produce registered guarded rules, e-graph explanations, rewrite traces and counterexamples; accepted rule use consumes independent replay or proof verdicts. Runtime ranking objectives are separate from removed project work accounting. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Criterion `math/egraph-equality-saturation` (MATH9; Open).
+Implement: Build and merge e-graph equality classes only under checked equality premises and conservative compatible analysis joins.
+Boundary: Unproved edges cannot justify code, proofs, side conditions or further equality; conflict requires rejection/restriction/candidate status.
+Done when: Merge only checked compatible equalities; join facts valid for selected members across domain/codomain/branch/mode/floating/exception/provider effects/checks/proof/origins, keeping discovery-only edges distinct.
+Negative fixtures: Reject or restrict conflicting analysis joins; reject an unproved edge used for code, proof, a side condition or further accepted equality.
+Outputs: Guarded equality edges, conservative e-class analyses and explanation report.
+Dependencies: math/symbolic-rule-promotion, math/symbolic-guarded-rewrite. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/egraph-extraction` (MATH9; Open).
+Implement: Extract a legal representative using the declared versioned runtime cost model, deterministic ties and replayable selection explanation.
+Boundary: Hidden semantic constraints or unproved edges cannot enter extraction; optimization fuel/stopping passages remain separately scoped.
+Done when: Select a legal representative with explicit runtime/proof/stability/allocation/check/provider/code-size objective and deterministic ties; reconstruct its equality path and relevant rejected choices without rerunning saturation.
+Negative fixtures: Reject extraction through unproved edges, hidden semantic constraints in heuristic weights, changed cost-model identity, nondeterministic ties or an unreplayable explanation.
+Outputs: Extracted representative, versioned runtime-cost model, tie policy and independent explanation replay.
+Dependencies: math/egraph-equality-saturation, math/symbolic-independent-trace-replay. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-counterexample-production` (MATH9; Open).
+Implement: Preserve a rejected rule and reproducible counterexample with the original failed assumptions.
+Boundary: Later accepted narrower rules retain distinct provenance rather than overwriting the broad rejection.
+Done when: Reproduce a failing broad rule such as sqrt(x*x)=x at negative x, bind inputs/rule version/domain/reason and preserve it when a separately justified narrower rule is introduced.
+Negative fixtures: Reject overwritten rejection history, missing failed assumptions or a narrowed rule used to retroactively validate the original broad claim.
+Outputs: Rejected rule/application and reproducible counterexample with original assumptions.
+Dependencies: math/symbolic-rule-registration. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-COUNTEREXAMPLE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-guarded-rewrite` (MATH9; Open).
+Implement: Match and apply a registered symbolic rewrite only when its typed semantic side conditions hold and output obligations remain explicit.
+Boundary: Guarded pattern matching and independent domain/branch/mode premises; no tree-shape equality shortcut.
+Done when: Match registered typed patterns, discharge domain/branch/nonzero/periodic/exception/mode/floating/provider side conditions and preserve effects/checks/source/generated origins.
+Negative fixtures: Reject an undischarged condition promoted to accepted rewrite, tree-shape equality shortcut or erased runtime check/provider effect.
+Outputs: Typed guarded rewrite result with explicit pending/discharged obligations and anchors.
+Dependencies: math/symbolic-rule-promotion, math/semantic-equality-proof-gate. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-rule-promotion` (MATH9; Open).
+Implement: Keep candidate, proved, bounded, rejected and deprecated rules distinct and select only a rule whose required proof or approximation certificate is accepted.
+Boundary: Deprecated rules remain readable but unselected; a narrowed later rule does not validate a rejected broad rule.
+Done when: Distinguish declared/candidate/guarded/proved/bounded/rejected/deprecated, permitting code changes only for current proved or bounded evidence; retain deprecated readability and broad-rule rejection history.
+Negative fixtures: Reject selection of a candidate, deprecated/rejected rule, missing MATH5 bounded certificate or stale evidence under changed domain/branch/mode.
+Outputs: Rule-state transition with exact proof or bounded-approximation certificate.
+Dependencies: math/symbolic-rule-registration, math/semantic-equality-proof-gate. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-PROOF is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-rule-registration` (MATH9; Open).
+Implement: Validate and register a versioned semantic rewrite-rule artifact with pattern/replacement, domain/branch/mode guards, proof obligations and provenance.
+Boundary: Standard/package/provider/generated rules; package import obeys trust policy and semantic content identity.
+Done when: Validate pattern/replacement, typed variables, domain/codomain, branch/modes, side conditions, proof status/refs, invalidation rules and source provenance before registry insertion.
+Negative fixtures: Reject incomplete rule shape, missing branch/mode guards, semantic content changes under an unchanged version identity or untrusted package import.
+Outputs: Versioned content-addressed rule artifact and package trust/source provenance.
+Dependencies: math/efir-content-identity. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-RULE-SHAPE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-trace-production` (MATH9; Open).
+Implement: Emit a symbolic rewrite trace retaining before/after identities, rule/version, side conditions, evidence, source origins and invalidations.
+Boundary: Proof/diagnostic back-edges survive rewrite execution and extraction.
+Done when: Emit each actual rule application and relevant heuristic/target/provider/runtime-cost choice with exact graph/node/trace identities and proof or candidate status.
+Negative fixtures: Reject lost diagnostic/source back-edges, hidden choices, missing proof/side-condition results or accepted status assigned to a discovery-only step.
+Outputs: Rewrite trace with before/after/rule/version/premises/evidence/origins/preserved-invalidated facts.
+Dependencies: math/symbolic-rule-registration. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+- [ ] `math/independent-proof-and-certificate-checking` Independent math proof and certificate checking
+
+Status: Open
+
+Projected task block:
+Outcome: Independent subject-bound certificate, EML/symbolic/interval replay and proof-import verdicts. Remaining tasks, all open: Check the actual producer artifact, source/expression/domain/rounding/target/assumption/trust identity and emit a verdict consumed before promotion/elision.
+
+Yes/no acceptance: Check the actual producer artifact, source/expression/domain/rounding/target/assumption/trust identity and emit a verdict consumed before promotion/elision. Reject changed subjects, missing domain coverage, stale or revoked proof/trust, forged traces and self-certified producer success. Required outputs: Independent subject-bound certificate, EML/symbolic/interval replay and proof-import verdicts. Integration: consume actual interface artifacts from pass-evidence, formal, opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors; these are not whole-component completion prerequisites. Decision owner: existing independent math checker maintainer. Independently check MATH5 approximation certificates and MATH10 correctly-rounded inputs against exact EFIR/expression/domain/branch/exceptional/rounding/target subjects. Validate all applicable polynomial/rational/piecewise/table/fused/vector/device assumptions, separate error ledgers, denominator/index bounds, domain coverage, accepted-result intervals and invalidation/trust. Reject unsupported methods, changed subjects, stale or revoked evidence, missing exceptional paths, unsatisfied target assumptions and self-certified synthesis. Emit a deterministic verdict and replay transcript before selection or check erasure; the synthesizer remains a separate producer. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Criterion `math/eml-independent-trace-replay` (MATH4; Open).
+Implement: Independently and deterministically check a recorded EML normalization trace.
+Boundary: Replay of recorded rules/premises/choices; rerunning the heuristic search is not the checker.
+Done when: Replay each recorded rule, premise, assumption, choice and before/after identity using the independent checker; reproduce preserved and invalidated facts without rerunning heuristic search.
+Negative fixtures: Reject missing/reordered/substituted steps, changed rule/provider/target facts, unsupported assumptions or optimizer self-attestation.
+Outputs: Independent deterministic trace-check report bound to exact input and rule versions.
+Dependencies: math/eml-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH4-TRACE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/interval-partition-replay` (MATH6; Open).
+Implement: Replay the emitted partition deterministically and reject incomplete or unreplayable partitions.
+Boundary: Partition proof artifact, not a second run of the adaptive search.
+Done when: Replay emitted cell order, split points, local assumptions and statuses from the original claim, verifying complete coverage without rerunning adaptive search.
+Negative fixtures: Reject a missing/substituted cell, changed split input/domain/claim or unreplayable ordering.
+Outputs: Independent deterministic partition/coverage replay report.
+Dependencies: math/interval-partition-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-PARTITION is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/real-proof-provider-import` (MATH6; Open).
+Implement: Import a real-proof provider result only through an accepted checker validating claim/input identities, method, domain, branch, trust, replay and current assumptions.
+Boundary: Opaque provider output may guide search but cannot certify transformations or erase checks.
+Done when: Check exact claim/input hashes, domain/branch/method/trust/replay/proof-object/current assumptions and invalidation conditions independently of the provider or optimizer.
+Negative fixtures: Reject opaque attestations used to certify, unsupported trust/method, stale inputs, branch mismatch or invalidated assumptions.
+Outputs: Accepted-checker import report and SAFE15 proof reference.
+Dependencies: math/interval-claim-production, math/interval-partition-replay. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH6-PROVIDER is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+Criterion `math/symbolic-independent-trace-replay` (MATH9; Open).
+Implement: Independently check the symbolic rewrite trace without trusting or rerunning the heuristic optimizer.
+Boundary: Exact registered rules, premises, semantic identities and proof artifacts.
+Done when: Reconstruct the transformation from exact input, registered rule versions, side-condition results and proof artifacts without trusting or rerunning the optimizer/saturation scheduler.
+Negative fixtures: Reject missing/substituted/reordered steps, changed guards or versions, unproved edges and optimizer-generated pass status without checker replay.
+Outputs: Independent rule/edge/premise/identity replay and proof-status report.
+Dependencies: math/symbolic-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.
+Diagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.
+Required future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.
+
+
 - [ ] `schema` Schema
 
 Status: Open
 
 Projected task block:
-Outcome: generated consumers enforce the same source schema. Remaining tasks,
-all open: implement schema normalization and validators; implement canonical
-serialization and version identities; generate GraphQL/OpenAPI and ABI/config
-artifacts; implement checked migration mapping; execute source/generated parity
-and weakening/taint/invalid-data rejection fixtures.
+Outcome: Versioned typed schema IR, canonical value/encoding identity and source-equivalent validation/codec results. Remaining tasks, all open: Normalize source schemas and execute their validators/codecs under declared refinement, recursion, taint and canonicalization policy.
 
-Yes/no acceptance: is schema identity stable? Do generated consumers reject
-invalid values? Are migration loss and secret exposure prevented or explicitly
-rejected? Integration: Types to schema, Emit generated artifacts, Build schema
-identity, Query/AI/Stdlib consumers. Decision owner: schema maintainer;
-recommendation: shared canonical schema IR with explicit target adapters.
+Yes/no acceptance: Normalize source schemas and execute their validators/codecs under declared refinement, recursion, taint and canonicalization policy. Reject weakened constraints, invalid payloads, noncanonical/lossy encoding and stale identity. Required outputs: Versioned typed schema IR, canonical value/encoding identity and source-equivalent validation/codec results. Integration: consume actual interface artifacts from types/current-evidence-and-remaining-work/types2-check-declared-abstractions; these are not whole-component completion prerequisites. Decision owner: existing schema semantics maintainer. Own source schema, validation and declared codec semantics. Evolution decisions come from schema/compatibility-and-migration; generated API/ABI/config/artifact consumer production comes from schema/checked-consumer-projection. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
 
 Source-specific acceptance for S1-S9 remains open. S1: expanded manifests and
 static types preserve every declared schema family, recursive strategy,
@@ -624,6 +646,56 @@ schema/version identity, encoded-byte map/set ordering, absent versus null,
 numeric special values, UTF-8/normalization, timestamps and metadata policy.
 Host order, identity, timezone and layout cannot affect bytes. Reject values
 outside the declared domain and noncanonical hash/signature inputs.
+
+Criterion `schema/source-manifest-and-validator/decision-interface` (Open): Input: S1 source schema and resolved type/effect/capability/taint facts, declared refinement class, boundaries and derivation policy. Outputs: Expanded versioned schema manifest; Generated runtime validator; Recursive/refined schema fixtures and source/generated parity report. Accept: Expand records/maps/arrays/sets/tuples/enums/tagged unions/optional/refined/alias/reference/recursive/opaque schemas into an authoritative typed manifest, preserving id/version/hash/span/compatibility/boundary/derivation target. Generate the validator from that manifest; preserve compile-time/runtime/boundary/proof/advisory refinement classes and intended-schema versus stronger-sink trust distinctions. Run accepted and invalid payloads through API/database/message/workflow/AI/config/decoded/FFI/artifact boundary fixtures; documented narrowing projections remain explicit. Refuse: Malformed shape, unsupported/unclassified refinement or recursion without strategy; Missing identity/boundary/manifest metadata or generated constraints weaker than source; External values trusted before intended validator/sink validation or AI output bypass. Dependencies consume actual artifacts: Types resolved schema identities and constraints; Effects/Auth/Legality authority and taint facts; S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate. Diagnostics: Applicable S1-SHAPE/REFINEMENT/BOUNDARY/PROJECTION/TAINT/RECURSION/MANIFEST with schema/version/span/boundary/target/field and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/declared-format-codecs/decision-interface` (Open): Input: S2 schema/version/format representability, field/unknown-field/numeric/string-byte/variant/conversion/trust/canonicalization policy and actual typed values or external bytes. Outputs: Serializer manifest and encoder/decoder products; Validation/trust/compatibility records; Round-trip and invalid-byte/value fixtures tied to schema hashes. Accept: Encode typed values under the declared policies and decode external bytes while checking required/unknown/duplicate fields, variants/refinements, precision, UTF-8/normalization and binary representation legality. Preserve numeric/string/timestamp/decimal/UUID/binary/variant conversions only under explicit compatible loss policy. Round-trip all claimed formats and retain untrusted/authenticated-unvalidated/schema-validated/sink-validated distinctions. Refuse: Schemaless or unsafe polymorphic decode without a finite declared type set; Implicit lossy conversion, duplicate/missing/incompatible fields, invalid variants or encoding; Trusting decoded data before intended validation, missing round-trip evidence, or noncanonical hash/signature use. Dependencies consume actual artifacts: S1 schema/validator and SAFE11 sink-taint facts; S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed. Diagnostics: Applicable S2 format/field/variant/numeric/string/polymorphic/taint/roundtrip/manifest diagnostics bind schema/format/path/span/policy/trust state. Removed work/input quotas are not reinstated by mixed recursion/length text. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/canonical-codecs-and-identity/decision-interface` (Open): Input: S1 schema hash, format version, canonical domain/policy, typed semantic value or encoded bytes; hash/sign/replay consumers supply their actual identity input. Outputs: Canonical encoder/decoder and format manifest; Byte-exact per-type reference vectors; Hash/sign/replay input admission and rejection records. Accept: Encode equal values identically under the same schema/version/policy, using encoded-byte map/set ordering, type/version tags and explicit absent/null, integer/decimal width, NaN/infinity/signed-zero, timestamp/timezone, UUID/symbol/keyword, union, UTF-8/normalization, byte and metadata rules. Decode against that same version/domain and reference vectors. Actual hash/sign/replay identity consumers require those canonical bytes and reject mismatched or unsupported encodings before use. Refuse: Host iteration/object identity/target layout/timezone/encoding changing canonical bytes; Ambiguous values, missing canonical rules, invalid UTF-8/metadata or vector mismatch; Hashes/signatures over noncanonical or wrong-schema/version bytes; a canonical flag alone is insufficient. Dependencies consume actual artifacts: S1 expanded schema and S2 representation policy; B13/package/workflow/AI/proof/release consume checked canonical bytes and input records. Diagnostics: S3-NONCANONICAL/ORDER/NUMERIC/STRING/METADATA/HASH/VECTOR/MANIFEST bind schema/value-path/rule/version/consumer context and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/binary-layout-codecs-and-vectors/decision-interface` (Open): Input: S1/S2 schema and declared target triple/calling convention, explicit field representation, compatibility, pointer ownership/lifetime and target ABI facts. Outputs: Binary/ABI and layout manifests; Schema-hash-bound codecs and typed FFI binding input; Ownership/lifetime map, cross-target report and byte reference fixtures. Accept: Produce field-order/width/alignment/padding/endian/signedness/optional/tag/pointer layouts including struct/union/enum/string/buffer/error/ownership-transfer ABI policy. Generate codecs/binding input from the accepted layout and its schema hash. Check each supported target against byte-exact reference vectors or a declared target-independent encoding, including buffers/handles/callback/bitfield/resource forms where claimed. Refuse: Implicit host layout/packing/pointer size or ABI/calling-convention mismatch; Uninitialized/nondeterministic stable bytes or pointers/handles missing ownership/lifetime policy; Wrong schema hash, unsupported representation, missing vectors or undeclared binary-breaking changes. Dependencies consume actual artifacts: Types/ownership facts and S1/S2 schema contracts; B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer. Diagnostics: Applicable S7 layout/endian/pointer/ABI/variant/fixture/compatibility/manifest diagnostics bind schema/field/target/rule/pointer-or-variant/fixture/proof and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+- [ ] `schema/compatibility-and-migration` Schema compatibility and migration
+
+Status: Open
+
+Projected task block:
+Outcome: Old/new schema compatibility classification, migration plan/result and rejected incompatible or lossy transitions. Remaining tasks, all open: Compare exact schema versions and execute or reject the declared migration while preserving required data/taint and replay/consumer compatibility.
+
+Yes/no acceptance: Compare exact schema versions and execute or reject the declared migration while preserving required data/taint and replay/consumer compatibility. Reject unsupported version drift, omitted migration, hidden data loss, stale consumers and unauthorized secret changes. Required outputs: Old/new schema compatibility classification, migration plan/result and rejected incompatible or lossy transitions. Integration: consume actual interface artifacts from schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution; these are not whole-component completion prerequisites. Decision owner: existing schema evolution maintainer. Own exact old/new compatibility and checked migration or reload transitions, including data-loss, authority, lifecycle, replay and consumer-version decisions. Projection and runtime services supply their actual interface artifacts. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
+
+Criterion `schema/configuration-reload/full-source-interface` (Open).
+Implement a reload boundary for a declared typed-config schema and environment
+using recorded deterministic source precedence, defaults/required/secret fields,
+validation and redaction policy. Require an explicit compatibility, lifecycle
+and observability policy for each reload. Exercise a compatible reload and
+policy-rejected incompatible or missing-policy reloads, preserving config ID,
+schema/source versions, lifecycle result and redacted observation records.
+External replacement values stay tainted until validated. Reject malformed or
+missing required values and env/file/secret/provider reads without declared
+effects/grants. Reject ambient config reads and secret leakage in logs,
+manifests, source maps, prompts, traces or diagnostics; only policy-allowed
+redacted markers may appear. Capture build-time reads as reproducibility inputs
+or reject them in hermetic builds. Closing evidence is the versioned reload
+policy, typed manifest/source-precedence/secret records, accepted/rejected
+reload fixtures and redaction report. Emit applicable S8 diagnostics including
+S8-RELOAD with config/field/source/span-or-edge, effect/grant, secret/redaction
+state and remediation. Dependencies consume S1/S2 schema/decoding and Runtime
+lifecycle, SAFE10/SAFE11/R11 grants/taint and R12 observations; loader generation
+alone does not prove an actual reload.
+
+Criterion `schema/semantic-compatibility-diff/decision-interface` (Open): Input: Exact old/new schema identities, expanded source and generated projection contracts, and additive/migration-required/binary-stable/reviewed-breaking/append-only/exact compatibility policy. Outputs: Semantic diff and compatibility report; Required migration/review decisions; Accepted and rejected evolution fixtures. Accept: Classify added/removed/renamed fields, changed nullability/enums/variants/refinements/binary layouts and semantic hazards. Include GraphQL resolver policy, HTTP route/error/auth, database dialect/migration, ABI and artifact-schema changes; preserve public schema-library consumer context when those adapters are used. Emit the required compatibility/migration decision for each changed boundary instead of accepting a textual-only diff. Refuse: Changed schema/projection without declared policy or required migration/review evidence; Hidden API/client/AI or ABI compatibility breaks and weakened constraints; Wrong from/to identity, dropped negative condition or schema helper availability substituted for a checked diff. Dependencies consume actual artifacts: S1 old/new schemas and S4/S5/S6/S7/S9 projection/consumer records; STD10 schema APIs and Build/Query/Workflow/AI/Runtime consume the applicable checked diff, not a new whole-component completion condition. Diagnostics: Applicable S1-COMPATIBILITY, S4-DIFF, S5-DIFF, S6-MIGRATION/DATA-LOSS, S7-COMPATIBILITY and S9-COMPATIBILITY retain changed path, boundary/policy and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/migration-plan-admission-and-validation/decision-interface` (Open): Input: Checked S1/S6 old/new schema diff, declared dialect, transaction/backfill/rollback-or-forward-only/deployment ordering, data-loss policy and any required review record; runtime supplies actual database write/admin grants. Outputs: Typed SQL/provider migration and plan/identity manifest; Data-loss/review/rollback-or-forward-only and API-client compatibility records; Actual admission/denial and fixture-database or equivalent plan-validation results. Accept: Generate a typed migration with exact from/to identities and all declared policy fields; include shared GraphQL/OpenAPI/client/AI compatibility. At the actual execution boundary admit only with applicable database write/admin grant and required destructive-change policy/review/evidence. Validate generated additive/breaking/destructive changes using fixture databases or equivalent checked plans, binding exact subject, dialect and policy in results. Refuse: String-only migration without schema diff or wrong from/to/dialect; Destructive change lacking explicit data-loss decision or policy-required review/evidence; Missing write/admin grant, missing rollback/forward-only policy, hidden API break or missing/mismatched validation fixture. Dependencies consume actual artifacts: S1 schema/diff and B11 relational artifacts; SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation. Diagnostics: Applicable S6-MIGRATION/DATA-LOSS/ROLLBACK/CAPABILITY/FIXTURE/MANIFEST bind schema/path/dialect/migration/effect/grant/data-loss and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+- [ ] `schema/checked-consumer-projection` Checked schema consumer projection
+
+Status: Open
+
+Projected task block:
+Outcome: Generated API/client/ABI/config/artifact consumers with source-schema identity and accepted/rejected parity evidence. Remaining tasks, all open: Generate each declared consumer from the verified schema and exercise the same valid/invalid/refinement cases against source and consumer.
+
+Yes/no acceptance: Generate each declared consumer from the verified schema and exercise the same valid/invalid/refinement cases against source and consumer. Reject weakened generated constraints, incompatible ABI/layout, missing source schema/version and generated code that bypasses ordinary checks. Required outputs: Generated API/client/ABI/config/artifact consumers with source-schema identity and accepted/rejected parity evidence. Integration: consume actual interface artifacts from schema, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout, emit/current-evidence-and-remaining-work/emit2-emit-real-outputs; these are not whole-component completion prerequisites. Decision owner: existing schema projection/codegen maintainer. Own generated mapping, adapters and source/consumer parity. Migration statements in these contracts consume checked schema/compatibility-and-migration artifacts; declaring a shared source schema does not implement migration admission or execution. Implementation acceptance remains unassessed; sibling identity grants no completion credit.
 
 S4/S5: generated GraphQL SDL/resolvers and OpenAPI routes, errors, validators
 and contract tests preserve source constraints, nullability, auth/grants,
@@ -714,26 +786,6 @@ data-loss state and remediation. Dependencies consume S1 schemas, B11 relational
 IR and SAFE10/SAFE11/P9/R7 authority, taint and replay records; consuming a
 migration plan is separate from evidence that it executed.
 
-Criterion `schema/configuration-reload/full-source-interface` (Open).
-Implement a reload boundary for a declared typed-config schema and environment
-using recorded deterministic source precedence, defaults/required/secret fields,
-validation and redaction policy. Require an explicit compatibility, lifecycle
-and observability policy for each reload. Exercise a compatible reload and
-policy-rejected incompatible or missing-policy reloads, preserving config ID,
-schema/source versions, lifecycle result and redacted observation records.
-External replacement values stay tainted until validated. Reject malformed or
-missing required values and env/file/secret/provider reads without declared
-effects/grants. Reject ambient config reads and secret leakage in logs,
-manifests, source maps, prompts, traces or diagnostics; only policy-allowed
-redacted markers may appear. Capture build-time reads as reproducibility inputs
-or reject them in hermetic builds. Closing evidence is the versioned reload
-policy, typed manifest/source-precedence/secret records, accepted/rejected
-reload fixtures and redaction report. Emit applicable S8 diagnostics including
-S8-RELOAD with config/field/source/span-or-edge, effect/grant, secret/redaction
-state and remediation. Dependencies consume S1/S2 schema/decoding and Runtime
-lifecycle, SAFE10/SAFE11/R11 grants/taint and R12 observations; loader generation
-alone does not prove an actual reload.
-
 Criterion `schema/artifact-validation/full-source-interface` (Open).
 Implement versioned artifact-envelope and graph validators for each declared
 Gravity artifact kind, including source-derived schemas, IR/backend outputs,
@@ -785,18 +837,6 @@ Criterion `schema/api-client-generation`: Generate typed API clients tied to sch
 Criterion `schema/configuration-loading`: Load typed configuration using deterministic recorded precedence, required/default/secret fields and validated provider inputs. Accepted fixture: Load required/default/secret typed fields with deterministic recorded precedence and validated declared provider inputs. Negative fixture: Reject missing required values, invalid source types, undeclared ambient precedence and secret exposure. Required evidence: configuration schema/loader/precedence manifest and redacted load/error fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit, emit/current-evidence-and-remaining-work/emit2-emit-real-outputs outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
 
 Criterion `schema/openapi-generation`: Generate source-faithful OpenAPI route/schema/error/auth documents and request/response validators with handler contract tests. Accepted fixture: Generate source-faithful route/schema/request/response/error/auth OpenAPI artifacts with runtime validators and handler parity tests. Negative fixture: Reject incompatible operation/schema identity, weakened validation, invalid requests/responses and drift from actual handler contracts. Required evidence: OpenAPI/schema/validator artifacts and handler contract fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit, emit/current-evidence-and-remaining-work/emit2-emit-real-outputs outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
-
-Criterion `schema/source-manifest-and-validator/decision-interface` (Open): Input: S1 source schema and resolved type/effect/capability/taint facts, declared refinement class, boundaries and derivation policy. Outputs: Expanded versioned schema manifest; Generated runtime validator; Recursive/refined schema fixtures and source/generated parity report. Accept: Expand records/maps/arrays/sets/tuples/enums/tagged unions/optional/refined/alias/reference/recursive/opaque schemas into an authoritative typed manifest, preserving id/version/hash/span/compatibility/boundary/derivation target. Generate the validator from that manifest; preserve compile-time/runtime/boundary/proof/advisory refinement classes and intended-schema versus stronger-sink trust distinctions. Run accepted and invalid payloads through API/database/message/workflow/AI/config/decoded/FFI/artifact boundary fixtures; documented narrowing projections remain explicit. Refuse: Malformed shape, unsupported/unclassified refinement or recursion without strategy; Missing identity/boundary/manifest metadata or generated constraints weaker than source; External values trusted before intended validator/sink validation or AI output bypass. Dependencies consume actual artifacts: Types resolved schema identities and constraints; Effects/Auth/Legality authority and taint facts; S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate. Diagnostics: Applicable S1-SHAPE/REFINEMENT/BOUNDARY/PROJECTION/TAINT/RECURSION/MANIFEST with schema/version/span/boundary/target/field and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
-
-Criterion `schema/declared-format-codecs/decision-interface` (Open): Input: S2 schema/version/format representability, field/unknown-field/numeric/string-byte/variant/conversion/trust/canonicalization policy and actual typed values or external bytes. Outputs: Serializer manifest and encoder/decoder products; Validation/trust/compatibility records; Round-trip and invalid-byte/value fixtures tied to schema hashes. Accept: Encode typed values under the declared policies and decode external bytes while checking required/unknown/duplicate fields, variants/refinements, precision, UTF-8/normalization and binary representation legality. Preserve numeric/string/timestamp/decimal/UUID/binary/variant conversions only under explicit compatible loss policy. Round-trip all claimed formats and retain untrusted/authenticated-unvalidated/schema-validated/sink-validated distinctions. Refuse: Schemaless or unsafe polymorphic decode without a finite declared type set; Implicit lossy conversion, duplicate/missing/incompatible fields, invalid variants or encoding; Trusting decoded data before intended validation, missing round-trip evidence, or noncanonical hash/signature use. Dependencies consume actual artifacts: S1 schema/validator and SAFE11 sink-taint facts; S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed. Diagnostics: Applicable S2 format/field/variant/numeric/string/polymorphic/taint/roundtrip/manifest diagnostics bind schema/format/path/span/policy/trust state. Removed work/input quotas are not reinstated by mixed recursion/length text. These are required future products/results; no execution or implementation acceptance is claimed.
-
-Criterion `schema/canonical-codecs-and-identity/decision-interface` (Open): Input: S1 schema hash, format version, canonical domain/policy, typed semantic value or encoded bytes; hash/sign/replay consumers supply their actual identity input. Outputs: Canonical encoder/decoder and format manifest; Byte-exact per-type reference vectors; Hash/sign/replay input admission and rejection records. Accept: Encode equal values identically under the same schema/version/policy, using encoded-byte map/set ordering, type/version tags and explicit absent/null, integer/decimal width, NaN/infinity/signed-zero, timestamp/timezone, UUID/symbol/keyword, union, UTF-8/normalization, byte and metadata rules. Decode against that same version/domain and reference vectors. Actual hash/sign/replay identity consumers require those canonical bytes and reject mismatched or unsupported encodings before use. Refuse: Host iteration/object identity/target layout/timezone/encoding changing canonical bytes; Ambiguous values, missing canonical rules, invalid UTF-8/metadata or vector mismatch; Hashes/signatures over noncanonical or wrong-schema/version bytes; a canonical flag alone is insufficient. Dependencies consume actual artifacts: S1 expanded schema and S2 representation policy; B13/package/workflow/AI/proof/release consume checked canonical bytes and input records. Diagnostics: S3-NONCANONICAL/ORDER/NUMERIC/STRING/METADATA/HASH/VECTOR/MANIFEST bind schema/value-path/rule/version/consumer context and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
-
-Criterion `schema/binary-layout-codecs-and-vectors/decision-interface` (Open): Input: S1/S2 schema and declared target triple/calling convention, explicit field representation, compatibility, pointer ownership/lifetime and target ABI facts. Outputs: Binary/ABI and layout manifests; Schema-hash-bound codecs and typed FFI binding input; Ownership/lifetime map, cross-target report and byte reference fixtures. Accept: Produce field-order/width/alignment/padding/endian/signedness/optional/tag/pointer layouts including struct/union/enum/string/buffer/error/ownership-transfer ABI policy. Generate codecs/binding input from the accepted layout and its schema hash. Check each supported target against byte-exact reference vectors or a declared target-independent encoding, including buffers/handles/callback/bitfield/resource forms where claimed. Refuse: Implicit host layout/packing/pointer size or ABI/calling-convention mismatch; Uninitialized/nondeterministic stable bytes or pointers/handles missing ownership/lifetime policy; Wrong schema hash, unsupported representation, missing vectors or undeclared binary-breaking changes. Dependencies consume actual artifacts: Types/ownership facts and S1/S2 schema contracts; B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer. Diagnostics: Applicable S7 layout/endian/pointer/ABI/variant/fixture/compatibility/manifest diagnostics bind schema/field/target/rule/pointer-or-variant/fixture/proof and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
-
-Criterion `schema/semantic-compatibility-diff/decision-interface` (Open): Input: Exact old/new schema identities, expanded source and generated projection contracts, and additive/migration-required/binary-stable/reviewed-breaking/append-only/exact compatibility policy. Outputs: Semantic diff and compatibility report; Required migration/review decisions; Accepted and rejected evolution fixtures. Accept: Classify added/removed/renamed fields, changed nullability/enums/variants/refinements/binary layouts and semantic hazards. Include GraphQL resolver policy, HTTP route/error/auth, database dialect/migration, ABI and artifact-schema changes; preserve public schema-library consumer context when those adapters are used. Emit the required compatibility/migration decision for each changed boundary instead of accepting a textual-only diff. Refuse: Changed schema/projection without declared policy or required migration/review evidence; Hidden API/client/AI or ABI compatibility breaks and weakened constraints; Wrong from/to identity, dropped negative condition or schema helper availability substituted for a checked diff. Dependencies consume actual artifacts: S1 old/new schemas and S4/S5/S6/S7/S9 projection/consumer records; STD10 schema APIs and Build/Query/Workflow/AI/Runtime consume the applicable checked diff, not a new whole-component completion condition. Diagnostics: Applicable S1-COMPATIBILITY, S4-DIFF, S5-DIFF, S6-MIGRATION/DATA-LOSS, S7-COMPATIBILITY and S9-COMPATIBILITY retain changed path, boundary/policy and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
-
-Criterion `schema/migration-plan-admission-and-validation/decision-interface` (Open): Input: Checked S1/S6 old/new schema diff, declared dialect, transaction/backfill/rollback-or-forward-only/deployment ordering, data-loss policy and any required review record; runtime supplies actual database write/admin grants. Outputs: Typed SQL/provider migration and plan/identity manifest; Data-loss/review/rollback-or-forward-only and API-client compatibility records; Actual admission/denial and fixture-database or equivalent plan-validation results. Accept: Generate a typed migration with exact from/to identities and all declared policy fields; include shared GraphQL/OpenAPI/client/AI compatibility. At the actual execution boundary admit only with applicable database write/admin grant and required destructive-change policy/review/evidence. Validate generated additive/breaking/destructive changes using fixture databases or equivalent checked plans, binding exact subject, dialect and policy in results. Refuse: String-only migration without schema diff or wrong from/to/dialect; Destructive change lacking explicit data-loss decision or policy-required review/evidence; Missing write/admin grant, missing rollback/forward-only policy, hidden API break or missing/mismatched validation fixture. Dependencies consume actual artifacts: S1 schema/diff and B11 relational artifacts; SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation. Diagnostics: Applicable S6-MIGRATION/DATA-LOSS/ROLLBACK/CAPABILITY/FIXTURE/MANIFEST bind schema/path/dialect/migration/effect/grant/data-loss and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
 
 Criterion `schema/executed-http-contract-parity/decision-interface` (Open): Input: Pinned generated OpenAPI/request/response/error schemas, schema/operation/route identities and actual handler/provider/version with declared effects/grants/auth/idempotency policy. Outputs: Executed handler contract-test report; Accepted/invalid request/response/error fixtures and stable source-mapped diagnostics. Accept: Execute generated contract tests against the actual declared handlers and compare request/response/error/status/nullability/constraint/auth behavior to the authoritative route/schema contract; bind handler/provider, schema/operation and source/compiler identities in results. Retain raw external-input taint until intended validation. Refuse: Invalid request/response/error admitted, drifted operation/schema/handler identity or weakened source constraint; Undeclared effect/grant/auth/idempotency requirement and unvalidated HTTP input; Generated test source or OpenAPI document substituted for actual execution results. Dependencies consume actual artifacts: S1-S3 schema/identity and generated S5 document/validators/client contracts; DOM8/B11/R11/R12 actual handler, authority and observation interfaces. Diagnostics: Applicable S5 route/schema/taint/capability/idempotency/diff/client/source-map diagnostics retain route/method/path/span/schema/effect/grant/compatibility and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
 
@@ -2699,3 +2739,42 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `domains-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+
+## Historical grouping context (not counted)
+
+These retained envelopes describe the earlier grouped records. The current
+leaf records above own their explicit producer, checker and consumer contracts.
+No historical envelope is an additional task or current acceptance witness.
+
+Outcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared
+numeric semantics and checked justification for transformations. Remaining
+finite tasks, all open: implement numeric-mode/domain checking; implement EFIR
+lowering and evaluation; connect EML/certificate checking to justified rewrites;
+implement certified approximation/interval and symbolic operations; run the
+contract conformance matrix with rejected unproved transformations.
+
+Yes/no acceptance: do domain and branch errors reject? Do proof-dependent
+rewrites require checked evidence? Do strict-mode results match the selected
+semantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib
+numeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as
+adjacent proof/search representation, never ordinary runtime equality authority.
+
+Math source-specific implementation criteria (proposed adoption, all Open).
+These stable criterion IDs refine the existing literal `math` task; they do not add
+project tasks or mark any implementation accepted. Each dependency names an input
+interface and can be satisfied by its exact available artifact, not completion of
+the whole component. Each declared supported case needs actual positive and negative
+execution evidence before closure; unavailable combinations remain explicit.
+
+Outcome: generated consumers enforce the same source schema. Remaining tasks,
+all open: implement schema normalization and validators; implement canonical
+serialization and version identities; generate GraphQL/OpenAPI and ABI/config
+artifacts; implement checked migration mapping; execute source/generated parity
+and weakening/taint/invalid-data rejection fixtures.
+
+Yes/no acceptance: is schema identity stable? Do generated consumers reject
+invalid values? Are migration loss and secret exposure prevented or explicitly
+rejected? Integration: Types to schema, Emit generated artifacts, Build schema
+identity, Query/AI/Stdlib consumers. Decision owner: schema maintainer;
+recommendation: shared canonical schema IR with explicit target adapters.
