@@ -9852,3 +9852,28 @@
         (is (= :rejected (:status (analyze (assoc-in facts [:type-table (:operator-node-id (first (:calls core))) :bounds-proof :selected-index] 1) 65536))))))
     (println (pr-str {:vector-first-symbol-loop-normalized-c8 (select-keys result [:status :reason :work-count])
                      :formats formats :source-credit false :authentication-credit false}))))
+
+(deftest body-list-construction-admission-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'list-construction-input)
+        c7 (ns-resolve upstream 'invoke-c7)
+        check (fn [& args] (apply leaf 'body-lc-source args))]
+    (doseq [width [0 1023 1024 1025 2049]]
+      (let [{:keys [core node call edge nodes bindings types module]}
+            (input-fn (vec (repeat width :gravity.type/string)))
+            validation (c7 'sh08-lc-validate-types [(mapv types (:argument-node-ids call))])
+            header (check core node call edge nodes bindings types module validation)
+            expected (c7 'sh08-lc-source [core node call edge nodes bindings types module validation])]
+        (is (map? header))
+        (is (= expected header))
+        (is (= width (count (:argument-types header))))
+        (is (nil? (check core node (assoc call :extra true) edge nodes bindings types module validation)))
+        (is (nil? (check core node call (assoc edge :extra true) nodes bindings types module validation)))
+        (doseq [bad [nil {:status :rejected} {:status :accepted :work-count 0}]]
+          (is (nil? (check core node call edge nodes bindings types module bad))))
+        (when (pos? width)
+          (let [late-id (peek (:argument-node-ids call))
+                bad-types (assoc types late-id :gravity.type/unknown)
+                bad-validation (c7 'sh08-lc-validate-types [(mapv bad-types (:argument-node-ids call))])]
+            (is (nil? (check core node call edge nodes bindings bad-types module bad-validation)))))))))

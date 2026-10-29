@@ -6013,7 +6013,7 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (p15-s23-typed-all
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (<= (count args) 1023) (= expected-call call) (= expected-edge edge) (p15-s23-lc-binding? binding module)
+           (= expected-call call) (= expected-edge edge) (p15-s23-lc-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))

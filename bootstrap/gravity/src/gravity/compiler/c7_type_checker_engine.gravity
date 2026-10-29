@@ -9201,7 +9201,7 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (sh08-ft-all-true?
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (<= (count args) 1023) (= expected-call call) (= expected-edge edge) (sh08-lc-binding? binding module)
+           (= expected-call call) (= expected-edge edge) (sh08-lc-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
@@ -9253,20 +9253,16 @@
                {:kind :gravity.type/list :element-types (get header :argument-types) :shape :literal} :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-lc-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-lc-derive [core node call edge nodes bindings types forms]
   ; Evaluated persistent List construction has no quote or syntax authority.
   ; Every operand must remain established even when another transfers control.
-  (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))
+  (let [args (get call :argument-node-ids)
         validation (sh08-lc-validate-types (sh08-ft-ordered-child-types args types))
-        work base
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (if (> base budget) true false)
-      (assoc (sh08-sm-failure "C7-GENERIC" :list-construction-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
+    (let [header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
         (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
-                   (if (<= (count args) 1023) :list-construction-operand-type-required :list-construction-arity-mismatch)
-                   nil :bounded-established-first-order-values (sh08-ft-ordered-child-types args types)) :work-count work)
+          (sh08-sm-failure "C7-TYPE-MISMATCH" :list-construction-operand-type-required
+            nil :established-first-order-values (sh08-ft-ordered-child-types args types))
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= (+ 1 (count args)) (if (vector? ids) (count ids) 0))
                  (= {:operator-child-index 0 :argument-count (count args) :argument-child-indexes (sh08-ft-loop-kernel-indexes 1 (+ 1 (count args)))
@@ -9280,8 +9276,9 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-lc-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-lc-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :list-construction-source-mismatch nil :exact-operator-and-ordered-operand-source (get node :node-id)) :work-count work)))))))
+               :constraint (sh08-lc-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :list-construction-source-mismatch nil
+              :exact-operator-and-ordered-operand-source (get node :node-id)))))))
 
 (defn sh08-lc-node? [node context]
   (if (= :call (get node :core-form))
@@ -9293,11 +9290,11 @@
         header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lc-finish header)) false)))
 
-(defn sh08-lc-step [node types binding-types functions context budget]
+(defn sh08-lc-step [node types binding-types functions context]
   (sh08-lc-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))
 
 (defn sh08-lq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -23214,7 +23211,7 @@
                        (if (if (sh08-lq-node? node context) true (sh08-lc-node? node context))
                          (if (sh08-lq-node? node context)
                            (sh08-lq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
-                           (sh08-lc-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
+                           (sh08-lc-step node type-table binding-types function-result context))
                          (if (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) true (sh08-nq-node? node context))
                            (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) (if (sh08-vsl-node? node context) (sh08-vsl-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (sh08-scv-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (sh08-cqs-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (sh08-nq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
                            (sh08-sc-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))))
