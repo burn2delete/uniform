@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.java.io :as io]
             [gravity.digest :as digest]
-            [gravity.c11-mir.source-contract]))
+            [gravity.c11-mir.source-contract :as contract-data]))
 
 (def root "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/")
 (defn forms [file]
@@ -16,7 +16,7 @@
 (defn fail! [id _ _ extra] (throw (ex-info "Synthetic diagnostic transport" (assoc extra :id id))))
 (binding [*ns* owner]
   (clojure.core/refer 'clojure.core)
-  (alias 'c11-source-contract 'gravity.c11-mir.source-contract)
+  (alias 'c11-source-contract (ns-name (:ns (meta #'contract-data/v2-source-contract))))
   (intern owner 'sha256-hex digest/sha256-hex)
   (intern owner 'p15-s23-c11-mir-fail! fail!)
   (intern owner 'p15-s23-c11-mir-resolve-source-path (constantly "<no-fixture>"))
@@ -77,7 +77,7 @@
          'c-backend-stage2-plan-emitter-source-rule!
          (fn [& args] (swap! observations conj [:emitter args]) {:emitter :synthetic})
          'p15-s23-stage2-compiler-artifact-plan
-         (fn [emitter source source-text]
+         (fn [emitter _source source-text]
            (swap! observations conj [:compiler emitter source-text])
            (when-let [action (:during-compile options)] (action path))
            actual-plan)
