@@ -86,6 +86,9 @@
         ;; Distinct roots do not create an exception to that contract.
         _ (require! (<= (count (filter #(= :broker (:kind %)) (:guards expected))) 1)
                     :nested-broker-unsupported)
+        _ (require! (= [[:C :broker :exclusive] [:L :canonical :exclusive]]
+                       (mapv (juxt :id :kind :resource-class) (:guards expected)))
+                    :pmk-guard-configuration)
         clock (:clock! ports) deadline (+ (clock) (get-in expected [:limits :whole-timeout-ms]))
         leases (atom []) child (atom nil) handled (atom false) claimed (atom false)
         failure (atom nil) cleanup (atom nil) releases (atom []) result (atom nil)

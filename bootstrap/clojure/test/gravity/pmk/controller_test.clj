@@ -20,12 +20,12 @@
 
 (defn model []
   (let [request (fixture/request)
-        ;; One synthetic broker and two file guards exercise three-step cleanup
-        ;; without claiming that nested real broker acquisitions are supported.
-        guards (mapv #(hash-map :id % :kind (if (= % :common) :broker :canonical)
+        ;; PMK's exact candidate: one shared-root exclusive C, then file lock L.
+        ;; These synthetic paths do not supply actual participant coverage.
+        guards (mapv #(hash-map :id % :kind (if (= % :C) :broker :canonical)
                                :root (str "/synthetic/" (name %))
-                               :resource-class (if (= % :common) :normal :exclusive)
-                               :policy-sha256 fixture/h) [:common :host :canonical])
+                               :resource-class :exclusive
+                               :policy-sha256 fixture/h) [:C :L])
         binding (-> (fixture/binding-input request)
                     (assoc :guards guards)
                     (assoc :coverage {:authority-sha256 fixture/h :required-guards (mapv :id guards)
@@ -64,8 +64,8 @@
 (deftest order-identity-and-single-publication
   (let [m (model) r (run-model m) events @(:events m)]
     (is (= :passed (:status r)))
-    (is (= [:common :host :canonical] (mapv second (filter #(and (vector? %) (= :acquire (first %))) events))))
-    (is (= [:canonical :host :common] (mapv :guard (:releases r))))
+    (is (= [:C :L] (mapv second (filter #(and (vector? %) (= :acquire (first %))) events))))
+    (is (= [:L :C] (mapv :guard (:releases r))))
     (is (= [:publish :passed] (last events)))
     (is (zero? (event-count m :terminate)))
     (is (= r (edn/read-string (pr-str r))))
@@ -92,6 +92,19 @@
     (is (empty? @(:events m))))
   (let [m (model) bad (assoc-in m [:binding :guards 1 :kind] :broker)]
     (is (= :nested-broker-unsupported (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (assoc-in m [:binding :guards 0 :resource-class] :normal)]
+    (is (= :pmk-guard-configuration (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (-> m (update-in [:binding :guards] #(vec (reverse %)))
+                         (assoc-in [:binding :coverage :acquisition-order] [:L :C]))]
+    (is (= :pmk-guard-configuration (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (-> m (update-in [:binding :guards] conj (assoc (last (get-in m [:binding :guards])) :id :extra))
+                         (assoc-in [:binding :coverage :acquisition-order] [:C :L :extra])
+                         (assoc-in [:binding :coverage :required-guards] [:C :L :extra])
+                         (assoc-in [:binding :coverage :participants 0 :guards] [:C :L :extra]))]
+    (is (= :pmk-guard-configuration (fixture/reason #(run-model bad))))
     (is (empty? @(:events m)))))
 
 (deftest bookends-bind-the-tuple-and-claims-are-one-shot
@@ -116,25 +129,25 @@
   (doseq [at [:acquire! :validate!]]
     (let [m (model) original (get-in m [:ports at])
           r (run-model (assoc-in m [:ports at]
-                                (fn [g x] (if (= :host (:id g))
+                                (fn [g x] (if (= :L (:id g))
                                             (throw (ex-info "denied" {:reason :denied}))
                                             (original g x)))))]
       (is (= :failed (:status r)))
       (is (= :denied (get-in r [:error :reason])))
-      (is (= (if (= at :acquire!) [:common] [:host :common]) (mapv :guard (:releases r))))
+      (is (= (if (= at :acquire!) [:C] [:L :C]) (mapv :guard (:releases r))))
       (is (not-any? #(and (vector? %) (= :start (first %))) @(:events m)))))
   (let [m (model) original (get-in m [:ports :release!])
         r (run-model (assoc-in m [:ports :release!]
-                              (fn [g lease] (if (= :host (:id g))
+                              (fn [g lease] (if (= :L (:id g))
                                               (throw (ex-info "release" {:reason :release-error}))
                                               (original g lease)))))]
     (is (= :failed (:status r)))
     (is (= :release-error (get-in r [:error :reason])))
-    (is (= [:canonical :host :common] (mapv :guard (:releases r))))
+    (is (= [:L :C] (mapv :guard (:releases r))))
     (is (= [:publish :failed] (last @(:events m)))))
   (let [m (model) r (run-model (assoc-in m [:ports :release!] (fn [& _] {:outcome :uncertain})))]
     (is (= :release-incomplete (get-in r [:error :reason])))
-    (is (= 3 (count (:releases r))))))
+    (is (= 2 (count (:releases r))))))
 
 (deftest deadline-startup-capture-and-process-fail-closed
   (doseq [process [(assoc process-pass :exit-code 7 :status :failed)
@@ -166,7 +179,7 @@
         r (run-model (assoc-in m [:ports :release!]
                               (fn [& args] (reset! (:clock m) 120000) (apply original args))))]
     (is (= :whole-deadline (get-in r [:error :reason])))
-    (is (= 3 (count (:releases r)))))
+    (is (= 2 (count (:releases r)))))
   (doseq [capture [(assoc-in (machine-result (:request (model))) [:summary :pass] 0)
                    (assoc-in (machine-result (:request (model))) [:selection :test-vars] [])]]
     (let [m (model) r (run-model (assoc-in m [:ports :capture!] (fn [& _] capture)))]
@@ -178,7 +191,7 @@
     (is (= :failed (:status r)))
     (is (= 1 (event-count m :interrupt)))
     (is (= 1 (event-count m :terminate)))
-    (is (= 3 (count (:releases r)))))
+    (is (= 2 (count (:releases r)))))
   (let [m (model) count (atom 0)
         original (get-in m [:ports :bookend!])
         r (run-model (assoc-in m [:ports :bookend!] (fn [b] (if (= 1 (swap! count inc)) (original b) nil))))]
@@ -188,7 +201,7 @@
                                  (assoc-in [:ports :interrupt!] (fn [] (throw (Exception. "interrupt hook failed"))))))]
     (is (= "original stop" (get-in r [:error :message])))
     (is (= "interrupt hook failed" (get-in r [:interrupt-errors 0 :message])))
-    (is (= 3 (count (:releases r))))
+    (is (= 2 (count (:releases r))))
     (is (= [:publish :failed] (last @(:events m)))))
   (let [m (model) original (ex-info "first" {:reason :first-error}) published (atom 0)
         m (-> m (assoc-in [:ports :supervise!] (fn [& _] (throw original)))
