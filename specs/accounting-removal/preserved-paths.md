@@ -215,8 +215,9 @@ helper mappings remain explicit rather than being treated as missing features.
   exports, tests, all other production definitions and all 30 remaining loop
   functions are unchanged. Pinned source/tooling scans contain no remaining
   reference. Source checks, boundary 6/11, docs/roadmap and whitespace pass.
-  Independent source disposition and fresh main composition/reference checks
-  remain pending; no active loop accounting removal or genuine result is claimed.
+  Child source review subsequently passed as recorded below. Fresh main
+  disposition/composition/reference checks remain pending; no active loop
+  accounting removal or genuine result is claimed.
 - ACC-01 owns stacked cold quote-metadata repair PR618 at
   `3a1a553dbb1b3eb0ae472f5bf806171c02a71109`, tree
   `c8600e2c52f4ba47f1366fae4035248d23365623`, parent PR616's exact `2f2f8f70`.
@@ -232,6 +233,25 @@ helper mappings remain explicit rather than being treated as missing features.
   pass (zero errors, 223 warnings, one information finding). Genuine helpers,
   private/indexed-self composition, independent acceptance and integration remain
   pending. A separate parent-routed PR616 review is not duplicated or extended.
+- Separate parent-routed independent review of exact PR616 `2f2f8f70`, tree
+  `e21649ac124613802ad024edce7df203176f32e8`, parent PR615 `bb3a9acf`, returned
+  `pass-exact-child-source-slice`: 3 controls/89 source assertions, no findings.
+  Reviewer `01a18529-dad4-7de1-b68d-3e567c8976a3` receipt SHA256
+  `c91616d8e3279d871583f174398f00b649173384c1343d199038df8cd38e6bee` was read and
+  verified against the exact source/census hashes. It covers only the two-helper
+  deletion/census; PR615, main, PR569, whole-loop accounting and genuine execution
+  remain unaccepted. This new route does not retry or replace the denied review.
+- ACC-01 owns fresh-main extraction draft PR619 at
+  `ab33cc5fbf97bf6d9b6160ba5e54dae0d7c71acc`, tree
+  `b53719628047069dd3c64aba71b6ebd2160f9f3a`, assessed main
+  `40ecbb97ede5e93c3202c894c4a7ec5e64cdd5bd`. Its `loop-accounting-main.md`
+  and census bind the exact same 29-line interval, byte-identical to the reviewed
+  parent interval. Every other main byte and all 1087 remaining definitions are
+  unchanged. Namespace/exports and all 30 loop-family forms match main, reviewed
+  child and candidate. Current reference scans, source checks, boundary 6/11,
+  docs/roadmap and whitespace pass. Main-candidate independent disposition,
+  required acceptance and integration preflight remain pending; no parent-stack
+  changes or child-review authority are imported into main.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
@@ -246,8 +266,8 @@ helper mappings remain explicit rather than being treated as missing features.
 - Routine CI completed with seven successes and two skips for PR591 at
   `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`,
   PR599 at `b786b464`, PR610 at `2b70fac2`, PR611 at `edef2c00`, PR613 at `5ebff5ca`,
-  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70` and this evidence
-  draft's prior head `df563453`. Those catalogs do
+  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70`, PR618 at `3a1a553d`
+  and this evidence draft's prior head `279fe99c`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
 ## Every original authored path
@@ -351,7 +371,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 
 | Original authored path | Supported disposition and exact remaining obligation |
 | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. The dispatch source map separately pins four C7 DSE-dispatch correspondences under explicit helper aliases. PR613 supplies the historical native carrier preflight/imported-result wrapper, four retired helpers and exact dependent caller/policy/test changes; its genuine acceptance remains open. PR614 supplies complete historical iterative uniqueness/node typing and the unmetered product-vector shape predicate, with unchanged external interfaces and genuine acceptance pending. PR615 supplies complete historical physical-check/receipt/coordinator guard ordering, with other authority/catalog/provider expressions unchanged and genuine acceptance pending. PR616 retires the isolated, unexported historical loop-accounting helper pair only, with all 30 remaining loop functions unchanged. PR618 supplies the historical cold-evidence field retirement with coherent Effects/emitter schema consumers and pending actual-owner controls. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. The dispatch source map separately pins four C7 DSE-dispatch correspondences under explicit helper aliases. PR613 supplies the historical native carrier preflight/imported-result wrapper, four retired helpers and exact dependent caller/policy/test changes; its genuine acceptance remains open. PR614 supplies complete historical iterative uniqueness/node typing and the unmetered product-vector shape predicate, with unchanged external interfaces and genuine acceptance pending. PR615 supplies complete historical physical-check/receipt/coordinator guard ordering, with other authority/catalog/provider expressions unchanged and genuine acceptance pending. PR616 retires the isolated, unexported historical loop-accounting helper pair only, with all 30 remaining loop functions unchanged; its exact child source review passes c91616d8. PR619 extracts that byte-identical deletion on assessed main40ecbb97, with main acceptance/integration pending. PR618 supplies the historical cold-evidence field retirement with coherent Effects/emitter schema consumers and pending actual-owner controls. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. PR610 removes only the Set source descriptor operand-work field; full-equality consumers remain unchanged and genuine acceptance is pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid control definitions, pending genuine execution and independent acceptance. PR618 removes the orphan cold quote-work field and its consumer-only requirements, with source/cut/mode checks preserved and genuine acceptance pending. The dispatch source map pins five Effects DSE-dispatch units, including two explicit guard differences and an additional selector difference; independent mapping disposition is pending. DSE joins, remaining predicate/query/construction headers, nil/List work accounting and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. PR610 removes only the Set source descriptor operand-work field with unchanged full-equality consumers and genuine acceptance pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid controls, pending genuine execution and independent acceptance. PR618 coherently retires cold quote-work schema/charge requirements while preserving source/cut/mode checks, with genuine acceptance pending. The dispatch source map pins three emitter DSE forwarding/caller units and two exact inline direct-call helper bodies, pending independent disposition. Direct-call source/type/arity/order acceptance, remaining join accounting and descriptor consumers remain open. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores nine GIS3/native tests; PR595 restores five join tests; PR599 restores the exact ordinary construction test and adds the explicit qualified/fresh-verifier controls. PR610 reconciles two Set kernels with absent metadata and coherent obsolete-field forgeries, retiring their payment/width-only refusal assertions while preserving independent semantic checks. PR613 reconciles three imported/shape controls and appends native carrier extent/callback/cycle/class controls; all other parent test bytes are conserved. PR614 restores the complete original structural-vector kernel and adds prefix/state controls. PR615 restores both complete original carrier/receipt physical-entry kernels and adds hostile/malformed entry-order controls. PR618 appends the cold quote-metadata producer/helper controls. Genuine execution remains unrun. Broader opaque-ordering, other public-verifier and remaining old-only cases still need test-level mapping, not a whole-file incorporation claim. |

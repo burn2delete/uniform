@@ -166,9 +166,24 @@ draft PR616 at `2f2f8f701f19660dad89e98f351693669a97980b`, tree
 Both historical absences match; namespace/exports, all other production code,
 tests and all 30 remaining loop-family definitions remain unchanged. The pinned
 source/tooling reference scan finds no external caller or remaining reference.
-Independent disposition and fresh composed reference checks remain pending;
+Exact child source review subsequently passed as recorded below. Fresh composed
+reference checks and main acceptance remain pending;
 current loop validation/accounting and genuine results are not accepted by this
 unused-helper deletion. Original machine snapshot/state counts are unchanged.
+
+Independent PR616 source review now passes only that exact child deletion and
+census, receipt SHA256
+`c91616d8e3279d871583f174398f00b649173384c1343d199038df8cd38e6bee`, reviewer
+`01a18529-dad4-7de1-b68d-3e567c8976a3`, 3 controls/89 source assertions.
+Receipt/source/census identities were verified. It accepts no parent dependency,
+main integration or genuine loop result and does not revive the denied review.
+The fresh-main extraction is PR619 `ab33cc5fbf97bf6d9b6160ba5e54dae0d7c71acc`,
+tree `b53719628047069dd3c64aba71b6ebd2160f9f3a`, base main40ecbb97. Its exact
+removed byte interval matches the reviewed parent, with all other main bytes,
+1087 remaining definitions, namespace/exports and 30 loop-family forms conserved.
+Main-candidate independent disposition and integration remain pending. The
+original machine inventory is retained unchanged rather than treating this
+consumed child review as completed main integration.
 
 Primitive uniqueness/node typing and the product-vector predicate now have
 source successor PR614 at `c506514d4b32baf8269a7c3ff49ca86d2dc18c05`, tree
