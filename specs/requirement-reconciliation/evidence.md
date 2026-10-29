@@ -1,5 +1,40 @@
 # Requirement reconciliation evidence
 
+## Composed task census candidate
+
+The derived `task-baseline.edn` binds source commit
+`cb3c7e381047ec20df4485d6b2b9010d947d0297`. It records 138 existing
+component tasks, including the five Release tasks, plus 11 separate Open
+Platform Product tasks. Three tasks retain scoped Accepted status, 144 are
+Open, one Partial and one status-unassessed: 3/149 accepted in declared task
+scope, 146 remaining. No task is recorded Blocked; dependency blocking and
+whole-requirement evidence remain unassessed. This candidate awaits independent
+composed review and the scope auditor's concrete interface correction.
+
+All 240 original contracts retain explicit source dispositions. The 833 finite
+interface/evidence/architecture decisions are work within existing tasks and
+are excluded from the task denominator. Historical missing-interface IDs and
+retirements are preserved separately. The overlap proposal resolves ten source
+relations and adds intermediate stage/module admission criteria to the existing
+stage task; it grants no implementation credit or requirement-manifest adoption.
+
+The current-main Reader merge required resolving generated SH projection and
+source-pin conflicts. Main's Reader ownership provenance and prior mapping
+reviews survive alongside this candidate's task criteria. The first SH test run
+reported two stale Build bridge assertions; the successor control now verifies
+both the composed source bytes and the unchanged historical bridge hashes.
+The subsequent run passed 11 tests / 299 assertions. Dependency controls passed
+14 / 402, census controls 3 / 8, and language boundary 6 / 11. All 12 affected
+task projection checks and both document validators passed. All 180 whole-SH
+implementation assessments remain unassessed.
+
+Reproduce the derived census with `clojure -M tools/task_baseline.clj --check`.
+Its writer requires a full immutable source commit. An initial generation used
+the symbolic HEAD name; it was replaced by the explicit source identity above.
+The family source-composition record and overlap record retain the exact inputs
+and criteria amendments. No compiler/runtime execution or release claim is
+supplied by this planning increment.
+
 ## Frozen input observation
 
 Source commit: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`.

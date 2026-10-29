@@ -91,7 +91,9 @@
     (require! (or (and (= "--write" mode) ref (= 2 (count args)))
                   (= ["--check"] (vec args))) "Use --write SOURCE_COMMIT or --check")
     (let [old (when (= "--check" mode) (edn/read-string (slurp output-path)))
-          ref (or ref (:source-commit old)) result (build ref)]
+          ref (or ref (:source-commit old))
+          _ (require! (boolean (re-matches #"[0-9a-f]{40}" ref)) "Use an immutable full source commit")
+          result (build ref)]
       (if old (require! (= old result) "Stale or manually changed derived task baseline")
         (spit output-path (with-out-str (pp/pprint result))))
       (prn (select-keys result [:source-commit :scope :progress :remaining-decisions])))))
