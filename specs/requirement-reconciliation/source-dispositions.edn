@@ -196403,11 +196403,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Schema task supplies the expanded manifest"
      "Types resolved declarations/constraints supply legality; downstream validators and bindings consume the projected type facts"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "language/types/project-schema-static-type",
     :task-links
     [{:task-id
@@ -272715,11 +272725,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Auth supplies typed policy/grants, compiler/Legality supplies accepted facts, Lower supplies emitted source/identity maps"
      "Each applicable runtime/provider supplies actual hook results; S4/S5/S6 consumers preserve admission decisions and R12 consumers check required redacted records"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "safety/safe10/runtime-authority",
     :task-links
     [{:task-id
@@ -330537,11 +330557,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 schema/diff and B11 relational artifacts"
      "SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/authorize-runtime-migration",
     :task-links
     [{:task-id "schema",
@@ -337053,11 +337083,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Types/ownership facts and S1/S2 schema contracts"
      "B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/check-binary-reference-layout",
     :task-links
     [{:task-id "schema",
@@ -337591,11 +337631,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 expanded schema and S2 representation policy"
      "B13/package/workflow/AI/proof/release consume checked canonical bytes and input records"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/check-canonical-identity-input",
     :task-links
     [{:task-id "schema",
@@ -338491,11 +338541,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Actual operation and pinned client/server schema/version/hash"
      "S1/S4/S5 validators and Types boundary facts; emission alone does not validate an operation"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/check-client-operation",
     :task-links
     [{:task-id "schema",
@@ -339054,11 +339114,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 old/new schemas and S4/S5/S6/S7/S9 projection/consumer records"
      "STD10 schema APIs and Build/Query/Workflow/AI/Runtime consume the applicable checked diff, not a new whole-component completion condition"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/compatibility-diff",
     :task-links
     [{:task-id "schema",
@@ -340737,11 +340807,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 expanded schema and S2 representation policy"
      "B13/package/workflow/AI/proof/release consume checked canonical bytes and input records"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/decode-canonical-value",
     :task-links
     [{:task-id "schema",
@@ -341628,11 +341708,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 schema/validator and SAFE11 sink-taint facts"
      "S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/decode-declared-format",
     :task-links
     [{:task-id "schema",
@@ -342049,11 +342139,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Types/ownership facts and S1/S2 schema contracts"
      "B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-binary-codec-binding-input",
     :task-links
     [{:task-id "schema",
@@ -342524,11 +342624,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 source schema and B11 relational mapping inputs"
      "Declared dialect/representation/compatibility policy and SAFE10/SAFE11 boundary facts"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-database-structure",
     :task-links
     [{:task-id "schema",
@@ -342789,11 +342899,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Types/ownership facts and S1/S2 schema contracts"
      "B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-explicit-binary-layout",
     :task-links
     [{:task-id "schema",
@@ -343264,11 +343384,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 source schema and typed resolver declaration"
      "Runtime actual grant enforcement and S4 effect/error/auth policy; generated adapters alone do not prove invocation"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-graphql-resolver-adapter",
     :task-links
     [{:task-id "schema",
@@ -343511,11 +343641,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 expanded source schemas/validators and Types facts"
      "S2/S3 schema identities and declared S4 mapping/pagination/error/compatibility policy"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-graphql-sdl",
     :task-links
     [{:task-id "schema",
@@ -343814,11 +343954,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Authoritative S5 request/response/error route contract and S1 validator"
      "Types/taint/grant metadata and emitted operation identities; actual handler test execution remains separate"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-http-boundary-validators",
     :task-links
     [{:task-id "schema",
@@ -344058,11 +344208,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1-S3 source schema/identity plus authoritative S5 route/error/auth declarations"
      "Types facts and Emit real generated document artifacts"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-openapi-document",
     :task-links
     [{:task-id "schema",
@@ -344391,11 +344551,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S4/S5 pinned schema/operation/server request-response-error contract"
      "Types dynamic-boundary legality and Emit generated client/validator artifacts"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-typed-api-client",
     :task-links
     [{:task-id "schema",
@@ -344825,11 +344995,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 schema/diff and B11 relational artifacts"
      "SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-typed-migration-plan",
     :task-links
     [{:task-id "schema",
@@ -345496,11 +345676,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 source validator and declared database row representation"
      "B11 relational result identities and SAFE11 intended-sink taint facts"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/emit-typed-row-adapter",
     :task-links
     [{:task-id "schema",
@@ -345771,11 +345961,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 expanded schema and S2 representation policy"
      "B13/package/workflow/AI/proof/release consume checked canonical bytes and input records"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/encode-canonical-value",
     :task-links
     [{:task-id "schema",
@@ -346662,11 +346862,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 schema/validator and SAFE11 sink-taint facts"
      "S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/encode-declared-format",
     :task-links
     [{:task-id "schema",
@@ -347068,12 +347278,22 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Types resolved schema identities and constraints"
      "Effects/Auth/Legality authority and taint facts"
      "S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/expand-authoritative-schema",
     :task-links
     [{:task-id "schema",
@@ -347426,12 +347646,22 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Types resolved schema identities and constraints"
      "Effects/Auth/Legality authority and taint facts"
      "S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/generate-source-validator",
     :task-links
     [{:task-id "schema",
@@ -348093,11 +348323,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1-S3 schema/identity and generated S5 document/validators/client contracts"
      "DOM8/B11/R11/R12 actual handler, authority and observation interfaces"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/run-http-contract-tests",
     :task-links
     [{:task-id "schema",
@@ -348803,11 +349043,21 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["S1 schema/diff and B11 relational artifacts"
      "SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation"],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+     :sha256
+     "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+     :independent-receipt-sha256
+     "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+     :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+     :scope :exact25-current-source-criterion-composition-joins},
     :semantic-source-id "schema/validate-migration-change",
     :task-links
     [{:task-id "schema",
