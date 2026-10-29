@@ -3,6 +3,8 @@
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is]]
             [gravity.build.producer-evidence :as evidence]
+            [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting-test-runner :as child-runner]
             [gravity.digest :as digest]))
 
 (defn- bytes [value] (.getBytes (pr-str value) "UTF-8"))
@@ -329,6 +331,119 @@
                        (update provenance :classpath-identities #(vec (reverse %)))]]
         (is (= :producer-provenance
                (field #(check (assoc-in f [:capture :producer-provenance] changed)))))))))
+
+(deftest actual-child-observation-flows-to-fresh-serializer
+  ;; This exercises the real wiring and serializer with injected observations;
+  ;; it is not a real producer or terminal observation.
+  (let [{:keys [capture report]} (fixture-with-snapshot (last (source-shaped-snapshots)))
+        observed {:binding (:binding-before capture)
+                  :repository-snapshot (get-in capture [:producer-provenance :repository-snapshot])}
+        events (atom [])
+        binding-var (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'observe-fresh-producer-binding!)
+        loaders-var (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'supported-resource-loaders?)]
+    (with-redefs-fn
+      {binding-var (fn [& _] (swap! events conj :observe) observed)
+       loaders-var (constantly true)}
+      (fn []
+        (let [returned (wiring/run-child-unit!
+                        ['gravity.c2-artifact-identity-test] {:observe-producer? true}
+                        #(do (swap! events conj :operation) report))
+              serialized (evidence/serialize-observed-fresh-capture
+                           contract-bytes returned (:terminal capture))
+              readback (edn/read-string (String. serialized "UTF-8"))]
+          (is (= [:observe :operation :observe] @events))
+          (is (= (:binding-before capture) (:binding-before readback) (:binding-after readback)))
+          (is (= (:producer-provenance capture) (:producer-provenance readback)))
+          (is (= returned (edn/read-string (:report-edn readback))))
+          (is (false? (:child-cache-hit? returned)))
+          (is (false? (get-in returned [:child-cache-receipt :cacheable?])))
+          (is (= :terminal (field #(evidence/serialize-observed-fresh-capture
+                                   contract-bytes returned
+                                   (assoc (:terminal capture) :cleanup-complete? false)))))
+          (is (= :child-observation
+                 (field #(evidence/serialize-observed-fresh-capture contract-bytes report (:terminal capture))))))))))
+
+(deftest child-observation-drift-or-unsupported-selection-refuses
+  (let [calls (atom 0)
+        operations (atom 0)
+        observer (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                             'observe-fresh-producer-binding!)]
+    (with-redefs-fn
+      {observer (fn [& _] {:binding {:observation (swap! calls inc)}})}
+      (fn []
+        (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+               (try (wiring/run-child-unit!
+                      ['gravity.c2-artifact-identity-test] {:observe-producer? true}
+                      #(do (swap! operations inc) {:status :passed}))
+                    (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
+        (is (= 1 @operations))
+        (is (= 2 @calls))
+        (is (= "SH01-PRODUCER-OBSERVATION"
+               (try (wiring/run-child-unit!
+                      ['gravity.c11-mir-test] {:observe-producer? true}
+                      #(swap! operations inc))
+                    (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
+        (is (= 1 @operations))))))
+
+(deftest producer-observation-is-explicit-and-runtime-required
+  (let [options {:cache-directory "/tmp/unused-source-control"
+                 :timeout-ms 1000 :repository-identity h}]
+    (is (child-runner/valid-development-cache-options? options))
+    (is (child-runner/valid-development-cache-options? (assoc options :observe-producer? true)))
+    (is (false? (child-runner/valid-development-cache-options? (assoc options :observe-producer? false))))
+    (is (false? (child-runner/valid-development-cache-options? (assoc options :unknown-observation true)))))
+  (let [calls (atom 0)
+        runtime (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring 'effective-child-runtime)]
+    (with-redefs-fn
+      {runtime (constantly nil)}
+      (fn []
+        (is (= "SH01-PRODUCER-OBSERVATION"
+               (try (wiring/run-child-unit!
+                      ['gravity.c2-artifact-identity-test] {:observe-producer? true}
+                      #(swap! calls inc))
+                    (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
+        (is (zero? @calls))))))
+
+(deftest producer-observer-rejects-missing-nonregular-and-changing-inputs
+  ;; Runtime/context ports are injected; declared files are read, never run.
+  (let [resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)
+        observer (var-get (resolve-wiring 'observe-fresh-producer-binding!))
+        state-var (resolve-wiring 'required-input-state)
+        state (var-get state-var)
+        inventory-var (resolve-wiring 'closure-inventory)
+        inventory (var-get inventory-var)
+        binding (:binding-before (:capture (fixture)))
+        common {(resolve-wiring 'effective-child-runtime) (constantly (:child-runtime-identity binding))
+                #'wiring/prepare-context (constantly {:revision (select-keys (:source binding) [:commit :tree])
+                                                      :snapshot {:repository-identity h}
+                                                      :runtime-tool-inputs (:runtime-tool-inputs binding)})
+                (resolve-wiring 'explicit-classpath-identities) (constantly (:classpath-identities binding))
+                (resolve-wiring 'run-git-bytes!) (fn [& _] (.getBytes "" "UTF-8"))}
+        first-path (:path (first (:inputs closure)))
+        observe #(with-redefs-fn (merge common %)
+                   (fn [] (observer (System/getProperty "user.dir") [] {})))
+        id #(try (observe %) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))]
+    (is (= (mapv :path (:inputs closure)) (mapv :path (get-in (observe {}) [:binding :inputs]))))
+    (is (= "SH01-PRODUCER-OBSERVATION"
+           (id {state-var (fn [root path] (when-not (= first-path path) (state root path)))})))
+    (is (= "SH01-PRODUCER-OBSERVATION"
+           (id {state-var (fn [root path] (state root (if (= first-path path) "." path)))})))
+    (let [reads (atom {})]
+      (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             (id {state-var (fn [root path]
+                              (let [n (get (swap! reads update path (fnil inc 0)) path)
+                                    observed (state root path)]
+                                (if (and (= first-path path) (> n 1))
+                                  (update observed :executable? not) observed)))}))))
+    (let [reads (atom 0)]
+      (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             (id {inventory-var (fn [root declaration]
+                                  (let [observed (inventory root declaration)]
+                                    (if (> (swap! reads inc) (count (:inventories closure)))
+                                      (update observed :paths conj "synthetic-changed-inventory")
+                                      observed)))}))))))
 
 (defn- fresh-supplied [capture]
   (select-keys capture [:binding-before :binding-after :producer-provenance :applying-source :terminal]))
