@@ -1,0 +1,238 @@
+{:nonclaims
+ [:full-Effects-context-accounting-removal
+  :authenticated-ordinary-local-call-acceptance
+  :DSE-acceptance
+  :genuine-Effects-execution
+  :whole-helper-equivalence
+  :ACC-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :integration :UNRUN,
+ :independent-acceptance :pending,
+ :production
+ {:changed false,
+  :selected-dependencies
+  [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-st-context,
+    :base-form-sha256
+    "6eb47ee2331b936c6654b836c53392ea24c972e1aeacf355eab0fe3c67753279",
+    :historical-form-sha256
+    "6eb47ee2331b936c6654b836c53392ea24c972e1aeacf355eab0fe3c67753279",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-st-call-valid?,
+    :base-form-sha256
+    "37c81e79d3c95ad5842e943e31235253359856bbdcf9540bf994f908d16e1812",
+    :historical-form-sha256
+    "37c81e79d3c95ad5842e943e31235253359856bbdcf9540bf994f908d16e1812",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-evidence,
+    :base-form-sha256
+    "80d7d0846f5bd366653bc34d0503a2df860acebf32721db94557a3ea2469d6a9",
+    :historical-form-sha256
+    "80d7d0846f5bd366653bc34d0503a2df860acebf32721db94557a3ea2469d6a9",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-header,
+    :base-form-sha256
+    "1c5dd4de19df9b2f254ada967f81b4c3f1e81ddaac95c72b0ea861573efd77ba",
+    :historical-form-sha256
+    "89d88711caaf56d16251cdf6e469a7cdaafc429c9ec20548f6b1a51cfad55c1f",
+    :historical-identical false}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-originals,
+    :base-form-sha256
+    "0f96b2f6c6da6e57bf8fa574f2d64c1ae908e0f0a0edfef72a36329132984f56",
+    :historical-form-sha256
+    "0f96b2f6c6da6e57bf8fa574f2d64c1ae908e0f0a0edfef72a36329132984f56",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-row-census,
+    :base-form-sha256
+    "6ea9109b49c279085d7933eebde3300384d869ae9d635291521f421a95c784e9",
+    :historical-form-sha256
+    "6ea9109b49c279085d7933eebde3300384d869ae9d635291521f421a95c784e9",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-fact-census,
+    :base-form-sha256
+    "2b21292832d8d9cd77a1e659eb5116f7c6435abef44a4b3e54b99f6214f134ff",
+    :historical-form-sha256
+    "2b21292832d8d9cd77a1e659eb5116f7c6435abef44a4b3e54b99f6214f134ff",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lq-context,
+    :base-form-sha256
+    "9208914fbaec9bd178ff5c4969d6a6e68f6a09f637408f99ccf8b3391aa411ad",
+    :historical-form-sha256
+    "5546a707b494aee820ae4da85adcb35e795f6e2dc56aa59b4419a35ef8fad9fe",
+    :historical-identical false}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lq-call-valid?,
+    :base-form-sha256
+    "fb28321d48f799d776b4dae47f9d5f6de165d7e9e78f988eba09456d7d971413",
+    :historical-form-sha256
+    "fb28321d48f799d776b4dae47f9d5f6de165d7e9e78f988eba09456d7d971413",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-evidence,
+    :base-form-sha256
+    "5ea03115e1404ab88bb94844714eeca07a70ac31873ef7450ec6c932a4d514e3",
+    :historical-form-sha256
+    "5ea03115e1404ab88bb94844714eeca07a70ac31873ef7450ec6c932a4d514e3",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-header,
+    :base-form-sha256
+    "83ecdecc3751c903ad1817efe520bfa2d01c8d17f4f996063049d67eeafa8e97",
+    :historical-form-sha256
+    "e7a34e9b2e110fef582db990435324287055fd99743c8619ac9e3b89b99852cc",
+    :historical-identical false}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-originals,
+    :base-form-sha256
+    "d9e26d23427676187eee3cb7c0926068a03f84ced9180cd451b07788b14f6ffd",
+    :historical-form-sha256
+    "d9e26d23427676187eee3cb7c0926068a03f84ced9180cd451b07788b14f6ffd",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-row-census,
+    :base-form-sha256
+    "359073840288c5e695bb96909269f0665bc64825a25ef192c78e7a222ca6722b",
+    :historical-form-sha256
+    "359073840288c5e695bb96909269f0665bc64825a25ef192c78e7a222ca6722b",
+    :historical-identical true}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-fact-census,
+    :base-form-sha256
+    "1404b2ac4ce966f99b224b2ecae4325c18cdd2a2976dd5f11f40e825b54f6065",
+    :historical-form-sha256
+    "1404b2ac4ce966f99b224b2ecae4325c18cdd2a2976dd5f11f40e825b54f6065",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-st-derive,
+    :base-form-sha256
+    "e9b0c7c99c5fbda8159e736ad773112ef7e5b7488016116009c4697b666d4629",
+    :historical-form-sha256
+    "e9b0c7c99c5fbda8159e736ad773112ef7e5b7488016116009c4697b666d4629",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-st-constraint,
+    :base-form-sha256
+    "f334fc46c7744647d644c872391990bf2b1b02953286e1e24f43954edf96bf46",
+    :historical-form-sha256
+    "f334fc46c7744647d644c872391990bf2b1b02953286e1e24f43954edf96bf46",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-st-call-fact,
+    :base-form-sha256
+    "42881c3066870da5b2b98ce1c834244ccaa70fdcb57b8430b8988af332e830d2",
+    :historical-form-sha256
+    "42881c3066870da5b2b98ce1c834244ccaa70fdcb57b8430b8988af332e830d2",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-lq-derive,
+    :base-form-sha256
+    "de1734096d2276bd9a185418202ebe4a38454fe0cf4f422c413aff2bcf106428",
+    :historical-form-sha256
+    "0791b278e035e53b3fc440bb7834c020b213cb8a1a965cb1fff6deea59a49305",
+    :historical-identical false}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-lq-constraint,
+    :base-form-sha256
+    "019a037091ca6a56b18ccaefa3f651a2eb5812c897cc9b338e40d8abc8a01171",
+    :historical-form-sha256
+    "019a037091ca6a56b18ccaefa3f651a2eb5812c897cc9b338e40d8abc8a01171",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-lq-call-fact,
+    :base-form-sha256
+    "d7ef416e483535bea0348f2f3c15b583af6aed7f94f2a92a6de185e50e72bae8",
+    :historical-form-sha256
+    "d7ef416e483535bea0348f2f3c15b583af6aed7f94f2a92a6de185e50e72bae8",
+    :historical-identical true}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-call-constraints-with-context,
+    :base-form-sha256
+    "0e3b7281b4b642070c0f693e80a4370d811e6a9fac2fc259d612e6f9146cd795",
+    :historical-form-sha256
+    "df89d9f6c7e2f04bf53e4395d4affac16c54dffe13710fe89ea115a6b7071efb",
+    :historical-identical false}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-call-facts,
+    :base-form-sha256
+    "a60cb7ae54ec93c7e8df10f6350f8e27a0eaf212b662a7ec45405588f00577b2",
+    :historical-form-sha256
+    "a60cb7ae54ec93c7e8df10f6350f8e27a0eaf212b662a7ec45405588f00577b2",
+    :historical-identical true}],
+  :whole-callgraph-proof false},
+ :restored-units
+ [{:name mixed-ordinary-local-call-effect-input,
+   :raw-historical-sha256
+   "a376423d61fa1297d237abb1d55af9e1d83c8981bd0a87c3eecac50c5db401ab",
+   :candidate-form-sha256
+   "e7ce0cfe00e026d91e8453211d4df76300e27134f31ece59cfeb1eafb55ae82d",
+   :retired-accounting-assertions 0,
+   :remaining-assertion-expressions 0,
+   :raw-copy-except-explicit-adaptations true}
+  {:name body-list-set-local-call-composition-development-kernel,
+   :raw-historical-sha256
+   "91443dc09546da61afc539055cc2cfb455ee3c02ff8b68091f2300d384f28ae7",
+   :candidate-form-sha256
+   "ed2e779d31ec88f1f6cf9ebcb4f59db9f78833819fbe24a8b5d78f874a7f82e3",
+   :retired-accounting-assertions 2,
+   :remaining-assertion-expressions 17,
+   :raw-copy-except-explicit-adaptations true}
+  {:name body-map-keys-local-call-composition-development-kernel,
+   :raw-historical-sha256
+   "1d4f8e6af61074d3fffa4f98cae23db1b10614e4388d3d628517f91a30122e25",
+   :candidate-form-sha256
+   "bb3cb8320b8f8563495f9f6f2e2b4020313857d8fe0f611f89717a1ee347eb6d",
+   :retired-accounting-assertions 2,
+   :remaining-assertion-expressions 17,
+   :raw-copy-except-explicit-adaptations true}],
+ :test-file
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+  :base-sha256
+  "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+  :candidate-sha256
+  "429747c7d8033ec842a47871294e7ebe55d16c623c08df5dcd9fbfccba753ff2",
+  :all-prior-bytes-preserved true},
+ :kind :effects-local-call-original-controls,
+ :generator
+ {:language :clojure,
+  :sha256
+  "f6a3b710705df615a56ed0049b48291f5474d2e2d7c325850811689ee9cbc47c",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-integrity :passed,
+  :genuine-execution :UNRUN},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :explicit-adaptations
+ {:retired-payment-blocks
+  [{:raw-sha256
+    "633f42995cacc3fa1568e1812f9483d4d15a1d544367e2ad59383d8ae8dc1a36",
+    :source
+    "    (when (= :accepted (:status prepared))\n      (is (= prepared (prepare facts (:work-count prepared))))\n      (is (= :body-deferred-work-limit (:reason (prepare facts (dec (:work-count prepared)))))))\n"}
+   {:raw-sha256
+    "633f42995cacc3fa1568e1812f9483d4d15a1d544367e2ad59383d8ae8dc1a36",
+    :source
+    "    (when (= :accepted (:status prepared))\n      (is (= prepared (prepare facts (:work-count prepared))))\n      (is (= :body-deferred-work-limit (:reason (prepare facts (dec (:work-count prepared)))))))\n"}],
+  :diagnostic-field-selection
+  {:before [:status :reason :work-count], :after [:status :reason]},
+  :unused-fixture-bindings-retired [ids]}}
