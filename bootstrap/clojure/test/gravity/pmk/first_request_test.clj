@@ -5,11 +5,13 @@
 
 (def h (apply str (repeat 64 "a")))
 (def git-id {:head (apply str (repeat 40 "b")) :tree (apply str (repeat 40 "c"))})
+(def closure (into [{:selector first-request/selector :owner-apis {:c7 first-request/required-apis}}]
+                   (for [i (range 1 15)] {:selector (symbol (str "synthetic-" i))})))
 (def parent
   {:schema :pmk-acceptance-plan-v1 :execution :unrun :root "file:/synthetic/"
    :source-revision git-id :checkout git-id :inputs-sha256 h :runtime {:synthetic true}
-   :selection (vec (range 15))
-   :closure [{:selector first-request/selector :owner-apis {:c7 first-request/required-apis}}]})
+   :selection (mapv #(str pmk/test-ns "/" (:selector %)) closure)
+   :closure closure})
 (def outputs {:result "/synthetic/one/result.edn" :stdout "/synthetic/one/stdout"
               :stderr "/synthetic/one/stderr" :terminal "/synthetic/one/terminal.edn"})
 
@@ -59,7 +61,11 @@
       (with-redefs [pmk/prepare (fn [& _] parent)]
         (is (= :outputs (reason #(first-request/prepare {} {} {} "one" bad))))))
     (with-redefs [pmk/prepare (fn [& _] (assoc-in parent [:closure 0 :owner-apis] {:effects first-request/required-apis}))]
-      (is (= :first-selector (reason #(first-request/prepare {} {} {} "one" outputs)))))))
+      (is (= :first-selector (reason #(first-request/prepare {} {} {} "one" outputs)))))
+    (doseq [changed [(assoc parent :closure [(first closure)])
+                     (update parent :selection #(assoc % 14 "foreign/selector"))]]
+      (with-redefs [pmk/prepare (fn [& _] changed)]
+        (is (= :first-selector (reason #(first-request/prepare {} {} {} "one" outputs))))))))
 
 (deftest missing-or-inconsistent-bindings-stop-before-verifier
   (let [r (request) expected (binding-input r) calls (atom 0) verify (fake-verifier calls)]

@@ -29,7 +29,9 @@
         selected (first (:closure parent))]
     (need! (and (= selector (:selector selected))
                 (= {:c7 required-apis} (:owner-apis selected))
-                (= 15 (count (:selection parent)))) :first-selector)
+                (= 15 (count (:selection parent)) (count (:closure parent)))
+                (= (:selection parent)
+                   (mapv #(str pmk/test-ns "/" (:selector %)) (:closure parent)))) :first-selector)
     (need! (and (string? operation-id) (seq operation-id)) :operation-id)
     (need! (and (= #{:result :stdout :stderr :terminal} (set (keys outputs)))
                 (every? absolute? (vals outputs))
