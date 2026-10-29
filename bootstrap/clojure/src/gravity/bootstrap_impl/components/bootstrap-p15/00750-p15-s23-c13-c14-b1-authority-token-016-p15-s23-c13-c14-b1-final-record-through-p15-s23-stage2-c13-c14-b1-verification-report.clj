@@ -204,14 +204,13 @@
 
 (defn- p15-s23-c13-c14-b1-selected-verification-report
   [packet checked-core context explicit? interface-header]
-  (let [source-path (p15-s23-c11-ingress-source-path context)]
+  ;; Public owner failures retain their own diagnostics. In particular, the
+  ;; compact interface-header rejection must not enter backend containment.
+  (let [selected-c11 (when explicit?
+                       (p15-s23-stage2-c11-mir-artifact
+                        checked-core context interface-header))
+        source-path (p15-s23-c11-ingress-source-path context)]
     (try
-      (let [selected-c11 (when explicit?
-                           ;; Owner header checks precede downstream preflight.
-                           ;; This also performs fresh Core authentication;
-                           ;; no supplied/saved report is accepted here.
-                           (p15-s23-stage2-c11-mir-artifact
-                            checked-core context interface-header))]
       (p15-s23-c13-c14-b1-verification-preflight! source-path packet)
       (let [fresh-c11 (if explicit? selected-c11
                        (p15-s23-stage2-c11-mir-artifact checked-core context))
@@ -239,7 +238,7 @@
           (p15-s23-b3-llvm-fail!
            "B1-METADATA" source-path packet
            {:missing-fact :fresh-context-bound-c13-c14-b1-packet}))
-        (p15-s23-c13-c14-b1-contextual-report-record packet)))
+        (p15-s23-c13-c14-b1-contextual-report-record packet))
       (catch InterruptedException interrupted
         (.interrupt (Thread/currentThread))
         (throw interrupted))

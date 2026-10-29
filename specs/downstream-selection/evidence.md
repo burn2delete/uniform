@@ -29,6 +29,13 @@ packet through the versioned packet entrypoint. Legacy replay retains
 preflight-before-unversioned-construction order. No report is cached between
 invocations or accepted from the caller.
 
+Independent review of 0d0a3d29 found that the selected constructor was inside
+backend containment, which would replace the owner's compact header diagnostic.
+The correction places that public owner call outside backend containment.
+The composition control now fails if an owner rejection reaches containment;
+its former rethrowing containment stub was insufficient evidence. The reviewed
+revision and this correction retain separate Git identities.
+
 This increment does not extend C13/C14/B1 source contracts, wire the accepted
 relative C13 helper, change source pins or introduce a transport format. Existing downstream
 contracts continue to reject unsupported inputs. The Core artifact schema

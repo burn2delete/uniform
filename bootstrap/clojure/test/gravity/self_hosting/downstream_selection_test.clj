@@ -198,7 +198,9 @@
            'p15-s23-c11-mir-digest (fn [_] :artifact)
            'p15-s23-c13-c14-b1-actual-path-binding-id (fn [& _] :binding)
            'p15-s23-c13-c14-b1-contextual-report-record (fn [_] :synthetic-report)
-           'p15-s23-b3-llvm-contain-exception! (fn [_ _ error] (throw error))}
+           'p15-s23-b3-llvm-contain-exception!
+           (fn [& _] (swap! calls conj :unexpected-containment)
+             (throw (ex-info "Owner rejection reached backend containment" {})))}
           (fn [invoke]
             (is (= :synthetic-report (invoke packet core context header)))
             (is (= [[:construct 3] :preflight :versioned-packet :strict] @calls))
