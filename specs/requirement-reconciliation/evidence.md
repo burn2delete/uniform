@@ -448,3 +448,34 @@ plus the one declared additive operation. The original PKG5 fixture hashes,
 five-task lineage and review-history checks remain. The corrected SH suite
 passed 11 tests / 345 assertions; boundary passed 6 / 11. The failed check
 remains recorded here and does not confer acceptance.
+
+## Independent adoption of the 75-mapping batch
+
+The independent review accepted all 75 new mappings in frozen candidate
+`1f38064e22494ceee03f7fafc22fc93741110a9a`, tree
+`193f6d714c05bfda6f44567dcc3e7057fca0e0c8`, against criterion source
+`6905570c41d81afb1d2917a479cf4d92b2304b30`. Receipt SHA256:
+`96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb`.
+It verifies Math48, Performance11 and Release16, all 200 accepted predecessors,
+current dependency interfaces, source metadata, and thirteen mutation controls.
+
+The exact accepted-new-ID manifest has SHA256
+`e07191ab93f9dce5e739cc0fb7b204c95a331376b80dc69de8e03d3a0c1e5444`.
+The public aggregate `accepted-historical-mappings-275.edn`, SHA256
+`ba1f761d7be9f214e498c55f2e7a965de76859ef9e59718dab79dade539930c4`,
+records 275 accepted and 286 unadopted historical mappings. The original
+200-mapping artifact and all frozen witness snapshots remain unchanged.
+The 275 accepted IDs have normalized-vector SHA256
+`63aaabb02f0e15e990589c7ed509121de243ac16d05a8e43da5a79e34b581736`.
+
+Before adoption, every accepted criterion and nested context was checked
+against its retained binding in the later 345-witness snapshot and the actual
+current named task. Raw witness hashes remain unchanged and current file/span
+hashes match. All 833 current decision records and Open states are unchanged.
+The 70 later Domains mappings remain unaccepted pending their separate review;
+their preparation does not invalidate the frozen 75-mapping review.
+
+The accepted delta is 75 mappings, zero implementation tasks. The provisional
+current task census remains 3 / 158. Source-policy decisions, complete inherited
+facet entailment, task granularity, all-833 actionability, whole-project scope,
+whole-PR/SH source-version acceptance and integration remain separate work.
