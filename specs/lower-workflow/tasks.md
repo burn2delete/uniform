@@ -33,7 +33,7 @@ Done when (yes/no): Match runtime services and providers to effects/capabilities
 
 Current evidence/status: Open; partial source evidence above is not closure
 
-Done when (yes/no): Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math.
+Done when (yes/no): Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math. Decision criterion interface/native/concurrency-order: Preserve declared task/thread/lock/message and atomic/fence ordering semantics and required provider/target facts through native lowering. Reject: Reject unsupported target order/atomic operations, detached invalid borrows, unsafe shared-state transformations and weakened ordering without lawful semantics. Required outputs: Native scheduler/atomic/lock/transfer and target-lowering records, ordering/lifetime preservation and unsupported-context refusals.
 
 - [ ] `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` lower/5: Integrate target emission
 
