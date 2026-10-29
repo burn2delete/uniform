@@ -291,3 +291,71 @@ full compiler-free panel passes 33 tests / 520 assertions and the focused Git
 panel passes 10 tests / 189 assertions. A new source/request freeze and exact
 affected re-review are required; the prior failed source and stale request
 remain historical evidence. No selected target was executed.
+
+### Shared configuration churn diagnosis
+
+The [byte witness](syntax-selected-git-config-churn.edn) authenticates four
+historical common-config states by their complete SHA256 values. It recovers
+these exact changes, without identifying their writer:
+
+- 67,392 -> 67,518 bytes: a 126-byte origin/upstream stanza for
+  `codex/loop-accounting-cleanup-20261029`.
+- 67,518 -> 67,542 bytes: the `codex/rv2-owned-git-bookends` merge value changed
+  from `refs/heads/main` to `refs/heads/codex/rv2-owned-git-bookends` (+24 bytes).
+- 67,542 -> 67,773 bytes: 231 bytes of origin/upstream stanzas for
+  `codex/cold-quote-metadata-disposition-20261029` and
+  `codex/loop-accounting-main-20261029`.
+
+The witness contains only hashes and these safe tracking edits, not a copy of
+the configuration or credentials. Subsequent configuration changes are not
+classified by this witness. A later attempt to recover the old state from a
+prefix of the then-current file failed authentication and stopped; it confers
+no additional equivalence evidence. No historical request was refreshed.
+
+The installed selected leaf contains the version string `2.50.1 (Apple
+Git-155)`. Apple's [Git-155 vendor record](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/Git.plist)
+identifies upstream revision `d82adb61ba2fd11d8f2587fca1b6bd7925ce4044`.
+The following is a source assessment of that release, not a claim that the
+dispatcher has executed that leaf:
+
+- The exact `rev-parse HEAD` and `HEAD^{tree}` forms initialize default config
+  and resolve the named objects; they do not request upstream resolution.
+  [rev-parse source](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/builtin/rev-parse.c)
+- The selected cached-path `ls-files` form uses default config. The default
+  branch callback handles automatic setup settings, rather than per-branch
+  `remote` and `merge` bookkeeping.
+  [ls-files source](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/builtin/ls-files.c),
+  [config source](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/config.c)
+- Porcelain status without `-b` suppresses deferred branch-header settings.
+  Its short printer calls the tracking printer only when `show_branch` is set.
+  This explains why the recovered upstream edits do not change that direct
+  output path. It does not close index refresh or indirect process paths.
+  [status configuration](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/builtin/commit.c),
+  [status printing](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/wt-status.c)
+
+`gravity.syntax.selected-git-configuration/candidate` is an inactive, pure
+comparison for affected review. It excludes only complete canonical LF/TAB
+origin-tracking sections for other `codex/` branches. Every other byte stays
+opaque and hashed, including current-branch settings, unknown keys, comments,
+remote URLs, credential configuration and non-ASCII bytes. Includes, backslash
+escapes or an unknown current branch select strict comparison. Synthetic
+positive/negative controls cover the authenticated edit shapes; they are not
+copies or reconstructions of the historical files.
+
+This candidate is deliberately not wired into `git-binding!` or its verifier.
+Those still compare the complete explicit file set, executable inputs and
+inherited environment. The missing applicability evidence is the installed
+invocation's effective configuration-search and indirect-helper coverage:
+Apple's source derives bundled/system paths through `system_path`, and status
+refreshes the index and can traverse submodule paths. Binding the dispatcher,
+developer-selection link and a proposed leaf is not independently verified
+evidence of the executable/configuration/helper graph actually selected by
+`git` under the inherited environment. A direct pinned-leaf invocation or an
+effective-config projection therefore needs its own exact source review and
+new request; the old request cannot be replayed using this candidate.
+
+The affected compiler-free panel passes 24 tests / 305 assertions, including
+four new candidate tests / 37 assertions; lint reports zero errors/warnings.
+There was no target Git adapter invocation, owner/C3 execution, acquisition,
+process probe, global freeze, configuration write or copied secret. The
+candidate supplies no acceptance, release, containment or runtime guarantee.
