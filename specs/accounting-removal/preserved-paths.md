@@ -1,7 +1,7 @@
 # PR502 preserved path reconciliation
 
 Planning: ACC-01/04/05/06/07/08/09/12/13. This is an evidence input to the
-existing accounting tasks, not a second outcome ledger. Assessed main:
+existing accounting tasks, not a second outcome ledger. Initial assessed main:
 `6276c94b0b753c888ef8fecc794bcc81245ea3b3`.
 
 The canonical [PR359 table](evidence.md#pr359-finite-reconciliation-and-preserved-work---2026-10-27-1239-mdt)
@@ -43,6 +43,27 @@ semantic incorporation of the other changes.
   only. Original fixture spellings remain pinned, absent and unconsumed; their
   source/typed/emitted/runtime acceptance is pending. This is concrete finite
   draft coverage, not independent implementation or semantic acceptance.
+- Later DSE readback verifies PR568 at
+  `f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a`, tree
+  `71b343d4cc131ef3be1601c8f8ba12509744b31e`. The initial `b165ca5a`
+  review required changes for stripped-tag false accepts. Corrected source at
+  `ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec`, tree
+  `66304198a8c44f59adc4349030541fd26d674e29`, received affected source-only
+  review receipt `8b2994e26a18580bdaac238cd5652118a74f0737bfc1d095b4f9a8edb9573328`.
+  Its adapted compiler-free controls pass 7/249; no Gravity acceptance follows.
+  The later selector/paired copies under `sh-08/preserved` are preparation only
+  and outside that exact review. Genuine consumer/runtime acceptance remains
+  unrun; the original failure is preserved.
+- ACC-01 now owns finite quoted-data source draft PR591 at
+  `1c0d699f06372fe3c52fa003f53aa38ffd40d07c`, tree
+  `5daf1c0d0f690a4557c362fc7203ebe589570768`, based on main `b7347f6b`.
+  Its `quoted-data.md` and `quoted-data-census.edn` bind the iterative traversal,
+  five native-DATA guard dependencies, two caller updates and preserved semantic
+  tests. Seventeen complete historical definitions match with only the listed
+  quote preflight-call adaptation. Source validation and boundary 6/11 pass;
+  genuine SH08/C8/source/Vector consumer acceptance and independent source/result
+  review remain unrun or pending. Shared carrier quotas and verifier arenas are
+  not covered. This is an accountable implementation draft, not integration.
 
 ## Every original authored path
 
@@ -145,10 +166,10 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 
 | Original authored path | Supported disposition and exact remaining obligation |
 | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. GIS3 entry/product reconstruction, iterative qd traversal, vf native arenas, nil/List joins, ordinary parameter choice and remaining descriptor/derive/step deltas have no verified complete successor disposition. |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 draft PR591 supplies finite iterative quoted-data source, native-DATA guard dependencies and caller migration with acceptance pending. GIS3 entry/product reconstruction, vf native arenas, nil/List joins, ordinary parameter choice and remaining descriptor/derive/step deltas still lack complete successor disposition. |
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. DSE joins, remaining predicate/query/construction headers, nil/List element contracts and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. Typed-direct-call compatibility/argument validation, typed LSET/Map-key census and remaining descriptor consumers need explicit disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. Preserved GIS3, qd, vf, ordinary-function, structural-vector, opaque-ordering and other old-only cases need test-level mapping, not a whole-file incorporation claim. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three complete preserved quote authentication/independent-diagnostic/deep-malformed test bodies; semantic execution is unrun. GIS3, vf, ordinary-function, structural-vector, opaque-ordering and other old-only cases still need test-level mapping, not a whole-file incorporation claim. |
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
 | `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | The unchanged original reader-only controls pass 2/223 on pinned current source, including precedence and full private constraint/fact source bodies. Together with PR359's finite evidence this supports a proposed incorporation decision, still awaiting independent acceptance. |
