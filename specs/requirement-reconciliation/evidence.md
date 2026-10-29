@@ -3,7 +3,7 @@
 ## Composed task census candidate
 
 The derived `task-baseline.edn` binds source commit
-`cb3c7e381047ec20df4485d6b2b9010d947d0297`. It records 138 existing
+`af0229de9216448d49a68eedf1491ac82d28dec3`. It records 138 existing
 component tasks, including the five Release tasks, plus 11 separate Open
 Platform Product tasks. Three tasks retain scoped Accepted status, 144 are
 Open, one Partial and one status-unassessed: 3/149 accepted in declared task
