@@ -1613,6 +1613,44 @@ that ratio. Independent current scope/overlap acceptance and final whole-project
 denominator review remain required. No compiler, runtime, denied or restricted
 operation was executed.
 
+## Exact document-provenance facet scope
+
+`source-provenance-facet-dispositions.edn` records 372 enumerated fragments
+over 240 source occurrences in all 240 original documents at
+`17b4ee474f16bb5b74699f1eec5657b971c9a6c0`. Every fragment consists solely of
+sequence, phase, draft-status or the original source-basis attribution in its
+document preface. Exact original/current file and raw-span hashes agree;
+sequence and phase match the canonical inventory. The four observed draft
+labels are retained without weakening the documents' normative authority.
+Attribution is preserved without claiming a fresh PDF content review.
+
+These finite metadata dispositions replace 239 unresolved fragment traces,
+one mistaken dependency-edge trace and 132 already structural traces. They
+do not classify introductory semantic sentences, schemas, examples, conformance
+lists, dependencies or any other fragment by its broad extraction kind. Owner
+checks pass 2 tests / 10 assertions, including mixed semantic text, a conformance
+introduction and unknown attribution refusal controls. Independent facet review
+remains pending. No task, decision, implementation state or census changes.
+
+`policy-and-efir14-facet-dispositions.edn` separately binds fourteen exact
+fragments at the same source. Eight project-accounting-only predicates are
+superseded by the user's removal authority while all independent macro/type/
+compile-time semantics and actual host restrictions remain. Three mixed budget
+phrases retain external provider/account policy through the existing typed
+tool interpreter and AI failure criteria, both of which explicitly exclude
+restored project quotas. Three EFIR fragments retain the bare-EFIR backend
+refusal and selected implementation requirement through the existing Math
+criterion. Three exact ACC-12 policy criteria preserve removal, semantic
+validation and host/external separation obligations.
+
+Original criterion witnesses authenticate against their own frozen file and
+raw hashes; fresh witnesses locate the same bytes inside the current owning
+task. Older whole-file pins are retained as history, not treated as current
+file identity. Checks pass 2 tests / 26 assertions. The fourteen fragments are
+disjoint from the 372 metadata fragments. Neither result proves whole enclosing
+occurrences or confers independent acceptance, execution, implementation credit,
+new decisions or new tasks. Complete remaining-facet entailment stays open.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten
