@@ -1591,6 +1591,60 @@ unchanged. All833 decisions remain Open; provisional3/182 task status, full
 facet/granularity/ACC/final-count/integration holds and implementation nonclaims
 remain unchanged.
 
+### All833 current decision criteria allocated
+
+Task source `46a58eddd4e412064c7a5d0898cc1e583e3dffcc` completes the
+remaining25 Bootstrap routes. The frozen phase15 artifact at
+`2c19c4b0111f88142785a5e8a292a6e0b0a95266` retains its recorded SHA256
+`ade4891541d3d5b5e8d394dd320eeeeb90db241eb3e456df99a47d629bce43cd`.
+The scoped composition verifies973 original facet memberships against the
+frozen source matrix and current source file/raw byte hashes, preserving IDs.
+The matrix is used for these selected source coordinates, not adopted as
+whole-facet entailment or implementation evidence.
+
+Eight predicate groups refine six existing task fields: canonical signing,
+diagnostic identity and structured diagnostics, compatibility assessment,
+specialist unsafe-audit decisions, unsafe-boundary admission, audit production
+and safe wrappers. Seventeen groups reuse existing exact clauses. Signing
+retains canonical subject/policy requirements and tamper refusals; diagnostics
+retain actual phase availability and explicit nil facts; GOV9 audit decisions
+remain distinct from GOV4 security decisions and SAFE6 record production.
+Native ABI, once-evaluation, no-callback, sticky-denial and source-language
+boundaries survive. No new task units or implementation acceptance result.
+
+Allocation source `3993e0fd95b455e766896bfa8557871cb7ba062f` binds those25
+previously absent fields with exact before-record guards and current owning
+criterion/context spans. Actual dependency artifacts and downstream Release
+consumers do not impose whole-component completion gates. All833 stable IDs
+are now allocated and remain Open:474 qualified current reviews,56 pending
+(Governance14, Performance/AI17 and Bootstrap25),zero unallocated. Original303
+review scopes remain recorded separately; all561 historical mappings remain
+accepted withzero pending andzero unbound.
+
+The new561-binding snapshot preserves all1262 current UTF8 file/raw spans.
+Twenty-one whole-task contexts across two Governance records expand; the
+context-refinement proof recovers each old block exactly by reversing only its
+authenticated Bootstrap25 field appends. New clauses inherit no historical
+acceptance. Earlier context refinements retain their scopes.
+
+`all833-current-criterion-conservation.edn` checks the entire
+allocated population at source `3993e0fd`: all833 original decision records
+remain Open and each of911 authenticated original criterion witnesses is an
+exact current span within its declared owning task. This is predicate-byte
+conservation, not independent acceptance or whole-shared-facet entailment.
+The PKG5 source-lineage regression initially identified the older Build pin;
+the successor check now includes this exact Bootstrap25 source and reconstructs
+the Build field append while preserving its historical source/review record.
+
+Build5/86, Diagnostics4/65, Evolution2/13, Legality4/59, census5/18 and
+boundary6/11 checks pass, as do both document validators and changed census
+tool lint. The census now distinguishes complete criterion allocation from
+partial allocation without changing task acceptance or full-facet status.
+Provisional task states remain3 accepted of182,179 remaining. Coherent
+granularity,13 proposed sibling replacements,legacy ACC scope,complete facet
+entailment,independent final counting andcoordinator integration remain open.
+The refreshed SH projection and12/529 source-lineage assertions also pass.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,

@@ -27,4 +27,12 @@
     (is (= ["decision"] (baseline/task-decisions [bound] "producer")))
     (is (empty? (baseline/task-decisions [bound] "release")))
     (is (rejects? #(baseline/decision-task-ids (assoc legacy :criterion-task-allocation {:task-links []}))))))
+(deftest complete-allocation-is-separate-from-acceptance
+  (let [open {:id "d" :status :open :criterion-task-allocation {:task-links [{:task-id "producer"}]}}
+        unallocated {:id "other" :status :open}]
+    (is (= :unassessed (baseline/criterion-allocation-state [])))
+    (is (= :unassessed (baseline/criterion-allocation-state [unallocated])))
+    (is (= :partially-criterion-witness-bound (baseline/criterion-allocation-state [open unallocated])))
+    (is (= :criterion-witness-bound (baseline/criterion-allocation-state [open])))
+    (is (rejects? #(baseline/criterion-allocation-state [(assoc open :criterion-task-allocation {:task-links []})])))))
 (let [r (run-tests)] (shutdown-agents) (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

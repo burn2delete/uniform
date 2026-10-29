@@ -34,6 +34,12 @@
     (set (concat (when-let [id (:accountable-task decision)] [id]) (:supporting-task-ids decision)))))
 (defn task-decisions [decisions task-id]
   (vec (sort (for [d decisions :when (contains? (decision-task-ids d) task-id)] (:id d)))))
+(defn criterion-allocation-state [decisions]
+  (let [allocated (filter :criterion-task-allocation decisions)]
+    (doseq [d allocated] (decision-task-ids d))
+    (cond (empty? allocated) :unassessed
+          (= (count allocated) (count decisions)) :criterion-witness-bound
+          :else :partially-criterion-witness-bound)))
 (defn progress [tasks]
   (let [ids (map :id tasks) counts (frequencies (map #(get-in % [:status :state]) tasks))
         accepted (get counts :accepted 0) total (count tasks)]
@@ -104,7 +110,7 @@
                            (count (filter #(= :pending-independent-current-composition-review
                                               (get-in % [:criterion-task-allocation :allocation-review])) decisions))
                            :remaining-criterion-allocation-work (count (remove :criterion-task-allocation decisions))
-                           :allocation-to-counted-tasks (if (some :criterion-task-allocation decisions) :partially-criterion-witness-bound :unassessed)
+                           :allocation-to-counted-tasks (criterion-allocation-state decisions)
                            :allocation-review-qualification "Concrete criterion spans do not confer independent composition review or full attached-facet entailment; predecessor allocations retain their recorded review scope."
                            :full-attached-facet-entailment :pending-complete-source-disposition-audit
                            :counting :necessary-work-addressed-through-task-criteria-not-additional-task-units}

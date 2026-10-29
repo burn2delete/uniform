@@ -193,7 +193,9 @@
           decision-successor (get-in view [:mapping-review :compiler-testing34-current-composition])
           package-successor (get-in view [:mapping-review :package7-current-composition])
           safety-successor (get-in view [:mapping-review :safety107-current-composition])
-          successor (or (:source-commit safety-successor)
+          bootstrap-successor (get-in view [:mapping-review :bootstrap25-current-source-composition])
+          successor (or (:source-commit bootstrap-successor)
+                        (:source-commit safety-successor)
                         (:source-commit package-successor)
                         (:source-commit decision-successor)
                         (:source-commit build-successor)
@@ -213,10 +215,10 @@
             (is (= path (:path old)))
             (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
                    (:sha256 old) (sh-inventory/sha256 (:text old)))))))
-      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor decision-successor package-successor safety-successor])]
+      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor decision-successor package-successor safety-successor bootstrap-successor])]
         (let [record (edn/read-string (slurp (:record declared-successor)))
               path "specs/build-workflow/tasks.md"
-              before (sh-crosswalk/git-source (:applying-source record) path)
+              before (sh-crosswalk/git-source (or (:applying-source record) (:source-commit record)) path)
               operations (filter #(= path (:path %)) (:operations record))]
           (is (= (case (:kind record)
                    :guarded-governance12-core31-current-task-composition 4
@@ -230,7 +232,8 @@
                        :guarded-build68-current-task-composition "122c13e4591a1503e7f030e291b3cde673d36973"
                        :guarded-compiler-testing34-current-task-composition "c2f6e48f49066e3edda0e0f194c925de01e2af22"
                        :guarded-package7-current-task-composition "dc983dcd35ef1bfde47dd14c27a03e7aad601c04"
-                       :guarded-safety107-current-task-composition "bc485c7e4b0197873f6a3104021764711215b3b1"}
+                       :guarded-safety107-current-task-composition "bc485c7e4b0197873f6a3104021764711215b3b1"
+                       :bootstrap25-current-source-composition "46a58eddd4e412064c7a5d0898cc1e583e3dffcc"}
                       (:kind record))
                  (:source-commit declared-successor)))
           (doseq [op operations]
