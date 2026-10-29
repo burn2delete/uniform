@@ -5571,6 +5571,7 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= expected (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
+        (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[(:type result)]])))
         (let [consumer (list-query-derived (list-query-input 'first [expected]))]
           (is (= :accepted (:status consumer)))
           (is (= (if (empty? (:element-types expected)) :gravity.type/nil (first (:element-types expected))) (:type consumer))))
@@ -5610,6 +5611,7 @@
                       (assoc (:types input) :operator changed :call (:type result))])))))
     (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
       (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
+      (is (= :accepted (:status (derive (vector-rest-input (nested 192)) 65536))))
       (let [result (derive (vector-rest-input (nested 129)) 65536)]
         (is (= :accepted (:status result)))
         (is (= (finite :gravity.type/list []) (:type result) (get-in result [:descriptor :result-type])))))
@@ -12517,11 +12519,18 @@
              [(positional [:gravity.type/unknown]) s :list-prepend-operand-type-required]
              [(assoc homogeneous :schema :secret) s :list-prepend-operand-type-required]]]
       (is (= reason (:reason (list-prepend-derived (list-prepend-input receiver value))))))
-    (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]
-      (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))
-      (let [value (nested 128) result (list-prepend-derived (list-prepend-input (positional []) value))]
-        (is (= :accepted (:status result)))
-        (is (= (positional [value]) (:type result) (get-in result [:descriptor :result-type])))))
+    (let [nested (fn [leaf depth]
+                   (nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) leaf) depth))]
+      ;; The canonical C7 validator already checks complete finite type DATA
+      ;; without a depth allowance. Consumer helper limits are a separate scope.
+      (doseq [depth [127 128 129]]
+        (let [value (nested k depth)
+              result (list-prepend-derived (list-prepend-input (positional []) value))]
+          (is (= :accepted (:status result)))
+          (is (= (positional [value]) (:type result) (get-in result [:descriptor :return])
+                 (get-in result [:descriptor :result-type]))))
+        (is (= :list-prepend-operand-type-required
+               (:reason (list-prepend-derived (list-prepend-input (positional []) (nested :gravity.type/unknown depth))))))))
     (doseq [args [[] [:arg0] [:arg0 :arg1 :arg0]]]
       (is (= :list-prepend-arity-mismatch (:reason (list-prepend-derived (assoc-in (list-prepend-input homogeneous s) [:call :argument-node-ids] args))))))
     (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)
