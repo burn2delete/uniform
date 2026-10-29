@@ -2,6 +2,7 @@
   "Pure process/clock controls. No production port is resolved or loaded."
   (:refer-clojure :exclude [run!])
   (:require [clojure.test :refer [deftest is run-tests]]
+            [clojure.string :as str]
             [effects-acceptance :as a]))
 
 (def source-identity
@@ -27,7 +28,7 @@
    :identity-file (assoc (pin "/synthetic/identity.edn") :sha256 (a/request-hash source-identity))
    :broker {:class :memory-heavy :coordination-root "/synthetic/broker"}
    :command ["/synthetic/bin/java" "-Xmx2g" "-cp"
-             (clojure.string/join java.io.File/pathSeparator (map :path classpath))
+             (str/join java.io.File/pathSeparator (map :path classpath))
              "clojure.main" "/synthetic/operation.clj" "/synthetic/identity.edn" "/synthetic/broker"]})
 (def port-source (slurp a/process-port-path))
 (def request (a/validation-request frozen "/synthetic/checkout" port-source))
@@ -143,11 +144,11 @@
       (is (empty? @(:calls h)))))
   (is (= :process-port-bounds
          (try (a/validation-request frozen "/synthetic/checkout"
-                (clojure.string/replace port-source "process-cleanup-grace-ms 100" "process-cleanup-grace-ms 999"))
+                (str/replace port-source "process-cleanup-grace-ms 100" "process-cleanup-grace-ms 999"))
               (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
   (is (= :process-port-bounds
          (try (a/validation-request frozen "/synthetic/checkout"
-                (clojure.string/replace port-source "(.onExit handle) 100" "(.onExit handle) 101"))
+                (str/replace port-source "(.onExit handle) 100" "(.onExit handle) 101"))
               (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
 
 (deftest empty-cleanup-and-wrapped-interruptions-are-not-retried-or-erased
