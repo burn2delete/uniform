@@ -64,11 +64,12 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
    :only-change :remove-C7-derive-allowance-argument,
    :call-count 4}],
+ :assessed-main "e3d990e9c6594f140a85397fd8e16a80078a4f10",
  :kind :C7-branch-join-source-port,
  :generator
  {:language :clojure,
   :sha256
-  "bf2dcfe23428c859534ec72b4dcb43ffbcf58e84fcad5c3963942b73d240f937",
+  "94e711d98c3bdba46a31e522d4861cc66e4a85bb662063957063faf411108c46",
   :preserved-locally true},
  :historical-definitions
  [{:name sh08-ni-type-join,

@@ -63,6 +63,9 @@ historical helper body appears exactly once, inline, in current
 census pins the helper expression and complete current caller hashes. This is a
 source-grounded incorporation proposal pending independent disposition, not a
 whole-caller equivalence or fresh semantic acceptance claim.
+The unchanged caller correspondence is also checked at freshly observed main
+`e3d990e9c6594f140a85397fd8e16a80078a4f10`. Its later tooling changes have not
+been composed into this stacked candidate; current-main integration remains open.
 
 ## Observed checks and finite remaining acceptance
 
