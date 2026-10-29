@@ -303,3 +303,39 @@
         (is (= :set-literal-native-data-required (:reason result)))
         (is (= 0 (:comparison-attempts result) (:insertions result)))))
     (is (zero? @callbacks))))
+
+(deftest runtime-set-conversion-validates-native-inputs
+  (let [callbacks (atom 0)
+        deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign conversion callback")))
+        foreign (fn [interface]
+                  (java.lang.reflect.Proxy/newProxyInstance
+                   (.getClassLoader interface) (into-array Class [interface clojure.lang.IObj])
+                   (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny)))))
+        foreign-vector (foreign clojure.lang.IPersistentVector)
+        foreign-list (foreign clojure.lang.IPersistentList)
+        opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        cycle (list :a :b)
+        bad-view (clojure.lang.APersistentVector$SubVector. nil [] 0 1)
+        functions ['runtime-convert-vector-set 'runtime-convert-keyword-list-set]
+        convert (fn [value] {:op :builtin-call :function 'set :args [{:op :literal :value value}]})]
+    (set-fixture-field! cycle "_rest" cycle)
+    (doseq [constructor functions
+            value [foreign-vector foreign-list [opaque] (list opaque) cycle bad-view
+                   (with-meta [:valid] {:hidden opaque}) (with-meta '(:valid) {:hidden opaque})]]
+      (let [result (invoke constructor value)]
+        (is (= :set-conversion-native-data-required (:reason result)))
+        (is (= 0 (:insertions result)))))
+    (doseq [value [foreign-vector foreign-list [opaque] cycle bad-view
+                   (with-meta [:valid] {:hidden opaque})]]
+      (is (= :set-conversion-native-data-required
+             (get-in (invoke 'p15-s23-runtime-evaluate-closed-instruction (convert value) {} "") [0 :reason]))))
+    (is (zero? @callbacks))
+    (doseq [[constructor value expected]
+            [['runtime-convert-vector-set (with-meta (subvec [(Object.) :a :a (Object.)] 1 3) {:tag :inert}) #{:a}]
+             ['runtime-convert-vector-set (with-meta ["a" "a"] {:tag :inert}) #{"a"}]
+             ['runtime-convert-keyword-list-set (with-meta '(:a :a :b) {:tag :inert}) #{:a :b}]]]
+      (let [metadata (meta value) result (invoke constructor value)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (identical? metadata (meta value)))))
+    (is (zero? @callbacks))))

@@ -797,3 +797,21 @@ early header ingress, authenticated/public runtime and release remain open.
 The original PR450 candidate and its evidence remain unchanged. Native API
 registration and current-main integration are pending dependencies, not inferred
 from this successor's local test result. No ACC checkbox closes for this unit.
+
+## ACC-09 runtime Set conversion increment
+
+The separate conversion successor replaces the three budget APIs with
+`runtime-convert-vector-set` and `runtime-convert-keyword-list-set`. Both take
+one original operand. String/Keyword vector conversion and Keyword List capture
+validate native representation and every member before hashing, then deduplicate.
+Literal construction's duplicate rejection is a different contract and remains
+unchanged. Existing List support does not expand to Cons or arbitrary Seqable.
+
+Work/width/content admission and caller/capture/deduplication debits are removed
+together with obsolete fields and tests. Input and captured extents and actual
+unique insertions remain. The semantic runtime-function census is updated from
+57 to 56 because three helpers become two; it remains a complete arity/bijection
+check, not an admission allowance. Independent source/retained-result/public
+review accepted this finite scope; dependency/current-main integration remains
+pending. Typed conversion/lowering accounting,
+other runtime operations and whole ACC-09 remain open.
