@@ -143,6 +143,8 @@
     (is (identical? original (:error r)))
     (is (= :failed (:status r)))
     (is (= :unknown (:publication r)))
+    (is (= 3 (count (:raw-release-attempts r))))
+    (is (every? #(and (:lease %) (= :unknown (:status %)) (:error %)) (:raw-release-attempts r)))
     (is (<= 5 (count (:secondary-errors r))))))
 
 (deftest interruption-restores-the-flag-after-finalization
@@ -168,6 +170,19 @@
         (is (identical? original (:error r)))
         (is flag-at-return)
         (is (true? (get-in r [:receipt :process-result :wait-interrupted?]))))
+      (finally (Thread/interrupted)))))
+
+(deftest wrapped-normal-broker-interruption-keeps-original-error-and-flag
+  (let [f (fixture) acquire (get-in f [:ports :acquire])
+        original (ex-info "broker interrupted" {:id "SH01-BROKER-INTERRUPTED"} (InterruptedException. "wait"))]
+    (try
+      (let [r (execute f {:acquire (fn [guard budget]
+                                     (if (= :exclusive (:kind guard)) (throw original) (acquire guard budget)))
+                          :release (fn [& _] (Thread/interrupted) {:status :released})})
+            flag-at-return (.isInterrupted (Thread/currentThread))]
+        (is (identical? original (:error r)))
+        (is flag-at-return)
+        (is (not-any? #{:start} @(:events f))))
       (finally (Thread/interrupted)))))
 
 (deftest one-finalizer-and-one-publication-no-retry-on-unknown-write

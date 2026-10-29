@@ -79,9 +79,14 @@
                          (require! (pos? left) :whole-deadline) left)
             held (atom []) process (atom nil) result (atom nil) terminal (atom nil) reserved? (atom false)
             publication (atom :not-attempted)
-            primary (atom nil) secondary (atom []) releases (atom []) raw-releases (atom []) interrupted (atom false)
+            primary (atom nil) secondary (atom []) releases (atom []) raw-releases (atom [])
+            release-attempts (atom []) interrupted (atom false)
             record-error! (fn [error]
-                            (when (instance? InterruptedException error) (reset! interrupted true))
+                            (when (or (instance? InterruptedException error)
+                                      (instance? InterruptedException (.getCause ^Throwable error))
+                                      (= "SH01-BROKER-INTERRUPTED" (:id (ex-data error)))
+                                      (.isInterrupted (Thread/currentThread)))
+                              (reset! interrupted true))
                             (if @primary (swap! secondary conj error) (reset! primary error)))
             metadata-view (fn [raw fields]
                             (try
@@ -131,15 +136,23 @@
                   (remaining)
                   (catch Throwable error (record-error! error))))
               (doseq [[guard lease] (reverse @held)]
-                (try
-                  (let [receipt (release guard lease)]
-                    (swap! raw-releases conj receipt)
-                    (swap! releases conj
-                           (assoc (metadata-view receipt [:status :evidence-id])
-                                  :broker-receipt (metadata-view (:broker-receipt receipt)
-                                                                 [:schema :resource-class :capacity :outcome :diagnostic-id])))
-                    (require! (= :released (:status receipt)) :release-not-finalized))
-                  (catch Throwable error (record-error! error))))
+                (let [attempt (atom {:guard guard :lease lease :status :unknown})]
+                  (try
+                    (let [receipt (release guard lease)]
+                      (swap! attempt assoc :result receipt)
+                      (swap! raw-releases conj receipt)
+                      (require! (= :released (:status receipt)) :release-not-finalized)
+                      (swap! attempt assoc :status :released))
+                    (catch Throwable error
+                      (swap! attempt assoc :error error)
+                      (record-error! error))
+                    (finally
+                      (swap! release-attempts conj @attempt)
+                      (swap! releases conj
+                             (assoc (metadata-view (:result @attempt) [:evidence-id])
+                                    :status (:status @attempt) :guard-kind (:kind guard)
+                                    :broker-receipt (metadata-view (get-in @attempt [:result :broker-receipt])
+                                                                   [:schema :resource-class :capacity :outcome :diagnostic-id])))))))
               (when-not @primary
                 (try (remaining) (catch Throwable error (record-error! error))))))
           (let [process-metadata (metadata-view @result [:status :exit-code :wait-interrupted? :output-truncated? :capture-failed?
@@ -165,7 +178,8 @@
                 (catch Throwable error (record-error! error))))
             {:status (if @primary :failed :passed) :error @primary :secondary-errors @secondary
              :publication @publication :receipt receipt
-             :raw-process-result @result :raw-terminal @terminal :raw-releases @raw-releases})
+             :raw-process-result @result :raw-terminal @terminal :raw-releases @raw-releases
+             :raw-release-attempts @release-attempts})
           (finally (when @interrupted (.interrupt (Thread/currentThread)))))))))
 
 (defn normal-process-bindings
