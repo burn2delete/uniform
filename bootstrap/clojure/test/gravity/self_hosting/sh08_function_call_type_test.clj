@@ -5571,6 +5571,7 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= expected (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
+        (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[(:type result)]])))
         (let [consumer (list-query-derived (list-query-input 'first [expected]))]
           (is (= :accepted (:status consumer)))
           (is (= (if (empty? (:element-types expected)) :gravity.type/nil (first (:element-types expected))) (:type consumer))))
@@ -5610,6 +5611,7 @@
                       (assoc (:types input) :operator changed :call (:type result))])))))
     (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
       (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
+      (is (= :accepted (:status (derive (vector-rest-input (nested 192)) 65536))))
       (let [result (derive (vector-rest-input (nested 129)) 65536)]
         (is (= :accepted (:status result)))
         (is (= (finite :gravity.type/list []) (:type result) (get-in result [:descriptor :result-type])))))
@@ -12517,11 +12519,18 @@
              [(positional [:gravity.type/unknown]) s :list-prepend-operand-type-required]
              [(assoc homogeneous :schema :secret) s :list-prepend-operand-type-required]]]
       (is (= reason (:reason (list-prepend-derived (list-prepend-input receiver value))))))
-    (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]
-      (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))
-      (let [value (nested 128) result (list-prepend-derived (list-prepend-input (positional []) value))]
-        (is (= :accepted (:status result)))
-        (is (= (positional [value]) (:type result) (get-in result [:descriptor :result-type])))))
+    (let [nested (fn [leaf depth]
+                   (nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) leaf) depth))]
+      ;; The canonical C7 validator already checks complete finite type DATA
+      ;; without a depth allowance. Consumer helper limits are a separate scope.
+      (doseq [depth [127 128 129]]
+        (let [value (nested k depth)
+              result (list-prepend-derived (list-prepend-input (positional []) value))]
+          (is (= :accepted (:status result)))
+          (is (= (positional [value]) (:type result) (get-in result [:descriptor :return])
+                 (get-in result [:descriptor :result-type]))))
+        (is (= :list-prepend-operand-type-required
+               (:reason (list-prepend-derived (list-prepend-input (positional []) (nested :gravity.type/unknown depth))))))))
     (doseq [args [[] [:arg0] [:arg0 :arg1 :arg0]]]
       (is (= :list-prepend-arity-mismatch (:reason (list-prepend-derived (assoc-in (list-prepend-input homogeneous s) [:call :argument-node-ids] args))))))
     (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)
@@ -22980,3 +22989,30 @@
           (is (= :rejected (:status rejected)))
           (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
                  ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
+
+(defn cold-metadata-input []
+  ;; Normalized metadata only. Legacy non-quote fields satisfy the unchanged API.
+  (let [record {:function-syntax-id :function :parameter-binding-ids []}
+        cut {:mode :entries :excluded-node-ids [] :work-count 0}
+        core {:function-records [record] :calls [] :call-edges [] :nodes []
+              :lexical-bindings [] :definitions []}
+        input {:mode :entries :cut cut :source-argument-call-node-ids []
+               :source-preparation-work-count 4 :quoted-products {:work-count 97}
+               :inference {:round-count 1 :round-bound 2} :work-count 11}
+        cold (invoke-c7 'sh08-is-cold-evidence [input])]
+    {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
+     :input input :cold cold :cut cut}))
+
+(defn cold-metadata-invalid-inputs [cold]
+  [(assoc cold :quote-work-count 0) (assoc cold :quote-work-count 1) (assoc cold :quote-work-count nil)
+   (assoc cold :mode :body) (assoc-in cold [:cut :excluded-node-ids] [:forged])
+   (assoc cold :source-argument-call-node-ids [:forged])
+   (dissoc cold :source-argument-call-node-ids) (assoc cold :unknown-field true)])
+
+(deftest cold-quote-metadata-production-development-kernel
+  (let [{:keys [input cold cut]} (cold-metadata-input)]
+    (is (= {:mode :entries :cut cut :source-argument-call-node-ids []
+            :source-preparation-work-count 4 :round-count 1 :round-bound 2 :work-count 11} cold))
+    (is (not (contains? cold :quote-work-count)))
+    (doseq [value [nil 0 1 97]]
+      (is (= cold (invoke-c7 'sh08-is-cold-evidence [(assoc input :quoted-products {:work-count value})]))))))
