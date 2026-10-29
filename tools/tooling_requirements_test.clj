@@ -1,6 +1,8 @@
 (ns tooling-requirements-test
-  (:require [clojure.edn :as edn] [clojure.test :refer [deftest is run-tests]]))
-(load-file "tools/tooling_requirements.clj")
+  (:require [clojure.edn :as edn] [clojure.string :as str]
+            [clojure.test :refer [deftest is run-tests]]))
+(binding [*command-line-args* nil] (load-file "tools/tooling_requirements.clj"))
+(require '[tooling-requirements])
 (def input (tooling-requirements/inputs))
 (def proposal (edn/read-string (slurp tooling-requirements/proposal-path)))
 (defn refuses? [p]
@@ -18,7 +20,7 @@
   (doseq [path ["specs/tools-workflow/tasks.md" "specs/cli-workflow/tasks.md"]]
     (let [before (tooling-requirements/git-text "6276c94b0b753c888ef8fecc794bcc81245ea3b3" path)
           after (slurp path)
-          strip #(clojure.string/replace % #"(?m)^Closing evidence(?: and governing contract)?: .+$" "")]
+          strip #(str/replace % #"(?m)^Closing evidence(?: and governing contract)?: .+$" "")]
       (is (= (strip before) (strip after))))))
 
 (deftest wrong-task-identities-refuse
