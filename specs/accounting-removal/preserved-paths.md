@@ -840,6 +840,20 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Four retired validator branch proposals
+
+The [complete source correspondence](retired-validator-branch-correspondence.md)
+accounts for four additional changed C7 units that do not match historical
+forms exactly: `sh08-pc-first-work`, `sh08-pc-key-part`,
+`sh08-lsi-vector-first` and `sh08-vsl-parameter`. Exactly eight source subtrees
+differ: zero additions/rebindings and old validator work-limit diagnostic
+branches. All other complete-form source and arguments agree. Two current
+validator/ingress definitions pin their actual literal semantic result reasons;
+ten inert source-corruption controls refuse. Proposed current incorporation
+remains independently unaccepted and semantically unproven. Outer metering,
+width/source/receiver semantics and genuine execution remain separate. The
+original inventory and its counts remain unchanged.
+
 ### Predicate source proposal
 
 [Predicate source comparison](predicate-source-disposition.edn) checks all eleven
