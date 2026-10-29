@@ -754,3 +754,41 @@ including the explicit legacy ACC task associations. SH controls passed
 12 tests / 457 assertions, census controls 4/13 and the boundary gate 6/11.
 Preparation reader checks rejected unmatched delimiters before evaluation;
 the corrected helpers performed no partial write on those failed attempts.
+
+## Compiler/Testing current-decision allocation
+
+Task source `c2f6e48f49066e3edda0e0f194c925de01e2af22` composes twelve
+field amendments for 28 missing clauses; six other allocations reuse existing
+criteria. No new tasks or status changes follow. The selected composition
+`compiler-testing34-current-composition.edn` has SHA256
+`31a2a9150863a75519e3bcf8735e3f549df5d63d2062e46f5336ec68123460e0`.
+All 1,070 available source-facet memberships match current UTF8 bytes; three
+unresolved C18 metadata IDs remain explicit. C1 ordering and SAFE5 lease
+qualifications remain named source work, not inferred semantics or ordinary
+development permission prerequisites.
+
+Source `e3f51140beb4665f1f612b1c195ac3967697eeff` records the 34 concrete
+allocation fields. Their immutable task/criterion/context/dependency spans bind
+the actual named producer/checker/consumer interfaces and outputs. Every full
+before-record hash, absent-field guard and semantic-source identity matched;
+removing the 34 fields recovers all predecessor decision records exactly.
+All 833 identities and Open states survive. The public transaction
+`current-decision-allocation-compiler-testing34.edn` has SHA256
+`9bf585b0768e41b213612ab1b74e8cb91c20d26d5d7cc15f8741d6f3e3839bda`.
+Concrete links are now 337 of 833, with 496 remaining. These 34 links explicitly
+await independent current-composition review; the prior 303 retain their
+recorded review scope. No independent acceptance is conferred by the allocation
+commit or its message. The census reports pending review separately.
+
+`current-criterion-bindings-561-compiler-testing34.edn`, SHA256
+`d4db0c00859c1a8580be3ae9b863737640891fac086eba141eee41fec0b234c9`,
+refreshes all 561 historical witnesses after the task-field amendments. All
+1,262 current file/raw span hashes pass, including explicit legacy ACC task
+associations. Accepted historical mappings remain 430, with 131 pending review
+and none unbound. The task census remains a provisional 3/182, with no new
+implementation, final granularity, complete-facet or integration credit.
+
+Compiler API passed 5/77, Legality 4/59, Backends 5/211, Expand 4/41, Syntax
+4/28, Build 5/86, Release 6/131, census 4/13, SH 12/476 and boundary 6/11.
+Both documentation validators passed. CI-pinned clj-kondo 2025.10.23 with
+`--repro --cache false` reports zero findings for the changed census tool.
