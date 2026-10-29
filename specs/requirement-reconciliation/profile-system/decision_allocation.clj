@@ -111,7 +111,7 @@
   (let [proposed (filter #(= :proposed-minimal-acceptance-interface (get-in % [:operation :after :disposition])) (:rows p))]
     (mapv (fn [[path rs]]
             (let [text (source base path)
-                  after (reduce (fn [text [id grouped]]
+                  after (reduce (fn [text [_id grouped]]
                                   (let [v (get-in (first grouped) [:operation :after]) tr (:task-reference v)
                                         record (record-text text tr) c (:criterion-proposal v) before (:before-value c)
                                         added (str/join " " (map #(get-in % [:operation :after :criterion-proposal :append]) grouped))
