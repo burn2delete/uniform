@@ -254,3 +254,78 @@
     (is (= :terminal
            (field #(check (assoc-in (fixture-with-output :stdout output)
                                       [:capture :terminal :exit-code] 1)))))))
+
+(defn- source-shaped-snapshots []
+  (let [base {:repository-identity h :path-count 4 :hashed-path-count 2 :hashed-byte-count 8}]
+    [(assoc base :schema :gravity/sh01-complete-repository-snapshot-v1
+                 :snapshot-engine :full-content-v1)
+     (assoc base :schema :gravity/sh01-incremental-repository-snapshot-v2
+                 :snapshot-engine :git-index-full-content-v2)
+     (assoc base :schema :gravity/sh01-incremental-repository-snapshot-v2
+                 :snapshot-engine :git-index-overlay-v2
+                 :tracked-path-count 4 :overlay-path-count 2)]))
+
+(defn- fixture-with-snapshot [snapshot]
+  (assoc-in (fixture) [:capture :producer-provenance :repository-snapshot] snapshot))
+
+(deftest supplied-runtime-snapshot-records-survive-pinned-serialization
+  (doseq [snapshot (source-shaped-snapshots)]
+    (let [{:keys [method capture]} (fixture-with-snapshot snapshot)
+          capture-bytes (bytes capture)
+          method (assoc method :capture-sha256 (hash-bytes capture-bytes))
+          method-bytes (bytes method)
+          pins [(hash-bytes method-bytes) (hash-bytes contract-bytes) (hash-bytes capture-bytes)]
+          result (evidence/verify-capture! (first pins) method-bytes contract-bytes capture-bytes)
+          readback (edn/read-string (String. capture-bytes "UTF-8"))]
+      (is (= :consistent (:status result)))
+      (is (= snapshot (get-in readback [:producer-provenance :repository-snapshot])))
+      (is (= pins [(:method-sha256 result) (:contract-sha256 result) (:capture-sha256 result)]))
+      (is (= pins [(hash-bytes method-bytes) (hash-bytes contract-bytes) (hash-bytes capture-bytes)]))
+      (is (= result (edn/read-string (String. (bytes result) "UTF-8"))))
+      (is (false? (:real-evidence-accepted? result)))
+      (is (false? (:cache-admission? result)))
+      (let [changed (update-in capture [:producer-provenance :repository-snapshot :hashed-byte-count] inc)]
+        (is (not= (hash-bytes capture-bytes) (hash-value changed)))
+        (is (= :capture-digest
+               (field #(evidence/verify-capture! (first pins) method-bytes contract-bytes (bytes changed)))))
+        (is (not= (:capture-sha256 result)
+                  (:capture-sha256 (check (assoc (fixture-with-snapshot snapshot) :capture changed)))))))))
+
+(deftest unknown-or-incomplete-producer-snapshots-refuse
+  (doseq [snapshot (source-shaped-snapshots)]
+    (doseq [key (keys snapshot)]
+      (is (= :producer-snapshot
+             (field #(check (fixture-with-snapshot (dissoc snapshot key)))))
+          (str (:snapshot-engine snapshot) " missing " key)))
+    (doseq [[key value] [[:schema :unknown] [:snapshot-engine :unknown]
+                         [:repository-identity (hash-value :wrong-source)]
+                         [:path-count -1] [:hashed-path-count "2"] [:hashed-byte-count nil]
+                         [:unexpected true]]]
+      (is (= :producer-snapshot
+             (field #(check (fixture-with-snapshot (assoc snapshot key value)))))
+          (str (:snapshot-engine snapshot) " wrong " key))))
+  (is (= :producer-snapshot (field #(check (fixture-with-snapshot nil))))))
+
+(deftest full-provenance-does-not-enable-miss-hit-or-failed-capture
+  (doseq [snapshot (source-shaped-snapshots)]
+    (doseq [decision [:miss :hit]]
+      (let [f (fixture-with-snapshot snapshot)
+            report (-> (:report f)
+                       (assoc :child-cache-hit? (= :hit decision) :tests-executed? (= :miss decision))
+                       (assoc-in [:child-cache-receipt :decision] decision))]
+        (is (= :report
+               (field #(check (assoc-in f [:capture :report-edn] (pr-str report))))))))
+    (is (= :terminal
+           (field #(check (assoc-in (fixture-with-snapshot snapshot)
+                                      [:capture :terminal :natural-exit?] false)))))))
+
+(deftest full-snapshots-retain-provenance-identity-refusals
+  (doseq [snapshot (source-shaped-snapshots)]
+    (let [f (fixture-with-snapshot snapshot)
+          provenance (get-in f [:capture :producer-provenance])]
+      (doseq [changed [(assoc-in provenance [:revision :commit] (apply str (repeat 40 "c")))
+                       (assoc provenance :consumed-input-identity (hash-value :wrong-input))
+                       (assoc-in provenance [:child-runtime-identity :sha256] (hash-value :wrong-runtime))
+                       (update provenance :classpath-identities #(vec (reverse %)))]]
+        (is (= :producer-provenance
+               (field #(check (assoc-in f [:capture :producer-provenance] changed)))))))))

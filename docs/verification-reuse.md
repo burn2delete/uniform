@@ -1421,3 +1421,42 @@ source attribution; the changed output guard receives focused new controls
 rather than a repeated broad suite. Merged-commit CI40783760547 is terminal
 cancelled and supplies no successful result; it was not rerun or cancelled by
 this correction.
+
+#### Source-defined producer snapshot serialization
+
+The existing development wiring attaches its complete `:snapshot` as
+`:test-producer-provenance :repository-snapshot`. The offline driver's initial
+exact-map comparison instead required only `:repository-identity`, rejecting
+those source-defined records unless their metadata was removed. The correction
+accepts the existing closed snapshot shapes without changing their encoding:
+
+- `:gravity/sh01-complete-repository-snapshot-v1` / `:full-content-v1`;
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-full-content-v2`; and
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-overlay-v2`, including tracked and overlay path counts.
+
+These shapes come directly from `full-repository-snapshot`,
+`full-index-repository-snapshot` and `incremental-repository-snapshot` in
+`sh01_development_loop_wiring.clj`. Their required counters are nonnegative
+integers, their schema/engine pairing is exact, and their repository identity
+must match the pinned binding. Missing/extra fields, unknown schema/engine
+pairs and wrong identities fail with `:producer-snapshot`. The legacy
+hash-only v1 record remains a supplied declaration. Source revision, consumed
+identity, ordered classpath, runtime and terminal checks remain intact.
+
+The original snapshot metadata remains in the raw capture bytes pinned by the
+method; no observer fields are dropped or reconstructed. An injected metadata
+change changes the capture/method pin, and the old pin rejects it. Schema and
+engine names identify serialization shapes, not proof that an observer ran.
+All new controls supply these fields and terminal facts explicitly; none are
+captured runtime observations. The consistency result retains
+`:real-evidence-accepted? false` and `:cache-admission? false`.
+
+This does not add a runtime observer or a new miss/hit format. The current
+fresh-only wiring returns before producing the cache-enabled runtime/provenance
+bundle; that operational observation gap remains. Miss/hit claims, failed
+terminal records, and mismatched source/runtime/classpath provenance still
+refuse. Independent review of the actual observer/serializer method, separately
+admitted execution, real producer/reuse/invalidation evidence and result review
+remain the original RV2/RV4 gates. No schema-shaped fixture discharges them.
