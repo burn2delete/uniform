@@ -148,7 +148,107 @@ and human-review boundaries. Remaining tasks, all open: implement declaration
 lowering; connect model/tool/memory providers with explicit policies; implement
 structured-output and taint validation; connect human review and replay;
 execute evaluations plus prompt-injection, missing-review, cross-tenant and
-unvalidated-output rejection fixtures. Yes/no acceptance: does untrusted output
+unvalidated-output rejection fixtures.
+
+Source acceptance for A1-A11 remains open. A1: lower all declared AI forms
+through syntax, typed core and legal profiles into linked manifests, preserving
+source/macro origins, every AI effect, explicit replay modes and runtime audit
+records. Reject ambient credentials, hidden adapter effects, missing model or
+schema identities, generated source bypassing the normal compiler pipeline,
+and privileged deployments without review policy or required evaluation evidence.
+
+A2: normalize provider/model declarations, including adapter, endpoint, modes,
+version/tokenizer, schema enforcement, retention and credential requirements.
+Require a provider handle in addition to the effect; network access alone is
+insufficient. Check embedding dimensions, CI live-call allowance, fallback
+mode/schema/retention/evaluation compatibility and floating-identity upgrades.
+Record reproducibility parameters, response/refusal/validation state, typed
+failure classes, drift and retry/fallback decisions. Pinned audit replay rejects
+identity mismatch. Secret/no-store bodies stay out of prompts, memory, datasets
+and ledgers; retain permitted hashes, validation facts and observed cost/latency.
+Preserve real external spending/account preflight before issuing paid calls.
+
+A3: emit typed prompt schemas, tool visibility, authority/taint maps, render
+hashes and compatibility policy. Validate format/schema, canonicalization,
+per-field taint and intended use before typed output admission. Reject arbitrary
+model-selected schemas, illegal partial outputs, undeclared tools and breaking
+output changes mislabeled compatible. Refusals follow a typed branch; repair
+policy and attempts are recorded. Secret-to-provider flow requires explicit
+policy; no-store responses retain only permitted hashes and facts.
+The inherited prompt-authority bridge retains approved sanitizer OR approved
+delimiter policy without promoting data to instruction authority or clearing
+source/taint, grant, secret or review obligations.
+
+A4-A5: emit tool and agent manifests with complete dependencies and separate
+memory read/write modes. Tool declaration, agent toolset, package/deployment
+grant, scoped runtime handle and policy must all agree. Plans and model text
+grant no authority. Validate tool and agent results, expose implementation
+effects, normalize foreign errors, redact logs and model-facing descriptions,
+and record agent identity on every invocation event. Privileged tools require
+review policy; non-idempotent retries/replay require declared idempotency or
+compensation. Generated agent source re-enters compiler validation.
+
+A6: consume the Workflow task's typed graph, state/event-log schemas, durable
+transitions and replay records. Preserve node effects, capabilities, idempotency,
+review payload binding, retry/compensation and lowering metadata. Validate
+branch inputs and typed/effect-checked compensation. Record or forbid model,
+tool, memory, random, clock and external IO nondeterminism; reject unsafe repeated
+side effects, changed review payloads and incompatible graph/state/log evolution
+without migration. Replay fixtures reuse the actual recorded decisions.
+
+A7: emit memory item/metadata schemas, provenance, partitions, retention,
+redaction, indexing, embedding and replay policies. Enforce separate scoped
+read/write and embedding capabilities. Reject invalid writes, unauthorized
+protected-data embedding/persistence, implicit cross-tenant sharing, retrieved
+instruction authority, incompatible index reuse and fresh retrieval where a
+recorded result is required. Record query/result ids, scores, embedding identity
+and old/new embedding lineage. Deletion/redaction must remove stale retrievable
+entries and update indexes and ledgers.
+
+A8: compile explicit production policy and deterministic layered decisions with
+deny precedence. Later policies cannot silently broaden authority. Record action
+identity, effects/capabilities, data/taint, review, eval and replay facts and the
+resulting rule/decision. Reject cyclic policy, unsafe fallback, unvalidated output
+or generated code and protected-data logging. Authority-broadening changes need
+compatibility/security review; emergency overrides are explicit, scoped,
+time-bound and auditable, with no new capability implied.
+
+A9: produce versioned dataset/schema/provenance/split artifacts and eval reports
+bound to every behavior-changing subject/model/prompt/tool/memory/policy/runtime
+identity. Record changed artifacts, metric direction/threshold/aggregation and
+confidence/sample or variance rules, seeds/traces, redacted samples or hashes,
+probe results and release decisions. Required safety probes cover injection,
+tool misuse, denial, schema failure, refusal and protected-data leakage. Reject
+absent/stale/incompatible release evidence, name-similarity fallback, missing
+probes or thresholds and unauthorized live-provider evaluation; preserve real
+credentials, provider spend/account policy and report-signing requirements.
+
+A10: compile typed review declarations with action, actor/role, displayed evidence
+and evidence hash, payload hash, timestamp, expiry, revocation, denial/timeout,
+replay and emergency rules. Block required actions until matching valid review;
+reject absent records, wrong roles, changed payloads, expiry or revocation.
+Display enough typed evidence for the decision, follow denial as a workflow
+outcome, and reuse recorded decisions only under the declared replay policy.
+Audit requests and lifecycle transitions with redaction and permitted hashes.
+
+A11: keep user/web/file/package/retrieved/tool/model content in its declared
+data authority, preserving taint back into model context. Data cannot grant
+tools or change policy. Reject instruction promotion, unauthorized secret flow,
+unvalidated tool output and generated source, and privileged releases without
+defense probes. Monitor escalation, override and exposure attempts; incident
+bundles reconstruct prompt, taint, tool, memory, policy and workflow decisions
+without exposing protected raw content. Each source's diagnostic identifiers
+and contextual fields and its positive/negative conformance fixtures are part
+of acceptance, not separate implementation tasks.
+
+The exact mixed A1/A3/A5/A6 call-count, repair-attempt and retry-accounting
+clauses remain unresolved in the bounded family proposal; they cannot receive
+acceptance by linking this task. Remove synthetic project/compiler work quotas
+under current accounting policy while preserving real external billing/account
+limits, semantic representability and actual host restrictions. Do not silently
+supersede a mixed source clause or invent a replacement work allowance.
+
+Yes/no acceptance: does untrusted output
 remain data? Are actions denied without grants/review? Are evaluations bound to
 exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
 Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
