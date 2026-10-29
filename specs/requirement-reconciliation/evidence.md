@@ -1732,6 +1732,38 @@ The561 historical bindings and1262 current spans survive unchanged. No
 implementation or count credit follows; granularity,ACC,full facet entailment,
 independent final counting andcoordinator integration remain required.
 
+### Governance14 closes the new-allocation review queue
+
+The completed independent Governance14 review is bound to frozen `63284c85`,
+tree `3f50a43e51df88cda74c80155d2dbe45225588d8`, with receipt SHA256
+`67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3`.
+The reviewer was assigned after the earlier Core-author conflict was identified;
+that conflict was not a denied action or review PASS. The replacement review
+checks authorship/reservation,469 memberships,nine original documents and the
+14 output/refusal/dependency/role contracts. Four tests/2489 assertions include
+coherently rehashed missing-refusal mutants for every assigned decision,
+reversed downstream Release prerequisites and stale/forged evidence controls.
+Other Performance/AI semantics and enclosing own Tooling/Platform predicates
+receive no independent semantic acceptance from this review.
+
+The current applicability at `bd2d96dfe53ec9828437da6b4e5651df5271316b`
+authenticates receipt, reproduction/check/control artifacts, frozen inputs and
+the reviewer's separate `094521aa` applicability record. All14 selected current
+decision records are unchanged. Fifty exact criterion witnesses and declared
+dependency contexts bind to current tasks; reversing the eight later Bootstrap
+field appends reconstructs all50 registry task/plan files at the frozen review.
+All240 original contracts remain unchanged. The later Bootstrap clauses derive
+their acceptance solely from their own separate receipt.
+
+Adoption `fc9eeaf6` adds exactly14 qualified reviews:all530 new allocations
+are now qualified,zero allocation reviews pending,all833 current decisions Open
+and allocated,zero unallocated. Original303 review scopes remain separately
+recorded. Governance outputs do not select human policy or implement their
+dependencies; Build consumes governance artifacts and Release is downstream.
+All561 historical acceptances and1262 current spans are preserved. The13-sibling
+repartition and its current routing,legacy ACC scope,whole-facet entailment,
+independent final counting andcoordinator integration still require completion.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,

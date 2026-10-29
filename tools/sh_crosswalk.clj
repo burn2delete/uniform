@@ -1430,6 +1430,24 @@
  :applicability
  "specs/requirement-reconciliation/bootstrap25-qualified-current-applicability.edn",
  :reviewed-records 25}
+    :governance14-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/governance14-qualified-review-adoption.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 530,
+ :pending-allocation-review 0,
+ :source-memberships 469,
+ :source-commit "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :current-criteria 50,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :applicability
+ "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+ :reviewed-records 14}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

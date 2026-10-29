@@ -13856,6 +13856,24 @@
    "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
    :reviewed-records 2},
   :status :pending-source-version-review,
+  :governance14-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/governance14-qualified-review-adoption.edn",
+   :remaining-allocation-work 0,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :qualified-source-review-adoptions 530,
+   :pending-allocation-review 0,
+   :source-memberships 469,
+   :source-commit "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :current-criteria 50,
+   :historical-adoptions-preserved 561,
+   :total-concrete-links 833,
+   :applicability
+   "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+   :reviewed-records 14},
   :safety107-current-composition
   {:allocation-source-commit
    "e8b30404da883433274acf7eabb90e9077f56e8e",
