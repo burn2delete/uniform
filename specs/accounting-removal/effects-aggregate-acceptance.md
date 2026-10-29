@@ -191,6 +191,29 @@ normal API for its directly owned parent. No PID lookup or replacement generic
 controller is supplied. Profile preparation and review do not approve C/L
 participation, the source creation envelope, platform admission or execution.
 
+The selected PMK successor installs `effects-retained-git/read-output` through
+the thread-local `effects-acceptance/*git-reader*` at all three roles' source
+bookends. The default preparation route remains unchanged. The Git-specific
+binding delegates to the canonical retained Process/token API, closes unused
+stdin, preserves `git -C root args` order and inherited configuration/environment,
+and consumes only complete valid UTF-8 capture with a zero exit and tracked
+terminal state. It reuses finalization and preserves original interruption/errors;
+it does not create another process controller or normalize global coverage.
+Pinned actual `clojure.java.shell/sh` forms under a fake exec provide comparison
+controls for argv, environment/cwd inheritance, stream decoding, stdin and exit.
+Git stdout limits are derived from the exact authenticated source sizes; the
+one-MiB child report limit would truncate several legitimate Git source blobs.
+
+The former 3,600-second limits are conservative explicit maxima, not measured
+PMK-duration claims or measurement prerequisites. A proposed successor schedule
+accounts for startup/initial verification, parent execution, Git wait/capture/
+cleanup, post-verification and terminal reserves. Its external whole-operation
+facility is explicitly unbound: an in-JVM clock cannot supervise its own startup,
+and a response-yield interval is not an external process timeout. No supported
+external deadline is fabricated and no generic wrapper is added. The preserved
+proposal's C/L order is acceptable in principle only; that decision supplies
+neither complete method acceptance nor platform authorization.
+
 `lease-validation-request` additionally pins the existing SH-01 broker source and its
 existing acquire, live-token validation and release ports. `observe-under-lease!`
 uses caller-installed ports to acquire the frozen lease in the parent. New PMK

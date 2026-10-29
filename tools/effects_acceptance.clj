@@ -55,10 +55,15 @@
           (if (= ::eof form) out (recur (conj out form))))))))
 (defn definitions [text kind]
   (into {} (for [f (forms text) :when (and (seq? f) (= kind (first f)))] [(second f) f])))
+(def ^:dynamic *git-reader*
+  "Exact profile-installed Git reader; nil retains compiler-free preparation."
+  nil)
 (defn git-output [root & args]
-  (let [{:keys [exit out]} (apply shell/sh "git" "-C" (str root) args)]
-    (require! (zero? exit) :git-read)
-    out))
+  (if *git-reader*
+    (*git-reader* root (vec args))
+    (let [{:keys [exit out]} (apply shell/sh "git" "-C" (str root) args)]
+      (require! (zero? exit) :git-read)
+      out)))
 (defn git [root & args] (str/trim (apply git-output root args)))
 (defn snapshot [root main]
   (require! (boolean (re-matches #"[0-9a-f]{40}" main)) :main-identity)
