@@ -164,6 +164,21 @@ helper mappings remain explicit rather than being treated as missing features.
   separate work accounting and independent acceptance remain open. A prohibited
   cache-cleanup command was rejected and not retried; the generated local lint
   cache remains untracked, without an integration/clean-worktree claim.
+- ACC-01 owns stacked carrier admission draft PR613 at
+  `5ebff5cae276ddd93b002a28806a1c363687f7c9`, tree
+  `aa6a3d0d21905452338262c48dce94e2b9b8dce3`, based on PR599's exact
+  `b786b464`. Its `carrier-admission.md` and `carrier-admission-census.edn`
+  bind the complete historical native-DATA preflight and imported-result wrapper,
+  four historical aggregate/max helper absences, three orphan policy-field
+  deletions, five unchanged native dependencies and all eleven direct C7 source callers.
+  The imported-producer diagnostic changes only core-bound to core-invalid.
+  Existing imported/shape/coverage controls are reconciled; two actual-C7 native
+  kernels add beyond-quota positives and equally late invalid carriers, complete
+  native class/metadata/cycle/malformed-value and callback obligations. Source
+  checks, boundary 6/11, docs/roadmap and unchanged lint findings pass (zero errors,
+  72 warnings). Genuine kernels, source coverage, public/authenticated paths and
+  composed acceptance remain unrun. Other structural/core/inference accounting,
+  independent acceptance and fresh main integration stay open.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
@@ -178,7 +193,7 @@ helper mappings remain explicit rather than being treated as missing features.
 - Routine CI completed with seven successes and two skips for PR591 at
   `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`,
   PR599 at `b786b464`, PR610 at `2b70fac2`, PR611 at `edef2c00` and this evidence
-  draft's prior head `9f64bb34`. Those catalogs do
+  draft's prior head `7ad92e84`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
 ## Every original authored path
@@ -282,10 +297,10 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 
 | Original authored path | Supported disposition and exact remaining obligation |
 | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. The dispatch source map separately pins four C7 DSE-dispatch correspondences under explicit helper aliases. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. The dispatch source map separately pins four C7 DSE-dispatch correspondences under explicit helper aliases. PR613 supplies the historical native carrier preflight/imported-result wrapper, four retired helpers and exact dependent caller/policy/test changes; its genuine acceptance remains open. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. PR610 removes only the Set source descriptor operand-work field; full-equality consumers remain unchanged and genuine acceptance is pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid control definitions, pending genuine execution and independent acceptance. The dispatch source map pins five Effects DSE-dispatch units, including two explicit guard differences and an additional selector difference; independent mapping disposition is pending. DSE joins, remaining predicate/query/construction headers, nil/List work accounting and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. PR610 removes only the Set source descriptor operand-work field with unchanged full-equality consumers and genuine acceptance pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid controls, pending genuine execution and independent acceptance. The dispatch source map pins three emitter DSE forwarding/caller units and two exact inline direct-call helper bodies, pending independent disposition. Direct-call source/type/arity/order acceptance, remaining join accounting and descriptor consumers remain open. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores nine GIS3/native tests; PR595 restores five join tests; PR599 restores the exact ordinary construction test and adds the explicit qualified/fresh-verifier controls. PR610 reconciles two Set kernels with absent metadata and coherent obsolete-field forgeries, retiring their payment/width-only refusal assertions while preserving independent semantic checks. Genuine execution remains unrun. Structural-vector, opaque-ordering, other public-verifier and old-only cases still need test-level mapping, not a whole-file incorporation claim. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores nine GIS3/native tests; PR595 restores five join tests; PR599 restores the exact ordinary construction test and adds the explicit qualified/fresh-verifier controls. PR610 reconciles two Set kernels with absent metadata and coherent obsolete-field forgeries, retiring their payment/width-only refusal assertions while preserving independent semantic checks. PR613 reconciles three imported/shape controls and appends native carrier extent/callback/cycle/class controls; all other parent test bytes are conserved. Genuine execution remains unrun. Structural-vector, opaque-ordering, other public-verifier and old-only cases still need test-level mapping, not a whole-file incorporation claim. |
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
 | `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | The unchanged original reader-only controls pass 2/223 on pinned current source, including precedence and full private constraint/fact source bodies. Together with PR359's finite evidence this supports a proposed incorporation decision, still awaiting independent acceptance. |

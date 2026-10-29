@@ -118,9 +118,20 @@ parameters/charges/refusals remain explicit open obligations. This follow-up
 does not rewrite the original machine snapshot or grant whole-function credit
 to a later caller or composition.
 
-Other authored-base identities include the shared C7 carrier preflight and its
-aggregate helpers, coordinator/receipt/source validation, conditional List-element
-checks in Effects/emitter and selected schema/caller cells. Each requires its
+The shared C7 carrier preflight and its four obsolete aggregate/max helpers now
+have source successor PR613 at `5ebff5cae276ddd93b002a28806a1c363687f7c9`,
+tree `aa6a3d0d21905452338262c48dce94e2b9b8dce3`, parent PR599 `b786b464`.
+Its source census pins the historical preflight/public imported-result wrapper,
+four historical absences, three orphan policy deletions and five unchanged
+native dependencies. All eleven direct callers and exact diagnostic/test/coverage
+adaptations are accounted for. Actual native/late-invalid/callback/producer and
+source-coverage execution, independent acceptance and composed integration remain
+pending. Remaining structural/core/inference limits are explicit open work; the
+original machine snapshot and its state totals remain unchanged.
+
+Other authored-base identities include C7 coordinator/receipt/source validation,
+conditional List-element work in Effects/emitter and selected schema/caller
+cells. Each requires its
 actual source/contract/caller disposition. The machine table names every unit;
 this prose does not replace that work or assign broad completion credit to a
 family label.
