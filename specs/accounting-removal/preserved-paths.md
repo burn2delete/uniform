@@ -122,6 +122,23 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Predicate source proposal
+
+[Predicate source comparison](predicate-source-disposition.edn) checks all eleven
+families named by the preserved predicate test against the same three pinned
+owner inputs at `0f7acce5`. All 44 complete source, finish, constraint and call-fact
+bodies agree after the record's explicit helper-symbol correspondences. Every
+descriptor omits `:operand-type-work`; semantic `get` mutations break each body
+comparison. This supplies source parity without changing production code.
+
+The record separately compares all 36 helper correspondences: 30 complete bodies
+match under those names. The shared all/ordered-child helpers and List predicate
+call-id helpers account for six nonmatching bodies; their semantics are not
+inferred from the source parity. The original Bootstrap-dependent test was not
+run. Its actual derive, Effects context/joins, typed lowering, runtime result,
+coherent field forgeries, late-invalid types and opaque zero-callback controls
+remain unresolved. Independent source disposition is also pending.
+
 Each row retains its unresolved obligation. "Selected integration" identifies
 only the named subfamily. Rows with unresolved controls are not terminal
 incorporation/rejection decisions. No old-only semantic test is discarded.
@@ -139,7 +156,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. The mapping record identifies four current tests: two complete relocated bodies, the PR507 validation API migration, and stronger active/inactive legacy census controls. Independent disposition of this source mapping remains open. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | The unchanged original reader-only controls pass 4/167 for complete reconstruction parity, semantic field drift and full consumer equality on pinned current source. This supplies the missing source-level evidence, not a fresh three-owner semantic run or independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Original reader controls remain NONPASS with five failures. Supplemental source comparisons isolate four superseded routing-mismatch assertions and the missing native-guard name correspondence after checking complete guard bodies. All original results and current source/tamper obligations remain explicit pending independent adaptation disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | Complete three-owner predicate descriptor parity remains uncovered by PMK/inferred-insertion drafts; retain actual invalid-input obligations. |
+| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. Six helper differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. The source proposal awaits independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | PR462 is runtime conversion only. Typed LSET both-order row/fact composition and forged joins still require disposition separately from payment assertions. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | Private alias repair does not establish all public Map-key mixed-ledger controls. Retain semantic composition/forgeries while classifying payment-only assertions. |
