@@ -488,6 +488,16 @@ helper mappings remain explicit rather than being treated as missing features.
   Source correspondence, boundary 6/11, zero-finding lint, docs/roadmap and
   whitespace pass. Both genuine tests are UNRUN; independent review, parent
   acceptance and integration remain open. No denied selector was retried.
+- PR631 initial `508e9360` static CI is NONPASS for a new blank line at EOF,
+  run `40966217048`/job `123771287698`; changed-file lint had zero findings.
+  The earlier local whitespace claim missed the untracked file and is
+  superseded. Corrected head `df1688b26123247e2c20eaf218ebcf7592481b15`, tree
+  `f97d45e232e67cb3097b7c7fc54cd7e447202de5`, removes only one final newline
+  from the test and updates provenance/documentation. [Readback](descriptor-set-controls-disposition.edn)
+  verifies the final file, nine definition pins, unchanged reader forms, only
+  three added paths and complete tracked parent-relative whitespace. Boundary
+  6/11 and zero-finding lint pass; current-head CI and independent review remain
+  separate. Initial failure and the genuine UNRUN boundary are retained.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
