@@ -593,3 +593,73 @@
                        [[:x [:ref :y]] [:x [:ref :y]] [:y [:ref :x]]]
                        [[:x [:ref :outside]]]]]
       (is (= #{} (alias-component-model {:equations equations}))))))
+
+(defn alias-declaration-conjunction-model
+  "Finite constraint-satisfaction oracle. Fixture source identities are DATA,
+  not authentication. No candidate type is assigned to a source binding."
+  [{:keys [sources requirements observations] :as case}]
+  (let [atomic #{:gravity.type/i8 :gravity.type/string :gravity.type/bool}
+        evidence (mapv (fn [r]
+                         (let [matches (filter #(= (:source-id r) (:id %)) sources)]
+                           (when (and (= 1 (count matches))
+                                      (= (select-keys r [:binding-id :type :producer :relation])
+                                         (select-keys (first matches) [:binding-id :type :producer :relation]))
+                                      (= :parameter-declaration (:producer r))
+                                      (= :declared-parameter-compatibility (:relation r)))
+                             (first matches)))) requirements)
+        checked (filter #(atomic (:type %)) evidence)
+        solutions (set (filter (fn [candidate] (every? #(= candidate (:type %)) checked)) atomic))
+        status (cond
+                 (empty? (alias-component-model case)) :unsupported-component
+                 (some nil? evidence) :invalid-source-premise
+                 (and (seq checked) (empty? solutions)) :conflicting-scalar-declarations
+                 (< (count checked) (count requirements)) :unsupported
+                 (empty? checked) :unconstrained
+                 :else :compatible-scalar-declarations)]
+    {:status status :requirements requirements :observations observations
+     :normalization :unresolved :inferred-type :gravity.type/unknown}))
+
+(deftest mandatory-alias-constraints-are-conjoined-without-selecting-a-seed
+  (let [source (fn [id binding type]
+                 {:id id :binding-id binding :type type :producer :parameter-declaration
+                  :relation :declared-parameter-compatibility})
+        requirement (fn [s] (assoc (dissoc s :id) :source-id (:id s)))
+        x (source :sx :x :gravity.type/i8) y (source :sy :y :gravity.type/i8)
+        base {:equations [[:tail [:ref :x]] [:x [:ref :y]] [:y [:ref :x]]]
+              :sources [x y] :requirements (mapv requirement [x y])
+              :observations {:x :gravity.type/i8 :y :gravity.type/string}}
+        check (fn [case status]
+                (let [r (alias-declaration-conjunction-model case)]
+                  (is (= status (:status r)))
+                  (is (= (:requirements case) (:requirements r)))
+                  (is (= (:observations case) (:observations r)))
+                  (is (= :unresolved (:normalization r)))))]
+    (check base :compatible-scalar-declarations)
+    (check (assoc base :requirements [] :sources []) :unconstrained)
+    (let [other (source :sy :y :gravity.type/string)
+          conflict (assoc base :sources [x other] :requirements (mapv requirement [x other]))]
+      (check conflict :conflicting-scalar-declarations)
+      (check (update conflict :requirements #(vec (reverse %))) :conflicting-scalar-declarations)
+      (check (assoc conflict :observations {:x :gravity.type/string :y :gravity.type/i8}) :conflicting-scalar-declarations)
+      (let [pending (source :st :tail :gravity.type/map)]
+        (check (assoc conflict :sources [x other pending] :requirements (mapv requirement [x other pending]))
+               :conflicting-scalar-declarations)))
+    (let [tail (source :st :tail :gravity.type/string)]
+      (check (assoc base :sources [x y tail] :requirements (mapv requirement [x y tail]))
+             :conflicting-scalar-declarations))
+    (let [bare (source :sx :x :gravity.type/map)
+          refined (source :sy :y {:kind :gravity.type/map :member-types [] :shape :literal})]
+      ;; Raw inequality is not a Map boundary compatibility proof or conflict.
+      (check (assoc base :sources [bare refined] :requirements (mapv requirement [bare refined])) :unsupported))
+    (doseq [changed [(assoc-in base [:requirements 0 :type] :gravity.type/string)
+                     (assoc-in base [:requirements 0 :source-id] :missing)
+                     (update base :sources conj x)
+                     (assoc-in base [:requirements 0 :producer] :caller-asserted-authority)
+                     (assoc-in base [:requirements 0 :relation] :all-seeds-are-equality)]]
+      (check changed :invalid-source-premise))
+    (doseq [equations [[[:x [:ref :y]] [:y [:vector [:ref :x]]]]
+                       [[:x [:call [:ref :callback] [:ref :y]]] [:y [:ref :x]]]
+                       [[:x [:ref :y]] [:x [:ref :y]] [:y [:ref :x]]]]]
+      (check (assoc base :equations equations) :unsupported-component))
+    (check (assoc base :cached-proof {:status :accepted :type :gravity.type/string})
+           :compatible-scalar-declarations)))

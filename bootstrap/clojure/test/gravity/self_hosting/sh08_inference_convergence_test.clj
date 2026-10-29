@@ -503,3 +503,87 @@
       (is (= (:diagnostics rejected) (:diagnostics result)))
       (is (= :rejected (:status result))))
     (is (= base (invoke 'retain-alias-source-premises [base [] origins observation])))))
+
+(defn- scalar-alias-declaration [binding symbol type]
+  {:binding-id binding :type type :producer :parameter-declaration
+   :required-relation :declared-parameter-compatibility
+   :source-records [{:function-syntax-id :source-function :parameter-binding-ids [binding]
+                     :signature {:parameters [{:type-symbol symbol :type-id type}]}}]})
+
+(deftest alias-conjunction-checks-all-source-declarations-without-choosing-a-type
+  (let [x (scalar-alias-declaration :x 'I8 :gravity.type/i8)
+        y (scalar-alias-declaration :y 'I8 :gravity.type/i8)
+        premise {:members [:x :y] :edges [{:reference-node {:node-id :rx}}]
+                 :source-seed-conjunction [x y] :provisional-observations [{:binding-id :x :type :gravity.type/string}]}
+        checked (invoke 'check-alias-conjunction [premise])
+        conflict (assoc premise :source-seed-conjunction [x (scalar-alias-declaration :y 'String :gravity.type/string)])]
+    (is (= :compatible-scalar-declarations (get-in checked [:compatibility-decision :status])))
+    (is (= [x y] (mapv :constraint (get-in checked [:compatibility-decision :checks]))))
+    (is (= (:provisional-observations premise) (:provisional-observations checked)))
+    (is (= :unresolved (:normalization checked)))
+    (is (= :not-established (:grounding checked)))
+    (is (= :conflicting-scalar-declarations
+           (get-in (invoke 'check-alias-conjunction [conflict]) [:compatibility-decision :status])))
+    (is (= :conflicting-scalar-declarations
+           (get-in (invoke 'check-alias-conjunction [(update conflict :source-seed-conjunction #(vec (reverse %)))])
+                   [:compatibility-decision :status])))
+    (doseq [bad [(assoc x :type :gravity.type/string)
+                 (update x :source-records #(conj % (first %)))
+                 (assoc x :producer :caller-asserted-authority)
+                 (assoc x :required-relation :every-seed-is-equality)]]
+      (is (= :invalid-source-premise
+             (get-in (invoke 'check-alias-conjunction [(assoc premise :source-seed-conjunction [bad y])])
+                     [:compatibility-decision :status]))))
+    (let [bare (scalar-alias-declaration :x 'Map :gravity.type/map)
+          checked (invoke 'check-alias-conjunction [(assoc premise :source-seed-conjunction [bare y])])]
+      (is (= :unsupported (get-in checked [:compatibility-decision :status])))
+      (is (= [bare y] (mapv :constraint (get-in checked [:compatibility-decision :checks]))))
+      (let [checked (invoke 'check-alias-conjunction [(update conflict :source-seed-conjunction conj bare)])]
+        (is (= :conflicting-scalar-declarations (get-in checked [:compatibility-decision :status])))
+        (is (true? (get-in checked [:compatibility-decision :unsupported-obligations-retained?])))))
+    (let [empty (invoke 'check-alias-conjunction [(assoc premise :source-seed-conjunction [])])]
+      (is (= :unconstrained (get-in empty [:compatibility-decision :status])))
+      (is (= :unresolved (:normalization empty))))))
+
+(deftest alias-conjunction-diagnostics-preserve-existing-semantic-and-resource-failures
+  (let [x (scalar-alias-declaration :x 'I8 :gravity.type/i8)
+        y (scalar-alias-declaration :y 'String :gravity.type/string)
+        premise (invoke 'check-alias-conjunction
+                        [{:members [:x :y] :edges [{:reference-node {:node-id :rx}}]
+                          :source-seed-conjunction [x y]}])
+        base {:convergence-status :nonconverged :diagnostics [{:reason :bounded-function-type-inference-nonconvergence}]
+              :binding-types {:x :gravity.type/string :y :gravity.type/i8}
+              :round-count 3 :round-bound 64 :type-join-work-left 10}
+        checked (invoke 'apply-alias-conjunction-diagnostic [base [premise]])]
+    (is (= :type-conflict (:convergence-status checked)))
+    (is (= :alias-mandatory-declaration-conflict (get-in checked [:diagnostics 0 :reason])))
+    (is (= (dissoc base :diagnostics :convergence-status) (dissoc checked :diagnostics :convergence-status)))
+    (doseq [existing [(assoc base :convergence-status :resource-limit)
+                     (assoc base :diagnostics [{:reason :function-result-type-mismatch}])
+                     (assoc base :diagnostics [{:reason :typed-handler-source-join}])]]
+      (is (= existing (invoke 'apply-alias-conjunction-diagnostic [existing [premise]]))))
+    (let [ungrounded (invoke 'check-alias-conjunction [(assoc premise :source-seed-conjunction [])])
+          result (invoke 'apply-alias-conjunction-diagnostic [(assoc base :diagnostics []) [ungrounded]])]
+      (is (= "C7-ANNOTATION" (get-in result [:diagnostics 0 :rule])))
+      (is (= :alias-source-grounding-required (get-in result [:diagnostics 0 :reason]))))))
+
+(deftest alias-conjunction-cached-authority-and-identity-copies-are-reconstructed
+  (let [x (scalar-alias-declaration :x 'I8 :gravity.type/i8)
+        products {:function-records (:source-records x)}
+        functions {:source-function {:parameters [{:binding-id :x}]
+                                     :signature (get-in x [:source-records 0 :signature])}}
+        origins (invoke 'inference-seed-source-premises [products functions {} false false {} {} {}])
+        component {:members [:x :y] :edges [{:binding-id :x :dependency-binding-id :y}
+                                           {:binding-id :y :dependency-binding-id :x}]}
+        observations {:x :gravity.type/string :y :gravity.type/i8}
+        base {:convergence {:status :converged} :identity-input {:domain :fixture}
+              :artifact-id-request {:domain :fixture} :binding-types observations}
+        expected (invoke 'check-retained-alias-conjunctions [base [component] origins observations])]
+    (doseq [forged [(assoc-in expected [:convergence :alias-equivalence-premises 0 :members] [:different])
+                    (assoc-in expected [:convergence :alias-equivalence-premises 0 :source-seed-conjunction] [])
+                    (assoc-in expected [:convergence :alias-equivalence-premises 0 :normalization] :accepted)
+                    (assoc-in expected [:identity-input :convergence] {:authority :caller-approved})]]
+      (is (= expected (invoke 'check-retained-alias-conjunctions [forged [component] origins observations]))))
+    (is (= observations (:binding-types expected)))
+    (is (= (:convergence expected) (get-in expected [:identity-input :convergence])
+           (get-in expected [:artifact-id-request :convergence])))))

@@ -24101,6 +24101,14 @@
     :binding-types (get handler-products :seeds {}) :source-records (get handler-products :groups {})
     :required-relation :source-handler-binding-type}])
 
+(defn retain-alias-convergence-premises [result premises]
+  (if (= 0 (count premises)) result
+    (let [convergence (assoc (get result :convergence {}) :alias-equivalence-premises premises)
+          result (assoc result :convergence convergence)]
+      (if (map? (get result :identity-input))
+        (let [identity (assoc (get result :identity-input) :convergence convergence)]
+          (assoc result :identity-input identity :artifact-id-request identity)) result))))
+
 (defn retain-alias-source-premises [result components seed-producers observations]
   (if (= 0 (count components)) result
     (let [premises
@@ -24135,15 +24143,124 @@
                     :source-seed-conjunction constraints :provisional-observations prior
                     :compatibility-decision :not-performed :normalization :not-performed
                     :grounding (if (= 0 (count constraints)) :no-entry-seed-contribution :requires-producer-specific-compatibility)
-                    :authority :retained-source-inputs-not-independent-acceptance))))))
-          convergence (assoc (get result :convergence {}) :alias-equivalence-premises premises)
-          result (assoc result :convergence convergence)]
-      ; The existing convergence carrier survives downstream reconstruction.
-      ; Preserve the typed-core and top-level schemas, and bind the evidence
-      ; through the existing identity carriers. This adds no caller flag.
-      (if (map? (get result :identity-input))
-        (let [identity (assoc (get result :identity-input) :convergence convergence)]
-          (assoc result :identity-input identity :artifact-id-request identity)) result))))
+                    :authority :retained-source-inputs-not-independent-acceptance))))))]
+      (retain-alias-convergence-premises result premises))))
+
+(defn alias-declaration-source-check [constraint]
+  (let [id (get constraint :binding-id) type (get constraint :type)
+        matches
+        (loop [records (get constraint :source-records) out []]
+          (if (= 0 (count records)) out
+            (let [record (first records)]
+              (recur (rest records)
+                (loop [ids (get record :parameter-binding-ids)
+                       declarations (get (get record :signature) :parameters) values out]
+                  (if (= 0 (count ids)) values
+                    (recur (rest ids) (rest declarations)
+                      (if (= id (first ids))
+                        (conj values {:record record :declaration (first declarations)}) values))))))))]
+    (if (= 1 (count matches))
+      (let [witness (first matches) declaration (get witness :declaration)
+            atomic (sh08-ft-atomic-type-id (get declaration :type-symbol))]
+        (if (= type (get declaration :type-id))
+          (if (if (= atomic nil) false (= atomic type))
+            {:status :checked-scalar-declaration :constraint constraint :source-witness witness}
+            {:status :unsupported :reason :source-bound-declared-compatibility-required
+             :constraint constraint :source-witness witness})
+          {:status :rejected :reason :alias-declaration-type-source-mismatch :constraint constraint}))
+      {:status :rejected :reason :alias-declaration-source-not-unique :constraint constraint})))
+
+(defn alias-seed-constraint-check [constraint]
+  (let [producer (get constraint :producer) relation (get constraint :required-relation)]
+    (if (= producer :parameter-declaration)
+      (if (= relation :declared-parameter-compatibility)
+        (alias-declaration-source-check constraint)
+        {:status :rejected :reason :alias-seed-relation-source-mismatch :constraint constraint})
+      (if (contains? #{:recursive-or-higher-order-premise :imported-function :handler-binding} producer)
+        (if (= relation (get {:recursive-or-higher-order-premise :producer-premise-specific
+                             :imported-function :imported-function-type
+                             :handler-binding :source-handler-binding-type} producer))
+          {:status :unsupported :reason :alias-grounding-producer-compatibility-required :constraint constraint}
+          {:status :rejected :reason :alias-seed-relation-source-mismatch :constraint constraint})
+        {:status :rejected :reason :unknown-alias-seed-producer :constraint constraint}))))
+
+(defn check-alias-conjunction [premise]
+  ; Only the existing scalar declaration equality rule is checked here.
+  ; Map/List/function/proof/handler compatibility needs its actual source-bound
+  ; checker; neither inequality nor the presence of a seed supplies that proof.
+  (let [checks (loop [remaining (get premise :source-seed-conjunction) out []]
+                 (if (= 0 (count remaining)) out
+                   (recur (rest remaining) (conj out (alias-seed-constraint-check (first remaining))))))
+        supported (loop [remaining checks out []]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining)
+                        (if (= :checked-scalar-declaration (get (first remaining) :status))
+                          (conj out (get (first remaining) :constraint)) out))))
+        pairs (loop [remaining supported prior nil out []]
+                (if (= 0 (count remaining)) out
+                  (let [constraint (first remaining)]
+                    (recur (rest remaining) constraint
+                      (if (= prior nil) out
+                        (conj out {:argument (get constraint :type) :chosen (get prior :type)
+                                    :argument-source constraint :chosen-source prior}))))))
+        mismatch (sh08-ft-first-type-mismatch pairs)
+        invalid? (loop [remaining checks]
+                   (if (= 0 (count remaining)) false
+                     (if (= :rejected (get (first remaining) :status)) true (recur (rest remaining)))))
+        unsupported? (loop [remaining checks]
+                       (if (= 0 (count remaining)) false
+                         (if (= :unsupported (get (first remaining) :status)) true (recur (rest remaining)))))]
+    (assoc premise
+      :compatibility-decision
+      {:status (if invalid? :invalid-source-premise
+                 (if (= mismatch nil)
+                   (if unsupported? :unsupported
+                     (if (= 0 (count checks)) :unconstrained :compatible-scalar-declarations))
+                   :conflicting-scalar-declarations))
+       :checks checks :scalar-conflict mismatch
+       :unsupported-obligations-retained? unsupported?}
+      :grounding :not-established :normalization :unresolved
+      :normalization-reason :independent-source-grounding-required)))
+
+(defn check-retained-alias-conjunctions [result components seed-producers observations]
+  ; Ignore any cached candidate premise. The factory supplies freshly matched
+  ; canonical components and reconstructed producer inputs, not authority flags.
+  (let [retained (retain-alias-source-premises result components seed-producers observations)
+        premises (get (get retained :convergence) :alias-equivalence-premises)
+        checked (loop [remaining premises out []]
+                  (if (= 0 (count remaining)) out
+                    (recur (rest remaining) (conj out (check-alias-conjunction (first remaining))))))
+        result (retain-alias-convergence-premises retained checked)] result))
+
+(defn alias-conjunction-diagnostic [premises]
+  (if (= 0 (count premises)) nil
+    (let [selected (loop [remaining premises invalid nil conflict nil]
+                     (if (= 0 (count remaining))
+                       (if (= invalid nil) (if (= conflict nil) (first premises) conflict) invalid)
+                       (let [premise (first remaining) status (get (get premise :compatibility-decision) :status)]
+                         (recur (rest remaining)
+                           (if (if (= invalid nil) (= status :invalid-source-premise) false) premise invalid)
+                           (if (if (= conflict nil) (= status :conflicting-scalar-declarations) false) premise conflict)))))
+          premise selected status (get (get premise :compatibility-decision) :status)]
+      {:node (get (first (get premise :edges)) :reference-node)
+       :rule (if (= status :invalid-source-premise) "C7-VERIFY"
+               (if (= status :conflicting-scalar-declarations) "C7-TYPE-MISMATCH" "C7-ANNOTATION"))
+       :reason (if (= status :invalid-source-premise) :alias-source-premise-mismatch
+                 (if (= status :conflicting-scalar-declarations) :alias-mandatory-declaration-conflict
+                   :alias-source-grounding-required))
+       :expected :compatible-mandatory-constraints-and-independent-source-grounding
+       :actual premise})))
+
+(defn apply-alias-conjunction-diagnostic [inference premises]
+  (let [issue (alias-conjunction-diagnostic premises) issues (get inference :diagnostics)
+        replaceable? (if (= 0 (count issues)) true
+                       (if (= 1 (count issues))
+                         (= :bounded-function-type-inference-nonconvergence (get (first issues) :reason)) false))]
+    (if (if (= issue nil) false
+          (if (= :resource-limit (get inference :convergence-status)) false replaceable?))
+      (assoc inference :diagnostics [issue]
+        :convergence-status (if (= "C7-TYPE-MISMATCH" (get issue :rule)) :type-conflict
+                              (get inference :convergence-status))) inference)))
 
 (defn sh08-ft-context-proof
   [recursive? higher-order? recursive-proof higher-order-proof]
@@ -24926,20 +25043,24 @@
                 final-functions
                 (if (sh08-rv? recursive-proof) (sh08-ft-final-functions functions)
                   (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
-            (let [result (sh08-ft-finish-function-type-core
-                           core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)
-                  components (inference-alias-components
+            (let [components (inference-alias-components
                                (get shape :nodes) (get products :lexical-bindings) (get products :definitions)
                                function-skeletons
                                (sh08-ft-source-join-context
                                  {:ordering-core core-artifact :lookup-bindings bindings
                                   :boolean-matches (get products :boolean-matches)
-                                  :loop-core (sh08-ft-loop-working-core core-artifact bindings)}))]
-              (if (= 0 (count components)) result
-                (retain-alias-source-premises result components
-                  (inference-seed-source-premises products function-skeletons imports recursive? higher-order?
-                    recursive-proof higher-order-proof handler-products)
-                  (get inference :binding-types))))))))
+                                  :loop-core (sh08-ft-loop-working-core core-artifact bindings)}))
+                  checked (if (= 0 (count components)) {}
+                            (check-retained-alias-conjunctions
+                              {} components
+                              (inference-seed-source-premises products function-skeletons imports recursive? higher-order?
+                                recursive-proof higher-order-proof handler-products)
+                              (get inference :binding-types)))
+                  premises (get (get checked :convergence) :alias-equivalence-premises [])
+                  inference (apply-alias-conjunction-diagnostic inference premises)
+                  result (sh08-ft-finish-function-type-core
+                           core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)]
+              (retain-alias-convergence-premises result premises))))))
         {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected
