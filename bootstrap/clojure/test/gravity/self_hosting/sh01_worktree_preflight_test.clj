@@ -92,23 +92,41 @@
 (defn- text-sha [value]
   ((ns-resolve 'workstream-composition 'sha256) value))
 
+(defn- held-fixture-record []
+  (-> (slurp "tools/fixtures/workstream_governance/accepted/minimal-ledger.json")
+      ((ns-resolve 'gravity.workstream-governance 'read-strict-json))
+      (get "workstreams") first
+      (assoc "id" "example-held" "state" "held"
+             "disposition" "Synthetic historical held storage fixture; no integration authority.")
+      (update "history" conj {"state" "held" "at" "2026-08-23T00:00:01Z"
+                              "actor" "synthetic-held-author"
+                              "reason" "Synthetic immutable held shard, not an integrated workstream."})))
+
 (defn- write-composition-ledger! [root record migration]
   (let [id (get record "id")
         path (str "contracts/workstream-active/" id ".json")
         text (str (canonical-json record) "\n")
-        aggregate (text-sha (canonical-json [record]))
+        held (held-fixture-record)
+        held-text (str (canonical-json held) "\n")
+        held-path (str "contracts/workstream-records/terminal/example-held-" (text-sha held-text) ".json")
+        aggregate (text-sha (canonical-json [record held]))
         manifest {"schema_version" 2 "contract_id" "gravity/workstream-ledger-v2"
                   "governance_contract" "contracts/workstream-governance.json"
                   "active_root" "contracts/workstream-active"
                   "record_root" "contracts/workstream-records"
-                  "record_count" 1 "active_count" 1 "terminal_count" 0
+                  "record_count" 2 "active_count" 1 "terminal_count" 1
                   "aggregate_sha256" aggregate "migration" migration
                   "records" [{"id" id "path" path "sha256" (text-sha text)
                               "ordinal" 0 "state" (get record "state") "terminal" false
                               "invariant_family" (get record "invariant_family")
-                              "dependencies" []}]}]
+                              "dependencies" []}
+                             {"id" "example-held" "path" held-path "sha256" (text-sha held-text)
+                              "ordinal" 1 "state" "held" "terminal" true
+                              "invariant_family" (get held "invariant_family") "dependencies" []}]}]
     (.mkdirs (.toFile (.resolve root "contracts/workstream-active")))
+    (.mkdirs (.toFile (.resolve root "contracts/workstream-records/terminal")))
     (spit (str (.resolve root path)) text)
+    (spit (str (.resolve root held-path)) held-text)
     (spit (str (.resolve root "contracts/workstream-ledger.json"))
           (str (canonical-json manifest) "\n"))))
 
@@ -121,13 +139,15 @@
                       (assoc "owned_paths" ["tracked.txt"]))
             migration-source (str (canonical-json {"schema_version" 1 "contract_id" "gravity/workstream-ledger-v1"
                                                    "governance_contract" "contracts/workstream-governance.json"
-                                                   "workstreams" [draft]}) "\n")
+                                                   "workstreams" [draft (held-fixture-record)]}) "\n")
             migration {"source_schema_version" 1 "source_contract_id" "gravity/workstream-ledger-v1"
                        "source_path" "contracts/workstream-ledger-v1.json"
                        "source_sha256" (text-sha migration-source)
-                       "decoded_record_count" 1 "parity" "exact"
-                       "decoded_aggregate_sha256" (text-sha (canonical-json [draft]))}]
+                       "decoded_record_count" 2 "parity" "exact"
+                       "decoded_aggregate_sha256" (text-sha (canonical-json [draft (held-fixture-record)]))}]
         (write-composition-ledger! root draft migration)
+        (spit (str (.resolve root "contracts/workstream-governance.json"))
+              (slurp "contracts/workstream-governance.json"))
         (spit (str (.resolve root "contracts/workstream-ledger-v1.json")) migration-source)
         (git! root "add" "contracts")
         (git! root "commit" "-qm" "immutable fixture source")
@@ -162,16 +182,20 @@
 (deftest governed-source-and-lifecycle-composition-bind-complete-identities
   (with-composition
     (fn [{:keys [root source options]}]
-      (let [[document code] (run-preflight root options)]
+      (let [[document code] (run-preflight root options)
+            manifest ((ns-resolve 'gravity.workstream-governance 'read-strict-json)
+                      (slurp (str (.resolve root "contracts/workstream-ledger.json"))))]
+        (is (true? (get (second (get manifest "records")) "terminal")))
         (is (zero? code) (pr-str (:diagnostics document)))
         (is (= source (get-in document [:source-composition :source-commit])))
         (is (= (:candidate-commit options) (get-in document [:source-composition :integration-commit])))
         (is (true? (get-in document [:source-composition :content-conserved])))
-        (is (re-matches #"[0-9a-f]{64}" (get-in document [:source-composition :manifest-sha256])))))))
+        (is (and (string? (get-in document [:source-composition :manifest-sha256]))
+                 (re-matches #"[0-9a-f]{64}" (get-in document [:source-composition :manifest-sha256]))))))))
 
 (deftest governed-composition-rejects-altered-content-and-tuples
   (doseq [scenario [:source :metadata-hash :metadata-authority :metadata-history
-                    :metadata-index :metadata-foreign :metadata-utf8 :base :head :tree
+                    :metadata-index :metadata-foreign :metadata-held-shard :metadata-utf8 :base :head :tree
                     :source-commit :source-tree :partial :dirty]]
     (testing (name scenario)
       (with-composition
@@ -185,17 +209,21 @@
                                   manifest ((ns-resolve 'gravity.workstream-governance 'read-strict-json) (slurp path))]
                               (spit path (canonical-json (assoc-in manifest ["records" 0 "state"] "draft"))))
             :metadata-foreign (spit (str (.resolve root "contracts/unrelated.json")) "{}\n")
+            :metadata-held-shard (let [held-text (str (canonical-json (held-fixture-record)) "\n")
+                                       held-path (str "contracts/workstream-records/terminal/example-held-"
+                                                      (text-sha held-text) ".json")]
+                                   (spit (str (.resolve root held-path)) "{}\n"))
             :metadata-utf8 (Files/write (.resolve root "contracts/workstream-active/example-candidate.json")
                                         (byte-array [(unchecked-byte 255)])
                                         (make-array java.nio.file.OpenOption 0))
             :dirty (spit (str (.resolve root "tracked.txt")) "uncommitted\n")
             nil)
           (when (#{:source :metadata-hash :metadata-authority :metadata-history
-                   :metadata-index :metadata-foreign :metadata-utf8} scenario)
+                   :metadata-index :metadata-foreign :metadata-held-shard :metadata-utf8} scenario)
             (git! root "add" ".")
             (git! root "commit" "-qm" "altered composition fixture"))
           (let [current (if (#{:source :metadata-hash :metadata-authority :metadata-history
-                              :metadata-index :metadata-foreign :metadata-utf8} scenario)
+                              :metadata-index :metadata-foreign :metadata-held-shard :metadata-utf8} scenario)
                           (merge options (expected-options root "origin/main" (:candidate-base options)))
                           options)
                 bad (apply str (repeat 40 "0"))

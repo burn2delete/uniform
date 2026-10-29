@@ -38,6 +38,9 @@
         (fn [commit]
           (let [text (read-file commit manifest-path)
                 manifest (wg/read-strict-json text)
+                policy (wg/read-strict-json (read-file commit "contracts/workstream-governance.json"))
+                _ (require! (empty? (wg/validate-contract policy)) "invalid committed governance policy")
+                active-states (set (get-in policy ["lifecycle" "active_candidate_states"]))
                 _ (require! (and (= 2 (get manifest "schema_version"))
                                   (empty? (wg/validate-ledger manifest)))
                             "invalid canonical manifest")
@@ -66,8 +69,7 @@
                                 (require! (and (= expected-path (get entry "path"))
                                                 (= (select-keys entry ["id" "state" "invariant_family" "dependencies"])
                                                    (select-keys item ["id" "state" "invariant_family" "dependencies"]))
-                                                (= terminal? (contains? #{"integrated" "rejected" "superseded" "abandoned"}
-                                                                       (get item "state"))))
+                                                (= terminal? (not (contains? active-states (get item "state")))))
                                           "shard identity or lifecycle differs from manifest")
                                 item))
                             (sort-by #(get % "ordinal") entries))

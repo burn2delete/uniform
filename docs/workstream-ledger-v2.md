@@ -22,6 +22,14 @@ Active candidates are reservations, one file per candidate:
 contracts/workstream-active/<workstream-id>.json
 ```
 
+Here `terminal` describes immutable shard storage, not integration authority.
+The migration classifies every state outside the governance policy's
+`active_candidate_states` as immutable storage, including historical `held`
+records. Such a held record remains held and confers no integration credit.
+Composition verification reads that committed policy and preserves the
+historical shard bytes and index entries; it does not reclassify held work as
+integrated or admit changes to unrelated immutable records.
+
 The manifest index is sorted by stable workstream id. Each entry records the
 relative path, SHA-256, lifecycle state, invariant family, dependencies,
 terminal flag, and source ordinal. The ordinal reconstructs the historical v1

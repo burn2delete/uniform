@@ -175,3 +175,37 @@ requested changes for those three static blockers. Receipt SHA256:
 `83e4fc3c02a484fd1a6a8082722200a4333f9d2268f8afb4eed9c407910bd8c4`.
 The successor again passes preflight 17 / 144 and boundary 6 / 11; the prior
 receipt covers unchanged semantic code only and does not accept the successor.
+
+## Actual ledger storage conformance correction
+
+After current main PR553 was merged, source `d136cff0` was observed clean and
+frozen, then metadata `1f6ca278` recorded review-pending. Only the selected shard
+and its manifest entry changed after that source capture. The first actual
+committed-repository composition check rejected `WORKTREE-COMPOSITION` with
+"shard identity or lifecycle differs from manifest". It conferred no eligibility.
+
+The canonical ledger contains nine historical `held` records stored under
+immutable terminal paths. `tools/migrate_workstream_ledger.clj` classifies
+storage by membership in the governance policy's active candidate states. The
+new checker had incorrectly limited terminal storage to four lifecycle end
+states. The candidate was truthfully reopened from review-pending to draft at
+`2026-10-29T01:02:17Z` before source repair; all previous events and source pins
+remain history.
+
+The checker now validates the committed governance policy and uses its active
+state set for storage classification. It still requires integration-eligible
+state for the selected candidate and unchanged hash-bound historical records.
+A committed held-shard positive fixture reproduces the prior refusal (1 test /
+6 assertions, 5 failures) before the correction, and an additional negative
+changes that immutable shard. An initial syntax error while adding that fixture
+was repaired before the regression run; it is not evidence of gate behavior.
+This correction requires new independent exact-source review before use. The
+existing metadata review request was submitted once; the reviewer is occupied
+on an unrelated approval, and that request is not duplicated or rerouted.
+
+After the storage-rule correction, focused preflight controls pass 17 tests /
+148 assertions, including the held-shard positive and fifteen negative scenarios.
+The language boundary passes 6 / 11, canonical governance validates 184
+workstreams with this candidate back in draft, and document validation passes
+240 documents / 19 phase indexes. These controls do not replace the required
+new independent source and final lifecycle/composition acceptance.
