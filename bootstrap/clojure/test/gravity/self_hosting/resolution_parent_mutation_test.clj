@@ -244,6 +244,7 @@
   (let [{:keys [source reader invocation parent]} (fresh-fragment-parent)
         alias (when field (fragment-aliased-parent parent field change))
         parent (or (:parent alias) parent)
+        run-count (count (get-in parent [:gravity-macro-boundary :expansion-runs]))
         dispatch (macro-dispatch-mutation dispatch-kind)
         inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
         construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
@@ -321,10 +322,12 @@
                           (filter #(= :macro-dispatch-enter (:event %)) calls)))
               (if field
                 (let [entered (filter #(= :macro-dispatch-enter (:event %)) calls)]
-                  (is (= ['sh05-verify-macro-template 'sh05-verify-macro-resolved]
+                  (is (= (vec (mapcat identity (repeat run-count
+                               ['sh05-verify-macro-template 'sh05-verify-macro-resolved])))
                          (mapv :requested-callee entered)))
-                  (is (= [:macro-dispatch-enter :macro-dispatch-return
-                          :macro-dispatch-enter :macro-dispatch-return]
+                  (is (= (vec (mapcat identity (repeat run-count
+                               [:macro-dispatch-enter :macro-dispatch-return
+                                :macro-dispatch-enter :macro-dispatch-return])))
                          (mapv :event calls)))
                   (is (some #(and (= :macro-dispatch-return (:event %)) (= :failed (:status %))) calls))
                   (is (some #(and (= :macro-return (:event %))
