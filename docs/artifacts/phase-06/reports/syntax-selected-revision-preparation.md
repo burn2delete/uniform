@@ -79,3 +79,15 @@ results cannot supply live coverage. No bare genuine dev-test child is launched.
 
 Original Syntax/source-consumer acceptance and ACC13 remain open. No whole C5,
 PR544, SH07/SH25, release, self-hosting or cleanup completion follows.
+
+## Added-fragment CI comparison
+
+Publication exposed a CI baseline-lint defect: a newly registered fragment was
+required to exist in the old archived loader context. The archive selection now
+filters only paths absent from that base inventory. Head selection remains
+strict, and retained baseline dependencies must still be regular, present and
+parseable. Three non-evaluating archive tests / ten assertions cover valid new
+head registration, absent baseline input, missing head registration/resource,
+retained missing/malformed base dependencies and Bootstrap remaining unloaded.
+The static job runs these controls. No lint result or semantic consumer check is
+waived. Two unused test-only requires are removed; predicate behavior is unchanged.

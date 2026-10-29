@@ -1,7 +1,6 @@
 (ns gravity.syntax.selected-binding-input-test
   "Fake owner ports for selected Syntax public DATA and exact export admission."
-  (:require [clojure.java.io :as io] [clojure.string :as str]
-            [clojure.test :refer [deftest is]]))
+  (:require [clojure.test :refer [deftest is]]))
 
 (def binding-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/sh04-development-syntax-binding.clj")
 (def syntax-path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
