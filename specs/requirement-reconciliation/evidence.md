@@ -1110,3 +1110,39 @@ template substitution changed an expected hash and refused before writes;
 the exact predecessor hash was restored and checked. Independent composition
 acceptance, full-facet disposition, granularity, legacy ACC scope, final count
 and integration remain open. These mappings confer no implementation credit.
+
+## Qualified Tooling65, Runtime20 and Domains30 review adoption
+
+Three independent PASS receipts review frozen source
+`c21258a8d3a4b98f97f11c1a5acb1d061b8ae548`:
+
+- Tooling65: `9741b81e6f9099e5b08ef675cf1dc570bcbb06d59d4f9517cb0acce5f3b1a36a`.
+- Runtime20: `bf7d539048d926fb3ef7da890c74ba25787626e4de2084f72746fc78ff186be2`.
+- Domains30: `280738cee3b533cfa43b8d4d66e8daaec58005122b2c36d08f67f308236504f2`.
+
+The canonical join at `610d5e8d4077b3b6ea837133d6ffc8e1f57ce3f8` verifies
+all 115 unchanged decision records and 130 exact current criterion witnesses
+(65 Tooling, 34 Runtime and 31 Domains). All 42 Profile74, 16 Safety107 and
+four Stdlib83 field operations reconstruct exact complete files and preserve
+all later additions. Declared dependency contracts, plan bytes and already
+named task inputs are checked; empty vectors confer no evidence. Tooling's
+nested proposed offsets remain historical, not current-file witnesses.
+Runtime's six reused cross-task allocations, three source-qualified criteria
+and ten recovered metadata IDs retain the independent review's exact scope.
+Domains' two unresolved GPU metadata IDs remain unclosed by its receipt.
+
+Adoption source `4ee78ca564d73063dbba833793555fb6d68f5e82` changes only the
+115 review states and qualified references. Its reversible transaction
+preserves all other fields, the seven earlier Package adoptions and all 833
+Open states. Concrete allocation remains 748, with 122 qualified source-review
+adoptions, 323 pending allocation reviews and 85 decisions left to allocate.
+Later added predicates remain separately pending. Historical acceptance is
+still 430/561, with 131 pending; task census is provisionally 3/182. No new
+historical mappings, task units, aliases, retirements or implementation credit.
+
+All 561 historical bindings and 1,262 current spans remain valid. SH 12/522,
+the generated SH check, census 4/13, boundary 6/11 and changed-file pinned lint
+pass. The join helper's initial
+reader error was caught before evaluation or writes. Whole-facet disposition,
+later predicate reviews, granularity, legacy ACC scope, independent final
+counting and integration remain open.

@@ -896,6 +896,24 @@
  :new-task-fields 4,
  :total-concrete-links 748,
  :distinct-verified-source-facets 354}
+    :tooling-runtime-domains-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/tooling-runtime-domains-qualified-review-adoption.edn",
+ :remaining-allocation-work 85,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 323,
+ :source-commit "4ee78ca564d73063dbba833793555fb6d68f5e82",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 130,
+ :reviewed-predicates 115,
+ :total-concrete-links 748,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/tooling-runtime-domains-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
