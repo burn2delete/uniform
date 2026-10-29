@@ -43484,8 +43484,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a1/generated-source-reentry",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -43893,8 +43903,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a1/human-review-gate",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -44645,8 +44665,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a1/profile-admission",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -45107,8 +45137,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a1/tool-authority",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -46006,8 +46046,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a3/prompt-authority-rendering",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -47595,8 +47645,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a6/typed-compensation",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -48225,8 +48285,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a6/workflow-graph-artifact",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -48961,8 +49031,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a6/workflow-replay-mode",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -49875,8 +49955,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a6/workflow-side-effect-repetition",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -50276,8 +50366,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a6/workflow-state-evolution",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -50814,8 +50914,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a7/retrieval-replay-identity",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -51467,8 +51577,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a7/retrieval-taint",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -52199,8 +52319,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a7/tenant-sharing-admission",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -52771,8 +52901,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a9/eval-gate",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -53760,8 +53900,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a9/eval-subject-binding",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -54464,8 +54614,18 @@
        :start-byte 892},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "behavior/a9/metric-decision",
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
@@ -277668,8 +277828,18 @@
        :start-byte 2682},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+     :sha256
+     "59da502d9779d451d5abc5f7366d88b3c0172651b72292f63df05220b1905302",
+     :independent-receipt-sha256
+     "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+     :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+     :scope :exact17-current-source-composition-joins},
     :semantic-source-id "performance/target-intrinsic-map",
     :task-links
     [{:path "specs/lower-workflow/tasks.md",
