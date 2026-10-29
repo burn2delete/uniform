@@ -107,3 +107,42 @@ head registration, absent baseline input, missing head registration/resource,
 retained missing/malformed base dependencies and Bootstrap remaining unloaded.
 The static job runs these controls. No lint result or semantic consumer check is
 waived. Two unused test-only requires are removed; predicate behavior is unchanged.
+
+## Direct C3 controller request preparation
+
+`gravity.syntax.selected-revision-request/prepare!` freezes one selector-specific
+request without loading Bootstrap, resolving process ports, acquiring guards or
+starting a child. It records exact clean source, complete tracked consumed
+sources, the resolved JDK file tree and three Clojure JARs, ordered classpath,
+direct Java argv, CWD, input/configuration digests and fresh output names. The
+inherited environment is bound by a digest without serializing secret values;
+Java option environment variables must be absent. The child rechecks these
+bindings before explicit Bootstrap loading and rechecks source/configuration
+on exit. A temporary-file control exposed canonical path aliasing; runtime
+paths are now resolved before classpath binding. The control then passed.
+
+The request describes existing normal broker acquire/release, FileChannel
+immediate lock and normal runner start/process-result ports. Its success order
+and failure contract preserve exactly-once thread-affine L-before-C release,
+original exceptions/interruption and raw owned handles. Unknown finalization
+cannot be reported as clean or released. There is no new generic controller.
+The shared runner owner (chat `01a17baa-ed84-75e4-846b-a1862288101e`) owns the
+future retained-finalizer API, including natural exit; its unpublished API is
+an explicit dependency. A whole-operation watchdog API also remains unbound.
+No child-only timeout is substituted for that watchdog.
+
+The proposed host profile is 2 GiB heap, 120 s child, 60 s broker wait, 300 s
+whole operation, 64 KiB/64 Kchar capture per stream and 5 s capture wait. These
+are reviewable host restrictions from prior preparation, not measured C3
+requirements or compiler input quotas. Only the parent direct controller would
+acquire C; its child would run under that lease. The selected argv uses no
+shell, warm-session launcher or profiler. This establishes the proposed direct
+selector wiring, not unrelated caller participation or OS process containment.
+Root C and participating callers still require parent confirmation; the single
+root proposal is not a claim that all launchers share it.
+
+The affected compiler-free panel passes 20 tests / 301 assertions and the
+boundary gate passes 6/11. A request is preparation only and has no acquisition,
+process or admission handle. Genuine PR566 consumer acceptance remains open.
+Original PR580 CI at `7317c350` completed with seven successful jobs and two
+conditional skips; that evidence remains bound to that historical source.
