@@ -1,0 +1,147 @@
+{:nonclaims
+ [:active-loop-accounting-removal
+  :semantic-validation-elision
+  :performance-improvement
+  :whole-callgraph-proof
+  :independent-acceptance
+  :integration
+  :release
+  :self-hosting
+  :PR502-closure],
+ :source
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :remaining-loop-family
+  [{:name sh08-lsi-compatible?,
+    :unchanged-base-candidate-form-sha256
+    "e735c5dc6fe7465292f6f6c734e2ea7405c500bfbc43e2cbb747d47e74b48551"}
+   {:name sh08-lsi-control-transfers,
+    :unchanged-base-candidate-form-sha256
+    "0e8698fb081ed519cdd8795ac18a336228cc2d979c7d173ac0d58cb0898be5de"}
+   {:name sh08-lsi-empty-constructor?,
+    :unchanged-base-candidate-form-sha256
+    "64bf15d7c588aa60af54a724128d6bbbaa327da52f0e181944dea57a8f7227a9"}
+   {:name sh08-lsi-empty?,
+    :unchanged-base-candidate-form-sha256
+    "df8a1d80e7b33a577dd9a69304a46992719c65a6ac9d8c9ebb43b63b91dae1e0"}
+   {:name sh08-lsi-entry-index,
+    :unchanged-base-candidate-form-sha256
+    "a530f5048b64b29bb5f7c999394ad0438f2af52d735d3d5e7b2c25e5d4206e71"}
+   {:name sh08-lsi-first-append,
+    :unchanged-base-candidate-form-sha256
+    "3199c46e602ab6d3de2cd2fb22aa25f1a0048a0c9f2187d294ae61f256ccf727"}
+   {:name sh08-lsi-first-call-input,
+    :unchanged-base-candidate-form-sha256
+    "885b48133d5756f1a41a57eea22d619dd1a9b0619ace5031df42736fc87aba68"}
+   {:name sh08-lsi-first-caller,
+    :unchanged-base-candidate-form-sha256
+    "73ae1cdf0c21c5a310af3ca24cb2b0da1affcaaedb8f7bd888027f9fc86fcc3e"}
+   {:name sh08-lsi-first-data-work,
+    :unchanged-base-candidate-form-sha256
+    "d6caafeb0852557d9ac14e0abf5079e157a657c1c02ce81f42f55b9027caffe9"}
+   {:name sh08-lsi-first-form-data,
+    :unchanged-base-candidate-form-sha256
+    "b3f1b98b3a593e2b370a56a3e096e81f867f101088b7ce09aac83f80f673460b"}
+   {:name sh08-lsi-first-form?,
+    :unchanged-base-candidate-form-sha256
+    "7e8926f4c69fd3c52e80741ffa053199eb98030e96f8fc6ea6bb80c6d5ea7e78"}
+   {:name sh08-lsi-first-head?,
+    :unchanged-base-candidate-form-sha256
+    "5258a6fa0d18ba64765e73ff125791a32d3da9fbd273f199e8fbc242c2e801f3"}
+   {:name sh08-lsi-first-ids?,
+    :unchanged-base-candidate-form-sha256
+    "907e566d55edd5bdf70c97c83a4dca4bc730cceaea4f35116a48602c0cdf8802"}
+   {:name sh08-lsi-first-node-data,
+    :unchanged-base-candidate-form-sha256
+    "a32a77ffc8ed0e2baa2116fdab4dd302ecf61b6c83e7cd52c5b655d33ea9acd4"}
+   {:name sh08-lsi-first-node?,
+    :unchanged-base-candidate-form-sha256
+    "cc89ba88c31bcf6f557d21bb2cfdd6fa784c6e6c367a7d31209aeec09288e296"}
+   {:name sh08-lsi-first-reference?,
+    :unchanged-base-candidate-form-sha256
+    "70b394fa0941b6435627eed80faeb4184e2517a1f814d7d885131efc037184db"}
+   {:name sh08-lsi-ground,
+    :unchanged-base-candidate-form-sha256
+    "83ada0a6a0a5a8a205b95a353c7e0fdb2fd4a117e4dc86e20d27a75ff1f26519"}
+   {:name sh08-lsi-id?,
+    :unchanged-base-candidate-form-sha256
+    "2340c0dc1278b0765392c835ba18ebf3d0d37969c63390d0a20cb6e273dcd6d1"}
+   {:name sh08-lsi-index,
+    :unchanged-base-candidate-form-sha256
+    "1b6e4591f85544b07a531fe977c7ba9baab81950051f7d75e6e084df9e7e17aa"}
+   {:name sh08-lsi-insertion,
+    :unchanged-base-candidate-form-sha256
+    "a90924b119aef6f5a74ed24b1b67b08d8cd5e83c41755a8785cd668018f1fbc4"}
+   {:name sh08-lsi-leaf?,
+    :unchanged-base-candidate-form-sha256
+    "1114d27c784851f06404605236afc0c431dd45201faa1b0aff1af7aa5c863778"}
+   {:name sh08-lsi-path,
+    :unchanged-base-candidate-form-sha256
+    "cfea909d2348747e34bccc117bc2f42f8e78c0922f79011c5a4b0327a2bc9ccd"}
+   {:name sh08-lsi-path-from-seen,
+    :unchanged-base-candidate-form-sha256
+    "40589d27ee497c2522f1bcbfc5606d54cfb15b44d6f1c13cdd1ff55455ca3dad"}
+   {:name sh08-lsi-promote,
+    :unchanged-base-candidate-form-sha256
+    "c218465818730453a35f1ae48852db7ab98f0e83fcad4545014850a782dea676"}
+   {:name sh08-lsi-reads,
+    :unchanged-base-candidate-form-sha256
+    "adfe87b2d65558dd58199d0f06f1e3b89d635ed94b68c658c692847a402c8d7c"}
+   {:name sh08-lsi-row,
+    :unchanged-base-candidate-form-sha256
+    "4d60a45570dbf11518d56e2a16629c4661aeed490cb66fe83efd45e8627a4be1"}
+   {:name sh08-lsi-slot,
+    :unchanged-base-candidate-form-sha256
+    "79d3b876f2098351f1d2168c3d2804f966a443050e13378cae02e094a6d0051b"}
+   {:name sh08-lsi-solve,
+    :unchanged-base-candidate-form-sha256
+    "2772a2bca6033d98961f0250ad0273feafebe8dd1736ad4941c1f85ef86c4355"}
+   {:name sh08-lsi-target-bindings,
+    :unchanged-base-candidate-form-sha256
+    "d63f3ee71750a7b28537493702bb47dffc11a99dd64a58699063dea850847540"}
+   {:name sh08-lsi-vector-first,
+    :unchanged-base-candidate-form-sha256
+    "f73d369b9fd90bde4a94cd8cc9adb1348607ce459995f1535837b21b799ea296"}],
+  :tracked-source-remaining-symbol-references 0,
+  :namespace-and-exports-form-sha256
+  "2afce06faa671151e4af71c0f117def7c8b33938e8045c205ae9d2707230115b",
+  :retired-definitions
+  [{:name sh08-lsi-row-index,
+    :base-form-sha256
+    "cb334d9044437690b96304c0521d7e5e06af05b4e255510fe155c53f4f44ac79",
+    :historical-and-candidate-state :absent,
+    :base-including-definition-references
+    [sh08-lsi-row-index sh08-lsi-target-rows]}
+   {:name sh08-lsi-target-rows,
+    :base-form-sha256
+    "024b1dcd043a9aeb74520af51b159fd241b77ea02ec22758fed6588d00a53f58",
+    :historical-and-candidate-state :absent,
+    :base-including-definition-references [sh08-lsi-target-rows]}],
+  :source-scan-paths
+  ["bootstrap" "tools" ".github" ".agents" ".specify" "deps.edn"],
+  :external-source-callers 0,
+  :base-sha256
+  "5ff0e402785f686b14e11344b85c30cd611cd90888c6eb02e5a4ce43749de59c",
+  :repository-test-and-export-references 0,
+  :candidate-sha256
+  "3fb120878e919464573bef2877a0c479ab4d4e1ab1e98601a30c00d58266e8c5",
+  :all-other-production-forms-unchanged true,
+  :namespace-and-exports-unchanged true},
+ :acceptance
+ {:independent-source-disposition :pending,
+  :genuine-compiler-runtime :UNRUN,
+  :fresh-main-integration :pending},
+ :kind :unused-loop-accounting-helper-retirement,
+ :generator
+ {:language :clojure,
+  :sha256
+  "6ac123a8d322bcbaa9eee336a663d7994e17411d9484b15780817f4b0626d2ac",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :exact-historical-absences true,
+  :source-checks :passed},
+ :base "bb3a9acfbb5dd683d6df0403867a179a5fdc51bc",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}
