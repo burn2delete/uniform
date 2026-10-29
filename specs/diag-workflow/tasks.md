@@ -17,7 +17,7 @@ Status: Open
 
 Evidence baseline: [Base carrier](../../bootstrap/clojure/src/gravity/diagnostics.clj), [records](../../bootstrap/clojure/src/gravity/c15_diagnostics/records.clj)
 
-Closing evidence: Record/schema parity fixtures from each producer, including malformed-record rejection
+Closing evidence: Record/schema parity fixtures from each producer, including malformed-record rejection Criterion compiler/c15/structured-diagnostic: Emit authoritative machine-readable diagnostic records with stable rule, severity/lifecycle, primary and related locations, generated-origin chain, stage, profile, target, involved artifacts, typed facts and structured remediation; actionable records include remediation. Preserve phase availability with explicit nil profile/target/primary syntax-id in early reader errors and unavailable input metadata in diagnostic-system errors. Generated diagnostics identify source producer unless package privacy redacts it; record redaction while retaining authorized audit data. Text/IDE/CI/localized renderings derive from this schema, never replace it. Reject malformed records, missing/invalid spans or origins, untyped facts, absent remediation and secret/private raw output leakage with C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION; suppression retains the internal audit record. Emit versioned schema, ordered stream/catalog, related-span/remediation/redaction artifacts and accepted/rejected golden JSON fixtures from actual reader-through-lowering producers and public consumers.
 
 - [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
 
@@ -25,7 +25,7 @@ Status: Open
 
 Evidence baseline: [Projection](../../bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj)
 
-Closing evidence: Macro and optimized-source diagnostics with original and generated locations
+Closing evidence: Macro and optimized-source diagnostics with original and generated locations Criterion compiler/c15/diagnostic-identity: Derive the resolved diagnostic identity from rule, primary artifact, producing stage and semantic facts, independently of display wording. For fixed source/profile/target/compiler/dependencies/grants preserve deterministic identity and stream order across text, JSON, IDE and CI consumers. Demonstrate wording-only stability and changed semantic subject separation; reject unstable or duplicate IDs with C15-ID and nondeterministic order with C15-ORDER. Retain actual span variants and generated origins. Early reader profile/target/primary syntax-id keys remain explicitly nil until produced; invent no module, coordinates or meta/JVM program context. A private construction record or unresolved digest request is not a resolved identity or safe publication. Emit resolved identity/catalog, ordering and consumer parity records plus positive and negative golden fixtures. Consume actual stage/source/origin facts and canonical diagnostic schema; do not infer compiler execution from a manifest.
 
 - [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts
 
