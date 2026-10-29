@@ -314,3 +314,32 @@ CI with seven successes/two configured skips. PR619 successor disposition and
 PR621 genuine execution/independent acceptance remain pending. Earlier live-CI
 observations above are historical; these terminal results do not expand their
 semantic scope.
+
+## LC admission implementation and accepted census correction
+
+PR623 at `c5e9fccdad293b34c290859cc3e4716870241dd6`, tree
+`7b506c824110d5f88fc228bdf9b4c5999b35b3a7`, base main `e047157d`, removes
+the three LC-source operand ceilings while preserving newer native/exact
+validation. Its two complete historical C7 derive/step definitions remove
+allowance inputs and output charges; the single inference caller and two direct
+test callers migrate. Six production definitions change, with every other
+production byte conserved. Existing semantic controls survive alongside three
+new actual-owner width/late-invalid/source/schema kernels. Source checks,
+original reader contract 4/167, boundary 6/11, zero lint errors/same 223 warnings
+and one info, docs/roadmap and whitespace pass. Genuine execution, independent
+acceptance, context/lowering/runtime composition and broader accounting remain
+open. This follow-up does not recompute or credit immutable inventory counts.
+
+Corrected PR619 exact `8330e468` received affected-successor PASS from the same
+reviewer: receipt SHA256
+`457ed321acbc06f14651c7bb872a6fe995b0ba7524be8324aae0a3a52e79807f`, 6 controls,
+143 assertions, no failures/errors. `loop-main-review-consumption.edn` verifies
+the receipt, candidate/tree, source/census pins and the unchanged original
+failed receipt. The census finding closes only for that successor; the exact
+production slice is reused with proven byte conservation. Fresh-current-main
+applicability, integration preflight and integration remain pending. No parent
+stack, PR569, live loop or whole-ACC acceptance is inferred.
+
+PR622 exact head `47a0f756` subsequently completed routine CI with seven
+successes/two configured skips. Its restored genuine recursive-type controls
+and independent acceptance remain open.
