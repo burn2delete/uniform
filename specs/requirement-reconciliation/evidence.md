@@ -1553,3 +1553,38 @@ success while projections were pending. The subsequent supported run readback
 confirms completed/success for run40953758973 at that exact head,with seven
 successful andtwo skipped jobs. Later-head CI is not inherited; the original
 HTTP429 failure and its source identity remain preserved.
+
+## Build68 historical mapping acceptance and conserved561 aggregate
+
+The independently checked current-composition receipt is SHA256
+`f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6`,
+frozen at `c21258a8d3a4b98f97f11c1a5acb1d061b8ae548`. Its21732 checks,
+17 negative controls, retained review artifacts and harness hashes are verified.
+The current review compares the immutable proposal, source predicates and40
+dependency contracts. Prior source-PASS provenance is supported reviewer
+readback only: its original private receipt bytes are unavailable. This caveat
+is retained,without claiming a local rehash or substituting it for the current
+independent composition review. PKG5006 selection/installation/signature/
+revocation rules and the explicit locked historical-rebuild exception survive.
+
+`build68-historical-current-applicability.edn` checks source
+`012480dc04f351e5d370a6fc58043af7d7f933ec`: all68 historical records and
+criterion bodies are conserved against the independent frozen binding set,
+current exact UTF8 witnesses and owning contexts apply,and all240 original
+documents are byte-identical. The set is exactly the68 remaining dispatched
+historical IDs and is disjoint from accepted493.
+
+Adoption source `712b7bef` adds those68 enumerated mappings. The new manifest
+`accepted-historical-mappings-561.edn` accepts all561 dispatched mappings with
+zero pending andzero unbound. Conservation is577 =13 prior witnesses +3 retained
+retirements +561 accepted mappings. Binding row states remain derivation
+history; the enumerated manifest is adoption authority. All earlier receipts
+and their source/role qualifications retain their scopes.
+
+All833 current decisions remain Open,with777 allocations,56 unallocated,472
+qualified current source reviews andtwo pending (Accounting-policy1,Product1).
+The historical adoption changes no current decision record or implementation
+acceptance. Provisional3/182 tasks receive no credit. The refreshed561-binding
+snapshot preserves all1262 current UTF8 file/raw span hashes. SH12/522,census4/13,
+boundary6/11,generated SH check and pinned changed-file lint pass. Whole-facet,
+granularity,legacy ACC,independent final counting and integration remain open.
