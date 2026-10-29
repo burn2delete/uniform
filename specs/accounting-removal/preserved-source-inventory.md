@@ -395,3 +395,24 @@ docs/roadmap and whitespace pass; census pins 114 owner forms and 22 upstream
 helpers. Genuine execution, independent source/result disposition and integration
 remain pending. Original source-only records and immutable inventory counts
 are unchanged; no semantic credit is inferred from this test restoration.
+
+## Restored source-reader contract paths
+
+PR626 at `bcf0bb4ba093a2634bf51b4541aa153040e333aa`, tree
+`ef10f7d8d95dfe750955556afd2a85638f5f6a68`, base main `e047157d`, restores
+the original private Map-route and List-construction files byte for byte. It
+also restores the complete List-query file with eight recorded native-guard
+correspondence/routing-parity edits and one additional guard/routing mutation
+control. Candidate source-reader results pass 2/223, 4/167 and 8/276. The
+unchanged original List-query is separately rerun: 7 tests, 257 passing
+assertions, 5 failures, zero errors, NONPASS, with log digest retained. Adapted
+results do not replace that failure. All production/preexisting test bytes and
+source bookends are conserved. Boundary 6/11, zero lint errors/same one warning,
+docs/roadmap and whitespace pass. Independent source/adaptation disposition and
+genuine compiler/Effects/lowering/runtime/authentication acceptance remain open.
+The immutable original inventory and prior evidence records are unchanged.
+
+PR624 at `9f9dce89` and PR625 at `50c7e58c` each completed routine CI with
+seven successes/two configured skips. Those catalogs do not run their new
+genuine Effects/predicate controls or supply independent source/result
+acceptance.
