@@ -85,6 +85,11 @@ contents and original Git blobs. The other four preserved source/verifier
 pairs, PMK descriptor/closure, and initializer/Set literal/conversion features
 are outside this port.
 
+The next-check preparation stages byte-identical copies of this pair under
+`sh-08/preserved/`, outside the accepted fixture directory. Staging is not
+consumption or acceptance. The original accepted-path absence and immutable
+PR502 fixture provenance in the reviewed census are unchanged.
+
 Historical `sh08-checked-dual-bare-set-equality-development-kernel` and
 `sh08-checked-dual-bare-set-equality-current-source-composition`, descriptor
 reconstruction, checked-bare-Set mixed-ledger, body-effect and runtime iteration
@@ -110,7 +115,8 @@ substitution; tag stripping; zero-callback foreign values; shared values;
 metadata, cyclic-tail and beyond-former-width/depth DATA; source forms; and
 injected lowering order with zero child launches on invalid evidence.
 
-Development checks executed against these source bytes:
+Historical checks for the initial `c6660c95` source increment (the affected
+correction and its separate evidence follow):
 
 | Command | Observed scope |
 | --- | --- |
@@ -160,7 +166,75 @@ Gravity, compiler, provider, runtime and paired fixtures were not executed.
 Changed-file clj-kondo `2025.10.23`, using the existing CI configuration, passed
 with zero findings. The direct language-boundary namespace passed 6 tests / 11
 assertions with Bootstrap unloaded before and after. Same-reviewer affected
-source review remains pending.
+source review was pending at that observation.
+
+ACC04 completed the affected source-only review of `ec085f5f`, exact tree
+`66304198a8c44f59adc4349030541fd26d674e29`, with PASS. Receipt SHA-256:
+`8b2994e26a18580bdaac238cd5652118a74f0737bfc1d095b4f9a8edb9573328`.
+The reviewer independently rejected all eight prior false accepts and passed
+the adapted 7/249 suite, source pins/callgraphs/hunks and 15 conserved fallback
+bodies. Original `d318a5ce` CHANGES REQUIRED and its bytes remain historical.
+This is affected source-only acceptance, not actual compiler/Effects/emitter,
+Native, provider, runtime, paired-fixture or integration acceptance. No new
+review was requested and no stopped notification was retried.
+
+### Prepared next genuine-source check, not executed
+
+The manual selector `gravity.types.set-equality-source-check` is new because
+the reviewed candidate had no DSE-specific genuine-source composition selector.
+It reuses the unchanged SH08 `function-work-policy-current-source`, `invoke-c7`,
+`pr359-descriptor-body` and `pr359-descriptor-emit` helpers and their original
+plan constructors. It does not add a producer, runtime implementation, resource
+broker or launcher. Requiring the selector namespace alone does not load
+Bootstrap. Its `-main` deliberately loads the genuine operations and must not
+be used as a preparation command.
+
+The precise proposed child invocation, from the repository root, is:
+
+```bash
+clojure -J-Xmx2g \
+  -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.types.set-equality-source-check
+```
+
+It selects only the staged `local-runtime-bare-set-equality` pair. The
+`.gravity` spelling supplies one real current-reader/C3/SH05/SH06/SH07/B47
+request, C7 production and fresh verification, the actual Effects equality
+context/call check, and typed lowering of the selected DSE call. It then runs
+the eight reviewed tag-stripping mutations against the actual consumer
+functions. It neither executes the emitted subject program nor invokes a C8
+module bundle. The companion `.qst` check is bytes/seed-parser parity only;
+paired typed/effect/emitted/runtime acceptance remains unestablished. It does
+not reuse the historical larger inference policy or raise a compiler limit.
+
+Preparation-only injected controls pass 2 tests / 38 assertions with Bootstrap
+unloaded, including stage order, bounded output, early stops and refusal of an
+injected consumer false accept. Both new Clojure files lint with zero findings
+under the unchanged CI configuration. No genuine operation was invoked.
+
+The parent must assess this new invocation with the applicable host safeguards.
+The recorded compiler-owner wrapper used Git-common normal and host-exclusive
+broker admission, the canonical lock, a 2 GiB child, a 120-second watchdog and
+complete stdout/stderr capture within 65,536 bytes/characters. Those are actual
+historical safeguards, not evidence of a present lock holder, interference or
+an active launch grant. This selector implements none of them. No committed
+named guarded route for this new selector was found; the existing owner wrapper
+is a separate local orchestration dependency. Its availability and applicable
+admission must be assessed by the parent without probing under this instruction.
+
+Before launch, bind the exact clean candidate HEAD/tree, selector/helper and
+fixture bytes, C7/Effects/emitter/runtime/Native sources, `deps.edn`, the ordered
+classpath and JVM identity/options. Compare the same source/worktree bookends
+after completion. A timeout, partial capture, failed assertion, source drift,
+nonzero exit or incomplete cleanup cannot produce a passing receipt. The
+preparation receipt freezes those inputs locally; it supplies no launch or
+semantic authority. A 120-second historical two-case timeout is preserved as
+history, not a prediction that this selector will time out or proof of current
+interference. Unknown historical mode/registration operations remain untouched;
+they are not silently repeated by this selector or made global clearance gates.
+The new selector and its injected controls are outside ACC04's `8b2994e2`
+reviewed bytes. That receipt remains exact to the original source correction;
+preparing a selector does not extend its independent acceptance.
 
 The finite genuine acceptance gate remains:
 
