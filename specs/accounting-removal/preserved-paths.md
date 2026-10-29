@@ -626,6 +626,25 @@ helper mappings remain explicit rather than being treated as missing features.
   execution or transitive equivalence is inherited. The five named dependency
   forms also match observed main `a6f5b2f9`, a source observation only. Genuine
   tests stay UNRUN; changed-base composition, preflight and integration are open.
+- PR628 is normally reconciled with accepted main `a6f5b2f9` at
+  `d4a82e686a3680db07f909b0969cd5a073734749`, tree
+  `d3d8c59a651ade262403eca2369de12c3d3848cb`, parents `46e8f15a`/`a6f5b2f9`.
+  [Fresh source/inspect evidence](cold-quote-clean-reconciliation.edn) verifies
+  the complete 10,073-entry tree and exact eight-path delta. All three reviewed
+  before/after definition intervals and five appended fixture/control forms
+  remain byte-identical. All other current-main bytes are conserved, especially
+  the accepted 29-line loop-helper deletion: C7 now has 1087 total definitions,
+  with 1086 unchanged outside the one cold-metadata function. The original
+  census's counts retain their original-base/unchanged-definition scope.
+  Current caller/dependency forms are unchanged and production has zero retired-
+  metadata field references. Actual quote-products remain metered and the
+  stack-only valid-data helper stays absent. The reused managed checkout is
+  clean/named; exact-base/head/tree inspect passes all conditions. Boundary 6/11,
+  docs/roadmap, governance 185 records and whitespace pass. All Clojure test
+  bytes match reviewed `46e8f15a`, retaining their prior lint scope. Original
+  evidence/cache/refs are preserved. Current-head CI and same-reviewer affected
+  composition remain pending; old `a939654e` PASS does not extend automatically.
+  Integration-mode preflight, main merge and genuine kernels remain UNRUN.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
