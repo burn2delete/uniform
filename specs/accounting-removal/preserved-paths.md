@@ -48,8 +48,8 @@ semantic incorporation of the other changes.
 
 ### Parameter and return test mapping proposal
 
-[The pinned source mapping](premise-test-mapping.edn) compares the two original
-premise-test files at preserved `6a4f87f0` with their six named SH08 successors
+The parameter/return portion of [the pinned source mapping](premise-test-mapping.edn)
+compares the two original premise-test files at preserved `6a4f87f0` with their six named SH08 successors
 at observed main `0f7acce5fc93e019062d84a3fd9dcf05643ba7fd`. The assessed SH08
 blob is identical to this branch's SH08 blob. The record contains full-file
 hashes, explicit helper-symbol correspondences, canonical body hashes and
@@ -66,13 +66,61 @@ and changed-assertion controls both detect a missing original assertion.
 | `return-validation-and-source-checks-remain-effective` | `sh08-list-return-validation-source-development-kernel`: original malformed/opaque fixtures and source mutations retained; the three removed budget APIs become `*-lr-validate-types` with two arguments. Assertion expressions match, but helper invocation semantics require the separately integrated PR507 evidence. |
 | `legacy-return-producers-cannot-escape-the-row-census` | `sh08-list-return-legacy-census-development-kernel`: original four legacy row shapes retained; two foreign-producer/domain variants added. The separate inactive-legacy census successor adds rejection when no declaration is active. |
 
-Seventeen of nineteen mapped helper bodies match after the named relocations.
+For those two files, seventeen of nineteen mapped helper bodies match after the named relocations.
 The two other bodies add explicit deferred dependency requires in
 `acc02-environment` and `return-premise-effects`; their load timing is not hidden
 as name equivalence. File/hash and source-expression comparisons do not execute
 fixtures, establish helper equivalence, renew the accepted ACC-02/03 receipts,
 or dispose of the other 27 paths. These two path dispositions remain proposals
 until independent acceptance; the stopped successor review is not replayed.
+
+### Prepend, descriptor and reader-contract proposals
+
+The same source mapping now inventories every test and helper in the preserved
+`prepend_premise_test.clj` and `descriptor_reconstruction_test.clj`: seven more
+tests and nineteen more helpers. The two original/current case templates are
+stored as unevaluated source data, not inferred from identical assertions.
+
+- Prepend: `pr359-prepend-complete-descriptors-and-typed-consumers` and
+  `pr359-prepend-coherent-old-costs-and-forgeries-reject` have complete relocated
+  bodies; their shared case template and obsolete-field vector also match.
+  `pr359-prepend-late-invalid-and-opaque-types-reject-without-callbacks` retains
+  the original malformed/opaque fixtures, unsupported carriers and zero-callback
+  assertion. Its three `pl-type-work` calls migrate to budget-free
+  `pl-validate-types`; the one changed assertion is recorded on both sides rather
+  than normalized away. The case-data helper makes the corresponding PR509
+  Effects/emitter validator migration, and the Effects adapter defers its require.
+- Descriptor reconstruction: all four `pr359-descriptor-*` test bodies match
+  after relocation, but the shared case template removes exactly the original
+  `[:dse [:gravity.type/set :gravity.type/set]]` case. Therefore the first two
+  tests no longer exercise that DSE case. It remains a separate PR568 obligation,
+  not coverage supplied by identical test bodies. The private/public Map tests
+  retain their complete bodies. Helpers migrate BKA header/derive calls to the
+  accepted budget-free PR524 interfaces and defer the Effects require.
+
+[Unchanged original reader controls](source-contract-results.edn) were also run
+against the three exact owner-source hashes at main `0f7acce5`. They load only
+the preserved Clojure reader-test definitions; no Gravity source, Bootstrap,
+compiler, authenticated pipeline or runtime execution occurs. Input hashes match
+before and after. Their results remain separate:
+
+| Preserved reader-only namespace | Observed source-control result |
+| --- | --- |
+| `private_map_route_contract_test.clj` | 2 tests / 223 passing assertions / no failures or errors: exact dedicated-route precedence and complete private constraint/fact bodies, including original mutation controls. |
+| `list_construction_contract_test.clj` | 4 tests / 167 passing assertions / no failures or errors: complete source/finish/constraint/fact parity, field-drift controls, full consumer equality and missing/duplicate definition rejection. |
+| `list_query_contract_test.clj` | NONPASS: 7 tests / 257 passing assertions / 5 failures / no errors. The original result and capture digest are retained. |
+
+The [separate List-query adaptation proposal](list-query-source-adaptation.edn)
+explains the five failures without modifying or relabeling the original tests.
+Four assertions require the emitter's old public/private Map routing mismatch;
+current complete constraint/fact wrappers instead agree after PR359's accepted
+alias repair. One parity assertion lacks correspondence for the newer
+`*-lc-native-map?` names. All three complete native-map guard bodies match with
+no symbol normalization; adding only the two explicitly recorded correspondences
+then gives complete scoped-contract source parity. Exact current routing and
+negative private-family/remapped-get mutations pass the supplemental source
+comparisons. These are proposed source-level incorporation/adaptation decisions;
+independent acceptance and all unrelated unique-path obligations remain open.
 
 Each row retains its unresolved obligation. "Selected integration" identifies
 only the named subfamily. Rows with unresolved controls are not terminal
@@ -84,13 +132,13 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. DSE joins, remaining predicate/query/construction headers, nil/List element contracts and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. Typed-direct-call compatibility/argument validation, typed LSET/Map-key census and remaining descriptor consumers need explicit disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. Preserved GIS3, qd, vf, ordinary-function, structural-vector, opaque-ordering and other old-only cases need test-level mapping, not a whole-file incorporation claim. |
-| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | Selected ANE/BKA/PMK/public-Map cases migrated to SH08 under PR359. DSE cases remain with the full feature; map all original mutations before terminal disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | Selected PL fields and later helper work integrated separately. Exact old descriptor, stale-field/forgery, late-invalid and zero-callback cases need incorporation mapping. |
-| `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | Dedicated private routing and full constraint/fact alias repair have PR359 evidence. Independent exact historical test-equivalence disposition remains unrecorded. |
+| `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
+| `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
+| `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | The unchanged original reader-only controls pass 2/223 on pinned current source, including precedence and full private constraint/fact source bodies. Together with PR359's finite evidence this supports a proposed incorporation decision, still awaiting independent acceptance. |
 | `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj` | ACC-02 remains closed. The six-test mapping record identifies this file's two current tests, retained assertion expressions, changed boundary fixtures and added refinement/transfer controls. Proposed incorporation still needs independent disposition; old receipts are not replayed as current acceptance. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. The mapping record identifies four current tests: two complete relocated bodies, the PR507 validation API migration, and stronger active/inactive legacy census controls. Independent disposition of this source mapping remains open. |
-| `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | Source/finish/constraint/fact parity, field-drift controls and full consumer equality remain distinct from recursive type-helper acceptance. No complete incorporated/rejected decision verified. |
-| `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Selected private-Map route repair does not dispose of query-tail parity, source proofs, malformed routing and explicit helper-normalization controls. |
+| `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | The unchanged original reader-only controls pass 4/167 for complete reconstruction parity, semantic field drift and full consumer equality on pinned current source. This supplies the missing source-level evidence, not a fresh three-owner semantic run or independent disposition. |
+| `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Original reader controls remain NONPASS with five failures. Supplemental source comparisons isolate four superseded routing-mismatch assertions and the missing native-guard name correspondence after checking complete guard bodies. All original results and current source/tamper obligations remain explicit pending independent adaptation disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | Complete three-owner predicate descriptor parity remains uncovered by PMK/inferred-insertion drafts; retain actual invalid-input obligations. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | PR462 is runtime conversion only. Typed LSET both-order row/fact composition and forged joins still require disposition separately from payment assertions. |

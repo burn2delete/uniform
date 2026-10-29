@@ -1,0 +1,91 @@
+{:nonclaims
+ [:semantic-acceptance
+  :unchanged-historical-suite-pass
+  :whole-path-disposition
+  :independent-acceptance
+  :PR502-closure
+  :ACC-row-status-change],
+ :source-bookends-identical true,
+ :authority :source-shape-control-results-only,
+ :preserved-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+ :scope
+ {:clojure-reader-tests-executed true,
+  :gravity-source-executed false,
+  :bootstrap-loaded-before false,
+  :bootstrap-loaded-after false,
+  :compiler-runtime-or-authenticated-pipeline-executed false},
+ :executing-checkout
+ {:commit "acae354634184c28576e3ec26ca2c074514dadd1",
+  :tree "eaff34c63c13f9d8c83d77d7b403fab3d48bc61b"},
+ :assessed-main "0f7acce5fc93e019062d84a3fd9dcf05643ba7fd",
+ :kind :preserved-source-reader-contract-results,
+ :generator
+ {:language :clojure,
+  :sha256
+  "411a8b4139d108bea5be45f0d649f62c1b5c9f9ac129dff4cf73240f627c1704",
+  :preserved-locally true},
+ :results
+ [{:original-path
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+   :original-sha256
+   "70d6ba31a1eda4085d522c6c0bf97b3959d74bf7a88cecd9209bed85a8106ced",
+   :namespace gravity.self-hosting.private-map-route-contract-test,
+   :vars
+   [{:test actual-private-constraint-and-fact-bodies-match-completely,
+     :result {:test 1, :pass 198, :fail 0, :error 0}}
+    {:test dedicated-private-route-precedes-other-dispatch,
+     :result {:test 1, :pass 25, :fail 0, :error 0}}],
+   :capture-sha256
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+  {:original-path
+   "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+   :original-sha256
+   "1e80fb01f61bac427efd01d684c558e7263517315b481939966061aa27407ca5",
+   :namespace gravity.self-hosting.list-construction-contract-test,
+   :vars
+   [{:test complete-source-comparison-detects-semantic-contract-drift,
+     :result {:test 1, :pass 157, :fail 0, :error 0}}
+    {:test consumers-keep-full-descriptor-equality,
+     :result {:test 1, :pass 3, :fail 0, :error 0}}
+    {:test reconstructed-list-contracts-have-complete-source-parity,
+     :result {:test 1, :pass 4, :fail 0, :error 0}}
+    {:test
+     source-contract-selection-rejects-missing-or-duplicate-definitions,
+     :result {:test 1, :pass 3, :fail 0, :error 0}}],
+   :capture-sha256
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+  {:original-path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :original-sha256
+   "a2925092466e5dbd8962275b7eec10acb692cc8854c621acc956f39ceb7f75df",
+   :namespace gravity.self-hosting.list-query-contract-test,
+   :vars
+   [{:test complete-list-query-reconstruction-expressions-agree,
+     :result {:test 1, :pass 3, :fail 1, :error 0}}
+    {:test consumers-retain-full-query-descriptor-equality,
+     :result {:test 1, :pass 3, :fail 0, :error 0}}
+    {:test explicit-helper-normalization-does-not-hide-other-changes,
+     :result {:test 1, :pass 7, :fail 0, :error 0}}
+    {:test genuine-query-guards-and-proof-outcomes-remain-in-source,
+     :result {:test 1, :pass 21, :fail 0, :error 0}}
+    {:test
+     other-collection-routing-difference-remains-explicit-and-unchanged,
+     :result {:test 1, :pass 22, :fail 4, :error 0}}
+    {:test
+     routing-extraction-rejects-missing-extra-or-malformed-expressions,
+     :result {:test 1, :pass 6, :fail 0, :error 0}}
+    {:test source-comparison-detects-header-proof-and-result-drift,
+     :result {:test 1, :pass 195, :fail 0, :error 0}}],
+   :capture-sha256
+   "6160421ac5818334a063a59e35376134b39ee82dfa63b5b87a0a755b58e2eed4"}]}

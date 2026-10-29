@@ -40,6 +40,7 @@
     parameter-input acc02-parameter-input,
     facts-and-context acc02-facts-and-context,
     local-valid? acc02-local-valid?},
+   :case-template-comparison nil,
    :helpers
    [{:original-helper environment,
      :current-helper acc02-environment,
@@ -160,6 +161,7 @@
     positional return-premise-positional,
     change-premises return-premise-change,
     emit return-premise-emit},
+   :case-template-comparison nil,
    :helpers
    [{:original-helper body,
      :current-helper return-premise-effects,
@@ -243,6 +245,300 @@
      :current-body-sha256
      "0beade9ae7bd41e8be1ffbbac759f8be7b7cdd8c4e7acf31112ca61ceab7d2af",
      :old-only-assertions [],
+     :current-only-assertions []}]}
+  {:original-path
+   "bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj",
+   :planning-ref [:ACC-05 :ACC-06],
+   :original-sha256
+   "ef01b806ebe3cd04ca7990bcb917f0a85f565da45ae180a64b795d8dc0ff591b",
+   :original-test-and-helper-inventory-complete true,
+   :explicit-symbol-correspondence
+   {helper pr359-prepend-helper,
+    body pr359-prepend-body,
+    c7 pr359-prepend-c7,
+    homogeneous pr359-prepend-homogeneous,
+    obsolete pr359-prepend-obsolete,
+    emitter-plan pr359-prepend-emitter-plan,
+    literal pr359-prepend-literal,
+    emit pr359-prepend-emit,
+    cases pr359-prepend-cases,
+    case-data pr359-prepend-case-data},
+   :case-template-comparison
+   {:identical true,
+    :original-template
+    ((concat
+      [[(pr359-prepend-literal :gravity.type/list [])
+        :gravity.type/nil]
+       [(pr359-prepend-literal
+         :gravity.type/list
+         [:gravity.type/bool :gravity.type/string])
+        :gravity.type/keyword]
+       [:gravity.type/list :gravity.type/string]
+       [(pr359-prepend-homogeneous
+         :gravity.type/list
+         :gravity.type/string)
+        :gravity.type/string]
+       [(pr359-prepend-homogeneous
+         :gravity.type/list
+         :gravity.type/string)
+        :gravity.type/never]]
+      (for
+       [element
+        [:gravity.type/string
+         :gravity.type/keyword
+         :gravity.type/symbol]
+        [receiver value]
+        [[(pr359-prepend-literal :gravity.type/set []) element]
+         [(pr359-prepend-literal :gravity.type/set [element]) element]
+         [(pr359-prepend-literal :gravity.type/set [element])
+          :gravity.type/never]]]
+       [receiver value])
+      (for
+       [element [:gravity.type/string :gravity.type/symbol]]
+       [(pr359-prepend-homogeneous :gravity.type/set element)
+        element]))),
+    :current-template
+    ((concat
+      [[(pr359-prepend-literal :gravity.type/list [])
+        :gravity.type/nil]
+       [(pr359-prepend-literal
+         :gravity.type/list
+         [:gravity.type/bool :gravity.type/string])
+        :gravity.type/keyword]
+       [:gravity.type/list :gravity.type/string]
+       [(pr359-prepend-homogeneous
+         :gravity.type/list
+         :gravity.type/string)
+        :gravity.type/string]
+       [(pr359-prepend-homogeneous
+         :gravity.type/list
+         :gravity.type/string)
+        :gravity.type/never]]
+      (for
+       [element
+        [:gravity.type/string
+         :gravity.type/keyword
+         :gravity.type/symbol]
+        [receiver value]
+        [[(pr359-prepend-literal :gravity.type/set []) element]
+         [(pr359-prepend-literal :gravity.type/set [element]) element]
+         [(pr359-prepend-literal :gravity.type/set [element])
+          :gravity.type/never]]]
+       [receiver value])
+      (for
+       [element [:gravity.type/string :gravity.type/symbol]]
+       [(pr359-prepend-homogeneous :gravity.type/set element)
+        element]))),
+    :limit :unevaluated-source-templates-only},
+   :helpers
+   [{:original-helper body,
+     :current-helper pr359-prepend-body,
+     :body-identical-after-named-relocation false}
+    {:original-helper c7,
+     :current-helper pr359-prepend-c7,
+     :body-identical-after-named-relocation true}
+    {:original-helper case-data,
+     :current-helper pr359-prepend-case-data,
+     :body-identical-after-named-relocation false}
+    {:original-helper cases,
+     :current-helper pr359-prepend-cases,
+     :body-identical-after-named-relocation true}
+    {:original-helper emit,
+     :current-helper pr359-prepend-emit,
+     :body-identical-after-named-relocation true}
+    {:original-helper emitter-plan,
+     :current-helper pr359-prepend-emitter-plan,
+     :body-identical-after-named-relocation true}
+    {:original-helper helper,
+     :current-helper pr359-prepend-helper,
+     :body-identical-after-named-relocation true}
+    {:original-helper homogeneous,
+     :current-helper pr359-prepend-homogeneous,
+     :body-identical-after-named-relocation true}
+    {:original-helper literal,
+     :current-helper pr359-prepend-literal,
+     :body-identical-after-named-relocation true}
+    {:original-helper obsolete,
+     :current-helper pr359-prepend-obsolete,
+     :body-identical-after-named-relocation true}],
+   :tests
+   [{:original-assertion-count 9,
+     :original-body-sha256
+     "411e81dcd1db3c09b0699c2ce303f9b560ffbb65b516676806eeb712234a6084",
+     :body-identical-after-named-relocation true,
+     :original-test complete-descriptors-and-typed-consumers,
+     :current-test
+     pr359-prepend-complete-descriptors-and-typed-consumers,
+     :current-assertion-count 9,
+     :current-body-sha256
+     "411e81dcd1db3c09b0699c2ce303f9b560ffbb65b516676806eeb712234a6084",
+     :old-only-assertions [],
+     :current-only-assertions []}
+    {:original-assertion-count 3,
+     :original-body-sha256
+     "2c818d7aad227b6eb8d26460a5af918d43bcb0a8871a2ea2da38c2f0dee538a6",
+     :body-identical-after-named-relocation true,
+     :original-test coherent-old-costs-and-forgeries-reject,
+     :current-test
+     pr359-prepend-coherent-old-costs-and-forgeries-reject,
+     :current-assertion-count 3,
+     :current-body-sha256
+     "2c818d7aad227b6eb8d26460a5af918d43bcb0a8871a2ea2da38c2f0dee538a6",
+     :old-only-assertions [],
+     :current-only-assertions []}
+    {:original-assertion-count 3,
+     :original-body-sha256
+     "327e2b9cb578f14c4270189e30877f52679c5497e23eb2c63b164e0f1dc07d31",
+     :body-identical-after-named-relocation false,
+     :original-test
+     late-invalid-and-opaque-types-reject-without-callbacks,
+     :current-test
+     pr359-prepend-late-invalid-and-opaque-types-reject-without-callbacks,
+     :current-assertion-count 3,
+     :current-body-sha256
+     "47141b41024081643e680587ba4d34f5e4366e4b5a70bb6d34e1b5ab13045da8",
+     :old-only-assertions
+     [(is
+       (=
+        :rejected
+        (:status
+         (invoke
+          (symbol (str prefix "pl-type-work"))
+          [receiver :gravity.type/string]
+          65536))))],
+     :current-only-assertions
+     [(is
+       (=
+        :rejected
+        (:status
+         (invoke
+          (symbol (str prefix "pl-validate-types"))
+          [receiver :gravity.type/string]))))]}]}
+  {:original-path
+   "bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj",
+   :planning-ref [:ACC-04 :ACC-05 :ACC-12],
+   :original-sha256
+   "8c58b98522b799fdbc0763293ab21946d7bee59c071a575bff02b602f7a5d4d8",
+   :original-test-and-helper-inventory-complete true,
+   :explicit-symbol-correspondence
+   {helper pr359-descriptor-helper,
+    consumer-descriptors pr359-descriptor-consumer-descriptors,
+    body pr359-descriptor-body,
+    c7 pr359-descriptor-c7,
+    finite pr359-descriptor-finite,
+    emitter-plan pr359-descriptor-emitter-plan,
+    emit pr359-descriptor-emit,
+    cases pr359-descriptor-cases,
+    case-data pr359-descriptor-case-data},
+   :case-template-comparison
+   {:identical false,
+    :original-template
+    ([[:ane [:gravity.type/nil :gravity.type/bool]]
+      [:ane [:gravity.type/keyword :gravity.type/string]]
+      [:ane
+       [{:kind :gravity.type/nil-or, :value-type :gravity.type/string}
+        {:kind :gravity.type/nil-or,
+         :value-type :gravity.type/keyword}]]
+      [:bka
+       [:gravity.type/set
+        (pr359-descriptor-finite [:gravity.type/keyword])]]
+      [:bka
+       [(pr359-descriptor-finite
+         [:gravity.type/keyword :gravity.type/keyword])
+        :gravity.type/set]]
+      [:dse [:gravity.type/set :gravity.type/set]]]),
+    :current-template
+    ([[:ane [:gravity.type/nil :gravity.type/bool]]
+      [:ane [:gravity.type/keyword :gravity.type/string]]
+      [:ane
+       [{:kind :gravity.type/nil-or, :value-type :gravity.type/string}
+        {:kind :gravity.type/nil-or,
+         :value-type :gravity.type/keyword}]]
+      [:bka
+       [:gravity.type/set
+        (pr359-descriptor-finite [:gravity.type/keyword])]]
+      [:bka
+       [(pr359-descriptor-finite
+         [:gravity.type/keyword :gravity.type/keyword])
+        :gravity.type/set]]]),
+    :limit :unevaluated-source-templates-only},
+   :helpers
+   [{:original-helper body,
+     :current-helper pr359-descriptor-body,
+     :body-identical-after-named-relocation false}
+    {:original-helper c7,
+     :current-helper pr359-descriptor-c7,
+     :body-identical-after-named-relocation true}
+    {:original-helper case-data,
+     :current-helper pr359-descriptor-case-data,
+     :body-identical-after-named-relocation false}
+    {:original-helper cases,
+     :current-helper pr359-descriptor-cases,
+     :body-identical-after-named-relocation false}
+    {:original-helper consumer-descriptors,
+     :current-helper pr359-descriptor-consumer-descriptors,
+     :body-identical-after-named-relocation false}
+    {:original-helper emit,
+     :current-helper pr359-descriptor-emit,
+     :body-identical-after-named-relocation true}
+    {:original-helper emitter-plan,
+     :current-helper pr359-descriptor-emitter-plan,
+     :body-identical-after-named-relocation true}
+    {:original-helper finite,
+     :current-helper pr359-descriptor-finite,
+     :body-identical-after-named-relocation true}
+    {:original-helper helper,
+     :current-helper pr359-descriptor-helper,
+     :body-identical-after-named-relocation true}],
+   :tests
+   [{:original-assertion-count 5,
+     :original-body-sha256
+     "bf7f3285c42612983b873e55fb140f90abeb30aded1a292ac63a47cc6c76027e",
+     :body-identical-after-named-relocation true,
+     :original-test complete-descriptors-and-typed-consumers-agree,
+     :current-test
+     pr359-descriptor-complete-descriptors-and-typed-consumers-agree,
+     :current-assertion-count 5,
+     :current-body-sha256
+     "bf7f3285c42612983b873e55fb140f90abeb30aded1a292ac63a47cc6c76027e",
+     :old-only-assertions [],
+     :current-only-assertions []}
+    {:original-assertion-count 3,
+     :original-body-sha256
+     "1c0aae19aa0f132f8376499c3d5eb0f723801a1a9e2ad210089cd85ba9daddf9",
+     :body-identical-after-named-relocation true,
+     :original-test coherent-stale-fields-and-source-tampering-reject,
+     :current-test
+     pr359-descriptor-coherent-stale-fields-and-source-tampering-reject,
+     :current-assertion-count 3,
+     :current-body-sha256
+     "1c0aae19aa0f132f8376499c3d5eb0f723801a1a9e2ad210089cd85ba9daddf9",
+     :old-only-assertions [],
+     :current-only-assertions []}
+    {:original-assertion-count 16,
+     :original-body-sha256
+     "7dc0f5d3b9cd1971d2e105f1ec501a22772159b83ea2778ef047bca37a4a315a",
+     :body-identical-after-named-relocation true,
+     :original-test
+     private-map-route-reconstructs-the-complete-descriptor,
+     :current-test
+     pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor,
+     :current-assertion-count 16,
+     :current-body-sha256
+     "7dc0f5d3b9cd1971d2e105f1ec501a22772159b83ea2778ef047bca37a4a315a",
+     :old-only-assertions [],
+     :current-only-assertions []}
+    {:original-assertion-count 6,
+     :original-body-sha256
+     "a2d2a2a5dbe5b29cf6d06e0acd78223dd5f757840cb0676a038700f4294dd7e6",
+     :body-identical-after-named-relocation true,
+     :original-test public-map-query-aliases-keep-the-existing-family,
+     :current-test
+     pr359-descriptor-public-map-query-aliases-keep-the-existing-family,
+     :current-assertion-count 6,
+     :current-body-sha256
+     "a2d2a2a5dbe5b29cf6d06e0acd78223dd5f757840cb0676a038700f4294dd7e6",
+     :old-only-assertions [],
      :current-only-assertions []}]}],
  :current-path
  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
@@ -251,7 +547,7 @@
  :generator
  {:language :clojure,
   :sha256
-  "8a2a2f75218583e481b8cf928500e7bd9c3316e6d7afa964b975f9debc4161ce",
+  "01d2d9cc0542963678b9b4ae5f787f5fefeddef13002955592515a183342d6b1",
   :preserved-locally true},
  :current-sha256
  "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
