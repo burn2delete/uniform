@@ -38,10 +38,11 @@ decision records remain Open. Product witnesses include exact preserved
 reviewed fragments plus the current composed whole criterion, preserving
 intervening Foundation/Profile conditions.
 
-The artifact distinguishes 200 reviewed/current-bound criteria and 361 not
-yet source-bound residuals from canonical adoption: zero new mappings are
-canonically adopted and all 561 dispatched IDs remain unadopted pending the
-admitted independent affected-composition review. Broad inherited facets,
+At that reviewed freeze, the artifact distinguished 200 reviewed/current-bound
+criteria and 361 not yet source-bound residuals from canonical adoption: zero
+new mappings were adopted and all 561 dispatched IDs remained unadopted before
+the affected-composition review. The later 200-mapping adoption is recorded
+separately above. Broad inherited facets,
 unresolved source decisions, task granularity and implementation acceptance
 remain separate. The source-reviewed proposal count is not a project ratio.
 
@@ -147,7 +148,7 @@ Independent composed acceptance and actual API/provider execution remain Open.
 ## Composed task census candidate
 
 The derived `task-baseline.edn` binds source commit
-`f1cb35013c9a132cda4557f7806616b19af0f3ed`. It records 138 existing
+`59e44d77cb79e1c8e6dea92d4f8514d2562b5114`. It records 138 existing
 component tasks, including the five Release tasks, plus 11 separate Open
 Platform Product tasks. Three tasks retain scoped Accepted status, 144 are
 Open, one Partial and one status-unassessed: 3/149 accepted in declared task
