@@ -893,3 +893,4 @@ repro/cache-false reports zero findings for the changed SH source. Full-facet
 entailment, granularity, legacy ACC scope, independent acceptance and the final
 count remain separate obligations.
 SH passed 12 tests / 495 assertions, and the generated SH projection check passed.
+SH passed 12 tests / 495 assertions, and the generated SH projection check passed.
