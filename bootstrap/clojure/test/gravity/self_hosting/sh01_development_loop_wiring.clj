@@ -1599,6 +1599,11 @@
              "Fresh producer observation requires the declared fresh selection and actual child runtime"
              {}))
     (let [context (prepare-context working-directory options)
+          _ (when-not (= (:repository-identity options)
+                         (get-in context [:snapshot :repository-identity]))
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Fresh observer inputs differ from the prelaunch repository snapshot"
+                     {:input-kind :child-startup}))
           root (.toPath (io/file working-directory))
           paths (mapv :path (:inputs closure))
           states (mapv #(required-input-state root %) paths)

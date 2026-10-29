@@ -423,9 +423,20 @@
                 (resolve-wiring 'run-git-bytes!) (fn [& _] (.getBytes "" "UTF-8"))}
         first-path (:path (first (:inputs closure)))
         observe #(with-redefs-fn (merge common %)
-                   (fn [] (observer (System/getProperty "user.dir") [] {})))
+                   (fn [] (observer (System/getProperty "user.dir") [] {:repository-identity h})))
         id #(try (observe %) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))]
     (is (= (mapv :path (:inputs closure)) (mapv :path (get-in (observe {}) [:binding :inputs]))))
+    ;; Equal child bookends do not justify attributing already loaded code to
+    ;; a source snapshot different from the parent's prelaunch identity.
+    (doseq [identity [nil (hash-value :changed-before-child-startup)]]
+      (is (= {:id "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" :input-kind :child-startup}
+             (with-redefs-fn common
+               (fn []
+                 (try
+                   (observer (System/getProperty "user.dir") [] {:repository-identity identity})
+                   nil
+                   (catch clojure.lang.ExceptionInfo error
+                     (select-keys (ex-data error) [:id :input-kind]))))))))
     (is (= "SH01-PRODUCER-OBSERVATION"
            (id {state-var (fn [root path] (when-not (= first-path path) (state root path)))})))
     (is (= "SH01-PRODUCER-OBSERVATION"
