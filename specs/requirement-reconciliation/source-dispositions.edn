@@ -9623,8 +9623,19 @@
      "SAFE2/SAFE5 ownership and provider sharing proof"
      "Target device ABI"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/gpu/argument-memory-abi",
     :task-links
     [{:task-id "backend-gpu",
@@ -11536,8 +11547,19 @@
      "GPU profile and feature/launch records"
      "Argument ABI and numeric certificates"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/gpu/kernel-emission",
     :task-links
     [{:task-id "backend-gpu",
@@ -14376,8 +14398,19 @@
      "Kernel and launch descriptor"
      "Runtime/provider transfer and completion interfaces"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/gpu/transfer-launch-stubs",
     :task-links
     [{:task-id "backend-gpu",
@@ -16210,8 +16243,19 @@
      "Synchronizer/FIFO/protocol proof"
      "Hardware audit policy"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/hdl/cdc-gate",
     :task-links
     [{:task-id "backend-hdl",
@@ -17628,8 +17672,19 @@
      "Adopted HDL/synthesis target"
      "Clock/reset/timing contract"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/hdl/clock-reset-timing",
     :task-links
     [{:task-id "backend-hdl",
@@ -20993,8 +21048,19 @@
      "Fixed-width layout and clock/reset facts"
      "CDC gate and synthesis target contract"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/hdl/cycle-aware-emission",
     :task-links
     [{:task-id "backend-hdl",
@@ -25083,8 +25149,19 @@
      "Selected simulator/testbench contract"
      "Expected hardware conformance vectors"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/hdl/testbench-trace",
     :task-links
     [{:task-id "backend-hdl",
@@ -26757,8 +26834,19 @@
      "Profile/target/runtime/provider manifests"
      "Current safety/proof/capability/source records"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/input-eligibility",
     :task-links
     [{:task-id "backend-interface",
@@ -31998,8 +32086,19 @@
      "Selected JS runtime/bundler/package policy"
      "Host grants, checked adapters and numeric representation map"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/js/module-emission",
     :task-links
     [{:task-id "backend-js",
@@ -34755,8 +34854,19 @@
      "JS value/schema/async representation map"
      "Host boundary and runtime validation contracts"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/js/type-declaration-emission",
     :task-links
     [{:task-id "backend-js",
@@ -37472,8 +37582,19 @@
      "Async canonical ABI and feature record"
      "Runtime scheduling/cancellation and replay schema"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/wasm/async-function-lowering",
     :task-links
     [{:task-id "backend-wasm",
@@ -39032,8 +39153,19 @@
      "Concurrency memory-order facts"
      "Explicit volatile/MMIO provider capability if requested"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/wasm/atomic-volatile-lowering",
     :task-links
     [{:task-id "backend-wasm",
@@ -40201,8 +40333,19 @@
      "Canonical ABI resource ownership"
      "Runtime completion/cancel/drop and schema interfaces"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/wasm/future-lowering",
     :task-links
     [{:task-id "backend-wasm",
@@ -41766,8 +41909,19 @@
      "Selected Wasm SIMD/relaxed feature record"
      "Math mode/certificates and legal fallback contract"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "backend/wasm/simd-lowering",
     :task-links
     [{:task-id "backend-wasm",
@@ -196850,8 +197004,19 @@
      "SAFE15 trust and invalidation records"
      "Selected backend target assumptions"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/approximation-certificate-check",
     :task-links
     [{:task-id "math",
@@ -203262,8 +203427,19 @@
      "Compiler typed-core/MIR source graph"
      "Elementary registry and resolved mode"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/efir-construction",
     :task-links
     [{:task-id "math",
@@ -207790,8 +207966,19 @@
      "EFIR semantic anchor and active math mode"
      "STD5 checked API boundary and oracle"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/elementary-execution-semantics",
     :task-links
     [{:task-id "math",
@@ -209320,8 +209507,19 @@
      "Accepted independent certificate verdict"
      "Current profile/target and grants"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/elementary-provider-selection",
     :task-links
     [{:task-id "math",
@@ -217340,8 +217538,19 @@
      "Target format/provider version and features"
      "Independent rounding/exception oracle"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/floating-mode-contract",
     :task-links
     [{:task-id "math",
@@ -223205,8 +223414,19 @@
      "Explicit numeric mode and conversion policy"
      "Profile support and required proof/unsafe audit"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+     :sha256
+     "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+     :independent-receipt-sha256
+     "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+     :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+     :scope
+     :twenty-current-source-criterion-guard-joins-and-one-formatting-adjustment},
     :semantic-source-id "math/numeric-conversion",
     :task-links
     [{:task-id "math",

@@ -1,0 +1,234 @@
+{:all-original-documents-unchanged 240,
+ :later-allocations
+ :accounting-policy1-and-product1-separate-pending-review,
+ :assigned-ids
+ ["interface/backend/gpu/argument-memory-abi"
+  "interface/backend/gpu/kernel-emission"
+  "interface/backend/gpu/transfer-launch-stubs"
+  "interface/backend/hdl/cdc-gate"
+  "interface/backend/hdl/clock-reset-timing"
+  "interface/backend/hdl/cycle-aware-emission"
+  "interface/backend/hdl/testbench-trace"
+  "interface/backend/input-eligibility"
+  "interface/backend/js/module-emission"
+  "interface/backend/js/type-declaration-emission"
+  "interface/backend/wasm/async-function-lowering"
+  "interface/backend/wasm/atomic-volatile-lowering"
+  "interface/backend/wasm/future-lowering"
+  "interface/backend/wasm/simd-lowering"
+  "interface/math/approximation-certificate-check"
+  "interface/math/efir-construction"
+  "interface/math/elementary-execution-semantics"
+  "interface/math/elementary-provider-selection"
+  "interface/math/floating-mode-contract"
+  "interface/math/numeric-conversion"],
+ :unresolved-source-metadata
+ :nine-ids-thirteen-incidences-four-decisions-remain-unassessed,
+ :independent-receipt-sha256
+ "4248f85aaf2e4dfd75246ea099dca83ffc4a651dcf97a3cb5a1aa0289494a2f4",
+ :new-tasks 0,
+ :independent-receipt
+ {:findings [],
+  :nonclaims
+  [:implementation
+   :full-facet-acceptance
+   :whole-project-denominator
+   :release
+   :integration],
+  :observations
+  {:historical577-inventory :exactly-preserved,
+   :decision-identities-and-states :all833-Open-preserved,
+   :accepted-historical493-artifact :exactly-preserved,
+   :all-later-fields :preserved,
+   :qualified-source-review-prefix 386,
+   :task-count-delta 0,
+   :formatting-delta
+   {:from "future<T>",
+    :to "future of T",
+    :count 1,
+    :semantics :unchanged,
+    :private-source-allocation-metadata :retained},
+   :context-layout
+   :six-trailing-newlines-outside-trimmed-task-context-with-all-semantic-text-and-independent-byte-hashes-preserved,
+   :twenty-criteria-six-existing-fields :exact,
+   :task-status :provisional3-of182-unchanged,
+   :later-task-change :exact-GPU-metadata-amendment-only,
+   :later-record-changes
+   :exactly-reconstructed-from190-Safety-Stdlib-review-adoptions-and-one-GPU-overlay},
+  :negative-controls
+  [:stale-task-files
+   :actual-duplicate-tasks
+   :actual-duplicate-allocations
+   :forged-dependencies
+   :forged-witness
+   :forged-review-status
+   :coherently-rehashed-missing-negative-obligation],
+  :assigned-ids
+  ["interface/math/approximation-certificate-check"
+   "interface/math/efir-construction"
+   "interface/math/elementary-execution-semantics"
+   "interface/math/elementary-provider-selection"
+   "interface/math/floating-mode-contract"
+   "interface/math/numeric-conversion"
+   "interface/backend/gpu/argument-memory-abi"
+   "interface/backend/gpu/kernel-emission"
+   "interface/backend/gpu/transfer-launch-stubs"
+   "interface/backend/hdl/cdc-gate"
+   "interface/backend/hdl/clock-reset-timing"
+   "interface/backend/hdl/cycle-aware-emission"
+   "interface/backend/hdl/testbench-trace"
+   "interface/backend/input-eligibility"
+   "interface/backend/js/module-emission"
+   "interface/backend/js/type-declaration-emission"
+   "interface/backend/wasm/async-function-lowering"
+   "interface/backend/wasm/atomic-volatile-lowering"
+   "interface/backend/wasm/future-lowering"
+   "interface/backend/wasm/simd-lowering"],
+  :canonical-writes :none,
+  :accepted-scope
+  :twenty-current-source-criterion-guard-joins-at-frozen88c3-only,
+  :unresolved
+  {:ids 9,
+   :incidences 13,
+   :decisions 4,
+   :disposition :explicit-unassessed,
+   :mapping
+   {"interface/backend/js/module-emission"
+    ["B6/partition-facet/459d32f1289af3c7ed820846302b2792d04c2b047ca23fd0638146e4dcd46a71/decomposition/a2de4f554083338f6d15"
+     "B6/partition-facet/e267b21d5f857dc00acd50bba8bc413d984e28674dd10b7a0ad300b181d4c9eb/decomposition/3420346d4d1fd51bfe20"
+     "B6/partition-facet/e267b21d5f857dc00acd50bba8bc413d984e28674dd10b7a0ad300b181d4c9eb/decomposition/c2055742c5534cfe241a"],
+    "interface/backend/js/type-declaration-emission"
+    ["B6/partition-facet/459d32f1289af3c7ed820846302b2792d04c2b047ca23fd0638146e4dcd46a71/decomposition/0f38ec1b74a3740b6eee"
+     "B6/partition-facet/459d32f1289af3c7ed820846302b2792d04c2b047ca23fd0638146e4dcd46a71/decomposition/a2de4f554083338f6d15"
+     "B6/partition-facet/e267b21d5f857dc00acd50bba8bc413d984e28674dd10b7a0ad300b181d4c9eb/decomposition/3420346d4d1fd51bfe20"],
+    "interface/backend/wasm/atomic-volatile-lowering"
+    ["B4/partition-facet/58f4ea7985eaa9d9d40d35326f926cc4ad44e5b2cd5bcf23833488a91032f1d5/decomposition/71b5267a8b4ed0f49031"
+     "B4/partition-facet/58f4ea7985eaa9d9d40d35326f926cc4ad44e5b2cd5bcf23833488a91032f1d5/decomposition/f928ab2f96a037c602b1"
+     "B4/partition-facet/9d65cc3e59d8606d978881625c408d85c0ee8a10ad2383e47f5df7f4a19ee480/decomposition/11df1c643b1f63dbb72a"
+     "B4/partition-facet/9d65cc3e59d8606d978881625c408d85c0ee8a10ad2383e47f5df7f4a19ee480/decomposition/7e835dceb73041307f93"],
+    "interface/backend/wasm/simd-lowering"
+    ["B4/partition-facet/58f4ea7985eaa9d9d40d35326f926cc4ad44e5b2cd5bcf23833488a91032f1d5/decomposition/f928ab2f96a037c602b1"
+     "B4/partition-facet/9d65cc3e59d8606d978881625c408d85c0ee8a10ad2383e47f5df7f4a19ee480/decomposition/34dd9e0d8f739ed6a3b1"
+     "B4/partition-facet/9d65cc3e59d8606d978881625c408d85c0ee8a10ad2383e47f5df7f4a19ee480/decomposition/7e835dceb73041307f93"]}},
+  :private-proposal
+  {:sha256
+   "39d304ff1e51f47eb52f0ac32feb7fa0ccfd9e9bb19420449d4fc18cab9fe42a",
+   :prior-receipt-sha256
+   "fda61bac80c48d88c938976826d4edca250db9c1c59502330efd01b3fb46d768",
+   :prior-scope :frozen-private-proposal-only,
+   :semantic-criteria-roles-dependencies-negatives :conserved},
+  :controls
+  {:historical-spans 1106,
+   :source-formatting-adjustments 1,
+   :tree "9ba45648af7ffe93452cf68a97d8963eec7603d3",
+   :qualified-review-prefix-preserved 386,
+   :allocation-source "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33",
+   :distinct-source-facets 1413,
+   :new-tasks 0,
+   :unresolved-decisions 4,
+   :criteria 20,
+   :fields 6,
+   :known-source-memberships 1768,
+   :missing-incidences 13,
+   :checks 9933,
+   :artifact-hashes
+   {"specs/requirement-reconciliation/math20-current-composition.edn"
+    "4e9bb8419df9eddb1d9cd6562173d5d7c99694fe7f53939a2795c5e31f8fba65",
+    "specs/requirement-reconciliation/current-decision-allocation-math20.edn"
+    "37a293e0bf1296184862c8ae59f62d210ab04df140447b109eb412ebea1c86d6",
+    "specs/requirement-reconciliation/source-dispositions.edn"
+    "70b2e8c4dfe5b1ed72c80189fd788b9f3011d47e430ee22b4f84a1690c09d007",
+    "specs/requirement-reconciliation/accepted-historical-mappings-493.edn"
+    "d8afc85647114e63699db6a49fec6715dd503fa6959fdcb7d06e12e1d3177147",
+    "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn"
+    "a6167ac7135249bfdad21f87d439c34b98c25a7182e74c9ac99dbe3835d0b8b2",
+    "specs/requirement-reconciliation/task-baseline.edn"
+    "b498514788dc8144bdff1b1b956dfdba5d385d7ca193cd08b7fe8f1e1a70a6e0"},
+   :head "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+   :provisional-task-ratio {:numerator 3, :denominator 182},
+   :unresolved-ids 9,
+   :task-source "f291697806406c289d243724a96a0338f4713ff0",
+   :open-decisions 833,
+   :verdict :pass-scoped-actual-current-composition,
+   :historical-acceptance-preserved 493,
+   :canonical-adoption :not-performed},
+  :source
+  {:head "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+   :tree "9ba45648af7ffe93452cf68a97d8963eec7603d3",
+   :task-source "f291697806406c289d243724a96a0338f4713ff0",
+   :allocation-source "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33"},
+  :controls-sha256
+  "fc68e5cae7d95a53adfcd12d0cb0607756d9218ac20625a4580f873a5a0f606f",
+  :conflict-check
+  {:supported-canonical-and-helper-readback
+   :no-other-exact-current-Math20-review-found,
+   :reviewer-authored-bootstrap-not-Math20 true,
+   :helper-reservation :this-review-only},
+  :kind :independent-affected-math20-current-composition-review,
+  :old-author-notification :not-retried,
+  :verdict :pass-scoped-actual-current-composition,
+  :review-script-sha256
+  "b98f151e1d504bd2823ee048c02c10ecfb94e9f410bd4e3642b3d7ac2fa6e216",
+  :reviewer "01a18529-cc2a-7cd3-9dda-521d2ca1e88b",
+  :preparation-corrections
+  ["Review harness initially assumed current whole files were unchanged; actual later GPU metadata amendment is now reconstructed exactly, with Math20 source bytes checked independently."
+   "Review harness initially required trailing criterion newline inside trimmed task context; exact source span checks prove all semantic text remains present."],
+  :runtime-or-broker-probes :none,
+  :original-bootstrap-goal :preserved-blocked},
+ :current-linked-byte-witnesses 40,
+ :implementation-credit :none,
+ :task-and-plan-bytes :all-identical-to-reviewed-source,
+ :decision-records :all20-byte-identical-to-reviewed-source,
+ :source-commit "6ca2c6b11106cbfe5189c612e619eb7d90e1015d",
+ :kind :exact-current-math20-independent-review-applicability,
+ :current-task-and-plan-paths
+ ["specs/accounting-removal/plan.md"
+  "specs/accounting-removal/tasks.md"
+  "specs/auth-workflow/plan.md"
+  "specs/auth-workflow/tasks.md"
+  "specs/backends-workflow/plan.md"
+  "specs/backends-workflow/tasks.md"
+  "specs/build-workflow/plan.md"
+  "specs/build-workflow/tasks.md"
+  "specs/cli-workflow/plan.md"
+  "specs/cli-workflow/tasks.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/compiler-api-workflow/tasks.md"
+  "specs/core-workflow/plan.md"
+  "specs/core-workflow/tasks.md"
+  "specs/diag-workflow/plan.md"
+  "specs/diag-workflow/tasks.md"
+  "specs/domains-workflow/plan.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/effects-workflow/plan.md"
+  "specs/effects-workflow/tasks.md"
+  "specs/evolution-workflow/plan.md"
+  "specs/evolution-workflow/tasks.md"
+  "specs/expand-workflow/plan.md"
+  "specs/expand-workflow/tasks.md"
+  "specs/legality-workflow/plan.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/lower-workflow/plan.md"
+  "specs/lower-workflow/tasks.md"
+  "specs/opt-workflow/plan.md"
+  "specs/opt-workflow/tasks.md"
+  "specs/platform-workflow/plan.md"
+  "specs/platform-workflow/tasks.md"
+  "specs/reader-workflow/plan.md"
+  "specs/reader-workflow/tasks.md"
+  "specs/release-workflow/plan.md"
+  "specs/release-workflow/tasks.md"
+  "specs/resolve-workflow/plan.md"
+  "specs/resolve-workflow/tasks.md"
+  "specs/runtime-workflow/plan.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/stdlib-workflow/plan.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/syntax-workflow/plan.md"
+  "specs/syntax-workflow/tasks.md"
+  "specs/tools-workflow/plan.md"
+  "specs/tools-workflow/tasks.md"
+  "specs/types-workflow/plan.md"
+  "specs/types-workflow/tasks.md"],
+ :frozen-review-source "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+ :formatting-adjustment :affected-current-composition-scoped-pass}
