@@ -1,0 +1,184 @@
+{:nonclaims
+ [:public-authentication
+  :source-callgraph-as-proof-of-execution
+  :whole-C7-accounting-removal
+  :runtime-support
+  :independent-acceptance
+  :integration
+  :release
+  :self-hosting
+  :PR502-closure],
+ :tests
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :base-sha256
+  "c84aeec34fb2068373ccb465935b97bf5f61b5bfe7ffa4c2d1acf9786dad9ec9",
+  :candidate-sha256
+  "35291de8c3e1b59a16c2d715bfdc9e1f9069ebbaaa7b326c89f610f0672bb05f",
+  :all-existing-test-bytes-preserved true,
+  :complete-historical-kernel
+  {:name sh08-structural-vectors-unmetered-development-kernel,
+   :canonical-form-sha256
+   "11b80b3fa2e539506a8e860200f2c2a5711a024b4c4e4fd0d4b68048feb97b40",
+   :original-byte-span-sha256
+   "b0494702ff98510f5918edacdcc74f5d04682da6f19cc519556314b7e2b1ece1",
+   :complete-original-body-and-bytes true},
+  :new-state-kernel
+  {:name primitive-traversal-state-development-kernel,
+   :canonical-form-sha256
+   "0e96515762052b6d46e4de8df5c3f50d5bfc45dbf0beb7cc02bf7dab74a2c65c",
+   :retained-observed-prefix true,
+   :late-duplicate true,
+   :seeded-result-state true,
+   :rejected-prefix-state true,
+   :unvisited-tail-excluded true,
+   :vector-presence-and-nonvector-callback-controls true},
+  :genuine-execution :UNRUN},
+ :source
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :base-sha256
+  "45e135800dbec4bd98158328825e5d968e7da3c4fa7ba66f0bbd5e6e95f4ad8f",
+  :candidate-sha256
+  "fb4a98f56e6a7f578fb58cf9770b337900ee45549a241c9380e4ccbbfba80a85",
+  :complete-historical-definitions
+  [sh08-all-unique? sh08-type-nodes sh08-ft-product-vector?],
+  :all-other-production-forms-unchanged true,
+  :interfaces-and-external-calls
+  [{:function sh08-all-unique?,
+    :arity 2,
+    :historical-candidate-form-sha256
+    "9c5879dceb1bb708e07529ba967026ffc7ee376a1be4dbc2a37f9455b93f9334",
+    :external-call-sites-unchanged true,
+    :direct-C7-source-callers
+    [{:name sh08-ft-lexical-valid?,
+      :form-sha256
+      "bb523cb226bcf33fa875185862a993484f10307e8e51a7a98d26ed5826e1390e",
+      :argument-counts [2]}
+     {:name sh08-ft-recursion-components-valid?,
+      :form-sha256
+      "c62caaab3ea6241dd9d382cc7934dc6dd33beafb47c972ab9c4c595da01771b9",
+      :argument-counts [2]}
+     {:name sh08-im-function-identities?,
+      :form-sha256
+      "16800c0633c486af73a004466bac224cf3a55123e0130e08260baa9473a879b1",
+      :argument-counts [2 2]}
+     {:name sh08-roots-valid?,
+      :form-sha256
+      "7e79ff72a3dd45a35d049649e8d283eb97fe9b6cbc0b3405b8ce38e7f9c28807",
+      :argument-counts [2]}
+     {:name sh08-sm-group,
+      :form-sha256
+      "58ceeca66ff86be3742a8b431e556d56c3affb5e6b3aeef68bcd9cdb5a901c45",
+      :argument-counts [2]}
+     {:name sh08-th-transfer-valid?,
+      :form-sha256
+      "3e4bdbb9d767f1e85e6c9b61a46f048a18140e1c9be927647c70ee2f6e65039f",
+      :argument-counts [2]}]}
+   {:function sh08-type-nodes,
+    :arity 4,
+    :historical-candidate-form-sha256
+    "dbab9ab684812c818cd9144ec019d9a246638c19c13589bdf396b54213fb439b",
+    :external-call-sites-unchanged true,
+    :direct-C7-source-callers
+    [{:name sh08-type-core-artifact,
+      :form-sha256
+      "11dc330839ab36d86c2193533ee01a83d233a1b35cfbaf83f0e97433b7b8721e",
+      :argument-counts [4]}]}
+   {:function sh08-ft-product-vector?,
+    :arity 2,
+    :historical-candidate-form-sha256
+    "8c6bfa6e8fd38910751faabf894100ad7be66675953bd0fd44aeadd8e3bedb83",
+    :external-call-sites-unchanged true,
+    :direct-C7-source-callers []}],
+  :unchanged-transitive-C7-source-dependencies
+  [{:name sh08-accepted-node,
+    :form-sha256
+    "c3af65134efd00c6e55226b34072f0e17a5e8edcbfe94d29e7266eb350f0b959",
+    :identical-to-historical true,
+    :source-calls [sh08-type-fact]}
+   {:name sh08-character-carrier?,
+    :form-sha256
+    "989798e035a8828d30d43fae9e599547e28508b17bcd8e4ca70fa83a20633c6c",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-child-types,
+    :form-sha256
+    "65b52f68a771406aa4d3c3d6cef0380d1ee29b37cd4a0bdfa412176f01a6e952",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-even-count?,
+    :form-sha256
+    "95e3efea21e6346fda5a219a67c3eae014c01b58ddf3003ba14db379e3330ac7",
+    :identical-to-historical true,
+    :source-calls [sh08-even-count?]}
+   {:name sh08-primitive-type-from-collection-kind,
+    :form-sha256
+    "273ab777c8c47b24d4b21bf52067182abe626fe602fccb594580df0debe1aa4a",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-primitive-type-from-literal-kind,
+    :form-sha256
+    "314ea7a18714ff172c4535724a8d0752f5462682464d6f2bc5ecd934841d729a",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-rejected-node,
+    :form-sha256
+    "25ec06d5709d2269ba7322c28febd29ef6192dd9396997750ed79868750b4e8e",
+    :identical-to-historical true,
+    :source-calls [sh08-type-diagnostic]}
+   {:name sh08-third,
+    :form-sha256
+    "3a99cd4ec4701e40c2964c0a5ef2703736252354ead4b0d98a2b839fb2cc332d",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-type-diagnostic,
+    :form-sha256
+    "d990d5ef6a90eb5ba0c83cabdcdc9795fe4510cb6cb0c44686450b9bf0a2ff52",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-type-fact,
+    :form-sha256
+    "52c1fab937d40de6355aaa6263bc3a898b6264bb6fd6823aa5a552e503b7bc90",
+    :identical-to-historical true,
+    :source-calls []}
+   {:name sh08-type-node,
+    :form-sha256
+    "cd474862a79bffc818e03bc65f6211b3b4f0b3e5d5acf8ae104fe73618f51886",
+    :identical-to-historical true,
+    :source-calls
+    [sh08-accepted-node
+     sh08-character-carrier?
+     sh08-child-types
+     sh08-even-count?
+     sh08-primitive-type-from-collection-kind
+     sh08-primitive-type-from-literal-kind
+     sh08-rejected-node
+     sh08-third]}
+   {:name sh08-vector-contains?,
+    :form-sha256
+    "fbca23690adf859eaa138afa4c9e156569a17c375f5acd819814044336bb1aaf",
+    :identical-to-historical true,
+    :source-calls []}],
+  :static-call-edges-not-semantic-reachability true},
+ :kind :primitive-C7-traversal-source-successor,
+ :generator
+ {:language :clojure,
+  :sha256
+  "d61d36c0a317cddf245109ab1d04537732a3fd6a34a05f7990f208d0a38c8db2",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :historical-functions-and-kernel :exact,
+  :source-checks :passed},
+ :base "5ebff5cae276ddd93b002a28806a1c363687f7c9",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :open-obligations
+ [:actual-primitive-kernels
+  :whole-Core-admission-and-typing
+  :actual-source-and-consumer-composition
+  :independent-source-result-acceptance
+  :remaining-core-structural-inference-accounting
+  :fresh-main-integration]}
