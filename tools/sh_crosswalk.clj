@@ -70,7 +70,7 @@
   "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order"
   "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts"
   "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
- "domains" ["math" "schema" "query" "workflow" "ai" "gpu" "ui"],
+ "domains" ["math" "schema" "query" "workflow" "ai" "gpu" "ui" "automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual"],
  "effects"
  ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"

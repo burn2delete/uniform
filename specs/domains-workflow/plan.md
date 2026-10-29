@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit the seven literal-key outcome/task records only in [tasks.md](tasks.md#implementation-tasks). The original sections below retain their generated task views and unchanged registry/aggregate boundaries:
+Edit the sixteen literal-key outcome/task records only in [tasks.md](tasks.md#implementation-tasks). The original seven sections below retain their generated task views and unchanged registry/aggregate boundaries; the nine additional integration records have separate generated views on the same roadmap:
 
 - [math](../../docs/component-roadmaps/domains.md#math)
 - [schema](../../docs/component-roadmaps/domains.md#schema)
@@ -24,7 +24,7 @@ Edit the seven literal-key outcome/task records only in [tasks.md](tasks.md#impl
 
 1. `spec.md`: scope, retained contract navigation and accepted/rejected workflow behavior.
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
-3. `tasks.md`: seven complete grouped outcome/task/acceptance records and the entire unchanged historical migration file, clearly separated.
+3. `tasks.md`: seven original grouped outcome/task/acceptance records, nine concrete integration task records, and the unchanged historical migration file, clearly separated.
 4. `evidence.md`: observed checks and implementation nonclaims.
 5. `tools/domains_task_projection{,_test}.clj`: checked task-block projection and focused controls; shared helpers remain unchanged.
 
@@ -33,6 +33,14 @@ Central migration inventory/schema is owned separately. This package does not wr
 ## Interfaces and dependencies
 
 Typed Core/MIR and semantic facts anchor each domain IR. Lower/Emit, Runtime, Schema and Stdlib are consumed only by the relevant domain outcome. Build packaging follows, not blocks, isolated domain work.
+
+The nine integration task interfaces consume the exact task outputs named in
+their Integration fields, rather than completion of whole components. Their
+source-reviewed criteria and original facets are retained in
+[the frozen Domains70 proposal](../requirement-reconciliation/domain-gap-completion.edn).
+Each task must produce its named actual artifacts and rejection diagnostics;
+supplied metadata alone cannot close it. Task granularity and composed-source
+mapping acceptance remain subject to independent reconciliation review.
 
 ## Validation and evidence
 

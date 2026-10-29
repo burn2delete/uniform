@@ -1,5 +1,5 @@
 (ns domains-task-projection
-  "Project seven existing domain outcome/task blocks from one editable ledger."
+  "Project declared domain outcome/task blocks from one editable ledger."
   (:require [clojure.string :as str]))
 
 (load-file "tools/task_projection.clj")
@@ -7,9 +7,10 @@
 
 (def task-path "specs/domains-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/domains.md")
-(def outcome-order ["math" "schema" "query" "workflow" "ai" "gpu" "ui"])
+(def outcome-order ["math" "schema" "query" "workflow" "ai" "gpu" "ui" "automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual"])
 (def outcome-headings {"math" "Math" "schema" "Schema" "query" "Query" "workflow" "Workflow"
-                       "ai" "AI" "gpu" "GPU" "ui" "UI"})
+                       "ai" "AI" "gpu" "GPU" "ui" "UI"
+                       "automation" "Typed automation and action audit" "blockchain" "Deterministic chain and programmable accounts" "crypto" "Cryptographic and protected-computation boundaries" "formal" "Formal proof verification and integration" "native" "Native performance slice" "services" "Backend service integration" "simulation" "Deterministic simulation slice" "storage" "Storage durability and recovery" "visual" "Checked visual workflow lowering"})
 (def record-pattern
   #"(?s)^- \[([ x])\] `([a-z]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Outcome: .+)$")
 (def open-tasks-pattern #"Remaining(?:\s+finite)?\s+tasks,\s+all open:")
