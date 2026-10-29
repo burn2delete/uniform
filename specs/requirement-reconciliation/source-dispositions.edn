@@ -9328,6 +9328,17 @@
     "interface/governance/registry-release-admission"
     "interface/governance/registry-yank"
     "interface/governance/security-response"]}],
+ :legacy-acc-scope
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+  :sha256
+  "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3",
+  :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+  :status
+  :owner-adjudicated-source-relations-pending-independent-review,
+  :counting
+  :separate-crosscutting-remediation-ledger-not-additional-registry-entries,
+  :implementation-credit :none},
  :remaining-decisions
  [{:source-document-ids [],
    :required-output

@@ -59,6 +59,12 @@
         product-text (pinned-text ref platform-task-projection/task-path)
         product (platform-task-projection/product-records product-text)
         decisions (:remaining-decisions source)
+        legacy-ref (:legacy-acc-scope source)
+        legacy (when legacy-ref
+                 (let [text (pinned-text ref (:path legacy-ref))]
+                   (require! (= (:sha256 legacy-ref) (sh-inventory/sha256 text))
+                             "Stale legacy ACC scope relation")
+                   (edn/read-string text)))
         task (fn [row]
                (let [path (:path row) text (pinned-text ref path)
                      plan (str "specs/" (:component row) "-workflow/plan.md")
@@ -88,10 +94,17 @@
       (require! (= current-sha256 (sh-inventory/sha256 (pinned-text ref path))) (str "Contract source drift: " path)))
     (require! (every? (set (map :id tasks)) (keep :accountable-task decisions)) "Missing accountable task for remaining decision")
     (require! (every? (set (map :id tasks)) (mapcat decision-task-ids decisions)) "Missing task for criterion allocation")
+    (when legacy
+      (let [ledger (:ledger legacy)]
+        (require! (= (:sha256 ledger) (sh-inventory/sha256 (pinned-text ref (:path ledger))))
+                  "Legacy ACC status authority changed")
+        (require! (every? (set (map :id tasks))
+                         (mapcat #(map :task-id (:current-task-interfaces %)) (:rows legacy)))
+                  "Missing task for legacy ACC interface relation")))
     {:kind :provisional-derived-task-census :schema-version 1 :authority :read-only-derived-task-census
      :source-commit ref :inventory-sha256 (sh-inventory/sha256 inventory)
      :dispositions {:path disposition-path :sha256 (sh-inventory/sha256 (slurp disposition-path))}
-     :scope {:original-contracts 240 :original-source-families 18
+     :scope (cond-> {:original-contracts 240 :original-source-families 18
              :whole-project-task-coverage :unestablished
              :task-granularity :pending-concrete-interface-and-coverage-review
              :component-task-count (count rows)
@@ -102,6 +115,10 @@
              :platform-counting :product-interfaces-additional-to-four-existing-target-tasks
              :requirement-candidate-denominator :not-adopted
              :phase-and-migration-checkboxes :not-counted}
+              legacy (assoc :legacy-remediation
+                            {:source legacy-ref
+                             :status (:status legacy)
+                             :disposition (:scope-disposition legacy)}))
      :progress (progress tasks) :tasks (vec (sort-by :id tasks))
      :remaining-decisions {:count (count decisions) :source disposition-path
                            :without-supporting-task-references (count (filter #(empty? (:supporting-task-ids %)) decisions))

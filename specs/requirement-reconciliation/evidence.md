@@ -1582,6 +1582,37 @@ roadmap, decision-data, and witness hashes, the thirteen literal identities,
 and conservation of all 240 original document bytes. It is review input;
 independent granularity acceptance remains pending.
 
+## Legacy ACC scope and overlap adjudication
+
+`legacy-acc13-current-scope-adjudication.edn` applies the finite ACC13 proposal
+with SHA256 `b7f1b1caa4a66c5af08d59acb0c8de1386767cb31bf329abb339baaa313a1fe3`
+to source `ebba8d97c454969e99c601ff970a5c23e7abe3ff`. The ACC task and
+evidence files remain byte-identical to the proposal's frozen inputs. All
+thirteen original closing criteria, dependencies and unresolved boundaries are
+retained, with authenticated current component-task contexts and plan sources.
+The changed Schema context refers to canonical schema semantics/validation;
+it does not confer the migration or projection siblings' wider scope.
+
+The owner disposition is a separate crosscutting remediation ledger with
+explicit affected component interfaces. It establishes no whole-task aliases,
+new registry entries, retirements or additional completion credit. Two ACC
+closures retain their historical integrated guard/Map-List and LR premise
+subjects; eleven rows remain Open or Partial. They are distinct from the three
+Accepted Reader outcomes. Eight existing ACC-01/12 policy clauses remain
+criteria, not extra units. Seven explicit overlap relations preserve distinct
+census, owner removal, composed closure and pipeline outputs while referencing
+shared finite runtime/Core evidence once. Changed C7/Effects/emitter whole-file
+inputs do not inherit fresh current execution from historical receipts.
+
+Owner source checks pass 2 tests / 22 assertions, including each-row criterion
+loss and automatic additive-count refusals. The proposal's earlier seventeen
+negative controls remain attributed to that proposal, not newly executed here.
+The derived census will expose this scope relation beside the provisional
+195-task registry, without adding the ACC cohort or its historical closures to
+that ratio. Independent current scope/overlap acceptance and final whole-project
+denominator review remain required. No compiler, runtime, denied or restricted
+operation was executed.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten

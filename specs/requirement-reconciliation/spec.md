@@ -43,7 +43,12 @@ extraction. Canonical task changes belong in their existing owning task files.
 
 Reject stale predecessors, duplicate application, dropped source spans,
 unsupported aliases and acceptance inferred from document migration. The
-current 3/138 observation is a component-task count; all-project scope and
-completion remain unestablished until the declared reconciliation is reviewed.
+current provisional 3/195 observation counts the component and Product task
+registry. The separate ACC remediation ledger retains its thirteen criteria,
+two historical closures and eleven unfinished rows through explicit affected
+interface relations; these do not establish whole-task aliases, additional
+registry entries, retirement or duplicate completion credit. All-project scope
+and completion remain unestablished until independent overlap, granularity,
+source entailment and final counting review accepts the exact declared tuple.
 The [plan](plan.md), [delivery tasks](tasks.md) and [evidence](evidence.md) track
 this change without replacing component implementation ledgers.
