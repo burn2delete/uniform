@@ -13,6 +13,19 @@ Its completed result `505c8ec17f195167e1fe0cef30afc8c95a4b0c366ff40e8cff4bce999b
 is RV evidence only. No RV capacity, eligibility or participant coverage transfers.
 Restricted RV warm material is outside this increment and was not accessed.
 
+The later fresh RV resolved method (review `692544bd`, result `cf7742be`) exposes
+a protocol applicability issue: its parent nests common-normal and
+host-exclusive broker acquisitions. The Host-Wide Development Resource Broker
+section of `docs/development-verification.md` says callers must not nest
+acquisitions and nested behavior is unspecified. The integrated
+`host-wide-development-resource-broker-v1` record preserves the same boundary.
+No reviewed multi-root exception was located in the broker source/tests, its
+governing section or that admission record. Distinct roots do not create an
+exception. This controller therefore refuses more than one broker guard before
+any clock, claim, acquisition or child port; fake lifecycle controls use one
+synthetic broker and two synthetic file guards. That is not a proposed PMK root
+configuration. Prior RV results are neither rejected nor repeated by this check.
+
 The original ACC04 `anchor-normal-parent` source used a normal broker lease at
 the Git-common development-loop root. This checkout's actual Git-common directory
 resolves to that same root. The original ACC04 handoff identifies session22232
@@ -46,6 +59,11 @@ that the four output paths are absent and atomically creates the terminal path's
 `.started` marker with `CREATE_NEW`. The marker is retained on failure. A duplicate
 claim cannot acquire, start or republish into the original operation. Output
 directories must already be configured; the claim port creates no directories.
+The first-request contract now binds eight port identities, including `:claim`.
+The controller additionally requires the normal `claim-operation!` Var and its
+source-bound entrypoint identity; substituting a function that only advertises a
+successful claim refuses before ports. Core controls explicitly replace that
+Var root with a synthetic CAS, never its normal filesystem implementation.
 
 The monotonic deadline is checked before/after acquisition, after startup and
 process supervision, and after release. Remaining time is passed to broker and
@@ -77,6 +95,14 @@ RV's additional guards establish its own use only. Neither source supplies the
 missing PMK participant map. The exact outer supervisor/hooks, output absence,
 new-operation history and actual interference observations must also be bound
 before same-owner platform assessment. No H/new-root adoption is implied.
+The broker record's existing owner is `development-verification`. Its unresolved
+decision is the supported nonnested PMK acquisition composition and participant
+coverage, or an authoritative reviewed exception with a governing source
+identifier and applicability conditions. Relevant source/config interfaces are
+the broker admission record's `owner`/`residual_host_boundaries`, the wiring's
+Git-common root derivation, original ACC04 parent `:coordination-root`, and the
+fresh method freeze's `:guards`. No current PMK coverage/exception key is supplied
+by those interfaces; a hash, root label or previous admission cannot fill it.
 
 All tests of this increment use fake ports; real acquisitions, releases, process
 starts, termination and target execution remain zero. The controls cover exact

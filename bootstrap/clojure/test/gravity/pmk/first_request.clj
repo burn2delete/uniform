@@ -4,7 +4,7 @@
 
 (def selector 'sh08-private-map-keys-preparation-semantic-cells)
 (def required-apis #{'sh08-pmk-index-forms 'sh08-pmk-type-view})
-(def required-ports #{:acquire :release :start :supervise :capture :terminate :bookend})
+(def required-ports #{:acquire :release :start :supervise :capture :terminate :bookend :claim})
 
 (defn digest [data]
   (pmk/sha (.getBytes (pr-str (pmk/owner-contract-data data)) "UTF-8")))

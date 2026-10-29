@@ -21,7 +21,7 @@ first execution selection.
 `bind-inputs` checks an independently reviewed expected request against the
 observed tuple before calling a normal owner's separate binding verifier.
 Required inputs include ordered classpath hashes, Java and Clojure executable
-hashes, config/environment digests, the exact controller and all seven port
+hashes, config/environment digests, the exact controller and all eight port
 identities, explicit guard roots/policies/classes/order and participant coverage,
 whole-operation deadline, capture size, descendant-containment evidence,
 terminal/release ordering, new-operation history and absent output observations.

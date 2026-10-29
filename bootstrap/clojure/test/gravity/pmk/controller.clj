@@ -24,6 +24,23 @@
 (defn claim-record [request]
   {:status :claimed :operation-id (:operation-id request) :request-sha256 (first/digest request)})
 
+(defn claim-identity [binding]
+  (first/digest {:entrypoint 'gravity.pmk.controller/claim-operation!
+                 :source-sha256 (get-in binding [:controller :sha256])}))
+
+(defn claim-operation! [bound]
+  (let [request (:request bound)
+        options (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+    (doseq [path (vals (:outputs request))]
+      (require! (not (java.nio.file.Files/exists (.toPath (java.io.File. ^String path)) options)) :output-exists))
+    (let [record (claim-record request)
+          path (.toPath (java.io.File. (str (get-in request [:outputs :terminal]) ".started")))
+          bytes (.getBytes (str (pr-str record) "\n") "UTF-8")]
+      (java.nio.file.Files/write path bytes
+        (into-array java.nio.file.OpenOption [java.nio.file.StandardOpenOption/CREATE_NEW
+                                             java.nio.file.StandardOpenOption/WRITE]))
+      record)))
+
 (defn child-command
   "Direct Java bypasses launcher config discovery. The only target call is
   the normal runner with the exact request's CLI selection and machine sink."
@@ -54,7 +71,10 @@
   start/FS/JVM/cleanup calls, which are not preemptible here."
   [request expected observed verify! ports]
   (let [bound (first/bind-inputs request expected observed verify!)
-        _ (require! (and (= port-keys (set (keys ports))) (every? fn? (vals ports))) :ports)
+        _ (require! (and (= port-keys (set (keys ports)))
+                         (every? #(or (fn? %) (var? %)) (vals ports))) :ports)
+        _ (require! (and (identical? #'claim-operation! (:claim! ports))
+                         (= (claim-identity expected) (get-in expected [:controller :ports :claim]))) :claim-port-binding)
         command (child-command request expected)
         _ (require! (= {:argv command :cwd (:cwd request)}
                        (get-in expected [:controller :launcher])) :launcher)
@@ -62,6 +82,10 @@
                                       (#{:normal :memory-heavy :exclusive} (:resource-class %)))
                                  (and (= :canonical (:kind %)) (= :exclusive (:resource-class %))))
                             (:guards expected)) :guard-kind)
+        ;; SH-01's documented protocol forbids nested broker acquisition.
+        ;; Distinct roots do not create an exception to that contract.
+        _ (require! (<= (count (filter #(= :broker (:kind %)) (:guards expected))) 1)
+                    :nested-broker-unsupported)
         clock (:clock! ports) deadline (+ (clock) (get-in expected [:limits :whole-timeout-ms]))
         leases (atom []) child (atom nil) handled (atom false) claimed (atom false)
         failure (atom nil) cleanup (atom nil) releases (atom []) result (atom nil)
@@ -165,19 +189,7 @@
   (merge
    {:clock! #(quot (System/nanoTime) 1000000)
     :interrupt! #(.interrupt (Thread/currentThread))
-    :claim! (fn [bound]
-              (let [request (:request bound)
-                    options (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])]
-                (doseq [path (vals (:outputs request))]
-                  (require! (not (java.nio.file.Files/exists (.toPath (java.io.File. ^String path)) options))
-                            :output-exists))
-                (let [record (claim-record request)
-                      path (.toPath (java.io.File. (str (get-in request [:outputs :terminal]) ".started")))
-                      bytes (.getBytes (str (pr-str record) "\n") "UTF-8")]
-                  (java.nio.file.Files/write path bytes
-                    (into-array java.nio.file.OpenOption [java.nio.file.StandardOpenOption/CREATE_NEW
-                                                         java.nio.file.StandardOpenOption/WRITE]))
-                  record)))
+    :claim! #'claim-operation!
     :acquire! (fn [guard timeout]
                 (if (= :canonical (:kind guard))
                   (let [path (.toPath (java.io.File. ^String (:root guard)))

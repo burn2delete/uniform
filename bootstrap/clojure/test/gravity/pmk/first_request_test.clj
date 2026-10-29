@@ -73,6 +73,7 @@
             [[:runtime-binding (assoc expected :runtime {})]
              [:runtime-binding (assoc-in expected [:runtime :ordered-classpath] [])]
              [:controller-binding (update-in expected [:controller :ports] dissoc :release)]
+             [:controller-binding (update-in expected [:controller :ports] dissoc :claim)]
              [:guard-binding (assoc expected :guards [])]
              [:guard-binding (assoc-in expected [:guards 0 :root] "relative")]
              [:participant-coverage (assoc-in expected [:coverage :acquisition-order] [:other])]

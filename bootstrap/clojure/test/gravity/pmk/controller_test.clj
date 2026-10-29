@@ -20,7 +20,9 @@
 
 (defn model []
   (let [request (fixture/request)
-        guards (mapv #(hash-map :id % :kind (if (= % :canonical) :canonical :broker)
+        ;; One synthetic broker and two file guards exercise three-step cleanup
+        ;; without claiming that nested real broker acquisitions are supported.
+        guards (mapv #(hash-map :id % :kind (if (= % :common) :broker :canonical)
                                :root (str "/synthetic/" (name %))
                                :resource-class (if (= % :common) :normal :exclusive)
                                :policy-sha256 fixture/h) [:common :host :canonical])
@@ -31,13 +33,12 @@
                                       :participants [{:id :synthetic :guards (mapv :id guards)}]}))
         binding (assoc-in binding [:controller :launcher]
                           {:argv (controller/child-command request binding) :cwd (:cwd request)})
+        binding (assoc-in binding [:controller :ports :claim] (controller/claim-identity binding))
         events (atom []) now (atom 0) counter (atom 0) claimed (atom false)
         event #(swap! events conj %)
         ports {:clock! #(deref now)
                :bookend! (fn [_] (event :bookend) (controller/expected-bookend request binding))
-               :claim! (fn [_] (event :claim)
-                         (if (compare-and-set! claimed false true) (controller/claim-record request)
-                           (throw (ex-info "already claimed" {:reason :operation-claimed}))))
+               :claim! #'controller/claim-operation!
                :acquire! (fn [g _] (event [:acquire (:id g)]) (:id g))
                :validate! (fn [g _] (event [:validate (:id g)]))
                :release! (fn [g _] (event [:release (:id g)]) {:outcome :released})
@@ -48,10 +49,16 @@
                :publish! (fn [r] (event [:publish (:status r)]))
                :interrupt! (fn [] (event :interrupt))}]
     {:request request :binding binding :verify (fixture/fake-verifier counter)
+     :claim-fn (fn [_] (event :claim)
+                 (if (compare-and-set! claimed false true) (controller/claim-record request)
+                   (throw (ex-info "already claimed" {:reason :operation-claimed}))))
      :ports ports :events events :clock now :verifier-count counter}))
 
 (defn run-model [m]
-  (controller/run! (:request m) (:binding m) (:binding m) (:verify m) (:ports m)))
+  ;; Explicitly replace the declared entrypoint root only in these core controls;
+  ;; normal execution never replaces it or injects a different claim function.
+  (with-redefs [controller/claim-operation! (:claim-fn m)]
+    (controller/run! (:request m) (:binding m) (:binding m) (:verify m) (:ports m))))
 (defn event-count [m event] (count (filter #{event} @(:events m))))
 
 (deftest order-identity-and-single-publication
@@ -76,6 +83,15 @@
     (is (empty? @(:events m))))
   (let [m (model) bad (assoc-in m [:binding :guards 0 :kind] :guessed)]
     (is (= :guard-kind (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (assoc-in m [:ports :claim!] (fn [_] (controller/claim-record (:request m))))]
+    (is (= :claim-port-binding (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (assoc-in m [:binding :controller :ports :claim] fixture/h)]
+    (is (= :claim-port-binding (fixture/reason #(run-model bad))))
+    (is (empty? @(:events m))))
+  (let [m (model) bad (assoc-in m [:binding :guards 1 :kind] :broker)]
+    (is (= :nested-broker-unsupported (fixture/reason #(run-model bad))))
     (is (empty? @(:events m)))))
 
 (deftest bookends-bind-the-tuple-and-claims-are-one-shot
@@ -189,7 +205,7 @@
     (is (empty? @(:events m)))
     (let [normal (controller/normal-process-ports (select-keys (:ports m) [:bookend! :capture! :publish!]))]
       (is (= controller/port-keys (set (keys normal))))
-      (is (every? fn? (vals normal)))
+      (is (every? ifn? (vals normal)))
       (is (empty? @(:events m)))
       (is (nil? (find-ns 'gravity.bootstrap)))
       (is (nil? (find-ns 'gravity.self-hosting.sh01-host-resource-broker)))
