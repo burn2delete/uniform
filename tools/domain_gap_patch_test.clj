@@ -46,6 +46,9 @@
                (assoc-in proposal [:records 0 :dependencies] [])
                (assoc-in proposal [:records 0 :task-reference :id] "missing-task")
                (assoc proposal :unresolved-semantic-ids [])
+               (assoc-in proposal [:task-amendments 0 :marker] "wrong-marker")
+               (assoc-in proposal [:task-amendments 0 :before-present?] false)
+               (assoc-in proposal [:new-task-proposals 0 :sha256] "wrong")
                (assoc-in proposal [:new-task-proposals 0 :raw] "- [x] `automation` Invented acceptance")]]
     (is (refuses? #(validates bad)))))
 

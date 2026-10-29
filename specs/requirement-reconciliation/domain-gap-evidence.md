@@ -74,7 +74,7 @@ git diff --check
 ```
 
 The exact pinned partition/coverage inputs passed the dry-run. Focused controls
-passed 3 tests/27 assertions, including stale whole-file/record predecessors,
+passed 3 tests/30 assertions, including stale whole-file/record predecessors,
 repeat/duplicate application, missing or cross-family IDs, wrong source
 hash/span/context, forged coverage or implementation acceptance, missing task
 criteria, negative fixtures or dependencies, and lost unresolved-source flags.

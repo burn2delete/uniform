@@ -25,7 +25,11 @@
     (require! (= (:sha256 pin) (sha (get files path))) "Stale whole task-file predecessor"))
   (let [amendments (:task-amendments p)
         _ (require! (= (count amendments) (count (set (map (juxt :path :id) amendments)))) "Duplicate task amendment")
-        changed (reduce (fn [m {:keys [path id before after before-sha256 after-sha256]}]
+        changed (reduce (fn [m {:keys [path id marker field-path before-present? before after before-sha256 after-sha256]}]
+                          (let [component (second (re-find #"^specs/([a-z-]+)-workflow/tasks.md$" path))]
+                            (require! (and component (= marker (str component "-implementation-tasks"))
+                                           (= [:canonical-task-record] field-path) (true? before-present?))
+                                      "Wrong task marker or field operation"))
                           (require! (= before-sha256 (sha before)) "Forged task before hash")
                           (require! (= after-sha256 (sha after)) "Forged task after hash")
                           (require! (and (str/includes? before (str "`" id "`"))
@@ -35,6 +39,10 @@
         new-tasks (:new-task-proposals p)
         ids (mapv :id new-tasks)
         _ (require! (= (count ids) (count (set ids))) "Duplicate new task ID")
+        _ (doseq [t new-tasks]
+            (require! (and (= "specs/domains-workflow/tasks.md" (:path t))
+                           (= "domains-implementation-tasks" (:marker t)) (= (:sha256 t) (sha (:raw t))))
+                      "Wrong proposed task source/marker/hash"))
         path "specs/domains-workflow/tasks.md"
         text (get changed path)
         _ (doseq [id ids] (require! (not (str/includes? text (str "- [ ] `" id "`"))) "New task already exists"))
