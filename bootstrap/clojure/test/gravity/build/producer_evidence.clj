@@ -72,6 +72,28 @@
   (require! (and (hash? (:repository-identity source))
                  (true? (:clean? source))) :source))
 
+(defn- producer-snapshot! [snapshot repository-identity]
+  ;; Preserve the actual wiring's snapshot records without inferring that the
+  ;; supplied schema, engine or counters were observed by a running child.
+  (let [base-fields #{:schema :repository-identity :path-count :snapshot-engine
+                      :hashed-path-count :hashed-byte-count}
+        overlay-fields #{:tracked-path-count :overlay-path-count}
+        engine (:snapshot-engine snapshot)
+        schema (case engine
+                 :full-content-v1 :gravity/sh01-complete-repository-snapshot-v1
+                 (:git-index-full-content-v2 :git-index-overlay-v2)
+                 :gravity/sh01-incremental-repository-snapshot-v2
+                 nil)]
+    (require! (and (map? snapshot)
+                   (= repository-identity (:repository-identity snapshot))) :producer-snapshot)
+    (when-not (= #{:repository-identity} (set (keys snapshot)))
+      (keys! snapshot (if (= :git-index-overlay-v2 engine)
+                        (into base-fields overlay-fields) base-fields) :producer-snapshot)
+      (require! (and schema (= schema (:schema snapshot))) :producer-snapshot)
+      (require! (every? #(and (integer? %) (<= 0 %))
+                        (vals (apply dissoc snapshot [:schema :repository-identity :snapshot-engine])))
+                :producer-snapshot))))
+
 (defn- binding! [binding contract]
   (keys! binding #{:source :consumed-input-identity :inputs :inventories
                    :shadow-inputs :classpath-identities :child-runtime-identity
@@ -208,13 +230,17 @@
       (require! (= :gravity/reader-producer-capture-v1 (:schema capture)) :capture-schema)
       (require! (= binding (:binding-before capture) (:binding-after capture)) :bookends)
       (require! (= (:source binding) (:applying-source capture)) :applying-source)
+      (producer-snapshot! (get-in capture [:producer-provenance :repository-snapshot])
+                          (get-in binding [:source :repository-identity]))
       (require! (= {:revision (select-keys (:source binding) [:commit :tree])
                     :repository-snapshot
                     {:repository-identity (get-in binding [:source :repository-identity])}
                     :consumed-input-identity (:consumed-input-identity binding)
                     :classpath-identities (:classpath-identities binding)
                     :child-runtime-identity (:child-runtime-identity binding)}
-                   (:producer-provenance capture)) :producer-provenance)
+                   (assoc (:producer-provenance capture) :repository-snapshot
+                          {:repository-identity (get-in binding [:source :repository-identity])}))
+                :producer-provenance)
       (require! (= {:exit-code 0 :natural-exit? true :timed-out? false
                     :stdout-complete? true :stderr-complete? true
                     :cleanup-complete? true :root-dead? true}
