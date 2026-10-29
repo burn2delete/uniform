@@ -208,3 +208,58 @@ nothing and leaves Bootstrap unloaded. Existing H-root participation, profile
 review, whole watchdog and Acceptance4/5 remain open. The accepted `9fe51995`
 request is unchanged; the successor requires a fresh freeze and independent
 affected binding review before any later admission decision.
+
+## Selected Git bookend successor
+
+The `89de3339` source/API preparation received independent PASS, receipt
+`07236cd52a6cdde032e825c76dc598d0a037bf4ea6ea03efa46696916c9b0913`:
+22 safe tests / 308 assertions, 57 controls and five-Var metadata inspection.
+That scope did not establish Git creation coverage. The `9fe51995` and
+`d89574e3` requests remain byte-identical historical preparations.
+
+The next source successor routes only the selected fresh C3 child's harness
+bookends through `gravity.syntax.selected-revision-git`. The shared harness
+file is unchanged. A scoped `with-redefs` restores its Var on every exit;
+unselected paths and other `shell/sh` callers retain their original behavior.
+Routing starts before the first selected child recheck. Git observations are
+published even when that recheck refuses, without replacing the original error.
+
+The four existing command forms retain their exact argument order, including
+`git -C root`; no configuration discovery or extra Git command is inserted.
+The selected method retains its actual inherited environment and CWD, closes
+stdin immediately, decodes stdout as UTF8 and stderr with the default charset,
+and consumes complete streams through the same IO-copy/future semantics as the
+old shell implementation. Normal runner bounded strict-UTF8 capture would alter
+these protocol strings and is not substituted. The adapter uses public normal
+start/retain/handles/finalize plus the original `Process.waitFor` behavior.
+Nonzero exit retains `:git-identity-read`; launch/wait errors remain original
+objects. Cleanup/identity failures remain separate observations, with ordinary
+primary exceptions preserved and interruption restored at the call boundary.
+
+Each returned Process is immediately kept in a raw record, including retain
+refusal. Successful retain stores the same raw token and handles through
+finalization. A wait exit, tracked finalization and unknown descendant coverage
+remain distinct facts. The selected child keeps raw values in memory and writes
+only observation fields; it never reconstructs ownership from serialized PIDs.
+Unknown retention or cleanup does not become terminal success or release.
+
+The new request records the PATH-selected entry and actual executable,
+dispatcher/selected-tool files, developer-selection links, configuration and
+locator files, and absent-file witnesses. They are checked by filesystem reads
+before and after a selected Git call, without invoking Git to discover them.
+The inherited environment digest is unchanged; unexpected shell dynamic-dir/env
+bindings refuse before launch. The file set is an explicit identity proposal,
+not proof of every native Git configuration search or descendant creation path.
+Apple dispatch, native helper/configuration coverage, remaining C3 callgraph,
+H-root participation/profile, whole watchdog and Acceptance4/5 remain open.
+
+Compiler-free controls read the actual `clojure.java.shell/sh` form from the
+frozen Clojure JAR and replace only its exec port. They compare ordinary and
+malformed UTF8, stderr, nonzero exit, complete output beyond 1 MiB, stdin and
+command order, then check launch/wait/retain/cleanup/identity failures and scoped
+restoration. The first actual-form fixture removed its temporary namespace too
+early for future helper resolution; keeping it until completion corrected that
+test-only lifetime defect. The affected panel passes 30 tests / 455 assertions;
+lint reports zero errors/warnings. No new selected Git adapter target, C3 child,
+genuine owner, acquisition, process probe or held operation was executed. Normal
+repository identity reads used for source preparation confer no target acceptance.

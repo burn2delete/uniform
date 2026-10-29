@@ -1,9 +1,11 @@
 (ns gravity.syntax.selected-revision-request
   "C3-specific request preparation. Loading/preparing never launches an owner."
   (:require [clojure.edn :as edn] [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
             [clojure.string :as str]
             [gravity.resolve.selected-source-harness :as h]
-            [gravity.syntax.selected-revision-acceptance :as acceptance])
+            [gravity.syntax.selected-revision-acceptance :as acceptance]
+            [gravity.syntax.selected-revision-git :as git])
   (:import (java.nio.file Files LinkOption OpenOption StandardOpenOption)
            (java.security DigestInputStream MessageDigest)))
 
@@ -96,6 +98,44 @@
     {:path (.getCanonicalPath file) :bytes (Files/size p)
      :sha256 (format "%064x" (java.math.BigInteger. 1 (.digest digest)))}))
 
+(defn- path-state [path]
+  (let [f (io/file path) p (.toPath f)]
+    (h/ensure! (.isAbsolute f) :absolute-Git-identity-input)
+    (cond (Files/isSymbolicLink p)
+          {:path path :state :symbolic-link :target (str (Files/readSymbolicLink p))
+           :resolved (.getCanonicalPath f)
+           :file (when (.isFile f) (fingerprint (.getCanonicalPath f)))}
+          (.isFile f) {:path path :state :file :file (fingerprint path)}
+          (not (.exists f)) {:path path :state :absent}
+          :else (throw (ex-info "Unsupported Git identity input" {:path path})))))
+
+(defn- git-path []
+  (some (fn [directory]
+          (let [f (io/file directory "git")]
+            (when (and (.isFile f) (.canExecute f)) (.getAbsolutePath f))))
+        (str/split (or (System/getenv "PATH") "") (re-pattern java.io.File/pathSeparator))))
+
+(defn git-binding! [root identity]
+  (h/ensure! (and (seq (:configuration-files identity)) (:executable identity)
+                  (= (.getCanonicalPath (io/file (:executable identity)))
+                     (some-> (git-path) io/file .getCanonicalPath))) :selected-Git-executable)
+  {:root root :cwd root :argv-executable "git" :path-selected-entry (git-path)
+   :identity-inputs identity :environment (environment)
+   :executable-inputs (mapv path-state (into [(:executable identity)] (:dispatch-files identity)))
+   :selection-inputs (mapv path-state (:selection-links identity))
+   :configuration-inputs (mapv path-state (:configuration-files identity))
+   :configuration-scope :explicit-frozen-file-set
+   :native-dispatch-and-config-search-coverage :requires-independent-source-assessment
+   :stdin :immediate-close :stdout-encoding "UTF-8"
+   :stderr-encoding (.name (java.nio.charset.Charset/defaultCharset))
+   :stream-retention :complete-as-shell-sh :environment-policy :inherit-unchanged})
+
+(defn verify-git-binding! [binding]
+  (h/ensure! (and (nil? shell/*sh-dir*) (nil? shell/*sh-env*)
+                  (= (:cwd binding) (.getCanonicalPath (io/file (System/getProperty "user.dir"))))
+                  (= binding (git-binding! (:root binding) (:identity-inputs binding))))
+             :selected-Git-identity-drift))
+
 (defn runtime-files [java-home jars]
   ;; Include the whole resolved JDK, not just its launcher and release file.
   (let [home (io/file java-home)]
@@ -117,7 +157,7 @@
         "(gravity.syntax.selected-revision-request/child! "
         (pr-str (:path input)) " " (pr-str (:sha256 input)) ")")])
 
-(defn read-prepared! [path expected-sha]
+(defn- read-input! [path expected-sha]
   (let [input (h/file-input! path)]
     (h/ensure! (= expected-sha (:sha256 input)) :request-input-drift)
     (let [prepared (edn/read-string (:text input))
@@ -126,27 +166,45 @@
                        (update-in [:closure :config-files] conj (dissoc input :text)))]
       (h/ensure! (= (:environment prepared) (environment)) :launcher-environment-drift)
       (h/ensure! (= host-profile (:host-profile prepared)) :request-host-profile-drift)
-      (acceptance/recheck-closure! prepared)
-      (acceptance/guard-configuration! prepared)
       prepared)))
+
+(defn read-prepared! [path expected-sha]
+  (let [prepared (read-input! path expected-sha)]
+    (acceptance/recheck-closure! prepared)
+    (acceptance/guard-configuration! prepared)
+    prepared))
 
 (defn child!
   "Explicit future child entrypoint. Never called by preparation or its tests.
   The parent must first bind the external watchdog/finalizer and admission."
   [path expected-sha]
-  (let [prepared (read-prepared! path expected-sha)]
-    (h/ensure! (= (:heap-bytes host-profile) (.maxMemory (Runtime/getRuntime))) :child-heap-profile)
-    (try
-      (require 'gravity.bootstrap)
-      (let [result (acceptance/exercise! h/loaded-owner prepared)]
-        (create-edn! (get-in prepared [:outputs :result]) result))
-      (finally (acceptance/recheck-closure! prepared)
-               (acceptance/guard-configuration! prepared)))))
+  (let [input (read-input! path expected-sha)
+        ports (assoc (runner-ports! (:root input)) :verify-git! verify-git-binding!)
+        records (atom []) primary (atom nil)]
+    ;; Only this fresh selected C3 child routes the harness Var. Unselected
+    ;; harness source and all other shell/sh callers remain unchanged.
+    (with-redefs [h/git! (partial git/git! ports (:git-binding input) records)]
+      (try
+        (let [prepared (read-prepared! path expected-sha)]
+          (h/ensure! (= (:heap-bytes host-profile) (.maxMemory (Runtime/getRuntime))) :child-heap-profile)
+          (try
+            (require 'gravity.bootstrap)
+            (let [result (acceptance/exercise! h/loaded-owner prepared)]
+              (create-edn! (get-in prepared [:outputs :result]) result))
+            (finally (acceptance/recheck-closure! prepared)
+                     (acceptance/guard-configuration! prepared))))
+        (catch Throwable error (reset! primary error) (throw error))
+        (finally
+          (try (create-edn! (get-in input [:outputs :git-observations]) (git/observation-view records))
+               (catch Throwable error
+                 (if-let [original @primary]
+                   (when-not (identical? original error) (.addSuppressed ^Throwable original error))
+                   (throw error)))))))))
 
 (defn prepare!
   "Freeze files and a controller request only. Does not resolve runtime ports,
   select a profiler/session, acquire a guard, or start any process."
-  [{:keys [root source directory java-home jars coordination-root]}]
+  [{:keys [root source directory java-home jars coordination-root git-identity]}]
   (let [prepared (h/prepare-inputs! root source)
         root (:root prepared)
         java-home (.getCanonicalPath (io/file java-home))
@@ -162,12 +220,13 @@
         runtime (runtime-files java-home jars)
         source-files (mapv fingerprint (acceptance/source-closure-paths root))
         runner (runner-binding! root)
+        git-binding (git-binding! root git-identity)
         policy (fingerprint (str (io/file coordination-root "policy.edn")))
         _ (h/ensure! (.mkdirs directory) :create-request-directory)
         path #(str (io/file directory %))
         outputs {:result (path "result.edn") :parent-receipt (path "parent-receipt.edn")
                  :stdout (path "stdout.log") :stderr (path "stderr.log")
-                 :whole-watchdog (path "whole-watchdog.edn")}
+                 :whole-watchdog (path "whole-watchdog.edn") :git-observations (path "git-observations.edn")}
         guard {:coordination-root coordination-root :resource-class :exclusive
                :participants ["direct-C3-controller/normal-start-process"]
                :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"
@@ -175,7 +234,7 @@
         guard-input (create-edn! (path "guard.edn") guard)
         prepared (assoc prepared :guard-config-path (:path guard-input)
                    :host-profile host-profile :environment env :outputs outputs
-                   :runtime {:executable executable :java-home java-home}
+                   :runtime {:executable executable :java-home java-home} :git-binding git-binding
                    :closure {:source-files source-files :runtime-files runtime
                              :config-files [guard-input policy (fingerprint (str (io/file root "deps.edn")))]
                              :classpath cp :cwd root})
@@ -185,6 +244,7 @@
                  :cwd root :argv (child-argv prepared input) :outputs outputs
                  :host-profile host-profile :guard-proposal guard :guard-policy-input policy
                  :runner-binding runner
+                 :git-binding git-binding
                  :host-time-assessment {:broker-wait-ms 60000 :child-wait-ms 120000
                                         :normal-finalization-ms 1500 :post-cleanup-wait-ms 100
                                         :two-capture-waits-ms 10000 :capture-post-close-waits-ms 200
@@ -198,10 +258,12 @@
                   :known-nested-site {:source 'gravity.resolve.selected-source-harness/git!
                                       :source-input (first (filter #(str/ends-with? (:path %) "/gravity/resolve/selected_source_harness.clj") source-files))
                                       :runtime-input (first (filter #(re-find #"/clojure-[^/]+\.jar$" (:path %)) runtime))
-                                      :launcher 'clojure.java.shell/sh :host-call 'java.lang.Runtime/exec
-                                      :wait 'java.lang.Process/waitFor :raw-handle-retention :absent}
-                  :missing [:exact-Git-executable-and-configuration-binding
-                            :nested-child-lifecycle-and-creation-coverage
+                                      :selected-launcher 'gravity.syntax.selected-revision-git/git!
+                                      :legacy-launcher 'clojure.java.shell/sh
+                                      :wait 'java.lang.Process/waitFor :raw-handle-retention :same-public-token
+                                      :capture :legacy-shell-compatible-complete-streams}
+                  :missing [:native-Git-dispatch-and-config-search-coverage
+                            :nested-native-creation-coverage
                             :remaining-genuine-C3-callgraph-coverage]
                   :tracked-to-owned-or-global-promotion false}
                  :profile-basis {:status :proposal-not-C3-measurement
