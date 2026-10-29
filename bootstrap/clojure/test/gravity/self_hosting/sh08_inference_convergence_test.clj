@@ -444,3 +444,62 @@
     (is (= :function-result-type-mismatch (get-in inferred [:diagnostics 0 :reason])))
     (is (= [:gravity.type/integer :gravity.type/string]
            ((juxt :expected :actual) (first (:diagnostics inferred)))))))
+
+(deftest source-alias-premise-census-includes-unknown-and-definition-producers
+  (let [{:keys [nodes lexical context]}
+        (occurs-model/input {:equations [[:tail [:ref :x]] [:x [:ref :y]] [:y [:ref :x]]]})
+        actual (invoke 'inference-alias-components [nodes lexical [] {} context])]
+    (is (= [[:x :y]] (mapv :members actual)))
+    (is (= [:tail] (mapv :binding-id (:external-alias-paths (first actual))))))
+  (doseq [case (filter #(contains? #{:alias-fixed-point :alias-oscillation :unresolved
+                                    :constructor-leading-to-alias-cycle :duplicate-binding :opaque-call} (:name %))
+                      occurs-model/cases)]
+    (let [{:keys [nodes lexical definitions functions context]} (occurs-model/input case)
+          actual (invoke 'inference-alias-components [nodes lexical (or definitions []) (or functions {}) context])]
+      (is (= (occurs-model/alias-component-model case) (set (map (comp set :members) actual))))))
+  (doseq [case (filter #(contains? #{:definition-alias-fixed-point :definition-alias-oscillation
+                                    :definition-alias-unresolved :definition-alias-never} (:name %))
+                      occurs-model/definition-alias-cases)]
+    (let [{:keys [nodes lexical definitions context]} (occurs-model/definition-input case)
+          actual (invoke 'inference-alias-components [nodes lexical definitions {} context])]
+      (is (= (occurs-model/alias-component-model case) (set (map (comp set :members) actual)))))))
+
+(deftest alias-source-premise-retains-overridden-constraints-without-normalizing
+  (let [function {:function-id :f :parameters [{:binding-id :x :type :gravity.type/unknown}]
+                  :signature {:parameters [{:type-id :gravity.type/map}]}}
+        functions {:f function} products {:function-records [{:function-syntax-id :f :signature (:signature function)}]}
+        imports {:x {:function-type :gravity.type/string :producer-sh07-artifact-id :producer}}
+        recursive {:status :accepted :definition {:binding-id :x} :function-syntax-id :f}
+        handlers {:seeds {:x :gravity.type/bool :tail :gravity.type/integer}
+                  :groups {:handler [{:record {:binding-id :x}} {:record {:binding-id :tail}}]}}
+        origins (invoke 'inference-seed-source-premises [products functions imports true false recursive {} handlers])
+        component {:members [:x :y] :edges [{:binding-id :x :dependency-binding-id :y}
+                                           {:binding-id :y :dependency-binding-id :x}]
+                   :external-alias-paths [{:binding-id :tail :edges [{:binding-id :tail :dependency-binding-id :x}]}]}
+        observation {:x :gravity.type/integer :y :gravity.type/string}
+        base {:status :accepted :diagnostics [] :binding-types observation
+              :identity-input {:domain :fixture} :artifact-id-request {:domain :fixture} :typed-core {}}
+        retained (invoke 'retain-alias-source-premises [base [component] origins observation])
+        premise (first (get-in retained [:convergence :alias-equivalence-premises]))]
+    (is (= [function :gravity.type/string :gravity.type/map :gravity.type/bool :gravity.type/integer]
+           (mapv :type (:source-seed-conjunction premise))))
+    (is (= [:recursive-or-higher-order-premise :imported-function :parameter-declaration :handler-binding :handler-binding]
+           (mapv :producer (:source-seed-conjunction premise))))
+    (is (= [:component-member :component-member :component-member :component-member :incoming-alias]
+           (mapv :role (:source-seed-conjunction premise))))
+    (is (= :not-performed (:compatibility-decision premise) (:normalization premise)))
+    (is (= observation (:binding-types retained)))
+    (is (= :accepted (:status retained)))
+    (is (= (:typed-core base) (:typed-core retained)))
+    (is (= (get-in retained [:convergence :alias-equivalence-premises])
+           (get-in retained [:identity-input :convergence :alias-equivalence-premises])
+           (get-in retained [:artifact-id-request :convergence :alias-equivalence-premises])))
+    (doseq [changed [(assoc-in retained [:convergence :alias-equivalence-premises] [])
+                     (assoc-in retained [:convergence :alias-equivalence-premises 0 :source-seed-conjunction] [])
+                     (assoc-in retained [:identity-input :convergence :alias-equivalence-premises] [:forged])]]
+      (is (= retained (invoke 'retain-alias-source-premises [changed [component] origins observation]))))
+    (let [rejected {:status :rejected :diagnostics [{:reason :function-result-type-mismatch}]}
+          result (invoke 'retain-alias-source-premises [rejected [component] origins observation])]
+      (is (= (:diagnostics rejected) (:diagnostics result)))
+      (is (= :rejected (:status result))))
+    (is (= base (invoke 'retain-alias-source-premises [base [] origins observation])))))

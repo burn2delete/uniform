@@ -555,3 +555,41 @@
     ;; A callback/call result is not an alias equation merely because the call
     ;; syntax mentions a member of the component. No call semantics are run.
     (is (false? (model-occurs? callback)))))
+
+(defn alias-component-model
+  "Compiler-free SCC oracle using mutual transitive reachability. Seed values
+  cannot create an alias edge or supply source authority."
+  [{:keys [equations definitions functions intrinsic-reference? context]}]
+  (let [ids (mapv first equations) owned (set ids)
+        blocked (set (concat (map :binding-id definitions)
+                             (mapcat :parameter-binding-ids (vals functions))))]
+    (if (or (not= (count ids) (count owned)) (some blocked ids) intrinsic-reference?
+            (seq (:boolean-matches context)) (map? (:loop-core context))) #{}
+      (let [graph (into {} (for [[id term] equations
+                                :when (and (= :ref (first term)) (= 2 (count term)) (owned (second term)))]
+                            [id #{(second term)}]))
+            paths (loop [paths graph]
+                    (let [next (into {} (for [[id targets] paths]
+                                         [id (into targets (mapcat paths targets))]))]
+                      (if (= paths next) paths (recur next))))]
+        (set (for [id ids :when ((get paths id #{}) id)]
+               (set (filter #(and ((get paths id #{}) %) ((get paths % #{}) id)) ids))))))))
+
+(deftest source-alias-components-do-not-depend-on-provisional-seed-values
+  (let [equations [[:x [:ref :y]] [:y [:ref :x]]]
+        component #{#{:x :y}}]
+    (doseq [bindings [{} {:x :gravity.type/integer :y :gravity.type/string}
+                      {:x :gravity.type/integer :y :gravity.type/integer}
+                      {:x :gravity.type/integer :y :gravity.type/unknown}
+                      {:x :gravity.type/never :y :gravity.type/never}]]
+      (is (= component (alias-component-model {:equations equations :bindings bindings}))))
+    (is (= component (alias-component-model {:equations (into [[:tail [:ref :x]]] equations)})))
+    (is (= #{#{:x :y} #{:z}} (alias-component-model {:equations (conj equations [:z [:ref :z]])})))
+    (doseq [addition [{:definitions [{:binding-id :x}]} {:functions {:f {:parameter-binding-ids [:x]}}}
+                     {:intrinsic-reference? true} {:context {:loop-core {}}} {:context {:boolean-matches [{}]}}]]
+      (is (= #{} (alias-component-model (merge {:equations equations} addition)))))
+    (doseq [equations [[[:x [:ref :y]] [:y [:vector [:ref :x]]]]
+                       [[:x [:ref :y]] [:y [:call [:ref :callback] [:ref :x]]]]
+                       [[:x [:ref :y]] [:x [:ref :y]] [:y [:ref :x]]]
+                       [[:x [:ref :outside]]]]]
+      (is (= #{} (alias-component-model {:equations equations}))))))

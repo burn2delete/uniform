@@ -23471,6 +23471,77 @@
             (conj result {:binding-id binding :initializer-node-id value
                           :definition-core-node-id id})) nil)))))
 
+(defn inference-alias-edge [binding equations nodes context]
+  (let [record (get equations binding) initializer (get record :initializer-node-id)
+        node (get nodes initializer) dependency (get (get node :attributes) :binding-id)
+        visible (get record :visible-prior-binding-ids)]
+    (if (if (map? record)
+          (if (= :reference (get node :core-form))
+            (if (if (vector? (get node :children)) (= [] (get node :children)) false)
+              (if (contains? (get context :ordering-operators {}) initializer) false
+                (if (contains? equations dependency)
+                  (if (contains? record :visible-prior-binding-ids)
+                    (if (vector? visible) (contains? (set visible) dependency) false) true) false)) false) false) false)
+      {:binding-id binding :dependency-binding-id dependency
+       :equation-record record :reference-node node
+       :definition-node (if (contains? record :definition-core-node-id)
+                          (get nodes (get record :definition-core-node-id)) nil)} nil)))
+
+(defn inference-alias-component [root equations nodes context]
+  (loop [binding root seen #{} edges []]
+    (if (contains? seen binding)
+      (if (= root binding)
+        {:members (loop [remaining edges out []]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining) (conj out (get (first remaining) :binding-id)))))
+         :edges edges} nil)
+      (let [edge (inference-alias-edge binding equations nodes context)]
+        (if (= edge nil) nil
+          (recur (get edge :dependency-binding-id) (conj seen binding) (conj edges edge)))))))
+
+(defn inference-alias-incoming-path [root members equations nodes context]
+  (loop [binding root seen #{} edges []]
+    (if (contains? members binding)
+      (if (= 0 (count edges)) nil {:binding-id root :edges edges})
+      (if (contains? seen binding) nil
+        (let [edge (inference-alias-edge binding equations nodes context)]
+          (if (= edge nil) nil
+            (recur (get edge :dependency-binding-id) (conj seen binding) (conj edges edge))))))))
+
+(defn inference-alias-components [node-sequence lexical definitions functions context]
+  ; This is a source equation census, not a known-type or convergence proof.
+  ; Unknown observations may occur; opaque/parameter/intrinsic producers may not.
+  (if (if (> (count (get context :boolean-matches)) 0) true (map? (get context :loop-core))) []
+    (let [nodes (sh08-ft-node-index node-sequence)
+          defs (inference-definition-equations definitions nodes)
+          records (loop [remaining defs out lexical]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining) (conj out (first remaining)))))
+          blocked (loop [ids (keys functions) out #{}]
+                    (if (= 0 (count ids)) out
+                      (recur (rest ids) (set (sh08-ft-add-values-to-set
+                        (get (get functions (first ids)) :parameter-binding-ids) (vec out))))))
+          equations (sh08-ft-lexical-equation-index records blocked nodes)]
+      (if (if (= defs nil) true
+            (if (= equations nil) true (= false (= (count nodes) (count node-sequence))))) []
+        (loop [remaining records covered #{} out []]
+          (if (= 0 (count remaining))
+            (loop [components out result []]
+              (if (= 0 (count components)) result
+                (let [component (first components) members (set (get component :members))
+                      incoming (loop [sources records paths []]
+                                 (if (= 0 (count sources)) paths
+                                   (let [path (inference-alias-incoming-path
+                                                (get (first sources) :binding-id) members equations nodes context)]
+                                     (recur (rest sources) (if (= path nil) paths (conj paths path))))))]
+                  (recur (rest components) (conj result (assoc component :external-alias-paths incoming))))))
+            (let [id (get (first remaining) :binding-id)
+                  component (if (contains? covered id) nil (inference-alias-component id equations nodes context))]
+              (if (= component nil) (recur (rest remaining) covered out)
+                (recur (rest remaining)
+                  (set (sh08-ft-add-values-to-set (get component :members) (vec covered)))
+                  (conj out component))))))))))
+
 (defn sh08-ft-constructor-cycle [root initializers nodes bindings types context]
   (loop [pending [{:id root :seen #{} :links [] :constructor? false}]]
     (if (= 0 (count pending)) nil
@@ -24010,6 +24081,69 @@
     (if higher-order?
       (get higher-order-proof :initial-binding-types)
       {})))
+
+(defn inference-seed-source-premises
+  [products functions imports recursive? higher-order? recursive-proof higher-order-proof handler-products]
+  ; Reconstruct each contribution from the same producers as the real entry.
+  ; Do not collapse overlapping contributions using the final assoc precedence.
+  [{:producer :recursive-or-higher-order-premise
+    :binding-types (sh08-ft-inference-context recursive? higher-order? recursive-proof higher-order-proof functions)
+    :source-records (if recursive? recursive-proof (if higher-order? higher-order-proof {}))
+    :required-relation :producer-premise-specific}
+   {:producer :imported-function
+    :binding-types (sh08-im-seeds imports {}) :source-records imports
+    :required-relation :imported-function-type}
+   {:producer :parameter-declaration
+    :binding-types (sh08-ft-declaration-seeds functions {})
+    :source-records (get products :function-records)
+    :required-relation :declared-parameter-compatibility}
+   {:producer :handler-binding
+    :binding-types (get handler-products :seeds {}) :source-records (get handler-products :groups {})
+    :required-relation :source-handler-binding-type}])
+
+(defn retain-alias-source-premises [result components seed-producers observations]
+  (if (= 0 (count components)) result
+    (let [premises
+          (loop [remaining components out []]
+            (if (= 0 (count remaining)) out
+              (let [component (first remaining) members (get component :members)
+                    constrained-ids (loop [paths (get component :external-alias-paths) ids members]
+                                      (if (= 0 (count paths)) ids
+                                        (recur (rest paths) (conj ids (get (first paths) :binding-id)))))
+                    constraints
+                    (loop [producers seed-producers values []]
+                      (if (= 0 (count producers)) values
+                        (let [producer (first producers) types (get producer :binding-types)]
+                          (recur (rest producers)
+                            (loop [ids constrained-ids rows values]
+                              (if (= 0 (count ids)) rows
+                                (let [id (first ids)]
+                                  (recur (rest ids)
+                                    (if (contains? types id)
+                                      (conj rows {:binding-id id :type (get types id)
+                                                  :producer (get producer :producer)
+                                                  :required-relation (get producer :required-relation)
+                                                  :source-records (get producer :source-records)
+                                                  :role (if (contains? (set members) id) :component-member :incoming-alias)}) rows)))))))))
+                    prior (loop [ids constrained-ids rows []]
+                            (if (= 0 (count ids)) rows
+                              (recur (rest ids)
+                                (conj rows {:binding-id (first ids)
+                                            :type (get observations (first ids) :gravity.type/unknown)}))))]
+                (recur (rest remaining)
+                  (conj out (assoc component
+                    :source-seed-conjunction constraints :provisional-observations prior
+                    :compatibility-decision :not-performed :normalization :not-performed
+                    :grounding (if (= 0 (count constraints)) :no-entry-seed-contribution :requires-producer-specific-compatibility)
+                    :authority :retained-source-inputs-not-independent-acceptance))))))
+          convergence (assoc (get result :convergence {}) :alias-equivalence-premises premises)
+          result (assoc result :convergence convergence)]
+      ; The existing convergence carrier survives downstream reconstruction.
+      ; Preserve the typed-core and top-level schemas, and bind the evidence
+      ; through the existing identity carriers. This adds no caller flag.
+      (if (map? (get result :identity-input))
+        (let [identity (assoc (get result :identity-input) :convergence convergence)]
+          (assoc result :identity-input identity :artifact-id-request identity)) result))))
 
 (defn sh08-ft-context-proof
   [recursive? higher-order? recursive-proof higher-order-proof]
@@ -24792,8 +24926,20 @@
                 final-functions
                 (if (sh08-rv? recursive-proof) (sh08-ft-final-functions functions)
                   (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
-            (sh08-ft-finish-function-type-core
-              core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)))))
+            (let [result (sh08-ft-finish-function-type-core
+                           core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)
+                  components (inference-alias-components
+                               (get shape :nodes) (get products :lexical-bindings) (get products :definitions)
+                               function-skeletons
+                               (sh08-ft-source-join-context
+                                 {:ordering-core core-artifact :lookup-bindings bindings
+                                  :boolean-matches (get products :boolean-matches)
+                                  :loop-core (sh08-ft-loop-working-core core-artifact bindings)}))]
+              (if (= 0 (count components)) result
+                (retain-alias-source-premises result components
+                  (inference-seed-source-premises products function-skeletons imports recursive? higher-order?
+                    recursive-proof higher-order-proof handler-products)
+                  (get inference :binding-types))))))))
         {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected
