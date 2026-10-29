@@ -100,8 +100,12 @@
      :remaining-decisions {:count (count decisions) :source disposition-path
                            :without-supporting-task-references (count (filter #(empty? (:supporting-task-ids %)) decisions))
                            :criterion-witness-bound (count (filter :criterion-task-allocation decisions))
+                           :criterion-allocation-review-pending
+                           (count (filter #(= :pending-independent-current-composition-review
+                                              (get-in % [:criterion-task-allocation :allocation-review])) decisions))
                            :remaining-criterion-allocation-work (count (remove :criterion-task-allocation decisions))
                            :allocation-to-counted-tasks (if (some :criterion-task-allocation decisions) :partially-criterion-witness-bound :unassessed)
+                           :allocation-review-qualification "Concrete criterion spans do not confer independent composition review or full attached-facet entailment; predecessor allocations retain their recorded review scope."
                            :full-attached-facet-entailment :pending-complete-source-disposition-audit
                            :counting :necessary-work-addressed-through-task-criteria-not-additional-task-units}
      :independent-composed-review :required-separately
