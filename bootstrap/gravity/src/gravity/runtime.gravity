@@ -2084,7 +2084,7 @@
 (defn p15-s23-runtime-module-census [plan]
   ; Validate the complete manifest before initialization. Root count and the
   ; aggregate initializer cost do not grant or consume an admission allowance.
-  ; The initializer helper retains its existing per-initializer limit for now.
+  ; The initializer helper validates native DATA and grammar without an allowance.
   (let [manifest (get plan :module-initialization) functions (get plan :functions)
         roots (get manifest :roots) initializers (get manifest :initializers)]
       (if (if (= manifest nil) (= false (contains? plan :module-initialization)) false)

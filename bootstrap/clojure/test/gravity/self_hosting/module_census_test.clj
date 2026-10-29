@@ -313,6 +313,7 @@
                    (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny)))))
         foreign-vector (foreign clojure.lang.IPersistentVector)
         foreign-list (foreign clojure.lang.IPersistentList)
+        foreign-seqable (reify clojure.lang.Seqable (seq [_] (deny)))
         opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
         cycle (list :a :b)
         bad-view (clojure.lang.APersistentVector$SubVector. nil [] 0 1)
@@ -320,12 +321,12 @@
         convert (fn [value] {:op :builtin-call :function 'set :args [{:op :literal :value value}]})]
     (set-fixture-field! cycle "_rest" cycle)
     (doseq [constructor functions
-            value [foreign-vector foreign-list [opaque] (list opaque) cycle bad-view
+            value [foreign-vector foreign-list foreign-seqable [opaque] (list opaque) cycle bad-view
                    (with-meta [:valid] {:hidden opaque}) (with-meta '(:valid) {:hidden opaque})]]
       (let [result (invoke constructor value)]
         (is (= :set-conversion-native-data-required (:reason result)))
         (is (= 0 (:insertions result)))))
-    (doseq [value [foreign-vector foreign-list [opaque] cycle bad-view
+    (doseq [value [foreign-vector foreign-list foreign-seqable [opaque] cycle bad-view
                    (with-meta [:valid] {:hidden opaque})]]
       (is (= :set-conversion-native-data-required
              (get-in (invoke 'p15-s23-runtime-evaluate-closed-instruction (convert value) {} "") [0 :reason]))))
@@ -337,5 +338,7 @@
       (let [metadata (meta value) result (invoke constructor value)]
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
+        (when (= constructor 'runtime-convert-keyword-list-set)
+          (is (= (count value) (:captured-element-count result))))
         (is (identical? metadata (meta value)))))
     (is (zero? @callbacks))))

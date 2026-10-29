@@ -2314,3 +2314,32 @@ whole accounting acceptance is claimed.
 | Runtime source | `a66d7f94822b6a43e9f46c3951ce3b999e7fefd31d2a76fb5e78ae151bd48fdb` |
 | Census/native tests | `e66c216a020776ba7f0540f990ade08994f774b7d34cfb6e13304a27d009afe0` |
 | Runtime caller tests | `7f4de1a0b7fdf1af142e2a110789b9908de86a9c9ac84458b5fbbb3a323d0440` |
+## Runtime family current-main composition - 2026-10-28
+
+The [finite composition record](runtime-family-composition.edn) binds main
+`6276c94b` and the original 446 -> 450 -> 454 -> 462 source identities. This
+isolated draft preserves both historical evidence streams and current task IDs.
+It does not incorporate any dependency into main or resolve Native446's unknown
+registration operation. The separate PR513 review remains unknown and untouched.
+
+Compiler-free reading found all 56 runtime function forms equal to the preserved
+PR462 source. Five Native component/test blobs remain exact; the load order
+preserves current main plus the original Native entry. All six retired runtime
+API names are absent from executable bootstrap source/tests. This establishes
+source/interface conservation, not a complete dynamic consumed closure or fresh
+semantic acceptance. Historical receipt hashes match; their original counts,
+including the first conversion NONPASS and corrected subset, remain separate.
+
+Independent static assessment found a stale initializer-limit comment and two
+conversion coverage gaps. The comment is corrected; tests now include a guarded
+custom top-level Seqable in zero-callback rejection cases and assert List capture
+extents. The new controls are parsed but unrun. Form/interface reading and the
+language boundary pass (6 tests / 11 assertions); no compiler/runtime job or
+shared broker operation was launched. The local audit's first attempt failed on
+an empty merge-commit file inventory; correcting that audit input produced the
+passing static result without evaluating Gravity or loading Bootstrap.
+
+Completion still requires verified dependency incorporation in order, an exact
+current composition/consumed-input assessment and permitted affected runtime
+validation, independent acceptance, routine CI and fresh integration identities.
+The known historical results do not close ACC09, public runtime or release.

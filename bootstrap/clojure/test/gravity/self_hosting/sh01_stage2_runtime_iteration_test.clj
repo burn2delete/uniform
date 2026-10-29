@@ -9927,6 +9927,8 @@
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
         (is (= (count members) (:input-element-count result)))
+        (when (= mode :list)
+          (is (= (count members) (:captured-element-count result))))
         (is (= (count expected) (:insertions result)))
         (is (= before (vec input)))
         (is (not-any? #(contains? result %) [:work-count :capture-work :deduplication-work :representation-units
@@ -9938,6 +9940,8 @@
           input (carrier (into members members)) result (build input)]
       (is (= :accepted (:status result)))
       (is (= 2060 (:input-element-count result)))
+      (when (= mode :list)
+        (is (= 2060 (:captured-element-count result))))
       (is (= 1030 (:insertions result)))
       (is (true? (= (set members) (:value result))))
       (is (true? (= [(set members) "" :normal] (evaluate (convert (literal input)))))))
