@@ -136,6 +136,17 @@ actual source/contract/caller disposition. The machine table names every unit;
 this prose does not replace that work or assign broad completion credit to a
 family label.
 
+Primitive uniqueness/node typing and the product-vector predicate now have
+source successor PR614 at `c506514d4b32baf8269a7c3ff49ca86d2dc18c05`, tree
+`ef9a09328663a93e213f65754c8caab882362c2d`, parent PR613 `5ebff5ca`. Its three
+complete definitions and complete original structural-vector kernel match
+historical PR502. External C7 source calls, arities, twelve transitive source
+dependencies and all prior test bytes are conserved. An added state kernel
+preserves observed-prefix, seeded/partial fact/type and first-failure behavior.
+Actual execution and independent acceptance remain pending. The product-vector
+predicate has no C7 source caller; its shape control grants no public artifact
+admission. The original machine snapshot/state counts remain unchanged.
+
 ## Validation and limits
 
 The pinned local Clojure generator completed the full inventory with Bootstrap
