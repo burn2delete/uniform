@@ -53,7 +53,7 @@
 
 (defn- terminal-pass? [result terminal]
   (and (= :passed (:status result)) (= 0 (:exit-code result))
-       (every? false? (map result [:output-truncated? :capture-failed? :cleanup-failed?
+       (every? false? (map result [:wait-interrupted? :output-truncated? :capture-failed? :cleanup-failed?
                                    :cleanup-root-alive? :timeout-containment-unproven?]))
        (= :complete (:status terminal)) (true? (:owned-descendants-complete? terminal))
        (false? (:root-alive? terminal))))
@@ -115,6 +115,8 @@
             (require! (some? @process) :missing-process)
             ;; Startup time is charged before supervision receives its budget.
             (reset! result (supervise @process (assoc limits :timeout-ms (remaining))))
+            (when (true? (:wait-interrupted? @result)) (reset! interrupted true))
+            (when (instance? Throwable (:wait-error @result)) (record-error! (:wait-error @result)))
             (remaining)
             (catch Throwable error (record-error! error))
             (finally
@@ -140,7 +142,7 @@
                   (catch Throwable error (record-error! error))))
               (when-not @primary
                 (try (remaining) (catch Throwable error (record-error! error))))))
-          (let [process-metadata (metadata-view @result [:status :exit-code :output-truncated? :capture-failed?
+          (let [process-metadata (metadata-view @result [:status :exit-code :wait-interrupted? :output-truncated? :capture-failed?
                                                          :cleanup-failed? :cleanup-root-alive?
                                                          :timeout-containment-unproven? :stdout :stderr
                                                          :stdout-bytes :stderr-bytes])

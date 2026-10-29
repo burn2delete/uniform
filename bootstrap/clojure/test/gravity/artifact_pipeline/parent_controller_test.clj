@@ -28,7 +28,7 @@
                  :guards guards :coverage {:authority-source "fake-reviewed-config" :decision-id "fake-decision"
                                            :participants participants :covered-participants participants :ordered-guards guards}}
         observation (select-keys request controller/identity-fields)
-        result {:status :passed :exit-code 0 :output-truncated? false :capture-failed? false
+        result {:status :passed :exit-code 0 :wait-interrupted? false :output-truncated? false :capture-failed? false
                 :cleanup-failed? false :cleanup-root-alive? false :timeout-containment-unproven? false
                 :stdout "actual fake capture" :stderr "" :stdout-bytes 19N :stderr-bytes 0}
         ports {:clock (fn [] @time)
@@ -153,6 +153,21 @@
         (is (instance? InterruptedException (:error r)))
         (is flag-at-return)
         (is (= 1 (count (filter #{:finish} @(:events f))))))
+      (finally (Thread/interrupted)))))
+
+(deftest returned-runner-interruption-survives-a-finalizer-clearing-the-flag
+  (let [f (fixture) original (InterruptedException. "normal runner wait interrupted")]
+    (try
+      (let [r (execute f {:supervise (fn [& _]
+                                       (.interrupt (Thread/currentThread))
+                                       (assoc (:result f) :status :error :wait-interrupted? true :wait-error original))
+                          :finish (fn [& _] (Thread/interrupted)
+                                    {:status :complete :owned-descendants-complete? true :root-alive? false})})
+            flag-at-return (.isInterrupted (Thread/currentThread))]
+        (is (= :failed (:status r)))
+        (is (identical? original (:error r)))
+        (is flag-at-return)
+        (is (true? (get-in r [:receipt :process-result :wait-interrupted?]))))
       (finally (Thread/interrupted)))))
 
 (deftest one-finalizer-and-one-publication-no-retry-on-unknown-write

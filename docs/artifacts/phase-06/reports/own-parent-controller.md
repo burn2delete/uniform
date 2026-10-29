@@ -60,7 +60,8 @@ controller does not change them or claim that passing a map overrides them.
 
 Started ownership is finalized once; partial guard acquisitions release once
 in reverse order. Original failure objects survive later cleanup, release or
-receipt failures. Interruption is restored after finalization. Nonzero exit,
+receipt failures. Both directly thrown interruption and the normal runner's
+returned wait-interruption/error are preserved after finalization. Nonzero exit,
 timeout, missing refusal flags, capture failure, drift, incomplete/unknown
 owned cleanup and nonfinalized release all prevent success. Atomic output
 reservation prevents a repeated request from launching or publishing again.
@@ -78,7 +79,7 @@ records. A metadata receipt alone is never execution acceptance.
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Thirteen tests and 289 assertions passed, with no real port resolution and
+Fourteen tests and 302 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture
