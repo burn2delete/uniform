@@ -6217,25 +6217,23 @@
     (if (= 0 (count remaining)) true
       (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
 
-(defn sh08-pmk-index-forms [forms budget]
-  (if (map? forms) {:status :accepted :work-count 0 :forms forms}
+(defn sh08-pmk-index-forms [forms]
+  (if (map? forms) {:status :accepted :forms forms}
     (if (vector? forms)
-      (let [work (* 3 (count forms))]
-        (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-          (loop [remaining forms out {}]
-            (if (= 0 (count remaining)) {:status :accepted :work-count work :forms out}
-              (let [form (first remaining) id (get form :form-id)]
-                (if (if (map? form) (sh08-sse-ids? [id] 1) false)
-                  (if (contains? out id) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
-                    (recur (rest remaining) (assoc out id form)))
-                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))))))
-      {:status :rejected :reason :private-map-keys-source-mismatch :work-count 0})))
+      (loop [remaining forms out {}]
+        (if (= 0 (count remaining)) {:status :accepted :forms out}
+          (let [form (first remaining) id (get form :form-id)]
+            (if (if (map? form) (sh08-sse-ids? [id] 1) false)
+              (if (contains? out id) {:status :rejected :reason :private-map-keys-source-mismatch}
+                (recur (rest remaining) (assoc out id form)))
+              {:status :rejected :reason :private-map-keys-source-mismatch}))))
+      {:status :rejected :reason :private-map-keys-source-mismatch})))
 
 (defn sh08-pmk-check-with-forms [core node call edge nodes bindings types forms budget]
-  (let [indexed (sh08-pmk-index-forms forms budget) work (get indexed :work-count)]
+  (let [indexed (sh08-pmk-index-forms forms)]
     (if (= :accepted (get indexed :status))
-      (let [result (sh08-pmk-inferred-call core node call edge nodes bindings types (get indexed :forms) (- budget work))]
-        (assoc result :work-count (+ work (get result :work-count)))) indexed)))
+      (sh08-pmk-inferred-call core node call edge nodes bindings types (get indexed :forms) budget)
+      indexed)))
 
 (defn sh08-tc-scope-with-types [core thrown budget types]
   (let [nodes (sh08-ft-node-index (get core :nodes))
@@ -11529,12 +11527,9 @@
       (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lq-finish header)) false)))
         ))))))
 
-(defn sh08-pmk-type-view [types prior budget]
+(defn sh08-pmk-type-view [types prior]
   (if (if (map? types) (map? prior) false)
-    (let [work (+ 8 (* 6 (count types)) (* 6 (count prior)))]
-      (if (> work budget)
-        {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-        (if (loop [groups [types prior]]
+    (if (loop [groups [types prior]]
               (if (= 0 (count groups)) true
                 (let [table (first groups) ids (vec (keys table))]
                   (if (loop [i 0]
@@ -11545,9 +11540,9 @@
                                 (if (if (= nil value) true (if (keyword? value) true (map? value)))
                                   (recur (+ i 1)) false)) false))))
                     (recur (rest groups)) false))))
-          {:status :accepted :types (sh08-pe-type-view types prior) :work-count work}
-          {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
-    {:status :rejected :reason :private-map-keys-source-mismatch :work-count 1}))
+      {:status :accepted :types (sh08-pe-type-view types prior)}
+      {:status :rejected :reason :private-map-keys-source-mismatch})
+    {:status :rejected :reason :private-map-keys-source-mismatch}))
 
 (defn sh08-lq-step [node types binding-types functions context budget]
   (let [core (get context :ordering-core)
@@ -11555,13 +11550,11 @@
         edge (get (get context :ordering-edges) (get node :node-id))
         nodes (get context :lookup-nodes) bindings (get context :ordering-bindings)]
     (if (sh08-pmk-entry? node call nodes bindings types (get core :module))
-      (let [view (sh08-pmk-type-view types (get context :prior-type-table {}) budget)
-            work (get view :work-count)]
+      (let [view (sh08-pmk-type-view types (get context :prior-type-table {}))]
         (if (= :accepted (get view :status))
-          (let [result (sh08-lq-derive core node call edge nodes bindings (get view :types) (get context :association-forms) (- budget work))]
-            (assoc result :work-count (+ work (get result :work-count))))
-          (assoc (sh08-sm-failure (if (= :private-map-keys-work-limit (get view :reason)) "C7-GENERIC" "C7-VERIFY")
-                   (get view :reason) nil :bounded-current-request-inference-types budget) :work-count work)))
+          (sh08-lq-derive core node call edge nodes bindings (get view :types) (get context :association-forms) budget)
+          (sh08-sm-failure "C7-VERIFY" (get view :reason) nil
+            :valid-current-and-prior-inference-type-tables :malformed-inference-type-table)))
       (sh08-lq-derive core node call edge nodes bindings types (get context :association-forms) budget))))
 
 (defn sh08-sc-binding? [binding module]
@@ -22895,7 +22888,10 @@
       node (if (sh08-sse-ids? [(get call :core-node-id)] 1) (get nodes (get call :core-node-id)) nil)
       checked (sh08-pmk-check-with-forms (get context :ordering-core) node call edge nodes
                  (get context :ordering-bindings) type-table (get context :association-forms) (- (get context :loop-work-left 65536) work))
-      total (+ work (get checked :work-count))]
+      total (if (if (= :rejected (get checked :status))
+                  (if (= :private-map-keys-source-mismatch (get checked :reason))
+                    (= false (contains? checked :work-count)) false) false)
+              work (+ work (get checked :work-count)))]
   (if (if (= :accepted (get checked :status)) true (= :deferred (get checked :status)))
     (recur (rest remaining) (rest remaining-edges) total next-bindings constraints diagnostics)
     {:compatibility-work-count total :binding-types next-bindings :constraints constraints
