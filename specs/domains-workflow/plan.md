@@ -55,3 +55,21 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [D5](../../docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md#requirements): Domain replacement claims require named incumbent slices, unsupported behavior, typed interop artifacts and accepted/rejected parity fixtures. A domain demo cannot establish whole-language replacement.
 - [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements): Schema-generated bindings and migration shims retain schema digests, error mappings, provenance and incumbent parity; this is not a blanket interop-support claim.
+
+## Source-qualified schema acceptance
+
+The existing Open `schema` record now names the S1-S9 producer and consumer
+acceptance conditions, including their negative fixtures. This expands its
+evidence interface without adding another implementation task population.
+Types supplies static type projection, Runtime supplies actual boundary
+enforcement and foreign invocation, Build supplies captured configuration
+inputs, and Release owns policy decisions. Schema artifacts cannot establish
+that those consumers ran.
+
+The bounded [proposal](../requirement-reconciliation/schema-family/proposal.edn)
+consumes delivered Language295 successor IDs and conditional source roles.
+Its guarded field operations preserve existing supplementary interfaces and
+full inherited records; a different current predecessor requires reconciliation.
+The [evidence](../requirement-reconciliation/schema-family/evidence.md) records
+the 21 occurrence composition holds and remaining interface qualifications.
+The canonical reconciliation owner alone adopts aggregate semantic changes.

@@ -1,0 +1,140 @@
+{:task-base-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+ :composition-hold-occurrence-ids
+ ["S4/source/e29a6b2dd7cc56e9433a1855820806a0ff357c6dccbed5dd7b6a95f748db4ec1"
+  "S4/source/862dbdb4528d678f7211c3cc1cc13fef29a633f201fc07a52ba676158db9cdc5"
+  "S4/source/157d149812430b51c5e8cad68f5d75ffd5352d34e20ba6c68aa268cbef2f4dcb"
+  "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813"
+  "S4/source/d89eeb652b2abc7fc8a5696b0426464f6ac90a4834b0994f66cee75910ea88f9"
+  "S4/source/a498d37428bb77fd94e70869a494208c25fbf569b177f4eb5a31bff4f81b5e1f"
+  "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315"
+  "S5/source/7a63eb2a7246ba5b97ded8b89c255a55000f80b0f2ef791b9456971ae45d2046"
+  "S5/source/ce3d7fecd74907971724c815608aeca809ee2a85ac6ba29e205c3b13ec047b6b"
+  "S5/source/820bf673980761585979cce63d49b7b6f1bad5ef8a2e19499076e248b109c9b7"
+  "S5/source/c963ff9ce0ab1371db2111900ea9bda7f3811a35c159528e3c2e1f620b5a61c8"
+  "S5/source/891b5df16dfa6e636a7aa5594eddbba06b53875cdf5f5028bc0c279268e56467"
+  "S5/source/fc2549ace9e5ba941fbf5620877c287c8c2e7638fb393ae7baa0e98917a2e94b"
+  "S6/source/99c1983bc0a1433fe9b1b147f162b8a23853bf749f9ba4f9bdd0fd6fbaed7377"
+  "S6/source/60423199f786ad22fe97885045aab4decd12cac6cfe2015a77a41fe6f200fd88"
+  "S6/source/d525769426fd3e677020b04a7babb9f0904c92b0e041c7bd9fcbf7712bb7c44f"
+  "S6/source/1705f365306fe3785d3c224357c1bb7335461ad00214d43a6c4429e5c6688f84"
+  "S6/source/dd5042cad5d8b688220a1cff575f8a040131b64385e4f5093f72d38ec71a2717"
+  "S6/source/3900109706f09b3d08a13062ebc8a86c4fa44c4bb3f780bed051c0e75dee201b"
+  "S6/source/e02200b8ffe9b96b72a0e041cd2ccb9d5c9e4cbcc7a409f926320c90efaff453"
+  "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5"],
+ :source-documents 9,
+ :checks
+ {:domains-assertions 103,
+  :boundary-assertions 11,
+  :proposal-negative-controls 15,
+  :whitespace :pass,
+  :boundary-tests 6,
+  :documents 240,
+  :roadmap :pass,
+  :domains-tests 6,
+  :phase-indexes 19,
+  :projection :pass},
+ :guarded-task-interface-fields 56,
+ :source-facets 538,
+ :scope-key
+ "requirement-reconciliation/phase-10-schema-data-and-interop",
+ :kind :gravity/schema-family-candidate-receipt,
+ :source-occurrences 511,
+ :independent-review :pending-coordinator-routing,
+ :remaining-consumer-interface-ids
+ ["integration/build-input-capture"
+  "language/types/project-schema-static-type"
+  "runtime/foreign-call-adaptation"
+  "runtime/policy-safe-observation"
+  "runtime/service-policy-enforcement"
+  "safety/safe10/runtime-authority"],
+ :schema-interface-ids
+ ["schema/artifact-validation"
+  "schema/authorize-runtime-migration"
+  "schema/boundary-validation"
+  "schema/check-binary-reference-layout"
+  "schema/check-canonical-identity-input"
+  "schema/check-client-operation"
+  "schema/compatibility-diff"
+  "schema/configuration-loading"
+  "schema/configuration-reload"
+  "schema/decode-canonical-value"
+  "schema/decode-declared-format"
+  "schema/emit-binary-codec-binding-input"
+  "schema/emit-database-structure"
+  "schema/emit-explicit-binary-layout"
+  "schema/emit-graphql-resolver-adapter"
+  "schema/emit-graphql-sdl"
+  "schema/emit-http-boundary-validators"
+  "schema/emit-openapi-document"
+  "schema/emit-typed-api-client"
+  "schema/emit-typed-migration-plan"
+  "schema/emit-typed-row-adapter"
+  "schema/encode-canonical-value"
+  "schema/encode-declared-format"
+  "schema/expand-authoritative-schema"
+  "schema/generate-source-validator"
+  "schema/release-evidence-gating"
+  "schema/run-http-contract-tests"
+  "schema/validate-migration-change"],
+ :delivered-active-ids
+ ["integration/build-input-capture"
+  "language/types/project-schema-static-type"
+  "runtime/foreign-call-adaptation"
+  "runtime/policy-safe-observation"
+  "runtime/service-policy-enforcement"
+  "safety/safe10/runtime-authority"
+  "schema/artifact-validation"
+  "schema/authorize-runtime-migration"
+  "schema/boundary-validation"
+  "schema/check-binary-reference-layout"
+  "schema/check-canonical-identity-input"
+  "schema/check-client-operation"
+  "schema/compatibility-diff"
+  "schema/configuration-loading"
+  "schema/configuration-reload"
+  "schema/decode-canonical-value"
+  "schema/decode-declared-format"
+  "schema/emit-binary-codec-binding-input"
+  "schema/emit-database-structure"
+  "schema/emit-explicit-binary-layout"
+  "schema/emit-graphql-resolver-adapter"
+  "schema/emit-graphql-sdl"
+  "schema/emit-http-boundary-validators"
+  "schema/emit-openapi-document"
+  "schema/emit-typed-api-client"
+  "schema/emit-typed-migration-plan"
+  "schema/emit-typed-row-adapter"
+  "schema/encode-canonical-value"
+  "schema/encode-declared-format"
+  "schema/expand-authoritative-schema"
+  "schema/generate-source-validator"
+  "schema/release-evidence-gating"
+  "schema/run-http-contract-tests"
+  "schema/validate-migration-change"],
+ :original-records-retained 19,
+ :task-base "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+ :artifacts
+ [{:path "specs/requirement-reconciliation/schema-family/proposal.edn",
+   :sha256
+   "b77b3980b6789125006e95f9a0fa2797482cad2d69543b0e52b6db9f991a715d"}
+  {:path "specs/requirement-reconciliation/schema-family/lineage.edn",
+   :sha256
+   "90d6fa1690ffbfffabc6bb916763398b2c9a761564ee94c23bbf899961f3a70f"}
+  {:path
+   "specs/requirement-reconciliation/schema-family/build-proposal.clj",
+   :sha256
+   "47142a7b6e6b9b77fafaca032a347408d7787918b8534f2e4af7481f2e5f13b3"}
+  {:path "specs/requirement-reconciliation/schema-family/evidence.md",
+   :sha256
+   "43f288a0e6a92a61730ff9b2b528965584ba7989851eaf25794231234721defb"}
+  {:path "specs/domains-workflow/tasks.md",
+   :sha256
+   "28c21ce9b7d89cf1089a2f53df2d9213c14e2086494a6d41c6d798aad2c8a055"}
+  {:path "specs/domains-workflow/plan.md",
+   :sha256
+   "75ec09288dc1d5428fbadfd0f1ef8d7615148178aa13bf1701a14996dcfdbd7a"}
+  {:path "docs/component-roadmaps/domains.md",
+   :sha256
+   "9fbc26c26af46074f31ca9753d9160608a46e8dea270bb14cbdecae4ad26328e"}],
+ :implementation-acceptance :unassessed,
+ :canonical-adoption :not-performed}
