@@ -149,13 +149,34 @@
               (.addSuppressed ^Throwable primary error))
             (when-not (identical? primary original) (throw primary))))))}))
 
+(defn- observation-view [binding records]
+  {:schema :gravity/rv2-git-observation-v1
+   :binding binding
+   :processes
+   (mapv (fn [record]
+           (let [record @record]
+             (reduce (fn [view field]
+                       (if-let [error (get record field)]
+                         (assoc view field {:class (.getName (class error))}) view))
+                     (select-keys record [:argv :cwd :exit-code :root-wait-exited?
+                                          :finalization :descendant-coverage :terminal])
+                     [:retain-error :operation-error :writer-error :finalization-error :identity-error])))
+         @records)
+   :capture-v1-ready? false :cache-admission? false})
+
 (defn run-selected!
   "Route only the two actual fresh C2 observer bookends through these hooks.
-  Test execution is outside their thread binding. This direct source seam is
-  not a new CLI/runtime entrypoint or capture/cache admission."
+  Test execution is outside their thread binding. The existing test entrypoint
+  may supply a frozen Git binding; raw Process/token/handles remain local.
+  Serialization of these observations supplies no capture/cache admission."
   [binding records options operation]
+  (require! (and (map? binding) (string? (:root binding))
+                 (try (.isAbsolute (.toPath (io/file (:root binding))))
+                      (catch Exception _ false))) :binding-shape)
   (require! (= (:root binding) (.getCanonicalPath (io/file (System/getProperty "user.dir")))) :root)
-  (wiring/run-child-unit! ['gravity.c2-artifact-identity-test]
-                          (assoc options :observe-producer? true
-                                 :producer-git-lifecycle (lifecycle binding records))
-                          operation))
+  (let [report (wiring/run-child-unit! ['gravity.c2-artifact-identity-test]
+                                      (assoc options :observe-producer? true
+                                             :producer-git-binding binding
+                                             :producer-git-lifecycle (lifecycle binding records))
+                                      operation)]
+    (assoc report :test-producer-git-observation (observation-view binding records))))
