@@ -144,9 +144,15 @@
     (p15-s23-stage2-construct-emitted-core-plan
      emitter source-path source-text authoritative-module function-table)))
 
+(declare sh03-reader-resolve-source-path p15-s23-c6c10-source-program-contract
+         ^:private p15-s23-c6c10-current-reader-envelope-state!)
 (defn- p15-s23-c6c10-private-ingress-products
   ([source-path source-text] (p15-s23-c6c10-private-ingress-products source-path source-text nil))
   ([source-path source-text reader-source-path]
+   (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path nil))
+  ([source-path source-text reader-source-path source-policy-version]
+   (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path source-policy-version nil))
+  ([source-path source-text reader-source-path source-policy-version selected-reader-binding]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -155,6 +161,12 @@
      (if (string? source-path) source-path "<c6-c10>")
      :co-canonical-source-path-and-text
      {:source-path source-path}))
+  (when (some? source-policy-version)
+    (p15-s23-c6c10-source-program-contract source-policy-version)
+    (when-not (and (contains? #{2 3} source-policy-version) (string? reader-source-path)
+                   (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
+                      (.getCanonicalPath (java.io.File. reader-source-path))))
+      (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :selected-current-reader-invocation-policy {})))
   ;; C2/C3 construction is deliberately first and occurs exactly once under
   ;; the actual normative project context.  The private projection then
   ;; rebuilds every path-sensitive derived hash rather than lying about the
@@ -216,8 +228,11 @@
        :plan-emitter-rule
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
-        parameter? (assoc :resolved-parameter resolved-parameter))))))
-
+        parameter? (assoc :resolved-parameter resolved-parameter)
+        (contains? #{2 3} source-policy-version)
+        (assoc :source-policy-receipt
+               (p15-s23-c6c10-current-reader-envelope-state!
+                source-path raw-front-end reader-source-path selected-reader-binding source-policy-version)))))))
 (defn p15-s23-c6c10-resolve-source-path
   []
   (let [relative p15-s23-c6c10-source-relative-path

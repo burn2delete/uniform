@@ -120,11 +120,11 @@
                      runner/catalog)]
     (is (= "gravity/stage0-clojure-components-v1"
            (get contract "schema")))
-    (is (= 54 (count (get contract "components"))))
+    (is (= 55 (count (get contract "components"))))
     (is (= 4 (count (get contract "auxiliary_bootstrap_free_tests"))))
-    (is (= 52 (count expected)))
+    (is (= 53 (count expected)))
     (is (= expected actual))
-    (is (= {:foundation-reader 9 :c2-c3 16 :compiler 27}
+    (is (= {:foundation-reader 9 :c2-c3 16 :compiler 28}
            (frequencies (map :group expected))))))
 
 (deftest auxiliary-tests-retain-explicit-production-source-associations
