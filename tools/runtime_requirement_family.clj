@@ -3,6 +3,7 @@
   (:require [clojure.edn :as edn] [clojure.java.io :as io] [clojure.string :as str]))
 
 (binding [*command-line-args* nil] (load-file "tools/runtime_task_projection.clj"))
+(require '[runtime-task-projection])
 (def proposal-path "specs/requirement-reconciliation/runtime-family.edn")
 (def scope-key "requirement-reconciliation/phase-08-runtime-architecture")
 (defn require! [ok message] (when-not ok (throw (ex-info message {}))))
@@ -21,6 +22,7 @@
     (require! (zero? (.waitFor p)) (str "Missing immutable source: " ref ":" path " " error)) result))
 (defn occurrence-api [pin]
   (let [text (git-source (:ref pin) (:path pin))]
+    (require! (not (str/blank? text)) "Missing occurrence API source")
     (require! (= (:sha256 pin) (sha256 text)) "Occurrence API hash drift")
     (with-open [r (java.io.PushbackReader. (java.io.StringReader. text))]
       (loop []

@@ -1,5 +1,5 @@
 (binding [*command-line-args* nil] (load-file "tools/runtime_requirement_family.clj"))
-(require '[clojure.test :refer [deftest is run-tests]])
+(require '[clojure.test :refer [deftest is run-tests]] '[runtime-requirement-family])
 (def p (runtime-requirement-family/read-edn runtime-requirement-family/proposal-path))
 (def manifest-path (first *command-line-args*))
 (runtime-requirement-family/require! manifest-path "Pass the preserved applying manifest path")
