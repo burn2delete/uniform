@@ -141,10 +141,15 @@
     (is (not= (:applying-input-fingerprint bridge)
               (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
     (doseq [{:keys [path before after]} (:source-files bridge)]
-      (is (= (:commit after) (get-in view [:applying-source-pins path])))
+      (is (= (:commit after)
+             (if (= path "docs/self-hosting-slice-ownership.edn")
+               (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn"))
+                       [:native-v2-ownership-successor :source-files 0 :before :commit])
+               (get-in view [:applying-source-pins path]))))
       (is (= (:sha256 before)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
-      (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+      (when-not (= path "docs/self-hosting-slice-ownership.edn")
+        (is (= (:sha256 after) (sh-inventory/sha256 (slurp path)))))
       (is (= (:sha256 after)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path)))))
     (let [path "specs/reader-workflow/tasks.md"
@@ -165,6 +170,30 @@
         (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main)
                       (:new-standalone-owners bridge))
                (:standalone-test-owners current)))))))
+
+(deftest native-v2-ownership-successor-retains-both-parent-registrations
+  (let [view (sh-crosswalk/build)
+        bridge (:native-v2-ownership-successor
+                 (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn")))
+        {:keys [path before after]} (first (:source-files bridge))
+        current (edn/read-string (slurp path))
+        incoming (edn/read-string (sh-crosswalk/git-source (:incoming-main bridge) path))
+        candidate (edn/read-string (sh-crosswalk/git-source (:candidate bridge) path))]
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (doseq [record [before after]]
+      (is (= (:sha256 record)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:commit record) path)))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (doseq [key [:module-owners :standalone-test-owners :reserved-leaf-modules]]
+      (is (= (merge (get incoming key) (get candidate key)) (get current key))))
+    (is (= :sh-core (get-in current [:reserved-leaf-modules "source-interface-header"])))
+    (is (= :pending-independent-source-version-review (:status bridge)))
+    (is (false? (:latest-source-and-v3-admission bridge)))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (is (thrown? Exception
+          (sh-crosswalk/validate-pinned-sources!
+            {:applying-source-pins {path (:commit before)}
+             :source-digests {path (:sha256 after)}} sh-crosswalk/git-source)))))
 
 (deftest pkg5-task-source-successor-preserves-population-and-review-history
   (let [view (sh-crosswalk/build)
