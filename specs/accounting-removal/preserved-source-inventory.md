@@ -361,3 +361,20 @@ pending. Source checks and docs/roadmap pass without compiler/runtime execution.
 PR623 exact head `c5e9fccd` completed routine CI with seven successes/two
 configured skips. This does not run the new genuine LC kernels or supply
 independent source/result acceptance.
+
+## Original Effects ordinary-local-call control follow-up
+
+PR624 at `9f9dce89fc592050c4c44461522485cc49df0037`, tree
+`350ddd4c3e76b3c428f881b1ec223dac3729082a`, base main `e047157d`, restores
+the complete original ordinary-local-call fixture helper plus both List-to-Set
+and public Map-key Effects composition controls. Four payment assertions,
+diagnostic counter selection and two newly copied unused bindings retire; all
+ordering, malformed/foreign/duplicate/missing-tag, coherent source/binding/caller,
+evaluation and opaque zero-callback candidates survive. Production and every
+preexisting test byte remain unchanged. Seventeen of twenty-two selected C7 and
+Effects dependency forms match history; five differences remain explicit, not
+semantic equivalence claims. Source checks, boundary 6/11, zero lint errors/same
+76 warnings/one info, docs/roadmap and whitespace pass. Genuine Effects execution,
+independent source/result disposition, API accounting and integration remain
+open. PR533 PMK preparation, PR598 emitter controls and DSE acceptance retain
+their own scope. Immutable source inventory counts remain unchanged.
