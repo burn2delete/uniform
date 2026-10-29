@@ -406,6 +406,45 @@
                     (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
         (is (zero? @calls))))))
 
+(deftest producer-observer-rejects-missing-nonregular-and-changing-inputs
+  ;; Runtime/context ports are injected; declared files are read, never run.
+  (let [resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)
+        observer (var-get (resolve-wiring 'observe-fresh-producer-binding!))
+        state-var (resolve-wiring 'required-input-state)
+        state (var-get state-var)
+        inventory-var (resolve-wiring 'closure-inventory)
+        inventory (var-get inventory-var)
+        binding (:binding-before (:capture (fixture)))
+        common {(resolve-wiring 'effective-child-runtime) (constantly (:child-runtime-identity binding))
+                #'wiring/prepare-context (constantly {:revision (select-keys (:source binding) [:commit :tree])
+                                                      :snapshot {:repository-identity h}
+                                                      :runtime-tool-inputs (:runtime-tool-inputs binding)})
+                (resolve-wiring 'explicit-classpath-identities) (constantly (:classpath-identities binding))
+                (resolve-wiring 'run-git-bytes!) (fn [& _] (.getBytes "" "UTF-8"))}
+        first-path (:path (first (:inputs closure)))
+        observe #(with-redefs-fn (merge common %)
+                   (fn [] (observer (System/getProperty "user.dir") [] {})))
+        id #(try (observe %) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))]
+    (is (= (mapv :path (:inputs closure)) (mapv :path (get-in (observe {}) [:binding :inputs]))))
+    (is (= "SH01-PRODUCER-OBSERVATION"
+           (id {state-var (fn [root path] (when-not (= first-path path) (state root path)))})))
+    (is (= "SH01-PRODUCER-OBSERVATION"
+           (id {state-var (fn [root path] (state root (if (= first-path path) "." path)))})))
+    (let [reads (atom {})]
+      (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             (id {state-var (fn [root path]
+                              (let [n (get (swap! reads update path (fnil inc 0)) path)
+                                    observed (state root path)]
+                                (if (and (= first-path path) (> n 1))
+                                  (update observed :executable? not) observed)))}))))
+    (let [reads (atom 0)]
+      (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             (id {inventory-var (fn [root declaration]
+                                  (let [observed (inventory root declaration)]
+                                    (if (> (swap! reads inc) (count (:inventories closure)))
+                                      (update observed :paths conj "synthetic-changed-inventory")
+                                      observed)))}))))))
+
 (defn- fresh-supplied [capture]
   (select-keys capture [:binding-before :binding-after :producer-provenance :applying-source :terminal]))
 

@@ -1600,10 +1600,21 @@
              {}))
     (let [context (prepare-context working-directory options)
           root (.toPath (io/file working-directory))
+          paths (mapv :path (:inputs closure))
+          states (mapv #(required-input-state root %) paths)
+          _ (when-not (every? #(and % (.isRegularFile ^BasicFileAttributes (:attributes %))) states)
+              (fail! "SH01-PRODUCER-OBSERVATION"
+                     "Fresh producer requires every declared input to be a regular file" {}))
           inputs (mapv #(repository-input-identity root %) (:inputs closure))
           inventories (mapv #(closure-inventory root %) (:inventories closure))
           shadows (mapv #(repository-input-identity root {:path % :role :shadow})
                         (declared-shadow-paths inputs inventories))
+          verified-inventories (mapv #(closure-inventory root %) (:inventories closure))
+          verified-states (mapv #(required-input-state root %) paths)
+          _ (when-not (and (= inventories verified-inventories)
+                           (every? true? (map same-required-input-state? states verified-states)))
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Fresh producer inputs changed while observed" {:input-kind :producer-observation}))
           consumed (sha256-id
                     (pr-str (array-map
                              :schema (:schema closure)
