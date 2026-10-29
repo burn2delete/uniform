@@ -967,3 +967,48 @@ SH check passed. Pinned clj-kondo 2025.10.23 reports zero findings on the change
 SH source. Independent source-recovery/composition acceptance, full-facet
 disposition, task granularity, legacy ACC scope, final count and integration
 remain required.
+
+## Seventy-four Core and Profile decision allocations
+
+Task source `45fc1420cfe4373e5a20b1fcd80d46f87e4edb63` appends 42 clauses
+across 21 existing fields in ten authorities, reuses 31 Core interfaces and one
+provider criterion, and adds no task units. All 2,816 known source memberships
+(2702 distinct facets) match current document hashes and UTF8 spans. The
+composition record has SHA256
+`51dbd2bd4443045b525490a37f9c7a88a9a62dc595ad96d31576ea13db2b669a`.
+Forty-three decision guards match directly. The other 31 match by reversing only
+the exact recorded Governance/Core field operations; no record hash is waived.
+Eleven conditional stable-language adoption predicates share the existing
+evolution/change-review producer through the recorded union, with no duplicate
+Release admission task or ordinary-development permission gate.
+
+The authenticated finite18 history recovers 17 GPU metadata IDs over 22
+incidences, with matching old/current DOM13 bytes. Selected recovery SHA256
+`8130e18442f7db8ce591b0f304114b7fcb0e1a7df14bbac1097d6ff6904a28a3`
+is proposed source evidence, pending independent source and owning-context
+review. Original unresolved IDs remain visible; metadata recovery is not
+canonical acceptance or full-facet entailment. Removed work/input accounting
+is not reintroduced by the new criteria.
+
+Allocation source `7063afd8bfdf2d77d95e1b9f591f9d523f4b5393` adds exactly 74
+fields and preserves all 484 predecessor fields and all 833 Open identity/status
+pairs. Actual criteria, task contexts and declared dependency interfaces are
+refreshed; only the recorded old Release-producer reference is redirected to
+the shared Governance producer, retaining its provenance. The transaction
+SHA256 is `1acf26c2d1ebfa77363a16cb682ee10d0b832535ea40d7a5cff9039903630e50`.
+Concrete allocation is 558, including 255 pending independent current-composition
+review, with 275 remaining decisions. Task census remains provisionally
+3 Accepted / 182. Scratch reader/helper compilation errors occurred before
+any allocation-field writes and were corrected; record and context guards
+remain enforced.
+
+`current-criterion-bindings-561-profile74.edn`, SHA256
+`bd79139054c9d34c568f2cb74957d98d4e4fdfdd4dcaadc08cff3bc81eaa85f3`,
+preserves all 561 historical IDs and all 1,262 current spans. Historical acceptance
+remains 430, with 131 pending and none unbound. Component tests passed: Auth 4/61,
+Compiler API 5/77, Core 4/42, Effects 4/41, Expand 4/41, Legality 4/59, Lower 6/57,
+Runtime 4/67, Stdlib 5/79 and Types 4/41. SH passed 12/507, census 4/13 and
+boundary 6/11; both document validators and generated SH check passed. Pinned
+clj-kondo 2025.10.23 reports zero findings on the changed SH source. Independent
+acceptance, complete original-facet disposition, granularity, legacy ACC scope,
+final counting and integration remain open.
