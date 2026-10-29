@@ -114,6 +114,10 @@
       (let [cached (get @stage-cache key)]
         (if (and (envelope-valid? stage lane key-id preimage cached source-id
                                   provenance parents)
+                 (try
+                   (authenticate-embedded-parent! stage (:payload cached) parents)
+                   true
+                   (catch clojure.lang.ExceptionInfo _ false))
                  (or (not= :reader stage)
                      (try
                        (authenticate-reader-source! source-path source-id
