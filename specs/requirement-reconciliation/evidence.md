@@ -1,5 +1,26 @@
 # Requirement reconciliation evidence
 
+## Stdlib interface successor
+
+The coverage audit `a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f`
+found that the five task records referenced an absent source-specific plan
+matrix. The reviewed matrix from `8bd18cbe398a8075681492eacba5b329c791bfc7`
+is now composed with the five concrete source relations from adjudication
+`2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc`.
+Two existing task criteria retain the complete syntax API, transaction,
+render-trust, clock-domain and release-evidence distinctions. All five tasks
+stay Open. No new task or implementation credit is added.
+
+The five matching source decisions now name their concrete execution task,
+criteria digest and qualified dependencies; the former Release accountability
+link remains coordination history. Other decision allocation is unchanged.
+`stdlib-interface-composition.edn` records exact before/after field and file
+hashes, dependencies and four successful stale/corrupt/reapplication rejection
+controls. The helper reported an extra delimiter after completing writes;
+readback verified the written state without replaying mutations. Projection
+controls passed 5 tests / 79 assertions and both document validators passed.
+Independent composed acceptance and actual API/provider execution remain Open.
+
 ## Composed task census candidate
 
 The derived `task-baseline.edn` binds source commit

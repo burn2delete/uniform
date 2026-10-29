@@ -46376,7 +46376,8 @@
    :families ["phase-16"]}
   {:source-document-ids ["STD11"],
    :required-output
-   "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Execute transaction commit, rollback and retry under declared isolation, idempotency and provider failure policy, preserving the stated safety and resource boundaries.",
+   "Execute and independently accept the concrete standard-library task criteria and qualified dependencies for stdlib/db/transaction-lifecycle; retain exact source/API/provider/artifact identities and positive/refusal evidence. Interface composition supplies no implementation acceptance.",
+   :source-interface-state :composed-pending-independent-review,
    :supporting-task-ids
    ["stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"],
    :source-facet-ids
@@ -46384,9 +46385,12 @@
     "stdlib/facet/std11/4675-4756"
     "stdlib/facet/std11/5288-5356"
     "stdlib/facet/std11/5893-5974"],
-   :task-granularity :unassessed,
+   :task-granularity
+   :distinct-obligation-within-source-qualified-existing-task,
+   :source-composition-record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
    :accountable-task
-   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
    :status :open,
    :id "interface/stdlib/db/transaction-lifecycle",
    :kind :interface-and-evidence-qualification,
@@ -46394,7 +46398,18 @@
    ["Task acceptance strengthened by the five-record source-specific matrix; executable API/provider/binding fixtures and independent acceptance remain open."],
    :semantic-source-id "stdlib/db/transaction-lifecycle",
    :qualification
-   "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   "Concrete source-qualified criteria and dependencies composed; execution evidence and independent composed acceptance remain Open. This does not establish coverage of any other decision.",
+   :coordination-task
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :concrete-task-interface
+   {:id
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+    :path "specs/stdlib-workflow/tasks.md",
+    :criterion-sha256
+    "a55c57475116168a479ece229342040fd85ad66a85faf5f85e3842a19d75a6db",
+    :source-adjudication-sha256
+    "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+    :state :Open},
    :families ["phase-16"]}
   {:source-document-ids ["STD3"],
    :required-output
@@ -46419,13 +46434,17 @@
    :families ["phase-16"]}
   {:source-document-ids ["STD17"],
    :required-output
-   "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Require synchronization proof or checked adapters for communication crossing declared clock/device domains.",
+   "Execute and independently accept the concrete standard-library task criteria and qualified dependencies for stdlib/hardware/clock-domain-admission; retain exact source/API/provider/artifact identities and positive/refusal evidence. Interface composition supplies no implementation acceptance.",
+   :source-interface-state :composed-pending-independent-review,
    :supporting-task-ids
    ["stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
    :source-facet-ids ["stdlib/facet/std17/1708-1805"],
-   :task-granularity :unassessed,
+   :task-granularity
+   :distinct-obligation-within-source-qualified-existing-task,
+   :source-composition-record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
    :accountable-task
-   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
    :status :open,
    :id "interface/stdlib/hardware/clock-domain-admission",
    :kind :interface-and-evidence-qualification,
@@ -46433,7 +46452,18 @@
    ["Task acceptance strengthened by the five-record source-specific matrix; executable API/provider/binding fixtures and independent acceptance remain open."],
    :semantic-source-id "stdlib/hardware/clock-domain-admission",
    :qualification
-   "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   "Concrete source-qualified criteria and dependencies composed; execution evidence and independent composed acceptance remain Open. This does not establish coverage of any other decision.",
+   :coordination-task
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :concrete-task-interface
+   {:id
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+    :path "specs/stdlib-workflow/tasks.md",
+    :criterion-sha256
+    "c1a829b8db8557a77bbaedee27b972019d10f3670a5e3a3df39901135910dd43",
+    :source-adjudication-sha256
+    "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+    :state :Open},
    :families ["phase-16"]}
   {:source-document-ids ["STD17"],
    :required-output
@@ -46597,17 +46627,22 @@
    :families ["phase-16"]}
   {:source-document-ids ["STD15" "STD2"],
    :required-output
-   "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Preserve source spans, hygiene, namespace, metadata and phase facts through standard syntax construction, inspection and transformation, including STD2 metadata operations on syntax objects.",
+   "Execute and independently accept the concrete standard-library task criteria and qualified dependencies for stdlib/meta/syntax-context-preservation; retain exact source/API/provider/artifact identities and positive/refusal evidence. Interface composition supplies no implementation acceptance.",
+   :source-interface-state :composed-pending-independent-review,
    :supporting-task-ids
-   ["stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+   ["stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"],
    :source-facet-ids
    ["stdlib/facet/std15/1058-1164"
     "stdlib/facet/std2/2161-2261"
     "stdlib/facet/std2/3248-3311"
     "stdlib/facet/std2/9939-10001"],
-   :task-granularity :unassessed,
+   :task-granularity
+   :distinct-obligation-within-source-qualified-existing-task,
+   :source-composition-record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
    :accountable-task
-   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
    :status :open,
    :id "interface/stdlib/meta/syntax-context-preservation",
    :kind :interface-and-evidence-qualification,
@@ -46615,7 +46650,18 @@
    ["Task acceptance strengthened by the five-record source-specific matrix; executable API/provider/binding fixtures and independent acceptance remain open."],
    :semantic-source-id "stdlib/meta/syntax-context-preservation",
    :qualification
-   "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   "Concrete source-qualified criteria and dependencies composed; execution evidence and independent composed acceptance remain Open. This does not establish coverage of any other decision.",
+   :coordination-task
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :concrete-task-interface
+   {:id
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+    :path "specs/stdlib-workflow/tasks.md",
+    :criterion-sha256
+    "a55c57475116168a479ece229342040fd85ad66a85faf5f85e3842a19d75a6db",
+    :source-adjudication-sha256
+    "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+    :state :Open},
    :families ["phase-16"]}
   {:source-document-ids ["STD9"],
    :required-output
@@ -46859,14 +46905,18 @@
    :families ["phase-16"]}
   {:source-document-ids ["STD20"],
    :required-output
-   "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Emit release compatibility reports and signed provenance with visible profile/diagnostic/schema/conformance impact.",
+   "Execute and independently accept the concrete standard-library task criteria and qualified dependencies for stdlib/stability/release-compatibility-artifacts; retain exact source/API/provider/artifact identities and positive/refusal evidence. Interface composition supplies no implementation acceptance.",
+   :source-interface-state :composed-pending-independent-review,
    :supporting-task-ids
    ["stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
    :source-facet-ids
    ["stdlib/facet/std20/2046-2129" "stdlib/facet/std20/7654-7725"],
-   :task-granularity :unassessed,
+   :task-granularity
+   :distinct-obligation-within-source-qualified-existing-task,
+   :source-composition-record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
    :accountable-task
-   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
    :status :open,
    :id "interface/stdlib/stability/release-compatibility-artifacts",
    :kind :interface-and-evidence-qualification,
@@ -46875,7 +46925,18 @@
    :semantic-source-id
    "stdlib/stability/release-compatibility-artifacts",
    :qualification
-   "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   "Concrete source-qualified criteria and dependencies composed; execution evidence and independent composed acceptance remain Open. This does not establish coverage of any other decision.",
+   :coordination-task
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :concrete-task-interface
+   {:id
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+    :path "specs/stdlib-workflow/tasks.md",
+    :criterion-sha256
+    "c1a829b8db8557a77bbaedee27b972019d10f3670a5e3a3df39901135910dd43",
+    :source-adjudication-sha256
+    "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+    :state :Open},
    :families ["phase-16"]}
   {:source-document-ids ["STD2"],
    :required-output
@@ -47210,14 +47271,18 @@
    :families ["phase-16"]}
   {:source-document-ids ["STD19"],
    :required-output
-   "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Preserve escaped-text/trusted-markup/binary-media/native-view distinctions and reject rendering sinks violating escaping/trust policy.",
+   "Execute and independently accept the concrete standard-library task criteria and qualified dependencies for stdlib/ui/render-kind-and-trust; retain exact source/API/provider/artifact identities and positive/refusal evidence. Interface composition supplies no implementation acceptance.",
+   :source-interface-state :composed-pending-independent-review,
    :supporting-task-ids
    ["stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"],
    :source-facet-ids
    ["stdlib/facet/std19/1510-1610" "stdlib/facet/std19/5567-5640"],
-   :task-granularity :unassessed,
+   :task-granularity
+   :distinct-obligation-within-source-qualified-existing-task,
+   :source-composition-record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
    :accountable-task
-   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
    :status :open,
    :id "interface/stdlib/ui/render-kind-and-trust",
    :kind :interface-and-evidence-qualification,
@@ -47225,7 +47290,18 @@
    ["Task acceptance strengthened by the five-record source-specific matrix; executable API/provider/binding fixtures and independent acceptance remain open."],
    :semantic-source-id "stdlib/ui/render-kind-and-trust",
    :qualification
-   "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   "Concrete source-qualified criteria and dependencies composed; execution evidence and independent composed acceptance remain Open. This does not establish coverage of any other decision.",
+   :coordination-task
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :concrete-task-interface
+   {:id
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+    :path "specs/stdlib-workflow/tasks.md",
+    :criterion-sha256
+    "a55c57475116168a479ece229342040fd85ad66a85faf5f85e3842a19d75a6db",
+    :source-adjudication-sha256
+    "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+    :state :Open},
    :families ["phase-16"]}
   {:source-document-ids ["STD19"],
    :required-output
