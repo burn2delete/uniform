@@ -1079,6 +1079,24 @@
  :new-task-fields 6,
  :total-concrete-links 768,
  :distinct-verified-source-facets 1413}
+    :safety-stdlib-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/safety-stdlib-qualified-review-adoption.edn",
+ :remaining-allocation-work 65,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 493,
+ :total-allocation-review-pending 79,
+ :source-commit "5331194fcf47baf9419566e839b11607e45470a3",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 194,
+ :reviewed-predicates 190,
+ :total-concrete-links 768,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/safety-stdlib-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

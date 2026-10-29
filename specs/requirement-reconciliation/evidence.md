@@ -1086,6 +1086,40 @@ runtime execution or implementation credit is inferred. Independent composition
 review, full-facet disposition, granularity, legacy ACC scope, final counting
 and integration remain open.
 
+## Qualified Safety107 and Stdlib83 review adoption
+
+Frozen-source independent receipts are Safety107
+`0e522488f2a5aa7c0bbc8b5da0e9bcc724fab15c86b2ee62117adcfa322098d7`
+and Stdlib83
+`eb77a4b1c28b25adab390245948b1382f537d74648b6a8d0e330adaa4439cb92`,
+both at `6fb01a5430e3b571d7c286a104ddba5af406a31b`. The actual current
+join at `5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae` checks all 190
+unchanged decision records and 194 current criterion witnesses (107 Safety,
+87 Stdlib), including Safety's 279 named dependency inputs. Exact 42 Profile,
+16 Safety, four Stdlib and six Math field operations reconstruct complete
+current files and preserve every later addition. Stdlib's five-interface
+disposition retains five distinct actual criteria.
+
+Adoption source `5331194fcf47baf9419566e839b11607e45470a3` changes only
+190 review states and their qualified references. All other decision fields,
+prior 196 qualified reviews and all 833 Open states are conserved. There are
+386 qualified current source-review adoptions, 79 pending current-allocation
+reviews and 65 allocation cases remaining, within 768 concrete allocations.
+Historical acceptance stays 493, with 68 pending; task census stays provisionally
+3/182. No new historical mapping or implementation credit is added.
+
+Safety's two DOM17 and Stdlib's three authenticated metadata recoveries remain
+separately proposed, without canonical facet-index adoption. Math20 predicates
+and its formatting adjustment retain separate pending review. Whole-facet,
+implementation and denominator acceptance are outside both receipts.
+
+`current-criterion-bindings-561-reviewed190.edn`, SHA256
+`e46460855df01064e968f92ee354c687a316daac7beafc76a81ead0535a5a7ef`,
+preserves all 561 historical bindings and 1,262 current spans. SH 12/522, census
+4/13, boundary 6/11, generated SH check and pinned changed-file lint pass.
+Complete facet disposition, granularity, legacy ACC scope, independent final
+counting and integration remain open.
+
 ## Qualified Package7 independent-review adoption
 
 The independent Package7 receipt, SHA256

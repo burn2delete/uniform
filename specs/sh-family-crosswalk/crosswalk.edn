@@ -13567,6 +13567,24 @@
    :new-open-tasks 10},
   :prior-current-main-qualification
   "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed.",
+  :safety-stdlib-qualified-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/safety-stdlib-qualified-review-adoption.edn",
+   :remaining-allocation-work 65,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :previously-accepted-mappings-preserved 493,
+   :total-allocation-review-pending 79,
+   :source-commit "5331194fcf47baf9419566e839b11607e45470a3",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :new-historical-mapping-adoptions 0,
+   :criterion-witnesses 194,
+   :reviewed-predicates 190,
+   :total-concrete-links 768,
+   :later-added-predicates :pending-separate-review,
+   :applicability
+   "specs/requirement-reconciliation/safety-stdlib-current-applicability.edn"},
   :status :pending-source-version-review,
   :safety107-current-composition
   {:allocation-source-commit
