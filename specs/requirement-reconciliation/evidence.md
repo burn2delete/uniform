@@ -1294,3 +1294,30 @@ boundary 6/11, generated SH check and pinned changed-file lint pass. Scratch
 reader errors were rejected before evaluation or writes. Complete facet
 disposition, granularity, legacy ACC scope, independent final counting and
 integration remain open.
+
+## Exact two GPU supporting metadata admission
+
+Task source `87692395` admits only the two DOM13 supporting contexts in
+`gpu2-source-metadata-admission.edn`, preserving original facet identities,
+source occurrences, raw bytes, owning contexts and all shared member routes.
+The existing Core/Profile74 source review and Domains30 operation review
+retain their frozen scope. No new extraction or requirement is introduced.
+Only the current kernel-lowering unresolved-metadata qualifier is replaced;
+verifier facts, source/layout/authority/synchronization/numeric preservation,
+unsupported-transition rejection and separate dispatch, transfer and backend
+emission consumers remain unchanged.
+
+Allocation overlay source `2c16e1dbe634189e203356e00e5a2007a5cf8e44`
+updates one current allocation with reversible before/after records. Frozen
+proposals and review receipts remain immutable. The current registry admits
+these exact supporting example/diagnostic records without blanket facet-index,
+full-facet, task-completion or implementation credit. All833 decisions remain
+Open:768 allocated,386 qualified source reviews,79 pending and65 unallocated.
+Historical acceptance493/pending68 and provisional task status3/182 are unchanged.
+
+All561 historical bindings and1262 current UTF8 file/raw spans pass after the
+refresh. Domains7/213, SH12/522, census4/13, boundary6/11, generated SH check
+and pinned changed-file lint pass. The first SH test observed the previous
+generated view before regeneration completed; the ordered rerun passes.
+Scratch helper-loading errors occurred before mutation and were corrected.
+Final facet, granularity, legacy ACC, counting and integration gates remain open.
