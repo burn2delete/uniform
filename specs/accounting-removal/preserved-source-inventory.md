@@ -246,3 +246,30 @@ PR619 at `ab33cc5f` and this evidence draft's prior head `9df7b2d3` subsequently
 completed routine CI: seven successes and two configured skips each. This does
 not extend the exact-child PR616 source review to main or supply genuine kernel
 execution.
+
+## Imported producer and main-census follow-up
+
+PR621 at `6c8d70290a52789ba57d5f7c95e5c700cc7ce89c`, tree
+`f2b5fbcc0a7fa8b2d4ac70cccad72fe874f62f2d`, parent PR618 `3a1a553d`, restores
+the complete original imported-producer validation kernel and comments byte
+for byte. Production and all prior tests remain unchanged. Four actual
+entrypoint forms match history. Nine immediate source pins explicitly retain
+the producer core-invalid wrapper difference. The preserved 4097 requests,
+16777217-character DATA carrier and authentication rejection distinguish DATA
+from genuine producer authority. Source checks, boundary 6/11, unchanged lint
+71 warnings/zero errors, docs/roadmap and whitespace pass. Genuine execution,
+independent acceptance and composition remain pending.
+
+PR619 prior head `ab33cc5f` now has independent changes-required-census-only
+receipt SHA256
+`4e9f49959c5e296ac74d0be826a4a0df9c56f740a24a8838c016c63c60e47993`: 5 controls,
+127 passing assertions, 1 failure, no errors. Production-source disposition
+passes for that exact main extraction; its census counted 28 instead of 29
+newline-terminated deleted lines. Corrected successor
+`8330e46870de055f3ad4c864921dc83b999d4a06`, tree
+`6606e4cdd541156117589399ff5d9fb861ff8529`, changes only the count to 29 and
+the regenerated checker digest. Production, all other census values and the
+main documentation remain unchanged. Separate correction/source checks,
+docs/roadmap and whitespace pass. Original review history is preserved;
+independent successor disposition, exact-head CI and fresh-main integration
+remain pending. Immutable inventory counts and snapshots remain unchanged.
