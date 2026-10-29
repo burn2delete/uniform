@@ -1,8 +1,10 @@
 (ns gravity.build.producer-git-observation-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is]]
             [gravity.build.producer-git-observation :as git]
             [gravity.self-hosting.sh01-component-test-dependencies :as dependencies]
-            [gravity.self-hosting.sh01-development-loop-wiring])
+            [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting-test-runner :as child-runner])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]))
 
@@ -222,3 +224,75 @@
                          :cache-closure-valid?])))
     (is (true? (get-in index [:by-test-path "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj"
                              :test-policy :freshness-required?])))))
+
+(deftest supported-entrypoint-requires-the-exact-opt-in-selection
+  (let [base {:cache-directory "/tmp/unused-rv2-cli-control" :timeout-ms 1000
+              :repository-identity (str "sha256:" (apply str (repeat 64 "a")))}
+        options (assoc base :observe-producer? true
+                            :producer-git-binding {:schema :gravity/rv2-git-binding-v1})
+        select (fn [options namespaces]
+                 (child-runner/select-tests
+                  (into ["--development-cache" (pr-str options)]
+                        (mapcat #(vector "--namespace" (str %)) namespaces))))]
+    (is (child-runner/valid-development-cache-options? base))
+    (is (= options (:development-cache-options
+                    (select options ['gravity.c2-artifact-identity-test]))))
+    (doseq [invalid [(dissoc options :observe-producer?)
+                     (assoc options :observe-producer? false)
+                     (assoc options :producer-git-binding nil)
+                     (assoc options :producer-git-binding {:schema :unknown})
+                     (assoc options :producer-git-lifecycle {})]]
+      (is (false? (child-runner/valid-development-cache-options? invalid))))
+    (doseq [namespaces [['gravity.c11-mir-test]
+                        ['gravity.c2-artifact-identity-test 'gravity.c11-mir-test]]]
+      (is (= "SH01-TEST-USAGE"
+             (try (select options namespaces) nil
+                  (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))))
+
+(deftest actual-main-dispatch-preserves-default-and-git-routes
+  (let [dispatch (ns-resolve 'gravity.self-hosting-test-runner 'run-development-child-unit!)
+        calls (atom []) operation (fn [] :operation)
+        binding {:schema :gravity/rv2-git-binding-v1}]
+    (with-redefs [clojure.core/requiring-resolve
+                  (fn [symbol] (fn [& args] (swap! calls conj [symbol args]) :report))]
+      (is (= :report (dispatch ['gravity.c2-artifact-identity-test] {} operation)))
+      (is (= 'gravity.self-hosting.sh01-development-loop-wiring/run-child-unit!
+             (ffirst @calls)))
+      (is (identical? operation (last (second (first @calls)))))
+      (is (= :report (dispatch ['gravity.c2-artifact-identity-test]
+                              {:producer-git-binding binding} operation)))
+      (let [[symbol args] (last @calls)]
+        (is (= 'gravity.build.producer-git-observation/run-selected! symbol))
+        (is (identical? binding (first args)))
+        (is (instance? clojure.lang.Atom (second args)))
+        (is (empty? @(second args)))
+        (is (identical? operation (last args)))))))
+
+(deftest child-report-retains-git-facts-without-raw-java-state
+  (let [binding {:root (.getCanonicalPath (java.io.File. "."))
+                 :schema :gravity/rv2-git-binding-v1}
+        records (atom []) raw-process (Object.) token (Object.)
+        record {:process raw-process :owned-process token :raw-handles [(Object.)]
+                :argv ["git" "status"] :cwd (:root binding) :exit-code 0
+                :root-wait-exited? true :descendant-coverage :unknown
+                :finalization {:root-alive? false :tracked-complete? true
+                               :complete? nil :descendant-coverage :unknown}}
+        summary {:schema :synthetic-report :child-cache-hit? false}]
+    (with-redefs [wiring/run-child-unit!
+                  (fn [namespaces options _]
+                    (is (= ['gravity.c2-artifact-identity-test] namespaces))
+                    (is (true? (:observe-producer? options)))
+                    (is (identical? binding (:producer-git-binding options)))
+                    (is (map? (:producer-git-lifecycle options)))
+                    (swap! records conj (atom record)) summary)]
+      (let [report (git/run-selected! binding records {} (fn [] :unused))
+            observation (:test-producer-git-observation report)
+            readback (edn/read-string (pr-str report))]
+        (is (= report readback))
+        (is (= summary (dissoc report :test-producer-git-observation)))
+        (is (= binding (:binding observation)))
+        (is (= (dissoc record :process :owned-process :raw-handles)
+               (first (:processes observation))))
+        (is (false? (:capture-v1-ready? observation)))
+        (is (false? (:cache-admission? observation)))
+        (is (identical? token (:owned-process @(first @records))))))))

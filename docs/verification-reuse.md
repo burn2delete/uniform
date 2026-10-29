@@ -1651,6 +1651,45 @@ native/helper reachability, loader, watchdog and report/capture publication
 remain method gates. Capture readiness, cache admission and the original real
 producer/reuse/invalidation acceptance criteria remain unchanged and open.
 
+#### Supported opt-in child entrypoint and retained Git observations
+
+The existing `--development-cache` request now also accepts
+`:producer-git-binding` with schema `:gravity/rv2-git-binding-v1`, together
+with `:observe-producer? true`. This route requires exactly
+`gravity.c2-artifact-identity-test`; another or mixed selection, a missing
+opt-in, unknown schema, or arbitrary lifecycle-hook data is rejected before
+dispatch. The actual binding is still revalidated against its explicit
+filesystem inputs before each Git command. Parsing this data is not method
+approval or executable authentication.
+
+The existing `self-hosting-test-runner` main entrypoint resolves
+`producer-git-observation/run-selected!` only for that explicit request.
+Requests without the binding use the existing wiring route. Thus this source
+route retains the normal main/basis/argument checks instead of introducing an
+alternate `-e` launch that the supported-runtime observer would reject.
+The parent-prelaunch identity and all fresh-only checks remain required.
+
+The supplied Git binding is included as
+`:selected-observer-git-binding` in the observer's runtime-tool identities.
+The report also retains `:test-producer-git-observation`: the frozen binding,
+per-command argv/CWD, root-wait result and original finalizer observations.
+Raw Process, ownership token and handles remain in local child records;
+Throwable values are represented only by class names in the serializable
+view. Root exit and tracked completion do not change unknown descendant
+coverage. The observation explicitly keeps capture-v1 readiness and cache
+admission false. Existing report serialization retains the extra observations
+without turning them into evidence of a real run.
+
+Injected controls cover the actual main dispatch, closed options and exact
+selection, binding identity inclusion, preservation through EDN round-trip,
+raw-token exclusion and unchanged default route. No selected producer or Git
+bookend workload is launched by these controls. A supported source entrypoint
+is now present; exact launch/configuration, native/helper reachability, outer
+watchdog, output/report/capture publication, independent method review and
+separate runtime admission remain open. Real miss/hit, unrelated reuse,
+per-lexical-input invalidation and independent result acceptance remain the
+original RV2 obligations.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
