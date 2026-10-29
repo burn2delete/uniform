@@ -681,6 +681,23 @@ helper mappings remain explicit rather than being treated as missing features.
   and metered; valid-data helper is absent/uncalled. Original refs/cache and
   all failed history remain intact. Genuine kernels/private inference/runtime,
   whole accounting removal and ACC-01/PR502 closure remain outside this acceptance.
+- PR632 is normally reconciled with accepted main `ce4f0f42` at
+  `9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e`, tree
+  `8e2f688ffcad861682c54571a07eee37517b9363`, parents `70e95305`/`ce4f0f42`.
+  [Source/inspect evidence](collection-result-clean-reconciliation.edn) verifies
+  all 10,075 tree entries and exactly three declared paths. Both complete
+  reviewed test intervals match byte for byte, and every other current-main
+  test byte survives, including PR628's three appended C7 fixture/control forms.
+  All production and all other main entries are unchanged. Five current C7
+  dependency forms/arities match the original receipt. The two extraction
+  records retain their original-base source hashes as historical records.
+  The existing managed checkout is clean/named; complete-identity inspect passes
+  all conditions. Boundary 6/11, docs/roadmap, governance 185 and whitespace pass.
+  Fresh pinned cache-disabled lint reproduces zero errors and identical complete
+  71-warning multisets against actual current main, without configuration changes.
+  Current-head CI and independent affected composition are pending. Genuine
+  tests, integration-mode preflight and main merge remain UNRUN. Original
+  evidence/cache/refs and the complete 29-path inventory remain unchanged.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
