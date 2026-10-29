@@ -13335,6 +13335,527 @@
    :semantic-source-id "behavior/pkg1/project-entrypoint-resolution",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg1/1143-1175",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/697298e5d6252f9f4c276dfe2246ad44ad3fb109543b0f96c00382d3d9fa2e3f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1143,
+       :end-byte 1175,
+       :raw-sha256
+       "f683825a6a5d747b4c02c080ed374e5e314154efa9a7a4d06396bda965bf548f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/1886-1955",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/f7abc867bc5b9635f939dc6dc55a9386f3c3173bedeab423ccacd19b2e23f199",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1886,
+       :end-byte 1955,
+       :raw-sha256
+       "6542f537700a7f5a59b663b5a8ce18c4a71e354c3b416dd7aaaa0b7fbe8ae430"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/2562-2602",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/b35df54b61ea673d9a44145ccf27797eaa38a88b3806852cd9ff01d7c01e3897",
+       :kind :cross-contract-interface,
+       :start-byte 2562,
+       :end-byte 2602,
+       :raw-sha256
+       "a0f9f2464fbf42a7f248605cb91ab8578c38d41039740243a2f7eb635954c3fb"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3175-3195",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :example,
+       :start-byte 3175,
+       :end-byte 3195,
+       :raw-sha256
+       "41e6ae5b87fe022d8d6e0956c5b44341212b7ac9ccbac4e5dd73a8971b7e2005"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3195-3223",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3195,
+       :end-byte 3223,
+       :raw-sha256
+       "b5c31c5c2a0910b36fedcb707de97689eaab5aa66947c4f73e7b7c1fbee2e044"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3223-3243",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3223,
+       :end-byte 3243,
+       :raw-sha256
+       "c274d62933786075da0927c86a0ce6d60b23afe70b0e7027cf527eb8f4448280"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3243-3264",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3243,
+       :end-byte 3264,
+       :raw-sha256
+       "6fac95ddea5dded21f133a87202aad42060a2ff7f6704f9bd9f689a9ebf79625"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3264-3301",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3264,
+       :end-byte 3301,
+       :raw-sha256
+       "340041c6a4739005bcb3deb7ade3d7b10ea77179d2c0afb7d5020fac6e823276"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3301-3328",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3301,
+       :end-byte 3328,
+       :raw-sha256
+       "4d92f8f5b6cb40a3af6eab83ef97af3731694db587d4fc8417b828caa0354cda"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3328-3366",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3328,
+       :end-byte 3366,
+       :raw-sha256
+       "67cd1716de76a6f46e7dad6fe505aa32cd2b57716f621d6fc7a5d1f01a25f698"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3366-3411",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3366,
+       :end-byte 3411,
+       :raw-sha256
+       "e7fb2788389f99612597a5dca81978cafef10f881f6872322cf90ec3d0eb0155"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/339-717",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/987c884ad20600685db88a8d9eb7e3bec38125698ed092cb1f9d8447907ad449",
+       :kind :normative-context,
+       :start-byte 339,
+       :end-byte 717,
+       :raw-sha256
+       "554b6125403baaa8c1a08378df92ffad92df9abd3771c401167e017a61087299"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3411-3463",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3411,
+       :end-byte 3463,
+       :raw-sha256
+       "f4d8b08eaeb90506966e06d3632a135fae0de77edfe5964e660959cb6e47d39c"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3463-3502",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3463,
+       :end-byte 3502,
+       :raw-sha256
+       "da800ce2e049865dddd93256fdd53ddaaaee52ca50e0ea1157e96d934960e36b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3502-3540",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :example,
+       :start-byte 3502,
+       :end-byte 3540,
+       :raw-sha256
+       "b4048bcbf8511514101477bb67ddcb44756ce6fae2ac262cf58214382c50fa25"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3540-3608",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3540,
+       :end-byte 3608,
+       :raw-sha256
+       "d18c48d250b64fd7200b295a88db39752aecf4aacb453f650fd2e171f38a51fe"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3608-3656",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3608,
+       :end-byte 3656,
+       :raw-sha256
+       "e2c3da3b9895846a8469619240c1992184f10d185f9b27ba56011a54230fa593"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3656-3720",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3656,
+       :end-byte 3720,
+       :raw-sha256
+       "d9141b8110ff9245ead6b6289bb4b2f7cce50a6a8d194e9926502bd28b15e046"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3720-3772",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3720,
+       :end-byte 3772,
+       :raw-sha256
+       "a6729d7e4efd698070a965aa32563d11e2cbfccf9d46809fc4a139d55c9bb00b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3772-3835",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3772,
+       :end-byte 3835,
+       :raw-sha256
+       "0e61d5a4f41496b8f899f9897eaafd3e65e76b0437c458fcc67076d5cc11eea2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3835-3861",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3835,
+       :end-byte 3861,
+       :raw-sha256
+       "3b34b6bbc408d5c6800d333934b3ace92c611bb02048ebddc2bda74e579660a8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3861-3924",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :provenance-segment,
+       :start-byte 3861,
+       :end-byte 3924,
+       :raw-sha256
+       "bfcc7769fe273c7235974992c8fc652529eeb26d3c6232b08c1a946942bb6612"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/3924-3928",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/0e3c97df6f966b88756fbec9a3a0ec3906fd4ded789d2127a80a949ab4315d17",
+       :kind :example,
+       :start-byte 3924,
+       :end-byte 3928,
+       :raw-sha256
+       "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/4071-4138",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/f2802b5a21bc477ad450bbe90c82c66f029f3418687459d9ca53c6413c56a3a5",
+       :kind :negative-acceptance,
+       :start-byte 4071,
+       :end-byte 4138,
+       :raw-sha256
+       "c800ae038a14592402738f33869a2115288c8fbade8389dc94522526b3e8a806"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg1/4613-4656",
+       :document-id "PKG1",
+       :source-occurrence-id
+       "PKG1/source/9908df9ff313bd5d103a4396505ebb98e4fd7356c635dbba222a3dcfaf98442e",
+       :kind :diagnostic,
+       :start-byte 4613,
+       :end-byte 4656,
+       :raw-sha256
+       "08c6536cedba124a84dc08c7a16e0ddaa4cc5a6bb07ca92a0527ee1a46d363f9"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+      :qualification :required-predicate-retained}],
+    :semantic-source-id "behavior/pkg1/project-entrypoint-resolution",
+    :task-links
+    [{:task-id
+      "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+      :path "specs/resolve-workflow/tasks.md",
+      :role :namespace-analysis-producer,
+      :criterion-witness
+      {:path "specs/resolve-workflow/tasks.md",
+       :marker "resolve-implementation-tasks",
+       :task-id
+       "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+       :start-byte 1885,
+       :end-byte 2538,
+       :raw-sha256
+       "3d6ff75174650f2c5913517133a39dbc5ab5b0eb18ac68b37413dfb34c409073"},
+      :task-context
+      {:path "specs/resolve-workflow/tasks.md",
+       :task-id
+       "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+       :file-sha256
+       "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+       :raw-sha256
+       "6bd2a7104f795b6b8681bc8b5d0daa7185299842f1a0307dfd06d095ec6cbd90",
+       :marker "resolve-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open; partial source evidence above is not closure",
+       :end-byte 2538,
+       :start-byte 1661},
+      :reviewed-context-sha256
+      "3d6ff75174650f2c5913517133a39dbc5ab5b0eb18ac68b37413dfb34c409073",
+      :current-criterion-sha256
+      "3d6ff75174650f2c5913517133a39dbc5ab5b0eb18ac68b37413dfb34c409073"}],
+    :source-evidence
+    {:source-contracts ["PKG1"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg1/1143-1175"
+      "facet/ai-build-tools/pkg1/1886-1955"
+      "facet/ai-build-tools/pkg1/2562-2602"
+      "facet/ai-build-tools/pkg1/3175-3195"
+      "facet/ai-build-tools/pkg1/3195-3223"
+      "facet/ai-build-tools/pkg1/3223-3243"
+      "facet/ai-build-tools/pkg1/3243-3264"
+      "facet/ai-build-tools/pkg1/3264-3301"
+      "facet/ai-build-tools/pkg1/3301-3328"
+      "facet/ai-build-tools/pkg1/3328-3366"
+      "facet/ai-build-tools/pkg1/3366-3411"
+      "facet/ai-build-tools/pkg1/339-717"
+      "facet/ai-build-tools/pkg1/3411-3463"
+      "facet/ai-build-tools/pkg1/3463-3502"
+      "facet/ai-build-tools/pkg1/3502-3540"
+      "facet/ai-build-tools/pkg1/3540-3608"
+      "facet/ai-build-tools/pkg1/3608-3656"
+      "facet/ai-build-tools/pkg1/3656-3720"
+      "facet/ai-build-tools/pkg1/3720-3772"
+      "facet/ai-build-tools/pkg1/3772-3835"
+      "facet/ai-build-tools/pkg1/3835-3861"
+      "facet/ai-build-tools/pkg1/3861-3924"
+      "facet/ai-build-tools/pkg1/3924-3928"
+      "facet/ai-build-tools/pkg1/4071-4138"
+      "facet/ai-build-tools/pkg1/4613-4656"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :namespace-analysis-producer,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "Resolve each artifact-kind entrypoint to its actual source var or artifact declaration after namespace analysis under the owning visibility rules.",
+      :reject
+      "An entrypoint is absent, ambiguous, violates its owning visibility rules or resolves to the wrong declaration kind.",
+      :outputs
+      "Entrypoint-to-binding/artifact table consumed by the emission plan; PKG1003 names manifest key, package, profile and target.",
+      :dependencies ["L3" "PKG1" "B13"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id
+    "interface/behavior/pkg1/project-entrypoint-resolution",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12"]}
   {:source-document-ids ["BOOT8" "PKG10"],
    :required-output
@@ -13829,6 +14350,753 @@
    :semantic-source-id "behavior/pkg6/derived-capability-manifest",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg6/1024-1071",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1024,
+       :end-byte 1071,
+       :raw-sha256
+       "4f7b37b368393dfb9ef691a44c65c19118e5d889227086250a392859dbff0837"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1071-1117",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1071,
+       :end-byte 1117,
+       :raw-sha256
+       "c245ff25726e24835d66bd16d69b83a17c7a098cae50ed354c73c15fad3613d0"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1117-1152",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1117,
+       :end-byte 1152,
+       :raw-sha256
+       "441b17b6de7c74962ddf3a7f1db637c080b8c74e129e8fd71d7a68a879f29636"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1152-1184",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1152,
+       :end-byte 1184,
+       :raw-sha256
+       "cbe35b726e41447a28c89fcad5d21b3ea3b7c85e22d756655ceacebb04304c2a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1217-1252",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1217,
+       :end-byte 1252,
+       :raw-sha256
+       "df68f29f3bfd29ab508c2223058ddce7957435ca82bf7b39160f1af1a49cd462"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1300-1426",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/16cf8bd0238b88f83808cabc6f473064f7a8da1c661782a5bd69aa44f42157ba",
+       :kind :normative-context,
+       :start-byte 1300,
+       :end-byte 1426,
+       :raw-sha256
+       "416b6930350a0a137c001cce2ec439c349cbc6b01784f5cda3d58c05b9548464"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1444-1504",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1444,
+       :end-byte 1504,
+       :raw-sha256
+       "cb22c36bc18c500d5e22a53b5ed35926baa89497291258f000cd0e7ba4e5f2fd"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1504-1591",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1504,
+       :end-byte 1591,
+       :raw-sha256
+       "595f976eccc1aba7abcab21b5db124714bec974a8d11f3d6e89404df0d81905b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1874-2016",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1874,
+       :end-byte 2016,
+       :raw-sha256
+       "5ced17c3a3f6e3f0a16f6de6258b077947d87a6d5b72163b7a55454e19a855f3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2076-2145",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2076,
+       :end-byte 2145,
+       :raw-sha256
+       "5cab62551b7dcee1d9d197c4d17f1c8093d359fe1e0dcf747967c98d1286991a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2257-2579",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/583fa58a2cae370409c4041b675f7af775b7ff83d07895bc7f271e2d8265e0a9",
+       :kind :normative-context,
+       :start-byte 2257,
+       :end-byte 2579,
+       :raw-sha256
+       "ea97f1ae1ea6154c839bb108e873d892267dc261f65a330c68b2c92d3fa294ad"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2580-2626",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1b2f42d92f15746fd4618c4b9c22a8e1f6a34455060790ca5e125b4b87c39606",
+       :kind :normative-context,
+       :start-byte 2580,
+       :end-byte 2626,
+       :raw-sha256
+       "5210164ac2c753c29683d5514f37265d22b9fb6f63013676aba8e4962a56e185"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2653-2677",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2653,
+       :end-byte 2677,
+       :raw-sha256
+       "eb81fffeb307cda319f9ab996c46c97a26a39d2487f7ad2ed9118dd6a4278af5"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2677-2715",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2677,
+       :end-byte 2715,
+       :raw-sha256
+       "9026d22006a5c6f0b4aeb5d16a299d639de43af9e558168f8e83b1d337568664"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2715-2755",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2715,
+       :end-byte 2755,
+       :raw-sha256
+       "249c6019ac12998b8c6b5ad422e404f5fbaf79aa4ab33a07aa7b5103855ea476"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2792-2842",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2792,
+       :end-byte 2842,
+       :raw-sha256
+       "41ebcede5b8bd833d0a3adc04e218083893ee4511606460068215a1460fa874b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2842-2885",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2842,
+       :end-byte 2885,
+       :raw-sha256
+       "3467b705216dc815a91527c258e2aa53b8dde212485f38b3cc3a407b8dfe5c7e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2925-2983",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2925,
+       :end-byte 2983,
+       :raw-sha256
+       "a586d4d99c04e7827fc4456bf9ae902e5513a5b779dc964355fe21315adf9b76"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3010-3046",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/281da817afa7cc9e572b9d1f197a4ac9e770a6bb3cad90783e458e2c81a62b90",
+       :kind :artifact-schema,
+       :start-byte 3010,
+       :end-byte 3046,
+       :raw-sha256
+       "08f06aa35ac207a78b4313f666292d38076514af4d4f3f89a4f0ed084267fcec"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3047-3070",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3047,
+       :end-byte 3070,
+       :raw-sha256
+       "da9c477a73edfd2b0f0d78197a8c9ee99edc8bdadba508e7aeffb6b5c234f69b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3070-3112",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3070,
+       :end-byte 3112,
+       :raw-sha256
+       "243f6dc5baef5faca1216caf40ecbc5467311a84d56c5c64f4f2dcd151493e4c"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3112-3158",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3112,
+       :end-byte 3158,
+       :raw-sha256
+       "302d72fc98d5f282b5599ae2fe889b4f2ba4a17d260ae69b0759d6b1611b69d8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3262-3288",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3262,
+       :end-byte 3288,
+       :raw-sha256
+       "43a4c22bc32bdda6ba870be4fe9e6e976949c6b84149c2e4316b9a67092c2cb3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3865-3912",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 3865,
+       :end-byte 3912,
+       :raw-sha256
+       "f20683a244ed3d381186d3ff9b78008956d9f033c2311b5c2c91c9a4db9f888e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4277-4325",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4277,
+       :end-byte 4325,
+       :raw-sha256
+       "3603885a0c23f627028f488c8a97c91ebce43a473f1daf9adc3359c792829246"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4325-4389",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4325,
+       :end-byte 4389,
+       :raw-sha256
+       "41914090d9ec1c8c33944e25de8a0195309ed0c9a740e3c82c247be6fa4d7875"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4406-4454",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4406,
+       :end-byte 4454,
+       :raw-sha256
+       "eaa0426c6fa8ad62e048dbb78aaa19921e0c99a06a776de2c2f9fed2bf0cbeae"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4454-4512",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4454,
+       :end-byte 4512,
+       :raw-sha256
+       "7fb4ec7e6155a1f249971e8cbef60f48d44f65c5f6d6017a81fe7c518748a8f1"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4621-4660",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4621,
+       :end-byte 4660,
+       :raw-sha256
+       "e7227c0044ef17c2778aa95ff2cef021b788be3a21a1426482027aba98cea16f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4706-4752",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4706,
+       :end-byte 4752,
+       :raw-sha256
+       "8ef7a4e17fbd4abb1e5d816a702d548ec261572f5e92901cb86d0e7d0c3a19de"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4752-4809",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4752,
+       :end-byte 4809,
+       :raw-sha256
+       "6fd6faaad155ebd0daf818ea6109a524cd194c1241d61281d81d7e3815532867"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4810-4928",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/5a488bdd25fe54749f240dd285afa4967923a92fbdb0aa52a91238b71dfe98ba",
+       :kind :diagnostic,
+       :start-byte 4810,
+       :end-byte 4928,
+       :raw-sha256
+       "1fc6578f4ec6b56b6c08a04b70eb13ab212c9baefb435e1223bb0e80233b132d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4954-5016",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 4954,
+       :end-byte 5016,
+       :raw-sha256
+       "7cf02c4acf63e26d0a31dac6f830519ca7302648f061522a2dc6ca26ae1600d8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5304-5341",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5304,
+       :end-byte 5341,
+       :raw-sha256
+       "e98c94ac055a4813068f0ab8c375bd3a3c636225f04273968efe6a22d59eacbd"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5341-5409",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5341,
+       :end-byte 5409,
+       :raw-sha256
+       "8074a8dc367bf5e052618b266a5b2d7ac7488f430bd39b2a86d3841bb3012174"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/903-925",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/5f1cbb2bf53f1645ac5d0c2caf0768474d1cefcb4b9ec0a71b005471c351aeba",
+       :kind :normative-context,
+       :start-byte 903,
+       :end-byte 925,
+       :raw-sha256
+       "6acbe2eb198ff46814d732c52ac907eb05543b9f31770adb9428fc830a0b85d7"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/926-952",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 926,
+       :end-byte 952,
+       :raw-sha256
+       "6c655ddaec3ecfefe88722740875b1a3cf91d4831ea68a0f3fa5667dcc08ea46"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/952-989",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 952,
+       :end-byte 989,
+       :raw-sha256
+       "e11e0a54a1a0188e416a20559ebefbf1981f5f0a2be6f2d6b1af2205ca908af2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/989-1024",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 989,
+       :end-byte 1024,
+       :raw-sha256
+       "fc664b03f6ca67261000ef47412c6dbfb5809951b7123537f738aae47a5d93a1"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}],
+    :semantic-source-id "behavior/pkg6/derived-capability-manifest",
+    :task-links
+    [{:task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :path "specs/effects-workflow/tasks.md",
+      :role :effect-analysis-summary-producer,
+      :criterion-witness
+      {:path "specs/effects-workflow/tasks.md",
+       :marker "effects-implementation-tasks",
+       :task-id
+       "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "b9af0f1312950d001a950982aacace9e2d590dd456dec91dcbe2fda32a031e74",
+       :start-byte 2764,
+       :end-byte 3567,
+       :raw-sha256
+       "73c95f76f4005076727941e42d7111d7ef9d25d1a9772b41467eea4d568561aa"},
+      :task-context
+      {:path "specs/effects-workflow/tasks.md",
+       :task-id
+       "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+       :file-sha256
+       "b9af0f1312950d001a950982aacace9e2d590dd456dec91dcbe2fda32a031e74",
+       :raw-sha256
+       "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+       :marker "effects-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open; partial source evidence above is not closure",
+       :end-byte 3567,
+       :start-byte 2528},
+      :reviewed-context-sha256
+      "73c95f76f4005076727941e42d7111d7ef9d25d1a9772b41467eea4d568561aa",
+      :current-criterion-sha256
+      "73c95f76f4005076727941e42d7111d7ef9d25d1a9772b41467eea4d568561aa"}],
+    :source-evidence
+    {:source-contracts ["PKG6"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg6/1024-1071"
+      "facet/ai-build-tools/pkg6/1071-1117"
+      "facet/ai-build-tools/pkg6/1117-1152"
+      "facet/ai-build-tools/pkg6/1152-1184"
+      "facet/ai-build-tools/pkg6/1217-1252"
+      "facet/ai-build-tools/pkg6/1300-1426"
+      "facet/ai-build-tools/pkg6/1444-1504"
+      "facet/ai-build-tools/pkg6/1504-1591"
+      "facet/ai-build-tools/pkg6/1874-2016"
+      "facet/ai-build-tools/pkg6/2076-2145"
+      "facet/ai-build-tools/pkg6/2257-2579"
+      "facet/ai-build-tools/pkg6/2580-2626"
+      "facet/ai-build-tools/pkg6/2653-2677"
+      "facet/ai-build-tools/pkg6/2677-2715"
+      "facet/ai-build-tools/pkg6/2715-2755"
+      "facet/ai-build-tools/pkg6/2792-2842"
+      "facet/ai-build-tools/pkg6/2842-2885"
+      "facet/ai-build-tools/pkg6/2925-2983"
+      "facet/ai-build-tools/pkg6/3010-3046"
+      "facet/ai-build-tools/pkg6/3047-3070"
+      "facet/ai-build-tools/pkg6/3070-3112"
+      "facet/ai-build-tools/pkg6/3112-3158"
+      "facet/ai-build-tools/pkg6/3262-3288"
+      "facet/ai-build-tools/pkg6/3865-3912"
+      "facet/ai-build-tools/pkg6/4277-4325"
+      "facet/ai-build-tools/pkg6/4325-4389"
+      "facet/ai-build-tools/pkg6/4406-4454"
+      "facet/ai-build-tools/pkg6/4454-4512"
+      "facet/ai-build-tools/pkg6/4621-4660"
+      "facet/ai-build-tools/pkg6/4706-4752"
+      "facet/ai-build-tools/pkg6/4752-4809"
+      "facet/ai-build-tools/pkg6/4810-4928"
+      "facet/ai-build-tools/pkg6/4954-5016"
+      "facet/ai-build-tools/pkg6/5304-5341"
+      "facet/ai-build-tools/pkg6/5341-5409"
+      "facet/ai-build-tools/pkg6/903-925"
+      "facet/ai-build-tools/pkg6/926-952"
+      "facet/ai-build-tools/pkg6/952-989"
+      "facet/ai-build-tools/pkg6/989-1024"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :effect-analysis-summary-producer,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "Derive deterministic package requests/denials/privileged summaries from actual effect analysis plus explicit declarations; include per-profile/target/dependency/tool/agent/FFI/unsafe/review/handle/audit metadata and provenance/SBOM links.",
+      :reject
+      "A summary differs from analyzed effects, omits a privileged surface or required capability/SBOM field, or treats a request as a grant.",
+      :outputs
+      "Normalized capability manifest, derivation report, deny tables, dependency diff, deployment requirements, audit schema and SBOM capability fields; PKG6001/PKG6002/PKG6007/PKG6008.",
+      :dependencies ["L6" "L15" "SAFE10" "PKG6" "R11"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id "interface/behavior/pkg6/derived-capability-manifest",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12"]}
   {:source-document-ids ["PKG6"],
    :required-output
@@ -13875,6 +15143,587 @@
    :semantic-source-id "behavior/pkg6/request-grant-separation",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg6/1184-1217",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1184,
+       :end-byte 1217,
+       :raw-sha256
+       "b05b001f828463aef1cb358c8d508778e442dec4ee54f0d8bc7be749dc0576b3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1252-1276",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1252,
+       :end-byte 1276,
+       :raw-sha256
+       "920aace1d7b50e84040cd4ea9b83cd4a99f37d0ee15f4dfe6ee219fd6217c76b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1591-1649",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1591,
+       :end-byte 1649,
+       :raw-sha256
+       "550c7c046cbfecb5d7b637a71598aff2f53a6edd368b2948b45c6405845eba28"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1723-1786",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1723,
+       :end-byte 1786,
+       :raw-sha256
+       "30ef93ac248ef7f29b6755d8f4c1678ce5661448f127d47e1e02bcedcbe86d0a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2016-2076",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2016,
+       :end-byte 2076,
+       :raw-sha256
+       "44556888fbc7e96573df47f7a017acd6f156e71369f59433134ff9d3711a5d8f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2257-2579",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/583fa58a2cae370409c4041b675f7af775b7ff83d07895bc7f271e2d8265e0a9",
+       :kind :normative-context,
+       :start-byte 2257,
+       :end-byte 2579,
+       :raw-sha256
+       "ea97f1ae1ea6154c839bb108e873d892267dc261f65a330c68b2c92d3fa294ad"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3199-3232",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3199,
+       :end-byte 3232,
+       :raw-sha256
+       "b05b001f828463aef1cb358c8d508778e442dec4ee54f0d8bc7be749dc0576b3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3301-3333",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :example,
+       :start-byte 3301,
+       :end-byte 3333,
+       :raw-sha256
+       "13bab945fd851450455881029924a1e5d9ad731cd51e13424954d394884b8cab"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3333-3364",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3333,
+       :end-byte 3364,
+       :raw-sha256
+       "03c8d924025be002e5826642033f2f11b74ce72a8ecd259404a0a812989b7fc2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3364-3433",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3364,
+       :end-byte 3433,
+       :raw-sha256
+       "e12fd4d3e62004c1c186dea17b271874e5f4cfca03337371297d099f04228968"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3433-3501",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3433,
+       :end-byte 3501,
+       :raw-sha256
+       "b70124e4609bff49eb83a9a5a88ca4cb7afdf6b2bf6de1149dc87bbbc3be0896"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3501-3566",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3501,
+       :end-byte 3566,
+       :raw-sha256
+       "9f2712d58e35724acfb3421713167360c0700085060b7a7c2b72d8744164baf9"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3566-3629",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3566,
+       :end-byte 3629,
+       :raw-sha256
+       "644160065041f2142929c0cf151badfd5e3b235654a4ff7eaf2f05afd52b527a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/361-732",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/30f42ae61049411c4250685ebca25cd4f3053ee03c95777edac56d76e74b7561",
+       :kind :normative-context,
+       :start-byte 361,
+       :end-byte 732,
+       :raw-sha256
+       "0de98c034190ed30e2fccf07652b47992d4405a456820cc0232f0680c018a5d8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3629-3692",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3629,
+       :end-byte 3692,
+       :raw-sha256
+       "ed6916b175e1f916e51441bbcfb55d2ebf1c8f82c20a5bfa7c1e9d0134afffb5"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3692-3742",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3692,
+       :end-byte 3742,
+       :raw-sha256
+       "223231befc27a16deff06263bafbad252eded40ddcb75ba10d36b08d9173165d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3742-3789",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3742,
+       :end-byte 3789,
+       :raw-sha256
+       "7cdbdd9bcbeb3dfccc9bfd56530ca7fa0fdda514414ea6124a8f512cc187a75c"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3789-3840",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :provenance-segment,
+       :start-byte 3789,
+       :end-byte 3840,
+       :raw-sha256
+       "d5d86e7f9f3542793827ed10ab307e4d8733f8f23e0740a2ea2522eb059d9e03"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3840-3844",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/d93f18b3b6488ef482294d9ad216d10fece27764f46820f7770097f5babebd5b",
+       :kind :example,
+       :start-byte 3840,
+       :end-byte 3844,
+       :raw-sha256
+       "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4055-4129",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4055,
+       :end-byte 4129,
+       :raw-sha256
+       "1160ccf97c77277e449e1fa636cd1973e8b3a60a2f3fefdfa1ef85297b9c5e03"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4129-4193",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4129,
+       :end-byte 4193,
+       :raw-sha256
+       "7b025f9f2889620c81f2ff3ba52474008eef4d0b556f1496bcf230899a5f37b3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4193-4277",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4193,
+       :end-byte 4277,
+       :raw-sha256
+       "26a053a3e78c6f24320d12dd6a52b2029b92896041984d8553018fbfe485ccfc"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4564-4621",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4564,
+       :end-byte 4621,
+       :raw-sha256
+       "7065e1663a3744774d4180fa2071131190424a27dd8c69d7ed084c6f29e28255"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4660-4706",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/1dcd610fd583f09dfe9fc1102622ccef6020ef34f2bcd76181cb4a2639b352d0",
+       :kind :diagnostic,
+       :start-byte 4660,
+       :end-byte 4706,
+       :raw-sha256
+       "fd68508e972cab24aa7fb6185e5476a325fd80b020a60f58a2eaf7d809a1cbfd"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4810-4928",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/5a488bdd25fe54749f240dd285afa4967923a92fbdb0aa52a91238b71dfe98ba",
+       :kind :diagnostic,
+       :start-byte 4810,
+       :end-byte 4928,
+       :raw-sha256
+       "1fc6578f4ec6b56b6c08a04b70eb13ab212c9baefb435e1223bb0e80233b132d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5088-5169",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5088,
+       :end-byte 5169,
+       :raw-sha256
+       "00375a8070235087f551aa4d8f333c782ea165bc74758a60b1f732d38fb259eb"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5169-5228",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5169,
+       :end-byte 5228,
+       :raw-sha256
+       "3e66025b163cc091e6f4218df30a921013aa17dd5658f643319eed7e1d647baa"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5228-5304",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5228,
+       :end-byte 5304,
+       :raw-sha256
+       "954713dcd78c51dca607985ff54b732a1b889e7f64c09fc6bd47d26ab9bda26f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/733-882",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/98674c8762954baf56f7a5b9cec2f4ca7f2374182a294a16b446949f5ec13fb0",
+       :kind :normative-context,
+       :start-byte 733,
+       :end-byte 882,
+       :raw-sha256
+       "51dc388894ac49aaeaf7c7e0a060471b69f887a9e273769927af5e766e650379"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}],
+    :semantic-source-id "behavior/pkg6/request-grant-separation",
+    :task-links
+    [{:task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :path "specs/auth-workflow/tasks.md",
+      :role :deployment-and-runtime-authority-checker,
+      :criterion-witness
+      {:path "specs/auth-workflow/tasks.md",
+       :marker "auth-implementation-tasks",
+       :task-id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "b40aed8c5e780d2c840781a763a6d3bf012349065d4a6482cc0861308eb34bd7",
+       :start-byte 2337,
+       :end-byte 3842,
+       :raw-sha256
+       "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"},
+      :task-context
+      {:path "specs/auth-workflow/tasks.md",
+       :task-id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :file-sha256
+       "b40aed8c5e780d2c840781a763a6d3bf012349065d4a6482cc0861308eb34bd7",
+       :raw-sha256
+       "3340c6e84c4e17f39fe16dabdf5687bffc4b9ea2e7bd1ed19ebd1d919c344be7",
+       :marker "auth-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 3842,
+       :start-byte 2003},
+      :reviewed-context-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f",
+      :current-criterion-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"}],
+    :source-evidence
+    {:source-contracts ["PKG6"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg6/1184-1217"
+      "facet/ai-build-tools/pkg6/1252-1276"
+      "facet/ai-build-tools/pkg6/1591-1649"
+      "facet/ai-build-tools/pkg6/1723-1786"
+      "facet/ai-build-tools/pkg6/2016-2076"
+      "facet/ai-build-tools/pkg6/2257-2579"
+      "facet/ai-build-tools/pkg6/3199-3232"
+      "facet/ai-build-tools/pkg6/3301-3333"
+      "facet/ai-build-tools/pkg6/3333-3364"
+      "facet/ai-build-tools/pkg6/3364-3433"
+      "facet/ai-build-tools/pkg6/3433-3501"
+      "facet/ai-build-tools/pkg6/3501-3566"
+      "facet/ai-build-tools/pkg6/3566-3629"
+      "facet/ai-build-tools/pkg6/361-732"
+      "facet/ai-build-tools/pkg6/3629-3692"
+      "facet/ai-build-tools/pkg6/3692-3742"
+      "facet/ai-build-tools/pkg6/3742-3789"
+      "facet/ai-build-tools/pkg6/3789-3840"
+      "facet/ai-build-tools/pkg6/3840-3844"
+      "facet/ai-build-tools/pkg6/4055-4129"
+      "facet/ai-build-tools/pkg6/4129-4193"
+      "facet/ai-build-tools/pkg6/4193-4277"
+      "facet/ai-build-tools/pkg6/4564-4621"
+      "facet/ai-build-tools/pkg6/4660-4706"
+      "facet/ai-build-tools/pkg6/4810-4928"
+      "facet/ai-build-tools/pkg6/5088-5169"
+      "facet/ai-build-tools/pkg6/5169-5228"
+      "facet/ai-build-tools/pkg6/5228-5304"
+      "facet/ai-build-tools/pkg6/733-882"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :deployment-and-runtime-authority-checker,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "Deploy only scoped handles for capabilities requested by the package and allowed by deployment policy; keep source requests, package requests, denials and actual grants distinct.",
+      :reject
+      "A dependency grants authority, a deployment grants an unrequested capability, or a runtime effect uses ambient authority instead of its scoped handle.",
+      :outputs
+      "Package-to-deployment grant/handle provenance and PKG6005/PKG6006 before the effect.",
+      :dependencies ["L15" "SAFE10" "PKG6" "R11"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id "interface/behavior/pkg6/request-grant-separation",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12"]}
   {:source-document-ids ["PKG6"],
    :required-output
@@ -13902,6 +15751,253 @@
    :semantic-source-id "behavior/pkg6/runtime-permission-audit",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg6/1252-1276",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1252,
+       :end-byte 1276,
+       :raw-sha256
+       "920aace1d7b50e84040cd4ea9b83cd4a99f37d0ee15f4dfe6ee219fd6217c76b"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/1276-1299",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f97779a5f1741702bb0970c6a3930e610f80f767c52c0a323626c0791dd2ccd1",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1276,
+       :end-byte 1299,
+       :raw-sha256
+       "aac3a54d8763cbe78db47335fe4717f2640ffb96fd6cc5fc386f3fe46f7aa1a2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2145-2222",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2145,
+       :end-byte 2222,
+       :raw-sha256
+       "48f928da8631ad38b75ef0d20bc4efca11982b02f5295d456a0b0f9a0de61eff"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2755-2792",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2755,
+       :end-byte 2792,
+       :raw-sha256
+       "746b10836d9492cc5cb517d3cf0ffc94935faaf9ff6d1dac15e52df2e64078a1"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2885-2925",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/6101f68e596f6942291da79416b11e8cef666f4d10b1965cdeb4c09dafea7005",
+       :kind :cross-contract-interface,
+       :start-byte 2885,
+       :end-byte 2925,
+       :raw-sha256
+       "30e393ffa25cd0cbca61abbeb43520651336241293468f76b33fc7ce10cdb6c8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3232-3262",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0a17354e464220e38619e76a6c04923e136b0c38fd40657efc159664aab1aa1f",
+       :kind :artifact-schema,
+       :start-byte 3232,
+       :end-byte 3262,
+       :raw-sha256
+       "6679e2fddfa8bbed3e4464cb123427768d5ff59f2746913474810b82c88a266e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/361-732",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/30f42ae61049411c4250685ebca25cd4f3053ee03c95777edac56d76e74b7561",
+       :kind :normative-context,
+       :start-byte 361,
+       :end-byte 732,
+       :raw-sha256
+       "0de98c034190ed30e2fccf07652b47992d4405a456820cc0232f0680c018a5d8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/3912-3968",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 3912,
+       :end-byte 3968,
+       :raw-sha256
+       "d7bb86f3d9bed77b3250f81ff7d19cec4ef03a31002f169a459f95fb03e1d307"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4129-4193",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4129,
+       :end-byte 4193,
+       :raw-sha256
+       "7b025f9f2889620c81f2ff3ba52474008eef4d0b556f1496bcf230899a5f37b3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5169-5228",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5169,
+       :end-byte 5228,
+       :raw-sha256
+       "3e66025b163cc091e6f4218df30a921013aa17dd5658f643319eed7e1d647baa"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}],
+    :semantic-source-id "behavior/pkg6/runtime-permission-audit",
+    :task-links
+    [{:task-id
+      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+      :path "specs/runtime-workflow/tasks.md",
+      :role :runtime-audit-producer,
+      :criterion-witness
+      {:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "4f52073df6b812c8333bfbcfb794a2e7b713e7c509d6cf732b899e14dacd2ee2",
+       :start-byte 40747,
+       :end-byte 44092,
+       :raw-sha256
+       "332fac084e19c6a7f65e24fc0e1344ef9d5780c6fb0b8485a48e8a3ff4c0e7ff"},
+      :task-context
+      {:path "specs/runtime-workflow/tasks.md",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+       :file-sha256
+       "4f52073df6b812c8333bfbcfb794a2e7b713e7c509d6cf732b899e14dacd2ee2",
+       :raw-sha256
+       "0e79124734e6f473cfad5d30a02d13d68b07da92c6b48ad7b151c0e6bb0111f0",
+       :marker "runtime-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 44092,
+       :start-byte 40432},
+      :reviewed-context-sha256
+      "332fac084e19c6a7f65e24fc0e1344ef9d5780c6fb0b8485a48e8a3ff4c0e7ff",
+      :current-criterion-sha256
+      "332fac084e19c6a7f65e24fc0e1344ef9d5780c6fb0b8485a48e8a3ff4c0e7ff"}],
+    :source-evidence
+    {:source-contracts ["PKG6"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg6/1252-1276"
+      "facet/ai-build-tools/pkg6/1276-1299"
+      "facet/ai-build-tools/pkg6/2145-2222"
+      "facet/ai-build-tools/pkg6/2755-2792"
+      "facet/ai-build-tools/pkg6/2885-2925"
+      "facet/ai-build-tools/pkg6/3232-3262"
+      "facet/ai-build-tools/pkg6/361-732"
+      "facet/ai-build-tools/pkg6/3912-3968"
+      "facet/ai-build-tools/pkg6/4129-4193"
+      "facet/ai-build-tools/pkg6/5169-5228"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :runtime-audit-producer,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "For participating runtimes, record requested/granted/denied/used permission events with package/effect/capability/profile/target, grant source and policy identity in the declared audit schema.",
+      :reject
+      "A required use/denial event is missing, a runtime effect has no capability derivation or audit output discloses protected authority data.",
+      :outputs
+      "Runtime permission audit records/schema linked to capability manifest and SBOM, with PKG6002 context for missing derivation.",
+      :dependencies ["PKG6" "R11" "R12"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id "interface/behavior/pkg6/runtime-permission-audit",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12"]}
   {:source-document-ids ["PKG6"],
    :required-output
@@ -13923,6 +16019,149 @@
    :semantic-source-id "behavior/pkg6/transitive-deny-precedence",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg6/1786-1874",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/f7a9e3138c14dcc0fd347702b602f836f4a2c4813215009f37605cc75f1b4f72",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1786,
+       :end-byte 1874,
+       :raw-sha256
+       "cdd03babaf9bbb43b55608e851130d665094637d6f0fadb089ec1dd59996a4df"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/2243-2256",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/c29c77f52c767ff86ce40f8e94c7689f99f3a4e8435cec29ff50d6de32b54bff",
+       :kind :normative-context,
+       :start-byte 2243,
+       :end-byte 2256,
+       :raw-sha256
+       "e002b75d6a93fa0efc6c8ef7308d5548bf380afdfc2ec45cffb7acadcce73bcc"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/4055-4129",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/2efc1607cbac411125f9d6477757f3b8a64bfcec363f34140174eb80df0351c6",
+       :kind :negative-acceptance,
+       :start-byte 4055,
+       :end-byte 4129,
+       :raw-sha256
+       "1160ccf97c77277e449e1fa636cd1973e8b3a60a2f3fefdfa1ef85297b9c5e03"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg6/5088-5169",
+       :document-id "PKG6",
+       :source-occurrence-id
+       "PKG6/source/0581f498f0c4b9cbd70d7d1983779ac6adc50f5e0964c076330af7fcc22b95f0",
+       :kind :acceptance-fixture,
+       :start-byte 5088,
+       :end-byte 5169,
+       :raw-sha256
+       "00375a8070235087f551aa4d8f333c782ea165bc74758a60b1f732d38fb259eb"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+      :qualification :required-predicate-retained}],
+    :semantic-source-id "behavior/pkg6/transitive-deny-precedence",
+    :task-links
+    [{:task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :path "specs/auth-workflow/tasks.md",
+      :role :deployment-and-runtime-authority-checker,
+      :criterion-witness
+      {:path "specs/auth-workflow/tasks.md",
+       :marker "auth-implementation-tasks",
+       :task-id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "b40aed8c5e780d2c840781a763a6d3bf012349065d4a6482cc0861308eb34bd7",
+       :start-byte 2337,
+       :end-byte 3842,
+       :raw-sha256
+       "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"},
+      :task-context
+      {:path "specs/auth-workflow/tasks.md",
+       :task-id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :file-sha256
+       "b40aed8c5e780d2c840781a763a6d3bf012349065d4a6482cc0861308eb34bd7",
+       :raw-sha256
+       "3340c6e84c4e17f39fe16dabdf5687bffc4b9ea2e7bd1ed19ebd1d919c344be7",
+       :marker "auth-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 3842,
+       :start-byte 2003},
+      :reviewed-context-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f",
+      :current-criterion-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"}],
+    :source-evidence
+    {:source-contracts ["PKG6"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg6/1786-1874"
+      "facet/ai-build-tools/pkg6/2243-2256"
+      "facet/ai-build-tools/pkg6/4055-4129"
+      "facet/ai-build-tools/pkg6/5088-5169"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :deployment-and-runtime-authority-checker,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "Check every source-analysis/project/manifest/resolver/deployment/runtime edge; explicit denials remain effective across transitive dependency requests.",
+      :reject
+      "Any required edge is missing, a transitive request overrides denial, or an action/build proceeds despite conflicting policy.",
+      :outputs
+      "Authority-chain decision with dependency chain/effect/capability/grant source/policy and PKG6004.",
+      :dependencies ["PKG6" "PKG5" "SAFE10" "R11"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id "interface/behavior/pkg6/transitive-deny-precedence",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12"]}
   {:source-document-ids ["BOOT1" "BOOT2" "BOOT6" "PKG7"],
    :required-output
@@ -14083,6 +16322,1233 @@
    :semantic-source-id "behavior/pkg7/recorded-build-recipe",
    :qualification
    "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces nil,
+    :decision-status :open,
+    :source-adjudication-references [],
+    :source-facet-witnesses
+    [{:metadata
+      {:id "facet/ai-build-tools/pkg7/1157-1184",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1157,
+       :end-byte 1184,
+       :raw-sha256
+       "c9f3dc4f47813820929be1467dd00aeedeb6fa02e3951546f9fc7b242b7e4204"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/1184-1225",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1184,
+       :end-byte 1225,
+       :raw-sha256
+       "7dbfed311f7bc653c3e8551e07c4fdbd5a27f8fdbe6d6d62a06582b2dc2e2499"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/1226-1310",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/59c09288faa7ff5e1b004c1d0b00dd0a4bf75e4a27857460991991975e9ec907",
+       :kind :normative-context,
+       :start-byte 1226,
+       :end-byte 1310,
+       :raw-sha256
+       "72237aa011adb2a6611f711aa7a8619df0ec4bddb4f1361f91d2245a4d9a7844"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/1328-1384",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/dd8db3e7d87ddde73be28c1f16746ced70fbd60994f04c76f1b5362d2787e513",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1328,
+       :end-byte 1384,
+       :raw-sha256
+       "e3a62e90d6d648367c4afd005f057015e52d4cc29e571eba9b11b38803c12f81"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/1384-1441",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/dd8db3e7d87ddde73be28c1f16746ced70fbd60994f04c76f1b5362d2787e513",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1384,
+       :end-byte 1441,
+       :raw-sha256
+       "6956aecac0997250a6551c3322f7d588af027218b50e9bc8f04ec78346c5ddf7"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/1773-1840",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/dd8db3e7d87ddde73be28c1f16746ced70fbd60994f04c76f1b5362d2787e513",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 1773,
+       :end-byte 1840,
+       :raw-sha256
+       "16db22acb33877c70d4226f30d2086214390005702c64da18bae82cedefae178"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2042-2062",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/0ea678aa065099d17edcadeea633fcc47c2355dbd7ca8748fc9ee6ddaf1446f1",
+       :kind :normative-context,
+       :start-byte 2042,
+       :end-byte 2062,
+       :raw-sha256
+       "86da29abbc2925c4af1af2893bb53b4598113644bddea4590ca3c0795fe9c8dd"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2063-2086",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2063,
+       :end-byte 2086,
+       :raw-sha256
+       "1bae5e35e626d00b6e95da8bacb9376ccd4ba020c256901bd19f1683b1626a94"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2086-2126",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2086,
+       :end-byte 2126,
+       :raw-sha256
+       "6c933587296f935e0fa263f59beb052a643165601f5ed71769bab17881260375"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2126-2156",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2126,
+       :end-byte 2156,
+       :raw-sha256
+       "2a1099da669ab4fcb37ca94ebba490dc84b0519fe149370f9ca97130aab1a440"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2179-2196",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2179,
+       :end-byte 2196,
+       :raw-sha256
+       "cecfacfa893fac20ae49782717662cee8211595e1f1e5745936d74ccc5b9eb59"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2196-2216",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2196,
+       :end-byte 2216,
+       :raw-sha256
+       "0f3d2535d0be83408b9ca7a8eb86047843f3df5d25941c649b651920b586e9c1"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2216-2243",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2216,
+       :end-byte 2243,
+       :raw-sha256
+       "02d52d0866dedefd5312fbd62db16cfa71db6b194b3172e7091803d1ba6fa362"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2243-2268",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2243,
+       :end-byte 2268,
+       :raw-sha256
+       "53620ecf30f9cd9c4254e701194b2e4c22a557e4bf7da033251b5a5b27bc19f7"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2268-2285",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2268,
+       :end-byte 2285,
+       :raw-sha256
+       "28f743d9b284533d12cc49bb748309b5a9d2bbeaa0565738367966f8f0d6567e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2285-2340",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/69e64a983abc53255c6b0df14d4ba0356451334e96bec448edbc9707d72f6c0f",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 2285,
+       :end-byte 2340,
+       :raw-sha256
+       "5d4a8ede9cf04a834a349668f27e0889c318ed82bdbe05a3df33f5fb8f303223"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2341-2393",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/ef50e608ccaeb9988347fc4f18b4dde3cd03b6509582fe9970904077ecbd6700",
+       :kind :normative-context,
+       :start-byte 2341,
+       :end-byte 2393,
+       :raw-sha256
+       "901605d75616c1c623d9cf35dc6fd73284803aa41bdfd5b366e85b78e32977a3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2420-2453",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2420,
+       :end-byte 2453,
+       :raw-sha256
+       "6edcdd9ce0d3a8f6acd731834234c194004d89cb4658534f1faa560697b2ba04"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2453-2492",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2453,
+       :end-byte 2492,
+       :raw-sha256
+       "0e8c5199df01a5c10d95825e03b570a8fe72e14ee1e57a413f7496d7e72dd04e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2492-2528",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2492,
+       :end-byte 2528,
+       :raw-sha256
+       "8f400eb223f5bd132a7f9ca6a011f98204fb350668abe09500f0d4c6d47ff7d6"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2528-2571",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2528,
+       :end-byte 2571,
+       :raw-sha256
+       "2022a82a5071b539e457c01cab8af766da2ca3205a991f463d16c945ed65b8b5"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2571-2601",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2571,
+       :end-byte 2601,
+       :raw-sha256
+       "3308903d2dbd5b0d58c62193734121180f15e0b717decfc7627b0147c396e65d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2601-2643",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2601,
+       :end-byte 2643,
+       :raw-sha256
+       "3ba26ca6947e430dc8d90d24f94f011d940c2e010df815ec268135c2504ed789"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2643-2717",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e75cdc807f6a2e2ab47bde453c3b0721fe81d6ed0318eaa7fb56b7c875420256",
+       :kind :cross-contract-interface,
+       :start-byte 2643,
+       :end-byte 2717,
+       :raw-sha256
+       "66fdd97d67715c436d192d5cfc0896c012ae298e56d68b1073da5449bcc21ff2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2744-2761",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/4e9bb1dd138289b79e6449b87fb011d9eae8a2909f32283bdf05f6bce2e53cf0",
+       :kind :artifact-schema,
+       :start-byte 2744,
+       :end-byte 2761,
+       :raw-sha256
+       "1ba2197be559f29c9eefd0531ff1ff925fa440a265384ddd9a1e26ed35afe4c2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2762-2791",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/5e80c12e8c0352e3ed7451560ded87ffaeac5d05ad7c6e141d465311098931c1",
+       :kind :artifact-schema,
+       :start-byte 2762,
+       :end-byte 2791,
+       :raw-sha256
+       "c4fec8f67e22f08b8aeff8a589120eb1f1fb1c7a27719397a1be832e537c908c"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2826-2847",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/5e80c12e8c0352e3ed7451560ded87ffaeac5d05ad7c6e141d465311098931c1",
+       :kind :artifact-schema,
+       :start-byte 2826,
+       :end-byte 2847,
+       :raw-sha256
+       "ec0714ee1476154e04fe9773ccbec8c737bcb221ce41346745f76e47bbdc82a4"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2847-2869",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/5e80c12e8c0352e3ed7451560ded87ffaeac5d05ad7c6e141d465311098931c1",
+       :kind :artifact-schema,
+       :start-byte 2847,
+       :end-byte 2869,
+       :raw-sha256
+       "e354f7348bcd35323241ae4b8d554a5ca5f58b898bac6d7b23f1e9fa38da86d0"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2900-2954",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/5e80c12e8c0352e3ed7451560ded87ffaeac5d05ad7c6e141d465311098931c1",
+       :kind :artifact-schema,
+       :start-byte 2900,
+       :end-byte 2954,
+       :raw-sha256
+       "30018a707920031ae7539628f157bcb0511edf7c570df196d9fa2516a739c6ab"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2967-2998",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :example,
+       :start-byte 2967,
+       :end-byte 2998,
+       :raw-sha256
+       "604ef5693f088ef12ea6aeb89bfc3783a649abff9a5b96e9a78a053245879db5"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/2998-3029",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 2998,
+       :end-byte 3029,
+       :raw-sha256
+       "03c8d924025be002e5826642033f2f11b74ce72a8ecd259404a0a812989b7fc2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3029-3065",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3029,
+       :end-byte 3065,
+       :raw-sha256
+       "44302fa5855b16f75a8ac87729bcda8bc68434efdf2539bf9086887ae9b11eb3"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3065-3103",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3065,
+       :end-byte 3103,
+       :raw-sha256
+       "244ed930f691cf6e47162098d522a78137e4509005a5422cfdb520771abe355f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3103-3139",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3103,
+       :end-byte 3139,
+       :raw-sha256
+       "61bcbdb649940550d62348694febf2d50436e00cd4d2e77b1931dcc60e227f94"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3139-3179",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3139,
+       :end-byte 3179,
+       :raw-sha256
+       "924b17da8c24f5e0ddee3fabf36eb335b06a82dcfcf6535e9531162374109c5a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3179-3209",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3179,
+       :end-byte 3209,
+       :raw-sha256
+       "b60c3ca6d7f9e844a4897875da083e43cecbd299d4d2e2b094f615f01b64cc46"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3209-3238",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3209,
+       :end-byte 3238,
+       :raw-sha256
+       "180f0dfbb71d9f444ae43b5c8fe9417d044136798d7e9a73c28d07fdbd8a0a0d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3238-3275",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3238,
+       :end-byte 3275,
+       :raw-sha256
+       "eb6c5bd8e62eabdef582c00e5040a917b18458aeba005c3bcf20f283737a9968"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3275-3313",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3275,
+       :end-byte 3313,
+       :raw-sha256
+       "67cd1716de76a6f46e7dad6fe505aa32cd2b57716f621d6fc7a5d1f01a25f698"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3313-3371",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :provenance-segment,
+       :start-byte 3313,
+       :end-byte 3371,
+       :raw-sha256
+       "80895389bb927507cf66e09fbce29d5f2d655288064dbe9ac375b4f5beffdf7e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3371-3375",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/a3490a5ba06e4f3a99def3ff3cf78e59b9bb97c2246c99ff95572ceb362877e1",
+       :kind :example,
+       :start-byte 3371,
+       :end-byte 3375,
+       :raw-sha256
+       "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3396-3460",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e3c4aa509ce7c81d5002d97e2bb1500cc2e07308797fd871690a9e6e9bf5ddf5",
+       :kind :negative-acceptance,
+       :start-byte 3396,
+       :end-byte 3460,
+       :raw-sha256
+       "213bcb1f690f253cafedaac85abbd0dd11158454f707686540babca18dce8e9d"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/345-670",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/cdc3dec00503617f192e5139e419c834ff91ba278803277eee8788c4a9e5adde",
+       :kind :normative-context,
+       :start-byte 345,
+       :end-byte 670,
+       :raw-sha256
+       "ab955c897c48ee6706e6716bb026485cf80f13fc95b94ed57f066768ad7ed1b2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3460-3492",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e3c4aa509ce7c81d5002d97e2bb1500cc2e07308797fd871690a9e6e9bf5ddf5",
+       :kind :negative-acceptance,
+       :start-byte 3460,
+       :end-byte 3492,
+       :raw-sha256
+       "742253543873351e20f8abafca59321fa75cef59faa0c1c34af4b7bf2de54183"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3527-3580",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e3c4aa509ce7c81d5002d97e2bb1500cc2e07308797fd871690a9e6e9bf5ddf5",
+       :kind :negative-acceptance,
+       :start-byte 3527,
+       :end-byte 3580,
+       :raw-sha256
+       "95a4a5f725e68101831da2cca296c25d2098cf924d7cd069e4a845cbf7b2e625"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3623-3679",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e3c4aa509ce7c81d5002d97e2bb1500cc2e07308797fd871690a9e6e9bf5ddf5",
+       :kind :negative-acceptance,
+       :start-byte 3623,
+       :end-byte 3679,
+       :raw-sha256
+       "37c6c59ad5d16a30c8d3e43c72f34aa691dcee838ed303dc0a0046faea6d4dda"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3734-3826",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/e3c4aa509ce7c81d5002d97e2bb1500cc2e07308797fd871690a9e6e9bf5ddf5",
+       :kind :negative-acceptance,
+       :start-byte 3734,
+       :end-byte 3826,
+       :raw-sha256
+       "162236a19e98c0a9251a52bf593f4cc718202257cdd9750e24672454852b373a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3843-3885",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/c09938c4b69c805f65a11109853b5189cc21848fc653551f9ecbce2e22eaf493",
+       :kind :diagnostic,
+       :start-byte 3843,
+       :end-byte 3885,
+       :raw-sha256
+       "af1f314e0cf2b44be99333e2a9ad417ecd3329a4da3e354faf182e39d086e13f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3885-3926",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/c09938c4b69c805f65a11109853b5189cc21848fc653551f9ecbce2e22eaf493",
+       :kind :diagnostic,
+       :start-byte 3885,
+       :end-byte 3926,
+       :raw-sha256
+       "13d8692dc85ebaa9fd30ee43a72aed81b0f03382601c056d53849f2390c10b33"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/3926-3974",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/c09938c4b69c805f65a11109853b5189cc21848fc653551f9ecbce2e22eaf493",
+       :kind :diagnostic,
+       :start-byte 3926,
+       :end-byte 3974,
+       :raw-sha256
+       "586da8d0bfa08af42bcd8db5f42b387e90690cdf12a9cdf9bfb7275c3c23f19a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4054-4112",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/c09938c4b69c805f65a11109853b5189cc21848fc653551f9ecbce2e22eaf493",
+       :kind :diagnostic,
+       :start-byte 4054,
+       :end-byte 4112,
+       :raw-sha256
+       "e2f3cdc42c9182c1ec7b85a77c10dcf37e72eac69e85f2adf59faf2293faf6cc"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4212-4316",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/d9a3be381144c34b8e15e34f781cd99ed761e7268c487c45dddbfca2ad367a19",
+       :kind :diagnostic,
+       :start-byte 4212,
+       :end-byte 4316,
+       :raw-sha256
+       "0cb69555ce3dc7a0c7a1e7f4b0d356576def6fcf19d0aab622f9b665dc3b2e44"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4342-4436",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/1b3de820e934610a09d6bd5185c74c8c0762589ffc63c74f9e20fc64c61d7b4d",
+       :kind :acceptance-fixture,
+       :start-byte 4342,
+       :end-byte 4436,
+       :raw-sha256
+       "4385b8dbec35e7d7f05c98b82e913ccc7a0701b7e39a6f8de934bfb269fa4cbb"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4436-4511",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/1b3de820e934610a09d6bd5185c74c8c0762589ffc63c74f9e20fc64c61d7b4d",
+       :kind :acceptance-fixture,
+       :start-byte 4436,
+       :end-byte 4511,
+       :raw-sha256
+       "66ef5246d95b557f23f49bcc182220ec6546850b0dbb1d1d277df63d3a218b38"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4619-4683",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/1b3de820e934610a09d6bd5185c74c8c0762589ffc63c74f9e20fc64c61d7b4d",
+       :kind :acceptance-fixture,
+       :start-byte 4619,
+       :end-byte 4683,
+       :raw-sha256
+       "8f8a7e19803a4f8b6a7844981e22f8716f10fe81b755a7228df842983a60b428"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/4744-4817",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/1b3de820e934610a09d6bd5185c74c8c0762589ffc63c74f9e20fc64c61d7b4d",
+       :kind :acceptance-fixture,
+       :start-byte 4744,
+       :end-byte 4817,
+       :raw-sha256
+       "52c5555212f41498f6e53c833fd5d52b8645420ab007cdee943a3676eeb9099a"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/671-800",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/9212f11b322f212ea12525790c92089873e9d911de87c19d938d1d868a5f2023",
+       :kind :normative-context,
+       :start-byte 671,
+       :end-byte 800,
+       :raw-sha256
+       "34d6bbb1dce9a962318ca5bcbf051096041529723b2437cf7edd32510b93c387"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/823-854",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/4ab9cc40d74835cc0a5b5cd8f3e606e4e8f6243f0d486ca12f6cf4f2c1fe1df3",
+       :kind :normative-context,
+       :start-byte 823,
+       :end-byte 854,
+       :raw-sha256
+       "26a1978560ba784b87d9b0538931a314823effd32e2c3e902b4a4ebfd1129aa2"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification
+      :retained-context-not-independent-whole-output-proof}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/855-876",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 855,
+       :end-byte 876,
+       :raw-sha256
+       "760207e4c83aa8ed71926927ca11cdfa176728b96b74f0c0b8ccd3fa797cfeb8"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/876-901",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 876,
+       :end-byte 901,
+       :raw-sha256
+       "299bd580df1524b20ce6b125b2bac06062c6d32ac9f8c420fc9e1401813e9742"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/901-918",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 901,
+       :end-byte 918,
+       :raw-sha256
+       "e3944e1449045993283442b06e3c6f69af6f3cf60546522fe3ad47af52be99a6"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/918-953",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 918,
+       :end-byte 953,
+       :raw-sha256
+       "2823625759f594e02cb133b3a31fe9a7dbb025c98c585b231e328813b69ce42f"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/953-986",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 953,
+       :end-byte 986,
+       :raw-sha256
+       "e6d21c36ec4f8d47f4365ad65cbef2aee50a0f6d1026885af460a6326d3b5f0e"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "facet/ai-build-tools/pkg7/986-1015",
+       :document-id "PKG7",
+       :source-occurrence-id
+       "PKG7/source/b829717631331fc59f3f8d85b89b37330738a9fd16317c904dd892c2405b8e18",
+       :kind :declaration-or-behavior-contract,
+       :start-byte 986,
+       :end-byte 1015,
+       :raw-sha256
+       "df765684794682f274b60ebbba6b0d4b6e328585342b2146abb2dc7ceda03622"},
+      :path
+      "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "stdlib/facet/std1/2214-2324",
+       :document-id "STD1",
+       :source-occurrence-id
+       "STD1/source/bf8628ff2f2041fd0e22fe6a648fa2d5081c27a4db31e9e2560f5cd164eaa013",
+       :kind :acceptance-rule,
+       :start-byte 2214,
+       :end-byte 2324,
+       :raw-sha256
+       "dbd5ea429b5be5bdb6b832b2f0f41bc557044511884209d84424a36964646880"},
+      :path
+      "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a",
+      :qualification :required-predicate-retained}
+     {:metadata
+      {:id "stdlib/facet/std1/8955-9025",
+       :document-id "STD1",
+       :source-occurrence-id
+       "STD1/source/e4a5f70953eef7ca8a53abd5513d8785cb85ed310d471df20690e60b7d23008d",
+       :kind :acceptance-rule,
+       :start-byte 8955,
+       :end-byte 9025,
+       :raw-sha256
+       "e5c325c0a84c3da03ae3b99372a90e93d425f2ad591688991af0e69f18192a35"},
+      :path
+      "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+      :source "86747916c4c876d707a1548113409fb939d854c9",
+      :source-sha256
+      "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a",
+      :qualification :required-predicate-retained}],
+    :semantic-source-id "behavior/pkg7/recorded-build-recipe",
+    :task-links
+    [{:task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :path "specs/build-workflow/tasks.md",
+      :role :build-recipe-and-rebuild-evidence-producer,
+      :criterion-witness
+      {:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :start-byte 42460,
+       :end-byte 44280,
+       :raw-sha256
+       "32a4b9439365cd0f2ca7b60ecdd3861a0914b9a6c977256a8d920662b271cd56"},
+      :task-context
+      {:path "specs/build-workflow/tasks.md",
+       :task-id
+       "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :raw-sha256
+       "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+       :marker "build-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 44280,
+       :start-byte 35942},
+      :reviewed-context-sha256
+      "a7ddca460409ace88feeca39573fa4200c38ae98f4f6f6027d7b0f864a02315f",
+      :current-criterion-sha256
+      "32a4b9439365cd0f2ca7b60ecdd3861a0914b9a6c977256a8d920662b271cd56"}],
+    :source-evidence
+    {:source-contracts ["PKG7" "STD1"],
+     :assigned-source-facet-ids
+     ["facet/ai-build-tools/pkg7/1157-1184"
+      "facet/ai-build-tools/pkg7/1184-1225"
+      "facet/ai-build-tools/pkg7/1226-1310"
+      "facet/ai-build-tools/pkg7/1328-1384"
+      "facet/ai-build-tools/pkg7/1384-1441"
+      "facet/ai-build-tools/pkg7/1773-1840"
+      "facet/ai-build-tools/pkg7/2042-2062"
+      "facet/ai-build-tools/pkg7/2063-2086"
+      "facet/ai-build-tools/pkg7/2086-2126"
+      "facet/ai-build-tools/pkg7/2126-2156"
+      "facet/ai-build-tools/pkg7/2179-2196"
+      "facet/ai-build-tools/pkg7/2196-2216"
+      "facet/ai-build-tools/pkg7/2216-2243"
+      "facet/ai-build-tools/pkg7/2243-2268"
+      "facet/ai-build-tools/pkg7/2268-2285"
+      "facet/ai-build-tools/pkg7/2285-2340"
+      "facet/ai-build-tools/pkg7/2341-2393"
+      "facet/ai-build-tools/pkg7/2420-2453"
+      "facet/ai-build-tools/pkg7/2453-2492"
+      "facet/ai-build-tools/pkg7/2492-2528"
+      "facet/ai-build-tools/pkg7/2528-2571"
+      "facet/ai-build-tools/pkg7/2571-2601"
+      "facet/ai-build-tools/pkg7/2601-2643"
+      "facet/ai-build-tools/pkg7/2643-2717"
+      "facet/ai-build-tools/pkg7/2744-2761"
+      "facet/ai-build-tools/pkg7/2762-2791"
+      "facet/ai-build-tools/pkg7/2826-2847"
+      "facet/ai-build-tools/pkg7/2847-2869"
+      "facet/ai-build-tools/pkg7/2900-2954"
+      "facet/ai-build-tools/pkg7/2967-2998"
+      "facet/ai-build-tools/pkg7/2998-3029"
+      "facet/ai-build-tools/pkg7/3029-3065"
+      "facet/ai-build-tools/pkg7/3065-3103"
+      "facet/ai-build-tools/pkg7/3103-3139"
+      "facet/ai-build-tools/pkg7/3139-3179"
+      "facet/ai-build-tools/pkg7/3179-3209"
+      "facet/ai-build-tools/pkg7/3209-3238"
+      "facet/ai-build-tools/pkg7/3238-3275"
+      "facet/ai-build-tools/pkg7/3275-3313"
+      "facet/ai-build-tools/pkg7/3313-3371"
+      "facet/ai-build-tools/pkg7/3371-3375"
+      "facet/ai-build-tools/pkg7/3396-3460"
+      "facet/ai-build-tools/pkg7/345-670"
+      "facet/ai-build-tools/pkg7/3460-3492"
+      "facet/ai-build-tools/pkg7/3527-3580"
+      "facet/ai-build-tools/pkg7/3623-3679"
+      "facet/ai-build-tools/pkg7/3734-3826"
+      "facet/ai-build-tools/pkg7/3843-3885"
+      "facet/ai-build-tools/pkg7/3885-3926"
+      "facet/ai-build-tools/pkg7/3926-3974"
+      "facet/ai-build-tools/pkg7/4054-4112"
+      "facet/ai-build-tools/pkg7/4212-4316"
+      "facet/ai-build-tools/pkg7/4342-4436"
+      "facet/ai-build-tools/pkg7/4436-4511"
+      "facet/ai-build-tools/pkg7/4619-4683"
+      "facet/ai-build-tools/pkg7/4744-4817"
+      "facet/ai-build-tools/pkg7/671-800"
+      "facet/ai-build-tools/pkg7/823-854"
+      "facet/ai-build-tools/pkg7/855-876"
+      "facet/ai-build-tools/pkg7/876-901"
+      "facet/ai-build-tools/pkg7/901-918"
+      "facet/ai-build-tools/pkg7/918-953"
+      "facet/ai-build-tools/pkg7/953-986"
+      "facet/ai-build-tools/pkg7/986-1015"
+      "stdlib/facet/std1/2214-2324"
+      "stdlib/facet/std1/8955-9025"],
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :finite-actionable-existing-task-interface,
+     :role :build-recipe-and-rebuild-evidence-producer,
+     :dependency-role-qualification
+     "Named producer/checker/consumer artifacts are required inputs, not whole-component completion gates.",
+     :implementation-limit
+     "The actual operation, positive products and refused cases must execute under the declared source/profile/target/provider identities before implementation acceptance.",
+     :criterion
+     {:accept
+      "Emit a schema-valid release build recipe binding package/version, source/project/lock/compiler/toolchain, graph/task settings, concrete profile/target matrix, controlled environment/locale/timezone/traversal/timestamps/seeds/network, generator/input hashes, blobs/FFI inputs, expected artifact identities, output hashes and verification command or machine-readable equivalent. Rebuild twice under that exact recipe and compare canonical manifests and actual content hashes. For standard-library packages retain source commit, build graph, compiler, package lock, tests and policy-required signatures in the provenance record.",
+      :reject
+      "Reject a claimed reproducible release with no recipe, omitted or altered consumed inputs/outputs, unlocked dependencies, unrecorded network/randomness, host path leakage, missing generator hashes, filename-only comparison or unexplained hash drift; mark uncontrolled inputs nonreproducible and deny reproducible signing/release claims when policy requires reproducibility. Standard-library provenance and artifact identity must agree; neither API inventory nor a supplied success label proves a rebuild.",
+      :outputs
+      "Versioned build-recipe artifact, controlled-environment manifest, input/output digest lists, actual repeat-build canonical comparison, exception list and PKG7001-PKG7008 diagnostics with recipe/input/artifact/target/environment context; standard-library source/build/lock/test/signature provenance links.",
+      :dependencies
+      ["PKG1/PKG2 project, lock and typed graph producers"
+       "PKG3 canonical manifests"
+       "PKG5 complete dependency lock"
+       "PKG10/PKG12 provenance/signing evidence"
+       "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests module/package manifests"
+       "BOOT6 trust evidence remains separate"]},
+     :whole-attached-facet-proof
+     :pending-independent-full-predicate-review},
+    :decision-id "interface/behavior/pkg7/recorded-build-recipe",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed},
    :families ["phase-12" "phase-16"]}
   {:source-document-ids ["T1"],
    :required-output
@@ -89137,7 +92603,227 @@
    :accountable-task
    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
    :completion-credit :none,
-   :source-relation :resolved-by-overlap-decisions}
+   :source-relation :resolved-by-overlap-decisions,
+   :criterion-task-allocation
+   {:new-aliases-or-retirements-applied false,
+    :source-adjudication-references-state
+    :retained-history-no-new-alias-or-retirement-admission,
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :declared-dependency-interfaces
+    ["Build normalization and package verification producers"
+     "Conformance and equivalence producers for declared compiler subset"
+     "BOOT3 module manifest and ownership matrix"
+     "BOOT7 comparison modes and reviewed deltas"
+     "Separate intermediate and final Release consumers"],
+    :decision-status :open,
+    :source-adjudication-references
+    [{:id :package-resolution,
+      :decision :qualified-alias,
+      :target "behavior/pkg5/deterministic-dependency-solver",
+      :rationale
+      "PKG4 names resolve, requires deterministic resolution for the same inputs and explicitly delegates resolution to PKG5. PKG5 owns the same selection predicate with canonical inputs, specified tie-breakers, variants/features and complete direct/transitive identities. Retire only the redundant deterministic-resolution unit on central adoption; retain PKG4 operation entry and structured outputs under package-operation-artifacts.",
+      :negative-distinctions
+      ["A callable resolve command and operation records are not proved by a solver library result."
+       "Choosing a dependency grants no authority; grant admission remains distinct."
+       "Keep the resolve-name facet as operation-entry context as well as the qualified solver context."]}
+     {:id :package-capability-diff,
+      :decision :qualified-alias,
+      :target "behavior/pkg4/package-update-diff",
+      :rationale
+      "PKG6's dependency effect/capability expansion report is the capability/effect projection of PKG4's pre-mutation update diff. Use one update transaction requirement with the full direct/transitive and profile/target context. Its acceptance must also reject expansion without policy review. Source/summary agreement remains owned by derived-capability-manifest and is retained as a shared facet, not absorbed as display-only behavior.",
+      :negative-distinctions
+      ["Displaying a diff does not grant or approve the expansion. Reject the update when required policy review is absent."
+       "An unchanged direct dependency can contain a transitive effect/capability expansion."
+       "Keep PKG6/4325-4389 source-analysis consistency with derived-capability-manifest; do not turn it into mere text output."]}
+     {:id :registry-history,
+      :decision :retain-distinct-qualified-refinement,
+      :target "behavior/pkg4/yank-history",
+      :rationale
+      "PKG9 produces and retains visible registry yank/revocation and package-state records under public/private/latent access policy. PKG4 preserves content/identity metadata needed to rebuild an already locked package after a yank. They share historical-rebuild context but operate on different artifacts and consumers. Neither record retention nor reproducibility grants access or permits a revoked dependency under current policy.",
+      :negative-distinctions
+      ["A retained yank log alone does not preserve all material needed for an old lockfile."
+       "Cached rebuild material alone does not publish the required registry revocation/state record."
+       "Historical visibility must not leak private package existence; retained history is not ordinary resolution or revocation bypass."]}
+     {:id :download-versus-use,
+      :decision :retain-distinct-qualified-refinement,
+      :target "behavior/pkg12/verify-before-consumption",
+      :rationale
+      "PKG4 verifies acquired package bytes against content identity and required registry signatures and rejects unverified downloads at acquisition/install. PKG12 is the actual consumer-use gate for the required content/schema/signature/SBOM/attestation bundle, including freshness, binding and revocation. Download verification is a qualified input to that gate, not an alias for every later use.",
+      :negative-distinctions
+      ["A correctly hashed/signed download can later have missing or stale mandatory attestation and must fail consumer use."
+       "A consumer gate cannot retroactively make an unverified download/install conforming."
+       "Keep PKG4's publish-policy facet as its qualified publication context; do not claim download hashing implements release admission."]}
+     {:id :stage-admission,
+      :decision :retain-distinct-with-concrete-existing-task-interface,
+      :target
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :rationale
+      "BOOT5 produces the versioned support matrix and eligibility facts; TEST13 produces/runs the stage conformance, comparison and trust evidence and also requires rejection of unsupported advancement. The authoritative-admission unit is the single consuming decision for advancing a declared stage or stable authoritative module revision. TEST13's missing-pass advancement refusal is one predicate of this same admission consumer, not another gate or an alias of all conformance execution. It is not a second producer and is not identical to final release acceptance. Strengthen existing release task2 to execute the intermediate admission decision; keep task5 as the final release consumer.",
+      :negative-distinctions
+      ["A truthful matrix/manifest can describe an unsupported or incomplete stage without authorizing advancement."
+       "Required applicable conformance failure, stale provenance/matrix or unexplained divergence denies authoritative admission."
+       "Intermediate declared gaps may be owned or explicitly deferred within the claimed subset; only release candidates must have no unreviewed claimed-support gaps."
+       "Ordinary source edits and focused tests are development, not authoritative migration and do not require a renewed admission gate."]}],
+    :source-facet-witnesses [],
+    :task-links
+    [{:task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :path "specs/build-workflow/tasks.md",
+      :role :dependency-selection-producer,
+      :criterion-witness
+      {:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :start-byte 949,
+       :end-byte 2177,
+       :raw-sha256
+       "4a0bcce0cf2388eb62b15ff4ab2671be4ee2f1cc5acad20fc99f70c7616e2c09"},
+      :task-context
+      {:path "specs/build-workflow/tasks.md",
+       :task-id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :raw-sha256
+       "c0e122be737fdcb4459afc2edf477e3d6a8e28e4c1d17bcc37afad935035be02",
+       :marker "build-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 8834,
+       :start-byte 591},
+      :reviewed-context-sha256
+      "4a0bcce0cf2388eb62b15ff4ab2671be4ee2f1cc5acad20fc99f70c7616e2c09",
+      :current-criterion-sha256
+      "4a0bcce0cf2388eb62b15ff4ab2671be4ee2f1cc5acad20fc99f70c7616e2c09"}
+     {:task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :path "specs/build-workflow/tasks.md",
+      :role :acquisition-and-consumer-verification-producer,
+      :criterion-witness
+      {:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :start-byte 19121,
+       :end-byte 20048,
+       :raw-sha256
+       "fd44508b8a3a087ffe3e3c92da7c9d3304dfd495c94075f99ae10bb645c8f891"},
+      :task-context
+      {:path "specs/build-workflow/tasks.md",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :file-sha256
+       "6ff36e1d788157a118214cf621a1d378e47ca76f622f581e6aeecbb7af2148b3",
+       :raw-sha256
+       "3e26ba649361595128e720ebe493a78c93f1f2a32744ebde9f639ea07b91b718",
+       :marker "build-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 35940,
+       :start-byte 18803},
+      :reviewed-context-sha256
+      "fd44508b8a3a087ffe3e3c92da7c9d3304dfd495c94075f99ae10bb645c8f891",
+      :current-criterion-sha256
+      "fd44508b8a3a087ffe3e3c92da7c9d3304dfd495c94075f99ae10bb645c8f891"}
+     {:task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :path "specs/release-workflow/tasks.md",
+      :role :intermediate-authoritative-admission-consumer,
+      :criterion-witness
+      {:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+       :start-byte 13847,
+       :end-byte 18349,
+       :raw-sha256
+       "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971"},
+      :task-context
+      {:path "specs/release-workflow/tasks.md",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :file-sha256
+       "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+       :raw-sha256
+       "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+       :marker "release-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 19836,
+       :start-byte 13483},
+      :reviewed-context-sha256
+      "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971",
+      :current-criterion-sha256
+      "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971"}
+     {:task-id
+      "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+      :path "specs/release-workflow/tasks.md",
+      :role :final-release-consumer,
+      :criterion-witness
+      {:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :file-sha256
+       "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+       :start-byte 27626,
+       :end-byte 29176,
+       :raw-sha256
+       "b74a419b9c8857fb3e3d2002ef1ca66d1cefedab072869748d1912cff5c3e51b"},
+      :task-context
+      {:path "specs/release-workflow/tasks.md",
+       :task-id
+       "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+       :file-sha256
+       "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+       :raw-sha256
+       "ae62e84bdff9602626ab15cbc1103cc987b5956d13cc40d91ddb730cd8dfaa32",
+       :marker "release-implementation-tasks",
+       :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+       :status "Open",
+       :end-byte 29176,
+       :start-byte 27293},
+      :reviewed-context-sha256
+      "b74a419b9c8857fb3e3d2002ef1ca66d1cefedab072869748d1912cff5c3e51b",
+      :current-criterion-sha256
+      "b74a419b9c8857fb3e3d2002ef1ca66d1cefedab072869748d1912cff5c3e51b"}],
+    :source-evidence
+    {:source-contracts ["PKG4" "PKG12" "BOOT3" "BOOT7"],
+     :assigned-source-facet-ids nil,
+     :unresolved-facet-metadata-ids []},
+    :task-composition
+    {:path
+     "specs/requirement-reconciliation/package7-current-composition.edn",
+     :sha256
+     "34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2"},
+    :source-allocation
+    {:kind :source-adjudicated-distinct-interfaces,
+     :required-output
+     "Execute and independently accept the source-qualified existing task interfaces named by overlap-decisions.edn; source relation is resolved, implementation evidence remains Open.",
+     :positive-output
+     "Actual deterministic selected graph/operation receipts; verified acquired and consumed package evidence; versioned support matrix and source-bound stage conformance/equivalence/provenance; exact admit/deny and separate final-release decisions.",
+     :refusals
+     "Deny unauthorized dependency expansion, missing pre-mutation policy review, private metadata leakage, erased rebuild material, unverified acquisition, stale/missing consumer evidence, unsupported stage support, missing applicable conformance or ownership/matrix updates and unexplained compiler/diagnostic drift. A retained source relation or package signature is not stage admission.",
+     :disposition
+     "Retain the package selection, update, registry-history, acquisition and consumer-use predicates as qualified distinct outputs. Intermediate authoritative module/stage admission consumes fresh subset conformance/equivalence/matrix/provenance/TCB/audit outputs; final release remains a separate consumer. Ordinary development is not migration admission. No alias is created or implementation gate satisfied here.",
+     :missing-facet-qualification
+     "The existing special decision has nil facet IDs, retained exactly. Exact original witnesses from the five recorded overlap relations supply the finite source-adjudication evidence; no synthetic facet IDs are invented. Broad cross-family execution remains Open.",
+     :whole-attached-facet-proof :not-conferred},
+    :decision-id "decision/package-bootstrap-admission",
+    :task-source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+    :implementation-acceptance :unassessed}}
   {:id "decision/stdlib-five-overlaps",
    :kind :equivalence,
    :status :open,
