@@ -1,6 +1,7 @@
 (ns gravity.pmk.acceptance-test
   (:require [clojure.test :refer [deftest is]]
             [clojure.string :as str]
+            [clojure.edn :as edn]
             [gravity.pmk.acceptance :as pmk]))
 
 (def identity-record {:head (apply str (repeat 40 "a")) :tree (apply str (repeat 40 "b"))})
@@ -184,7 +185,8 @@
     (is (= :unrun (:execution plan)))
     (is (= owner-contract (:owner-contract plan)))
     (is (= #{[:c7 'consumer] [:effects 'effect-consumer] [:emitter 'emit-consumer]}
-           (pmk/owner-closure (pmk/definitions owner-test-text) 'selected))))
+           (pmk/owner-closure (pmk/definitions owner-test-text) 'selected)))
+    (is (= plan (owner-prepare (edn/read-string (pr-str owner-manifest)) owner-observation owner-snapshot))))
   (doseq [mutant [(assoc-in owner-manifest [:selection 0 :selector] 'missing)
                   (assoc-in owner-manifest [:selection 0 :selector] 'foreign/selected)
                   (assoc-in owner-manifest [:selection 0 :owner-apis] {:c7 '#{effect-consumer}})
@@ -236,3 +238,11 @@
         s (-> (owner-replacement owner-snapshot pmk/test-path changed) (assoc :tests changed))
         m (assoc owner-manifest :inputs-sha256 (:inputs-sha256 s) :tests-sha256 (digest changed))]
     (is (= :wrong-selector (reason #(owner-prepare m owner-observation s))))))
+
+(deftest production-owner-contract-roundtrip
+  (let [contract (edn/read-string (slurp "specs/accounting-removal/pmk-owner-selection.edn"))
+        legacy (edn/read-string (slurp "specs/accounting-removal/pmk-acceptance.edn"))]
+    (is (= pmk/owner-closure-sha256 (pmk/closure-digest contract)))
+    (is (= 15 (count (:selection contract))))
+    (is (= (:selection legacy) (mapv #(dissoc % :owner-apis) (take 9 (:selection contract)))))
+    (is (= (pmk/closure-digest contract) (pmk/closure-digest (edn/read-string (pr-str contract)))))))

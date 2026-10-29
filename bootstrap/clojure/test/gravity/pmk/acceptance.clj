@@ -8,7 +8,7 @@
 (def source-path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def test-ns "gravity.self-hosting.sh08-function-call-type-test")
 (def closure-sha256 "b997383da2d2f5e61390f0bd089958201a039c2768233e774c7eafbfd8da6d38")
-(def owner-closure-sha256 "36b8f77396b9d2851cb7e0f2c210842e964a84bdadd1c113bff9beb695d6b422")
+(def owner-closure-sha256 "bca67eb1d190b1f4007d6d2ee5e61ee7a3c0fe8e53d7ee16ec14d3a7ca23fbb7")
 (def owner-paths
   {:c7 source-path
    :effects "bootstrap/gravity/src/gravity/effects.gravity"
@@ -127,9 +127,18 @@
 (defn oid? [s]
   (and (string? s) (boolean (re-matches #"[0-9a-f]{40}" s))))
 
+(defn owner-contract-data [x]
+  (let [order #(compare (pr-str %1) (pr-str %2))]
+    (cond
+      (map? x) (into (sorted-map-by order) (map (fn [[k v]] [(owner-contract-data k) (owner-contract-data v)]) x))
+      (set? x) (into (sorted-set-by order) (map owner-contract-data x))
+      (vector? x) (mapv owner-contract-data x)
+      (seq? x) (apply list (map owner-contract-data x))
+      :else x)))
+
 (defn closure-digest [manifest]
   (sha (.getBytes (pr-str (if (:owner-contract manifest)
-                           [(:selection manifest) (:consumer-edges manifest) (:owner-contract manifest)]
+                           (owner-contract-data [(:selection manifest) (:consumer-edges manifest) (:owner-contract manifest)])
                            [(:selection manifest) (:consumer-edges manifest)])) "UTF-8")))
 
 (defn owner-closure [defs start]

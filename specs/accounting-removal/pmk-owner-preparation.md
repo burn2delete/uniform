@@ -36,6 +36,8 @@ source digest cannot replace those independently pinned bytes. The request
 predecessor is PR577's cycle-only commit `3c3241b80c3b1af991c709a4eb993583e4871d52`,
 tree `bd939a5da2fa92c690c1168878afa708f5dd2830`, and composition packet SHA256
 `0373ed6e53000d6612509614dcfcd22cd2062abdb9c315d8f0e170dc6462e5b4`.
+The successor digest orders map and set data deterministically before hashing;
+EDN round trips retain the same contract. The legacy digest is unchanged.
 
 ## Nonlaunching request preparation
 
