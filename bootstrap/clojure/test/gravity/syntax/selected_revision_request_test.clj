@@ -31,6 +31,8 @@
           (is (false? (:launchable r)))
           (is (= :never-submitted (:execution r)))
           (is (= :not-yet-published (get-in r [:missing-interfaces :retained-finalizer :API])))
+          (is (not (contains? (:existing-ports r) :wait)))
+          (is (= :private (get-in r [:missing-interfaces :wait-capture :visibility])))
           (is (= :unbound (get-in r [:missing-interfaces :whole-watchdog :API])))
           (is (= [:C :L] (get-in r [:guard-proposal :acquire-order])))
           (is (= [:L :C] (get-in r [:guard-proposal :release-order])))

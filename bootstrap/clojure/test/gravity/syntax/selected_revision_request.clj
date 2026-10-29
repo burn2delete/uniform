@@ -142,12 +142,14 @@
                  {:acquire 'gravity.self-hosting.sh01-host-resource-broker/acquire!
                   :release 'gravity.self-hosting.sh01-host-resource-broker/release!
                   :launch 'gravity.self-hosting.sh01-parallel-test-runner/start-process
-                  :wait 'gravity.self-hosting.sh01-parallel-test-runner/process-result
                   :L-open 'java.nio.channels.FileChannel/open
                   :L-acquire 'java.nio.channels.FileChannel/tryLock
                   :L-release 'java.nio.channels.FileLock/release}
                  :missing-interfaces
-                 {:retained-finalizer {:owner "01a17baa-ed84-75e4-846b-a1862288101e"
+                 {:wait-capture {:owner "01a17baa-ed84-75e4-846b-a1862288101e"
+                                 :observed-var 'gravity.self-hosting.sh01-parallel-test-runner/process-result
+                                 :visibility :private :supported-public-API :unbound}
+                  :retained-finalizer {:owner "01a17baa-ed84-75e4-846b-a1862288101e"
                                        :API :not-yet-published
                                        :requires [:raw-owned-handles :natural-exit-finalization
                                                   :root-and-tracked-descendant-status

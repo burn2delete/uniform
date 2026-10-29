@@ -122,7 +122,7 @@ on exit. A temporary-file control exposed canonical path aliasing; runtime
 paths are now resolved before classpath binding. The control then passed.
 
 The request describes existing normal broker acquire/release, FileChannel
-immediate lock and normal runner start/process-result ports. Its success order
+immediate lock and normal runner start-process ports. Its success order
 and failure contract preserve exactly-once thread-affine L-before-C release,
 original exceptions/interruption and raw owned handles. Unknown finalization
 cannot be reported as clean or released. There is no new generic controller.
@@ -141,7 +141,15 @@ selector wiring, not unrelated caller participation or OS process containment.
 Root C and participating callers still require parent confirmation; the single
 root proposal is not a claim that all launchers share it.
 
-The affected compiler-free panel passes 20 tests / 301 assertions and the
+Independent review of `b8d4b795` found that `process-result` was incorrectly
+listed as a supported controller port despite being private. That exact review
+remains changes-required history (receipt SHA256
+`7ab1d20ca8e55b3aaf2329f05f0ca72ceaad42407d3c520b9f62a9b9bd0468dd`).
+The successor descriptor instead records the observed private Var and unresolved
+supported wait/capture API under the existing shared runner owner. No private
+access workaround or public interface name is invented.
+
+The affected compiler-free panel passes 20 tests / 303 assertions and the
 boundary gate passes 6/11. A request is preparation only and has no acquisition,
 process or admission handle. Genuine PR566 consumer acceptance remains open.
 Original PR580 CI at `7317c350` completed with seven successful jobs and two
