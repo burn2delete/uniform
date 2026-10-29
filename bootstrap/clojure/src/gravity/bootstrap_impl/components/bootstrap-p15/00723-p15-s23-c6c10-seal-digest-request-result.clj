@@ -431,9 +431,6 @@
 (declare p15-s23-stage2-sh02-descriptor-envelope-verify!
          p15-s23-c6c10-require-trusted-carrier!)
 
-;; Mechanism controls resolve this private dependency by symbol. Its production
-;; caller is the pending versioned private-ingress path.
-#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- p15-s23-c6c10-current-reader-envelope-state!
   ([source-path raw-front-end reader-path selected-binding]
    (p15-s23-c6c10-current-reader-envelope-state! source-path raw-front-end reader-path selected-binding 2))
