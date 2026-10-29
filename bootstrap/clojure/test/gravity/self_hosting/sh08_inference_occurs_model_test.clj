@@ -254,6 +254,68 @@
     (assoc case :nodes @nodes :lexical lexical
            :context (cond-> (or context {}) operators (assoc :ordering-operators operators)))))
 
+(def definition-alias-cases
+  [{:name :definition-alias-constructor-cycle
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :definition-branching-constructor-cycle
+    :equations [[:x [:map [:ref :y] [:ref :x]]] [:y [:set [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :lexical-constructor-through-definition-alias
+    :equations [[:x [:vector [:ref :y]]] [:y [:ref :x]]] :definition-ids #{:y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :definition-constructor-through-lexical-alias
+    :equations [[:x [:ref :y]] [:y [:set [:ref :x]]]] :definition-ids #{:y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :definition-alias-fixed-point
+    :equations [[:x [:ref :y]] [:y [:ref :x]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected false :stable? true}
+   {:name :definition-alias-oscillation
+    :equations [[:x [:ref :y]] [:y [:ref :x]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/string} :expected false :oscillation? true}
+   {:name :definition-alias-unresolved
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {} :expected false :stable? true}
+   {:name :definition-alias-never
+    :equations [[:x [:ref :y]] [:y [:set [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/never :y :gravity.type/never} :expected false :stable? true}
+   {:name :definition-alias-acyclic
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :outside]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :outside :gravity.type/integer}
+    :expected false :stable? true}
+   {:name :definition-alias-opaque
+    :equations [[:x [:ref :y]] [:y [:call [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected false}
+   {:name :definition-alias-parameter-producer
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer}
+    :functions {:f {:parameter-binding-ids [:x]}} :expected false}
+   {:name :definition-alias-intrinsic
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer}
+    :intrinsic-reference? true :expected false}
+   {:name :definition-alias-loop-transfer
+    :equations [[:x [:ref :y]] [:y [:vector [:ref :x]]]] :definition-ids #{:x :y}
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer}
+    :context {:loop-core {}} :expected false}])
+
+(defn definition-input
+  "Build matched def producers around the existing internal-DATA fixture."
+  [{:keys [definition-ids] :as case}]
+  (let [base (input case)
+        records (filterv #(contains? definition-ids (:binding-id %)) (:lexical base))
+        definitions (mapv (fn [record]
+                            {:binding-id (:binding-id record)
+                             :value-node-id (:initializer-node-id record)
+                             :core-node-id (keyword (str "def-" (name (:initializer-node-id record))))
+                             :name (symbol (name (:binding-id record)))}) records)
+        wrappers (mapv (fn [d] {:node-id (:core-node-id d) :core-form :def
+                                :children [(:value-node-id d)] :resolved-binding-ids [(:binding-id d)]
+                                :attributes {:name (:name d)}}) definitions)]
+    (assoc base :nodes (into (:nodes base) wrappers)
+           :lexical (filterv #(not (contains? definition-ids (:binding-id %))) (:lexical base))
+           :definitions (into (vec (:definitions base)) definitions))))
+
 (defn- term-edges [term bindings]
   (case (first term)
     :ref (when (and (= 2 (count term)) (contains? bindings (second term))
@@ -424,3 +486,25 @@
     (is (false? (model-occurs? case)))
     (is (not= seed (step case seed)))
     (is (= seed (step case (step case seed))))))
+
+(deftest definition-alias-equations-have-independent-growth-and-nongrowth-controls
+  (doseq [case definition-alias-cases]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (is (= 7 (count (set (take 7 (iterate #(step case %) (:bindings case))))))))
+      (when (:stable? case)
+        (let [settled (nth (iterate #(step case %) (:bindings case)) 4)]
+          (is (= settled (step case settled)))))
+      (when (:oscillation? case)
+        (let [seed (:bindings case)]
+          (is (not= seed (step case seed)))
+          (is (= seed (step case (step case seed))))))))
+  (let [case (first definition-alias-cases)
+        built (definition-input case)
+        ;; The prior lexical-only witness has no roots in this example.
+        lexical-only (assoc case :equations [] :definitions (:definitions built))]
+    (is (empty? (:lexical built)))
+    (is (= 2 (count (:definitions built))))
+    (is (false? (model-occurs? lexical-only)))
+    (is (true? (model-occurs? case)))))

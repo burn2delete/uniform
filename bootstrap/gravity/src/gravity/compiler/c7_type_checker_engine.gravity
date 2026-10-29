@@ -23453,6 +23453,24 @@
           nil
           (recur (rest remaining) (assoc result id record)))))))
 
+(defn inference-definition-equations [definitions nodes]
+  ; bind-definition-types copies the observed value type for normal known
+  ; values. Match the actual def producer before using that same equation;
+  ; unknown function fallback and all opaque transfers remain unsupported.
+  (loop [remaining definitions result []]
+    (if (= 0 (count remaining)) result
+      (let [definition (first remaining) binding (get definition :binding-id)
+            id (get definition :core-node-id) value (get definition :value-node-id)
+            node (get nodes id)]
+        (if (if (= binding nil) false
+              (if (= :def (get node :core-form))
+                (if (= [value] (get node :children))
+                  (if (= [binding] (get node :resolved-binding-ids))
+                    (contains? nodes value) false) false) false))
+          (recur (rest remaining)
+            (conj result {:binding-id binding :initializer-node-id value
+                          :definition-core-node-id id})) nil)))))
+
 (defn sh08-ft-constructor-cycle [root initializers nodes bindings types context]
   (loop [pending [{:id root :seen #{} :links [] :constructor? false}]]
     (if (= 0 (count pending)) nil
@@ -23480,7 +23498,10 @@
                       (let [edge (first remaining) dependency (get edge :dependency-binding-id)]
                         (recur (rest remaining)
                             (conj result {:id dependency :seen (conj seen id)
-                                          :links (conj links (assoc edge :binding-id id :initializer-node-id initializer))
+                                          :links (conj links
+                                            (let [link (assoc edge :binding-id id :initializer-node-id initializer)]
+                                              (if (contains? record :definition-core-node-id)
+                                                (assoc link :definition-core-node-id (get record :definition-core-node-id)) link)))
                                           :constructor? (if constructed? true (get edge :constructor?))})))))
                   (rest pending))))
             (recur (rest pending))))))))
@@ -23489,23 +23510,27 @@
   [node-sequence lexical-bindings definitions functions bindings types context]
   ; Match seeding and loop transfer may replace an apparent lexical equation.
   ; Do not claim a closed dependency through those contexts or through another
-  ; producer of the same binding ID. Intrinsic operator references are skipped
+  ; producer of the same binding ID. Definition equations require a matched
+  ; def producer; duplicate definition/lexical/parameter producers refuse.
+  ; Intrinsic operator references are skipped
   ; by literal-collection-links, rather than mistaken for ordinary aliases. Supplied
   ; lexical visibility must permit each edge. Minimal records without source
   ; visibility describe internal equations only, not authenticated source.
   (if (if (> (count (get context :boolean-matches)) 0) true (map? (get context :loop-core))) nil
     (let [nodes (sh08-ft-node-index node-sequence)
-          blocked (loop [remaining definitions result #{}]
-                    (if (= 0 (count remaining)) result
-                      (recur (rest remaining) (conj result (get (first remaining) :binding-id)))))
-          blocked (loop [remaining (keys functions) result blocked]
+          definition-equations (inference-definition-equations definitions nodes)
+          equations (loop [remaining definition-equations result lexical-bindings]
+                      (if (= 0 (count remaining)) result
+                        (recur (rest remaining) (conj result (first remaining)))))
+          blocked (loop [remaining (keys functions) result #{}]
                     (if (= 0 (count remaining)) result
                       (recur (rest remaining)
                         (set (sh08-ft-add-values-to-set
                           (get (get functions (first remaining)) :parameter-binding-ids) (vec result))))))
-          initializers (sh08-ft-lexical-equation-index lexical-bindings blocked nodes)]
-      (if (if (= initializers nil) true (= false (= (count nodes) (count node-sequence)))) nil
-        (loop [remaining lexical-bindings]
+          initializers (sh08-ft-lexical-equation-index equations blocked nodes)]
+      (if (if (= definition-equations nil) true
+            (if (= initializers nil) true (= false (= (count nodes) (count node-sequence))))) nil
+        (loop [remaining equations]
           (if (= 0 (count remaining)) nil
             (let [cycle (sh08-ft-constructor-cycle (get (first remaining) :binding-id)
                           initializers nodes bindings types context)]

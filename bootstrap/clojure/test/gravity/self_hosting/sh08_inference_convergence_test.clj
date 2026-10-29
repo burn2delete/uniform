@@ -364,3 +364,67 @@
         lexical (assoc-in lexical [0 :visible-prior-binding-ids] [:y])
         types (:type-table (pass nodes lexical bindings))]
     (is (nil? (invoke 'sh08-ft-first-constructor-cycle [nodes lexical [] {} bindings types {}])))))
+
+(deftest definition-alias-constructor-cycles-retain-actual-producer-links
+  (doseq [case occurs-model/definition-alias-cases]
+    (let [{:keys [nodes lexical definitions functions bindings context expected stable?]}
+          (occurs-model/definition-input case)
+          functions (or functions {})
+          table (into {} (map (juxt :node-id identity)) nodes)
+          observed (invoke 'sh08-ft-infer-pass-with-context
+                           [nodes lexical definitions [] [] functions bindings context])
+          witness (invoke 'sh08-ft-first-constructor-cycle
+                          [nodes lexical definitions functions bindings (:type-table observed) context])]
+      (testing (name (:name case))
+        (is (= expected (map? witness)))
+        (when expected
+          (is (some :definition-core-node-id (:links witness)))
+          (is (some :constructor? (:links witness)))
+          (is (= (:binding-id witness) (:dependency-binding-id (last (:links witness)))))
+          (let [inferred (invoke 'sh08-ft-infer-acyclic-with-context
+                                 [nodes table lexical definitions [] [] functions bindings 64 context])]
+            (is (= :type-conflict (:convergence-status inferred)))
+            (is (= :infinite-structural-type (get-in inferred [:diagnostics 0 :reason])))))
+        (when stable?
+          (let [inferred (invoke 'sh08-ft-infer-acyclic-with-context
+                                 [nodes table lexical definitions [] [] functions bindings 64 context])]
+            (is (= :converged (:convergence-status inferred)))
+            (is (empty? (:diagnostics inferred)))))))))
+
+(deftest definition-equations-require-matched-unique-producers
+  (let [{:keys [nodes lexical definitions bindings]}
+        (occurs-model/definition-input (first occurs-model/definition-alias-cases))
+        types (:type-table (invoke 'sh08-ft-infer-pass-with-context
+                                   [nodes lexical definitions [] [] {} bindings {}]))
+        definition (first definitions) wrapper (:core-node-id definition)
+        check (fn [ns ls ds fs]
+                (invoke 'sh08-ft-first-constructor-cycle [ns ls ds fs bindings types {}]))]
+    (is (nil? (check nodes lexical (conj definitions definition) {})))
+    (is (nil? (check nodes [{:binding-id (:binding-id definition)
+                            :initializer-node-id (:value-node-id definition)}] definitions {})))
+    (is (nil? (check nodes lexical definitions {:f {:parameter-binding-ids [(:binding-id definition)]}})))
+    (doseq [changed [(assoc definition :value-node-id :missing)
+                     (assoc definition :core-node-id :missing)
+                     (assoc definition :binding-id :different)
+                     (assoc definition :binding-id nil)]]
+      (is (nil? (check nodes lexical (assoc definitions 0 changed) {}))))
+    (doseq [changed [(filterv #(not= wrapper (:node-id %)) nodes)
+                     (mapv #(if (= wrapper (:node-id %)) (assoc % :children []) %) nodes)
+                     (mapv #(if (= wrapper (:node-id %)) (assoc % :resolved-binding-ids [:different]) %) nodes)
+                     (mapv #(if (= wrapper (:node-id %)) (assoc % :core-form :call) %) nodes)
+                     (mapv #(if (= (:value-node-id (second definitions)) (:node-id %))
+                              (assoc % :core-form :fn) %) nodes)]]
+      (is (nil? (check changed lexical definitions {}))))))
+
+(deftest declared-return-conflict-precedes-definition-alias-feedback
+  (let [{:keys [nodes lexical definitions bindings]}
+        (occurs-model/definition-input (first occurs-model/definition-alias-cases))
+        body {:node-id :body :core-form :literal :children [] :attributes {:literal-kind :string}}
+        nodes (conj nodes body)
+        function {:function-id :fn :body-core-node-id :body :parameter-binding-ids []
+                  :parameters [] :return :gravity.type/integer}
+        inferred (invoke 'sh08-ft-infer-acyclic-with-context
+                         [nodes (into {} (map (juxt :node-id identity)) nodes)
+                          lexical definitions [] [] {:fn function} bindings 64 {}])]
+    (is (= :type-conflict (:convergence-status inferred)))
+    (is (= :function-result-type-mismatch (get-in inferred [:diagnostics 0 :reason])))))
