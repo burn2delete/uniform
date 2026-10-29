@@ -30,6 +30,7 @@
                                 (do (swap! replaced inc) (cons 'launch-only (drop 2 x))) x))
                             (drop-while #(or (string? %) (map? %)) (nnext form)))
         name (gensym "shell_actual_form_") n (create-ns name)]
+    (h/ensure! (= 1 @replaced) :actual-shell-fake-exec-port)
     (is (= 1 @replaced))
     (binding [*ns* n]
       (clojure.core/refer 'clojure.core)
@@ -136,6 +137,62 @@
             (do (is interrupted?)
                 (is (some #(identical? cleanup %) (.getSuppressed ^Throwable error))))
             (do (is interrupted?) (is (not-any? #{:finalize} @events)))))
+        (finally (Thread/interrupted))))))
+
+(deftest cleanup-and-identity-interruptions-survive-nonzero-and-mixed-errors
+  (doseq [phase [:cleanup-nonzero :cleanup-mixed :identity-nonzero]]
+    (let [events (atom []) records (atom []) verification (atom 0)
+          wait-error (when (= phase :cleanup-mixed) (java.io.IOException. "original wait error"))
+          interruption (InterruptedException. "secondary interruption")
+          p (fake-process (byte-array 0) (byte-array 0) 7 events wait-error)
+          ports (cond-> (controls p events (Object.) (when (not= phase :identity-nonzero) interruption))
+                  (= phase :identity-nonzero)
+                  (assoc :verify-git! (fn [_] (when (= 2 (swap! verification inc)) (throw interruption)))))]
+      (try
+        (let [[error interrupted?] (try (git/git! ports {:root "/fixture" :cwd "/fixture"}
+                                                 records "/fixture" "rev-parse" "HEAD")
+                                       nil (catch Throwable e [e (.isInterrupted (Thread/currentThread))]))]
+          (is interrupted?)
+          (if wait-error
+            (do (is (identical? wait-error error))
+                (is (some #(identical? interruption %) (.getSuppressed ^Throwable error))))
+            (is (= :git-identity-read (:reason (ex-data error)))))
+          (is (identical? interruption (get @(first @records)
+                                          (if (= phase :identity-nonzero) :identity-error :finalization-error)))))
+        (finally (Thread/interrupted))))))
+
+(deftest fatal-cleanup-never-becomes-an-ordinary-Git-refusal
+  (doseq [make-fatal [#(LinkageError. "constructed linkage error")
+                     #(OutOfMemoryError. "constructed VM error") #(ThreadDeath.)]
+          wait-failed? [false true]]
+    (let [events (atom []) records (atom []) fatal (make-fatal)
+          original (when wait-failed? (java.io.IOException. "original wait error"))
+          p (fake-process (byte-array 0) (byte-array 0) 7 events original)
+          error (try (git/git! (controls p events (Object.) fatal) {:root "/fixture" :cwd "/fixture"}
+                                 records "/fixture" "rev-parse" "HEAD")
+                       nil (catch Throwable e e))]
+        (is (identical? fatal error))
+        (is (identical? fatal (:finalization-error @(first @records))))
+        (when original (is (some #(identical? original %) (.getSuppressed ^Throwable fatal)))))))
+
+(deftest selected-observation-write-keeps-original-error-and-interrupted-state
+  (doseq [writer-error [(java.io.IOException. "observation write failed")
+                       (LinkageError. "constructed writer linkage error")
+                       (OutOfMemoryError. "constructed writer VM error")]]
+    (let [original (ex-info "original Git refusal" {:reason :git-identity-read}) old h/git!
+          fatal? (not (instance? java.io.IOException writer-error))]
+      (try
+        (with-redefs-fn {#'request/read-input! (fn [_ _] {:root "/fixture" :outputs {:git-observations "/fixture/out"}})
+                        #'request/runner-ports! (fn [_] {})
+                        #'request/read-prepared! (fn [_ _] (.interrupt (Thread/currentThread)) (throw original))
+                        #'request/create-edn! (fn [_ _] (Thread/interrupted) (throw writer-error))}
+          (fn []
+            (let [[error interrupted?] (try (request/child! "fixture" "hash") nil
+                                            (catch Throwable e [e (.isInterrupted (Thread/currentThread))]))]
+              (is (identical? (if fatal? writer-error original) error))
+              (is interrupted?)
+              (is (some #(identical? (if fatal? original writer-error) %) (.getSuppressed ^Throwable error))))))
+        (is (identical? old h/git!))
         (finally (Thread/interrupted))))))
 
 (deftest selected-child-routes-initial-bookend-and-restores-shared-Var-on-failure

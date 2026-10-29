@@ -14,6 +14,33 @@
     (io/copy stream out :encoding encoding)
     (.toString out)))
 
+(defn- interrupted-error? [error]
+  (loop [e error]
+    (cond (nil? e) false (instance? InterruptedException e) true
+          :else (recur (.getCause ^Throwable e)))))
+
+(defn- fatal-cause [error]
+  (loop [e error]
+    (cond (nil? e) nil
+          (or (instance? ThreadDeath e) (instance? VirtualMachineError e) (instance? LinkageError e)) e
+          :else (recur (.getCause ^Throwable e)))))
+
+(defn- terminal-error! [record primary interrupted field error]
+  (swap! record assoc field error :terminal :unproven)
+  (when (or (interrupted-error? error) (.isInterrupted (Thread/currentThread))) (reset! interrupted true))
+  (let [original @primary fatal (fatal-cause error)]
+    (cond
+      (and fatal (not (fatal-cause original)))
+      (do (when (and original (not (identical? original fatal)))
+            (.addSuppressed ^Throwable fatal original))
+          (reset! primary fatal) (throw fatal))
+      original (when-not (identical? original error) (.addSuppressed ^Throwable original error))
+      (or (nil? (:exit @record)) (zero? (:exit @record)))
+      (do (reset! primary error) (throw error))
+      ;; A nonzero Git exit retains the original h/git! refusal when the
+      ;; secondary cleanup/identity error is nonfatal. Interruption is separate.
+      :else nil)))
+
 (defn- shell-result!
   "Preserve shell/sh's inherited environment, closed stdin, complete streams,
   UTF8 stdout/default-charset stderr and wait/exit semantics. Normal bounded,
@@ -28,9 +55,9 @@
     (let [owned (try ((:retain ports) process)
                      (catch Throwable error
                        (swap! record assoc :retain-error error :terminal :unproven)
-                       (when (instance? InterruptedException error) (.interrupt (Thread/currentThread)))
+                       (when (interrupted-error? error) (.interrupt (Thread/currentThread)))
                        (throw error)))
-          primary (atom nil)]
+          primary (atom nil) interrupted (atom (.isInterrupted (Thread/currentThread)))]
       (swap! record assoc :retained-token owned)
       (try
         (swap! record assoc :raw-handles ((:handles ports) owned))
@@ -45,6 +72,7 @@
             result))
         (catch Throwable error
           (reset! primary error)
+          (when (or (interrupted-error? error) (.isInterrupted (Thread/currentThread))) (reset! interrupted true))
           (swap! record assoc :error error)
           (throw error))
         (finally
@@ -52,23 +80,14 @@
             (swap! record assoc :finalization ((:finalize ports) owned))
             (swap! record assoc :raw-handles ((:handles ports) owned))
             (catch Throwable error
-              (swap! record assoc :finalization-error error :terminal :unproven)
-              (if-let [original @primary]
-                (when-not (identical? original error) (.addSuppressed ^Throwable original error))
-                ;; A nonzero Git exit keeps the original h/git! refusal. Its
-                ;; cleanup failure remains a distinct terminal observation.
-                (when (or (nil? (:exit @record)) (zero? (:exit @record)))
-                  (reset! primary error) (throw error))))
+              (terminal-error! record primary interrupted :finalization-error error))
             (finally
               (try
                 ((:verify-git! ports) binding)
                 (catch Throwable error
-                  (swap! record assoc :identity-error error)
-                  (if-let [original @primary]
-                    (when-not (identical? original error) (.addSuppressed ^Throwable original error))
-                    (when (or (nil? (:exit @record)) (zero? (:exit @record))) (throw error))))
+                  (terminal-error! record primary interrupted :identity-error error))
                 (finally
-                  (when (instance? InterruptedException @primary)
+                  (when @interrupted
                     (.interrupt (Thread/currentThread))))))))))))
 
 (defn git! [ports binding records root & args]

@@ -263,3 +263,31 @@ test-only lifetime defect. The affected panel passes 30 tests / 455 assertions;
 lint reports zero errors/warnings. No new selected Git adapter target, C3 child,
 genuine owner, acquisition, process probe or held operation was executed. Normal
 repository identity reads used for source preparation confer no target acceptance.
+
+### Mixed-error correction and request applicability
+
+Independent review of `fbd05eb2` is changes-required, receipt SHA256
+`846932ddf124a4c3b40755a19fd2103e4401f22ed0453dc4a9813ee176351377`.
+Six safe tests / 113 assertions and 62 controls passed, but fake processes
+confirmed two missing cases: secondary cleanup interruption could lose the flag
+after nonzero exit or an ordinary wait error, and cleanup VM/linkage errors
+after nonzero exit became ordinary Git refusals. The shared Git configuration
+also changed after the `dfc3edac` request freeze. That snapshot remains unchanged
+and stale; its identity failure must not be bypassed.
+
+The corrected terminal handling records interruption independently of the
+primary error and restores it after cleanup/identity checks. The same flag is
+preserved across observation writing. Ordinary primary errors remain original;
+when a secondary VM/linkage/ThreadDeath error takes priority, the ordinary error
+is preserved as suppressed data. Fatal failures cannot become nonzero Git
+results. Root wait, raw-token ownership, tracked cleanup and unknown coverage
+remain separate; no release or target acceptance follows.
+
+New fake-port controls cover nonzero/mixed cleanup interruption, identity
+interruption, all three canonical fatal classes after nonzero exit or ordinary
+wait errors, and interrupted/fatal observation-write failures. Actual-form
+injection refuses a missing exec replacement before evaluating the form. The
+full compiler-free panel passes 33 tests / 520 assertions and the focused Git
+panel passes 10 tests / 189 assertions. A new source/request freeze and exact
+affected re-review are required; the prior failed source and stale request
+remain historical evidence. No selected target was executed.

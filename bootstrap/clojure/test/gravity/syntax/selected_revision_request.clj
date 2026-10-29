@@ -180,7 +180,7 @@
   [path expected-sha]
   (let [input (read-input! path expected-sha)
         ports (assoc (runner-ports! (:root input)) :verify-git! verify-git-binding!)
-        records (atom []) primary (atom nil)]
+        records (atom []) primary (atom nil) interrupted (atom false)]
     ;; Only this fresh selected C3 child routes the harness Var. Unselected
     ;; harness source and all other shell/sh callers remain unchanged.
     (with-redefs [h/git! (partial git/git! ports (:git-binding input) records)]
@@ -193,13 +193,25 @@
               (create-edn! (get-in prepared [:outputs :result]) result))
             (finally (acceptance/recheck-closure! prepared)
                      (acceptance/guard-configuration! prepared))))
-        (catch Throwable error (reset! primary error) (throw error))
+        (catch Throwable error
+          (reset! primary error)
+          (when (or (instance? InterruptedException error) (.isInterrupted (Thread/currentThread)))
+            (reset! interrupted true))
+          (throw error))
         (finally
           (try (create-edn! (get-in input [:outputs :git-observations]) (git/observation-view records))
                (catch Throwable error
+                 (when (or (instance? InterruptedException error) (.isInterrupted (Thread/currentThread)))
+                   (reset! interrupted true))
+                 (when (or (instance? ThreadDeath error) (instance? VirtualMachineError error)
+                           (instance? LinkageError error))
+                   (when-let [original @primary]
+                     (when-not (identical? original error) (.addSuppressed ^Throwable error original)))
+                   (throw error))
                  (if-let [original @primary]
                    (when-not (identical? original error) (.addSuppressed ^Throwable original error))
-                   (throw error)))))))))
+                   (throw error)))
+               (finally (when @interrupted (.interrupt (Thread/currentThread))))))))))
 
 (defn prepare!
   "Freeze files and a controller request only. Does not resolve runtime ports,
