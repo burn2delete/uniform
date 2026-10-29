@@ -1012,3 +1012,34 @@ boundary 6/11; both document validators and generated SH check passed. Pinned
 clj-kondo 2025.10.23 reports zero findings on the changed SH source. Independent
 acceptance, complete original-facet disposition, granularity, legacy ACC scope,
 final counting and integration remain open.
+
+## One hundred seven Safety decision allocations
+
+Task source `bc485c7e4b0197873f6a3104021764711215b3b1` adds 106 clauses
+and reuses one SAFE16 criterion across 16 existing fields in six authorities,
+with no new task units. All 107 record guards match; all 1,927 available
+source memberships (712 distinct facets) match document and UTF8 span hashes.
+Two direct decision contexts retain their original IDs without invented facet
+aliases. Two missing DOM17 continuation metadata records are recovered from
+authenticated finite18 history with the complete owning clause, pending
+independent source/context review. The composition SHA256 is
+`2d773f4b85bf33673ae68263b6929e483908ab4bbb93faf02876301e6cab9b83`.
+
+Allocation source `e8b30404da883433274acf7eabb90e9077f56e8e` preserves all
+558 predecessor allocations and all 833 Open identity/status pairs. Its
+transaction SHA256 is
+`d3f7eaf8f09a7ed3b38c6f8cf76c2e44f29b9227936c2ca57643b8d36e721be9`.
+There are 665 concrete allocations, including 362 pending independent
+current-composition review, and 168 decisions remaining. The task census stays
+provisionally 3 Accepted / 182; allocation grants no implementation credit.
+
+`current-criterion-bindings-561-safety107.edn`, SHA256
+`153796f893ffdaf175d31af735f5a651e26644d54100aa22a3c2fa07434162eb`,
+preserves all 561 historical IDs and all 1,262 current spans. Historical
+acceptance remains 430, with 131 pending and none unbound. Component tests
+passed: Auth 4/61, Build 5/86, Domains 7/213, Expand 4/41, Legality 4/59 and
+Runtime 4/67. SH passed 12/522, census 4/13 and boundary 6/11. Both document
+validators and the generated SH check passed. Pinned clj-kondo 2025.10.23
+reports zero findings on both changed SH files. Independent acceptance,
+full-facet disposition, granularity, legacy ACC scope, final counting and
+integration remain open.
