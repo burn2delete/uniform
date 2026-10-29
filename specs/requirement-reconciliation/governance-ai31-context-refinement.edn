@@ -1,0 +1,23 @@
+{:witnesses
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn",
+  :sha256
+  "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786"},
+ :new-historical-adoptions 0,
+ :old-source-file-and-raw-hashes :all-exact,
+ :expanded-context-references 10,
+ :implementation-credit :none,
+ :new-task-units 0,
+ :source-commit "370a7b5d26814243b1a8fecbfd2ebf0b904db489",
+ :new-current-file-and-raw-hashes :all-exact,
+ :kind :exact-governance-task-context-refinement-proof,
+ :distinct-task-ids
+ ["evolution/experiment-lifecycle" "evolution/stabilization-decision"],
+ :composition
+ {:path
+  "specs/requirement-reconciliation/governance-ai31-current-composition.edn",
+  :sha256
+  "20ae121c5f777898fad41cd3f63b771666723387e2509794d4b9522fa6d1fdfb"},
+ :new-predicate-acceptance :not-conferred,
+ :semantic-preservation
+ :all-original-blocks-recovered-by-inverting-four-authenticated-field-appends}

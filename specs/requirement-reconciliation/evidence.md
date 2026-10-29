@@ -1537,6 +1537,31 @@ preserves the exact prior vector and its1262 verified spans. SH12/522,census4/13
 boundary6/11,generated SH check and pinned changed-file lint pass. Full facets,
 granularity,legacy ACC,independent final counting and integration remain open.
 
+### Governance14 and Performance/AI17 current allocation
+
+Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten
+field appends in Evolution, Domains and Lower. Allocation source
+`370a7b5d26814243b1a8fecbfd2ebf0b904db489` binds31 current decisions:
+Governance14 and Performance/AI17, with937 authenticated source memberships
+(469 Governance and468 Performance/AI),72 criterion witnesses andzero new
+task units. Five criterion families are added; remaining allocations reuse
+existing clauses. Declared downstream Release consumers and secondary
+interfaces do not become whole-task completion prerequisites.
+
+The refreshed561 historical bindings retain all1262 current UTF8 file/raw
+span hashes. Ten stored whole-task contexts across two Evolution tasks need
+expanded current contexts. `governance-ai31-context-refinement.edn` verifies
+old and current source hashes and recovers each original block exactly by
+inverting its four authenticated field appends. Historical acceptance does
+not extend to the new predicates.
+
+All833 decisions remain Open:808 allocated,25 Bootstrap allocations remaining,
+472 qualified current source reviews and33 pending allocation reviews. All561
+historical mappings remain accepted, withzero pending or unbound. Provisional
+task status remains3/182. Full facets, granularity, legacy ACC, independent
+final counting and integration remain open; no implementation or count credit
+is conferred by these allocations.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,
