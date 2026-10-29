@@ -25,7 +25,8 @@
     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
     "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
-    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"})
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"})
 (def link-pattern task-projection-links/link-pattern)
 (def record-pattern
   #"(?s)^- \[([ x])\] `(release/remaining-tasks-and-evidence/[a-z-]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nEvidence baseline: ([^\n|]+)\n\nClosing evidence: ([^\n|]+)$")

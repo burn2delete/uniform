@@ -143,7 +143,8 @@
   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
-  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"],
+  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+  "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"],
  "resolve"
  ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
   "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
