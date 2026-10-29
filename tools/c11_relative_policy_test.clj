@@ -28,10 +28,10 @@
   (and (seq? form) (contains? '#{def defn defn- declare require} (first form))))
 (binding [*ns* owner]
   (clojure.core/refer 'clojure.core)
-  (alias 'str 'clojure.string)
-  (alias 'digest 'gravity.digest)
+  (alias 'str (ns-name (:ns (meta #'str/blank?))))
+  (alias 'digest (ns-name (:ns (meta #'digest/sha256-output-hex))))
   (alias 'c6-source-contract 'gravity.c6-c10.source-contract)
-  (alias 'c11-source-contract 'gravity.c11-mir.source-contract)
+  (alias 'c11-source-contract (ns-name (:ns (meta #'c11-contract/v2-source-contract))))
   ;; Only diagnostic transport/path selection is synthetic. Carrier traversal,
   ;; canonical encoding, hashing, fixed contracts and policy checks are actual.
   (intern owner 'p15-s23-c6c10-host-fail!
