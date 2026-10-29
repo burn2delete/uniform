@@ -504,6 +504,83 @@ injected pass report, synthetic final artifact or relaxed source guard closes
 them. Runtime writer/acceptance ownership must be confirmed; accounting removal
 does not transfer Unicode, collision, callback or semantic safety responsibility.
 
+#### Preserved v3 successor checkpoint
+
+The 2026-10-28 Native handoff records a separate development candidate
+`f66d9ff4554815b89ee7d51ee73b7961f0c33a44`, tree
+`1ee9986eb613abe6c0218603d78d5f4279a4ac9d`. Its preservation receipt SHA-256
+is `016db5b4ad2e69dce363edf8eb3da7158f63a5f67d3f4c7769bdae8f3a65876e`.
+This is an attributed owner checkpoint, not a current-main admission result.
+Its `00724a` fresh constructor distinguishes version 3 from the version-2 Bool
+branch join: it selects the versioned Reader ingress, authenticates the source
+binding, invokes the pinned Gravity builder and replay verifier, then requires
+the trusted flat-Bool sequence family. Static inspection of that route does not
+establish a successful call.
+
+The preserved physical input composition names C6 source SHA-256
+`7d14fef9a3ca0f47fd7ec301d96cd6c0b57c4c6a3f91a0839c673e8c702a6396`
+(186745 bytes) and C11 source SHA-256
+`4ca2bf8c551c9b0e7aefbeab84e7f7c9b5742bdeee10f68e74aff3470d35b3dd`
+(597279 bytes). These owner-reported inputs are distinct from the historical
+v2 tuples in OWN-03/04. The retained MIR identity handoff observes program
+identities only; it explicitly claims neither Core construction nor execution
+of the C11 builder/verifier. Program identity observation is not join acceptance.
+
+The next semantic completion criterion remains genuine v3 Core construction
+with complete source/runtime bookends and an external zero exit, independent
+positive review, then a separately fresh public Core report using actual policy
+state. Only that accepted product can supply genuine flat C11 construction,
+fresh Native/Gravity verification and actual type-fact, source, target and
+policy negatives for the versioned final consumer. Existing producer owners
+retain their source and private harnesses. Historical v2 acceptance does not
+discharge these gates or reopen the accepted OWN-04 Bool development adapter.
+The recorded pre-admission capacity and child-timeout nonpasses remain
+nonpasses; unresolved terminal/cleanup and runtime holds remain in force.
+This checkpoint authorizes no execution and confers no OWN-06 closure.
+
+#### V3 Core policy handoff and actual-consumer evidence
+
+The following criteria describe the same preserved Native candidate
+`f66d9ff4554815b89ee7d51ee73b7961f0c33a44`, tree
+`1ee9986eb613abe6c0218603d78d5f4279a4ac9d`, not a new main-source admission.
+The source interfaces are `00726-p15-s23-c6c10-gravity-candidate-verification`,
+`00744-opaque-c11-construction-token-helper-02-invoke-checked-core-verifier`,
+`00744-opaque-c11-construction-token-helper-03-authenticate-checked-core-ingress`
+and `00740a-p15-s23-c11-current-core-policy`, all `.clj` components in
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/` at
+that exact revision. ACC10 retains genuine Core production and its private
+harness; ACC11 retains the versioned consumer join. OWN records the contract.
+
+| Actual boundary | Required evidence and commitments |
+| --- | --- |
+| ACC10 construction -> separately fresh public Core report (`00726`) | Retain the real artifact/context pair and explicit `{:interface :gravity/c6-c10 :version 3}` invocation. The fresh report must retain `:source-interface`, `:semantic-family :closed-flat-bool-literal-sequence`, actual `:source-binding`, `:source-policy-receipt` and `:source-policy-binding-id`. Its status/semantic authority, typed semantic comparison, target request, physical provenance and sealed-root parity must come from the actual verifier, not supplied report labels. |
+| Fresh Core owner -> C11 public ingress (`00744`) | The versioned pure-source route invokes the fresh C6 verifier with that same version before projecting policy. Retain this actual call and result; a saved report, parsed header or standalone final-artifact DATA check cannot replace it. The unversioned overload selects historical version 1, not v3. |
+| Fresh report -> C11 policy projection (`00740a`) | Preserve version 3 in the policy, receipt and compiler-program projection, with the flat-Bool semantic family in all three. Preserve `:development-unadmitted`, `:selected-current-source-host-seed` and the receipt's false `:self-hosted?`. Bind the compiler-program source byte count/hash and plan/functions/builder/verifier hashes to the selected source contract. |
+| Policy -> actual Core/context and C11 artifact | `:source-policy-binding-id` binds the actual Core `:artifact-id`, context and receipt under `:gravity/c6-c10-source-policy-v3`. The distinct C11 `:source-policy-hash` binds the projected policy under `:gravity/c11-checked-core-policy-v3`. Preserve both identities through the actual versioned consumer, rather than copying a matching-looking string into a fixture. |
+
+The receipt must preserve the actual Reader plan binding, source revision,
+Reader-result identities, authenticated envelope and expression binding, plus
+the owner-metadata content ID and projection contract. `00740a` checks their
+shape, selected source-contract commitments and digest coherence; its helpers
+explicitly do not authenticate a supplied report. Fresh authority comes from
+the lexical public route's actual owner invocation. Header parsing and these
+structural checks remain separate from genuine source-bound acceptance.
+
+Required negatives at the actual consumer are mixed source-interface/artifact
+versions; altered semantic family; crossed Core/context/receipt/binding tuples;
+and changed Reader-result, Reader-source or expression-binding commitments.
+Retain owning-stage rejection diagnostics, including early version-dispatch
+rejections separately from `C11-MODULE/:current-core-source-policy-data` failures
+where that policy check is reached. A coherent recomputed digest alone does not
+establish fresh owner authentication. Existing header/class/metadata controls
+are prerequisites, not execution of those genuine artifact substitutions.
+
+Genuine v3 construction, separately fresh public Core verification using actual
+policy state, and actual versioned C11/Native/Gravity positives and negatives
+remain unaccepted. This field mapping grants no source execution, final
+admission, OWN-06 closure or broader OWN credit; existing runtime holds and
+accepted OWN-04 development evidence remain unchanged.
+
 ## Exact evidence and outstanding boundaries
 
 Locally inspected main and open PR metadata at the baseline above. Draft heads:

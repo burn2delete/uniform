@@ -210,8 +210,11 @@ clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/m
   clean worktree, owned paths, governing contracts, positive and negative
   fixtures, stable diagnostics, successful checks, independent acceptance,
   residual host boundaries, and explicit nonclaims.
-- Run the preflight in `integration` mode with the ledger's exact identities
-  immediately before integration. Dirty or detached worktrees, missing or
+- Run the preflight in `integration` mode with the exact complete integration
+  base/commit/tree immediately before integration. For later lifecycle metadata,
+  also bind the ledger's immutable source commit/tree and workstream id through
+  the governed-composition path in `docs/workstream-governance.md`; the exact
+  permitted metadata delta requires independent review. Dirty or detached worktrees, missing or
   divergent bases, and identity mismatches fail closed.
 - Compare both ancestry and tree identity. If the candidate is already
   identical or tree-equivalent to the base, do not merge or replay it again.
