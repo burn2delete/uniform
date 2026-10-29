@@ -6,7 +6,10 @@
             [gravity.pmk.first-request :as first]))
 
 (def process-pass {:status :passed :exit-code 0 :terminal? true :root-alive? false
-                   :cleanup-complete? true :cleanup-failed? false :capture-failed? false
+                   :root-exited? true :tracked-owned-processes-terminal? true :descendant-coverage :unknown
+                   :cleanup {:status :tracked-clean :tracked-complete? true :complete? nil :root-alive? false
+                             :descendant-coverage :unknown :live-descendants-at-finalization 0 :survivor-pids []}
+                   :cleanup-complete? nil :cleanup-failed? false :capture-failed? false
                    :timeout-containment-unproven? false :output-truncated? false
                    :wait-error nil :wait-interrupted? false
                    :stdout-capture-status :complete :stderr-capture-status :complete
@@ -162,7 +165,18 @@
                    (assoc process-pass :stdout-capture-forced-close? true)
                    (assoc process-pass :stderr-capture-forced-close? true)
                    (assoc process-pass :output-truncated? true)
-                   (assoc process-pass :cleanup-complete? false)]]
+                   (assoc process-pass :cleanup-complete? false)
+                   (assoc process-pass :cleanup-complete? true)
+                   (assoc process-pass :root-exited? false)
+                   (dissoc process-pass :tracked-owned-processes-terminal?)
+                   (assoc process-pass :tracked-owned-processes-terminal? false)
+                   (assoc process-pass :descendant-coverage :complete)
+                   (assoc-in process-pass [:cleanup :complete?] true)
+                   (assoc-in process-pass [:cleanup :tracked-complete?] false)
+                   (assoc-in process-pass [:cleanup :root-alive?] true)
+                   (assoc-in process-pass [:cleanup :live-descendants-at-finalization] 1)
+                   (assoc-in process-pass [:cleanup :survivor-pids] [42])
+                   (assoc-in process-pass [:cleanup :discovery-error] "unobserved child")]]
     (let [m (model) r (run-model (assoc-in m [:ports :supervise!] (fn [& _] process)))]
       (is (= :failed (:status r)))
       (is (= :process-nonpass (get-in r [:error :reason])))
@@ -223,3 +237,33 @@
       (is (nil? (find-ns 'gravity.bootstrap)))
       (is (nil? (find-ns 'gravity.self-hosting.sh01-host-resource-broker)))
       (is (nil? (find-ns 'gravity.self-hosting.sh01-parallel-test-runner))))))
+
+(deftest normal-ports-retain-the-original-token
+  (let [events (atom [])
+        process (proxy [Process] []
+                  (getInputStream [] nil) (getErrorStream [] nil) (getOutputStream [] nil)
+                  (waitFor [] 0) (exitValue [] 0) (destroy [] nil) (isAlive [] false))
+        owned {:process process :raw-token :synthetic}
+        api {'start-process (fn [command cwd] (swap! events conj [:start command cwd]) process)
+             'retain-owned-process! (fn [p] (is (identical? process p)) (swap! events conj :retain) owned)
+             'process-result (fn [p options token]
+                               (is (identical? process p)) (is (identical? owned token))
+                               (swap! events conj [:wait options]) process-pass)
+             'retained-process-handles (fn [token] (is (identical? owned token))
+                                        (swap! events conj :handles) [:synthetic-handle])
+             'finalize-owned-process! (fn [token] (is (identical? owned token))
+                                       (swap! events conj :finalize) (:cleanup process-pass))}
+        normal (controller/normal-process-ports {:bookend! identity :capture! identity :publish! identity})]
+    (with-redefs [clojure.core/requiring-resolve
+                  (fn [sym]
+                    (is (= "gravity.self-hosting.sh01-parallel-test-runner" (namespace sym)))
+                    (or (get api (symbol (name sym))) (throw (ex-info "unexpected API" {:symbol sym}))))]
+      (let [token ((:start! normal) ["synthetic"] "/synthetic")
+            r ((:supervise! normal) token {:timeout-ms 10})]
+        (is (identical? owned token))
+        (is (= 1 (:retained-handle-count r)))
+        (is (nil? (:cleanup-complete? r)))
+        (is (= :unknown (:descendant-coverage r)))
+        (is (= (:cleanup process-pass) ((:terminate! normal) token)))
+        (is (= [[:start ["synthetic"] "/synthetic"] :retain [:wait {:timeout-ms 10}] :handles :finalize]
+               @events))))))

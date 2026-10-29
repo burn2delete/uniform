@@ -126,7 +126,19 @@
           (remaining)
           (require! (and (= :passed (:status process)) (= 0 (:exit-code process))
                          (true? (:terminal? process)) (false? (:root-alive? process))
-                         (true? (:cleanup-complete? process))
+                         (true? (:root-exited? process))
+                         (true? (:tracked-owned-processes-terminal? process))
+                         (= :unknown (:descendant-coverage process))
+                         (nil? (:cleanup-complete? process))
+                         (= :tracked-clean (get-in process [:cleanup :status]))
+                         (true? (get-in process [:cleanup :tracked-complete?]))
+                         (false? (get-in process [:cleanup :root-alive?]))
+                         (nil? (get-in process [:cleanup :complete?]))
+                         (= :unknown (get-in process [:cleanup :descendant-coverage]))
+                         (zero? (get-in process [:cleanup :live-descendants-at-finalization] -1))
+                         (empty? (get-in process [:cleanup :survivor-pids]))
+                         (nil? (get-in process [:cleanup :discovery-error]))
+                         (nil? (get-in process [:cleanup :cleanup-error]))
                          (false? (:cleanup-failed? process))
                          (false? (:timeout-containment-unproven? process))
                          (false? (:capture-failed? process))
@@ -221,14 +233,18 @@
                        (finally (.close ^java.nio.channels.FileChannel (:channel lease))))
                   ((requiring-resolve 'gravity.self-hosting.sh01-host-resource-broker/release!) lease)))
     :start! (fn [command cwd]
-              ((requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/start-process) command cwd))
-    :supervise! (fn [process options]
-                  (require 'gravity.self-hosting.sh01-parallel-test-runner)
-                  (let [r ((ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-result) process options)
+              (let [start (requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/start-process)
+                    retain (requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/retain-owned-process!)]
+                (retain (start command cwd))))
+    :supervise! (fn [owned options]
+                  (let [process (:process owned)
+                        r ((requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/process-result)
+                           process options owned)
+                        handles ((requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/retained-process-handles) owned)
                         alive (.isAlive ^Process process)]
                     (assoc r :root-alive? alive :terminal? (not alive)
+                           :retained-handle-count (count handles)
                            :cleanup-attempted? (some? (:cleanup r)))))
-    :terminate! (fn [process]
-                  (require 'gravity.self-hosting.sh01-parallel-test-runner)
-                  ((ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'terminate-process-tree!) process))}
+    :terminate! (fn [owned]
+                  ((requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/finalize-owned-process!) owned))}
    hooks))

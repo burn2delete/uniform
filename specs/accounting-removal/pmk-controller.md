@@ -122,3 +122,35 @@ This is source-method evidence under D1/D8/D9 and TEST1. It supplies no actual
 PMK result, native admission, whole-accounting closure or integration authority.
 Dependent PR534 source composition and the actual consumer/public-verification
 acceptance gates remain open.
+
+## Retained-process lifecycle successor
+
+The reviewed shared runner from PR600, source commit
+`e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80`, supplies the canonical public
+`retain-owned-process!`, `retained-process-handles`, three-argument
+`process-result` and `finalize-owned-process!` APIs. The PMK normal start port
+returns the actual retained ownership token immediately after startup. Wait and
+exceptional finalization receive that same token on the retaining thread; no PID
+lookup reconstructs ownership. The runner retains raw handles through natural
+root exit. Repeated finalization observes its cached terminal result rather than
+repeating termination. The outer method uses the same public lifecycle for its
+controller child, without resolving private runner functions.
+
+The controller requires natural root exit, terminal tracked owned handles, a
+tracked-clean finalization with no survivors, discovery/cleanup errors or live
+descendants at finalization, and complete nontruncated captures. It keeps
+`:descendant-coverage :unknown` and the global cleanup-complete fields Nil.
+Tracked completion is never promoted to complete descendant coverage. Success
+still requires independent source-bound creation coverage for the exact workload,
+along with all existing source, guard, deadline and result checks. It supplies
+no global process-registry or strict native containment claim.
+
+The preceding frozen method at `d41c01099c0c6ba1e250e491de81c08c0986a91a`
+received one action-specific platform admission. Its original handle terminated
+with exit 1 on runtime-binding equality before the supervisor start marker,
+parent, controller, claim or guard calls. The exact changed runtime field was
+not captured. Independent outcome review confirmed NONPASS/HOLD and no selector
+execution. The corrected terminal assessment receipt SHA256 is
+`0eb53d303a3f4660b5f2975f5f226024e493ccc3db89d5584213e4656a2733ee`.
+That method and its nonpass remain history; they are not resubmitted or promoted.
+This successor is source preparation only and grants no additional attempt.
