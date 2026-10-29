@@ -13,7 +13,19 @@
     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
     "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
     "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
-    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"})
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+    "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+    "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+    "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"})
 (def link-pattern task-projection-links/link-pattern)
 (def record-pattern
   #"(?s)^- \[([ x])\] `(release/remaining-tasks-and-evidence/[a-z-]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nEvidence baseline: ([^\n|]+)\n\nClosing evidence: ([^\n|]+)$")

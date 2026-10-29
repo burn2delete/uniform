@@ -1,0 +1,1394 @@
+{:current-join-proposal-sha256
+ "c3fc23828213797f3c85a704af38b5f7afa96adf9fe58a2472dce69c55f7cee5",
+ :reviewed-source
+ {:commit "bcec88119b3ab647fb737d4b08fcf86d7e1da41e",
+  :tree "588508b85256e9ddc6d0bac8edd27689ac34634c",
+  :mapping-sha256
+  "59811eabc33991eb9df32ecbb080d87ccc21da33f22f0198daecbea1c7da71d5",
+  :proposal-sha256
+  "e95765489cab5df2609702820e4dffd1737f592274f44559e9fd58ca6f0fff2f",
+  :receipt-sha256
+  "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"},
+ :new-task-identities
+ ["domain-ir-boundaries"
+  "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+  "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+  "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+  "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+  "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+  "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"],
+ :accepted-manifest-sha256
+ "ba1f761d7be9f214e498c55f2e7a965de76859ef9e59718dab79dade539930c4",
+ :accepted-mapping-delta 0,
+ :nonclaims
+ [:no-broad-facet-entailment
+  :no-whole-project-ratio
+  :no-implementation-or-integration-acceptance],
+ :canonical-mapping-adoption
+ :pending-independent-actual-composition-binding-and-task-scope-review,
+ :assigned-ids
+ ["bootstrap/release-supply-chain"
+  "bootstrap/trust-reduction"
+  "compiler/c1/compiler-program-legality"
+  "compiler/c1/self-hosting-comparison"
+  "compiler/c12/domain-entry"
+  "compiler/c12/domain-fallback"
+  "compiler/c12/domain-proof-boundary"
+  "compiler/c12/domain-registration"
+  "compiler/c12/registered-domain-exit"
+  "compiler/c16/cache-revalidation"
+  "compiler/c16/proof-reuse"
+  "compiler/c16/recorded-rebuild"
+  "compiler/c16/semantic-cache-key"
+  "compiler/c16/speculation-publication-gate"
+  "testing/test1/portable-language"
+  "testing/test1/profile-separation"
+  "testing/test1/report"
+  "testing/test1/syntax-origin"
+  "testing/test10/backend-artifact"
+  "testing/test10/context-divergence"
+  "testing/test10/numeric-mode"
+  "testing/test10/oracle-observables"
+  "testing/test10/recorded-nondeterminism"
+  "testing/test10/report"
+  "testing/test11/formal-obligations"
+  "testing/test11/pass-linkage"
+  "testing/test11/proof-identity"
+  "testing/test11/report"
+  "testing/test12/ai-costs"
+  "testing/test12/device-counters"
+  "testing/test12/report"
+  "testing/test12/semantic-safety-gate"
+  "testing/test13/diagnostic-schema"
+  "testing/test13/rebuild-equivalence"
+  "testing/test13/report"
+  "testing/test13/stage-conformance"
+  "testing/test13/trusting-trust"
+  "testing/test2/cache-invalidation"
+  "testing/test2/development-feedback"
+  "testing/test2/diagnostic-match"
+  "testing/test2/generated-reentry"
+  "testing/test2/optimization-soundness"
+  "testing/test2/plugin-boundaries"
+  "testing/test2/report"
+  "testing/test2/stage-preservation"
+  "testing/test3/ai-ledger"
+  "testing/test3/capability-denial"
+  "testing/test3/concurrency"
+  "testing/test3/family-coverage"
+  "testing/test3/ffi-boundary"
+  "testing/test3/memory-safety"
+  "testing/test3/observability"
+  "testing/test3/replay"
+  "testing/test3/report"
+  "testing/test4/allocation-runtime"
+  "testing/test4/capability-legality"
+  "testing/test4/compatibility"
+  "testing/test4/delegation"
+  "testing/test4/profile-legality"
+  "testing/test4/report"
+  "testing/test5/capability-bypass"
+  "testing/test5/check-elision"
+  "testing/test5/report"
+  "testing/test5/runtime-checks"
+  "testing/test5/safe-outcomes"
+  "testing/test5/taint"
+  "testing/test5/unsafe-audit"
+  "testing/test7/availability"
+  "testing/test7/capability-denial"
+  "testing/test7/properties"
+  "testing/test7/public-api-coverage"
+  "testing/test7/report"
+  "testing/test7/stability"
+  "testing/test7/unsafe-wrappers"
+  "testing/test8/human-review"
+  "testing/test8/metric-release"
+  "testing/test8/report"
+  "testing/test9/live-effect-policy"
+  "testing/test9/minimize-regressions"
+  "testing/test9/mir-preservation"
+  "testing/test9/property-oracle"
+  "testing/test9/replay-identity"
+  "testing/test9/report"
+  "testing/test9/schema-canonicalization"
+  "testing/test9/valid-invalid"],
+ :routing-order
+ :all-original-positions-preserved-new-identities-appended,
+ :bindings
+ [{:id "compiler/c1/compiler-program-legality",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pipeline",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c1/compiler-program-legality: Apply ordinary Gravity type/effect/capability/profile/safety/artifact rules to compiler programs. Concrete acceptance: Compile an otherwise valid compiler module with a forbidden effect, missing grant, illegal profile operation or invalid safety fact; reject it by the same owning rule as an equivalent user module, without a compiler-internal exemption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c1/self-hosting-comparison",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source compiler/c1/self-hosting-comparison: Represent compiler structures as Gravity values and expose comparable public stage artifacts across seed and self-hosted implementations, even with optimized private layouts. Concrete acceptance: Compare actual seed and next-stage public artifacts for the same module; missing public stage output, an unrepresentable compiler structure, unexplained semantic drift or a provenance mismatch fails even when private layouts differ legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c12/domain-entry",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c12/domain-entry: Build domain IR through declared entry passes recording consumed, preserved, invalidated and translated source/IR facts. Concrete acceptance: Mutate each consumed/preserved/invalidated/translated fact edge or remove its source/core/MIR anchor; the entry verifier must reject or regenerate the affected fact before the domain result is consumed. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c12/domain-fallback",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c12/domain-fallback: For unsupported targets expose semantically legal fallback, residual MIR or explicit rejection with diagnostic and eligibility records. Concrete acceptance: Select an unsupported target with no fallback, a fallback that violates profile/effect/safety semantics, and an undeclared lowering; require C12-FALLBACK or C12-LOWERING with eligibility records, never fabricated executable success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c12/domain-proof-boundary",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c12/domain-proof-boundary: Expose optimized domain results only with proof/certificate/translation-validation or accepted nonsemantic evidence; reject benchmark/search/provider claims as sole correctness evidence. Concrete acceptance: Supply benchmark results, optimizer search output or a provider assertion in place of required checked proof/certificate/translation evidence; reject with C12-PROOF. Nonsemantic conformance acceptance must not authorize semantic change. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c12/domain-registration",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c12/domain-registration: Register stable package-visible domain interfaces with owning schema/verifier/passes/profiles/lowerings/proof/fallback/diagnostic contracts, including plugin-provided domains. Concrete acceptance: Require EFIR registration and verification, schema IR registration and verification, workflow IR registration and verification, and registration and verification for one identified target-oriented domain IR (HDL/state-machine IR). Retain each family's package-visible registration, semantic-anchor map, verifier identity, actual invocation input/output and verdict. Reject a missing required family, an unverified family, a failed verifier or an untargeted registration substituted for the target-oriented case; one successful family cannot complete this population. Consume math, schema, workflow and backend-hdl producer interfaces for their corresponding family fixtures, not whole-component completion. Try absent schema/verifier/owner/anchor/entry/exit/profile/target/proof/fallback/diagnostic fields, unstable or conflicting package-visible identity and unauthorized opaque plugin payloads; reject registration before target use. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "backend-interface"
+    "math"
+    "schema"
+    "workflow"
+    "backend-hdl"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c12/registered-domain-exit",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :marker "compiler-api-implementation-tasks",
+   :criterion-text
+   "Source compiler/c12/registered-domain-exit: Permit domain exit/target consumption only via registered paths after verifier acceptance and accepted lowering/equivalence evidence. Concrete acceptance: Submit a failed verifier result, missing exact lowering/equivalence evidence and a path absent from the registration; reject target consumption before emitting an artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c16/cache-revalidation",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :marker "build-implementation-tasks",
+   :criterion-text
+   "Source compiler/c16/cache-revalidation: Reuse stage-specific entries only after producing-pass/schema/version/facts/policy/dependency/diagnostic validation, retaining provenance and invalidation records. Concrete acceptance: Change producer pass version, schema, preserved facts, profile/target, policy, dependency or diagnostic schema separately; reject stale reuse and record the actual affected revalidation/recomputation, keeping prior provenance. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c16/proof-reuse",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :marker "build-implementation-tasks",
+   :criterion-text
+   "Source compiler/c16/proof-reuse: Reuse proofs/certificates only when complete claim/input/assumption/context/invalidation conditions match; require a mapping when node identity changes but semantics survive. Concrete acceptance: Change each claim/input/assumption/profile/target/compiler/provider/package/invalidation premise, and change a node ID without a proof mapping; reject reuse or reprove, retaining residual checks until evidence is valid. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c16/recorded-rebuild",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :marker "build-implementation-tasks",
+   :criterion-text
+   "Source compiler/c16/recorded-rebuild: Reproduce hermetic/release artifacts from recorded inputs and replay rather than trusting stale or incomplete caches. Concrete acceptance: Remove or alter a recorded build input or effect replay record; the hermetic/release rebuild must refuse the claim or expose output drift rather than passing from a stale cache. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c16/semantic-cache-key",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :marker "build-implementation-tasks",
+   :criterion-text
+   "Source compiler/c16/semantic-cache-key: Key each reusable stage artifact over all meaning/legality/proof/diagnostic/output inputs with producer-owned required fields; reject incomplete or timestamp-only identity. Concrete acceptance: Omit each producer-required semantic/legality/proof/diagnostic/output input, or provide only a timestamp; reject C16-KEY and demonstrate that each changed relevant field prevents a false cache hit. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "compiler/c16/speculation-publication-gate",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :marker "build-implementation-tasks",
+   :criterion-text
+   "Source compiler/c16/speculation-publication-gate: Mark partial interactive reuse speculative and withhold release publication until full revalidation succeeds. Concrete acceptance: Attempt publication from a partially revalidated interactive cache; require C16-SPECULATIVE and no release artifact until complete revalidation succeeds. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "bootstrap/release-supply-chain",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source bootstrap/release-supply-chain: Require the active release policy's provenance, SBOM, signatures and reproducibility evidence on bootstrap release candidates. Concrete acceptance: Under the active release policy remove required provenance, SBOM, signature or reproducibility evidence, tamper the candidate identity, or revoke an input; reject the claim. Preserve TEST13 signed-or-otherwise-verifiable provenance: signing is mandatory only when that policy requires it. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "bootstrap/trust-reduction",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source bootstrap/trust-reduction: Make the trusted compiler-source boundary and its change across a migration explicit and measurable. Concrete acceptance: Claim a reduced trusted base with no exact before/after compiler-source and host/toolchain inventory or with unchanged trust merely because source moved to Gravity; fail the claim and retain residual host dependencies. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test1/portable-language",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test1/portable-language: Run accepted and rejected portable language fixtures across all declared language rule areas; distinguish reader syntax errors from semantic errors and compare types/effects and AST/core results. Concrete acceptance: Run a positive and negative fixture for each applicable L1-L19 portable rule with expected type/effect/core result; a missing rule, wrong observable or semantic failure disguised as a reader error fails conformance. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test1/profile-separation",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test1/profile-separation: Keep portable language results distinct from profile-specific behavior and test the latter additionally in profile compliance. Concrete acceptance: Run the same profile-sensitive fixture under portable core and the relevant profile suite; reject merged results or hosted-only behavior reported as portable success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test1/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test1/report: Emit reproducible language conformance evidence with fixture index, reader/syntax/typed-core goldens, diagnostic JSON, feature matrix and identified implementation/compiler/fixture/profile/target; failures identify the smallest reproducible fixture path. Concrete acceptance: Delete or substitute implementation/compiler/fixture/profile/target identities, expected reader/syntax/core artifacts, diagnostic JSON or the failing fixture path; reject incomplete or falsely passing reports. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test1/syntax-origin",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test1/syntax-origin: Preserve macro hygiene, syntax metadata and source-origin spans in expansion goldens. Concrete acceptance: Mutate a macro expansion span, syntax identity, hygiene fact or source/generated-origin edge while retaining the result value; the golden comparison must fail with the owning stable diagnostic. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/backend-artifact",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/backend-artifact: Compare backend semantics and emitted artifacts, including self-host stage artifact hashes and conformance results. Concrete acceptance: Compare actual backend observables and emitted manifests/artifacts with the applicable oracle; fail matching outputs paired with wrong ABI/layout/provenance or semantically divergent artifacts. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/context-divergence",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/context-divergence: Declare relevant profile/target/backend/runtime and expected target divergence; report portable agreement and accepted differences, rejecting unexplained divergence. Concrete acceptance: Run an allowed profile/target divergence and an undeclared difference under the same oracle policy; report the former and fail the unexplained difference. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/numeric-mode",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/numeric-mode: Compare numerical results using declared numeric precision and rounding mode. Concrete acceptance: Compare under declared exactness/precision/rounding/exception contracts; fail a missing mode or values differing outside its accepted relation, including signed zero/NaN cases where applicable. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/oracle-observables",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/oracle-observables: Define compared observables and oracle trust/applicability across supported reference interpreters, stages, runtimes, releases, proof checkers and data/workflow validators; tie oracle outputs to compiler/artifact versions. Concrete acceptance: Execute at least two applicable versioned oracles on the same fixture and declared observables; fail absent observable/trust/applicability definitions or outputs not bound to compiler/artifact identities. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/recorded-nondeterminism",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/recorded-nondeterminism: Compare AI/workflow behavior using recorded traces or controlled datasets; reject fresh live calls when recorded traces are required. Concrete acceptance: Replay the same AI/workflow trace or controlled dataset in both implementations; reject a fresh live call or unrecorded nondeterministic input as a comparison oracle. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test10/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test10/report: Emit oracle manifest, comparison and observable records, diagnostic/artifact comparisons, minimized reproducer and accepted divergence list. Concrete acceptance: Remove oracle manifest, observed outputs, diagnostic/artifact comparison, reproducer or accepted-divergence records; fail reports that ignore code/category drift or substitute unrelated versions. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["backend-conformance"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test11/formal-obligations",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test11/formal-obligations: Require declared and satisfied formal-profile proof obligations for release. Concrete acceptance: Run a formal-profile module with discharged and unmet obligations; reject the unmet claim, absent assumptions/trusted basis or prose-only release evidence. Executable tests remain complementary. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pass-evidence"
+    "math"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test11/pass-linkage",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test11/pass-linkage: Bind optimization proofs to exact pass and before/after IR. Concrete acceptance: Check an optimization proof against exact pass/version and before/after IR; reject swapped inputs, absent transformation identity or an unchecked certificate. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pass-evidence"
+    "math"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test11/proof-identity",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test11/proof-identity: Record formal assumptions and trusted basis; proof artifacts identify claim ID, checker/version and input hash, rejecting unknown checkers or unstated assumptions. Concrete acceptance: Substitute checker name/version, input hash, claim ID or assumptions in a proof artifact; require checker rejection and retain its concrete result and trusted basis. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pass-evidence"
+    "math"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test11/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test11/report: Emit semantics artifacts, proof objects, certificate/checker/assumption manifests, counterexamples and proof invalidation reports across declared formal claim areas. Concrete acceptance: Remove semantics/proof/certificate/checker/assumption/counterexample/invalidation artifacts required by the claim; reject an uncheckable report rather than treating schema presence as a successful proof. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pass-evidence"
+    "math"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test12/ai-costs",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test12/ai-costs: Separate actual AI provider/model, tool, memory, human-review and replay costs/latencies instead of collapsing provider/tool latency into an opaque number. Concrete acceptance: Measure provider/model, tool, memory, human-review and replay cost/latency separately; reject an opaque collapsed total or identities not tied to actual observations. External costs do not impose compiler work quotas. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test12/device-counters",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test12/device-counters: Declare device/counter source and reject counters unavailable on the declared target/device. Concrete acceptance: Collect a supported device counter with device and source identity, then request an unavailable/mismatched counter; reject the unsupported measurement rather than fabricating a sample. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test12/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test12/report: Emit benchmark manifest, raw measurements, summary/comparison reports, regression decision, semantic gate report and safety evidence links. Concrete acceptance: Remove raw samples, benchmark/environment/compiler/artifact identities, comparison/regression decision, semantic gate or safety links; reject an unrepeatable or misleading performance artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test12/semantic-safety-gate",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test12/semantic-safety-gate: Accept performance only after semantic/correctness and safety gates; reject faster behavior violating precision, profile legality or replay policy and require safety evidence for check-elision gains. Concrete acceptance: Compare a genuine safe-equivalent speedup with a faster wrong-result/proofless-check-elision case; fail semantic/safety violations before accepting performance, regardless of threshold improvement. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test13/diagnostic-schema",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test13/diagnostic-schema: Preserve self-hosted compiler diagnostic source spans/stable codes and artifact schemas. Concrete acceptance: Compile accepted and rejected fixtures with both named stages and compare stable codes, source spans and artifact schemas; fail lost origins or incompatible unexplained schemas. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test13/rebuild-equivalence",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test13/rebuild-equivalence: Rebuild staged compilers with source/compiler/lockfile/target-matrix/output hashes; classify expected/unexpected output differences and reject unexplained divergence. Concrete acceptance: Actually rebuild each claimed next stage from pinned source/compiler/lockfile/target inputs and compare outputs; fail unexplained divergence or supplied output records with no executed rebuild. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test13/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test13/report: Emit stage manifest/compiler artifact, conformance report, rebuild log, stage comparison report, provenance attestation, TCB delta and unsafe audit report. Concrete acceptance: Remove stage manifest/compiler artifact/conformance/rebuild/comparison/provenance/TCB/audit links required by the stage; reject missing or unrelated evidence and retain explicit implemented-subset limits. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test13/stage-conformance",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test13/stage-conformance: Run conformance suites required for the stage's implemented subset; deny stage advancement without those passes. Concrete acceptance: Invoke the applicable TEST1-TEST12 suites using each claimed stage compiler; fail stage advancement for an omitted/failing applicable suite and do not infer full-language support from a subset. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test13/trusting-trust",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test13/trusting-trust: Support release trust with reproducible builds or diverse double compilation where applicable; reject unreproducible releases when policy requires reproducibility. Concrete acceptance: Perform policy-applicable reproducible or diverse double compilation with actual compiler/toolchain identities; fail unexplained output drift, missing diversity where required or a trust claim based only on source language. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/cache-invalidation",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/cache-invalidation: Run incremental fixtures that change relevant source/dependency/profile/target/policy/compiler inputs and assert invalidated reuse plus rebuilding exactly affected graph nodes. Concrete acceptance: Mutate source, compiler, dependency, profile, target, policy, grants and other stage-relevant inputs individually; observe exactly the affected rebuild graph and fail a forged reuse result. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/development-feedback",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/development-feedback: Run focused accepted/rejected phase tests and affected pass composition during implementation, recording accurate source/compiler context without claiming proof certification; authoritative migration/release separately requires fresh provenance, stage equivalence and bootstrap evidence after input changes. Concrete acceptance: Change a pass input/output interface and execute focused and affected composition fixtures against current source; fail lost facts or false authoritative-proof labels, without requiring a fresh bootstrap admission merely to run development tests. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/diagnostic-match",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/diagnostic-match: Match compiler diagnostic code, span, profile, target and remediation with stable tool-usable output. Concrete acceptance: Change code, source span, category, profile, target or remediation independently; fail mismatches even if localized message text differs legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/generated-reentry",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/generated-reentry: Execute generated-code test fixtures through the normal compiler pipeline and assert retained source/generated provenance. Concrete acceptance: Submit generated source that is well shaped but type/effect/profile/capability/safety illegal or lacks producer origins; normal pipeline validation must reject before downstream execution. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/optimization-soundness",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/optimization-soundness: Reject unsound compiler rewrites and remove safety checks only with evidence that preserves safe semantics. Concrete acceptance: Execute an unsound rewrite and proofless safety-check deletion alongside the valid rewrite; fail preservation and prevent a claimed optimization pass. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/plugin-boundaries",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/plugin-boundaries: Exercise compiler plugin capability, profile and pass-boundary enforcement without ambient authority. Concrete acceptance: Try an ungranted plugin effect, a write outside its pass boundary, incompatible profile or undeclared transformed fact; the fixture must observe denial before effect/consumption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/report: Emit source/compiler-traceable stage goldens, preservation and proof/evidence reports, diagnostic goldens, cache traces, plugin denials and minimized crash fixtures. Concrete acceptance: Remove stage golden, preservation/evidence, diagnostic, incremental trace, plugin-denial or minimized crash outputs required by the executed cases; reject missing or unrelated report artifacts. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test2/stage-preservation",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test2/stage-preservation: Exercise compiler stages from reader through lowering using golden inputs/outputs and declarations of preserved/transformed facts; preserve source identity, names, types, effects, ownership, capabilities, safety and artifact metadata through composition. Concrete acceptance: For each claimed reader-through-lowering stage mutate source/origin/name/type/effect/ownership/capability/safety/artifact facts; fail the declared golden or preservation check rather than accepting a supplied pass flag. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "plugins"
+    "pass-evidence"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/ai-ledger",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/ai-ledger: Test and reconstruct runtime model/prompt/tool/memory/policy/human-review/replay events using model/tool ledgers. Concrete acceptance: Run model/tool/memory/policy/review/replay fixtures and delete or alter one causal ledger event; reconstruction must fail and unauthorized operations must remain denied. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/capability-denial",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/capability-denial: Deny runtime operations with missing grants and execute fixtures without ambient host services or authority. Concrete acceptance: Exercise the same runtime operation with its exact grant and with absent, narrowed or revoked grants; observe denial before the side effect and reject ambient authority. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/concurrency",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/concurrency: Test runtime scheduling, synchronization, actors and race-prevention claims. Concrete acceptance: Exercise scheduler, synchronization, actors and supported race-prevention claims; inject an invalid synchronization or ownership edge and require the specified rejection/check failure rather than a clean concurrency report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/family-coverage",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/family-coverage: Exercise positive and negative fixtures separately for all declared runtime families, recording family/profile/target/artifact and runtime version. Concrete acceptance: Omit or misidentify a claimed no-runtime/minimal/managed/memory/concurrency/distributed/AI/REPL/FFI/capability/observability family; fail coverage and separate unsupported cases from executed passes. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/ffi-boundary",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/ffi-boundary: Test FFI ABI identity, ownership, errors, callbacks and cleanup and reject mismatched ABI. Concrete acceptance: Use mismatched ABI identity, ownership transfer, error normalization, callback lifetime or cleanup behavior; the FFI fixture must reject or expose the specified failure and verify cleanup on error. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/memory-safety",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/memory-safety: Test runtime allocation, deallocation, arenas, regions and unsafe wrappers where supported. Concrete acceptance: Exercise supported allocation/deallocation/arena/region/unsafe-wrapper boundaries, including invalid lifetime, double release and missing audit controls; fail unsafe outcomes or unsupported claims. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/observability",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/observability: Validate runtime event schemas and redaction without secret leakage. Concrete acceptance: Inject a secret/no-store value and an event with wrong schema or identity; require redaction or refusal and fail any secret-bearing or schema-invalid report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/replay",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/replay: Test distributed retry/idempotency/compensation/event logs with recorded nondeterminism; replay must not repeat side effects. Concrete acceptance: Record a retry/idempotency/compensation/event-log run, replay it, then remove nondeterministic events or repeat an external effect; fail replay equivalence and assert no duplicated side effect. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test3/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test3/report: Emit runtime conformance, capability decision, memory safety, concurrency, replay, AI ledger, FFI and observability reports linked to artifact/profile/target/runtime version. Concrete acceptance: Omit a required runtime/capability/memory/concurrency/replay/AI/FFI/observability report or change its artifact/profile/target/runtime version; reject unrelated or incomplete conformance evidence. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/allocation-runtime",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/allocation-runtime: Test profile allocation, memory, dynamic eval, reflection, GC, runtime and host-service assumptions wherever profile rules mention them. Concrete acceptance: In each applicable profile exercise allowed and forbidden allocation/memory/eval/reflection/GC/runtime/host-service cases; fail any undocumented hosted assumption or missing runtime-legality result. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/capability-legality",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/capability-legality: Test capability legality separately per profile. Concrete acceptance: For each declared profile execute granted and missing/forbidden-grant cases; fail a profile result that inherits a different profile's authority. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/compatibility",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/compatibility: Detect and reject unresolved compatibility conflicts in multi-profile project/package fixtures. Concrete acceptance: Compose multi-profile packages with a deliberate incompatible boundary; require a compatibility diagnostic and no falsely passing combined package. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/delegation",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/delegation: Record target-specific delegation only where permitted by the profile, with profile legality results in artifacts. Concrete acceptance: Remove a delegation artifact or choose a target service outside the profile's permitted delegation; reject and identify the violated rule. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/profile-legality",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/profile-legality: Exercise each named profile with allowed/checked/delegated/rejected categories, accepting allowed behavior, rejecting forbidden services at compile time where possible and honoring required diagnostic severity; no default hosted assumptions in stricter profiles. Concrete acceptance: Exercise allowed/checked/delegated/rejected categories for every named profile; fail rejected allowed behavior, accepted forbidden services, wrong diagnostic severity or missing compile-time rejection where possible. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test4/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test4/report: Emit profile compliance, profile/target matrix, positive/negative results, capability/runtime legality and artifact delegation reports. Concrete acceptance: Remove profile/target matrix cells, negative results, capability/runtime legality or delegation records; fail missing claimed coverage rather than counting unspecified cells as success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "backend-interface"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/capability-bypass",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/capability-bypass: Probe and deny capability bypass attempts including at runtime. Concrete acceptance: Attempt forged, missing and revoked authority through compiler and runtime entry points; fail any accepted bypass and retain the exact denial event. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/check-elision",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/check-elision: Accept removed safety checks only when proof or analysis demonstrates redundancy. Concrete acceptance: Run equivalent checked and valid-proof-elided cases, then substitute absent/stale/unrelated proof or analysis; reject removal and detect a deleted required check. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/report: Emit source-span-linked safety conformance, runtime checks, unsafe audit, proof/certificate, capability denial, taint flow and check-elision evidence; safe-package release claims require this safety gate. Concrete acceptance: Remove source spans, runtime check outcomes, audit, certificate, capability, taint or check-elision links; fail the safety report and any safe-package release claim consuming it. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/runtime-checks",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/runtime-checks: Demonstrate both passing and deterministic failing runtime-check paths for valid and invalid inputs. Concrete acceptance: For each supported check execute valid and invalid inputs; require normal success and deterministic declared failure with source identity, never undefined host behavior. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/safe-outcomes",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/safe-outcomes: Exercise each safety mechanism with positive, negative and unsafe-audited fixtures; safe code must never depend on undefined behavior and negative cases reject with stable diagnostics under the four declared safety outcomes. Concrete acceptance: For every claimed safety mechanism execute positive, negative and audited-unsafe fixtures; reject absent/fifth outcomes, safe-code undefined behavior and unstable negative diagnostics. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/taint",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/taint: Trace source, validation and sink and reject unvalidated taint sinks, including bypass attempts. Concrete acceptance: Follow tainted source through validation to the actual sink, then bypass the validator or substitute unrelated validation; deny the sink and fail a trace that hides the bypass. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test5/unsafe-audit",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test5/unsafe-audit: Inspect actual unsafe-fixture audit artifacts and fail or reject unaudited unsafe fixture results. Concrete acceptance: Inspect the emitted audit records from actual unsafe fixture execution; remove owner/reason/review/source/evidence or the audit entirely and fail the fixture rather than emitting a generic audit-shaped report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/availability",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/availability: Validate per-API/module profile and target availability without importing hosted assumptions into stricter profiles. Concrete acceptance: Run API/module fixtures across declared profile/target availability; reject unsupported availability claims and hosted-only dependencies in stricter profiles. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/capability-denial",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/capability-denial: Test effectful API required effects and missing-capability failures; IO/network/database/platform APIs require mock and capability-denial fixtures. Concrete acceptance: For effectful IO/network/database/platform APIs run recorded/mock success and missing-capability cases; assert denial before the operation and fail ambient grants. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/properties",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/properties: Property-test collection, string, numeric and schema APIs. Concrete acceptance: Execute declared collection/string/numeric/schema invariants and known counterexamples through real APIs; fail an absent oracle, untested API family or violated property. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/public-api-coverage",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/public-api-coverage: Test each public standard-library API behavior, or supply explicit proof/evidence when executable testing is impossible, across declared module areas. Concrete acceptance: Enumerate every declared public API/module and join each to executed behavior fixtures or explicit evidence where execution is impossible; fail missing coverage and reject generic module links as a witness. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/report: Emit module test, profile availability, capability denial, property, runnable documentation and stability compatibility reports. Concrete acceptance: Remove module/profile/capability/property/runnable-documentation/stability artifacts or change their package/API identities; reject the incomplete conformance report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/stability",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/stability: Identify breaking public API changes and require stability-policy handling. Concrete acceptance: Compare compatible and breaking public API revisions; flag the break and reject release without required stability-policy handling. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test7/unsafe-wrappers",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test7/unsafe-wrappers: Test safe boundaries and audit evidence of public APIs wrapping unsafe internals. Concrete acceptance: Execute valid and invalid safe-wrapper preconditions and inspect the underlying audit evidence; fail leaked unsafe states or absent boundary tests/audits. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test8/human-review",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test8/human-review: Evaluate human-review grant/deny/expiry/revocation/payload-change behavior. Concrete acceptance: Execute grant, deny, expiry, revocation and payload-change cases with the same action identity; deny stale or mismatched approval and fail missing refusal cases. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["ai"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test8/metric-release",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test8/metric-release: Apply declared metric thresholds to deterministic release decisions and fail closed for missing or stale evaluation evidence. Concrete acceptance: Score the declared dataset under explicit thresholds, then remove/stale the subject-bound eval or cross the threshold; require deterministic fail-closed release decisions. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["ai"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test8/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test8/report: Emit evaluation, dataset, scored output, replay, tool/memory, human-review, safety, budget and release-gate artifacts linked to release gates. Concrete acceptance: Remove or alter subject/dataset/model/prompt/tool/memory/policy/runtime, scored output, replay, review, safety, real external-cost or release-decision links; reject the incomplete/stale eval report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["ai"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/live-effect-policy",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/live-effect-policy: Use recorded/mocked provider/tool effects for AI/workflow fuzzing; prohibit unbudgeted live provider calls and live effects without policy. Concrete acceptance: Run recorded/mocked AI/workflow cases; attempt a live effect without explicit credential/external billing/retention policy and require denial before the call. No compiler work allowance may substitute for external-service policy. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/minimize-regressions",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/minimize-regressions: Minimize failures into reproducible cases and promote shrunk reproducers to regression fixtures. Concrete acceptance: Inject a reproducible failure, shrink it while preserving the failure oracle, and rerun the promoted regression; fail absent minimization, changed failure cause or missing compiler/oracle outputs. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/mir-preservation",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/mir-preservation: Check MIR and optimization preservation properties with generated inputs. Concrete acceptance: Generate valid and deliberately invalid MIR/pass transformations with declared facts; detect lost types/effects/ownership/safety/origins and reject an unsound preservation claim. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/property-oracle",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/property-oracle: Execute generated property cases against their declared expected invariant and failure oracle, retaining attributable replayable input and result evidence. Concrete acceptance: Execute generated cases against the declared invariant and oracle, including a known violating input; fail missing oracle, fabricated pass flags or evidence unrelated to the replayable input. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/replay-identity",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/replay-identity: Record fuzz seed, generator version, profile/target/compiler and shrinker so generated source/schema/MIR/math/package/workflow/runtime cases replay in CI. Concrete acceptance: Replay from seed/generator/shrinker/compiler/profile/target identities and compare complete cases/results; missing or changed identities must fail reproducibility rather than silently using a new generator. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/report",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/report: Emit seed corpus, generated case manifest, property/coverage/crash reports, minimized reproducer and promoted regression fixture with profile/target identities. Concrete acceptance: Remove seed corpus, generated manifest, property/coverage/crash report, minimized reproducer or regression promotion required by the run; reject reports with absent profile/target or untraceable cases. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/schema-canonicalization",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/schema-canonicalization: Check schema validation and canonicalization under generated values. Concrete acceptance: Generate valid/invalid schemas and values, checking validator outcomes and canonical round trips; detect malformed values, canonical collisions or changed semantics rather than trusting serialization success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}
+  {:id "testing/test9/valid-invalid",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :marker "release-implementation-tasks",
+   :criterion-text
+   "Source testing/test9/valid-invalid: Accept generated valid programs or report known resource-limit diagnostics; invalid programs produce stable diagnostics rather than compiler crashes, preserving type/effect invariants. Concrete acceptance: Run generated valid and invalid programs through the real compiler; fail crashes, missing stable diagnostics and type/effect violations. Any known resource diagnostic must identify an actual host/platform restriction, never revive removed input/work quotas; retain the TEST9 source-policy exception explicitly. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :dependencies
+   ["pipeline"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "schema"
+    "math"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+   :source-review-sha256
+   "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec"}],
+ :task-count-delta 13,
+ :schema-version 1,
+ :reviewed-join-predecessor "92d0ff734190ea260edfb56667803be2651d3256",
+ :implementation-credit :none,
+ :partition-sha256
+ "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+ :kind :guarded-compiler-testing85-current-task-composition,
+ :new-task-interfaces
+ [{:path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :record
+   "- [ ] `domain-ir-boundaries` Domain IR registration and transition boundaries\n\nStatus: Open\n\nProjected task block:\nOwner role: compiler domain-IR interface maintainer. All tasks open; acceptance\nrequires actual registered entry, verifier and exit calls, not registry-shaped data.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| domain-entry | Source compiler/c12/domain-entry: Build domain IR through declared entry passes recording consumed, preserved, invalidated and translated source/IR facts. Concrete acceptance: Mutate each consumed/preserved/invalidated/translated fact edge or remove its source/core/MIR anchor; the entry verifier must reject or regenerate the affected fact before the domain result is consumed. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |\n| domain-fallback | Source compiler/c12/domain-fallback: For unsupported targets expose semantically legal fallback, residual MIR or explicit rejection with diagnostic and eligibility records. Concrete acceptance: Select an unsupported target with no fallback, a fallback that violates profile/effect/safety semantics, and an undeclared lowering; require C12-FALLBACK or C12-LOWERING with eligibility records, never fabricated executable success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |\n| domain-proof-boundary | Source compiler/c12/domain-proof-boundary: Expose optimized domain results only with proof/certificate/translation-validation or accepted nonsemantic evidence; reject benchmark/search/provider claims as sole correctness evidence. Concrete acceptance: Supply benchmark results, optimizer search output or a provider assertion in place of required checked proof/certificate/translation evidence; reject with C12-PROOF. Nonsemantic conformance acceptance must not authorize semantic change. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |\n| domain-registration | Source compiler/c12/domain-registration: Register stable package-visible domain interfaces with owning schema/verifier/passes/profiles/lowerings/proof/fallback/diagnostic contracts, including plugin-provided domains. Concrete acceptance: Require EFIR registration and verification, schema IR registration and verification, workflow IR registration and verification, and registration and verification for one identified target-oriented domain IR (HDL/state-machine IR). Retain each family's package-visible registration, semantic-anchor map, verifier identity, actual invocation input/output and verdict. Reject a missing required family, an unverified family, a failed verifier or an untargeted registration substituted for the target-oriented case; one successful family cannot complete this population. Consume math, schema, workflow and backend-hdl producer interfaces for their corresponding family fixtures, not whole-component completion. Try absent schema/verifier/owner/anchor/entry/exit/profile/target/proof/fallback/diagnostic fields, unstable or conflicting package-visible identity and unauthorized opaque plugin payloads; reject registration before target use. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |\n| registered-domain-exit | Source compiler/c12/registered-domain-exit: Permit domain exit/target consumption only via registered paths after verifier acceptance and accepted lowering/equivalence evidence. Concrete acceptance: Submit a failed verifier result, missing exact lowering/equivalence evidence and a path absent from the registration; reject target consumption before emitting an artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |\n\nYes/no acceptance: do registered entry/verifier/exit operations execute with\nexact anchors and complete facts? Do all invalid registrations, missing proofs,\nillegal exits and unavailable-target fallback cases reject as specified? Both\nmust be yes. Domain owners retain their payload schemas and semantics.",
+   :record-sha256
+   "328d5f523f8aa8dc31e1091e864fedeb95d2f4ae9bb875cdee9afd042b24f43c"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations` Execute agent and workflow evaluations\n\nStatus: Open\n\nEvidence baseline: [TEST8](../../docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md)\n\nClosing evidence: Implement and execute the Execute agent and workflow evaluations runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test8/human-review: Evaluate human-review grant/deny/expiry/revocation/payload-change behavior. Concrete acceptance: Execute grant, deny, expiry, revocation and payload-change cases with the same action identity; deny stale or mismatched approval and fail missing refusal cases. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test8/metric-release: Apply declared metric thresholds to deterministic release decisions and fail closed for missing or stale evaluation evidence. Concrete acceptance: Score the declared dataset under explicit thresholds, then remove/stale the subject-bound eval or cross the threshold; require deterministic fail-closed release decisions. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test8/report: Emit evaluation, dataset, scored output, replay, tool/memory, human-review, safety, budget and release-gate artifacts linked to release gates. Concrete acceptance: Remove or alter subject/dataset/model/prompt/tool/memory/policy/runtime, scored output, replay, review, safety, real external-cost or release-decision links; reject the incomplete/stale eval report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures` Execute compiler preservation fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)\n\nClosing evidence: Implement and execute the Execute compiler preservation fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test2/cache-invalidation: Run incremental fixtures that change relevant source/dependency/profile/target/policy/compiler inputs and assert invalidated reuse plus rebuilding exactly affected graph nodes. Concrete acceptance: Mutate source, compiler, dependency, profile, target, policy, grants and other stage-relevant inputs individually; observe exactly the affected rebuild graph and fail a forged reuse result. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/development-feedback: Run focused accepted/rejected phase tests and affected pass composition during implementation, recording accurate source/compiler context without claiming proof certification; authoritative migration/release separately requires fresh provenance, stage equivalence and bootstrap evidence after input changes. Concrete acceptance: Change a pass input/output interface and execute focused and affected composition fixtures against current source; fail lost facts or false authoritative-proof labels, without requiring a fresh bootstrap admission merely to run development tests. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/diagnostic-match: Match compiler diagnostic code, span, profile, target and remediation with stable tool-usable output. Concrete acceptance: Change code, source span, category, profile, target or remediation independently; fail mismatches even if localized message text differs legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/generated-reentry: Execute generated-code test fixtures through the normal compiler pipeline and assert retained source/generated provenance. Concrete acceptance: Submit generated source that is well shaped but type/effect/profile/capability/safety illegal or lacks producer origins; normal pipeline validation must reject before downstream execution. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/optimization-soundness: Reject unsound compiler rewrites and remove safety checks only with evidence that preserves safe semantics. Concrete acceptance: Execute an unsound rewrite and proofless safety-check deletion alongside the valid rewrite; fail preservation and prevent a claimed optimization pass. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/plugin-boundaries: Exercise compiler plugin capability, profile and pass-boundary enforcement without ambient authority. Concrete acceptance: Try an ungranted plugin effect, a write outside its pass boundary, incompatible profile or undeclared transformed fact; the fixture must observe denial before effect/consumption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/report: Emit source/compiler-traceable stage goldens, preservation and proof/evidence reports, diagnostic goldens, cache traces, plugin denials and minimized crash fixtures. Concrete acceptance: Remove stage golden, preservation/evidence, diagnostic, incremental trace, plugin-denial or minimized crash outputs required by the executed cases; reject missing or unrelated report artifacts. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/stage-preservation: Exercise compiler stages from reader through lowering using golden inputs/outputs and declarations of preserved/transformed facts; preserve source identity, names, types, effects, ownership, capabilities, safety and artifact metadata through composition. Concrete acceptance: For each claimed reader-through-lowering stage mutate source/origin/name/type/effect/ownership/capability/safety/artifact facts; fail the declared golden or preservation check rather than accepting a supplied pass flag. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures` Execute differential conformance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)\n\nClosing evidence: Implement and execute the Execute differential conformance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test10/backend-artifact: Compare backend semantics and emitted artifacts, including self-host stage artifact hashes and conformance results. Concrete acceptance: Compare actual backend observables and emitted manifests/artifacts with the applicable oracle; fail matching outputs paired with wrong ABI/layout/provenance or semantically divergent artifacts. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test10/context-divergence: Declare relevant profile/target/backend/runtime and expected target divergence; report portable agreement and accepted differences, rejecting unexplained divergence. Concrete acceptance: Run an allowed profile/target divergence and an undeclared difference under the same oracle policy; report the former and fail the unexplained difference. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test10/numeric-mode: Compare numerical results using declared numeric precision and rounding mode. Concrete acceptance: Compare under declared exactness/precision/rounding/exception contracts; fail a missing mode or values differing outside its accepted relation, including signed zero/NaN cases where applicable. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test10/oracle-observables: Define compared observables and oracle trust/applicability across supported reference interpreters, stages, runtimes, releases, proof checkers and data/workflow validators; tie oracle outputs to compiler/artifact versions. Concrete acceptance: Execute at least two applicable versioned oracles on the same fixture and declared observables; fail absent observable/trust/applicability definitions or outputs not bound to compiler/artifact identities. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test10/recorded-nondeterminism: Compare AI/workflow behavior using recorded traces or controlled datasets; reject fresh live calls when recorded traces are required. Concrete acceptance: Replay the same AI/workflow trace or controlled dataset in both implementations; reject a fresh live call or unrecorded nondeterministic input as a comparison oracle. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test10/report: Emit oracle manifest, comparison and observable records, diagnostic/artifact comparisons, minimized reproducer and accepted divergence list. Concrete acceptance: Remove oracle manifest, observed outputs, diagnostic/artifact comparison, reproducer or accepted-divergence records; fail reports that ignore code/category drift or substitute unrelated versions. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-formal-evidence-checks` Execute formal evidence checks\n\nStatus: Open\n\nEvidence baseline: [TEST11](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)\n\nClosing evidence: Implement and execute the Execute formal evidence checks runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test11/formal-obligations: Require declared and satisfied formal-profile proof obligations for release. Concrete acceptance: Run a formal-profile module with discharged and unmet obligations; reject the unmet claim, absent assumptions/trusted basis or prose-only release evidence. Executable tests remain complementary. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test11/pass-linkage: Bind optimization proofs to exact pass and before/after IR. Concrete acceptance: Check an optimization proof against exact pass/version and before/after IR; reject swapped inputs, absent transformation identity or an unchecked certificate. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test11/proof-identity: Record formal assumptions and trusted basis; proof artifacts identify claim ID, checker/version and input hash, rejecting unknown checkers or unstated assumptions. Concrete acceptance: Substitute checker name/version, input hash, claim ID or assumptions in a proof artifact; require checker rejection and retain its concrete result and trusted basis. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test11/report: Emit semantics artifacts, proof objects, certificate/checker/assumption manifests, counterexamples and proof invalidation reports across declared formal claim areas. Concrete acceptance: Remove semantics/proof/certificate/checker/assumption/counterexample/invalidation artifacts required by the claim; reject an uncheckable report rather than treating schema presence as a successful proof. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures` Execute fuzz and property fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)\n\nClosing evidence: Implement and execute the Execute fuzz and property fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test9/live-effect-policy: Use recorded/mocked provider/tool effects for AI/workflow fuzzing; prohibit unbudgeted live provider calls and live effects without policy. Concrete acceptance: Run recorded/mocked AI/workflow cases; attempt a live effect without explicit credential/external billing/retention policy and require denial before the call. No compiler work allowance may substitute for external-service policy. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/minimize-regressions: Minimize failures into reproducible cases and promote shrunk reproducers to regression fixtures. Concrete acceptance: Inject a reproducible failure, shrink it while preserving the failure oracle, and rerun the promoted regression; fail absent minimization, changed failure cause or missing compiler/oracle outputs. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/mir-preservation: Check MIR and optimization preservation properties with generated inputs. Concrete acceptance: Generate valid and deliberately invalid MIR/pass transformations with declared facts; detect lost types/effects/ownership/safety/origins and reject an unsound preservation claim. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/property-oracle: Execute generated property cases against their declared expected invariant and failure oracle, retaining attributable replayable input and result evidence. Concrete acceptance: Execute generated cases against the declared invariant and oracle, including a known violating input; fail missing oracle, fabricated pass flags or evidence unrelated to the replayable input. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/replay-identity: Record fuzz seed, generator version, profile/target/compiler and shrinker so generated source/schema/MIR/math/package/workflow/runtime cases replay in CI. Concrete acceptance: Replay from seed/generator/shrinker/compiler/profile/target identities and compare complete cases/results; missing or changed identities must fail reproducibility rather than silently using a new generator. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/report: Emit seed corpus, generated case manifest, property/coverage/crash reports, minimized reproducer and promoted regression fixture with profile/target identities. Concrete acceptance: Remove seed corpus, generated manifest, property/coverage/crash report, minimized reproducer or regression promotion required by the run; reject reports with absent profile/target or untraceable cases. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/schema-canonicalization: Check schema validation and canonicalization under generated values. Concrete acceptance: Generate valid/invalid schemas and values, checking validator outcomes and canonical round trips; detect malformed values, canonical collisions or changed semantics rather than trusting serialization success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test9/valid-invalid: Accept generated valid programs or report known resource-limit diagnostics; invalid programs produce stable diagnostics rather than compiler crashes, preserving type/effect invariants. Concrete acceptance: Run generated valid and invalid programs through the real compiler; fail crashes, missing stable diagnostics and type/effect violations. Any known resource diagnostic must identify an actual host/platform restriction, never revive removed input/work quotas; retain the TEST9 source-policy exception explicitly. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-language-conformance-fixtures` Execute language conformance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md)\n\nClosing evidence: Implement and execute the Execute language conformance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test1/portable-language: Run accepted and rejected portable language fixtures across all declared language rule areas; distinguish reader syntax errors from semantic errors and compare types/effects and AST/core results. Concrete acceptance: Run a positive and negative fixture for each applicable L1-L19 portable rule with expected type/effect/core result; a missing rule, wrong observable or semantic failure disguised as a reader error fails conformance. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test1/profile-separation: Keep portable language results distinct from profile-specific behavior and test the latter additionally in profile compliance. Concrete acceptance: Run the same profile-sensitive fixture under portable core and the relevant profile suite; reject merged results or hosted-only behavior reported as portable success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test1/report: Emit reproducible language conformance evidence with fixture index, reader/syntax/typed-core goldens, diagnostic JSON, feature matrix and identified implementation/compiler/fixture/profile/target; failures identify the smallest reproducible fixture path. Concrete acceptance: Delete or substitute implementation/compiler/fixture/profile/target identities, expected reader/syntax/core artifacts, diagnostic JSON or the failing fixture path; reject incomplete or falsely passing reports. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test1/syntax-origin: Preserve macro hygiene, syntax metadata and source-origin spans in expansion goldens. Concrete acceptance: Mutate a macro expansion span, syntax identity, hygiene fact or source/generated-origin edge while retaining the result value; the golden comparison must fail with the owning stable diagnostic. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "3a7f005598c024d292ce8143dd35a4824fe013e47c9d2813458ee166ddfd7073"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-library-conformance-fixtures` Execute library conformance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)\n\nClosing evidence: Implement and execute the Execute library conformance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test7/availability: Validate per-API/module profile and target availability without importing hosted assumptions into stricter profiles. Concrete acceptance: Run API/module fixtures across declared profile/target availability; reject unsupported availability claims and hosted-only dependencies in stricter profiles. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/capability-denial: Test effectful API required effects and missing-capability failures; IO/network/database/platform APIs require mock and capability-denial fixtures. Concrete acceptance: For effectful IO/network/database/platform APIs run recorded/mock success and missing-capability cases; assert denial before the operation and fail ambient grants. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/properties: Property-test collection, string, numeric and schema APIs. Concrete acceptance: Execute declared collection/string/numeric/schema invariants and known counterexamples through real APIs; fail an absent oracle, untested API family or violated property. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/public-api-coverage: Test each public standard-library API behavior, or supply explicit proof/evidence when executable testing is impossible, across declared module areas. Concrete acceptance: Enumerate every declared public API/module and join each to executed behavior fixtures or explicit evidence where execution is impossible; fail missing coverage and reject generic module links as a witness. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/report: Emit module test, profile availability, capability denial, property, runnable documentation and stability compatibility reports. Concrete acceptance: Remove module/profile/capability/property/runnable-documentation/stability artifacts or change their package/API identities; reject the incomplete conformance report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/stability: Identify breaking public API changes and require stability-policy handling. Concrete acceptance: Compare compatible and breaking public API revisions; flag the break and reject release without required stability-policy handling. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test7/unsafe-wrappers: Test safe boundaries and audit evidence of public APIs wrapping unsafe internals. Concrete acceptance: Execute valid and invalid safe-wrapper preconditions and inspect the underlying audit evidence; fail leaked unsafe states or absent boundary tests/audits. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-performance-regression-fixtures` Execute performance regression fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST12](../../docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md)\n\nClosing evidence: Implement and execute the Execute performance regression fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test12/ai-costs: Separate actual AI provider/model, tool, memory, human-review and replay costs/latencies instead of collapsing provider/tool latency into an opaque number. Concrete acceptance: Measure provider/model, tool, memory, human-review and replay cost/latency separately; reject an opaque collapsed total or identities not tied to actual observations. External costs do not impose compiler work quotas. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/device-counters: Declare device/counter source and reject counters unavailable on the declared target/device. Concrete acceptance: Collect a supported device counter with device and source identity, then request an unavailable/mismatched counter; reject the unsupported measurement rather than fabricating a sample. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/report: Emit benchmark manifest, raw measurements, summary/comparison reports, regression decision, semantic gate report and safety evidence links. Concrete acceptance: Remove raw samples, benchmark/environment/compiler/artifact identities, comparison/regression decision, semantic gate or safety links; reject an unrepeatable or misleading performance artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/semantic-safety-gate: Accept performance only after semantic/correctness and safety gates; reject faster behavior violating precision, profile legality or replay policy and require safety evidence for check-elision gains. Concrete acceptance: Compare a genuine safe-equivalent speedup with a faster wrong-result/proofless-check-elision case; fail semantic/safety violations before accepting performance, regardless of threshold improvement. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures` Execute profile compliance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)\n\nClosing evidence: Implement and execute the Execute profile compliance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test4/allocation-runtime: Test profile allocation, memory, dynamic eval, reflection, GC, runtime and host-service assumptions wherever profile rules mention them. Concrete acceptance: In each applicable profile exercise allowed and forbidden allocation/memory/eval/reflection/GC/runtime/host-service cases; fail any undocumented hosted assumption or missing runtime-legality result. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test4/capability-legality: Test capability legality separately per profile. Concrete acceptance: For each declared profile execute granted and missing/forbidden-grant cases; fail a profile result that inherits a different profile's authority. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test4/compatibility: Detect and reject unresolved compatibility conflicts in multi-profile project/package fixtures. Concrete acceptance: Compose multi-profile packages with a deliberate incompatible boundary; require a compatibility diagnostic and no falsely passing combined package. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test4/delegation: Record target-specific delegation only where permitted by the profile, with profile legality results in artifacts. Concrete acceptance: Remove a delegation artifact or choose a target service outside the profile's permitted delegation; reject and identify the violated rule. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test4/profile-legality: Exercise each named profile with allowed/checked/delegated/rejected categories, accepting allowed behavior, rejecting forbidden services at compile time where possible and honoring required diagnostic severity; no default hosted assumptions in stricter profiles. Concrete acceptance: Exercise allowed/checked/delegated/rejected categories for every named profile; fail rejected allowed behavior, accepted forbidden services, wrong diagnostic severity or missing compile-time rejection where possible. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test4/report: Emit profile compliance, profile/target matrix, positive/negative results, capability/runtime legality and artifact delegation reports. Concrete acceptance: Remove profile/target matrix cells, negative results, capability/runtime legality or delegation records; fail missing claimed coverage rather than counting unspecified cells as success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures` Execute runtime conformance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)\n\nClosing evidence: Implement and execute the Execute runtime conformance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test3/ai-ledger: Test and reconstruct runtime model/prompt/tool/memory/policy/human-review/replay events using model/tool ledgers. Concrete acceptance: Run model/tool/memory/policy/review/replay fixtures and delete or alter one causal ledger event; reconstruction must fail and unauthorized operations must remain denied. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/capability-denial: Deny runtime operations with missing grants and execute fixtures without ambient host services or authority. Concrete acceptance: Exercise the same runtime operation with its exact grant and with absent, narrowed or revoked grants; observe denial before the side effect and reject ambient authority. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/concurrency: Test runtime scheduling, synchronization, actors and race-prevention claims. Concrete acceptance: Exercise scheduler, synchronization, actors and supported race-prevention claims; inject an invalid synchronization or ownership edge and require the specified rejection/check failure rather than a clean concurrency report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/family-coverage: Exercise positive and negative fixtures separately for all declared runtime families, recording family/profile/target/artifact and runtime version. Concrete acceptance: Omit or misidentify a claimed no-runtime/minimal/managed/memory/concurrency/distributed/AI/REPL/FFI/capability/observability family; fail coverage and separate unsupported cases from executed passes. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/ffi-boundary: Test FFI ABI identity, ownership, errors, callbacks and cleanup and reject mismatched ABI. Concrete acceptance: Use mismatched ABI identity, ownership transfer, error normalization, callback lifetime or cleanup behavior; the FFI fixture must reject or expose the specified failure and verify cleanup on error. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/memory-safety: Test runtime allocation, deallocation, arenas, regions and unsafe wrappers where supported. Concrete acceptance: Exercise supported allocation/deallocation/arena/region/unsafe-wrapper boundaries, including invalid lifetime, double release and missing audit controls; fail unsafe outcomes or unsupported claims. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/observability: Validate runtime event schemas and redaction without secret leakage. Concrete acceptance: Inject a secret/no-store value and an event with wrong schema or identity; require redaction or refusal and fail any secret-bearing or schema-invalid report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/replay: Test distributed retry/idempotency/compensation/event logs with recorded nondeterminism; replay must not repeat side effects. Concrete acceptance: Record a retry/idempotency/compensation/event-log run, replay it, then remove nondeterministic events or repeat an external effect; fail replay equivalence and assert no duplicated side effect. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test3/report: Emit runtime conformance, capability decision, memory safety, concurrency, replay, AI ledger, FFI and observability reports linked to artifact/profile/target/runtime version. Concrete acceptance: Omit a required runtime/capability/memory/concurrency/replay/AI/FFI/observability report or change its artifact/profile/target/runtime version; reject unrelated or incomplete conformance evidence. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures` Execute safety conformance fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)\n\nClosing evidence: Implement and execute the Execute safety conformance fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test5/capability-bypass: Probe and deny capability bypass attempts including at runtime. Concrete acceptance: Attempt forged, missing and revoked authority through compiler and runtime entry points; fail any accepted bypass and retain the exact denial event. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/check-elision: Accept removed safety checks only when proof or analysis demonstrates redundancy. Concrete acceptance: Run equivalent checked and valid-proof-elided cases, then substitute absent/stale/unrelated proof or analysis; reject removal and detect a deleted required check. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/report: Emit source-span-linked safety conformance, runtime checks, unsafe audit, proof/certificate, capability denial, taint flow and check-elision evidence; safe-package release claims require this safety gate. Concrete acceptance: Remove source spans, runtime check outcomes, audit, certificate, capability, taint or check-elision links; fail the safety report and any safe-package release claim consuming it. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/runtime-checks: Demonstrate both passing and deterministic failing runtime-check paths for valid and invalid inputs. Concrete acceptance: For each supported check execute valid and invalid inputs; require normal success and deterministic declared failure with source identity, never undefined host behavior. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/safe-outcomes: Exercise each safety mechanism with positive, negative and unsafe-audited fixtures; safe code must never depend on undefined behavior and negative cases reject with stable diagnostics under the four declared safety outcomes. Concrete acceptance: For every claimed safety mechanism execute positive, negative and audited-unsafe fixtures; reject absent/fifth outcomes, safe-code undefined behavior and unstable negative diagnostics. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/taint: Trace source, validation and sink and reject unvalidated taint sinks, including bypass attempts. Concrete acceptance: Follow tainted source through validation to the actual sink, then bypass the validator or substitute unrelated validation; deny the sink and fail a trace that hides the bypass. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test5/unsafe-audit: Inspect actual unsafe-fixture audit artifacts and fail or reject unaudited unsafe fixture results. Concrete acceptance: Inspect the emitted audit records from actual unsafe fixture execution; remove owner/reason/review/source/evidence or the audit entirely and fail the fixture rather than emitting a generic audit-shaped report. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"}
+  {:path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+   :record
+   "- [ ] `release/remaining-tasks-and-evidence/execute-staged-compiler-validation` Execute staged compiler validation\n\nStatus: Open\n\nEvidence baseline: [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)\n\nClosing evidence: Implement and execute the Execute staged compiler validation runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source bootstrap/release-supply-chain: Require the active release policy's provenance, SBOM, signatures and reproducibility evidence on bootstrap release candidates. Concrete acceptance: Under the active release policy remove required provenance, SBOM, signature or reproducibility evidence, tamper the candidate identity, or revoke an input; reject the claim. Preserve TEST13 signed-or-otherwise-verifiable provenance: signing is mandatory only when that policy requires it. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source bootstrap/trust-reduction: Make the trusted compiler-source boundary and its change across a migration explicit and measurable. Concrete acceptance: Claim a reduced trusted base with no exact before/after compiler-source and host/toolchain inventory or with unchanged trust merely because source moved to Gravity; fail the claim and retain residual host dependencies. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test13/diagnostic-schema: Preserve self-hosted compiler diagnostic source spans/stable codes and artifact schemas. Concrete acceptance: Compile accepted and rejected fixtures with both named stages and compare stable codes, source spans and artifact schemas; fail lost origins or incompatible unexplained schemas. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test13/rebuild-equivalence: Rebuild staged compilers with source/compiler/lockfile/target-matrix/output hashes; classify expected/unexpected output differences and reject unexplained divergence. Concrete acceptance: Actually rebuild each claimed next stage from pinned source/compiler/lockfile/target inputs and compare outputs; fail unexplained divergence or supplied output records with no executed rebuild. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test13/report: Emit stage manifest/compiler artifact, conformance report, rebuild log, stage comparison report, provenance attestation, TCB delta and unsafe audit report. Concrete acceptance: Remove stage manifest/compiler artifact/conformance/rebuild/comparison/provenance/TCB/audit links required by the stage; reject missing or unrelated evidence and retain explicit implemented-subset limits. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test13/stage-conformance: Run conformance suites required for the stage's implemented subset; deny stage advancement without those passes. Concrete acceptance: Invoke the applicable TEST1-TEST12 suites using each claimed stage compiler; fail stage advancement for an omitted/failing applicable suite and do not infer full-language support from a subset. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test13/trusting-trust: Support release trust with reproducible builds or diverse double compilation where applicable; reject unreproducible releases when policy requires reproducibility. Concrete acceptance: Perform policy-applicable reproducible or diverse double compilation with actual compiler/toolchain identities; fail unexplained output drift, missing diversity where required or a trust claim based only on source language. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
+   :record-sha256
+   "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"}],
+ :source-review-sha256
+ "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec",
+ :accepted-mappings-preserved 275,
+ :operations
+ [{:path "specs/compiler-api-workflow/tasks.md",
+   :reviewed-before-sha256
+   "21b0ced1473ab42e6910121e327bfdea8d7fcd7a6a05220b8d48b678248d9bc7",
+   :applying-after-sha256
+   "2d439724cd8f0fae570e067e25dd7394af2bc156b07935d4e743fe7e4465d23b",
+   :reviewed-after-sha256
+   "2d439724cd8f0fae570e067e25dd7394af2bc156b07935d4e743fe7e4465d23b",
+   :retained-later-prefix false,
+   :field :projection,
+   :applying-before-sha256
+   "21b0ced1473ab42e6910121e327bfdea8d7fcd7a6a05220b8d48b678248d9bc7",
+   :after
+   "Owner role: compiler API/pipeline maintainer. All tasks open; source evidence\nabove is partial implementation evidence, not closure.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Stabilize public request/context/result API | Versioned schema and compatibility fixtures for source and stage-artifact calls; missing versions, incompatible schemas and hidden mutable-context access reject. A direct caller and CLI adapter receive the same semantic results. |\n| Register and schedule actual passes | Built-in registration binds implementation/version to complete requires/preserves/invalidates/regenerates/effects/profile contracts; execute declared order and reject missing facts, duplicate/conflicting registration and illegal ordering before consumption. |\n| Execute and retain stage products | Actual selected compiler invocation records input/output identities, diagnostics, source origins and provenance for every required stage, including fused-pass observable boundaries; verifier failure stops downstream execution. |\n| Derive cache keys and invalidate facts | Use actual source/compiler/pass/plugin/grant/replay/policy/target inputs; unchanged-input reuse agrees with a clean run, and every contract invalidation class triggers revalidation or recomputation. Stale proofs, diagnostics and speculative release reuse reject. |\n| Integrate compiler consumers | Build, CLI and inspection callers consume the same API artifacts; positive and negative selected-target programs demonstrate no raw/unchecked backend input and no runnable output from diagnostic-only mode. |\n\nYes/no acceptance: are passes actually invoked? Are all required stage facts\nverified and retained? Are clean and reused results semantically equivalent?\nAre stale inputs and invalid stage orders rejected? Does public API behavior\nremain independent of ambient mutable compiler state? All must be yes.\n\nFoundation requirement gravity/canonical-pass-order: Resolve the retained D1 Core-AST-before-name-resolution versus C1/C6 resolved-lowering identity/order conflict through an explicit governing-source decision. Encode the adopted semantic boundaries and demonstrate their order on actual stage products, including fused execution without inventing another stage. Refusals: Reject unresolved or conflicting order claims, unresolved required names before typed acceptance and a fused pass that omits an adopted boundary; no manifest ordering label alone resolves the source conflict. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nFoundation requirement gravity/domain-anchor-preservation: Carry each domain operation's typed Core/MIR semantic anchor and required facts through optimization until its owning domain contract authorizes lowering; expose replacement or invalidation edges in the emitted artifacts. Refusals: Reject an unanchored opaque domain payload, a lost source/fact edge or premature lowering that prevents the required domain verification. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/feature-layer-classification: Attach each introduced feature to its owning source semantic layer, compile-time contract, domain IR, backend/runtime provider or tooling surface, with explicit dependencies and observable artifacts. Refusals: Reject a feature classified as portable source semantics solely because a host runtime or target supports it, or a backend used to defer compile-time profile/effect/authority legality. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n\nFoundation requirement gravity/fused-pass-observability: For each physically fused pass expose the same adopted semantic input/output boundaries, preserved/invalidated/regenerated facts, diagnostics and artifacts as the canonical pipeline; compare fused and unfused accepted/refused cases. Refusals: Reject lost intermediate obligations, unobservable invalidation or a fused path that accepts an input the canonical required boundary rejects. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/pass-contract-schema: Publish and validate versioned pass input/output schemas including required, preserved, invalidated and regenerated facts, profiles, effects, capabilities, diagnostics and emitted artifacts; actual registrations and consumers use those versions. Refusals: Reject absent or incompatible schema versions, undeclared invalidation, missing required facts and a pass output that violates the selected contract. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/unified-source-semantics: Compile the same supported Gravity source across its declared profiles/targets with one source semantic model, recording only contract-permitted representation/provider differences and explicit unsupported cases. Refusals: Reject a host truth/null/equality/overflow rule substituted for Gravity semantics or a backend accepting source behavior already rejected by profile/effect/safety analysis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nSource compiler/c1/compiler-program-legality: Apply ordinary Gravity type/effect/capability/profile/safety/artifact rules to compiler programs. Concrete acceptance: Compile an otherwise valid compiler module with a forbidden effect, missing grant, illegal profile operation or invalid safety fact; reject it by the same owning rule as an equivalent user module, without a compiler-internal exemption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :id "pipeline",
+   :before
+   "Owner role: compiler API/pipeline maintainer. All tasks open; source evidence\nabove is partial implementation evidence, not closure.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Stabilize public request/context/result API | Versioned schema and compatibility fixtures for source and stage-artifact calls; missing versions, incompatible schemas and hidden mutable-context access reject. A direct caller and CLI adapter receive the same semantic results. |\n| Register and schedule actual passes | Built-in registration binds implementation/version to complete requires/preserves/invalidates/regenerates/effects/profile contracts; execute declared order and reject missing facts, duplicate/conflicting registration and illegal ordering before consumption. |\n| Execute and retain stage products | Actual selected compiler invocation records input/output identities, diagnostics, source origins and provenance for every required stage, including fused-pass observable boundaries; verifier failure stops downstream execution. |\n| Derive cache keys and invalidate facts | Use actual source/compiler/pass/plugin/grant/replay/policy/target inputs; unchanged-input reuse agrees with a clean run, and every contract invalidation class triggers revalidation or recomputation. Stale proofs, diagnostics and speculative release reuse reject. |\n| Integrate compiler consumers | Build, CLI and inspection callers consume the same API artifacts; positive and negative selected-target programs demonstrate no raw/unchecked backend input and no runnable output from diagnostic-only mode. |\n\nYes/no acceptance: are passes actually invoked? Are all required stage facts\nverified and retained? Are clean and reused results semantically equivalent?\nAre stale inputs and invalid stage orders rejected? Does public API behavior\nremain independent of ambient mutable compiler state? All must be yes.\n\nFoundation requirement gravity/canonical-pass-order: Resolve the retained D1 Core-AST-before-name-resolution versus C1/C6 resolved-lowering identity/order conflict through an explicit governing-source decision. Encode the adopted semantic boundaries and demonstrate their order on actual stage products, including fused execution without inventing another stage. Refusals: Reject unresolved or conflicting order claims, unresolved required names before typed acceptance and a fused pass that omits an adopted boundary; no manifest ordering label alone resolves the source conflict. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nFoundation requirement gravity/domain-anchor-preservation: Carry each domain operation's typed Core/MIR semantic anchor and required facts through optimization until its owning domain contract authorizes lowering; expose replacement or invalidation edges in the emitted artifacts. Refusals: Reject an unanchored opaque domain payload, a lost source/fact edge or premature lowering that prevents the required domain verification. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/feature-layer-classification: Attach each introduced feature to its owning source semantic layer, compile-time contract, domain IR, backend/runtime provider or tooling surface, with explicit dependencies and observable artifacts. Refusals: Reject a feature classified as portable source semantics solely because a host runtime or target supports it, or a backend used to defer compile-time profile/effect/authority legality. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n\nFoundation requirement gravity/fused-pass-observability: For each physically fused pass expose the same adopted semantic input/output boundaries, preserved/invalidated/regenerated facts, diagnostics and artifacts as the canonical pipeline; compare fused and unfused accepted/refused cases. Refusals: Reject lost intermediate obligations, unobservable invalidation or a fused path that accepts an input the canonical required boundary rejects. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/pass-contract-schema: Publish and validate versioned pass input/output schemas including required, preserved, invalidated and regenerated facts, profiles, effects, capabilities, diagnostics and emitted artifacts; actual registrations and consumers use those versions. Refusals: Reject absent or incompatible schema versions, undeclared invalidation, missing required facts and a pass output that violates the selected contract. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/unified-source-semantics: Compile the same supported Gravity source across its declared profiles/targets with one source semantic model, recording only contract-permitted representation/provider differences and explicit unsupported cases. Refusals: Reject a host truth/null/equality/overflow rule substituted for Gravity semantics or a backend accepting source behavior already rejected by profile/effect/safety analysis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results."}
+  {:path "specs/release-workflow/tasks.md",
+   :reviewed-before-sha256
+   "f7fe263a9b124fe12ffefac7f31ec0d7476c6b2a32f95f71bed182432902d3ce",
+   :applying-after-sha256
+   "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971",
+   :reviewed-after-sha256
+   "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971",
+   :retained-later-prefix false,
+   :field :acceptance,
+   :applying-before-sha256
+   "f7fe263a9b124fe12ffefac7f31ec0d7476c6b2a32f95f71bed182432902d3ce",
+   :after
+   "Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BOOT1/BOOT3/BOOT5/BOOT7: Publish a versioned row for every claimed stage and authoritative module revision, naming source/compiler/artifact identities, supported and unsupported documents/features/profiles/backends/runtime/package/library/test closure, owned or deferred gaps, conformance links and release eligibility. Record exact compiler-module ownership and residual TCB with measurable migration delta. Compare both named compilers and canonical artifacts under declared applicable hash/manifest/diagnostic/conformance/runtime/IR/performance/accepted-delta modes; preserve stable codes/spans and provenance. Reject missing outputs, implicit inherited support, omitted stage rows, unsupported claims, stale matrix versions and unexplained drift; accept deltas only with policy-linked review. Performance bounds apply only when performance is part of acceptance; no compiler work quota is introduced. Execute the intermediate authoritative stage/module admission decision against this exact candidate and declared subset, consuming the fresh conformance, equivalence/accepted-delta, matrix, provenance, TCB and applicable audit records. Record admit or deny with candidate/source/compiler/artifact identities and failed predicates. Deny failing applicable suites, stale or missing required evidence, unexplained drift, unsupported claimed support and missing ownership/matrix updates. Exercise both a valid intermediate admission and each refusal. Retain explicitly owned/deferred gaps outside the claimed subset; final release policy separately rejects unreviewed gaps for claimed release support. This decision does not produce the evidence it consumes, replace final release acceptance, or gate ordinary semantic development. Foundation requirement gravity/bootstrap-equivalence-before-retirement: Before retiring a named seed component, compare the declared predecessor and Gravity successor stages on accepted and rejected programs, canonical outputs and diagnostics; record residual TCB and an explicit retirement decision for that component only. Refusals: Deny retirement for missing stage products, unreviewed drift, stale compiler/source identities or required conformance failures; an intermediate stage admission cannot retire unrelated seed components. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Foundation requirement gravity/bootstrap-staged-trust-reduction: Record each actual compiler/platform component migration into Gravity with source and predecessor/successor compiler identities, reproducible stage products, exact supported subset and the measured residual seed/TCB inventory. Refusals: Reject a claimed seed reduction without an actual migrated product or with missing lineage; plans, supplied success labels and one migrated helper cannot establish complete seed absence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Source compiler/c1/self-hosting-comparison: Represent compiler structures as Gravity values and expose comparable public stage artifacts across seed and self-hosted implementations, even with optimized private layouts. Concrete acceptance: Compare actual seed and next-stage public artifacts for the same module; missing public stage output, an unrepresentable compiler structure, unexplained semantic drift or a provenance mismatch fails even when private layouts differ legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :id
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+   :before
+   "Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BOOT1/BOOT3/BOOT5/BOOT7: Publish a versioned row for every claimed stage and authoritative module revision, naming source/compiler/artifact identities, supported and unsupported documents/features/profiles/backends/runtime/package/library/test closure, owned or deferred gaps, conformance links and release eligibility. Record exact compiler-module ownership and residual TCB with measurable migration delta. Compare both named compilers and canonical artifacts under declared applicable hash/manifest/diagnostic/conformance/runtime/IR/performance/accepted-delta modes; preserve stable codes/spans and provenance. Reject missing outputs, implicit inherited support, omitted stage rows, unsupported claims, stale matrix versions and unexplained drift; accept deltas only with policy-linked review. Performance bounds apply only when performance is part of acceptance; no compiler work quota is introduced. Execute the intermediate authoritative stage/module admission decision against this exact candidate and declared subset, consuming the fresh conformance, equivalence/accepted-delta, matrix, provenance, TCB and applicable audit records. Record admit or deny with candidate/source/compiler/artifact identities and failed predicates. Deny failing applicable suites, stale or missing required evidence, unexplained drift, unsupported claimed support and missing ownership/matrix updates. Exercise both a valid intermediate admission and each refusal. Retain explicitly owned/deferred gaps outside the claimed subset; final release policy separately rejects unreviewed gaps for claimed release support. This decision does not produce the evidence it consumes, replace final release acceptance, or gate ordinary semantic development. Foundation requirement gravity/bootstrap-equivalence-before-retirement: Before retiring a named seed component, compare the declared predecessor and Gravity successor stages on accepted and rejected programs, canonical outputs and diagnostics; record residual TCB and an explicit retirement decision for that component only. Refusals: Deny retirement for missing stage products, unreviewed drift, stale compiler/source identities or required conformance failures; an intermediate stage admission cannot retire unrelated seed components. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Foundation requirement gravity/bootstrap-staged-trust-reduction: Record each actual compiler/platform component migration into Gravity with source and predecessor/successor compiler identities, reproducible stage products, exact supported subset and the measured residual seed/TCB inventory. Refusals: Reject a claimed seed reduction without an actual migrated product or with missing lineage; plans, supplied success labels and one migrated helper cannot establish complete seed absence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison."}
+  {:path "specs/build-workflow/tasks.md",
+   :reviewed-before-sha256
+   "2e91b83a5c96eed13d7f9a40276c95fe07852d78c649e93934fadb5bfe9d4e4d",
+   :applying-after-sha256
+   "ea1b013019c56aea49a27b337a0351522471e3e9b1cb21f92cb99b3280f167ca",
+   :reviewed-after-sha256
+   "ea1b013019c56aea49a27b337a0351522471e3e9b1cb21f92cb99b3280f167ca",
+   :retained-later-prefix false,
+   :field :acceptance,
+   :applying-before-sha256
+   "2e91b83a5c96eed13d7f9a40276c95fe07852d78c649e93934fadb5bfe9d4e4d",
+   :after
+   "Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes Source compiler/c16/cache-revalidation: Reuse stage-specific entries only after producing-pass/schema/version/facts/policy/dependency/diagnostic validation, retaining provenance and invalidation records. Concrete acceptance: Change producer pass version, schema, preserved facts, profile/target, policy, dependency or diagnostic schema separately; reject stale reuse and record the actual affected revalidation/recomputation, keeping prior provenance. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/proof-reuse: Reuse proofs/certificates only when complete claim/input/assumption/context/invalidation conditions match; require a mapping when node identity changes but semantics survive. Concrete acceptance: Change each claim/input/assumption/profile/target/compiler/provider/package/invalidation premise, and change a node ID without a proof mapping; reject reuse or reprove, retaining residual checks until evidence is valid. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/recorded-rebuild: Reproduce hermetic/release artifacts from recorded inputs and replay rather than trusting stale or incomplete caches. Concrete acceptance: Remove or alter a recorded build input or effect replay record; the hermetic/release rebuild must refuse the claim or expose output drift rather than passing from a stale cache. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/semantic-cache-key: Key each reusable stage artifact over all meaning/legality/proof/diagnostic/output inputs with producer-owned required fields; reject incomplete or timestamp-only identity. Concrete acceptance: Omit each producer-required semantic/legality/proof/diagnostic/output input, or provide only a timestamp; reject C16-KEY and demonstrate that each changed relevant field prevents a false cache hit. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/speculation-publication-gate: Mark partial interactive reuse speculative and withhold release publication until full revalidation succeeds. Concrete acceptance: Attempt publication from a partially revalidated interactive cache; require C16-SPECULATIVE and no release artifact until complete revalidation succeeds. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.",
+   :id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :before
+   "Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes"}],
+ :applying-source "ef27f94f73741c0eadd21d2fccd9b48cd7c504af",
+ :source-decision-identities-and-states :all-833-open-unchanged}

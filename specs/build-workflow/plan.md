@@ -247,3 +247,18 @@ Historical source reviews and the integrated PKG5 task-interface review retain
 their exact scope. No historical fixture or migration checkbox is promoted to
 current implementation acceptance. Central reconciliation owns alias decisions,
 composition, adoption and aggregate counts.
+
+## Proposed historical-gap criteria dependencies
+
+The following interfaces supply the concrete criterion's inputs; their entire
+components need not be complete before a selected fixture is developed.
+Conformance producers execute checks and emit evidence. Intermediate admission
+and final release consume it independently. All affected tasks remain Open.
+
+| Source obligation | Concrete task | Required input interfaces |
+| --- | --- | --- |
+| `compiler/c16/cache-revalidation` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | `pipeline`, `pass-evidence`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` |
+| `compiler/c16/proof-reuse` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | `pipeline`, `pass-evidence`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` |
+| `compiler/c16/recorded-rebuild` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | `pipeline`, `pass-evidence`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` |
+| `compiler/c16/semantic-cache-key` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | `pipeline`, `pass-evidence`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` |
+| `compiler/c16/speculation-publication-gate` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | `pipeline`, `pass-evidence`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` |

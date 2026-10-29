@@ -29,6 +29,15 @@
     (is (= expected (sh-crosswalk/task-ref {"core" (vec (reverse rows))} ["core" 1])))
     (is (thrown? Exception (sh-crosswalk/task-ref {"core" (vec (rest rows))} ["core" 1])))))
 
+(deftest compiler-domain-record-keeps-existing-routing-positions
+  (let [rows (sh-crosswalk/task-records "compiler-api")
+        tasks {"compiler-api" rows}
+        reordered {"compiler-api" (vec (reverse rows))}]
+    (is (= "development-boundaries" (:id (sh-crosswalk/task-ref tasks ["compiler-api" 4]))))
+    (is (= "domain-ir-boundaries" (:id (sh-crosswalk/task-ref tasks ["compiler-api" 5]))))
+    (is (= (sh-crosswalk/task-ref tasks ["compiler-api" 4])
+           (sh-crosswalk/task-ref reordered ["compiler-api" 4])))))
+
 (deftest regeneration-refuses-to-relabel-changed-bytes-with-an-old-source-commit
   (let [text "original source" digest (sh-inventory/sha256 text)
         record {:nested (sorted-map "string-key" "value")

@@ -49,3 +49,19 @@ implementation tasks, accepted outcomes or new semantic authority. Existing
 task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md#requirements): Compose portable language conformance from the owning front-end passes, with fixture/profile/target/type/effect identities and stable diagnostic spans; orchestration does not own each language rule.
+
+## Proposed historical-gap criteria dependencies
+
+The following interfaces supply the concrete criterion's inputs; their entire
+components need not be complete before a selected fixture is developed.
+Conformance producers execute checks and emit evidence. Intermediate admission
+and final release consume it independently. All affected tasks remain Open.
+
+| Source obligation | Concrete task | Required input interfaces |
+| --- | --- | --- |
+| `compiler/c1/compiler-program-legality` | `pipeline` | `types/current-evidence-and-remaining-work/types5-integrate-typed-core`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` |
+| `compiler/c12/domain-entry` | `domain-ir-boundaries` | `pipeline`, `plugins`, `pass-evidence`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `backend-interface` |
+| `compiler/c12/domain-fallback` | `domain-ir-boundaries` | `pipeline`, `plugins`, `pass-evidence`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `backend-interface` |
+| `compiler/c12/domain-proof-boundary` | `domain-ir-boundaries` | `pipeline`, `plugins`, `pass-evidence`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `backend-interface` |
+| `compiler/c12/domain-registration` | `domain-ir-boundaries` | `pipeline`, `plugins`, `pass-evidence`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `backend-interface`, `math`, `schema`, `workflow`, `backend-hdl` |
+| `compiler/c12/registered-domain-exit` | `domain-ir-boundaries` | `pipeline`, `plugins`, `pass-evidence`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `backend-interface` |

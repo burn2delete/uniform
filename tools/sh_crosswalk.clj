@@ -58,7 +58,11 @@
   "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction"
   "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"],
  "compiler-api"
- ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
+ ["pipeline"
+  "plugins"
+  "pass-evidence"
+  "development-boundaries"
+  "domain-ir-boundaries"],
  "core"
  ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
@@ -127,7 +131,19 @@
   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
   "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
-  "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"],
+  "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+  "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+  "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+  "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+  "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+  "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+  "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"],
  "resolve"
  ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
   "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"

@@ -4,10 +4,11 @@ Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](ev
 
 ## Implementation tasks
 
-The four literal outcome keys below are the sole editable implementation task
+The five literal outcome keys below are the sole editable implementation task
 authority. The original three grouped records retain their five-row task tables
 and acceptance questions. The new development-boundaries record has six SH-01
-acceptance facets under one task outcome. All four records remain Open for
+acceptance facets under one task outcome. The domain-IR record adds five concrete
+registration/transition criteria. All five records remain Open for
 current acceptance; original SH-01 historical completion is preserved separately.
 No individual-row IDs or completion denominator are invented.
 
@@ -44,6 +45,8 @@ Foundation requirement gravity/fused-pass-observability: For each physically fus
 Foundation requirement gravity/pass-contract-schema: Publish and validate versioned pass input/output schemas including required, preserved, invalidated and regenerated facts, profiles, effects, capabilities, diagnostics and emitted artifacts; actual registrations and consumers use those versions. Refusals: Reject absent or incompatible schema versions, undeclared invalidation, missing required facts and a pass output that violates the selected contract. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.
 
 Foundation requirement gravity/unified-source-semantics: Compile the same supported Gravity source across its declared profiles/targets with one source semantic model, recording only contract-permitted representation/provider differences and explicit unsupported cases. Refusals: Reject a host truth/null/equality/overflow rule substituted for Gravity semantics or a backend accepting source behavior already rejected by profile/effect/safety analysis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.
+
+Source compiler/c1/compiler-program-legality: Apply ordinary Gravity type/effect/capability/profile/safety/artifact rules to compiler programs. Concrete acceptance: Compile an otherwise valid compiler module with a forbidden effect, missing grant, illegal profile operation or invalid safety fact; reject it by the same owning rule as an equivalent user module, without a compiler-internal exemption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.
 
 - [ ] `plugins` Plugin Host: finite remaining tasks
 
@@ -102,6 +105,27 @@ Foundation requirement gravity/proof-artifact-claim-binding: Produce proof/certi
 Foundation requirement gravity/verification-evidence-kind: Label each claim's proof, checked certificate, test, audit, replay, differential or benchmark evidence explicitly, bind its subject and scope and make consumers enforce the required kind. Refusals: Reject a benchmark used as correctness proof, an unchecked certificate called checked, a replay log without actual replay or an audit label presented as executable conformance. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.
 
 Criterion `domain/mir-pass-integration`: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence. Accepted fixture: Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison. Negative fixture: Reject metadata loss, missing required facts or ungranted transformation effects. Required evidence: before/after MIR inspector artifacts and differential/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume pipeline, opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+- [ ] `domain-ir-boundaries` Domain IR registration and transition boundaries
+
+Status: Open
+
+Projected task block:
+Owner role: compiler domain-IR interface maintainer. All tasks open; acceptance
+requires actual registered entry, verifier and exit calls, not registry-shaped data.
+
+| Task | Concrete closing evidence |
+| --- | --- |
+| domain-entry | Source compiler/c12/domain-entry: Build domain IR through declared entry passes recording consumed, preserved, invalidated and translated source/IR facts. Concrete acceptance: Mutate each consumed/preserved/invalidated/translated fact edge or remove its source/core/MIR anchor; the entry verifier must reject or regenerate the affected fact before the domain result is consumed. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |
+| domain-fallback | Source compiler/c12/domain-fallback: For unsupported targets expose semantically legal fallback, residual MIR or explicit rejection with diagnostic and eligibility records. Concrete acceptance: Select an unsupported target with no fallback, a fallback that violates profile/effect/safety semantics, and an undeclared lowering; require C12-FALLBACK or C12-LOWERING with eligibility records, never fabricated executable success. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |
+| domain-proof-boundary | Source compiler/c12/domain-proof-boundary: Expose optimized domain results only with proof/certificate/translation-validation or accepted nonsemantic evidence; reject benchmark/search/provider claims as sole correctness evidence. Concrete acceptance: Supply benchmark results, optimizer search output or a provider assertion in place of required checked proof/certificate/translation evidence; reject with C12-PROOF. Nonsemantic conformance acceptance must not authorize semantic change. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |
+| domain-registration | Source compiler/c12/domain-registration: Register stable package-visible domain interfaces with owning schema/verifier/passes/profiles/lowerings/proof/fallback/diagnostic contracts, including plugin-provided domains. Concrete acceptance: Require EFIR registration and verification, schema IR registration and verification, workflow IR registration and verification, and registration and verification for one identified target-oriented domain IR (HDL/state-machine IR). Retain each family's package-visible registration, semantic-anchor map, verifier identity, actual invocation input/output and verdict. Reject a missing required family, an unverified family, a failed verifier or an untargeted registration substituted for the target-oriented case; one successful family cannot complete this population. Consume math, schema, workflow and backend-hdl producer interfaces for their corresponding family fixtures, not whole-component completion. Try absent schema/verifier/owner/anchor/entry/exit/profile/target/proof/fallback/diagnostic fields, unstable or conflicting package-visible identity and unauthorized opaque plugin payloads; reject registration before target use. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |
+| registered-domain-exit | Source compiler/c12/registered-domain-exit: Permit domain exit/target consumption only via registered paths after verifier acceptance and accepted lowering/equivalence evidence. Concrete acceptance: Submit a failed verifier result, missing exact lowering/equivalence evidence and a path absent from the registration; reject target consumption before emitting an artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. |
+
+Yes/no acceptance: do registered entry/verifier/exit operations execute with
+exact anchors and complete facts? Do all invalid registrations, missing proofs,
+illegal exits and unavailable-target fallback cases reject as specified? Both
+must be yes. Domain owners retain their payload schemas and semantics.
 
 - [ ] `development-boundaries` Compiler development ownership and verification boundaries
 
