@@ -148,6 +148,16 @@ actual source/contract/caller disposition. The machine table names every unit;
 this prose does not replace that work or assign broad completion credit to a
 family label.
 
+The unused `sh08-lsi-row-index`/`sh08-lsi-target-rows` pair now has retirement
+draft PR616 at `2f2f8f701f19660dad89e98f351693669a97980b`, tree
+`e21649ac124613802ad024edce7df203176f32e8`, parent PR615 `bb3a9acf`.
+Both historical absences match; namespace/exports, all other production code,
+tests and all 30 remaining loop-family definitions remain unchanged. The pinned
+source/tooling reference scan finds no external caller or remaining reference.
+Independent disposition and fresh composed reference checks remain pending;
+current loop validation/accounting and genuine results are not accepted by this
+unused-helper deletion. Original machine snapshot/state counts are unchanged.
+
 Primitive uniqueness/node typing and the product-vector predicate now have
 source successor PR614 at `c506514d4b32baf8269a7c3ff49ca86d2dc18c05`, tree
 `ef9a09328663a93e213f65754c8caab882362c2d`, parent PR613 `5ebff5ca`. Its three
