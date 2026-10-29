@@ -163,3 +163,26 @@ retain their exact original identity and do not become runs at the later head.
 Final head review, exact source inventory, repository preflight and normal
 integration remain necessary. Latest-expression positive support and broader
 compiler API obligations stay open.
+
+## Ownership projection reconciliation
+
+PR453 head dced564a20c175b95dcb919459c3e673a4ca7ade was normally composed
+with main 6276c94b0b753c888ef8fecc794bcc81245ea3b3 in merge
+6a1c9f8521318dea1924a90ceb2cd59943d5ded0, tree
+926461e5955ba484139dd4618a2bf91ccfd387db. Both parents are retained.
+The SH projection now pins the actual composed ownership file rather than the
+earlier Reader-only composition. The source-version bridge preserves that
+predecessor and both parents' module, standalone-test and leaf registrations.
+All canonical task IDs and predicates remain unchanged; all 180 whole-criterion
+acceptance states remain unassessed and source-version review remains pending.
+
+The metadata controls passed 12 tests / 144 assertions. The earlier first run
+failed one newly added assertion that used the wrong ownership map key; it is
+not a passing attempt. Boundary checks passed 6 tests / 11 assertions.
+No producer, compiler, broker or authentication operation was run for this
+correction. Incoming main changed Reader identity/transport source since the
+original 1f51 execution. Therefore the original v2 receipts retain their exact
+historical physical tuple; this reconciliation does not assert unchanged
+composed execution closure or fresh acceptance at the new merge. Independent
+composition review and affected integration evidence remain required before
+merging. This does not add latest-source or v3 support as a finite v2 gate.
