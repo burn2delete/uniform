@@ -1,0 +1,230 @@
+{:path "specs/accounting-removal/tasks.md",
+ :new-task-identities [],
+ :canonical-mapping-adoptions 0,
+ :decision-identities-and-states :all-833-open-unchanged,
+ :independent-actual-composition-review :pending,
+ :before-sha256
+ "f26670d438f5f4d57a1aab5ba6d5382d573c1f30684eed33042e091c210f7d51",
+ :bindings
+ [{:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### accounting-beyond-limit-late-invalid\n\nTask: ACC-12\n\nSource requirement: policy/accounting/beyond-limit-and-late-invalid-evidence\n\nAcceptance: For each removed artificial condition, demonstrate ordinary valid inputs beyond its former limit and equally late/deep/wide invalid inputs through the genuine affected producer/consumer paths and required runtime composition. The valid case must succeed for its declared semantics and the late invalid case must reject for the retained semantic rule with stable diagnostics and source/extents. Direct helpers, normalized owner fixtures, flags or recorded counts prove only their named scope; missing source authentication or required composition remains open.\n\nNegative evidence: Reject closure based on only small/early fixtures, a helper substituted for the required consumer/runtime route, a skipped or held path counted as a pass, lost late-invalid checking, fabricated extents or unreported callback effects.\n\nOutputs: Exact input/source/owner and command/result receipts for beyond-limit acceptance and equally late semantic rejection, actual composition identity and explicit failed/skipped/held/unrun stages. This mapping does not launch those paths.\n\nDependencies: ACC-01 old-condition census, the applicable coherent owner removal, preserved semantic validation and permitted genuine producer/consumer/runtime evidence. Restricted acceptance paths stay open.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/46c00a2e061a20dfa058e7fa"
+    "facet/extension/b3ac01d3101e1c2b8a365c21"
+    "facet/extension/b4d7d896f4d58ee22ff69465"
+    "facet/extension/340afdbab9ac40baeef00bf6"
+    "facet/extension/661e99e543ebbb90426a5540"
+    "facet/extension/c0d50272ffb5be27ae236735"],
+   :criterion-id "accounting-beyond-limit-late-invalid",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :reviewed-historical-record-sha256
+   "d4ece3ff62c87dbf98f550b33e0f31a288665a6a6f37a18ce7d9f2a833170e0c",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### accounting-closure-evidence\n\nTask: ACC-12\n\nSource requirement: policy/accounting/closure-evidence-record\n\nAcceptance: Before claiming accounting-removal completion, retain independently reviewed exact base/candidate/commit/tree and current-main integration evidence for the actual tested scope, with passed, failed and unrun stages, required owner acceptance, source/dependency invalidation and remaining host/semantic/restricted boundaries. All in-scope classifications and required removals must be resolved; a search count, helper result, draft PR, historical estimate or mapping witness cannot close the backlog. Accounting closure is not Gravity, release, self-hosting or seed-retirement completion.\n\nNegative evidence: Reject stale or mismatched source/tree, author self-acceptance, failed/unrun stages relabeled passing, unknown owners hidden from the census, a partial result promoted to whole closure, or an absent independent review/integration receipt.\n\nOutputs: Source-pinned closure bundle, independent review and exact integration receipts, per-stage result/limit inventory and explicit remaining-open list; preserve historical failed attempts and their original dates/commits.\n\nDependencies: Every other applicable ACC item's required evidence and existing coordinator integration authority; no unsupported runtime, source-authentication or release claim.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/46c00a2e061a20dfa058e7fa"
+    "facet/extension/b3ac01d3101e1c2b8a365c21"
+    "facet/extension/b4d7d896f4d58ee22ff69465"
+    "facet/extension/340afdbab9ac40baeef00bf6"
+    "facet/extension/661e99e543ebbb90426a5540"
+    "facet/extension/c0d50272ffb5be27ae236735"],
+   :criterion-id "accounting-closure-evidence",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/closure-evidence-record",
+   :reviewed-historical-record-sha256
+   "ec9e5e7a854c9c47a18ba085af9935f45c4da112a382070d19dafa9edf7f86fd",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### accounting-host-external-boundaries\n\nTask: ACC-12\n\nSource requirement: policy/accounting/host-external-boundary-separation\n\nAcceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.\n\nNegative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.\n\nOutputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.\n\nDependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+    "facet/extension/c0a50dab808dbc55acedbe6f"],
+   :criterion-id "accounting-host-external-boundaries",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/host-external-boundary-separation",
+   :reviewed-historical-record-sha256
+   "2c3f848d9619709fe19cc908ad1d12316d129d6b4d053df8126917c70152d76e",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### accounting-semantic-validation-preservation\n\nTask: ACC-12\n\nSource requirement: policy/accounting/preserve-semantic-validation\n\nAcceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.\n\nNegative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.\n\nOutputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.\n\nDependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+    "facet/extension/39c2bfa75c064758d41df1a0"
+    "facet/extension/22370b2464bfef0cdba95864"
+    "facet/extension/46c00a2e061a20dfa058e7fa"
+    "facet/extension/b3ac01d3101e1c2b8a365c21"
+    "facet/extension/b4d7d896f4d58ee22ff69465"
+    "facet/extension/340afdbab9ac40baeef00bf6"
+    "facet/extension/661e99e543ebbb90426a5540"
+    "facet/extension/c0d50272ffb5be27ae236735"],
+   :criterion-id "accounting-semantic-validation-preservation",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/preserve-semantic-validation",
+   :reviewed-historical-record-sha256
+   "028a6dae477d55f3ded7cde9f63b37e46449b27198907ae345a056e8b75d1188",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### accounting-artificial-refusal-removal\n\nTask: ACC-12\n\nSource requirement: policy/accounting/remove-artificial-refusals\n\nAcceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.\n\nNegative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.\n\nOutputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.\n\nDependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/81b347b50b389d47748ba512"
+    "facet/extension/f9d2b0829c7d71d90a00cbb5"
+    "facet/extension/d52ee8ce3fed3c840458f3ae"
+    "facet/extension/39c2bfa75c064758d41df1a0"
+    "facet/extension/22370b2464bfef0cdba95864"
+    "facet/extension/46c00a2e061a20dfa058e7fa"
+    "facet/extension/b3ac01d3101e1c2b8a365c21"
+    "facet/extension/b4d7d896f4d58ee22ff69465"
+    "facet/extension/340afdbab9ac40baeef00bf6"
+    "facet/extension/661e99e543ebbb90426a5540"
+    "facet/extension/c0d50272ffb5be27ae236735"],
+   :criterion-id "accounting-artificial-refusal-removal",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/remove-artificial-refusals",
+   :reviewed-historical-record-sha256
+   "2f7a45934285fe2c0722dc29445fe23bc26c6281bde55bba96b5b2fdf32e381c",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-01",
+   :criterion-text
+   "### accounting-source-inventory\n\nTask: ACC-01\n\nSource requirement: policy/accounting/source-grounded-inventory\n\nAcceptance: Inventory every in-scope compiler, emitter, development-runtime, adapter, schema, test and operative contract producer/consumer, including transitive callsites and unnamed literal maxima. Pin source commit, path, raw condition and owner; give each guard a source-grounded remove, retain-semantic, retain-host/external or historical disposition. Record unclassified guards and unknown owners as open work. A search-hit list, zero telemetry or renamed allowance is insufficient.\n\nNegative evidence: Reject an inventory that omits a transitive consumer, unnamed ceiling, enforcing schema/test/contract or unresolved classification, or calls a work/cost allowance a semantic limit without identifying the actual independent rule.\n\nOutputs: Source-pinned producer/consumer/field/refusal/test/contract census, per-guard rationale and explicit unresolved-owner/classification list, independently reviewed against actual source.\n\nDependencies: Current AGENTS accounting-removal authority; actual owner source and call graph. No preparation-only or per-run permission gate for ordinary census work.\n",
+   :current-authority-correction-review nil,
+   :source-facet-ids
+   ["facet/extension/81b347b50b389d47748ba512"
+    "facet/extension/f9d2b0829c7d71d90a00cbb5"
+    "facet/extension/d52ee8ce3fed3c840458f3ae"
+    "facet/extension/46c00a2e061a20dfa058e7fa"
+    "facet/extension/b3ac01d3101e1c2b8a365c21"
+    "facet/extension/b4d7d896f4d58ee22ff69465"
+    "facet/extension/340afdbab9ac40baeef00bf6"
+    "facet/extension/661e99e543ebbb90426a5540"],
+   :criterion-id "accounting-source-inventory",
+   :marker "accounting-source-criteria",
+   :id "policy/accounting/source-grounded-inventory",
+   :reviewed-historical-record-sha256
+   "da5e87a2f112343471e97857fbcc1a3da028cb9600d3e2096c7ab37ed0054c04",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### development-autonomy-conflict-coordination\n\nTask: ACC-12\n\nSource requirement: policy/development/autonomy-and-conflict-coordination\n\nAcceptance: Operative accounting-related contracts, tooling and coordination must allow authorized ordinary development without task-count, failed-attempt allowance, preparation-only stage or discretionary per-run permission prerequisites. Managers continue independently within standing goals while coordinating actual conflicting writers and incompatible interfaces. Preserve the coordinator's independent acceptance/integration role and historical attempts; never retry, transfer or route around denied/restricted actions. Removal of a project quota does not grant new access or operation authority. For governed integration, Bind the complete integration base/commit/tree immediately before integration. Later lifecycle metadata additionally binds immutable ledger source commit/tree and workstream ID through the governed-composition path in docs/workstream-governance.md. The source tuple must resolve exactly, descend from the integration base and be an ancestor of the integration commit. Independent review and CI cover the full integration tuple and exact permitted metadata delta; source evidence alone does not cover metadata. Only the existing active shard and canonical manifest may differ in that metadata lane; changes outside it require a new source freeze and affected-input review. These requirements do not gate ordinary edits or focused tests.\n\nNegative evidence: Reject policy/tool changes that reintroduce those ordinary-development quotas, impose migration/admission proofs before an ordinary edit or focused test, ignore a genuine writer/interface conflict, confer author acceptance, or use a different actor/endpoint to replay a denied action. Refuse substitution of the immutable source tuple for the complete integration tuple, missing source/workstream identity, unreviewed metadata deltas, or source/tooling/documentation/policy changes routed through the metadata lane.\n\nOutputs: Exact operative policy/tool source review and focused allowed/refused coordination fixtures or source-bound decision records distinguishing ordinary development, real conflict and denied-action cases. Missing execution evidence is recorded, not invented. Record both distinct identity tuples, workstream ID, exact changed metadata paths and manifest/shard/aggregate hashes, full-tuple independent review and CI receipts, and the actual clean named integration worktree capture.\n\nDependencies: Standing AGENTS decisions apply immediately; current writer/interface ownership and coordinator authority. This criterion has no dependency on completing ACC-12 before ordinary work proceeds.\n",
+   :current-authority-correction-review
+   "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89",
+   :source-facet-ids
+   ["facet/extension/d52ee8ce3fed3c840458f3ae"
+    "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+    "facet/extension/f3636df6e157a3cd03c6759b"
+    "facet/extension/b4faf5c413baf7acccd9f9aa"
+    "facet/extension/74c658623c0e7fa71db70872"
+    "facet/extension/1e870cbdb8245c6676bf5e21"
+    "facet/extension/70b6be3c1c9b0901c38f7cf9"
+    "facet/extension/d3c54bd0a627a0423d27c564"
+    "facet/extension/93cf1f576b4b93ccd064759d"
+    "facet/extension/fb812dbb0759c68f99c0a956"],
+   :criterion-id "development-autonomy-conflict-coordination",
+   :marker "accounting-source-criteria",
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :reviewed-historical-record-sha256
+   "8e1ef879a2cae7582d01023e6cb8ff1d7267e210578244b972ad9c0324013623",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :criterion-text
+   "### development-exact-candidate-admission\n\nTask: ACC-12\n\nSource requirement: policy/development/exact-candidate-admission\n\nAcceptance: Governed candidate integration eligibility binds exact base/candidate commit and tree, clean named worktree, owned paths, governing contracts, positive/negative fixtures, stable diagnostics, successful scoped validation, independent acceptance, residual host boundaries and coordinator disposition. Bind the complete integration base/commit/tree immediately before integration. Later lifecycle metadata additionally binds immutable ledger source commit/tree and workstream ID through the governed-composition path in docs/workstream-governance.md. The source tuple must resolve exactly, descend from the integration base and be an ancestor of the integration commit. Independent review and CI cover the full integration tuple and exact permitted metadata delta; source evidence alone does not cover metadata. Only the existing active shard and canonical manifest may differ in that metadata lane; changes outside it require a new source freeze and affected-input review. Refuse dirty/detached, missing/divergent base, identity mismatch, held/rejected/superseded/abandoned dependencies and unsupported credit. Compare ancestry and tree identity; already-identical/tree-equivalent work is not merged or replayed again. These admission requirements are not ordinary edit/test prerequisites.\n\nNegative evidence: Refuse stale or forged tuples, dirty/detached worktrees, owner/path conflicts, missing or self-authored acceptance, missing negative/diagnostic evidence, inadmissible dependencies and repeat integration of equivalent trees. Refuse substitution of the immutable source tuple for the complete integration tuple, missing source/workstream identity, unreviewed metadata deltas, or source/tooling/documentation/policy changes routed through the metadata lane. A structural validator pass or self-audit does not grant semantic acceptance, release or self-hosting authority.\n\nOutputs: Exact governed preflight/ledger input and refusal/conformance records, independent acceptance and coordinator integration disposition with scoped nonclaims; ordinary-development cases remain separately legal under standing authority. Record both distinct identity tuples, workstream ID, exact changed metadata paths and manifest/shard/aggregate hashes, full-tuple independent review and CI receipts, and the actual clean named integration worktree capture.\n\nDependencies: Applicable workstream governance/ledger contracts and exact immutable candidate evidence at integration time; no admission replay or live integration is performed by this mapping.\n",
+   :current-authority-correction-review
+   "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89",
+   :source-facet-ids
+   ["facet/extension/36ae1f06f3d916349306d096"
+    "facet/extension/81d3d77531dc76543665c3ac"
+    "facet/extension/2998bc6f17aeb73521322dad"
+    "facet/extension/90c0a765d3433d23d1f41686"
+    "facet/extension/7be86bf274f4b91e89704c2e"
+    "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+    "facet/extension/f3636df6e157a3cd03c6759b"
+    "facet/extension/b4faf5c413baf7acccd9f9aa"
+    "facet/extension/74c658623c0e7fa71db70872"
+    "facet/extension/1e870cbdb8245c6676bf5e21"
+    "facet/extension/70b6be3c1c9b0901c38f7cf9"
+    "facet/extension/d3c54bd0a627a0423d27c564"
+    "facet/extension/93cf1f576b4b93ccd064759d"
+    "facet/extension/fb812dbb0759c68f99c0a956"],
+   :criterion-id "development-exact-candidate-admission",
+   :marker "accounting-source-criteria",
+   :id "policy/development/exact-candidate-admission",
+   :reviewed-historical-record-sha256
+   "38cb73becdf867eb44221b644313600eb1c0e4b51743e8004d7c18e172a9e11e",
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+   :task-authority :existing-thirteen-row-ACC-ledger}],
+ :task-count-delta 0,
+ :schema-version 1,
+ :implementation-credit :none,
+ :criterion-allocations-preserved 303,
+ :authority-correction-sha256
+ "6fb95ca2b7d63a3366697908c33e980342a0e038dee3fd1b5b638bc6556951ec",
+ :current-join-sha256
+ "b8dbbf05314f0d5a2b357f70e9716bb2e6a71bbd3e331bdb398aa48d81d6b5ad",
+ :legacy-thirteen-task-census-scope
+ :pending-final-explicit-scope-and-overlap-adjudication,
+ :legacy-task-status-records
+ [{:id "ACC-01", :checked " "}
+  {:id "ACC-02", :checked "x"}
+  {:id "ACC-03", :checked "x"}
+  {:id "ACC-04", :checked " "}
+  {:id "ACC-05", :checked " "}
+  {:id "ACC-06", :checked " "}
+  {:id "ACC-07", :checked " "}
+  {:id "ACC-08", :checked " "}
+  {:id "ACC-09", :checked " "}
+  {:id "ACC-10", :checked " "}
+  {:id "ACC-11", :checked " "}
+  {:id "ACC-12", :checked " "}
+  {:id "ACC-13", :checked " "}],
+ :kind :guarded-accounting8-current-task-composition,
+ :historical-statuses :preserved-without-new-implementation-credit,
+ :source-review-sha256
+ "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b",
+ :accepted-mappings-preserved 430,
+ :applying-source "14706bf59247dc0d9d4663b3e9e96df9efdbbab1",
+ :authority-correction-review-sha256
+ "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89",
+ :after-sha256
+ "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c"}
