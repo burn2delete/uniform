@@ -13991,6 +13991,25 @@
    :new-concrete-links-pending-review 65,
    :new-task-fields 15,
    :total-concrete-links 434},
+  :schema25-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/schema25-qualified-review-adoption.edn",
+   :remaining-allocation-work 56,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :qualified-source-review-adoptions 465,
+   :pending-allocation-review 9,
+   :source-commit "65e0704bc180521c3393725b39c284995657a065",
+   :source-facets 463,
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :reviewed-predicates 25,
+   :later-fields-reconstructed 72,
+   :current-criteria 27,
+   :historical-adoptions-preserved 493,
+   :total-concrete-links 777,
+   :applicability
+   "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
   "6e15fa679cff969a71e16af3d6b0acf857a9cb6dd80d53b68da7636e81900e65"},
  :accepted-current-scoped-evidence

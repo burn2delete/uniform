@@ -1472,3 +1472,35 @@ its1262 verified current spans. SH12/522,census4/13,boundary6/11,generated SH
 check and pinned changed-file lint pass. Full-facet, granularity, legacy ACC,
 independent final counting and integration remain open; no runtime/probe or
 implementation result is added.
+
+## Existing Schema25 source-composition review adoption
+
+The existing independent receipt has SHA256
+`d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8`
+and freezes `16cdeb5e741310eb1cde09bfb0558b92140ed431`. Its retained local
+artifact hashes and19 normative source documents are checked. Actual source
+`893bb4b85926a9d7f8953798544b2126baf6ef58` retains all25 exact allocation
+payloads and27 criteria. Seventy-two later Profile/Safety/Stdlib/Math/GPU/
+Foundation field operations reconstruct complete current files, including the
+explicit GPU metadata-qualification replacement. All50 task/plan files from the
+actual25-component registry are checked. The generation/checking/static-type/
+compatibility and actual Runtime authority/admission roles remain separate.
+
+Every frozen receipt-input SHA is authenticated. Normative/policy and immutable
+allocation/composition/manifest bytes remain equal; changed task files are
+proved by reconstruction and source dispositions by selected record equality.
+The newer census remains separately source-bound. An initial scratch guard
+incorrectly required every reviewed shared task/data file to be unchanged; it
+refused before writes and was replaced with these explicit category checks.
+
+Adoption source `65e0704b` changes only25 qualified review states/references.
+All833 remain Open, with777 allocations and56 unallocated. Qualified current
+source reviews total465 andnine remain pending:Accounting-policy1,Product1 and
+Foundation7. Historical493 accepted/68 pending, all561 bindings and provisional
+3/182 task status are unchanged. The new snapshot preserves the exact prior
+binding vector and its1262 verified current spans.
+
+SH12/522,census4/13,boundary6/11,generated SH check and pinned changed-file lint
+pass. No new review, whole-facet, later-predicate, implementation, task/count,
+release or integration acceptance is inferred. Full-facet disposition,
+granularity, legacy ACC and independent final counting remain open.
