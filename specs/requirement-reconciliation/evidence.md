@@ -1176,3 +1176,45 @@ All 561 historical bindings and 1,262 current spans pass. SH 12/522, census
 4/13, boundary 6/11, generated SH check and pinned changed-file lint pass.
 Full-facet disposition, later predicate reviews, granularity, legacy ACC scope,
 independent final counting and integration remain open.
+
+## Sixty-three historical mapping adoptions
+
+Four independent frozen-c212 reviews pass their distinct historical scopes:
+Governance12 receipt `c280c6bb5ec9a38b83e6800f4d158f9e1f284fda970a9f7be391c846b468f891`,
+Core31 receipt `4b01218ef47c2cc3665fef3167e0c602f2cbfbb752496716b3a6fb9d7dbf6e55`,
+Bootstrap12 receipt `994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e`
+and Accounting8 receipt `df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114`.
+The current join at `13f5e67dfffc7cb879d27fc797b7547abe6e381c`
+verifies all 63 historical identities, 109 exact current criterion witnesses,
+original historical-record hashes, source memberships and named task contexts.
+All 240 original document files are byte-identical to the reviewed candidate.
+Legacy ACC authority and status are checked through their explicit format.
+
+Adoption source `66d6bfa395c64e3cf5ee28a71380d15328131433` adds exactly
+these 63 disjoint mappings to accepted430. The new manifest
+`accepted-historical-mappings-493.edn` has SHA256
+`d8afc85647114e63699db6a49fec6715dd503fa6959fdcb7d06e12e1d3177147`.
+Conservation is 577 historical records = 13 prior witnesses + 3 retained
+retirements + 493 accepted mappings + 68 pending. The accounting cohort keeps
+its two accounting-removal and six accounting-policy dispatch records; it is
+not relabelled as original-document scope. All 833 Open decisions and their
+196 qualified current source reviews are unchanged. Concrete allocation stays
+748, with 249 pending reviews and 85 allocation cases remaining. Task census
+stays provisionally 3/182, with no task-count or implementation delta.
+
+The GOV10 role overlay remains separately pending and is not adopted here.
+Eleven Core stable-adoption predicates retain the single Governance producer.
+Bootstrap intermediate/final consumers and the existing Open seed/native
+producer stay distinct; native carrier and callback boundaries receive no
+execution credit. Accounting authority corrections apply only to their exact
+reviewed bodies; thirteen legacy statuses, including two closed historical
+checkboxes, supply no new denominator credit. Later predicates and full-facet
+entailment remain outside these receipts.
+
+`current-criterion-bindings-561-historical493.edn`, SHA256
+`2361911fca48e9a083fa1f95b901c05c0c89b080c0a0f62968eb10279ed41195`,
+preserves all 561 bindings and 1,262 current spans. SH 12/522, census 4/13,
+boundary 6/11, generated SH check and pinned changed-file lint pass. Scratch
+reader errors were rejected before evaluation or writes. Complete facet
+disposition, granularity, legacy ACC scope, independent final counting and
+integration remain open.
