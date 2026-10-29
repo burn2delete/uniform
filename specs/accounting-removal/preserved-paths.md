@@ -532,6 +532,36 @@ helper mappings remain explicit rather than being treated as missing features.
   and staged/full whitespace pass. Both genuine tests are UNRUN. Independent
   source review, permitted acceptance, applicable CI and integration remain
   pending. The original DSE selector denial is not retried or transferred.
+- [Original cleanup-rejection scope](cleanup-denial-scope.edn) now pins the
+  actual command/result records, rather than relying on a later summary. At
+  `2026-10-29T19:41:27.640Z`, call `call_3aaa4e708245462ab5cef70d6fba2e41`
+  was rejected during CreateProcess, before any command ran: its prefix was
+  `rm -rf tools/ci/kondo/.cache`, followed by PR611 publication commands. The
+  stated reason was "rm -f style commands are not permitted. Use a safer
+  approach". This is an explicit destructive-command denial; no blanket checkout
+  prohibition is stated, and no alternate checkout is authorized by that receipt.
+  Raw records/private paths stay local, with immutable record hashes published.
+  The supported attachment inventory has one managed ACC-01 root, agreeing with
+  its physical root/Git entry. The same three cache paths remain; no delete,
+  move, exclusion, alternate-root selection or cleanup retry occurred. Other
+  checkout ownership/availability is not established. PR619's successful ancestry
+  check was specifically against `7a74f6e3`; newer-main reconciliation, composed
+  independent acceptance and a fresh clean integration preflight remain separate.
+- PR619 exact reconciled `c5fc3c57`, tree `998aee8e`, now has independent
+  composition SOURCE PASS, receipt SHA256
+  `eaa55bda09fe73d6c5f2c2e6ce1a42d69bdb80813ef15b1139890cd184e825f3`.
+  [Consumption](loop-composition-review-consumption.edn) verifies receipt/tree,
+  both parents, three file hashes/Git entries and prior receipt `457ed321`.
+  Independent inert controls pass 6 tests/111 assertions; the complete 10,071-
+  entry tree equals base `7a74f6e3` with exactly the three reviewed entries
+  overlaid. All 1087 remaining definitions/30 loops and the exact 29-line
+  deletion are conserved. Current-head CI has seven successes/two skips.
+  Later main advancement is explicitly outside this exact-composition pass;
+  clean integration checkout, fresh applicability/preflight and coordinator
+  integration remain open. No genuine execution or old denied review replay.
+- Exact PR632 `70e95305` and PR633 `be2e6ec7` routine CI completed with seven
+  successes/two configured skips each. Their genuine kernels remain UNRUN and
+  independent source acceptance remains pending; green CI does not close them.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
