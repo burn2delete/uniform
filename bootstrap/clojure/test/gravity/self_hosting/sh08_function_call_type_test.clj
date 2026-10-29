@@ -23717,3 +23717,95 @@
       (is (false? (invoke-c7 'sh08-ft-product-vector? [core :nodes]))))
     (is (true? (invoke-c7 'sh08-ft-product-vector? [{:nodes []} :nodes])))
     (is (zero? @calls))))
+
+(deftest sh08-carrier-preflight-unmetered-development-kernel
+  (let [check #(invoke-c7 'sh08-carrier-preflight [%])
+        deep (reduce (fn [value _] [value]) :leaf (range 192))
+        shared {:leaf [:value]}
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "carrier rendering")))
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "carrier hashing"))))
+        lazy-tail (lazy-seq (swap! callbacks conj :forced) (list :value))
+        backing (object-array [:self nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (doseq [value [deep (vec (repeat 70000 :member)) [shared shared] (sorted-map "key" :value)]]
+      (is (= {:status :accepted} (check value))))
+    (doseq [[value reason] [[cyclic :verification-native-cycle]
+                            [opaque :verification-native-carrier]
+                            [{:unused opaque} :verification-native-carrier]
+                            [(with-meta [] {:unused opaque}) :verification-carrier-metadata]
+                            [(clojure.lang.Cons. :head lazy-tail) :verification-native-carrier]]]
+      (is (= {:status :rejected :reason reason} (check value))))
+    (is (empty? @callbacks))))
+
+(deftest sh08-verification-receipt-physical-checks-development-kernel
+  ;; This validates receipt DATA and its complete catalog, not B47 authority.
+  (let [catalog (invoke-c7 'sh08-ft-b47-check-catalog [])
+        checks (zipmap catalog (repeat true))
+        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        receipt {:status :passed :checks checks :failed-checks []
+                 :receipt-context :gravity/sh07-b47-verification-v16
+                 :opaque-provenance-binding-id id :verification-digest id}
+        valid? #(invoke-c7 'sh08-ft-verification-receipt-valid? [(assoc receipt :checks %)])
+        all-true? #(invoke-c7 'sh08-ft-all-checks-true? [%])
+        entries (mapcat identity checks)
+        duplicate (clojure.lang.PersistentArrayMap. (object-array (concat entries entries)))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "check rendering")))
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "check hashing"))))
+        foreign (proxy [clojure.lang.APersistentMap] []
+                  (count [] (swap! callbacks conj :count) (throw (AssertionError. "check count")))
+                  (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "check seq"))))]
+    (doseq [value [checks (into (sorted-map) checks)]]
+      (is (true? (all-true? value)))
+      (is (true? (valid? value))))
+    (doseq [value ["checks" nil [] (list true) {} duplicate
+                   (assoc checks (first catalog) false)
+                   (dissoc checks (first catalog)) (assoc checks :forged true)
+                   (sorted-map "string-key" true) {:unused opaque} foreign
+                   (with-meta checks {:unused opaque})]]
+      (is (false? (valid? value))))
+    (is (false? (all-true? duplicate)))
+    (is (empty? @callbacks))))
+
+(deftest verification-record-entry-order-development-kernel
+  ;; Receipt DATA only; no coordinator witness or source authority is created.
+  (let [catalog (invoke-c7 'sh08-ft-b47-check-catalog [])
+        checks (zipmap catalog (repeat true))
+        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        receipt {:status :passed :checks checks :failed-checks []
+                 :receipt-context :gravity/sh07-b47-verification-v16
+                 :opaque-provenance-binding-id id :verification-digest id}
+        all-true? #(invoke-c7 'sh08-ft-all-checks-true? [%])
+        valid? #(invoke-c7 'sh08-ft-verification-receipt-valid? [(assoc receipt :checks %)])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "receipt key hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "receipt key equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "receipt rendering"))))
+        entries (vec (mapcat identity checks))
+        key (first catalog)
+        duplicate (clojure.lang.PersistentArrayMap. (object-array (concat entries [key true])))
+        hostile-key (clojure.lang.PersistentArrayMap. (object-array [opaque true]))
+        cases [duplicate hostile-key (clojure.lang.PersistentArrayMap. (object-array [key]))
+               (clojure.lang.PersistentArrayMap. nil)
+               (with-meta checks {})
+               (sorted-map-by (fn [& _]
+                                (swap! callbacks conj :comparator)
+                                (throw (AssertionError. "receipt comparator"))))]]
+    (doseq [value [checks (into (sorted-map) checks)]]
+      (is (true? (all-true? value)))
+      (is (true? (valid? value))))
+    (doseq [value cases]
+      (is (false? (all-true? value)))
+      (is (false? (valid? value))))
+    (doseq [value [false nil 0 1 :true "true"]]
+      (let [changed (assoc checks key value)]
+        (is (false? (all-true? changed)))
+        (is (false? (valid? changed)))))
+    (is (false? (valid? (dissoc checks key))))
+    (is (false? (valid? (assoc checks :unknown-catalog-entry true))))
+    (is (empty? @callbacks))))
