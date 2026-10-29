@@ -894,3 +894,37 @@ entailment, granularity, legacy ACC scope, independent acceptance and the final
 count remain separate obligations.
 SH passed 12 tests / 495 assertions, and the generated SH projection check passed.
 SH passed 12 tests / 495 assertions, and the generated SH projection check passed.
+
+## Thirty domain decision allocations
+
+Task source `a91ba41db8921492dde452b7c3cf0854afb1ecd2` appends 22 role-specific
+criteria across 10 existing Domains/Runtime fields and reuses 8 exact criteria.
+Both advanced Runtime prefixes and every surrounding task/status are retained.
+The composition adds no task units. All 878 source memberships (435 distinct
+available facets) match current document hashes and UTF8 spans. The two absent
+GPU metadata IDs remain explicit unresolved evidence; no facet closure is
+claimed. Checking, producer output, live execution, replay consumption and
+actual persistence/recovery retain distinct predicates and artifact roles.
+Protocol/provider resource semantics and actual heap constraints do not
+reinstate project work or valid-input allowances.
+
+`domains30-current-composition.edn` has SHA256
+`a363197d18d4fdf404c71c196484bacf1cb111060ecabe22ba519090a544ca3a`.
+Allocation source `6bb2e263f167ec3d7748f3de13c68284367ad283` adds only 30
+criterion-task-allocation fields, preserving all 434 predecessor fields and
+all 833 Open identity/status pairs. Actual criterion and dependency contexts
+are rebound to this committed source, with required artifact roles retained.
+The allocation transaction has SHA256
+`8a921f9e60b0cf2002c90918a3f9bfb9e8cab74775c198b6b018af15faec62f3`.
+Concrete allocation is 464, including 161 pending independent current-composition
+review; 369 cases remain. The provisional task census remains 3 Accepted / 182.
+
+`current-criterion-bindings-561-domains30.edn`, SHA256
+`177402867a94c259ff0f3e090c531f39f45de43acf57b7d9fd8cb7ef04e4de77`,
+preserves all 561 historical IDs and all 1,262 current source spans. Historical
+acceptance remains 430 with 131 pending and none unbound. Domains passed 7/213,
+Runtime 4/67, boundary 6/11, and both document validators passed. Pinned
+clj-kondo 2025.10.23 reports zero findings on the changed SH source. Independent
+source/composition acceptance, full-facet disposition, task granularity, legacy
+ACC scope, final counting and integration remain separate work.
+SH passed 12/495, census 4/13, and the generated SH projection check passed.
