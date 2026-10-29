@@ -1044,6 +1044,48 @@ reports zero findings on both changed SH files. Independent acceptance,
 full-facet disposition, granularity, legacy ACC scope, final counting and
 integration remain open.
 
+## Twenty Math and Backend decision allocations
+
+The preserved private proposal has SHA256
+`39d304ff1e51f47eb52f0ac32feb7fa0ccfd9e9bb19420449d4fc18cab9fe42a`
+and private-source PASS receipt
+`fda61bac80c48d88c938976826d4edca250db9c1c59502330efd01b3fb46d768`.
+That receipt accepts only its frozen private proposal. Its Backends task file
+fails the existing Markdown validator on literal future<T> prose. The canonical
+composition renders that one type phrase as "future of T", retains exact
+reviewed/rendered hashes and keeps the affected composition review pending.
+The validator is unchanged. Both original private task files are reconstructed
+against their recorded hashes before this formatting correction.
+
+Task source `f291697806406c289d243724a96a0338f4713ff0` appends 20 clauses
+across six existing Math/Backend fields, preserving all later predecessor text
+and adding no task units. All 20 record guards match. All 1,768 available
+memberships over 1,413 distinct facets verify. Nine missing metadata IDs over
+13 incidences in four B4/B6 decisions remain explicitly unresolved; an initial
+guard refused before writes when it encountered those flagged placeholders.
+Available and missing records are now checked separately against the exact
+declared unresolved-ID set, without inventing source aliases or metadata.
+The composition SHA256 is
+`4e9bb8419df9eddb1d9cd6562173d5d7c99694fe7f53939a2795c5e31f8fba65`.
+
+Allocation source `ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33` adds exactly
+20 concrete criterion/task bindings and preserves all prior 748 allocations,
+196 qualified source reviews, 493 historical adoptions and all 833 Open states.
+The transaction SHA256 is
+`37a293e0bf1296184862c8ae59f62d210ab04df140447b109eb412ebea1c86d6`.
+There are 768 concrete links, 269 pending current-composition reviews and
+65 remaining allocation cases. Private source-review scope is not promoted to
+current-composition acceptance. Task census remains provisionally 3/182.
+
+`current-criterion-bindings-561-math20.edn`, SHA256
+`ad9d8239da3c1c6d823ca463204fb7dc21d568bfc4e47a6ab4c91b9b9c08510a`,
+preserves all 561 historical IDs and 1,262 current spans. Backends passed 5/211,
+Domains 7/213, SH 12/522, census 4/13 and boundary 6/11. Both document validators,
+generated SH check and pinned changed-file lint pass. No backend/compiler/
+runtime execution or implementation credit is inferred. Independent composition
+review, full-facet disposition, granularity, legacy ACC scope, final counting
+and integration remain open.
+
 ## Qualified Package7 independent-review adoption
 
 The independent Package7 receipt, SHA256
