@@ -177,7 +177,8 @@
     (is (= ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"] (:changed-records lineage)))
     (is (every? #(= "Open" (get-in % [:after :status])) rows))
     (is (:historical-suffix-unchanged lineage))
-    (let [successor (get-in view [:mapping-review :family-task-source-composition :source-commit])]
+    (let [successor (or (get-in view [:mapping-review :historical-criterion-source-composition :source-commit])
+                        (get-in view [:mapping-review :family-task-source-composition :source-commit]))]
       (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
         (is (= (or successor (:applying-task-source bridge))
                (get-in view [:applying-source-pins path])))

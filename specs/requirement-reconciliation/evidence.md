@@ -28,6 +28,8 @@ or reclassifying another semantic unit. The Foundation helper completed its
 writes before a trailing delimiter error; readback checked every final file
 hash, all 20 field records, all 52 assignments and preservation of all eight
 Runtime criteria. Neither failure was credited as a successful run.
+The rebound source view passed SH controls (11 tests / 323 assertions), exact
+SH regeneration/checking, and the language boundary (6 tests / 11 assertions).
 
 These 60 are prepared criterion bindings with independent adoption pending.
 The current 833 decision identities and Open states are unchanged. No global
@@ -65,7 +67,7 @@ Independent composed acceptance and actual API/provider execution remain Open.
 ## Composed task census candidate
 
 The derived `task-baseline.edn` binds source commit
-`625a74467e33ed9f203673dd8edd0b48e530e575`. It records 138 existing
+`f1cb35013c9a132cda4557f7806616b19af0f3ed`. It records 138 existing
 component tasks, including the five Release tasks, plus 11 separate Open
 Platform Product tasks. Three tasks retain scoped Accepted status, 144 are
 Open, one Partial and one status-unassessed: 3/149 accepted in declared task
