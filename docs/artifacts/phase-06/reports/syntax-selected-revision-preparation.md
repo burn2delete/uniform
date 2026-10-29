@@ -110,6 +110,9 @@ waived. Two unused test-only requires are removed; predicate behavior is unchang
 
 ## Direct C3 controller request preparation
 
+This section records the accepted `286c7e38` request. The merged-API successor
+below preserves that request as immutable history.
+
 `gravity.syntax.selected-revision-request/prepare!` freezes one selector-specific
 request without loading Bootstrap, resolving process ports, acquiring guards or
 starting a child. It records exact clean source, complete tracked consumed
@@ -154,3 +157,54 @@ boundary gate passes 6/11. A request is preparation only and has no acquisition,
 process or admission handle. Genuine PR566 consumer acceptance remains open.
 Original PR580 CI at `7317c350` completed with seven successful jobs and two
 conditional skips; that evidence remains bound to that historical source.
+
+## Merged normal runner API successor
+
+PR600 merged at `e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80`, tree
+`72d3d56bd3cf2389e72989221cfa6fe99e30408d`. The local normal merge is
+`3b4f24ed3d014d90a4fe17a6aaf35bd09d7d2b9d`. The runner source SHA256 is
+`3ddb5fb8e68debdd21e15032b318b6eb09e0ae799770957e371625db7a462456`.
+The successor checks that exact source and public argument lists for
+`start-process`, `retain-owned-process!`, `retained-process-handles`,
+`process-result` (two and three arguments) and `finalize-owned-process!`.
+The explicit parent loader uses `require` in the fresh direct JVM and checks
+the loaded public Var metadata. Source parsing and preparation load no runner.
+
+The C3 wait adapter receives the caller's existing raw token, passes it to
+three-argument wait/capture and finalizes that same token before returning.
+The normal API's repeated finalization reuses its cached observation. Caller
+ownership remains available on exceptions; cleanup errors are suppressed onto
+the original error and interruption is preserved at the call boundary. Raw
+handles remain raw values, not PID reconstructions or serialized ownership.
+The returned tracked observation never authorizes guard release by itself;
+global coverage stays unknown. Source-specific creation coverage and the
+existing L-before-C release obligations remain separate.
+
+Actual source inspection identifies an additional child-creation site:
+`selected-source-harness/git!` calls `clojure.java.shell/sh`, whose frozen
+Clojure JAR source invokes `Runtime.exec` and waits with `Process.waitFor`.
+These source bookends occur inside the C3 child as well as preparation. They
+do not expose retained raw tokens. The exact Git executable/configuration,
+nested creation/lifecycle coverage and remaining genuine C3 callgraph coverage
+are explicit unresolved inputs. The parent runner's tracked handles cannot
+substitute for this proof; no all-OS registry or complete native containment
+is claimed. The successor remains nonlaunchable.
+
+The host-time proposal is recalculated from the normal source: 60,000 ms broker
+wait + 120,000 ms child wait + 1,500 ms finalization + 100 ms post-cleanup wait +
+10,000 ms for two capture waits + 200 ms for their post-close waits = 191,800 ms.
+The unchanged 300,000 ms whole-operation proposal leaves 108,200 ms nominally
+unassigned. Native acquisition, stream close, file bookends and release are not
+hard-bounded by this arithmetic; the whole watchdog binding remains open.
+These are host-operation restrictions, not project accounting or compiler quotas.
+
+Compiler-free injected controls preserve token/handle identity, cached cleanup,
+original wait errors, cleanup suppression, interruption and tracked/global
+separation. An initial interruption assertion ran after test reporting; the
+corrected assertion captures the flag at the adapter boundary. The affected
+panel passes 23 tests / 331 assertions. A separate loader check resolves only
+the five public Vars with their exact signatures; it launches/acquires/finalizes
+nothing and leaves Bootstrap unloaded. Existing H-root participation, profile
+review, whole watchdog and Acceptance4/5 remain open. The accepted `9fe51995`
+request is unchanged; the successor requires a fresh freeze and independent
+affected binding review before any later admission decision.

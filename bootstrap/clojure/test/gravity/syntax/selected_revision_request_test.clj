@@ -5,7 +5,7 @@
             [gravity.syntax.selected-revision-acceptance :as acceptance]
             [gravity.syntax.selected-revision-request :as request]))
 
-(deftest direct-request-is-exact-and-unlaunchable-with-missing-finalizer
+(deftest direct-request-is-exact-and-unlaunchable-with-missing-C3-coverage
   (let [directory (.getCanonicalFile (.toFile (java.nio.file.Files/createTempDirectory "C3-request-control-"
                            (make-array java.nio.file.attribute.FileAttribute 0))))
         path #(str (io/file directory %))
@@ -21,6 +21,7 @@
       (with-redefs [h/prepare-inputs! (fn [root source] {:root root :source source})
                     h/recheck-inputs! (fn [_] nil)
                     acceptance/source-closure-paths (fn [_] [(path "deps.edn")])
+                    request/runner-binding! (fn [_] {:fixture true})
                     request/environment (constantly env)]
         (let [r (request/prepare! options)
               input (:prepared-input r)]
@@ -30,9 +31,9 @@
           (is (= 7 (count (:argv r))))
           (is (false? (:launchable r)))
           (is (= :never-submitted (:execution r)))
-          (is (= :not-yet-published (get-in r [:missing-interfaces :retained-finalizer :API])))
-          (is (not (contains? (:existing-ports r) :wait)))
-          (is (= :private (get-in r [:missing-interfaces :wait-capture :visibility])))
+          (is (not (contains? (:missing-interfaces r) :retained-finalizer)))
+          (is (= 'gravity.self-hosting.sh01-parallel-test-runner/process-result (get-in r [:existing-ports :wait])))
+          (is (= :unestablished (get-in r [:C3-creation-coverage :status])))
           (is (= :unbound (get-in r [:missing-interfaces :whole-watchdog :API])))
           (is (= [:C :L] (get-in r [:guard-proposal :acquire-order])))
           (is (= [:L :C] (get-in r [:guard-proposal :release-order])))
@@ -56,3 +57,58 @@
           (is (nil? (find-ns 'gravity.self-hosting.sh01-host-resource-broker)))
           (is (nil? (find-ns 'gravity.self-hosting.sh01-parallel-test-runner)))))
       (finally (doseq [f (reverse (file-seq directory))] (.delete ^java.io.File f))))))
+
+(deftest exact-merged-public-source-signatures-without-loading-runner
+  (let [root (.getCanonicalPath (io/file ".")) binding (request/runner-binding! root)]
+    (is (= request/runner-source-sha (get-in binding [:source :sha256])))
+    (is (= request/runner-signatures (:arglists binding)))
+    (is (= :unknown (:global-descendant-coverage binding)))
+    (is (nil? (find-ns 'gravity.self-hosting.sh01-parallel-test-runner)))
+    (is (= :public-runner-source-drift
+           (with-redefs [h/file-input! (fn [_] {:sha256 "changed"})]
+             (try (request/runner-binding! root) nil
+                  (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))))
+
+(deftest same-raw-token-through-wait-and-cached-finalization-before-release
+  (let [process (Object.) token (Object.) handle (Object.) events (atom [])
+        cleanup (atom nil) finalized (atom 0)
+        finalize (fn [owned]
+                   (is (identical? token owned))
+                   (swap! events conj :finalize)
+                   (or @cleanup (do (swap! finalized inc)
+                                    (reset! cleanup {:tracked-complete? true :complete? nil
+                                                     :descendant-coverage :unknown}))))
+        ports {:retain (fn [p] (is (identical? process p)) (swap! events conj :retain) token)
+               :handles (fn [owned] (is (identical? token owned)) (swap! events conj :handles) [handle])
+               :wait (fn [p opts owned]
+                       (is (identical? process p)) (is (identical? token owned))
+                       (is (= {:timeout-ms 120000} opts)) (swap! events conj :wait)
+                       {:root-exited? true :tracked-owned-processes-terminal? true
+                        :cleanup (finalize owned) :descendant-coverage :unknown})
+               :finalize finalize}
+        owned ((:retain ports) process)
+        result (request/wait-C3-child! ports process owned {:timeout-ms 120000})]
+    (swap! events conj :release-L :release-C)
+    (is (identical? token (:retained-token result)))
+    (is (identical? handle (first (:raw-handles result))))
+    (is (identical? @cleanup (:finalization result)))
+    (is (= 1 @finalized))
+    (is (= [:retain :wait :finalize :handles :finalize :release-L :release-C] @events))
+    (is (false? (:release-authorized? result)))
+    (is (= :unknown (:global-descendant-coverage result)))))
+
+(deftest original-wait-error-and-interruption-survive-finalization-failure
+  (doseq [original [(ex-info "wait failed" {}) (InterruptedException. "interrupted")]]
+    (let [owned (Object.) cleanup (ex-info "cleanup failed" {}) seen (atom nil)]
+      (try
+        (let [[result interrupted?] (try (request/wait-C3-child!
+                           {:wait (fn [_ _ token] (is (identical? owned token)) (throw original))
+                            :finalize (fn [token] (reset! seen token) (throw cleanup))}
+                           (Object.) owned {})
+                         nil (catch Throwable error [error (.isInterrupted (Thread/currentThread))]))]
+          (is (identical? original result))
+          (is (identical? owned @seen))
+          (is (some #(identical? cleanup %) (.getSuppressed ^Throwable result)))
+          (when (instance? InterruptedException original)
+            (is interrupted?)))
+        (finally (Thread/interrupted))))))
