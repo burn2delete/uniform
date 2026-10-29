@@ -5,7 +5,8 @@
             [gravity.pmk.controller-test :as model]
             [gravity.pmk.first-request :as first]
             [gravity.pmk.first-request-test :as fixture]
-            [gravity.pmk.hooks :as hooks]))
+            [gravity.pmk.hooks :as hooks]
+            [clojure.java.shell :as shell]))
 
 (defn utf8 [x] (.getBytes ^String x "UTF-8"))
 (defn setup []
@@ -131,3 +132,13 @@
     (is (empty? @(:events s)))
     (doseq [n '[gravity.bootstrap gravity.self-hosting.sh01-host-resource-broker gravity.self-hosting.sh01-parallel-test-runner]]
       (is (nil? (find-ns n))))))
+
+(deftest git-observation-does-not-request-branch-tracking
+  (let [s (setup) freeze (update (:freeze s) :files assoc "/usr/bin/git" fixture/h "/synthetic/clojure" fixture/h)
+        freeze (assoc-in freeze [:binding :runtime :clojure :path] "/synthetic/clojure")
+        calls (atom []) io (hooks/normal-io freeze)]
+    (with-redefs [shell/sh (fn [& args] (swap! calls conj (vec args)) {:exit 0 :out "observed\n"})]
+      (is (= {:head "observed" :tree "observed" :tracked-status "observed"} ((:git! io)))))
+    (is (= ["status" "--porcelain" "--untracked-files=no" "--no-ahead-behind"]
+           (subvec (last @calls) 4 8)))
+    (is (= 3 (count @calls)))))

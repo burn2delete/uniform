@@ -13,6 +13,13 @@ observations, the reconstructed request and runtime must match the frozen tuple.
 It returns the controller's exact bookend only after these checks. A frozen
 method still needs an independently reviewed complete consumed-file inventory;
 these checks are consistency evidence, not binary/runtime authentication.
+Git tracked-status observation explicitly disables ahead/behind work. The first
+workload's outer method binds effective Git settings in output order, except
+`branch.<name>.remote` and `.merge` administration; head/tree/tracked-status
+observations request no branch tracking. Other settings and duplicate-value
+precedence remain checked. Raw common-config hashes remain observations, while
+compiler/source/runtime file pins remain exact. This avoids treating peer branch
+administration as a compiler input or a global writer exclusion.
 
 The capture hook reads the actual normal machine-result file under the declared
 host capture bound. It requires strict UTF-8, one EDN map without tagged values

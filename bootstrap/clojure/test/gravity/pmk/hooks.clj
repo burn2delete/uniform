@@ -133,7 +133,7 @@
                            (need! (zero? (:exit r)) :git-read)
                            (str/trim-newline (:out r))))]
                {:head (git "rev-parse" "HEAD") :tree (git "rev-parse" "HEAD^{tree}")
-                :tracked-status (git "status" "--porcelain" "--untracked-files=no")}))
+                :tracked-status (git "status" "--porcelain" "--untracked-files=no" "--no-ahead-behind")}))
      :snapshot! #(pmk/capture cwd)
      :runtime! #(observe-runtime clojure-path)
      :hash! hash-file
