@@ -652,8 +652,13 @@
       ([] (wait-operation) 0)
       ([_ _] (wait-operation)))
     (exitValue [] (if @alive (throw (IllegalThreadStateException.)) 0))
-    (destroy [] (reset! alive false))
-    (destroyForcibly [] (reset! alive false) this)
+    (destroy []
+      (if (instance? Throwable handle) (reset! alive false)
+          (.destroy ^java.lang.ProcessHandle handle)))
+    (destroyForcibly []
+      (if (instance? Throwable handle) (reset! alive false)
+          (.destroyForcibly ^java.lang.ProcessHandle handle))
+      this)
     (isAlive [] @alive)))
 
 (deftest retained-handles-survive-natural-exit-and-observe-late-grandchildren
@@ -771,6 +776,67 @@
     (is (identical? fatal (try (runner/finalize-owned-process! owned) nil
                               (catch Throwable error error))))
     (is (= 1 (count @events)))))
+
+(deftest retained-discovery-promotes-later-fatal-over-an-earlier-ordinary-error
+  (let [ordinary (UnsupportedOperationException. "first discovery unavailable")
+        fatal (OutOfMemoryError. "later owned discovery fatal")
+        calls (atom 0) events (atom []) root-alive (atom true) child-alive (atom true)
+        child (injected-owned-handle 2 child-alive #(throw fatal) events
+                                     (fn [_] (reset! child-alive false) true))
+        root (injected-owned-handle 1 root-alive
+                                    #(if (= 1 (swap! calls inc)) (throw ordinary) [child])
+                                    events (fn [_] (reset! root-alive false) true))
+        process (injected-owned-process root root-alive (constantly false))
+        owned (runner/retain-owned-process! process)
+        thrown (try (runner/process-result process {:timeout-ms 100} owned) nil
+                    (catch Throwable error error))]
+    (is (identical? fatal thrown))
+    (is (identical? fatal @(:discovery-error owned)))
+    (is (some #(identical? ordinary %) (.getSuppressed fatal)))
+    (is (false? @root-alive))
+    (is (false? @child-alive))
+    (is (= [[2 :destroy] [1 :destroy]] @events))))
+
+(deftest retained-cleanup-attempts-other-handles-before-rethrowing-fatal
+  (doseq [stage [:terminate :alive :reap]]
+    (let [fatal (OutOfMemoryError. (str "injected cleanup " stage))
+          active? (not= :reap stage)
+          root-alive (atom active?) good-alive (atom active?) bad-alive (atom active?)
+          events (atom []) reaped (atom [])
+          bad (reify java.lang.ProcessHandle
+                (pid [_] (long 3))
+                (isAlive [_] (if (= :alive stage) (throw fatal) @bad-alive))
+                (descendants [_] (java.util.stream.Stream/empty))
+                (destroy [_]
+                  (swap! events conj [3 :destroy])
+                  (if (= :terminate stage) (throw fatal) (do (reset! bad-alive false) true)))
+                (destroyForcibly [_] (swap! events conj [3 :force]) (reset! bad-alive false) true)
+                (onExit [this] (if (= :reap stage) (throw fatal)
+                                  (java.util.concurrent.CompletableFuture/completedFuture this))))
+          good (injected-owned-handle 2 good-alive (constantly []) events
+                                      (fn [_] (reset! good-alive false) true))
+          root (injected-owned-handle 1 root-alive (constantly [good bad]) events
+                                      (fn [_] (reset! root-alive false) true))
+          process (injected-owned-process root root-alive (constantly false))
+          owned (runner/retain-owned-process! process)
+          reap-var (ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'reap-process-handle!)
+          original-reap @reap-var
+          thrown (with-redefs-fn
+                   {(ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-grace-ms) 0
+                    (ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-timeout-ms) 50
+                    reap-var (fn [handle deadline tracker]
+                               (swap! reaped conj (.pid ^java.lang.ProcessHandle handle))
+                               (original-reap handle deadline tracker))}
+                   #(try (runner/finalize-owned-process! owned) nil (catch Throwable error error)))]
+      (is (identical? fatal thrown) (str stage))
+      (is (false? @root-alive) (str stage))
+      (is (false? @good-alive) (str stage))
+      (is (false? @bad-alive) (str stage))
+      (when (= :reap stage) (is (= [1 2 3] @reaped)))
+      (let [before @events]
+        (is (identical? fatal (try (runner/finalize-owned-process! owned) nil
+                                  (catch Throwable error error))))
+        (is (= before @events))))))
 
 (deftest process-launcher-is-injectable-and-receives-an-argument-vector
   (let [seen (atom nil)

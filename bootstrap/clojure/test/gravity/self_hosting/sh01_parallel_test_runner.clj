@@ -1681,7 +1681,21 @@
          :error throwable})))
 
 (defrecord RetainedProcess
-    [process handles discovery-error wait-throwable terminal owner-thread-id])
+    [process handles discovery-error cleanup-error wait-throwable terminal owner-thread-id])
+
+(defn- retain-process-error! [cell error]
+  (restore-interrupt! error)
+  (let [previous @cell
+        fatal (fatal-cause error)
+        primary (cond (nil? previous) (or fatal error)
+                      (and fatal (not (fatal-cause previous))) fatal
+                      :else previous)
+        secondary (if (identical? primary previous) fatal previous)]
+    (when (and secondary (not (identical? primary secondary))
+               (< (count (.getSuppressed ^Throwable primary)) 8)
+               (not-any? #(identical? secondary %) (.getSuppressed ^Throwable primary)))
+      (.addSuppressed ^Throwable primary secondary))
+    (reset! cell primary)))
 
 (defn- require-retained-process! [owned]
   (when-not (and (instance? RetainedProcess owned)
@@ -1699,13 +1713,12 @@
   (when-not (instance? Process process)
     (throw (ex-info "Retaining ownership requires an actual Process"
                     {:id "SH01-PROCESS-OWNERSHIP"})))
-  (let [owned (->RetainedProcess process (atom []) (atom nil) (atom nil)
+  (let [owned (->RetainedProcess process (atom []) (atom nil) (atom nil) (atom nil)
                                 (atom nil) (.getId (Thread/currentThread)))]
     (try
       (swap! (:handles owned) conj (.toHandle ^Process process))
       (catch Throwable error
-        (restore-interrupt! error)
-        (reset! (:discovery-error owned) error)))
+        (retain-process-error! (:discovery-error owned) error)))
     owned))
 
 (defn retained-process-handles
@@ -1719,7 +1732,7 @@
   ;; after root exit. Absence from a later enumeration never drops a handle.
   (doseq [handle @(:handles owned)]
     (let [{:keys [handles error]} (handle-descendants handle)]
-      (when error (compare-and-set! (:discovery-error owned) nil error))
+      (when error (retain-process-error! (:discovery-error owned) error))
       (swap! (:handles owned) #(vec (distinct (concat % handles))))))
   owned)
 
@@ -1728,48 +1741,44 @@
   (long (.pid handle)))
 
 (defn- alive-handle?
-  [^java.lang.ProcessHandle handle]
+  [^java.lang.ProcessHandle handle owned]
   (try
     (.isAlive handle)
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
+      (retain-process-error! (:cleanup-error owned) throwable)
       ;; If a handle can no longer be queried, retain it as a cleanup failure
       ;; rather than promoting an unverified timeout to a clean result.
       true)))
 
 (defn- request-handle-termination!
-  [^java.lang.ProcessHandle handle forcibly?]
+  [^java.lang.ProcessHandle handle forcibly? owned]
   (try
     (if forcibly?
       (.destroyForcibly handle)
       (.destroy handle))
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
+      (retain-process-error! (:cleanup-error owned) throwable)
       false)))
 
 (defn- reap-process-handle!
-  [^java.lang.ProcessHandle handle deadline]
+  [^java.lang.ProcessHandle handle deadline owned]
   (try
     ;; ProcessHandle::onExit is the JVM-level wait/reap boundary for a
     ;; descendant that is not represented by a java.lang.Process object.
-    (.get (.onExit handle)
-          (long (max 1 (min 100 (quot (- deadline (System/nanoTime)) 1000000))))
-          TimeUnit/MILLISECONDS)
-    true
+    (when (< (System/nanoTime) deadline)
+      (.get (.onExit handle)
+            (long (max 1 (min 100 (quot (- deadline (System/nanoTime)) 1000000))))
+            TimeUnit/MILLISECONDS)
+      true)
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      (not (alive-handle? handle)))))
+      (retain-process-error! (:cleanup-error owned) throwable)
+      false)))
 
 (defn- retained-root-alive? [owned]
   (try
     (.isAlive ^Process (:process owned))
     (catch Throwable error
-      (rethrow-fatal! error)
-      (restore-interrupt! error)
-      (compare-and-set! (:discovery-error owned) nil error)
+      (retain-process-error! (:cleanup-error owned) error)
       true)))
 
 (defn- terminate-retained-process! [owned]
@@ -1783,22 +1792,26 @@
     (loop []
       (observe-owned-process! owned)
       (let [observed @(:handles owned)
-            alive (vec (filter alive-handle? observed))
+            alive (vec (filter #(alive-handle? % owned) observed))
             root-alive? (retained-root-alive? owned)
             now (System/nanoTime)]
         (compare-and-set! live-at-entry nil (count (remove #(= root %) alive)))
-        (doseq [handle (reverse alive) :when (not (contains? @requested handle))]
-          (request-handle-termination! handle false)
+        (doseq [handle (reverse (remove #(= root %) alive))
+                :when (not (contains? @requested handle))]
+          (request-handle-termination! handle false owned)
           (swap! requested conj handle))
-        ;; Keep the actual Process usable when toHandle is unsupported.
-        (when (and (nil? root) root-alive? (not (contains? @requested :root)))
-          (.destroy ^Process (:process owned))
+        ;; The actual Process is the root control handle, including when its
+        ;; ProcessHandle is unavailable or cannot be queried.
+        (when (and root-alive? (not (contains? @requested :root)))
+          (try (.destroy ^Process (:process owned))
+               (catch Throwable error (retain-process-error! (:cleanup-error owned) error)))
           (swap! requested conj :root))
         (cond
           (and (empty? alive) (not root-alive?))
-          (let [reaped? (every? #(reap-process-handle! % deadline) observed)]
+          (let [reaped (mapv #(reap-process-handle! % deadline owned) observed)
+                reaped? (and (every? true? reaped) (nil? @(:cleanup-error owned)))]
             {:status (if reaped? :tracked-clean :failed)
-             :complete? nil
+             :complete? (when-not reaped? false)
              :tracked-complete? reaped?
              :descendant-coverage :unknown
              :root-alive? false
@@ -1807,7 +1820,8 @@
              :forced? (boolean (seq @forced))
              :observed-pids (mapv handle-pid observed)
              :survivor-pids []
-             :discovery-error (some-> @(:discovery-error owned) str)})
+             :discovery-error (some-> @(:discovery-error owned) str)
+             :cleanup-error (some-> @(:cleanup-error owned) str)})
 
           (>= now deadline)
           {:status :failed :complete? false :tracked-complete? false
@@ -1817,16 +1831,19 @@
            :forced? (boolean (seq @forced))
            :observed-pids (mapv handle-pid observed)
            :survivor-pids (mapv handle-pid alive)
-           :discovery-error (some-> @(:discovery-error owned) str)}
+           :discovery-error (some-> @(:discovery-error owned) str)
+           :cleanup-error (some-> @(:cleanup-error owned) str)}
 
           :else
           (do
             (when (>= now grace-deadline)
-              (doseq [handle (reverse alive) :when (not (contains? @forced handle))]
-                (request-handle-termination! handle true)
+              (doseq [handle (reverse (remove #(= root %) alive))
+                      :when (and (not (contains? @forced handle)) (alive-handle? handle owned))]
+                (request-handle-termination! handle true owned)
                 (swap! forced conj handle))
-              (when (and (nil? root) root-alive? (not (contains? @forced :root)))
-                (.destroyForcibly ^Process (:process owned))
+              (when (and (retained-root-alive? owned) (not (contains? @forced :root)))
+                (try (.destroyForcibly ^Process (:process owned))
+                     (catch Throwable error (retain-process-error! (:cleanup-error owned) error)))
                 (swap! forced conj :root)))
             (java.util.concurrent.locks.LockSupport/parkNanos
              (long (* (min 25 (max 1 (quot (- deadline now) 1000000))) 1000000)))
@@ -1835,7 +1852,10 @@
 (defn finalize-owned-process!
   "Finalize retained handles once on the retaining thread; repeat calls reuse
   the same observation. :tracked-complete? never proves descendant coverage.
-  :complete? is nil (unknown) or false, never a global success claim."
+  :complete? is nil (unknown) or false, never a global success claim. A caller
+  whose required lifecycle scope is these retained handles can consume the
+  tracked fact; source-bound creation knowledge belongs to its exact method,
+  not to an all-OS registry or an inferred meaning for the unknown field."
   [owned]
   (require-retained-process! owned)
   (let [terminal (:terminal owned)]
@@ -1843,6 +1863,7 @@
       (try
         (let [result (terminate-retained-process! owned)]
           (when-let [error @(:discovery-error owned)] (rethrow-fatal! error))
+          (when-let [error @(:cleanup-error owned)] (rethrow-fatal! error))
           (reset! terminal {:result result})
           result)
         (catch Throwable error
