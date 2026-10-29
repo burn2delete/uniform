@@ -1,5 +1,26 @@
 # Requirement reconciliation evidence
 
+## Current witness freeze for affected composition review
+
+`current-criterion-bindings.edn` binds all 200 reviewed historical criteria to
+actual task/context UTF8 spans and whole-file hashes at
+`bc0a04f8e70de2be04b642aec357dcfe9a532a5c`. Its SHA256 is
+`2378fa880c9ecec322a1db2911622dd025ac83710efa22fd52955d5fc7e83b84`;
+the normalized sorted 200-ID vector SHA256 is
+`472dd8fa27e91fc1306782cb132accdb055475bbe877d6091222d591a97b5385`.
+It also binds original-document identities, the complete current decision
+records and ID/status vector, and the task ID/status reference. All 833
+decision records remain Open. Product witnesses include exact preserved
+reviewed fragments plus the current composed whole criterion, preserving
+intervening Foundation/Profile conditions.
+
+The artifact distinguishes 200 reviewed/current-bound criteria and 361 not
+yet source-bound residuals from canonical adoption: zero new mappings are
+canonically adopted and all 561 dispatched IDs remain unadopted pending the
+admitted independent affected-composition review. Broad inherited facets,
+unresolved source decisions, task granularity and implementation acceptance
+remain separate. The source-reviewed proposal count is not a project ratio.
+
 ## Reviewed additive residual successor
 
 AI94, Schema5, Profile34 and Product7 add 140 source-reviewed criterion

@@ -49736,4 +49736,19 @@
    "a8fd4dd9123a764137dab609c1389ffed717a2035a3843b51771114ba8a403fc",
    :review-sha256
    "11410e1bf915276ec07b8f7cf73b41f882b302c4893278d70234b553ba46d1cc"}],
+ :current-criterion-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings.edn",
+  :remaining-unadopted-dispatch-ids 561,
+  :source-reviewed-and-current-bound 200,
+  :canonical-mapping-adoption
+  :pending-independent-current-composition-review,
+  :canonically-adopted-new-mappings 0,
+  :source-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+  :bound-ids-sha256
+  "472dd8fa27e91fc1306782cb132accdb055475bbe877d6091222d591a97b5385",
+  :sha256
+  "2378fa880c9ecec322a1db2911622dd025ac83710efa22fd52955d5fc7e83b84",
+  :qualification
+  "These are independently reviewed historical obligation-to-criterion source bindings with fresh current spans, not implementation acceptance or blanket entailment of every sentence of inherited broad facets. Whole-project scope, granularity and the 833 current Open decision identities remain separate and unassessed."},
  :implementation-acceptance :not-conferred}
