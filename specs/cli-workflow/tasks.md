@@ -17,7 +17,7 @@ Status: Open
 
 Evidence baseline: [Dispatcher](../../bootstrap/clojure/src/gravity/cli/dispatch.clj)
 
-Closing evidence: Command matrix that distinguishes implemented, rejected and unavailable operations
+Closing evidence: Command matrix that distinguishes implemented, rejected and unavailable operations T1 acceptance: enumerate all sixteen normative command families, relevant project/profile/target/package/format options and shell-completion metadata. Reject missing required explicit profile/target and unsupported formats with stable T1001-T1008 diagnostics where applicable; wider families retain their own service dependencies.
 
 - [ ] `cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services` Connect check/run/compile/build/test/package/verify to real services
 
@@ -25,7 +25,7 @@ Status: Open
 
 Evidence baseline: [Compile dispatcher](../../bootstrap/clojure/src/gravity/cli/compile_command.clj)
 
-Closing evidence: Executed success/failure fixtures and artifact paths at public command boundary
+Closing evidence: Executed success/failure fixtures and artifact paths at public command boundary T1 acceptance: actual command execution records and artifact paths/manifest hashes retain declared grants/denials. Reject ungranted effects, silent unsafe/AI/network/shell/secrets/publish operations, hidden network, output-directory escape without grant and missing release artifact verification.
 
 - [ ] `cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services` Connect REPL/format/lint/doc/inspect/profile/audit/AI/registry/explain services
 
@@ -33,7 +33,7 @@ Status: Open
 
 Evidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer-experience/README.md)
 
-Closing evidence: Each declared command has a genuine service result and negative fixture; no metadata-only success
+Closing evidence: Each declared command has a genuine service result and negative fixture; no metadata-only success T1 acceptance: gravity explain resolves known diagnostic codes and artifact ids to actionable source/policy context. Each invoked T2-T13 service keeps its own semantic owner and positive/negative service evidence.
 
 - [ ] `cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction` Normalize JSON, text, exit codes and redaction
 
@@ -41,7 +41,7 @@ Status: Open
 
 Evidence baseline: [Diagnostic presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj)
 
-Closing evidence: Golden success/error outputs including source, target, grants and redacted secrets
+Closing evidence: Golden success/error outputs including source, target, grants and redacted secrets T1 acceptance: golden JSON success/failure per family; exits 0 success, 1 policy/check, 2 usage, 3 dependency/registry, 4 build/artifact, 5 runtime, 6 missing authority/review. Reports include code/severity/source-span-or-manifest/profile/target/remediation when available, artifact paths/hashes and redacted text/JSON; CI check/test/build/audit/verify consume JSON. Reject unavailable requested JSON and unstable plugin output.
 
 - [ ] `cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints` Package and verify user entrypoints
 

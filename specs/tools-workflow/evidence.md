@@ -38,6 +38,60 @@ Exact checks and independent review belong to the public PR receipt.
 No service session, generated patch acceptance, authority grant, supported
 target or compiler/release completion is inferred from this transfer.
 
+## Original T1-T13 family candidate, 2026-10-28
+
+Input main: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`, tree
+`9f464ed0f03866bd4978e4213a488f3b1ae48683`. PR554 input snapshot at
+`53ae6a403b20d15155bb5b04911fe7ac0092b921` has SHA256
+`423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94`.
+The [family proposal](requirement-proposal.edn) retains 13 original documents,
+631 actual occurrences, 960 facets and 65 existing semantic requirement IDs.
+All 814 facets outside the 146 nonnormative facets have retained unit owners.
+The 85 negative-acceptance facets remain intact. No original source is edited.
+
+The committed PR445 manifest SHA256 `f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690`
+and preserved applying manifest SHA256 `aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980`
+are different complete inputs. Direct local comparison found this family's
+65 records, 960 facets and all dispositions identical between them. The
+existing ai-build-tools proposal lineage and dependency artifact hashes are
+preserved; other families' delivered decisions are not re-applied here.
+Prior atomicity states remain 51 reviewed and 14 proposed; all prior
+nonoverlap and implementation acceptance qualifications remain in force.
+
+The candidate has 200 guarded field edits. They bind the current task hashes
+and closing boundaries, retain concrete implementation/evidence gaps, add
+source-qualified dependency/acceptance detail, correct four unsupported
+obligation phrases and add the existing CLI command-inventory interface.
+Sixteen existing task rows gain closing criteria: twelve Tools and four CLI.
+All remain Open. Four context-sensitive redaction refinements remain proposals
+for central adjudication; no aliases or semantic IDs are deleted.
+
+Four corrected IDs: `behavior/t3/formatter-write-policy`,
+`behavior/t7/runnable-doc-examples`, `behavior/t9/registry-policy-search`,
+`behavior/t11/distributed-ai-cost-classes`. The first removes invented general
+ownership authority, the second retains mandatory checking of runnable
+examples, the third preserves the actual search filters, and the fourth
+preserves actual provider/tool reporting without invented memory-cost policy.
+Every ID in the proposal's `unresolved-requirement-ids` remains unassessed for
+implementation and cross-family nonoverlap. Historical support is empty for
+these 65 records; historical phase-13 record proofs are not promoted to actual
+service execution or accepted implementation.
+
+Observed candidate checks: tooling requirement controls passed 6 tests / 24
+assertions; Tools projection tests passed 4 / 80; CLI projection tests passed
+5 / 88; both projection checks passed. Document validation passed 240 documents
+and 19 phase indexes; full-language roadmap and whitespace passed. Language
+boundary passed 6 / 11. Negative controls reject wrong source/task hashes,
+missing or renamed tasks/markers/IDs, lost occurrences/facets/negative
+conditions, changed acceptance state, context-erasing aliases and stale or
+duplicate field operations. Initial local producer/test reader delimiter errors
+were corrected before the passing controls; no compiler evidence was produced.
+
+Independent exact-candidate review and central adoption remain pending.
+The coordinator routes review after consuming the immutable candidate. No
+global completion count, requirement denominator, service/runtime execution,
+release acceptance or self-hosting credit is conferred by this patch.
+
 ### Observed transfer checks
 
 Focused projector tests passed 4 tests / 80 assertions, zero failures/errors;

@@ -49,3 +49,25 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md#requirements): Performance inspection and benchmark reporting must retain source/compiler/target/harness identity. Reports do not establish optimizer correctness or realtime latency.
 - [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md#requirements): Profile-data producers expose identity, redaction/retention and hot/cold maps; collected data alone is not an accepted PGO transformation.
+
+## Original tooling source reconciliation
+
+The [bounded family proposal](requirement-proposal.edn) conserves the existing
+T1-T13 semantic IDs, source occurrences, byte facets and applying history.
+Its guarded field edits target the preserved PR445 records; central adoption
+belongs to the reconciliation owner. This package does not edit that manifest.
+
+The twelve existing service rows and four existing CLI rows gain concrete
+source-specific closing evidence. Their statuses, IDs, implementation actions
+and historical suffixes are retained. Per-unit dependency boundaries connect
+the applicable compiler, runtime, authority, package and proof producers;
+tooling consumes those facts without assuming their completion. Four proposed
+obligation corrections remove unsupported alternatives or extra obligations.
+Four redaction relationships retain their distinct consumer contexts for
+central adjudication. All 65 implementation outcomes remain unassessed.
+
+Run `clojure -J-Xmx512m -M tools/tooling_requirements_test.clj` and
+`clojure -J-Xmx512m -M tools/tooling_requirements.clj --check` for the bounded
+pin/conservation/task/field guards. These read the exact immutable Git inputs
+named in the proposal and execute core Clojure checks, not compiler services.
+The generated CLI and Tools roadmap regions still use their existing projectors.
