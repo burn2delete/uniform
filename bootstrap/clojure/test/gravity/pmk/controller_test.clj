@@ -7,7 +7,11 @@
 
 (def process-pass {:status :passed :exit-code 0 :terminal? true :root-alive? false
                    :cleanup-complete? true :cleanup-failed? false :capture-failed? false
-                   :timeout-containment-unproven? false :output-truncated? false})
+                   :timeout-containment-unproven? false :output-truncated? false
+                   :wait-error nil :wait-interrupted? false
+                   :stdout-capture-status :complete :stderr-capture-status :complete
+                   :stdout-capture-error nil :stderr-capture-error nil
+                   :stdout-capture-forced-close? false :stderr-capture-forced-close? false})
 (defn machine-result [request]
   {:schema :gravity/development-test-result-v1 :authority :non-authoritative :authoritative? false
    :selection {:namespaces ["gravity.self-hosting.sh08-function-call-type-test"]
@@ -27,10 +31,13 @@
                                       :participants [{:id :synthetic :guards (mapv :id guards)}]}))
         binding (assoc-in binding [:controller :launcher]
                           {:argv (controller/child-command request binding) :cwd (:cwd request)})
-        events (atom []) now (atom 0) counter (atom 0)
+        events (atom []) now (atom 0) counter (atom 0) claimed (atom false)
         event #(swap! events conj %)
         ports {:clock! #(deref now)
-               :bookend! (fn [_] (event :bookend) {:stable true})
+               :bookend! (fn [_] (event :bookend) (controller/expected-bookend request binding))
+               :claim! (fn [_] (event :claim)
+                         (if (compare-and-set! claimed false true) (controller/claim-record request)
+                           (throw (ex-info "already claimed" {:reason :operation-claimed}))))
                :acquire! (fn [g _] (event [:acquire (:id g)]) (:id g))
                :validate! (fn [g _] (event [:validate (:id g)]))
                :release! (fn [g _] (event [:release (:id g)]) {:outcome :released})
@@ -71,6 +78,24 @@
     (is (= :guard-kind (fixture/reason #(run-model bad))))
     (is (empty? @(:events m)))))
 
+(deftest bookends-bind-the-tuple-and-claims-are-one-shot
+  (doseq [wrong [nil {} {:wrong-source true}]]
+    (let [m (model)]
+      (is (= :source-bookend
+             (fixture/reason #(run-model (assoc-in m [:ports :bookend!] (fn [_] wrong))))))
+      (is (zero? (event-count m :claim)))
+      (is (not-any? #(and (vector? %) (#{:acquire :start :publish} (first %))) @(:events m)))))
+  (let [m (model) original (get-in m [:ports :bookend!])]
+    (is (= :source-bookend
+           (fixture/reason #(run-model (assoc-in m [:ports :bookend!]
+                                                (fn [b] (assoc (original b) :inputs-sha256 "foreign")))))))
+    (is (zero? (event-count m :claim))))
+  (let [m (model)]
+    (is (= :passed (:status (run-model m))))
+    (is (= :operation-claimed (fixture/reason #(run-model m))))
+    (is (= 1 (count (filter #(and (vector? %) (= :start (first %))) @(:events m)))))
+    (is (= 1 (count (filter #(and (vector? %) (= :publish (first %))) @(:events m)))))))
+
 (deftest acquisition-validation-and-release-failures
   (doseq [at [:acquire! :validate!]]
     (let [m (model) original (get-in m [:ports at])
@@ -101,6 +126,12 @@
                           :cleanup-complete? false :timeout-containment-unproven? true)
                    (assoc process-pass :capture-failed? true)
                    (assoc process-pass :capture-failed? true :wait-error (Exception. "native wait"))
+                   (assoc process-pass :wait-error (Exception. "hidden wait failure"))
+                   (assoc process-pass :wait-interrupted? true)
+                   (assoc process-pass :stdout-capture-status :error)
+                   (assoc process-pass :stderr-capture-error "failed decode")
+                   (assoc process-pass :stdout-capture-forced-close? true)
+                   (assoc process-pass :stderr-capture-forced-close? true)
                    (assoc process-pass :output-truncated? true)
                    (assoc process-pass :cleanup-complete? false)]]
     (let [m (model) r (run-model (assoc-in m [:ports :supervise!] (fn [& _] process)))]
@@ -133,8 +164,16 @@
     (is (= 1 (event-count m :terminate)))
     (is (= 3 (count (:releases r)))))
   (let [m (model) count (atom 0)
-        r (run-model (assoc-in m [:ports :bookend!] (fn [_] {:version (swap! count inc)})))]
+        original (get-in m [:ports :bookend!])
+        r (run-model (assoc-in m [:ports :bookend!] (fn [b] (if (= 1 (swap! count inc)) (original b) nil))))]
     (is (= :source-drift (get-in r [:error :reason]))))
+  (let [m (model) r (run-model (-> m
+                                 (assoc-in [:ports :supervise!] (fn [& _] (throw (InterruptedException. "original stop"))))
+                                 (assoc-in [:ports :interrupt!] (fn [] (throw (Exception. "interrupt hook failed"))))))]
+    (is (= "original stop" (get-in r [:error :message])))
+    (is (= "interrupt hook failed" (get-in r [:interrupt-errors 0 :message])))
+    (is (= 3 (count (:releases r))))
+    (is (= [:publish :failed] (last @(:events m)))))
   (let [m (model) original (ex-info "first" {:reason :first-error}) published (atom 0)
         m (-> m (assoc-in [:ports :supervise!] (fn [& _] (throw original)))
               (assoc-in [:ports :release!] (fn [& _] (throw (Exception. "release"))))

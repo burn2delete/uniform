@@ -5,7 +5,7 @@
             [gravity.pmk.acceptance :as pmk]
             [gravity.pmk.first-request :as first]))
 
-(def port-keys #{:clock! :bookend! :acquire! :validate! :release! :start!
+(def port-keys #{:clock! :bookend! :claim! :acquire! :validate! :release! :start!
                  :supervise! :capture! :terminate! :publish! :interrupt!})
 
 (defn- require! [p reason]
@@ -14,6 +14,15 @@
 (defn- error-record [error]
   (when error {:class (.getName (class error)) :message (.getMessage ^Throwable error)
                :reason (:reason (ex-data error))}))
+
+(defn expected-bookend [request binding]
+  {:source-revision (:source-revision request) :checkout (:checkout request)
+   :inputs-sha256 (:inputs-sha256 request) :parent-sha256 (:parent-sha256 request)
+   :request-sha256 (first/digest request) :binding-sha256 (first/digest binding)
+   :runtime (:runtime binding) :cwd (:cwd request)})
+
+(defn claim-record [request]
+  {:status :claimed :operation-id (:operation-id request) :request-sha256 (first/digest request)})
 
 (defn child-command
   "Direct Java bypasses launcher config discovery. The only target call is
@@ -54,15 +63,22 @@
                                  (and (= :canonical (:kind %)) (= :exclusive (:resource-class %))))
                             (:guards expected)) :guard-kind)
         clock (:clock! ports) deadline (+ (clock) (get-in expected [:limits :whole-timeout-ms]))
-        leases (atom []) child (atom nil) handled (atom false)
+        leases (atom []) child (atom nil) handled (atom false) claimed (atom false)
         failure (atom nil) cleanup (atom nil) releases (atom []) result (atom nil)
+        interrupt-errors (atom [])
         fail! (fn [error]
-                (when (instance? InterruptedException error) ((:interrupt! ports)))
-                (when-not @failure (reset! failure error)))
+                (when-not @failure (reset! failure error))
+                (when (instance? InterruptedException error)
+                  (try ((:interrupt! ports))
+                       (catch Throwable secondary (swap! interrupt-errors conj (error-record secondary))))))
         remaining (fn [] (let [left (- deadline (clock))]
                            (require! (pos? left) :whole-deadline) left))]
     (try
       (let [before ((:bookend! ports) bound)]
+        (require! (= (expected-bookend request expected) before) :source-bookend)
+        (remaining)
+        (require! (= (claim-record request) ((:claim! ports) bound)) :operation-claimed)
+        (reset! claimed true)
         (remaining)
         (doseq [guard (:guards expected)]
           (let [lease ((:acquire! ports) guard (remaining))]
@@ -87,12 +103,17 @@
                          (false? (:cleanup-failed? process))
                          (false? (:timeout-containment-unproven? process))
                          (false? (:capture-failed? process))
-                         (false? (:output-truncated? process))) :process-nonpass)
+                         (false? (:output-truncated? process))
+                         (nil? (:wait-error process)) (false? (:wait-interrupted? process))
+                         (= :complete (:stdout-capture-status process) (:stderr-capture-status process))
+                         (nil? (:stdout-capture-error process)) (nil? (:stderr-capture-error process))
+                         (false? (:stdout-capture-forced-close? process))
+                         (false? (:stderr-capture-forced-close? process))) :process-nonpass)
           (let [capture ((:capture! ports) bound process)
                 after ((:bookend! ports) bound)
                 plan (assoc (:parent-plan request) :selection (:selection request)
                             :closure [(first (:closure (:parent-plan request)))] :argv (:argv request))]
-            (require! (= before after) :source-drift)
+            (require! (= (expected-bookend request expected) before after) :source-drift)
             (pmk/attribute plan plan capture)
             (require! (and (= :passed (:outcome capture)) (= 1 (get-in capture [:summary :test]))
                            (pos? (get-in capture [:summary :pass]))) :capture-nonpass)
@@ -113,12 +134,17 @@
               (swap! releases conj {:guard (:id guard) :error (error-record error)})
               (fail! error))))))
     (try (remaining) (catch Throwable error (fail! error)))
+    ;; A failed/duplicate claim does not own this operation's output paths.
+    ;; Do not start or publish into the original operation, even a refusal.
+    (when-not @claimed (throw @failure))
     (let [receipt {:schema :pmk-first-controller-result-v1 :execution :attempted
                    :operation-id (:operation-id request) :request-sha256 (first/digest request)
+                   :claim (claim-record request)
                    :status (if @failure :failed :passed) :error (error-record @failure)
                    :process (when @result
                               (into {} (map (fn [[k v]] [k (if (instance? Throwable v) (error-record v) v)]) @result)))
                    :cleanup @cleanup :releases @releases
+                   :interrupt-errors @interrupt-errors
                    :authority :non-authoritative :authenticated? false}]
       ;; Exactly one publication, after all releases. Publication failure escapes;
       ;; it is never retried and cannot be returned as a passing result.
@@ -139,6 +165,19 @@
   (merge
    {:clock! #(quot (System/nanoTime) 1000000)
     :interrupt! #(.interrupt (Thread/currentThread))
+    :claim! (fn [bound]
+              (let [request (:request bound)
+                    options (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+                (doseq [path (vals (:outputs request))]
+                  (require! (not (java.nio.file.Files/exists (.toPath (java.io.File. ^String path)) options))
+                            :output-exists))
+                (let [record (claim-record request)
+                      path (.toPath (java.io.File. (str (get-in request [:outputs :terminal]) ".started")))
+                      bytes (.getBytes (str (pr-str record) "\n") "UTF-8")]
+                  (java.nio.file.Files/write path bytes
+                    (into-array java.nio.file.OpenOption [java.nio.file.StandardOpenOption/CREATE_NEW
+                                                         java.nio.file.StandardOpenOption/WRITE]))
+                  record)))
     :acquire! (fn [guard timeout]
                 (if (= :canonical (:kind guard))
                   (let [path (.toPath (java.io.File. ^String (:root guard)))

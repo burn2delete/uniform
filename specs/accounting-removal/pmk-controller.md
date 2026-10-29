@@ -39,6 +39,14 @@ never creates a new lock root/file. Broker validation requires zero reported
 stale-ticket recoveries before child start. This is a rejection rule for the
 normal new admission, not a stale-operation recovery procedure.
 
+Each bookend must match the exact request source/checkout/input/parent identities,
+runtime, CWD and request/binding digests; stable Nil or foreign values refuse.
+After the initial bookend and before acquisition, the normal claim port checks
+that the four output paths are absent and atomically creates the terminal path's
+`.started` marker with `CREATE_NEW`. The marker is retained on failure. A duplicate
+claim cannot acquire, start or republish into the original operation. Output
+directories must already be configured; the claim port creates no directories.
+
 The monotonic deadline is checked before/after acquisition, after startup and
 process supervision, and after release. Remaining time is passed to broker and
 process ports. Capture must contain the exact normal one-test machine result,
@@ -77,6 +85,9 @@ validation, uncertain release, startup/release deadline consumption, nonzero/
 timeout/capture/cleanup failures, no-pass results, interruption, source drift,
 single cleanup/publication and original-error preservation. Normal port
 construction is also tested without invoking its production functions.
+Controls also reject hidden wait/capture errors, interrupted or forced-closed
+captures despite a nominal passing status. A throwing interrupt hook is recorded
+as a secondary operational error and cannot replace the original failure.
 
 This is source-method evidence under D1/D8/D9 and TEST1. It supplies no actual
 PMK result, native admission, whole-accounting closure or integration authority.
