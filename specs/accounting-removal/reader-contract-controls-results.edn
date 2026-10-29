@@ -1,7 +1,9 @@
 {:restored-files
  {:two-byte-exact true,
   :List-query-exact-raw-adaptations
-  [["body-all? sh08-ft-all-true?"
+  [["[clojure.test :refer [deftest is testing]]"
+    "[clojure.test :refer [deftest is]]"]
+   ["body-all? sh08-ft-all-true?"
     "body-all? sh08-ft-all-true?\n               body-lc-native-map? sh08-lc-native-map?"]
    ["p15-s23-typed-all sh08-ft-all-true?"
     "p15-s23-typed-all sh08-ft-all-true?\n               p15-s23-lc-native-map? sh08-lc-native-map?"]
@@ -37,6 +39,46 @@
   "f105f6ef0f503b2e56879fdfda3010a596198f515621112bd8228a2c271eb0ba",
   :failure-history-preserved true},
  :integration :UNRUN,
+ :CI-correction
+ {:run 40960649429,
+  :strict-lint
+  {:unchanged-lint-implementation-sha256
+   "c7476633d1a33b535a20f92a7796b19bfbf03a2676e0c775b8438e60c43b71f5",
+   :runner-sha256
+   "e5bbfb784b95a83789d46ba9f5e93b690976239768390b24923baf235afb4cd5",
+   :all-errors-block true,
+   :baseline-warnings 0,
+   :driver-sha256
+   "7c973e6646b589ce45578e572de1357ee44c194266338c20f5b754f621876337",
+   :macro-source-sha256
+   "fac1feb7cbad2e2268580fcfe3b5250b7e27894b835a36a9f661fc87bb4ed6d4",
+   :output-directory-only-parameterized true,
+   :report-sha256
+   "f94ff9318057ebdeb2eaad1c77a70046ffec2213fd507c568549bc8734d35473",
+   :decision-rules-unchanged true,
+   :blocking 0,
+   :raw-evidence-preserved-locally true},
+  :verified-failure
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :row 7,
+   :column 46,
+   :type :unused-referred-var,
+   :baseline-warning-count 0,
+   :blocking-warning-count 1},
+  :correction-generator
+  {:language :clojure,
+   :sha256
+   "e40685af42c95840160d121a944e7b249bccf7cd873d84dd021e686772c9868e",
+   :preserved-locally true},
+  :original-query-NONPASS :preserved,
+  :production-unchanged true,
+  :predecessor-result :NONPASS,
+  :corrected-reader-results :unchanged-14-tests-666-passing-assertions,
+  :predecessor "bcf0bb4ba093a2634bf51b4541aa153040e333aa",
+  :only-test-code-change :remove-unused-clojure-test-testing-refer,
+  :static-job 123752212872,
+  :successor-CI :pending},
  :scope
  {:reader-eval false,
   :Clojure-reader-tests-executed true,
@@ -63,7 +105,7 @@
   :sha256
   "327775ea3d04ad08df23aba4098bd84dfb4d335374f07d715bdf2a0cf948a240",
   :restoration-script-sha256
-  "ebbdc25561a9cf71f4a40061c8de0cfc2834894018835464063a760721484781",
+  "fae13d37132884c567614ae5e8ed3eb9496aa1dde5449f1d61656a2478e93d8d",
   :preserved-locally true},
  :candidate-results
  [{:path
@@ -79,7 +121,7 @@
   {:path
    "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
    :test-file-sha256
-   "0eafbe17f40b9cc5c7fb906481516ec2daefccfcaee0917e288cbb8326bc480e",
+   "856886bfada854ca9046cd4c84e236c09db7276e686b29b3fb13c07830ed14f8",
    :result {:test 8, :pass 276, :fail 0, :error 0, :type :summary}}],
  :base "e047157d711652a5624012f0da7d6911ce086718",
  :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",

@@ -18,7 +18,7 @@ unchanged against the same pinned source: 7 tests, 257 passing assertions,
 5 failures, zero errors. The original NONPASS remains in the results record;
 this draft does not relabel that unchanged test passing.
 
-The adapted List-query file makes eight exact raw edits, all recorded in the
+The adapted List-query file makes nine exact raw edits, all recorded in the
 machine results: add the two explicit native-map helper correspondences; update
 the obsolete routing commentary/test name; use the repaired public/private
 Map-key predicate for all owners; and assert full current wrapper parity rather
@@ -48,7 +48,7 @@ against immutable Git bytes.
   failures/errors. These are Clojure reader/source comparisons only.
 - Language boundary: PASS, 6 tests/11 assertions.
 - clj-kondo 2025.10.23 with repository config/cache disabled: zero errors,
-  the same one warning and zero infos for the original and restored files.
+  zero warnings and infos for the corrected candidate. The original file's unused-import warning is retained as history.
 - Canonical docs, full-language roadmap and whitespace: PASS.
 
 The restoration script initially had a reader delimiter error before file
@@ -63,3 +63,19 @@ Effects, lowering, authenticated source, runtime and callback acceptance remain
 open. C7/C8 and D9 require those distinct evidence boundaries. Coordinator alone
 routes integration; no whole-path semantic acceptance, ACC/PR502 closure,
 release or self-hosting authority follows from the source tests.
+
+## CI correction
+
+Predecessor `bcf0bb4b` static job `123752212872`, run `40960649429`, failed
+strict changed-file lint on the newly restored List-query file's unused
+`clojure.test/testing` refer at line 7, column 46. The historical file's warning
+was not an unchanged baseline: that file is absent on main. The original CI
+NONPASS is retained; no lint policy or baseline was relaxed.
+
+The successor removes only that unused refer and refreshes its exact adaptation
+and file hashes. The same reader results pass 14/666, with the original query's
+257-pass/5-failure NONPASS separate. Boundary passes 6/11. The unchanged actual
+`ci.lint/run-comparison!` API, using its normal executor with only a fresh local
+output directory, reports zero baseline and zero blocking warnings/errors.
+Source/runner/macro/report hashes and exact original CI identities are recorded
+in the results. Successor automatic CI remains a separate pending check.

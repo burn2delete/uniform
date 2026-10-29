@@ -4,7 +4,7 @@
   Explicit helper-name correspondence is not evidence of helper equivalence.
   D1/C7/C8/D9 still require runtime composition before integration acceptance."
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is]]
             [clojure.walk :as walk])
   (:import [java.io PushbackReader]))
 
