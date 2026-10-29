@@ -78,6 +78,8 @@
          :target-source-reread? false
          :clojure-adapter-residual? true
          :self-hosted? false}
+        gravity-boundary (cond-> gravity-boundary (:operation-context sh04-products)
+                           (assoc :operation-context (:operation-context sh04-products)))
         serialization (c3-syntax-serialization-fixture syntax-stream)
         artifact-base {:kind :gravity/stage0-c3-syntax-object-artifact
                        :task "P06-D082"

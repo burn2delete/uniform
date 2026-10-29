@@ -1,6 +1,8 @@
 
 
 (declare sh04-syntax-current-binding!
+         sh04-development-syntax-verification-context!
+         sh04-syntax-verification-binding!
          sh04-syntax-execute!
          sh04-syntax-rich-object
          sh04-syntax-semantic-source-id
