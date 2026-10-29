@@ -52,5 +52,20 @@
                (assoc-in proposal [:new-task-proposals 0 :raw] "- [x] `automation` Invented acceptance")]]
     (is (refuses? #(validates bad)))))
 
+(deftest coverage-write-payload-must-match-validated-record
+  ;; Mutate the actual write payload only, preserving the validated records.
+  (doseq [[field value] [[[:after :implementation-acceptance] :accepted]
+                        [[:after :whole-facet-entailment-acceptance] :accepted]
+                        [[:after :criterion-text] "Forged coverage with no source-entailing criterion"]
+                        [[:after :criterion-task-id] "wrong-task"]
+                        [[:after :source-facet-ids] []]
+                        [[:after :historical-coverage-history] []]
+                        [[:after :unexpected-field] :unvalidated]]]
+    (is (refuses? #(validates (assoc-in proposal (into [:coverage-operations 0] field) value)))
+        (str "Actual coverage write mutation must reject: " field)))
+  (is (refuses? #(validates (-> proposal
+                               (assoc-in [:records 0 :after :criterion-task-id] "wrong-task")
+                               (assoc-in [:coverage-operations 0 :after :criterion-task-id] "wrong-task"))))))
+
 (let [result (run-tests)] (shutdown-agents)
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

@@ -76,6 +76,12 @@
     (require! (= (set assigned) (set (keys by-id)) (set (map :id operations))) "Missing, duplicated or cross-family residual")
     (require! (= 70 (count assigned) (count rs) (count operations)) "Assigned population differs")
     (require! (= :proposal-only (:authority p)) "Unsupported authority")
+    (require! (= operations
+                 (mapv (fn [r]
+                         {:collection :historical-gap-traceability :id (:historical-id r)
+                          :field-path [] :before-present? true
+                          :before (:before r) :after (:after r)}) rs))
+              "Coverage write payload differs from validated record")
     (doseq [r rs :let [id (:historical-id r) h (history id) o (original id) after (:after r)]]
       (require! (= h (:before r)) "Historical before record changed")
       (require! (= [h] (:historical-coverage-history after)) "Historical coverage lineage lost")
@@ -94,6 +100,8 @@
                     (= :pending-independent-source-review (:whole-facet-entailment-acceptance after))) "Forged coverage/implementation acceptance")
       (require! (= (:criterion-sha256 r) (sha (:criterion-text r)) (:criterion-sha256 after)) "Wrong criterion hash")
       (require! (= (:criterion-text r) (:criterion-text after)) "Criterion/coverage mismatch")
+      (require! (= [(:criterion-id after) (:criterion-task-id after)]
+                   [(str "acceptance/" id) (get-in r [:task-reference :id])]) "Criterion/task binding mismatch")
       (doseq [field [:positive-fixture :negative-fixture :required-output]]
         (require! (and (seq (get r field)) (str/includes? (:criterion-text r) (get r field))) "Lost acceptance, negative or output condition"))
       (require! (and (seq (:dependencies r)) (every? #(str/includes? (:criterion-text r) %) (:dependencies r))) "Missing dependencies")
