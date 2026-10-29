@@ -591,7 +591,7 @@
 (deftest imported-and-handler-alias-seeds-require-their-actual-source-records
   (doseq [fixture [(occurs-model/alias-import-source-fixture) (occurs-model/alias-handler-source-fixture)]]
     (let [checked (invoke 'alias-seed-constraint-check [fixture])]
-      (is (= :unsupported (:status checked)))
+      (is (= (if (= :handler-binding (:producer fixture)) :checked-scalar-handler :unsupported) (:status checked)))
       (is (= fixture (:constraint checked)))
       (is (map? (:source-witness checked))))
     (doseq [changed [(assoc fixture :binding-id "missing") (assoc fixture :type :gravity.type/string)
@@ -627,3 +627,43 @@
     (doseq [existing [(assoc base :convergence-status :resource-limit)
                      (assoc base :diagnostics [{:reason :function-result-type-mismatch}])]]
       (is (= existing (invoke 'apply-alias-conjunction-diagnostic [existing [premise]]))))))
+
+(deftest scalar-handler-conjunction-checks-do-not-normalize-bindings
+  (let [a (occurs-model/atomic-handler-constraint :gravity.type/i8 \0)
+        b (occurs-model/atomic-handler-constraint :gravity.type/string \5)
+        declaration (scalar-alias-declaration :p 'I8 :gravity.type/i8)
+        observations {(:binding-id a) :gravity.type/string (:binding-id b) :gravity.type/i8}
+        base {:members [(:binding-id a) (:binding-id b)] :edges [{:reference-node {:node-id :rx}}]
+              :provisional-observations observations}
+        cases [[[a declaration] :compatible-scalar-declarations]
+               [[a b] :conflicting-scalar-declarations]
+               [[b a] :conflicting-scalar-declarations]
+               [[declaration b] :conflicting-scalar-declarations]
+               [[a (occurs-model/alias-import-source-fixture) b] :conflicting-scalar-declarations]
+               [[a b (assoc a :required-relation :trusted)] :invalid-source-premise]
+               [[a (occurs-model/alias-import-source-fixture)] :unsupported]]]
+    (doseq [[constraints status] cases]
+      (let [checked (invoke 'check-alias-conjunction [(assoc base :source-seed-conjunction constraints)])
+            result (invoke 'apply-alias-conjunction-diagnostic
+                           [{:convergence-status :converged :diagnostics [] :binding-types observations} [checked]])]
+        (is (= status (get-in checked [:compatibility-decision :status])))
+        (is (= constraints (mapv :constraint (get-in checked [:compatibility-decision :checks]))))
+        (is (= observations (:provisional-observations checked) (:binding-types result)))
+        (is (= :unresolved (:normalization checked)))
+        (is (= :not-established (:grounding checked)))
+        (is (= (case status :invalid-source-premise "C7-VERIFY" :conflicting-scalar-declarations "C7-TYPE-MISMATCH" "C7-ANNOTATION")
+               (get-in result [:diagnostics 0 :rule])))))
+    (let [checked (invoke 'check-alias-conjunction [(assoc base :source-seed-conjunction [a b])])]
+      (doseq [original [{:convergence-status :resource-limit :diagnostics [] :binding-types observations}
+                        {:convergence-status :converged :diagnostics [{:reason :function-result-type-mismatch}] :binding-types observations}]]
+        (is (= original (invoke 'apply-alias-conjunction-diagnostic [original [checked]])))))
+    (doseq [type [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                  :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                  :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
+      (is (= :checked-scalar-handler
+             (:status (invoke 'alias-seed-constraint-check [(occurs-model/atomic-handler-constraint type \0)])))))
+    (doseq [type [:gravity.type/unknown :gravity.type/never :gravity.type/nil :gravity.type/integer
+                  :gravity.type/map :gravity.type/list {:kind :gravity.type/vector :member-types []}]]
+      (is (= :unsupported
+             (:status (invoke 'alias-seed-constraint-check [(occurs-model/atomic-handler-constraint type \0)])))))))

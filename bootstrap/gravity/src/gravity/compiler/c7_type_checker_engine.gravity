@@ -24218,8 +24218,13 @@
                (= (get clause :handler-core-node-id) (get record :handler-core-node-id))
                (sh08-sha256-id-vector? [id (get witness :owner) (get clause :handler-core-node-id)
                                         (get record :catch-clause-syntax-id) (get record :error-type-binding-id)])])
-          {:status :unsupported :reason :alias-grounding-producer-compatibility-required
-           :constraint constraint :source-witness witness}
+          (if (contains? #{:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                           :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                           :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio} (get constraint :type))
+            {:status :checked-scalar-handler :constraint constraint :source-witness witness}
+            {:status :unsupported :reason :source-bound-handler-compatibility-required
+             :constraint constraint :source-witness witness})
           {:status :rejected :reason :alias-handler-type-or-owner-source-mismatch :constraint constraint}))
       {:status :rejected :reason :alias-handler-source-not-unique :constraint constraint})))
 
@@ -24240,8 +24245,8 @@
         {:status :rejected :reason :unknown-alias-seed-producer :constraint constraint}))))
 
 (defn check-alias-conjunction [premise]
-  ; Only the existing scalar declaration equality rule is checked here.
-  ; Map/List/function/proof/handler compatibility needs its actual source-bound
+  ; Source-joined scalar parameter and catch restrictions share the existing
+  ; scalar mismatch rule. Map/List/function/proof compatibility needs its source-bound
   ; checker; neither inequality nor the presence of a seed supplies that proof.
   (let [checks (loop [remaining (get premise :source-seed-conjunction) out []]
                  (if (= 0 (count remaining)) out
@@ -24249,7 +24254,7 @@
         supported (loop [remaining checks out []]
                     (if (= 0 (count remaining)) out
                       (recur (rest remaining)
-                        (if (= :checked-scalar-declaration (get (first remaining) :status))
+                        (if (contains? #{:checked-scalar-declaration :checked-scalar-handler} (get (first remaining) :status))
                           (conj out (get (first remaining) :constraint)) out))))
         pairs (loop [remaining supported prior nil out []]
                 (if (= 0 (count remaining)) out

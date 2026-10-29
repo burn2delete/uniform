@@ -794,3 +794,91 @@
                      (assoc-in fixture [:source-records owner 0 :handler-core-node-id] "wrong")
                      (assoc-in fixture [:source-records owner 0 :record :catch-clause-syntax-id] "wrong")]]
       (is (= :invalid-source-premise (:status (alias-seed-source-join-model changed)))))))
+
+(defn atomic-handler-constraint [type digit]
+  (let [fixture (alias-handler-source-fixture)
+        owner (first (keys (:source-records fixture))) binding (apply str (repeat 64 digit))]
+    (-> fixture (assoc :binding-id binding :type type)
+        (assoc-in [:source-records owner 0 :record :catch-binding-id] binding)
+        (assoc-in [:source-records owner 0 :error-type] type))))
+
+(defn handler-scalar-conjunction-model
+  "Enumerate the atomic catalog's simultaneous solutions, rather than copying
+  the Gravity checker's adjacent-pair mismatch walk. No solution is assigned."
+  [{:keys [source-seed-conjunction] :as premise}]
+  (let [catalog (zipmap '[I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword Ratio]
+                       [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                        :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                        :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                        :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio])
+        atomic (set (vals catalog))
+        checks
+        (mapv (fn [{:keys [binding-id type producer required-relation source-records] :as c}]
+                (cond
+                  (= producer :handler-binding)
+                  (let [join (alias-seed-source-join-model c)]
+                    (if (= :invalid-source-premise (:status join)) :invalid
+                      (if (atomic type) :scalar :unsupported)))
+                  (= producer :parameter-declaration)
+                  (let [ds (for [record source-records
+                                 [id d] (map vector (:parameter-binding-ids record) (get-in record [:signature :parameters]))
+                                 :when (= binding-id id)] d)
+                        d (first ds)]
+                    (cond
+                      (not (and (= required-relation :declared-parameter-compatibility)
+                                (= 1 (count ds)) (= type (:type-id d)))) :invalid
+                      (= type (get catalog (:type-symbol d) ::missing)) :scalar
+                      :else :unsupported))
+                  (and (= producer :imported-function) (= required-relation :imported-function-type))
+                  (if (= :invalid-source-premise (:status (alias-seed-source-join-model c))) :invalid :unsupported)
+                  (and (= producer :recursive-or-higher-order-premise) (= required-relation :producer-premise-specific)) :unsupported
+                  :else :invalid)) source-seed-conjunction)
+        scalar (map first (filter #(= :scalar (second %)) (map vector source-seed-conjunction checks)))
+        solutions (filter (fn [candidate] (every? #(= candidate (:type %)) scalar)) atomic)
+        status (cond
+                 (some #{:invalid} checks) :invalid-source-premise
+                 (and (seq scalar) (empty? solutions)) :conflicting-scalar-declarations
+                 (some #{:unsupported} checks) :unsupported
+                 (empty? checks) :unconstrained
+                 :else :compatible-scalar-declarations)]
+    (assoc premise :status status :scalar-conflict? (boolean (and (seq scalar) (empty? solutions)))
+           :normalization :unresolved :grounding :not-established)))
+
+(deftest atomic-handler-and-declaration-obligations-share-a-conjunction-not-a-ground
+  (let [a (atomic-handler-constraint :gravity.type/i8 \0)
+        b (atomic-handler-constraint :gravity.type/i8 \5)
+        declaration {:binding-id :p :type :gravity.type/i8 :producer :parameter-declaration
+                     :required-relation :declared-parameter-compatibility
+                     :source-records [{:parameter-binding-ids [:p]
+                                       :signature {:parameters [{:type-symbol 'I8 :type-id :gravity.type/i8}]}}]}
+        observations {(:binding-id a) :gravity.type/string (:binding-id b) :gravity.type/bool}
+        check (fn [constraints expected]
+                (let [premise {:source-seed-conjunction constraints :provisional-observations observations}
+                      r (handler-scalar-conjunction-model premise)]
+                  (is (= expected (:status r)))
+                  (is (= constraints (:source-seed-conjunction r)))
+                  (is (= observations (:provisional-observations r)))
+                  (is (= :unresolved (:normalization r))) (is (= :not-established (:grounding r))) r))]
+    (check [a b declaration] :compatible-scalar-declarations)
+    (check [declaration b a] :compatible-scalar-declarations)
+    (let [different (atomic-handler-constraint :gravity.type/string \5)]
+      (check [a different] :conflicting-scalar-declarations)
+      (check [different a] :conflicting-scalar-declarations)
+      (check [declaration different] :conflicting-scalar-declarations)
+      (let [r (check [a (alias-import-source-fixture) different] :conflicting-scalar-declarations)]
+        (is (:scalar-conflict? r)))
+      (let [r (check [a different (assoc a :required-relation :trusted)] :invalid-source-premise)]
+        (is (:scalar-conflict? r))))
+    (doseq [type [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                  :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                  :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
+      (check [(atomic-handler-constraint type \0) (atomic-handler-constraint type \5)] :compatible-scalar-declarations))
+    ;; Coherent non-catalog records do not gain compatibility from raw equality.
+    (doseq [type [:gravity.type/unknown :gravity.type/never :gravity.type/nil :gravity.type/integer
+                  :gravity.type/map :gravity.type/list {:kind :gravity.type/vector :member-types []}]]
+      (check [(atomic-handler-constraint type \0)] :unsupported))
+    (check [a (assoc a :authority :accepted)] :compatible-scalar-declarations)
+    (check [a (assoc b :role :incoming-alias)] :compatible-scalar-declarations)
+    (check [a (alias-import-source-fixture)] :unsupported)
+    (check [a (assoc b :type :gravity.type/string)] :invalid-source-premise)))
