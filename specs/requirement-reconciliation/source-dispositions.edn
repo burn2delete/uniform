@@ -267222,8 +267222,18 @@
        :end-byte 6291,
        :start-byte 5394}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id "safety/safe1/preservation",
     :task-links
     [{:path "specs/legality-workflow/tasks.md",
@@ -329246,8 +329256,18 @@
        :end-byte 6291,
        :start-byte 5394}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id "safety/safe9/lowering-preservation",
     :task-links
     [{:path "specs/legality-workflow/tasks.md",
@@ -369755,8 +369775,18 @@
        :end-byte 22684,
        :start-byte 9888}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id nil,
     :task-links
     [{:path "specs/compiler-api-workflow/tasks.md",
@@ -370419,8 +370449,18 @@
        :end-byte 8075,
        :start-byte 6293}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id nil,
     :task-links
     [{:path "specs/release-workflow/tasks.md",
@@ -371287,8 +371327,18 @@
    :criterion-task-allocation
    {:dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id nil,
     :task-links
     [{:path "specs/tools-workflow/tasks.md",
@@ -372076,8 +372126,18 @@
        :end-byte 16612,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id nil,
     :task-links
     [{:path "specs/tools-workflow/tasks.md",
@@ -373109,8 +373169,18 @@
        :end-byte 37489,
        :start-byte 25490}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn",
+     :sha256
+     "8bc4e1c43493c381a9fe3081f1e6f745389b3793821a711295e2709561064571",
+     :independent-receipt-sha256
+     "e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd",
+     :source-commit "5da47ef00521216dd7109932fb630c57dbd72c9e",
+     :scope :exact7-current-source-composition-joins},
     :semantic-source-id nil,
     :task-links
     [{:path "specs/release-workflow/tasks.md",
