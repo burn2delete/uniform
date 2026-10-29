@@ -6109,7 +6109,6 @@
   {:mode (get cold :mode) :cut (get cold :cut)
    :source-argument-call-node-ids (get cold :source-argument-call-node-ids)
    :source-preparation-work-count (get cold :source-preparation-work-count)
-   :quote-work-count (get (get cold :quoted-products) :work-count)
    :round-count (get (get cold :inference) :round-count)
    :round-bound (get (get cold :inference) :round-bound)
    :work-count (get cold :work-count)})

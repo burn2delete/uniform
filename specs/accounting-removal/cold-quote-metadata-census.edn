@@ -1,0 +1,196 @@
+{:new-controls
+ {:obsolete-field-values [0 1 nil],
+  :total-invalid-cases 8,
+  :semantic-cases
+  [:mode
+   :cut
+   :source-argument-call-node-ids
+   :missing-field
+   :unknown-field],
+  :fixtures :normalized-helper-metadata-not-authenticated-Core,
+  :remaining-nonquote-fields
+  :unchanged-legacy-API-not-new-accounting-requirements,
+  :genuine-execution :UNRUN},
+ :nonclaims
+ [:whole-private-inference-accounting-removal
+  :authenticated-source
+  :whole-public-C7-or-runtime-support
+  :independent-acceptance
+  :integration
+  :release
+  :self-hosting
+  :PR502-closure],
+ :unchanged-unmetered-quote-producers
+ [{:name sh08-qd-products,
+   :form-sha256
+   "5f8b2c883e8ff7a1453b92f3efd606820e3e0510ccdd4301ba60c3ca7127d69b",
+   :work-count-output-absent true}
+  {:name sh08-qd-products-valid-data,
+   :form-sha256
+   "9e992cefd7c11b9da23a9c778c28cb62de6f7a00e525aec3bf076763a1bfe08a",
+   :work-count-output-absent true}],
+ :tests
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-file-sha256
+   "2c1194e0fc9bf1c92e4f96a4ce9db7ad983edc6c575dcd75c0150c386a8de4c6",
+   :candidate-file-sha256
+   "4b86b518d90227dd24c20abd013d8b78a2b8bc6f4a5678327976a67b10cdc444",
+   :all-existing-test-bytes-preserved true,
+   :added-forms
+   [{:name cold-metadata-input,
+     :canonical-form-sha256
+     "91f8941274b31c33495d5edc29050adc0b0f11c60cab36dccdc1119d2af1f1b5"}
+    {:name cold-metadata-invalid-inputs,
+     :canonical-form-sha256
+     "d389a63b32b6492b1a94f1d68edd1d08278b5dbb252fdae8dd5fcb8beca4a8d3"}
+    {:name cold-quote-metadata-production-development-kernel,
+     :canonical-form-sha256
+     "119d6cb47909498684344bea66d0041c2b32c46e3684362e8074a665504c0918"}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-file-sha256
+   "b45a8bd0cd30be40e9fb5dae0775784fecf8682c5c8367670fcb8ce8be0ffda4",
+   :candidate-file-sha256
+   "9e2a8288303896f5a7bac6af387181894b50f5919bd3f00550742c2f0b8e0ff7",
+   :all-existing-test-bytes-preserved true,
+   :added-forms
+   [{:name cold-quote-metadata-effects-development-kernel,
+     :canonical-form-sha256
+     "43c0fd2d59fbf3edb08948fca0adf70e040055c06aded46bf147ad663342d430"}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-file-sha256
+   "a9e56bf7143d12b7ca33eded85572d6b8aa3bd6ff36ac27316e17d47b3657002",
+   :candidate-file-sha256
+   "9fa5b2598e50036623a2c879d9f61337d3d57784247fd67c910e40f640ad3e47",
+   :all-existing-test-bytes-preserved true,
+   :added-forms
+   [{:name cold-quote-metadata-lowering-development-kernel,
+     :canonical-form-sha256
+     "77689722a0e86ded319ee4bdbbb4cecf5cbc52e85d6c6c724723f4f5a064c80e"}]}],
+ :consumer-transaction
+ {:remove-orphan-numeric-operand
+  [(get cold :quote-work-count)
+   (get cold :round-count)
+   (get cold :work-count)],
+  :remove-quote-only-bound
+  (<= (get cold :quote-work-count) (count forms)),
+  :remove-quote-charge
+  (+
+   preparation
+   (get cold :quote-work-count)
+   (* round-work (get cold :round-count))),
+  :all-other-cut-mode-source-count-and-open-accounting-expressions-unchanged
+  true},
+ :source
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :direct-C7-or-owner-source-callers
+   [{:name sh08-is-parameter-premise,
+     :form-sha256
+     "42eb555c97ccae6db4e8c7b4cd29615f9695bdc9f09e8cf9ea5e99a38ae246e5",
+     :argument-counts [1]}
+    {:name sh08-is-proof,
+     :form-sha256
+     "443a7cc095c07b06e0fc51ed3d61f451dfbd1391b73246715c242e33aec1957a",
+     :argument-counts [1 1]}],
+   :argument-lists-and-source-call-sites-unchanged true,
+   :function sh08-is-cold-evidence,
+   :base-file-sha256
+   "3fb120878e919464573bef2877a0c479ab4d4e1ab1e98601a30c00d58266e8c5",
+   :historical-form-state :candidate-exact,
+   :all-other-production-definitions-unchanged true,
+   :candidate-file-sha256
+   "f957e3b088efeae70eb4285a34e7e41fd0299608b152e0b4769ce25be72eacb4",
+   :candidate-form-sha256
+   "d035e80489457ab8496d5b1993903b17852feccce636dacc08618adb18beb3d2",
+   :base-form-sha256
+   "fd2e1d6de2a7ed74d703ddf61d0856bc73794605bc061fd7bbe58ad4c2aedf86"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :direct-C7-or-owner-source-callers
+   [{:name body-is-context,
+     :form-sha256
+     "cd807968e066cf21cd6079a39010e47a2592e5f85a50856c1c820a5027307b5b",
+     :argument-counts [7 7]}],
+   :argument-lists-and-source-call-sites-unchanged true,
+   :function body-is-cold-metadata-valid?,
+   :base-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :historical-form-state
+   :base-exact-consumer-still-required-retired-field,
+   :all-other-production-definitions-unchanged true,
+   :candidate-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :candidate-form-sha256
+   "779ab79b1ca553c01d14c648923e169927ad7c4739fb017fc7b3ccf2303ede14",
+   :base-form-sha256
+   "3de4cea3e95ba9e3bc7eff25e7ed053004d8046f0ba508cf9270e82dbe26c670"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :direct-C7-or-owner-source-callers
+   [{:name p15-s23-is-context,
+     :form-sha256
+     "3690bde7f5bcd798a126fe825bdab1f543d9667b76cf4fec0e6139b986f87f03",
+     :argument-counts [7 7]}
+    {:name p15-s23-ix-context,
+     :form-sha256
+     "335bf13adb625a59d572a03cca4a090e58479ba1f477721e3df12343e5ac8bfd",
+     :argument-counts [7 7]}],
+   :argument-lists-and-source-call-sites-unchanged true,
+   :function p15-s23-is-cold-metadata-valid?,
+   :base-file-sha256
+   "42192348681811452b4f5ede36eb342c74a05bdb21d5b76dd61bf415d2534efc",
+   :historical-form-state
+   :base-exact-consumer-still-required-retired-field,
+   :all-other-production-definitions-unchanged true,
+   :candidate-file-sha256
+   "b4c28524a0d780b04c63372a3e10c3df2508a95f8d6703d1e0b310a04fbccb2d",
+   :candidate-form-sha256
+   "cf9b722be5fa12f151cc27096a4e508da9b30e11735d954b1922589fe857c28a",
+   :base-form-sha256
+   "4f979bcd47b2e397aa7e0439a082118baa580345862bfdcf7ca8d953201a8243"}],
+ :consumer-source-parity
+ {:complete-bodies-identical-under-listed-helper-aliases
+  {body-is-cold-call-ids p15-s23-is-cold-call-ids,
+   body-all? p15-s23-typed-all,
+   sh09-exact-keys? p15-s23-is-exact-keys?},
+  :helper-equivalence-inferred false},
+ :kind :cold-quoted-data-metadata-retirement,
+ :generator
+ {:language :clojure,
+  :sha256
+  "6835c33401de8e4c8a7efc6aa077b2f0f6d2cea8319fd4fde43ddc2695990f0f",
+  :preserved-locally true},
+ :retired-field :quote-work-count,
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :tracked-production-field-references 0,
+  :source-checks :passed},
+ :base "2f2f8f701f19660dad89e98f351693669a97980b",
+ :metadata-keys-after
+ #{:source-preparation-work-count
+   :work-count
+   :round-count
+   :mode
+   :round-bound
+   :source-argument-call-node-ids
+   :cut},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :open-obligations
+ [:actual-three-owner-helper-controls
+  :actual-private-inference-and-body-consumer-composition
+  :remaining-nonquote-accounting
+  :independent-source-result-acceptance
+  :fresh-main-composition
+  :integration],
+ :metadata-keys-before
+ #{:source-preparation-work-count
+   :work-count
+   :round-count
+   :mode
+   :round-bound
+   :source-argument-call-node-ids
+   :quote-work-count
+   :cut}}
