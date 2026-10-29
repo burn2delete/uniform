@@ -1402,3 +1402,37 @@ unchanged current task bytes; its1262 spans retain their verified applicability.
 SH12/522,census4/13,boundary6/11,generated SH check and pinned changed-file lint
 pass. Full-facet, granularity, legacy ACC, independent final counting and
 integration remain open. No compiler/runtime/backend execution is inferred.
+
+## Foundation7 current allocation and three field refinements
+
+Task source `df11890b21f71d3f246cc47e9f63d866239a0d68` appends three
+source-backed acceptance refinements to existing Tools, Release and Legality
+fields. D3 deprecated-term migration periods/replacements and diagnostics,
+D5 safety/packaging/tooling parity and migration feasibility, and SAFE1/SAFE9
+classification/origin/numeric-contract preservation and invalidation/refusals
+are explicit. Existing clauses, roles, dependencies, statuses and later Safety
+predicates are retained. Boundary whitespace in the private third fragment is
+rendered as a space in the existing single-line field; prose is unchanged and
+the existing validator is preserved.
+
+Allocation source `8677d9e3daa440b9f1f7af3d62cee67ef595a2e4` binds exactly
+seven previously unallocated decisions to their actual criteria and consumed
+interface products. All360 available source memberships over219 distinct facets
+and governing document hashes verify. Original missing-metadata qualifications
+and frozen review pins retain their scopes; no whole-facet or current-composition
+acceptance is inferred. The dependency lookup uses the actual25-component
+registry, including unchanged MIR; changed-source pins alone are not a registry.
+
+All833 decisions remain Open:777 concrete allocations,56 unallocated,406
+qualified current source reviews and68 pending allocation reviews. Historical
+acceptance493/pending68 and provisional3/182 task status are unchanged. The
+new561-binding snapshot preserves all1262 current UTF8 file/raw span hashes.
+Source claims for the earlier Math20 adoption are also explicitly checked
+against all50 task/plan files from the actual25-component registry at its
+applicability source; all are unchanged from the independent frozen source.
+
+Tools4/80,Release6/131,Legality4/59,SH12/522,census4/13 andboundary6/11 pass.
+Both document validators, generated SH check and pinned changed-file lint pass.
+No compiler/runtime/probe execution or implementation credit is added. Full
+facets, granularity, legacy ACC, independent final counting and integration
+remain open.
