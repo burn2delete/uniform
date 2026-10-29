@@ -13372,6 +13372,26 @@
    :status :pending-independent-composed-review},
   :qualification
   "Family task criteria and current-main Reader source histories composed. Changed task/evidence source mapping awaits independent composed review. All 180 whole-criterion implementation assessments remain unassessed.",
+  :accounting8-current-composition
+  {:legacy-task-source "specs/accounting-removal/tasks.md",
+   :prior-criterion-allocations-preserved 303,
+   :canonical-mapping-adoptions 0,
+   :decision-identities-and-states :all-833-open-unchanged,
+   :current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-561.edn",
+   :new-source-reviewed-criteria 8,
+   :implementation-credit :none,
+   :previously-accepted-mappings-preserved 430,
+   :legacy-task-count 13,
+   :source-commit "7687c79684ade2ec13147a2c987967c5757703ae",
+   :legacy-counting-scope
+   :pending-final-explicit-scope-and-overlap-audit,
+   :status :pending-independent-actual-composition-review,
+   :record
+   "specs/requirement-reconciliation/accounting8-current-composition.edn",
+   :new-open-tasks 0,
+   :authority-correction-review-sha256
+   "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89"},
   :domains70-current-composition
   {:new-source-reviewed-and-rebound-criteria 70,
    :canonical-mapping-adoptions 70,
@@ -13396,7 +13416,7 @@
    :predecessor-input-fingerprint
    "014bb7e69aefa10c63d6a29869d842cf7d897574ac0707b92de9596d52f182c2"},
   :input-fingerprint
-  "fe480ba91a51c83a7f34ee8a91e18bb189cb5bc968134cdce9c61a833e8de24c"},
+  "049e6890790c14f08851ef08d5089622287b93723f6537ca1ac386ab5015c574"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -17503,6 +17523,8 @@
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
   "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97",
+  "specs/accounting-removal/tasks.md"
+  "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
   "specs/auth-workflow/tasks.md"
   "b40aed8c5e780d2c840781a763a6d3bf012349065d4a6482cc0861308eb34bd7",
   "specs/backends-workflow/tasks.md"
@@ -17608,6 +17630,8 @@
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/component-roadmaps/platform.md"
   "19e1120301643581e6a8b55b933ec12643d0ba2f",
+  "specs/accounting-removal/tasks.md"
+  "7687c79684ade2ec13147a2c987967c5757703ae",
   "specs/tools-workflow/tasks.md"
   "6905570c41d81afb1d2917a479cf4d92b2304b30",
   "specs/resolve-workflow/tasks.md"

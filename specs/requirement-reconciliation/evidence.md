@@ -713,3 +713,44 @@ All 67 added positive/rejection/output clauses and exact reconstruction of all
 five task files passed, with the complete 833 decision records and 240 original
 source dispositions unchanged. SH controls passed 12 tests / 451 assertions;
 the boundary gate passed 6/11 and both documentation validators passed.
+
+## Accounting8 and the complete historical binding population
+
+Task source `7687c79684ade2ec13147a2c987967c5757703ae` adds the exact reviewed
+Accounting8 criteria to the existing Accounting ledger. Its file SHA256 is
+`cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c`.
+The two current-authority corrections passed independent review, receipt SHA256
+`0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89`;
+the six other criterion bodies and all text outside those corrections remain
+identical to their earlier source-reviewed composition. Every governing source
+hash in that receipt still matches. All thirteen original ACC status records
+and historical sections remain unchanged.
+
+The selected composition `accounting8-current-composition.edn` has SHA256
+`ab7bdad40f25ad2af15fc07fb145f72b92fa8fb62e5e9f26a9ae2ffd4026eac5`.
+`current-criterion-bindings-561.edn` has SHA256
+`2f014e29c7bb7e20610f4fc8b8e6be180e8f828497e55b8b6a52496e74888e48`.
+All 561 dispatched historical IDs now have committed task/criterion witnesses:
+430 accepted and 131 pending independent actual-composition review. None are
+unbound. The full historical conservation remains 577 = 13 prior witnesses +
+3 retained retirements + 561 dispatched mappings. This does not accept the
+131 pending mappings or confer implementation credit.
+
+Accounting witnesses explicitly bind each criterion's `Task: ACC-01` or
+`Task: ACC-12` declaration within the named source-criteria region and its Open
+checkbox in the original thirteen-row ledger before the first section. They
+do not invent backtick task records or parse historical checkboxes as tasks.
+The thirteen legacy ACC tasks still require an explicit final scope and overlap
+decision before the denominator is final. No new ACC identities or status
+changes follow from these eight criteria. The provisional declared census
+remains 3/182; all 833 Open decisions and 303 prior allocations are unchanged.
+
+The Accounting task file is now an explicit pinned SH source input, allowing
+later drift to invalidate its metadata. Whole-SH and complete-facet acceptance,
+the 530 remaining decision allocations, the concrete sibling-task dispositions
+and final independent scope/status/count review remain separate work.
+All 561 identities and all 1,262 current UTF8 file/raw span hashes passed,
+including the explicit legacy ACC task associations. SH controls passed
+12 tests / 457 assertions, census controls 4/13 and the boundary gate 6/11.
+Preparation reader checks rejected unmatched delimiters before evaluation;
+the corrected helpers performed no partial write on those failed attempts.
