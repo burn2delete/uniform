@@ -146,7 +146,7 @@
   ;; resolution/verification checks. These direct helpers bypass that ingress.
   (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)
                (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)
-               (first occurs-model/fixed-member-cases)]]
+               (first occurs-model/fixed-member-cases) (first occurs-model/multiple-dependency-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         check (fn [nodes lexical]
                 (invoke 'sh08-ft-first-constructor-cycle
@@ -165,7 +165,7 @@
 (deftest declared-return-conflict-precedes-constructor-feedback
   (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)
                (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)
-               (first occurs-model/fixed-member-cases)]]
+               (first occurs-model/fixed-member-cases) (first occurs-model/multiple-dependency-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         body {:node-id :body :core-form :literal :children []
               :attributes {:literal-kind :string}}
@@ -311,3 +311,56 @@
     (let [character (first (filter #(= :character (get-in % [:attributes :literal-kind])) fixed))
           id (:node-id character) invalid (assoc-in character [:attributes :value] 65)]
       (is (false? (invoke 'sh08-ft-fixed-literal-member? [id (assoc index id invalid) types]))))))
+
+(deftest multiple-constructor-dependencies-produce-a-closed-path-witness
+  (doseq [case occurs-model/multiple-dependency-cases]
+    (let [{:keys [nodes lexical bindings context expected stable?]} (occurs-model/input case)
+          types (:type-table (pass nodes lexical bindings))
+          check #(invoke 'sh08-ft-first-constructor-cycle [nodes lexical [] {} bindings types context])
+          witness (check)]
+      (testing (name (:name case))
+        (is (= expected (map? witness)))
+        (is (= witness (check)))
+        (when expected
+          (let [links (:links witness) inferred (infer nodes lexical bindings)]
+            (is (seq links))
+            (is (some :constructor? links))
+            (is (= (:binding-id witness) (:binding-id (first links))))
+            (is (= (:binding-id witness) (:dependency-binding-id (last links))))
+            (is (every? true? (map (fn [a b] (= (:dependency-binding-id a) (:binding-id b)))
+                                   links (rest links))))
+            (is (= :type-conflict (:convergence-status inferred)))
+            (is (= :infinite-structural-type (get-in inferred [:diagnostics 0 :reason])))))
+        (when stable?
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :converged (:convergence-status inferred)))
+            (is (empty? (:diagnostics inferred)))))))))
+
+(deftest every-constructor-member-must-have-a-current-premise
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/multiple-dependency-cases))
+        types (:type-table (pass nodes lexical bindings))
+        index (into {} (map (juxt :node-id identity)) nodes)
+        initializer (:initializer-node-id (first lexical))
+        references (filter #(= :reference (:core-form %)) nodes)
+        links (invoke 'sh08-ft-literal-collection-links [initializer index bindings types {}])]
+    (is (= 2 (count links)))
+    (is (= 2 (count (set (map :node-path links)))))
+    (doseq [node references
+            changed [(dissoc types (:node-id node))
+                     (assoc types (:node-id node) :gravity.type/unknown)
+                     (assoc types (:node-id node) :gravity.type/never)
+                     (assoc types (:node-id node) :gravity.type/string)]]
+      (is (nil? (invoke 'sh08-ft-first-constructor-cycle [nodes lexical [] {} bindings changed {}]))))
+    ;; A well-typed opaque sibling remains unsupported even beside a real
+    ;; self dependency. Recomputing the parent's type cannot authorize it.
+    (let [id (:node-id (second references))
+          opaque (assoc (second references) :core-form :call)
+          changed (mapv #(if (= id (:node-id %)) opaque %) nodes)]
+      (is (nil? (invoke 'sh08-ft-literal-collection-links
+                        [initializer (into {} (map (juxt :node-id identity)) changed) bindings types {}])))))
+  (let [case (second occurs-model/multiple-dependency-cases)
+        {:keys [nodes lexical bindings]} (occurs-model/input case)
+        ;; Even a visible cyclic member cannot excuse an invisible sibling.
+        lexical (assoc-in lexical [0 :visible-prior-binding-ids] [:y])
+        types (:type-table (pass nodes lexical bindings))]
+    (is (nil? (invoke 'sh08-ft-first-constructor-cycle [nodes lexical [] {} bindings types {}])))))

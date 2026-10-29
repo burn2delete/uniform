@@ -38,7 +38,7 @@
    {:name :intrinsic-reference :equations [[:x [:vector [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :intrinsic-reference? true :expected false}
    {:name :nonunary-vector :equations [[:x [:vector [:ref :x] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :opaque-call :equations [[:x [:call [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected false}])
 
@@ -65,7 +65,7 @@
    {:name :set-match-reseeding :equations [[:x [:set [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :context {:boolean-matches [{}]} :expected false}
    {:name :nonunary-set :equations [[:x [:set [:ref :x] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}])
+    :bindings {:x :gravity.type/integer} :expected true}])
 
 (def map-cases
   [{:name :map-self-growth :equations [[:x [:map [:keyword :k] [:ref :x]]]]
@@ -82,14 +82,14 @@
    {:name :map-never :equations [[:x [:map [:keyword :k] [:ref :x]]]]
     :bindings {:x :gravity.type/never} :expected false}
    {:name :map-dynamic-key :equations [[:x [:map [:ref :key] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer :key :gravity.type/keyword} :expected false}
+    :bindings {:x :gravity.type/integer :key :gravity.type/keyword} :expected true}
    {:name :map-string-key :equations [[:x [:map [:string "k"] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected true}
    {:name :map-odd-arity :equations [[:x [:map [:keyword :k]]]]
     :bindings {:x :gravity.type/integer} :expected false}
    {:name :map-multiple-members
     :equations [[:x [:map [:keyword :k] [:ref :x] [:keyword :j] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :map-definition-overlap :equations [[:x [:map [:keyword :k] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :definitions [{:binding-id :x}] :expected false}
    {:name :map-parameter-overlap :equations [[:x [:map [:keyword :k] [:ref :x]]]]
@@ -118,14 +118,14 @@
    {:name :prefix-vector-never :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
     :bindings {:x :gravity.type/never} :expected false}
    {:name :prefix-vector-dynamic-prefix :equations [[:x [:vector [:ref :prefix] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer :prefix :gravity.type/keyword} :expected false}
+    :bindings {:x :gravity.type/integer :prefix :gravity.type/keyword} :expected true}
    {:name :prefix-vector-string-prefix :equations [[:x [:vector [:string "k"] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected true}
    {:name :prefix-vector-reversed-members :equations [[:x [:vector [:ref :x] [:keyword :k]]]]
     :bindings {:x :gravity.type/integer} :expected true}
    {:name :prefix-vector-extra-member
     :equations [[:x [:vector [:keyword :k] [:ref :x] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :prefix-vector-definition-overlap :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :definitions [{:binding-id :x}] :expected false}
    {:name :prefix-vector-parameter-overlap :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
@@ -139,8 +139,9 @@
     :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false}])
 
 ; The three former unsupported constant-position cases above now have positive
-; witnesses. Their fixtures remain; malformed and evolving-sibling cases stay
-; negative. These fixture samples do not model every character carrier.
+; witnesses. Multiple validated evolving members are now supported as well;
+; opaque or incomplete members still block the whole equation. These fixture
+; samples do not model every character carrier or source Set uniqueness.
 (def literal-types
   {:nil :gravity.type/nil :boolean :gravity.type/bool :integer :gravity.type/integer
    :decimal :gravity.type/decimal :ratio :gravity.type/ratio :character :gravity.type/character
@@ -178,7 +179,7 @@
                          [:boolean true] [:symbol 's]]]]
         :bindings {:x :gravity.type/integer} :expected true}
        {:name :two-dynamic-members :equations [[:x [:vector [:ref :x] [:ref :outside]]]]
-        :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+        :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected true}
        {:name :opaque-sibling :equations [[:x [:vector [:ref :x] [:call [:ref :outside]]]]]
         :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
        {:name :opaque-selected-child :equations [[:x [:vector [:keyword :k] [:call [:ref :x]]]]]
@@ -193,6 +194,34 @@
         :bindings {} :expected false :stable? true}
        {:name :fixed-members-never :equations [[:x [:vector [:integer 1] [:ref :x] [:boolean true]]]]
         :bindings {:x :gravity.type/never} :expected false :stable? true}]))))
+
+(def multiple-dependency-cases
+  [{:name :repeated-evolving-member :equations [[:x [:vector [:ref :x] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :distinct-mutual-members
+    :equations [[:x [:vector [:ref :y] [:ref :z]]] [:y [:ref :x]] [:z [:integer 1]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected true}
+   {:name :cycle-in-later-member
+    :equations [[:x [:map [:ref :outside] [:set [:ref :y] [:ref :x]]]] [:y [:ref :z]] [:z [:ref :y]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer
+               :outside :gravity.type/keyword} :expected true}
+   {:name :branching-constructor-tail-into-alias-cycle
+    :equations [[:x [:vector [:ref :y] [:ref :z]]] [:y [:ref :z]] [:z [:ref :y]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false :stable? true}
+   {:name :multiple-acyclic-members
+    :equations [[:x [:vector [:ref :y] [:ref :z]]] [:y [:integer 1]] [:z [:string "s"]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/string} :expected false :stable? true}
+   {:name :nested-fixed-sibling
+    :equations [[:x [:vector [:map [:keyword :k] [:integer 1]] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :unknown-sibling-blocks-equation :equations [[:x [:vector [:ref :x] [:ref :outside]]]]
+    :bindings {:x :gravity.type/integer} :expected false :stable? true}
+   {:name :never-sibling-blocks-equation :equations [[:x [:vector [:ref :x] [:ref :outside]]]]
+    :bindings {:x :gravity.type/integer :outside :gravity.type/never} :expected false :stable? true}
+   {:name :opaque-sibling-blocks-equation :equations [[:x [:vector [:ref :x] [:call [:ref :outside]]]]]
+    :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+   {:name :odd-map-blocks-equation :equations [[:x [:map [:ref :x] [:ref :x] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}])
 
 (defn input
   "Materialize fixture syntax in postorder for the actual C7 test harness."
@@ -225,20 +254,21 @@
     (assoc case :nodes @nodes :lexical lexical
            :context (cond-> (or context {}) operators (assoc :ordering-operators operators)))))
 
-(defn- term-edge [term]
+(defn- term-edges [term bindings]
   (case (first term)
-    :ref {:dependency (second term) :constructor? false}
+    :ref (when (and (= 2 (count term)) (contains? bindings (second term))
+                    (not (#{:gravity.type/unknown :gravity.type/never} (get bindings (second term)))))
+           [{:dependency (second term) :constructor? false}])
     (:vector :set :map)
     (when (or (not= :map (first term)) (even? (count (rest term))))
-      (let [dependencies (remove fixed-term? (rest term))]
-        (when (= 1 (count dependencies))
-          (when-let [edge (term-edge (first dependencies))]
-            (assoc edge :constructor? true)))))
-    nil))
+      (let [members (mapv #(term-edges % bindings) (rest term))]
+        (when (every? some? members)
+          (mapv #(assoc % :constructor? true) (mapcat identity members)))))
+    (when (fixed-term? term) [])))
 
 (defn model-occurs?
-  "Independent graph oracle: trim all noncycle vertices, then inspect only
-  surviving cycle edges for constructors. No Gravity code is evaluated."
+  "Independent graph oracle: compute transitive reachability, then ask whether
+  a constructor edge can return to its source. No Gravity code is evaluated."
   [{:keys [equations bindings context definitions functions intrinsic-reference?]}]
   (let [ids (mapv first equations)
         blocked (concat (map :binding-id definitions)
@@ -247,17 +277,18 @@
             intrinsic-reference? (not= (count ids) (count (set ids)))
             (some (set ids) blocked))
       false
-      (loop [graph (into {} (keep (fn [[id term]]
-                                   (when (and (contains? bindings id)
-                                              (not (#{:gravity.type/unknown :gravity.type/never}
-                                                    (get bindings id))))
-                                     (when-let [edge (term-edge term)] [id edge]))) equations))]
-        (let [incoming (set (map :dependency (vals graph)))
-              trimmed (into {} (filter (fn [[id edge]]
-                                         (and (incoming id) (contains? graph (:dependency edge)))) graph))]
-          (if (= graph trimmed)
-            (boolean (some :constructor? (vals graph)))
-            (recur trimmed)))))))
+      (let [graph (into {} (keep (fn [[id term]]
+                                  (when (and (contains? bindings id)
+                                             (not (#{:gravity.type/unknown :gravity.type/never} (get bindings id))))
+                                    (when-let [edges (term-edges term bindings)] [id edges]))) equations))
+            reachable (loop [paths (into {} (map (fn [[id edges]] [id (set (map :dependency edges))]) graph))]
+                        (let [expanded (into {} (map (fn [[id targets]]
+                                                      [id (into targets (mapcat #(get paths %) targets))]) paths))]
+                          (if (= paths expanded) paths (recur expanded))))]
+        (boolean (some (fn [[id edges]]
+                         (some #(and (:constructor? %)
+                                     (or (= id (:dependency %))
+                                         (contains? (get reachable (:dependency %)) id))) edges)) graph))))))
 
 (defn- substitute [term bindings]
   (if (contains? literal-types (first term))
@@ -372,3 +403,24 @@
           term (into [:vector] (concat (take position members) [[:ref :x]] (drop position members)))
           case {:equations [[:x term]] :bindings {:x :gravity.type/integer}}]
       (is (true? (model-occurs? case))))))
+
+(deftest multiple-dependency-graph-and-substitution-controls
+  (doseq [case (concat cases set-cases map-cases prefix-vector-cases fixed-member-cases multiple-dependency-cases)]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (is (= 7 (count (set (take 7 (iterate #(step case %) (:bindings case))))))))
+      (when (:stable? case)
+        (let [settled (nth (iterate #(step case %) (:bindings case)) (inc (count (:equations case))))]
+          (is (= settled (step case settled)))))))
+  (let [case (first multiple-dependency-cases)
+        result (get (step case (:bindings case)) :x)]
+    (is (= {:kind :gravity.type/vector :element-types [:gravity.type/integer :gravity.type/integer]
+            :shape :literal} result)))
+  ;; Alias oscillation is a repeated state without constructor growth; a
+  ;; constructor tail into that SCC still does not make its aliases infinite.
+  (let [case (first (filter #(= :alias-oscillation (:name %)) cases))
+        seed (:bindings case)]
+    (is (false? (model-occurs? case)))
+    (is (not= seed (step case seed)))
+    (is (= seed (step case (step case seed))))))

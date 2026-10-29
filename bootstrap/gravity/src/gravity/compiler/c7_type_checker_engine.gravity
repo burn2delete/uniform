@@ -23393,10 +23393,10 @@
        (+ total (count (get (first remaining) :parameter-binding-ids)))))))
 
 ; L5/C7: a closed normal equation T = Collection<...T...> has no solution in
-; this finite literal Vector/Set/Map representation. Trace single-dependency
-; constructors at any member position; all other members must be independently
-; fixed primitive literals. Multiple evolving members and opaque transfers
-; remain separate work. These are evidence boundaries, not admission quotas.
+; this finite literal Vector/Set/Map representation. Validate every member,
+; then trace all reference dependencies through those constructors. Opaque
+; transfers remain outside this witness. These are evidence boundaries,
+; not admission quotas.
 ; The visited sets are graph identities, not work or round allowances.
 (defn sh08-ft-fixed-literal-member? [id nodes types]
   (let [node (get nodes id) children (get node :children) type (get types id)]
@@ -23407,36 +23407,40 @@
             (if (= :gravity.type/never type) false
               (= type (sh08-ft-infer-node node {} {} {} []))) false) false) false) false)))
 
-(defn sh08-ft-literal-constructor-child [node nodes types]
+(defn sh08-ft-literal-constructor? [node]
   (let [kind (get (get node :attributes) :literal-kind) children (get node :children)]
-    (if (if (= :collection-literal (get node :core-form))
+    (if (= :collection-literal (get node :core-form))
           (if (vector? children)
             (if (contains? #{:vector :set :map} kind)
-              (if (= :map kind) (sh08-even-count? children) true) false) false) false)
-      (loop [remaining children selected nil found? false]
-        (if (= 0 (count remaining)) (if found? selected nil)
-          (let [id (first remaining)]
-            (if (contains? nodes id)
-              (if (sh08-ft-fixed-literal-member? id nodes types)
-                (recur (rest remaining) selected found?)
-                (if found? nil (recur (rest remaining) id true))) nil)))) nil)))
+              (if (= :map kind) (sh08-even-count? children) true) false) false) false)))
 
-(defn sh08-ft-unary-literal-collection-link [initializer nodes bindings types context]
-  (loop [id initializer seen #{} path [] constructed? false]
-    (if (contains? seen id) nil
-      (let [node (get nodes id) children (get node :children)
-            next-path (conj path id)]
-        (if (if (vector? children)
-              (if (= :gravity.type/never (get types id)) false (sh08-ft-known? (get types id))) false)
-        (if (= :reference (get node :core-form))
-          (if (if (= 0 (count children))
-                (if (= false (contains? (get context :ordering-operators {}) id))
-                  (= (get types id) (get bindings (get (get node :attributes) :binding-id) :gravity.type/unknown)) false) false)
-            {:dependency-binding-id (get (get node :attributes) :binding-id)
-             :constructor? constructed? :node-path next-path} nil)
-          (let [child (sh08-ft-literal-constructor-child node nodes types)]
-            (if (if (= child nil) false (= (get types id) (sh08-ft-collection-type node types)))
-              (recur child (conj seen id) next-path true) nil))) nil)))))
+(defn sh08-ft-literal-collection-links [initializer nodes bindings types context]
+  (loop [pending [{:id initializer :seen #{} :path [] :constructor? false}] links []]
+    (if (= 0 (count pending)) links
+      (let [frame (first pending) id (get frame :id) seen (get frame :seen)
+            node (get nodes id) children (get node :children) type (get types id)
+            path (conj (get frame :path) id)]
+        (if (if (contains? seen id) false
+              (if (contains? nodes id)
+                (if (vector? children)
+                  (if (= :gravity.type/never type) false (sh08-ft-known? type)) false) false))
+          (if (sh08-ft-fixed-literal-member? id nodes types)
+            (recur (rest pending) links)
+            (if (= :reference (get node :core-form))
+              (if (if (= 0 (count children))
+                    (if (contains? (get context :ordering-operators {}) id) false
+                      (= type (get bindings (get (get node :attributes) :binding-id) :gravity.type/unknown))) false)
+                (recur (rest pending)
+                  (conj links {:dependency-binding-id (get (get node :attributes) :binding-id)
+                               :constructor? (get frame :constructor?) :node-path path})) nil)
+              (if (if (sh08-ft-literal-constructor? node)
+                    (= type (sh08-ft-collection-type node types)) false)
+                (recur
+                  (loop [remaining children result (vec (rest pending))]
+                    (if (= 0 (count remaining)) result
+                      (recur (rest remaining)
+                        (conj result {:id (first remaining) :seen (conj seen id)
+                                      :path path :constructor? true})))) links) nil))) nil)))))
 
 (defn sh08-ft-lexical-equation-index [records blocked nodes]
   (loop [remaining records result {}]
@@ -23450,30 +23454,43 @@
           (recur (rest remaining) (assoc result id record)))))))
 
 (defn sh08-ft-constructor-cycle [root initializers nodes bindings types context]
-  (loop [id root seen #{} links [] constructed? false]
-    (if (contains? seen id)
-      (if (if (= id root) constructed? false)
-        {:binding-id root :links links} nil)
-      (let [type (get bindings id :gravity.type/unknown)]
-        (if (if (contains? initializers id)
-              (if (= :gravity.type/never type) false (sh08-ft-known? type)) false)
-          (let [record (get initializers id) initializer (get record :initializer-node-id)
-                link (sh08-ft-unary-literal-collection-link initializer nodes bindings types context)]
-            (if (if (map? link)
-                  (if (contains? record :visible-prior-binding-ids)
-                    (if (vector? (get record :visible-prior-binding-ids))
-                      (contains? (set (get record :visible-prior-binding-ids)) (get link :dependency-binding-id)) false)
-                    true) false)
-              (recur (get link :dependency-binding-id) (conj seen id)
-                (conj links (assoc link :binding-id id :initializer-node-id initializer))
-                (if constructed? true (get link :constructor?))) nil)) nil)))))
+  (loop [pending [{:id root :seen #{} :links [] :constructor? false}]]
+    (if (= 0 (count pending)) nil
+      (let [frame (first pending) id (get frame :id) seen (get frame :seen)
+            links (get frame :links) constructed? (get frame :constructor?)
+            type (get bindings id :gravity.type/unknown)]
+        (if (contains? seen id)
+          (if (if (= id root) constructed? false)
+            {:binding-id root :links links} (recur (rest pending)))
+          (if (if (contains? initializers id)
+                (if (= :gravity.type/never type) false (sh08-ft-known? type)) false)
+            (let [record (get initializers id) initializer (get record :initializer-node-id)
+                  edges (sh08-ft-literal-collection-links initializer nodes bindings types context)
+                  visible (get record :visible-prior-binding-ids)
+                  permitted? (if (contains? record :visible-prior-binding-ids)
+                               (if (vector? visible)
+                                 (loop [remaining edges]
+                                   (if (= 0 (count remaining)) true
+                                     (if (contains? (set visible) (get (first remaining) :dependency-binding-id))
+                                       (recur (rest remaining)) false))) false) true)]
+              (recur
+                (if (if (vector? edges) permitted? false)
+                  (loop [remaining edges result (vec (rest pending))]
+                    (if (= 0 (count remaining)) result
+                      (let [edge (first remaining) dependency (get edge :dependency-binding-id)]
+                        (recur (rest remaining)
+                            (conj result {:id dependency :seen (conj seen id)
+                                          :links (conj links (assoc edge :binding-id id :initializer-node-id initializer))
+                                          :constructor? (if constructed? true (get edge :constructor?))})))))
+                  (rest pending))))
+            (recur (rest pending))))))))
 
 (defn sh08-ft-first-constructor-cycle
   [node-sequence lexical-bindings definitions functions bindings types context]
   ; Match seeding and loop transfer may replace an apparent lexical equation.
   ; Do not claim a closed dependency through those contexts or through another
   ; producer of the same binding ID. Intrinsic operator references are skipped
-  ; by unary-literal-collection-link, rather than mistaken for ordinary aliases. Supplied
+  ; by literal-collection-links, rather than mistaken for ordinary aliases. Supplied
   ; lexical visibility must permit each edge. Minimal records without source
   ; visibility describe internal equations only, not authenticated source.
   (if (if (> (count (get context :boolean-matches)) 0) true (map? (get context :loop-core))) nil
