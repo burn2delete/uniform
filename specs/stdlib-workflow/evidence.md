@@ -41,6 +41,52 @@ review of the exact candidate are recorded in its public PR receipt.
 No library export execution, module conformance, runtime/provider acceptance
 or release completion is inferred from this structural transfer.
 
+### Phase-16 source-to-task reconciliation candidate
+
+On 2026-10-28, the bounded STD1-STD20 correction strengthened the closing
+evidence of the same five Open implementation tasks and added the
+[source-specific acceptance/dependency matrix](plan.md#source-specific-acceptance-and-dependencies).
+The roadmap table was regenerated from those records. Literal task identities,
+statuses, historical suffix and compiler-support scope are retained. The
+original 20 numbered source documents were not edited.
+
+The separately delivered family proposal pins baseline
+`6276c94b0b753c888ef8fecc794bcc81245ea3b3`, tree
+`9f464ed0f03866bd4978e4213a488f3b1ae48683`, and the preserved applying
+manifest by its exact digest. It conserves 1,118 actual source occurrences,
+1,752 exact byte facets and 147 existing unit identities. It retains 94 task
+bindings and proposes 53 current task interfaces across 31 distinct canonical
+task identities, including dependency owners. These are family traceability
+figures, not accepted requirements, a new task population or a project ratio.
+All source-specific semantic decisions, historical evidence, five unresolved
+equivalences and 13 typed residual records are preserved. Binding proposals
+remain unassessed and require central composition; task links do not establish
+provider execution, signatures, detailed entailment or acceptance.
+
+Observed controls passed: exact source pins and raw UTF-8 slices, complete
+occurrence partitions, unit/facet conservation, current file/hash/marker/task
+identity checks and 12 negative mutations covering lost sources/facets,
+invented occurrences, changed obligations, missing/renamed tasks, wrong hashes
+or markers, context-mismatched aliasing and lost residuals. The first local
+proposal harness stopped before validation because its pinned pure span
+function referenced an undeclared helper; declaring that helper corrected the
+harness. No failed invocation is credited as passing evidence.
+
+Existing Stdlib projection tests passed 5 tests / 79 assertions; documentation
+validation passed 240 documents / 19 phase indexes; full-language roadmap,
+whitespace and the language boundary (6 tests / 11 assertions) passed. Commands
+exited naturally with 0. No compiler, producer, runtime or live provider proof
+was executed. Independent exact-source review is pending coordinator routing;
+aggregate manifest adoption and counts remain with the canonical owner.
+
+The additional acceptance-dependency suite reported 14 tests / 101 assertions,
+zero failures and two errors because the central SH crosswalk still pins the
+old Stdlib task byte spans. This is an unresolved derived-source composition
+dependency, not a passing result. The family delivery includes a separate
+exact before/after crosswalk proposal for the canonical owner; shared
+crosswalk authority is not rewritten by this source-family patch. Independent
+review and integration must use the composed task/projection identities.
+
 ### Observed transfer checks
 
 The first focused-test invocation stopped on a test-only unmatched delimiter
