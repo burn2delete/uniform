@@ -1523,6 +1523,32 @@ controls, independent retained-result acceptance and RV2/RV4 adoption remain
 OPEN. No genuine comparison, runtime retry or cache-policy admission is part
 of this source increment.
 
+#### Parent ownership adapter with unresolved reachability
+
+`gravity.build.parent-producer-observation/observe!` accepts a newly launched
+Process and forwards the caller's exact options to the canonical runner's
+three-argument `process-result`. It retains one raw ownership token and passes
+that same token exactly once. The runner owns wait, capture and finalization,
+including exception cleanup; the adapter neither repeats finalization nor
+reconstructs ownership from PIDs. Returned raw token/handles are local parent
+state, not serializable evidence. The full original process result survives.
+
+Root exit, tracked-owned-process completion, global cleanup and descendant
+coverage remain separate fields. The selected C2 workload's complete
+source-created child set has not been established by this increment. Its
+reachability is explicitly unresolved even when every retained handle is
+terminal. Capture-v1 readiness and cache admission remain false; the adapter
+does not call the serializer with tracked completion renamed as cleanup.
+
+Injected controls check exact token/options forwarding, single consumption,
+unknown/failed terminal preservation and original exception propagation. No
+producer launch, process/holder probe, held-operation retry or runtime admission
+is included. An executable method still needs exact source/loader, bounds and
+output destinations frozen and reviewed, plus source-grounded reachability
+resolution before capture-v1 serialization. All original RV2 real-producer,
+miss/hit, unrelated reuse, per-lexical-input invalidation, provenance and
+fresh-policy acceptance obligations remain OPEN.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
