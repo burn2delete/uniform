@@ -284,8 +284,8 @@ helper mappings remain explicit rather than being treated as missing features.
   29 including trailing blanks. Corrected head `8330e468` changes only that
   count and the regenerated checker digest; source and all other evidence
   bytes/values are unchanged. Correction/source checks, docs/roadmap and
-  whitespace pass. Independent successor disposition and current-head CI
-  remain pending. Original CHANGES REQUIRED history is preserved.
+  whitespace pass. Independent successor disposition remains pending. Exact corrected-head CI
+  completed seven successes/two configured skips. Original CHANGES REQUIRED history is preserved.
 - ACC-01 owns main-based test-only PR622 at
   `47a0f75617aff8da5136e084b837b4f853190433`, tree
   `d9888ed279ddf2c99acbd3272bd6b74aa61fd051`, base main `e047157d`. It
@@ -312,7 +312,7 @@ helper mappings remain explicit rather than being treated as missing features.
 - Routine CI completed with seven successes and two skips for PR591 at
   `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`,
   PR599 at `b786b464`, PR610 at `2b70fac2`, PR611 at `edef2c00`, PR613 at `5ebff5ca`,
-  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70`, PR618 at `3a1a553d`, PR619 at `ab33cc5f`
+  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70`, PR618 at `3a1a553d`, PR619 at both `ab33cc5f` and corrected `8330e468`, PR621 at `6c8d7029`
   and this evidence draft's prior heads `279fe99c` and `9df7b2d3`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
@@ -411,6 +411,17 @@ run. Its actual derive, Effects context/joins, typed lowering, runtime result,
 coherent field forgeries, late-invalid types and opaque zero-callback controls
 remain unresolved. Independent source disposition is also pending.
 
+The [helper supplement](predicate-helper-correspondence.md) consumes that
+unchanged six-difference record at main `e047157d`. Four complete source tails
+match after only the listed parameter/helper renames: two ordered-child helpers
+and two List-predicate call-ID helpers. The three actual ID-validator bodies
+match completely, including arguments and guards. All selected forms remain
+unchanged from the original assessed main. Ten source mutations are detected.
+The recursive-versus-loop all-true helper difference remains explicit for both
+Effects and lowering. These are pending source correspondences, not semantic
+equivalence, actual test results or independent acceptance. Original evidence
+and immutable inventory counts are unchanged.
+
 Each row retains its unresolved obligation. "Selected integration" identifies
 only the named subfamily. Rows with unresolved controls are not terminal
 incorporation/rejection decisions. No old-only semantic test is discarded.
@@ -428,7 +439,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. The mapping record identifies four current tests: two complete relocated bodies, the PR507 validation API migration, and stronger active/inactive legacy census controls. Independent disposition of this source mapping remains open. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | The unchanged original reader-only controls pass 4/167 for complete reconstruction parity, semantic field drift and full consumer equality on pinned current source. This supplies the missing source-level evidence, not a fresh three-owner semantic run or independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Original reader controls remain NONPASS with five failures. Supplemental source comparisons isolate four superseded routing-mismatch assertions and the missing native-guard name correspondence after checking complete guard bodies. All original results and current source/tamper obligations remain explicit pending independent adaptation disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. Six helper differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. The source proposal awaits independent disposition. |
+| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. The supplement pins four of those six differences as complete source tails under explicit parameter/helper renames and identical ID-validator dependencies; the two recursion/loop differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. The source proposal awaits independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and every original negative assertion/candidate. It adds eight stripped-tag and four native-record mutations; payment-only assertions are removed while the semantic complete-status assertion remains. Actual C7/emitter and consumer/runtime acceptance remain unrun, separate from PR462's runtime conversion scope. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and all original public Map-key composition/forgery controls. Eight stripped-tag and four native-record mutations are added; the payment test retains its semantic assertion only. Genuine acceptance and independent source/results disposition remain pending; private alias repair alone supplies no acceptance. |

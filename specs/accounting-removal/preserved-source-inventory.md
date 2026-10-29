@@ -294,3 +294,23 @@ configured skips. Its genuine Record/Union helper execution and independent
 acceptance remain open. The original child PR616 census has no removed-line
 count field, so the PR619 line-count defect does not require a child-census
 mutation; the reviewed child remains unchanged.
+
+## Predicate helper correspondence supplement
+
+The separate `predicate-helper-correspondence.edn` and Markdown supplement
+consume the original six nonmatching helper keys without changing the original
+record or inventory. At main `e047157d`, four complete source tails match under
+explicit parameter/helper renames: Effects/lowering ordered-child helpers and
+List-predicate ID helpers. Their three actual ID-validator bodies match in full.
+All selected forms remain unchanged from the original `0f7acce5` assessment.
+Ten source mutations are detected; the recursive-versus-loop all-true helper
+difference remains explicit for both owners. Source facts confer no semantic
+equivalence, genuine execution or independent acceptance. Full remaining
+predicate derive/join/lowering/runtime/forgery/invalid-input obligations remain
+open. Immutable machine inventory and original evidence counts are unchanged.
+
+Corrected PR619 head `8330e468` and PR621 head `6c8d7029` each completed routine
+CI with seven successes/two configured skips. PR619 successor disposition and
+PR621 genuine execution/independent acceptance remain pending. Earlier live-CI
+observations above are historical; these terminal results do not expand their
+semantic scope.
