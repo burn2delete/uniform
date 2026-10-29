@@ -914,6 +914,24 @@
  :later-added-predicates :pending-separate-review,
  :applicability
  "specs/requirement-reconciliation/tooling-runtime-domains-current-applicability.edn"}
+    :profile74-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/profile74-qualified-review-adoption.edn",
+ :remaining-allocation-work 85,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 249,
+ :source-commit "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 74,
+ :reviewed-predicates 74,
+ :total-concrete-links 748,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/profile74-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

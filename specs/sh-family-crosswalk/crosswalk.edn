@@ -13386,6 +13386,24 @@
    :record
    "specs/requirement-reconciliation/build68-current-composition.edn",
    :new-open-tasks 0},
+  :profile74-qualified-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/profile74-qualified-review-adoption.edn",
+   :remaining-allocation-work 85,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :previously-accepted-mappings-preserved 430,
+   :total-allocation-review-pending 249,
+   :source-commit "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :new-historical-mapping-adoptions 0,
+   :criterion-witnesses 74,
+   :reviewed-predicates 74,
+   :total-concrete-links 748,
+   :later-added-predicates :pending-separate-review,
+   :applicability
+   "specs/requirement-reconciliation/profile74-current-applicability.edn"},
   :prior-current-main-input-fingerprint
   "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
   :schema25-current-composition

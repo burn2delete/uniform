@@ -1146,3 +1146,33 @@ pass. The join helper's initial
 reader error was caught before evaluation or writes. Whole-facet disposition,
 later predicate reviews, granularity, legacy ACC scope, independent final
 counting and integration remain open.
+
+## Qualified Core and Profile74 review adoption
+
+Independent receipt SHA256
+`4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d`
+passes exactly 74 allocations at frozen
+`c21258a8d3a4b98f97f11c1a5acb1d061b8ae548`. The current join at
+`5326078fe20595851606e724320717ea4caff9bc` checks all 74 unchanged records,
+74 current criterion witnesses and declared dependency task contexts. Exact
+Profile74, Safety107 and Stdlib83 field reconstructions preserve every later
+addition. Independent scope includes 43 direct guards, 31 exact Governance/
+Core lineage guards, 2,816 source memberships and the 17 recovered GPU metadata
+IDs over 22 incidences. Original unresolved IDs remain; canonical index
+adoption and whole-facet entailment are not conferred. Eleven stable-language
+adoption predicates retain the single evolution/change-review producer and
+do not gate ordinary development.
+
+Adoption source `8cae809f6c374465ac11ff28c58ed9b525c29bc0` changes only the
+74 review states and qualified references; all other fields and all 833 Open
+states are preserved. There are 196 qualified source reviews, 249 pending
+allocation reviews and 85 decisions still to allocate, within 748 concrete
+allocations. Prior receipt qualifications and separate pending review of later
+predicates survive. Historical acceptance remains 430, with 131 pending;
+task census stays provisionally 3/182. No historical mapping or implementation
+credit is added.
+
+All 561 historical bindings and 1,262 current spans pass. SH 12/522, census
+4/13, boundary 6/11, generated SH check and pinned changed-file lint pass.
+Full-facet disposition, later predicate reviews, granularity, legacy ACC scope,
+independent final counting and integration remain open.
