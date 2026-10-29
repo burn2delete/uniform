@@ -1,0 +1,44 @@
+{:preparation-history
+ "A false same-ID expectation refused before writes. Historical bindings are now retained separately, without restoring historical IDs, inventing aliases or changing unmatched current decisions.",
+ :input-commit "afe08a87e23989e50d41d0c79ad64d28767fe7a0",
+ :composed-review :pending,
+ :negative-controls
+ {:stale-file true,
+  :wrong-collection true,
+  :wrong-field true,
+  :wrong-before true,
+  :duplicate-application true},
+ :assigned-ids
+ ["runtime/debug-service-selection"
+  "runtime/family-composition"
+  "runtime/foreign-symbol-resolution"
+  "runtime/hot-reload-invalidation"
+  "runtime/managed-collection-semantics"
+  "runtime/managed-dynamic-state"
+  "runtime/managed-null-conversion"
+  "runtime/manifest-consumption"],
+ :task-count-delta 0,
+ :dependency-plan
+ {:path "specs/runtime-workflow/plan.md",
+  :before-sha256
+  "6e46a207d7dabe55663ad26636380a321fcc36f6f17e2f5920f4a14e62a8eeee",
+  :after-sha256
+  "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c"},
+ :implementation-credit :none,
+ :partition-sha256
+ "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+ :task-file
+ {:path "specs/runtime-workflow/tasks.md",
+  :before-sha256
+  "51b68ffda3eea2e859934d831db59385cd151baaac00a3c946b8d0087aae4de6",
+  :after-sha256
+  "a4aced15e1f68f8765d169c6bf952f527b1a2a8bb008f7b1ba00de9c0dd2167c"},
+ :input-sha256
+ "db594d1dc7c3b2d0f23c09a30f99b16aba71a69834c947b6ff6309110dd473ac",
+ :independently-adopted 0,
+ :kind :runtime-residual-criterion-composition,
+ :criteria-prepared 8,
+ :later-task-source-composition
+ "specs/requirement-reconciliation/foundation-residual-composition.edn",
+ :applied-field-proposals 4,
+ :matched-current-semantic-ids []}

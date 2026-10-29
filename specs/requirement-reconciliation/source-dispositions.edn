@@ -738,6 +738,90 @@
    "gravity/workflow-ai-vertical-slice"],
   :qualification
   "Neither primary nor supplementary task interface existed in this historical inventory. Later source retirements and current proposed mappings do not erase these records or establish a completion denominator."},
+ :historical-interface-compositions
+ [{:family "phase-08",
+   :historical-ids
+   ["runtime/debug-service-selection"
+    "runtime/family-composition"
+    "runtime/foreign-symbol-resolution"
+    "runtime/hot-reload-invalidation"
+    "runtime/managed-collection-semantics"
+    "runtime/managed-dynamic-state"
+    "runtime/managed-null-conversion"
+    "runtime/manifest-consumption"],
+   :task-count-delta 0,
+   :adoption :pending-independent-composed-review,
+   :identity-rule
+   "Historical IDs remain history. A criterion binding does not restore IDs, adopt aliases or reclassify a different current semantic unit.",
+   :sha256
+   "db594d1dc7c3b2d0f23c09a30f99b16aba71a69834c947b6ff6309110dd473ac",
+   :composition
+   "specs/requirement-reconciliation/runtime-residual-composition.edn",
+   :input
+   "specs/requirement-reconciliation/runtime-residual-interfaces.edn",
+   :matched-current-semantic-ids []}
+  {:family "phase-00",
+   :historical-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/approximation-certificate-checkability"
+    "gravity/artifact-graph-reproducibility"
+    "gravity/bootstrap-equivalence-before-retirement"
+    "gravity/bootstrap-staged-trust-reduction"
+    "gravity/canonical-concept-vocabulary"
+    "gravity/canonical-pass-order"
+    "gravity/checker-actually-verifies"
+    "gravity/coverage-claim-slice"
+    "gravity/coverage-claim-status-distinction"
+    "gravity/coverage-positive-negative-fixtures"
+    "gravity/cross-phase-term-change-control"
+    "gravity/documentation-lock-scope"
+    "gravity/domain-anchor-preservation"
+    "gravity/domain-concept-layer-map"
+    "gravity/elementary-math-semantic-carrier"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/extension-compatibility-evidence"
+    "gravity/extension-manifest-contract"
+    "gravity/extension-not-language-authority"
+    "gravity/extension-provider-lifecycle-contract"
+    "gravity/feature-layer-classification"
+    "gravity/foundation-semantic-change-control"
+    "gravity/fused-pass-observability"
+    "gravity/hosted-hello-execution"
+    "gravity/interop-boundary-manifest"
+    "gravity/interop-is-not-host-semantics"
+    "gravity/migration-provenance-safety"
+    "gravity/milestone-contract-sequencing"
+    "gravity/milestone-evidence-bundle"
+    "gravity/milestone-executable-evidence"
+    "gravity/multiversion-guard-manifest"
+    "gravity/native-target-artifact-emission"
+    "gravity/pass-contract-schema"
+    "gravity/profile-contract-declaration"
+    "gravity/proof-artifact-claim-binding"
+    "gravity/qualify-ambiguous-normative-terms"
+    "gravity/real-domain-coverage-evidence"
+    "gravity/realtime-not-throughput-proof"
+    "gravity/release-matrix-evidence"
+    "gravity/replacement-parity-evidence"
+    "gravity/replacement-slice-record"
+    "gravity/runtime-check-diagnostic-stability"
+    "gravity/runtime-manifest-closure"
+    "gravity/safety-family-conformance"
+    "gravity/source-schema-projection"
+    "gravity/target-lowering-operation-contract"
+    "gravity/tooling-semantic-consistency"
+    "gravity/unified-source-semantics"
+    "gravity/unsafe-island-safe-api-eligibility"
+    "gravity/verification-evidence-kind"],
+   :input
+   "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+   :sha256
+   "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
+   :composition
+   "specs/requirement-reconciliation/foundation-residual-composition.edn",
+   :adoption :pending-independent-composed-review,
+   :task-count-delta 0}],
  :original-documents
  [{:path
    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",

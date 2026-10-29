@@ -1,0 +1,411 @@
+{:preparation-history
+ "The helper completed all writes before reporting a trailing delimiter. No mutation was replayed; independent readback verified every final file hash, all 20 field records, all 52 assignments, preserved eight Runtime criteria and all 833 Open decision identities/states.",
+ :composed-review :pending,
+ :composition-rule
+ "Only exact reviewed additive criterion suffixes are composed. Later current criterion prefixes survive; other fields and task statuses remain unchanged.",
+ :assigned-ids
+ ["gravity/ai-tool-schema-policy-record"
+  "gravity/approximation-certificate-checkability"
+  "gravity/artifact-graph-reproducibility"
+  "gravity/bootstrap-equivalence-before-retirement"
+  "gravity/bootstrap-staged-trust-reduction"
+  "gravity/canonical-concept-vocabulary"
+  "gravity/canonical-pass-order"
+  "gravity/checker-actually-verifies"
+  "gravity/coverage-claim-slice"
+  "gravity/coverage-claim-status-distinction"
+  "gravity/coverage-positive-negative-fixtures"
+  "gravity/cross-phase-term-change-control"
+  "gravity/documentation-lock-scope"
+  "gravity/domain-anchor-preservation"
+  "gravity/domain-concept-layer-map"
+  "gravity/elementary-math-semantic-carrier"
+  "gravity/evidence-artifact-provenance"
+  "gravity/explicit-runtime-service-dependencies"
+  "gravity/extension-compatibility-evidence"
+  "gravity/extension-manifest-contract"
+  "gravity/extension-not-language-authority"
+  "gravity/extension-provider-lifecycle-contract"
+  "gravity/feature-layer-classification"
+  "gravity/foundation-semantic-change-control"
+  "gravity/fused-pass-observability"
+  "gravity/hosted-hello-execution"
+  "gravity/interop-boundary-manifest"
+  "gravity/interop-is-not-host-semantics"
+  "gravity/migration-provenance-safety"
+  "gravity/milestone-contract-sequencing"
+  "gravity/milestone-evidence-bundle"
+  "gravity/milestone-executable-evidence"
+  "gravity/multiversion-guard-manifest"
+  "gravity/native-target-artifact-emission"
+  "gravity/pass-contract-schema"
+  "gravity/profile-contract-declaration"
+  "gravity/proof-artifact-claim-binding"
+  "gravity/qualify-ambiguous-normative-terms"
+  "gravity/real-domain-coverage-evidence"
+  "gravity/realtime-not-throughput-proof"
+  "gravity/release-matrix-evidence"
+  "gravity/replacement-parity-evidence"
+  "gravity/replacement-slice-record"
+  "gravity/runtime-check-diagnostic-stability"
+  "gravity/runtime-manifest-closure"
+  "gravity/safety-family-conformance"
+  "gravity/source-schema-projection"
+  "gravity/target-lowering-operation-contract"
+  "gravity/tooling-semantic-consistency"
+  "gravity/unified-source-semantics"
+  "gravity/unsafe-island-safe-api-eligibility"
+  "gravity/verification-evidence-kind"],
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :partition-sha256
+ "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+ :identity-rule
+ "Historical criterion bindings do not restore historical IDs or imply aliases for current semantic units.",
+ :input-sha256
+ "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
+ :independently-adopted 0,
+ :kind :foundation-residual-criterion-composition,
+ :files
+ [{:path "specs/build-workflow/tasks.md",
+   :before-sha256
+   "323b63460b37536af3c3e219cf9836f5abbef44720842f366ef66743cede5f1d",
+   :after-sha256
+   "ae8d3a67a5dff377dc84a652ed4f9bc7167610236a4e92adbe2056ebfa358b5f",
+   :operations
+   [{:id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :field :acceptance,
+     :frozen-before-sha256
+     "bc110f0ceac69fcccb179e1baeb6251777c4c585b1b9b7d6aacf82981a4397e6",
+     :incoming-after-sha256
+     "e0808a860c92020f54632068b853a66cb5008e97ac61bce1185f85af3ba40cc2",
+     :applying-before-sha256
+     "bc110f0ceac69fcccb179e1baeb6251777c4c585b1b9b7d6aacf82981a4397e6",
+     :applying-after-sha256
+     "e0808a860c92020f54632068b853a66cb5008e97ac61bce1185f85af3ba40cc2",
+     :additive-suffix-sha256
+     "9fdf0db4f32b72cd06bf27aa4375b09d0dc928fcd2f475f88c5dbcaddb31cc5f",
+     :later-prefix-preserved false}]}
+  {:path "specs/cli-workflow/tasks.md",
+   :before-sha256
+   "8334b916a5dae13a9f9eac914367bf64ccc9dc197221d7f8c5d8ef88d9182447",
+   :after-sha256
+   "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+   :operations
+   [{:id
+     "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+     :field :acceptance,
+     :frozen-before-sha256
+     "1a51ad7d0afbf32a0bc345a6a432733de69af08c9013d06ba98b087a541e7c1f",
+     :incoming-after-sha256
+     "86d9e9c9444a810dfb89a1a4283806e90d31aea4a6e50430a90e39337df076bf",
+     :applying-before-sha256
+     "1a51ad7d0afbf32a0bc345a6a432733de69af08c9013d06ba98b087a541e7c1f",
+     :applying-after-sha256
+     "86d9e9c9444a810dfb89a1a4283806e90d31aea4a6e50430a90e39337df076bf",
+     :additive-suffix-sha256
+     "f6e1641c479cddaac276cd915f764fef480a3a1e8115c8f1fa7e50d4533e4fc8",
+     :later-prefix-preserved false}]}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :before-sha256
+   "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+   :after-sha256
+   "f5e34929c4ebd21c064709f2c471f8712430fcd741098bc183d0550ab6a1d342",
+   :operations
+   [{:id "pipeline",
+     :field :projection,
+     :frozen-before-sha256
+     "2d4f56bfe80cbcda823e3a29f095d6a2051f593d4b1c3b50be143acac8c3df13",
+     :incoming-after-sha256
+     "21b0ced1473ab42e6910121e327bfdea8d7fcd7a6a05220b8d48b678248d9bc7",
+     :applying-before-sha256
+     "2d4f56bfe80cbcda823e3a29f095d6a2051f593d4b1c3b50be143acac8c3df13",
+     :applying-after-sha256
+     "21b0ced1473ab42e6910121e327bfdea8d7fcd7a6a05220b8d48b678248d9bc7",
+     :additive-suffix-sha256
+     "3c9175b2939303f29fff654df018275d8e51c502cf650316c6ebc6b3fdb0a3af",
+     :later-prefix-preserved false}
+    {:id "plugins",
+     :field :projection,
+     :frozen-before-sha256
+     "182a98031a4f0c3f8e8a0b10dbb00a52186137dc73868907911d9ac26e4bf42e",
+     :incoming-after-sha256
+     "6e2f2a99234b9dad522bbf380c9c2a33e7b3cf266d9e6318300db272866c1991",
+     :applying-before-sha256
+     "182a98031a4f0c3f8e8a0b10dbb00a52186137dc73868907911d9ac26e4bf42e",
+     :applying-after-sha256
+     "6e2f2a99234b9dad522bbf380c9c2a33e7b3cf266d9e6318300db272866c1991",
+     :additive-suffix-sha256
+     "c68ea8c8d22e75643b9a6ea11123e432cc94bb6dc6f20519f0ac7cdecdf7c00d",
+     :later-prefix-preserved false}
+    {:id "pass-evidence",
+     :field :projection,
+     :frozen-before-sha256
+     "d2cda0dbdb508909ef1799016b56e6595eb6492bbacaf768644acf0d731543d4",
+     :incoming-after-sha256
+     "a2aa01ad75246099221184e847238880d67a4af9c61210a009fa0ace92a962cb",
+     :applying-before-sha256
+     "d2cda0dbdb508909ef1799016b56e6595eb6492bbacaf768644acf0d731543d4",
+     :applying-after-sha256
+     "a2aa01ad75246099221184e847238880d67a4af9c61210a009fa0ace92a962cb",
+     :additive-suffix-sha256
+     "773d0387cd424925aa19b7234d7fc493da52be318b0abced32b3d698fb83b651",
+     :later-prefix-preserved false}]}
+  {:path "specs/diag-workflow/tasks.md",
+   :before-sha256
+   "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+   :after-sha256
+   "13b27da1d8a192a7f74e0b9c03746f42eeff46aa5721af3eedc064f0c42857b9",
+   :operations
+   [{:id
+     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+     :field :acceptance,
+     :frozen-before-sha256
+     "c9dd542386e49c3982490ac55ad5b16a4b0747b5102cc67622802d02703c3e85",
+     :incoming-after-sha256
+     "f3defb457188143a4ea252415d391235977e73ff4d708f4903e61d19c7514972",
+     :applying-before-sha256
+     "c9dd542386e49c3982490ac55ad5b16a4b0747b5102cc67622802d02703c3e85",
+     :applying-after-sha256
+     "f3defb457188143a4ea252415d391235977e73ff4d708f4903e61d19c7514972",
+     :additive-suffix-sha256
+     "8ae2c447bf9bf0e97a1224e68f8c4e7aff1fa5c2bcd9c265c703eb0e9b81acb1",
+     :later-prefix-preserved false}]}
+  {:path "specs/domains-workflow/tasks.md",
+   :before-sha256
+   "4a58cf37f621a1d8bbac8cad6e1ce06eab21949784667076ad1034b4664bfd68",
+   :after-sha256
+   "2a493b74ef6d71181beec333f683b26c9a622163f1b56c2e3b89bf4c60f3ae7f",
+   :operations
+   [{:id "math",
+     :field :projection,
+     :frozen-before-sha256
+     "4c99da1ea3f3c91f02da44e08b54a9fa7318d6a53a5281f88cde3cc2c8617c96",
+     :incoming-after-sha256
+     "91bf43238eacef46a29b5561a7b6bf53926bb3833e02fabe44f858ffb10f1924",
+     :applying-before-sha256
+     "4c99da1ea3f3c91f02da44e08b54a9fa7318d6a53a5281f88cde3cc2c8617c96",
+     :applying-after-sha256
+     "91bf43238eacef46a29b5561a7b6bf53926bb3833e02fabe44f858ffb10f1924",
+     :additive-suffix-sha256
+     "0b147fd7a5fcf7816c09670672f300421da3fa900f7ebbb58185ba0a41ba683c",
+     :later-prefix-preserved false}
+    {:id "schema",
+     :field :projection,
+     :frozen-before-sha256
+     "b9afa81873e742484b007edc7030974c5106712d30edc78f8a14ced4f787ca29",
+     :incoming-after-sha256
+     "88f0376cdaf17925fd17a8ca1a5085c5ea8845cde73b5f54a32379fa16889f2b",
+     :applying-before-sha256
+     "b9afa81873e742484b007edc7030974c5106712d30edc78f8a14ced4f787ca29",
+     :applying-after-sha256
+     "88f0376cdaf17925fd17a8ca1a5085c5ea8845cde73b5f54a32379fa16889f2b",
+     :additive-suffix-sha256
+     "067478154c8d8932879713e21555f2d0d33b32327b1d02d702e2b5a4e2ac60c5",
+     :later-prefix-preserved false}
+    {:id "ai",
+     :field :projection,
+     :frozen-before-sha256
+     "3fc2c6c1d67ef9decbfe299f3dcec195edfa4a97f4900e27dabd6564a44455c1",
+     :incoming-after-sha256
+     "de35653f283ccfce4464c77b2852375b498368f76e4780b8656ca4be32f00a79",
+     :applying-before-sha256
+     "3fc2c6c1d67ef9decbfe299f3dcec195edfa4a97f4900e27dabd6564a44455c1",
+     :applying-after-sha256
+     "de35653f283ccfce4464c77b2852375b498368f76e4780b8656ca4be32f00a79",
+     :additive-suffix-sha256
+     "80114ce288471db698e89cebeb145799839160b541b153c6be6a226221535801",
+     :later-prefix-preserved false}]}
+  {:path "specs/legality-workflow/tasks.md",
+   :before-sha256
+   "ff5b0b5c1f4080499e29d4d6d1a31948967d2bc203ba4b85e5f6ead1c1d07dfd",
+   :after-sha256
+   "c16324ef250cf156254facf094f86399d008aee983981526c02a122050b78139",
+   :operations
+   [{:id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :field :acceptance,
+     :frozen-before-sha256
+     "bf43badc0ed4a73900ad8ab0101489a5ce7b6d80cdc4efb3be2cb575f95300bc",
+     :incoming-after-sha256
+     "08e258c474eb890e26f0d23fe9b0d74e11e130d07b34f2e676166ba5ebb5cb64",
+     :applying-before-sha256
+     "bf43badc0ed4a73900ad8ab0101489a5ce7b6d80cdc4efb3be2cb575f95300bc",
+     :applying-after-sha256
+     "08e258c474eb890e26f0d23fe9b0d74e11e130d07b34f2e676166ba5ebb5cb64",
+     :additive-suffix-sha256
+     "cb92121b28cc427a56ecc2d1e7d3ddb5a58bf39cd7374c04499858ae8f874826",
+     :later-prefix-preserved false}
+    {:id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :field :acceptance,
+     :frozen-before-sha256
+     "c09d83ea277d0e2b9c8d08303832139ec88ddd2fadb108c5a50bd98940936f4d",
+     :incoming-after-sha256
+     "b0e0a8072f10208f506dc113662ae5f86fa68b983e6fe82517f2af2ab0ba86e6",
+     :applying-before-sha256
+     "c09d83ea277d0e2b9c8d08303832139ec88ddd2fadb108c5a50bd98940936f4d",
+     :applying-after-sha256
+     "b0e0a8072f10208f506dc113662ae5f86fa68b983e6fe82517f2af2ab0ba86e6",
+     :additive-suffix-sha256
+     "26b86f29264b886f2315dbd0559e94f0731fc3a165eb249bbe5a19f8bfea579d",
+     :later-prefix-preserved false}]}
+  {:path "specs/lower-workflow/tasks.md",
+   :before-sha256
+   "18aedb64b0aa7db92906270646d1d9cd0ec482e63196646991eea19fad957785",
+   :after-sha256
+   "1e0a2269724532391564f8b8cb584a6a784b917522afd0ce4f4b8e323f573a21",
+   :operations
+   [{:id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :field :acceptance,
+     :frozen-before-sha256
+     "f6b86fe76e0111c30b6e3f19dc49af05deaef84c297c8bcf9182d5b33359e370",
+     :incoming-after-sha256
+     "af89f38c055a13870d649e69b15bb62c1c06a477e516cff5ad49c5077e73571f",
+     :applying-before-sha256
+     "f6b86fe76e0111c30b6e3f19dc49af05deaef84c297c8bcf9182d5b33359e370",
+     :applying-after-sha256
+     "af89f38c055a13870d649e69b15bb62c1c06a477e516cff5ad49c5077e73571f",
+     :additive-suffix-sha256
+     "cf3601dad27f424fa7b75a2962a8e1e25a7e2206619b242c6c12804e6f23f391",
+     :later-prefix-preserved false}
+    {:id
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+     :field :acceptance,
+     :frozen-before-sha256
+     "23e9612a33eaa31691e5d0e9d236e69c90e0a3ace231ad6018fbb16717851eab",
+     :incoming-after-sha256
+     "0ca19c80c48cb0dffbac3707681c0de1bbc126e79b0fc26ead20cf11948d4ede",
+     :applying-before-sha256
+     "23e9612a33eaa31691e5d0e9d236e69c90e0a3ace231ad6018fbb16717851eab",
+     :applying-after-sha256
+     "0ca19c80c48cb0dffbac3707681c0de1bbc126e79b0fc26ead20cf11948d4ede",
+     :additive-suffix-sha256
+     "776f198f81e63dda693236eb94e65d618646b0df25ff59b5b24ee613b6c0888c",
+     :later-prefix-preserved false}]}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-sha256
+   "492bd1f82712b8d2d0d0183a8bfbd67a4b14c9b03a912bba514098591d42f0c6",
+   :after-sha256
+   "f4a4619901c8f8109896b0741890ccb3444dbb4d02420c62fcf6d36f34db2db1",
+   :operations
+   [{:id "firmware",
+     :field :work,
+     :frozen-before-sha256
+     "d432e82ca5f34e47446f4fb639e416a5aceeed9bbf6e8496e4e79d88c80c994a",
+     :incoming-after-sha256
+     "fa56d7cd4773cf447ca8b2472aab57f173c6dbf63e4567366427ba7849c791cb",
+     :applying-before-sha256
+     "d432e82ca5f34e47446f4fb639e416a5aceeed9bbf6e8496e4e79d88c80c994a",
+     :applying-after-sha256
+     "fa56d7cd4773cf447ca8b2472aab57f173c6dbf63e4567366427ba7849c791cb",
+     :additive-suffix-sha256
+     "7cd10ec6b2d225fbcf08c27844f09dea32282170daf231cd3f474ae22ad31ec5",
+     :later-prefix-preserved false}]}
+  {:path "specs/release-workflow/tasks.md",
+   :before-sha256
+   "53e3af2ee3125ce41194a46e091183f6f038c81870fa2f68d3f3e95d130cdc1d",
+   :after-sha256
+   "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+   :operations
+   [{:id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :field :acceptance,
+     :frozen-before-sha256
+     "2c0c75e5e71f4b15de10d6d12fd1e5f969817711b60ed64332b6db8e21fcb2e7",
+     :incoming-after-sha256
+     "9335f63c38daa3d0b0b4733275a4bdec2807c62b89af442bc81a9ffccc6f29ea",
+     :applying-before-sha256
+     "2c0c75e5e71f4b15de10d6d12fd1e5f969817711b60ed64332b6db8e21fcb2e7",
+     :applying-after-sha256
+     "9335f63c38daa3d0b0b4733275a4bdec2807c62b89af442bc81a9ffccc6f29ea",
+     :additive-suffix-sha256
+     "ea4c4ea4a1070e02e8abd5724e6df601df95ae2a821cff030f38bdad7316b0e6",
+     :later-prefix-preserved false}
+    {:id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :field :acceptance,
+     :frozen-before-sha256
+     "69dda5ac7070eb7405212ef7c40fbd458d2a5e8341648fc6f2359e0760c5c738",
+     :incoming-after-sha256
+     "f7fe263a9b124fe12ffefac7f31ec0d7476c6b2a32f95f71bed182432902d3ce",
+     :applying-before-sha256
+     "69dda5ac7070eb7405212ef7c40fbd458d2a5e8341648fc6f2359e0760c5c738",
+     :applying-after-sha256
+     "f7fe263a9b124fe12ffefac7f31ec0d7476c6b2a32f95f71bed182432902d3ce",
+     :additive-suffix-sha256
+     "f0555a344c2a439981651e7004d256ebb6baabad733d6a774e341193d85f9e93",
+     :later-prefix-preserved false}]}
+  {:path "specs/runtime-workflow/tasks.md",
+   :before-sha256
+   "a4aced15e1f68f8765d169c6bf952f527b1a2a8bb008f7b1ba00de9c0dd2167c",
+   :after-sha256
+   "ce3b6cd74f094834ec39d1919a884d6312e9ef685d17555410bb3cd1b5dce09a",
+   :operations
+   [{:id
+     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+     :field :acceptance,
+     :frozen-before-sha256
+     "60a9c59758ba7942f8ab744e412aaa6cc5f11c6e91a16102c4b4b1d9443517d8",
+     :incoming-after-sha256
+     "12c7499b0c8c33ba5c457d6e062cc06425025c8f94dd927c9a7d833ac624a365",
+     :applying-before-sha256
+     "57dac0c769ae556a17629d1be51ea26c63b147b93e6330e5a2d4674263b9b09d",
+     :applying-after-sha256
+     "0cb2ed35b3a394893fa50448ef05b55c34353df493c4078a0d1cd9cb2d896c71",
+     :additive-suffix-sha256
+     "fc624b3f9af04878b62ef2625f8ee73e80c5dd57c36d7c7f14d5ba368c08a488",
+     :later-prefix-preserved true}
+    {:id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :field :acceptance,
+     :frozen-before-sha256
+     "3d2b90e21b458068ce76d0abc50fbcaf1f8ceb16eae0967130c0341d135369d5",
+     :incoming-after-sha256
+     "acddcb13b74e824f04b9e4ece395faad9a7224fb48d335654ed355be4f6bfad2",
+     :applying-before-sha256
+     "489e1c856ff79a0802170a3cb48c628fcd4792c5b0e3c60bea42f489e0a71d6e",
+     :applying-after-sha256
+     "8ba2261d770ea88a8b1c1998ede404e79bbeffbd906645d0e6998f0a6feb70f5",
+     :additive-suffix-sha256
+     "f476ace18486ea603b8fd227df37e5e3e288f40b8ac7c768123a38bb4d04d776",
+     :later-prefix-preserved true}]}
+  {:path "specs/tools-workflow/tasks.md",
+   :before-sha256
+   "0838ac2fd6d121358b880d261c9e7fe44c08f4a2e743b66d648e4d36781b85b9",
+   :after-sha256
+   "22813918f0556ba96bd344c721dbe5a652087df373423e4c283d3cc25f6824de",
+   :operations
+   [{:id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :field :acceptance,
+     :frozen-before-sha256
+     "0897b3c6ad29c6b34c2ac1789930c556ec416ed894b5fb34009732117b8b7a52",
+     :incoming-after-sha256
+     "79686e105d4fad82f95dbefd9a1d331de3ed602ead010b49ba7f31a5648142f6",
+     :applying-before-sha256
+     "0897b3c6ad29c6b34c2ac1789930c556ec416ed894b5fb34009732117b8b7a52",
+     :applying-after-sha256
+     "79686e105d4fad82f95dbefd9a1d331de3ed602ead010b49ba7f31a5648142f6",
+     :additive-suffix-sha256
+     "93d738005d8606e6999cc90ce0ccd5195f93e71f3b2bc01614a4f8e0f5aae266",
+     :later-prefix-preserved false}
+    {:id
+     "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+     :field :acceptance,
+     :frozen-before-sha256
+     "878035091572aa3a1583a485c61ad839c4c4f7f64ca714d3e76ade742ce432f5",
+     :incoming-after-sha256
+     "7fe7caf547709f0d2b330d59f93f3e5faa3d67146768152562aba6bca9435763",
+     :applying-before-sha256
+     "878035091572aa3a1583a485c61ad839c4c4f7f64ca714d3e76ade742ce432f5",
+     :applying-after-sha256
+     "7fe7caf547709f0d2b330d59f93f3e5faa3d67146768152562aba6bca9435763",
+     :additive-suffix-sha256
+     "23aaaee77e2a8890357acd768cea3b2ddcf579397c0b2da7431e6c6177454010",
+     :later-prefix-preserved false}]}],
+ :criteria-prepared 52,
+ :input
+ "specs/requirement-reconciliation/foundation-residual-interfaces.edn"}

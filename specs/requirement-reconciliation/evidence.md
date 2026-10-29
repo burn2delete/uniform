@@ -1,5 +1,39 @@
 # Requirement reconciliation evidence
 
+## Historical residual criterion cohort
+
+The exact 561-record partition is frozen at `bd37ab50c50d27094dce664b34831fcc43c3e9c3`,
+artifact SHA256 `f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a`.
+It preserves the original 577 rows as 13 criterion witnesses, three retirement
+histories and 561 residuals. Primary dispatch has no duplicate IDs and retains
+every affected-family context; it does not establish semantic ownership or
+acceptance.
+
+Foundation52 and Runtime8 candidate criteria are composed into the existing
+task authorities with no new task IDs. The input hashes are respectively
+`6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88`
+and `db594d1dc7c3b2d0f23c09a30f99b16aba71a69834c947b6ff6309110dd473ac`.
+The two composition records preserve exact field/file predecessors and the
+two additive Runtime joins, retaining later Runtime criteria as prefixes.
+All 11 affected task projections regenerated. Runtime projection controls
+passed 4 tests / 67 assertions; both document validators passed. Five root
+Runtime controls rejected stale files, wrong collections/fields/before values
+and duplicate application. The Foundation owner's 15 guard controls are
+attributed source-proposal evidence, not independent composed acceptance.
+
+The Runtime same-ID join initially refused before writes: its historical IDs
+are not current decision IDs. Historical bindings are therefore kept in
+`historical-interface-compositions`, without restoring IDs, inventing aliases
+or reclassifying another semantic unit. The Foundation helper completed its
+writes before a trailing delimiter error; readback checked every final file
+hash, all 20 field records, all 52 assignments and preservation of all eight
+Runtime criteria. Neither failure was credited as a successful run.
+
+These 60 are prepared criterion bindings with independent adoption pending.
+The current 833 decision identities and Open states are unchanged. No global
+residual decrement, whole-project denominator or implementation credit is
+claimed; later family returns and final coverage review remain necessary.
+
 ## Stdlib interface successor
 
 The coverage audit `a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f`

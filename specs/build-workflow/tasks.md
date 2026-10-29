@@ -49,7 +49,7 @@ Status: Open
 
 Evidence baseline: [Reproducibility contract](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md)
 
-Closing evidence: Repeated locked builds with matching identities and explicit failing-target diagnostics
+Closing evidence: Repeated locked builds with matching identities and explicit failing-target diagnostics Foundation requirement gravity/artifact-graph-reproducibility: Rebuild the declared artifact graph from recorded source/compiler/pass/policy/provider/target and dependency identities; compare canonical graph edges and outputs under an explicit accepted-delta policy. Refusals: Reject omitted inputs or edges, substituted provider/compiler identities and unexplained output drift; preserve the failed comparison and any policy-reviewed exception. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence.
 <!-- build-implementation-tasks:end -->
 
 ## Historical workflow migration record
