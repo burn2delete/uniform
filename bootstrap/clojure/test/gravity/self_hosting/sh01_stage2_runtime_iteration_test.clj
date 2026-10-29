@@ -37806,3 +37806,36 @@ else
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest lowering-list-join-element-width-development-kernel
+  (let [source-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
+        s :gravity.type/string
+        finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        invoke #(bootstrap/p15-s23-stage2-runtime-execute-function
+                  runtime plan 'p15-s23-ij-element [% 65536])]
+    (doseq [width [0 1 1024 1025 2049]]
+      (let [type (finite (vec (repeat width s)))
+            result (invoke type)]
+        (is (= {:status :accepted
+                :relation (if (zero? width) :empty-positional-list :all-positional-elements-match)
+                :element-type (when (pos? width) s)
+                :checked-member-count width}
+               (select-keys result [:status :relation :element-type :checked-member-count])))))
+    (doseq [width [1025 2049]]
+      (let [members (vec (repeat width s))]
+        (doseq [bad [:gravity.type/keyword :gravity.type/unknown nil {:kind :gravity.type/list}]]
+          (is (= {:status :not-applicable :reason :incompatible-list-elements}
+                 (select-keys (invoke (finite (assoc members (dec width) bad))) [:status :reason]))))))
+    (doseq [bad [nil :gravity.type/list
+                 {:kind :gravity.type/list :shape :literal :element-types (list s)}
+                 (assoc (finite [s]) :extra true)
+                 (assoc (finite [s]) :shape :homogeneous)]]
+      (is (= {:status :not-applicable :reason :independent-list-element-required}
+             (select-keys (invoke bad) [:status :reason]))))
+    (is (= {:status :not-applicable :reason :independent-atomic-element-required}
+           (select-keys (invoke (finite [:gravity.type/unknown])) [:status :reason])))
+    (is (= {:status :accepted :relation :homogeneous-list-identity :element-type s :checked-member-count nil}
+           (select-keys (invoke {:kind :gravity.type/list :shape :homogeneous :element-type s})
+                        [:status :relation :element-type :checked-member-count])))))

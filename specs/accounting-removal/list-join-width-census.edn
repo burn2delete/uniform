@@ -1,0 +1,108 @@
+{:nonclaims
+ [:complete-join-accounting-removal
+  :whole-path-acceptance
+  :PR502-closure
+  :release
+  :self-hosting],
+ :owners
+ [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :function body-ij-element,
+   :base-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :candidate-file-sha256
+   "54d8ff0cb2425e632d63cc4ac0f200cf6acbee7409e6e15da83cfccc7c9898ca",
+   :historical-and-candidate-form-sha256
+   "28ab018a8b86a0a05ced2809eafc38fce7ba989b7e16b05f586dc40a9a0c5aac",
+   :only-expression-change
+   {:before
+    (if finite? (if (vector? members) (<= width 1024) false) false),
+    :after (if finite? (vector? members) false)},
+   :direct-callers
+   [{:function body-ij-type-work,
+     :unchanged-form-sha256
+     "bf0499154074fe3718376891c9494a787fcb21d6578e49015f813bb42d35853a"}],
+   :test
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+    :checked-member-count-asserted true,
+    :cost-expectations false,
+    :execution :UNRUN,
+    :form-sha256
+    "e57cd127c9e5dcab0fb0ffc4fb03ef4c9717b55a6040a28a8db47256bbf6a894",
+    :name list-join-element-width-development-kernel,
+    :all-existing-forms-and-bytes-preserved true,
+    :positive-widths [0 1 1024 1025 2049],
+    :base-file-sha256
+    "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+    :late-invalid-members
+    [:gravity.type/keyword
+     :gravity.type/unknown
+     nil
+     {:kind :gravity.type/list}],
+    :candidate-file-sha256
+    "a8d83c99a4745d368e0555c8399f5b50884e8e77f0a2606b97ea25759becbd49",
+    :late-invalid-widths [1025 2049]}}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :function p15-s23-ij-element,
+   :base-file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :candidate-file-sha256
+   "a6a1cfe27d592993623cff3783b851b6ac8cda4b065ea2dc9399dd77270e73b2",
+   :historical-and-candidate-form-sha256
+   "9af62f61419ee70d917b9a28551263cd13ba8d3c00f2a25ea7c27df724d4028a",
+   :only-expression-change
+   {:before
+    (if finite? (if (vector? members) (<= width 1024) false) false),
+    :after (if finite? (vector? members) false)},
+   :direct-callers
+   [{:function p15-s23-ij-type-work,
+     :unchanged-form-sha256
+     "736f9e90dbc6d6a977fdd9f640a886d4d8a2977699c5213561d67071211425d7"}],
+   :test
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :checked-member-count-asserted true,
+    :cost-expectations false,
+    :execution :UNRUN,
+    :form-sha256
+    "ad5e4abed58918770eebe580b9cc9a1981dcf31a864980784d608164ea2dc4b4",
+    :name lowering-list-join-element-width-development-kernel,
+    :all-existing-forms-and-bytes-preserved true,
+    :positive-widths [0 1 1024 1025 2049],
+    :base-file-sha256
+    "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+    :late-invalid-members
+    [:gravity.type/keyword
+     :gravity.type/unknown
+     nil
+     {:kind :gravity.type/list}],
+    :candidate-file-sha256
+    "8e0c6bceb39e0bbff84f8c09fad2820d61edb07499f7c531a08f6370a5186fa1",
+    :late-invalid-widths [1025 2049]}}],
+ :source-parity
+ {:full-body-correspondence
+  {p15-s23-ij-atomic? body-ij-atomic?, p15-s23-hl-type? body-hl-type?},
+  :helper-equivalence-inferred false},
+ :kind :list-join-element-width-disposition,
+ :generator
+ {:language :clojure,
+  :sha256
+  "85dbff41c0b74468b18425e81164205d38828dc67d3bfc8993c6000b16931fc5",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :historical-complete-forms true,
+  :all-other-production-forms-unchanged true,
+  :all-existing-tests-unchanged true,
+  :Bootstrap-loaded false,
+  :genuine-execution :UNRUN},
+ :base "e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80",
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :open-obligations
+ [:work-allowance-removal
+  :C7-branch-join-composition
+  :actual-Effects-context-and-lowering
+  :runtime-execution
+  :independent-acceptance
+  :fresh-integration]}

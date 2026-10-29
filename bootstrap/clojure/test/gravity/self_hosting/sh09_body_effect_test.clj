@@ -9852,3 +9852,32 @@
         (is (= :rejected (:status (analyze (assoc-in facts [:type-table (:operator-node-id (first (:calls core))) :bounds-proof :selected-index] 1) 65536))))))
     (println (pr-str {:vector-first-symbol-loop-normalized-c8 (select-keys result [:status :reason :work-count])
                      :formats formats :source-credit false :authentication-credit false}))))
+
+(deftest list-join-element-width-development-kernel
+  (let [s :gravity.type/string
+        finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        invoke #(leaf 'body-ij-element % 65536)]
+    (doseq [width [0 1 1024 1025 2049]]
+      (let [type (finite (vec (repeat width s)))
+            result (invoke type)]
+        (is (= {:status :accepted
+                :relation (if (zero? width) :empty-positional-list :all-positional-elements-match)
+                :element-type (when (pos? width) s)
+                :checked-member-count width}
+               (select-keys result [:status :relation :element-type :checked-member-count])))))
+    (doseq [width [1025 2049]]
+      (let [members (vec (repeat width s))]
+        (doseq [bad [:gravity.type/keyword :gravity.type/unknown nil {:kind :gravity.type/list}]]
+          (is (= {:status :not-applicable :reason :incompatible-list-elements}
+                 (select-keys (invoke (finite (assoc members (dec width) bad))) [:status :reason]))))))
+    (doseq [bad [nil :gravity.type/list
+                 {:kind :gravity.type/list :shape :literal :element-types (list s)}
+                 (assoc (finite [s]) :extra true)
+                 (assoc (finite [s]) :shape :homogeneous)]]
+      (is (= {:status :not-applicable :reason :independent-list-element-required}
+             (select-keys (invoke bad) [:status :reason]))))
+    (is (= {:status :not-applicable :reason :independent-atomic-element-required}
+           (select-keys (invoke (finite [:gravity.type/unknown])) [:status :reason])))
+    (is (= {:status :accepted :relation :homogeneous-list-identity :element-type s :checked-member-count nil}
+           (select-keys (invoke {:kind :gravity.type/list :shape :homogeneous :element-type s})
+                        [:status :relation :element-type :checked-member-count])))))
