@@ -1,0 +1,3287 @@
+{:coverage-input-sha256
+ "a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f",
+ :family "phase-08",
+ :counts
+ {:assigned 8,
+  :prepared-actionable-criterion-mappings 8,
+  :independently-adopted-mappings 0,
+  :new-tasks 0,
+  :unresolved-interface-design-ids []},
+ :family-proposal-sha256
+ "a6b2ee0fd88a46d20da8d70afa182d54c4ad6b69b86dbb7959adc1edb4214a3f",
+ :task-predecessor
+ {:ref "43598c5b87feb4d88928549bb20fc4089768718b",
+  :path "specs/runtime-workflow/tasks.md",
+  :sha256
+  "51b68ffda3eea2e859934d831db59385cd151baaac00a3c946b8d0087aae4de6"},
+ :authority :proposal-only,
+ :task-successor-sha256
+ "a4aced15e1f68f8765d169c6bf952f527b1a2a8bb008f7b1ba00de9c0dd2167c",
+ :source-documents
+ [{:id "R1",
+   :sequence 112N,
+   :path
+   "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+   :source-family "phase-08",
+   :original-sha256
+   "c8b69b53960bc7257e797db4b77deff7cc76cc747890d107a4a0e4b660631a20",
+   :current-sha256
+   "c8b69b53960bc7257e797db4b77deff7cc76cc747890d107a4a0e4b660631a20"}
+  {:id "R2",
+   :sequence 113N,
+   :path
+   "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+   :source-family "phase-08",
+   :original-sha256
+   "d2eae424530f2b4feb929d54da5fad6499b82f0adba5da488ec2841275207797",
+   :current-sha256
+   "d2eae424530f2b4feb929d54da5fad6499b82f0adba5da488ec2841275207797"}
+  {:id "R3",
+   :sequence 114N,
+   :path
+   "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "81fd2dc117abe860a6a98aa1ac5fe9bcbec918a23b2e05ca0ff872c9a79e7094",
+   :current-sha256
+   "81fd2dc117abe860a6a98aa1ac5fe9bcbec918a23b2e05ca0ff872c9a79e7094"}
+  {:id "R4",
+   :sequence 115N,
+   :path
+   "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297",
+   :current-sha256
+   "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297"}
+  {:id "R5",
+   :sequence 116N,
+   :path
+   "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "01eaca3690fb061e949679f4ff27d07d969219c7778afc0bb9436a7f27a244a8",
+   :current-sha256
+   "01eaca3690fb061e949679f4ff27d07d969219c7778afc0bb9436a7f27a244a8"}
+  {:id "R6",
+   :sequence 117N,
+   :path
+   "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550",
+   :current-sha256
+   "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550"}
+  {:id "R7",
+   :sequence 118N,
+   :path
+   "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66",
+   :current-sha256
+   "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66"}
+  {:id "R8",
+   :sequence 119N,
+   :path
+   "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+   :current-sha256
+   "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b"}
+  {:id "R9",
+   :sequence 120N,
+   :path
+   "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "47db5a67d42bd821a5f8438c944066838c4be4bdd2a956e52de2153560d193a7",
+   :current-sha256
+   "47db5a67d42bd821a5f8438c944066838c4be4bdd2a956e52de2153560d193a7"}
+  {:id "R10",
+   :sequence 121N,
+   :path
+   "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b04ba44656a7cbb41020fe2cd60fa36d6c4cad692c09a8a3a8acd8d06dda3de8",
+   :current-sha256
+   "b04ba44656a7cbb41020fe2cd60fa36d6c4cad692c09a8a3a8acd8d06dda3de8"}
+  {:id "R11",
+   :sequence 122N,
+   :path
+   "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5",
+   :current-sha256
+   "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5"}
+  {:id "R12",
+   :sequence 123N,
+   :path
+   "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b66d26b2aa5e93a8fbb4952f5f379050e5311b94a1d163208cb25bc482070439",
+   :current-sha256
+   "b66d26b2aa5e93a8fbb4952f5f379050e5311b94a1d163208cb25bc482070439"}],
+ :partition-input
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :path
+  "specs/requirement-reconciliation/historical-gap-partition.edn",
+  :sha256
+  "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a"},
+ :historical-conservation
+ {:total 577,
+  :criterion-witnesses 13,
+  :retirements 3,
+  :residual 561,
+  :original-ids-and-dispositions-sha256
+  "08b842ce2fb614103170e19439fc5b64c36d01d40eb7457a0b990e5a2ff07b14",
+  :history-mutations []},
+ :task-edits
+ [{:collection :canonical-tasks,
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+   :field-path [:acceptance],
+   :before-present? true,
+   :before
+   "Actual service link/load inspection for every claimed profile/target and forbidden-service rejection. R1/R2/R4: explicit family selection and compatible composition; linked/generated/delegated/external/forbidden service records consumed by backend, package, observability, conformance and self-hosting tools; runtime-none entry/reset/interrupt/ABI, sections, memory map, alignment and required target stack evidence; generated checks and panic helpers with provenance. Reject hidden GC, allocator, scheduler, reflection, eval, host IO and hosted-profile leakage; unsupported dynamic forms reject unless eliminated with evidence. Dependencies: Lower supplies target ABI/artifacts, Legality supplies profile facts, and Build supplies package policy; no product ISA or platform choice is made here.",
+   :after
+   "Actual service link/load inspection for every claimed profile/target and forbidden-service rejection. R1/R2/R4: explicit family selection and compatible composition; linked/generated/delegated/external/forbidden service records consumed by backend, package, observability, conformance and self-hosting tools; runtime-none entry/reset/interrupt/ABI, sections, memory map, alignment and required target stack evidence; generated checks and panic helpers with provenance. Reject hidden GC, allocator, scheduler, reflection, eval, host IO and hosted-profile leakage; unsupported dynamic forms reject unless eliminated with evidence. Dependencies: Lower supplies target ABI/artifacts, Legality supplies profile facts, and Build supplies package policy; no product ISA or platform choice is made here. Residual criterion runtime/family-composition: For each claimed profile/target pair, resolve the selected combination of R1 runtime families under profile compatibility and package policy, emitting the family-selection record and linked/generated/delegated/external/forbidden service table. Exercise an allowed combination and reject incompatible combinations, undeclared providers and hidden universal-runtime dependencies. Every selected service and typed host adapter retains its effects, capability hook or applicable static proof, startup/failure model and provenance; listing families without checking the combination is not acceptance. Residual criterion runtime/manifest-consumption: Have backend, package, observability, conformance and self-hosting consumers read the emitted runtime manifest and cross-check it against the actual selected service/helper/provider graph. Emit consumer agreement evidence for family/profile/target, service classification, linked support objects, generated helpers, delegated typed adapters, external providers, forbidden services, capability enforcement hooks or static proofs, startup/initialization/cleanup/failure policy and runtime diagnostic schema/provenance. Reject an absent/unreadable manifest, omitted or contradictory service/provider, hidden forbidden dependency, missing enforcement hook/proof or lost artifact/source-origin edge. A manifest link or producer-only record cannot establish consumer integration. Native backend integration includes C and LLVM artifacts for the claimed target matrix; fixture inspection alone does not claim those targets implemented.",
+   :source-sha256
+   "51b68ffda3eea2e859934d831db59385cd151baaac00a3c946b8d0087aae4de6"}
+  {:collection :canonical-tasks,
+   :id
+   "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+   :field-path [:acceptance],
+   :before-present? true,
+   :before
+   "Executed startup/failure/resource fixtures and manifest-to-service agreement; before user code, validate selected provider existence, artifact versions, grant scopes, compiled contracts, profile/target compatibility and enabled safety/audit requirements; reject a missing required provider unless a declared fallback applies, with positive fallback and negative mismatch fixtures under [L15 runtime providers](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md) . R1/R3/R4: typed host adapters with effects, capabilities, taint, error and source-map contracts; selected host/version/module/collection/dynamic-state manifests; startup, initialization, handoff and teardown order; explicit panic/trap/abort/unwind/result policy; host null/undefined conversion, exception and rejected-promise translation; Gravity equality/hashing/serialization conformance; deterministic linear cleanup independent of process exit or GC. Reject undeclared helper effects, untranslated/null foreign values and GC-only linear cleanup; debug services must be absent or release-policy marked. Dependencies: Lower supplies ABI and source maps, Legality supplies legal services, and Auth supplies grants; selected compiler services do not close all managed/native targets. P4: execute deterministic cleanup for linear host resources despite GC; managed objects remain GC-managed and only an explicit boundary can rely on finalizer timing. Reject GC-only cleanup where deterministic release is required; preserve exactly-once flow evidence from Legality separately from executed terminal operations. Translate host errors through the declared Gravity failure channel with source/generated origins.",
+   :after
+   "Executed startup/failure/resource fixtures and manifest-to-service agreement; before user code, validate selected provider existence, artifact versions, grant scopes, compiled contracts, profile/target compatibility and enabled safety/audit requirements; reject a missing required provider unless a declared fallback applies, with positive fallback and negative mismatch fixtures under [L15 runtime providers](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md) . R1/R3/R4: typed host adapters with effects, capabilities, taint, error and source-map contracts; selected host/version/module/collection/dynamic-state manifests; startup, initialization, handoff and teardown order; explicit panic/trap/abort/unwind/result policy; host null/undefined conversion, exception and rejected-promise translation; Gravity equality/hashing/serialization conformance; deterministic linear cleanup independent of process exit or GC. Reject undeclared helper effects, untranslated/null foreign values and GC-only linear cleanup; debug services must be absent or release-policy marked. Dependencies: Lower supplies ABI and source maps, Legality supplies legal services, and Auth supplies grants; selected compiler services do not close all managed/native targets. P4: execute deterministic cleanup for linear host resources despite GC; managed objects remain GC-managed and only an explicit boundary can rely on finalizer timing. Reject GC-only cleanup where deterministic release is required; preserve exactly-once flow evidence from Legality separately from executed terminal operations. Translate host errors through the declared Gravity failure channel with source/generated origins. Residual criterion runtime/debug-service-selection: Select debug services explicitly for each native/managed runtime and release policy. Show a debug artifact and release artifact whose service/helper manifests expose exactly the selected stack/allocation/check/trace hooks; debug-only services are absent in release unless policy explicitly allows and marks them. Preserve source/check/allocation/provider/lifetime/release identity and proof-elision metadata. Stack diagnostics are capability-neutral unless an external lookup is enabled: reject undeclared filesystem, environment, network or symbol-server access, unmarked debug services and lost source/provenance; required safety checks cannot disappear with debug instrumentation. Provider debug manifests retain profile support, allocation effects, layout/alignment, failure/lifetime/deallocation strategy and unsafe boundaries; traces retain allocation site, resource ID and release site, including selected borrow-debug checks. Enforce sink grants and redact secrets, credentials, prompts, model outputs, user/tainted inputs, raw memory, environment values, package tokens, database rows and deployment identifiers; local logging permission cannot authorize network telemetry. Residual criterion runtime/managed-collection-semantics: For each claimed managed host/version and collection implementation, execute Gravity-observable value/collection fixtures for host representation, nullability, equality, hashing, serialization, mutability, identity and taint. Emit the managed-value/collection manifest and source-bound comparison results for persistent values adapted from host collections or implemented by Gravity. Reject observable host equality/hash/serialization/mutation behavior that diverges from the declared Gravity contract, unchecked nulls and a collection implementation missing from the host manifest; host convenience cannot define portable core meaning. Residual criterion runtime/managed-dynamic-state: Manifest dynamic variables, thread-local values, async context, namespace loading, REPL state and hot reload for the selected host/version/module system. Show declared binding/context behavior through thread and async boundaries and namespace/session changes, retaining source maps, taint, error translation and resource policy. Reject unmanifested state, ambient host reflection/eval/dynamic import/package globals without effects/grants and hosted dynamic state leaking into a lower profile without a legal facade/artifact. Session state influencing build artifacts is captured or nonhermetic, not an implicit capability. Residual criterion runtime/managed-null-conversion: At each claimed host adapter, manifest host/Gravity representation and nullability and convert host null or undefined through the selected Option, Result, checked-wrapper or opaque-foreign-value contract. Execute null, undefined and non-null fixtures for that declared boundary, retaining taint, errors and source/generated-origin diagnostics. Reject unchecked host null/undefined entering a safe Gravity value, a conversion inconsistent with its Gravity type or a missing adapter/null policy; an opaque foreign value does not authorize unchecked access or leakage into lower profiles. Alternative conversion policies are conditional choices, not a requirement to apply every conversion to one value. Exception/null boundary fixtures also reject untranslated host exceptions or rejected promises and preserve the declared Gravity error/panic/effect channel.",
+   :source-sha256
+   "dcc3026996f94e0e5c3d35652c243ab6ef151606ffb9d4dc79a752fbc99b909c"}
+  {:collection :canonical-tasks,
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+   :field-path [:acceptance],
+   :before-present? true,
+   :before
+   "Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. Execute the [SAFE2-SAFE8 contracts](../../docs/phase-02-safety/README.md): declared allocation and cleanup failures, partial initialization cleanup, region/arena generation and borrow checks, release through the correct allocator/provider, callback lifetime/thread/reentrancy/release and foreign error/exception/promise translation. Reject retained borrows, post-reset access, missing FFI declarations, unsupported atomics and unsynchronized mutable access; validate immutable sharing, lock cleanup, actor/channel transfer and declared backpressure/cancellation. Inspect actual checks and audit records, with no hidden GC or host-thread fallback. . R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety. P4/P5: host-object/native FFI records bind runtime/version/symbol, Gravity and foreign types, rooting/ownership/lifetime, nullability, failure mapping, affinity, ABI, effects/grants and safe wrappers. Insufficient host metadata permits opaque provider-only handles, not unrestricted manipulation; raw native imports are not directly safe-callable. Exercise positive boundaries and missing metadata, ungranted call, invalid lifetime and untranslated failure rejection.",
+   :after
+   "Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. Execute the [SAFE2-SAFE8 contracts](../../docs/phase-02-safety/README.md): declared allocation and cleanup failures, partial initialization cleanup, region/arena generation and borrow checks, release through the correct allocator/provider, callback lifetime/thread/reentrancy/release and foreign error/exception/promise translation. Reject retained borrows, post-reset access, missing FFI declarations, unsupported atomics and unsynchronized mutable access; validate immutable sharing, lock cleanup, actor/channel transfer and declared backpressure/cancellation. Inspect actual checks and audit records, with no hidden GC or host-thread fallback. . R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety. P4/P5: host-object/native FFI records bind runtime/version/symbol, Gravity and foreign types, rooting/ownership/lifetime, nullability, failure mapping, affinity, ABI, effects/grants and safe wrappers. Insufficient host metadata permits opaque provider-only handles, not unrestricted manipulation; raw native imports are not directly safe-callable. Exercise positive boundaries and missing metadata, ungranted call, invalid lifetime and untranslated failure rejection. Residual criterion runtime/foreign-symbol-resolution: Resolve a declared foreign symbol and dynamically load an admitted library/module only under package/deployment policy, the named provider/library/version identity and required effects/grants. Emit the binding, symbol-resolution and generated-adapter records tied to target ABI, calling convention, layout/alignment and source/unsafe audit. Positive fixtures resolve the admitted identity through its safe wrapper/provider; negative fixtures reject wrong/missing symbols, mismatched ABI/layout/provider identity and ungranted or policy-denied dynamic loading. Resolution/loading does not bypass nullability, lifetime/ownership, callback affinity/taint or foreign error conversion contracts. Preserve the delivered split between resolution and loading as two criteria within this same task, without accepting an alias or retiring their history.",
+   :source-sha256
+   "967d1379aa661f6f8b9831aa784156e08b8a620927eae641db4467b1243108a6"}
+  {:collection :canonical-tasks,
+   :id
+   "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+   :field-path [:acceptance],
+   :before-present? true,
+   :before
+   "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.. Under [SAFE8/SAFE13](../../docs/phase-02-safety/README.md), retain signal/timer/retry/idempotency/compensation and tool failure records; exact replay consumes recorded model/tool outputs, while audit policy retains digests, schemas, decisions, review events and providers. None is allowed only in interactive or non-safe contexts; workflow and release claims require replay or audit. Execute retention/deletion and secret-tainted memory denial fixtures through the declared provider; prompt text never grants authority.",
+   :after
+   "Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.. Under [SAFE8/SAFE13](../../docs/phase-02-safety/README.md), retain signal/timer/retry/idempotency/compensation and tool failure records; exact replay consumes recorded model/tool outputs, while audit policy retains digests, schemas, decisions, review events and providers. None is allowed only in interactive or non-safe contexts; workflow and release claims require replay or audit. Execute retention/deletion and secret-tainted memory denial fixtures through the declared provider; prompt text never grants authority. Residual criterion runtime/hot-reload-invalidation: For a changed interactive definition, record changed source, affected namespace/dependency edges and invalidation of stale syntax, analysis, typed core, MIR/domain IR, backend, runtime and package artifacts. Emit a hot-reload/session record distinguishing preserved runtime state from state that must restart, with evaluated-form/source/generated-origin identity. Show an unaffected artifact retained and affected artifacts rebuilt or rejected before reuse; reject a stale analysis/MIR/backend/runtime/package artifact, untracked build-affecting state and debug inspection outside grants/secret policy. Build-affecting session inputs are captured or explicitly nonhermetic; interactive manifests do not imply release runtime support. Build-affecting sessions emit transcripts, evaluated-form artifacts, syntax/core/MIR snapshots, dependency invalidation records and source maps; debug hooks cannot expose raw memory, host process state or model/tool outputs without grants.",
+   :source-sha256
+   "60a0a6c616b21eb62e15784b38f048f3d43cf67e2e691bc9c19d8cf243e5593c"}],
+ :kind :runtime-residual-criterion-patch,
+ :composition
+ "Apply sequential exact task-file and criterion predecessors; refuse stale, duplicate or changed source context. Preserve all later L15/P4/SAFE clauses already present in the predecessor. Central owner regenerates the roadmap and SH pins and reconciles later task changes. These eight full criterion proposals replace no historical receipt and confer no execution acceptance.",
+ :limits
+ [:implementation-open
+  :independent-adoption-pending
+  :no-shared-checkout-write
+  :no-alias-retirement
+  :no-global-rate],
+ :mappings
+ [{:criterion-id "runtime/debug-service-selection/acceptance",
+   :acceptance-and-rejection-outputs
+   ["debug/release artifact and service-manifest difference"
+    "source-bound check/allocation traces"
+    "debug-policy and undeclared-effect diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 17,
+     :raw-sha256
+     "dfa8252b1f62373e524d4174580ddfb000385ff2aad9eca9136f4ea1c7e85a7e",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/021c40812d836720a6280c03d20a9c09d084f5aa160a69ef4877b31befa65a39",
+     :origin-facet-ids
+     ["R12/facet/0d17113c520c755b68210039b9413a408f413ff9b36eeeb384d2e7f0d0803f3e"],
+     :id "facet/runtime-domains-schema/r12/c3ec6aff11ad49e4499396a1",
+     :kind :condition,
+     :document-id "R12",
+     :end-byte 889,
+     :end-line 18,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 745}
+    {:start-line 35,
+     :raw-sha256
+     "5baee6a23b88460eb20e7dbc90bd11fd82d1960b1d713d914b4107f7debe094d",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/5fd321515ec3dbb11786b6b0f336e46e13a7adea98ff478620f31a28210cb7e1",
+     :origin-facet-ids
+     ["R12/facet/eb90ef7a914d707990b944d7e127c3cb848e4c37af176e05db141a49c447fccb"],
+     :id "facet/runtime-domains-schema/r12/3dc4f6fe3cb5928e17583954",
+     :kind :condition,
+     :document-id "R12",
+     :end-byte 1849,
+     :end-line 35,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 1778}
+    {:start-line 39,
+     :raw-sha256
+     "e6c96036735eef83c0c3f8c93ddc5bc2ee698b142e9a87832c9c0c51f0f5265b",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/049459d0bdd002836d81daeabefa93613304204bd7b5b3a06287dc820b9d32c8",
+     :origin-facet-ids
+     ["R12/facet/407239bafa0824cb7e2d1226754b114fec5598e49ff210646d8de8a3eeabea58"],
+     :id "facet/runtime-domains-schema/r12/bdfa780a7dc6f43f8ddd91b4",
+     :kind :context,
+     :document-id "R12",
+     :end-byte 1933,
+     :end-line 39,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/policy-safe-observation"
+      "runtime/portable-diagnostic-bundle"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1867}
+    {:start-line 40,
+     :raw-sha256
+     "4c75a0d846c2a416782943779b940a37601ea297858b632b25ee550a8ebbf3d0",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/049459d0bdd002836d81daeabefa93613304204bd7b5b3a06287dc820b9d32c8",
+     :origin-facet-ids
+     ["R12/facet/2e902a8d41c03858c3a9027aad7090e4b40d894ead929885f422a1a3abe2fd0e"],
+     :id "facet/runtime-domains-schema/r12/be98c9017aa450a556010d6f",
+     :kind :context,
+     :document-id "R12",
+     :end-byte 1984,
+     :end-line 40,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/policy-safe-observation"
+      "runtime/portable-diagnostic-bundle"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1933}
+    {:start-line 41,
+     :raw-sha256
+     "162f93b69ebbe9a8159c678da69e892befa496f19f5df7b81b61e06f3e17aea9",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/049459d0bdd002836d81daeabefa93613304204bd7b5b3a06287dc820b9d32c8",
+     :origin-facet-ids
+     ["R12/facet/f5453a8f556cfc793a49d75984fd72193632447f61ba26ad7897616e9ec9d5b4"],
+     :id "facet/runtime-domains-schema/r12/dd04190e17a86f68d938703a",
+     :kind :context,
+     :document-id "R12",
+     :end-byte 2116,
+     :end-line 42,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/policy-safe-observation"
+      "runtime/portable-diagnostic-bundle"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1984}
+    {:start-line 43,
+     :raw-sha256
+     "21a25b0773d8a3d62d1f6ccc2f73ce8d0d74b970fcbe6ae2f2de2521f6511c7d",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/049459d0bdd002836d81daeabefa93613304204bd7b5b3a06287dc820b9d32c8",
+     :origin-facet-ids
+     ["R12/facet/6e57e0519d7653a5dba70a6bf8711494368f62a1eec100868584fa4cfab2c5ab"],
+     :id "facet/runtime-domains-schema/r12/98b772213f9175826b74837f",
+     :kind :context,
+     :document-id "R12",
+     :end-byte 2195,
+     :end-line 43,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/policy-safe-observation"
+      "runtime/portable-diagnostic-bundle"
+      "runtime/service-policy-enforcement"],
+     :start-byte 2116}
+    {:start-line 93,
+     :raw-sha256
+     "2830b4cfcece4536ab4c855f4006effdff2319200083bb1a37da56f3f9c668ab",
+     :unresolved false,
+     :source-occurrence-id
+     "R12/source/87cc7c1109203d2942bfb1b65698f22056e193ee7924c97324df7603092d551d",
+     :origin-facet-ids
+     ["R12/facet/e4825a57cc7de8dde0fc506ccd0fe30cea932d732a427d654b6f2124e1957336"],
+     :id "facet/runtime-domains-schema/r12/2f840d06edcec1eea3b658a8",
+     :kind :condition,
+     :document-id "R12",
+     :end-byte 4050,
+     :end-line 96,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/service-policy-enforcement"],
+     :start-byte 3737}
+    {:start-line 31,
+     :raw-sha256
+     "8b1feb4a0f9c6946a463e3dc20ab2fb2cdf9fb9b3258c43c7bc0bee1a41b6c4f",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/0f5aed9e1ca8cd5636a4374f74153f300effbc3c269369341e900a9004f9c3d2",
+     :origin-facet-ids
+     ["R3/facet/a47d11de25ccef83b1e2f59d769a8d6d4de28945714cf57d247a1c37c9a34f43"],
+     :id "facet/runtime-domains-schema/r3/b95695a3b73f73632eac4f19",
+     :kind :condition,
+     :document-id "R3",
+     :end-byte 1562,
+     :end-line 32,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 1421}
+    {:start-line 39,
+     :raw-sha256
+     "02bfe6371ac30f91d83469755cef7bc3a15afe1027a8ae6050eedda9b2c2a958",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/622059aefcfd47d705475a7587b75faf4680fb2741091afbf3f96fb7a67c994c"],
+     :id "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 1787,
+     :end-line 39,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1752}
+    {:start-line 40,
+     :raw-sha256
+     "2f63c577ad1e462d33d658b393a1fe65e9a496337aae10ada267a2ff87a2c8ca",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/39123e8bba75b6857a0b79b4470fae0720ebc4bbd9e93817e1bbe5223975f2cb"],
+     :id "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 1873,
+     :end-line 41,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1787}
+    {:start-line 42,
+     :raw-sha256
+     "987d3934ae9c41cac69db4dbd645ec37b84e560c664d69736cbbbe13a5ddd178",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/76882896be788e714dd8499b464ebc24294f859d28383a386e38d4d13264e532"],
+     :id "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 2027,
+     :end-line 43,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1873}
+    {:start-line 44,
+     :raw-sha256
+     "45a8a47ce1acdaca787565276db5bbe53800b35d3d5718e731fedfb17209778c",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/4c5648cac0fa90867d2b725662049d73bd7c8b85421770c1c706a2db51b465ab"],
+     :id "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 2147,
+     :end-line 45,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 2027}
+    {:start-line 57,
+     :raw-sha256
+     "0dd082106e197b93c4a0b0aa458c7754bf185a441e26dee368bed652ee753cb1",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/3cb508df523ac0ee2597c44b18a8a3460c5be3fc62cda54ba4d0847c644f3889",
+     :origin-facet-ids
+     ["R3/facet/6cc52f6aad98b0adeb2d19e5986f8149fb26e0e5167e09791bd2bfbcf40e10f5"],
+     :id "facet/runtime-domains-schema/r3/a3d56638a0f1321eb70348aa",
+     :kind :artifact,
+     :document-id "R3",
+     :end-byte 2454,
+     :end-line 57,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 2417}
+    {:start-line 59,
+     :raw-sha256
+     "04e7bde76404290d7983354f4ee08ce2e1572bbb3cd1bd8a034cf22f46b88aa1",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/3cb508df523ac0ee2597c44b18a8a3460c5be3fc62cda54ba4d0847c644f3889",
+     :origin-facet-ids
+     ["R3/facet/8ad2a955ee6dc611b5b96d4192b37473dc55422d092a7bf09a780c12412685cc"],
+     :id "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa",
+     :kind :artifact,
+     :document-id "R3",
+     :end-byte 2524,
+     :end-line 59,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 2486}
+    {:start-line 89,
+     :raw-sha256
+     "dd846cbb9f3cb427ee7a9ecb60a0784f8a4ccba0f6d64bbc2f680a414b5d6229",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/f4514abaf532c855f4a9840289d6aa1939d87fd8ef0bbb8b8145378590079e0d",
+     :origin-facet-ids
+     ["R3/facet/5208b032fee5f604a7aa5626737821f9b08e63e4591a0e22e97e8bf4c7637a0b"],
+     :id "facet/runtime-domains-schema/r3/725d287dfccf95abe8ffa6f8",
+     :kind :condition,
+     :document-id "R3",
+     :end-byte 3407,
+     :end-line 89,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 3364}
+    {:start-line 104,
+     :raw-sha256
+     "0d03d1165f2935592817ed7e9610a0529ecf76aa41c50e0895268183542db636",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/537bd456a72199812f369b60e4fa3772b3f34211ffcda875b3a02d7bc75b4921",
+     :origin-facet-ids
+     ["R3/facet/722547ea10bca6db9634f8ae36d0c28d2f57908a225db8a2359294208a349d69"],
+     :id "facet/runtime-domains-schema/r3/44c61258618e4acb6dbcb91d",
+     :kind :condition,
+     :document-id "R3",
+     :end-byte 4258,
+     :end-line 108,
+     :unit-ids
+     ["runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/failure-strategy"],
+     :start-byte 3922}
+    {:start-line 120,
+     :raw-sha256
+     "2f2ad058af2584ba3c507ec100234fb95ad05645f68688033aad250adcc28ffb",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/ccc63eb2a0a3027b4e59280d4d416c5ef5e3e1bef9e81dbeae51e7c1d125dc9f",
+     :origin-facet-ids
+     ["R3/facet/578da6cac0d06aa6e38c366b3aef85c1368d435994c2e197a81ab83b5dad4b10"],
+     :id "facet/runtime-domains-schema/r3/c38948bfaf366b1f65b869de",
+     :kind :diagnostic,
+     :document-id "R3",
+     :end-byte 4846,
+     :end-line 121,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 4748}
+    {:start-line 126,
+     :raw-sha256
+     "e6468db4c50a44f2272ae97ac411867533d61242bb4a62f67f984f6e142abc66",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/56518bf5469fe80f1009ba82e245068eaa9e959c4e1fa9472bf55fd0200614a7",
+     :origin-facet-ids
+     ["R3/facet/7753ce864d59800552faa4d0ca10ac2a1853194c2edac2904b803084c9e730ef"],
+     :id "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748",
+     :kind :diagnostic,
+     :document-id "R3",
+     :end-byte 5140,
+     :end-line 127,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 4995}
+    {:start-line 139,
+     :raw-sha256
+     "a73e433799a988724831740e67b15cfc4e667c6aa5c5cc1fa5f6a54886dee23e",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/63b6bbc0b804a434cbcd3098a8092508e7392d12e8da4181e95b1329bdb11035",
+     :origin-facet-ids
+     ["R3/facet/8944ce1c4c63eb2d007504b9f3ece466c8037790e7a4c9653aa95dda0774ce04"],
+     :id "facet/runtime-domains-schema/r3/3a73676752bcbcccfcf00f3c",
+     :kind :negative-case,
+     :document-id "R3",
+     :end-byte 5531,
+     :end-line 140,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 5424}
+    {:start-line 152,
+     :raw-sha256
+     "6729ba803c1d7aa3de77dfe2e97ca4d11916e06d4ef3f595a94db1358ec2fe17",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/c72c2948d88565303143708a5a6a37de9b2ff11c6b57f3236100d8af40c2c1f2",
+     :origin-facet-ids
+     ["R3/facet/c2ad6be3dd09dead1e946e3698df9cced163e4df6cbb40bebb7d3deff89b0723"],
+     :id "facet/runtime-domains-schema/r3/8d8354f4993893269b3557ab",
+     :kind :acceptance-case,
+     :document-id "R3",
+     :end-byte 5936,
+     :end-line 152,
+     :unit-ids ["runtime/debug-service-selection"],
+     :start-byte 5894}
+    {:start-line 20,
+     :raw-sha256
+     "8b5342b2c4ea517679cc7dfebd52a13aab247b358eaf42f4247e2fe4deca4197",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/0c3fd611d2ed4dbbd2ebe174352e3e15bc3b6c1190b8fd5a5bc6cec6c7b8b952",
+     :origin-facet-ids
+     ["R5/facet/533e6b9004fe6c7edcc252a981f25dd1a5aacdff2d274a289f500cbd94352190"],
+     :id "facet/runtime-domains-schema/r5/8bd05031c35740a6efa5e390",
+     :kind :condition,
+     :document-id "R5",
+     :end-byte 951,
+     :end-line 22,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 727}
+    {:start-line 32,
+     :raw-sha256
+     "9150092d2037f40b20766d6b7a6810786268050b10b3ac0df4212b7c0f2691cc",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/0c3fd611d2ed4dbbd2ebe174352e3e15bc3b6c1190b8fd5a5bc6cec6c7b8b952",
+     :origin-facet-ids
+     ["R5/facet/ce27454acb68bb9fd440425812b98a19849f2d64a569c4fc08812019a3bb488b"],
+     :id "facet/runtime-domains-schema/r5/ef46cf2ef0c169c84f46c27b",
+     :kind :condition,
+     :document-id "R5",
+     :end-byte 1587,
+     :end-line 33,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 1479}
+    {:start-line 38,
+     :raw-sha256
+     "e3b7b0eed1816712bd4297066edc2e3faf8a167b68897a0171a25d0f6eca6cfa",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/f6ca27b5fbc53817a9914529075c70979c7aa74ac37a92a494d8a3f5d0a47978",
+     :origin-facet-ids
+     ["R5/facet/7bae26ad93fd16807be0bd391b14d9cf8c118c55c5fd8912b261c031108c6fed"],
+     :id "facet/runtime-domains-schema/r5/558fa98bf4831cecd7b11cd3",
+     :kind :context,
+     :document-id "R5",
+     :end-byte 1855,
+     :end-line 40,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/device-memory-transfer"
+      "runtime/metadata-preservation"
+      "runtime/region-lifetime"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1676}
+    {:start-line 41,
+     :raw-sha256
+     "e2806cc20340a5fe98faf9f3fdcfdaaa0884f455f731e6d8c1997013ccb0835a",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/f6ca27b5fbc53817a9914529075c70979c7aa74ac37a92a494d8a3f5d0a47978",
+     :origin-facet-ids
+     ["R5/facet/94f8aa599c51630bf1dd002b5f7e93ff1716b2659834bd2eb9241d8ed98dbc06"],
+     :id "facet/runtime-domains-schema/r5/68d71a6a45ab44eb416b6518",
+     :kind :context,
+     :document-id "R5",
+     :end-byte 1940,
+     :end-line 42,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/device-memory-transfer"
+      "runtime/metadata-preservation"
+      "runtime/region-lifetime"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1855}
+    {:start-line 43,
+     :raw-sha256
+     "1c416ee19272d7296a8532c79b00a7b9b3be4cc3dbea0adea992ae842798ec51",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/f6ca27b5fbc53817a9914529075c70979c7aa74ac37a92a494d8a3f5d0a47978",
+     :origin-facet-ids
+     ["R5/facet/6979b999bda44d06e122b14df68bac06ecaefe7ad444fec05c0570e0e3184e4e"],
+     :id "facet/runtime-domains-schema/r5/7240538dbde5eb3d8d689706",
+     :kind :context,
+     :document-id "R5",
+     :end-byte 2043,
+     :end-line 44,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/device-memory-transfer"
+      "runtime/metadata-preservation"
+      "runtime/region-lifetime"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1940}
+    {:start-line 56,
+     :raw-sha256
+     "a01d9569da45fabac30936b08568f59e39c06177bd166d5f2fd6b8ee92824449",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/0fb97c240654dc08d220f2db1d7298c793a31426e818bc1645f422a72d7e0f8e",
+     :origin-facet-ids
+     ["R5/facet/590e071104d8cae83d26e74208a8f70611b5b32987d95dfbff5b214b89017992"],
+     :id "facet/runtime-domains-schema/r5/6653468e263aa3f53dff62bf",
+     :kind :artifact,
+     :document-id "R5",
+     :end-byte 2366,
+     :end-line 56,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 2333}
+    {:start-line 61,
+     :raw-sha256
+     "6a605f6189598e5fd3f6eacbc120f3f16df9adefbbda9d93d7e31123aaf484ed",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/cb7aa73b3264e48a6149153cf3e4528ae1c074cd8bd930e0c1eaac18bca2dc42",
+     :origin-facet-ids
+     ["R5/facet/b567f06997a0f5bada9f21be0bc3c0ae4d4b50fca0c23f2e01277bd3b11161a3"],
+     :id "facet/runtime-domains-schema/r5/8c56ccd8a485eafc06313f40",
+     :kind :example,
+     :document-id "R5",
+     :end-byte 2755,
+     :end-line 72,
+     :unit-ids
+     ["runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/metadata-preservation"
+      "runtime/region-lifetime"],
+     :start-byte 2419}
+    {:start-line 105,
+     :raw-sha256
+     "98189df3ec6a50226722d0f9f184776ebe04a64f59e7c3366d240c20ff0ea410",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/6eb26d8e16585155c14957bbcf99aa3e3cab10fed1bf13aa05d44154bace6bc3",
+     :origin-facet-ids
+     ["R5/facet/7d66d0850d8ceb1146fee115609b7eca14dd713c1f1e1ffc2fc76514fdb513fd"],
+     :id "facet/runtime-domains-schema/r5/d1e97e4fb4edb7b7a8c7d7e4",
+     :kind :condition,
+     :document-id "R5",
+     :end-byte 3448,
+     :end-line 105,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 3412}
+    {:start-line 111,
+     :raw-sha256
+     "ee2b1b601660203caf15f40d8c1bb5e1e6761df80deb0ae11b3b27e7531d49bf",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/b63b5271b3ae3490868606efcd10f84b6b1974adf19ea81add3cf0a9d3ed9cbe",
+     :origin-facet-ids
+     ["R5/facet/0d1331a7cf357b7ba4df3f9e821d136aaccc430a25fc4dc7e0cf04062c57e1b2"],
+     :id "facet/runtime-domains-schema/r5/b44dfc71b22489000ec5321f",
+     :kind :condition,
+     :document-id "R5",
+     :end-byte 3747,
+     :end-line 113,
+     :unit-ids
+     ["runtime/check-proof-preservation"
+      "runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 3554}
+    {:start-line 136,
+     :raw-sha256
+     "8c6522b558b10982666306b3e7cf4e908b9515e29092fec5f798f4bdbaa378da",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/40a4ec9d19ddd1225b47f0e925234c166702ba03fb404fd4712b2a513d277bcd",
+     :origin-facet-ids
+     ["R5/facet/080934db58fe74baa56fd91115d9b5a3845f3732221c65b21a97357fab751f16"],
+     :id "facet/runtime-domains-schema/r5/1726520c1b36d2b26d50a0fb",
+     :kind :diagnostic,
+     :document-id "R5",
+     :end-byte 4792,
+     :end-line 136,
+     :unit-ids
+     ["runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 4711}
+    {:start-line 166,
+     :raw-sha256
+     "0ab7fd2de8ee05fdcfe4258b334dd476ca054f58670ad5e239140035d555bcc4",
+     :unresolved false,
+     :source-occurrence-id
+     "R5/source/06630024c86052339615b7f2ef6c4f35a7229d550ec73c62db32a7da081ecdd3",
+     :origin-facet-ids
+     ["R5/facet/80d7ee8e4706c62cfc13271dee7c51aa9c5b6b2bcabadf6d417591b5c66c3462"],
+     :id "facet/runtime-domains-schema/r5/912748b3bb917e4c5320d302",
+     :kind :acceptance-case,
+     :document-id "R5",
+     :end-byte 5887,
+     :end-line 166,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/debug-service-selection"
+      "runtime/metadata-preservation"],
+     :start-byte 5843}],
+   :status "Open",
+   :id "runtime/debug-service-selection",
+   :partition-record
+   {:primary-source-contract "R12",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r12/c3ec6aff11ad49e4499396a1"
+     "facet/runtime-domains-schema/r12/3dc4f6fe3cb5928e17583954"
+     "facet/runtime-domains-schema/r12/bdfa780a7dc6f43f8ddd91b4"
+     "facet/runtime-domains-schema/r12/be98c9017aa450a556010d6f"
+     "facet/runtime-domains-schema/r12/dd04190e17a86f68d938703a"
+     "facet/runtime-domains-schema/r12/98b772213f9175826b74837f"
+     "facet/runtime-domains-schema/r12/2f840d06edcec1eea3b658a8"
+     "facet/runtime-domains-schema/r3/b95695a3b73f73632eac4f19"
+     "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329"
+     "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a"
+     "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0"
+     "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7"
+     "facet/runtime-domains-schema/r3/a3d56638a0f1321eb70348aa"
+     "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa"
+     "facet/runtime-domains-schema/r3/725d287dfccf95abe8ffa6f8"
+     "facet/runtime-domains-schema/r3/44c61258618e4acb6dbcb91d"
+     "facet/runtime-domains-schema/r3/c38948bfaf366b1f65b869de"
+     "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748"
+     "facet/runtime-domains-schema/r3/3a73676752bcbcccfcf00f3c"
+     "facet/runtime-domains-schema/r3/8d8354f4993893269b3557ab"
+     "facet/runtime-domains-schema/r5/8bd05031c35740a6efa5e390"
+     "facet/runtime-domains-schema/r5/ef46cf2ef0c169c84f46c27b"
+     "facet/runtime-domains-schema/r5/558fa98bf4831cecd7b11cd3"
+     "facet/runtime-domains-schema/r5/68d71a6a45ab44eb416b6518"
+     "facet/runtime-domains-schema/r5/7240538dbde5eb3d8d689706"
+     "facet/runtime-domains-schema/r5/6653468e263aa3f53dff62bf"
+     "facet/runtime-domains-schema/r5/8c56ccd8a485eafc06313f40"
+     "facet/runtime-domains-schema/r5/d1e97e4fb4edb7b7a8c7d7e4"
+     "facet/runtime-domains-schema/r5/b44dfc71b22489000ec5321f"
+     "facet/runtime-domains-schema/r5/1726520c1b36d2b26d50a0fb"
+     "facet/runtime-domains-schema/r5/912748b3bb917e4c5320d302"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Exclude debug-only services from release artifacts unless explicitly allowed/marked, and prevent debug facilities from performing undeclared external effects.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/debug-service-selection",
+    :historical-record-sha256
+    "40f2fb748ecaba601b2c9443a251dd75f012c27a330d3a46b12c097e9676bdc6",
+    :source-facet-records-sha256
+    "3910e4231dd29a73ef020acba41894775824e011b88bcac0f6d50e9d0eafb059",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "Select debug services explicitly for each native/managed runtime and release policy. Show a debug artifact and release artifact whose service/helper manifests expose exactly the selected stack/allocation/check/trace hooks; debug-only services are absent in release unless policy explicitly allows and marks them. Preserve source/check/allocation/provider/lifetime/release identity and proof-elision metadata. Stack diagnostics are capability-neutral unless an external lookup is enabled: reject undeclared filesystem, environment, network or symbol-server access, unmarked debug services and lost source/provenance; required safety checks cannot disappear with debug instrumentation. Provider debug manifests retain profile support, allocation effects, layout/alignment, failure/lifetime/deallocation strategy and unsafe boundaries; traces retain allocation site, resource ID and release site, including selected borrow-debug checks. Enforce sink grants and redact secrets, credentials, prompts, model outputs, user/tainted inputs, raw memory, environment values, package tokens, database rows and deployment identifiers; local logging permission cannot authorize network telemetry.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r12/c3ec6aff11ad49e4499396a1"
+     "facet/runtime-domains-schema/r12/3dc4f6fe3cb5928e17583954"
+     "facet/runtime-domains-schema/r12/bdfa780a7dc6f43f8ddd91b4"
+     "facet/runtime-domains-schema/r12/be98c9017aa450a556010d6f"
+     "facet/runtime-domains-schema/r12/dd04190e17a86f68d938703a"
+     "facet/runtime-domains-schema/r12/98b772213f9175826b74837f"
+     "facet/runtime-domains-schema/r12/2f840d06edcec1eea3b658a8"
+     "facet/runtime-domains-schema/r3/b95695a3b73f73632eac4f19"
+     "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329"
+     "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a"
+     "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0"
+     "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7"
+     "facet/runtime-domains-schema/r3/a3d56638a0f1321eb70348aa"
+     "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa"
+     "facet/runtime-domains-schema/r3/725d287dfccf95abe8ffa6f8"
+     "facet/runtime-domains-schema/r3/44c61258618e4acb6dbcb91d"
+     "facet/runtime-domains-schema/r3/c38948bfaf366b1f65b869de"
+     "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748"
+     "facet/runtime-domains-schema/r3/3a73676752bcbcccfcf00f3c"
+     "facet/runtime-domains-schema/r3/8d8354f4993893269b3557ab"
+     "facet/runtime-domains-schema/r5/8bd05031c35740a6efa5e390"
+     "facet/runtime-domains-schema/r5/ef46cf2ef0c169c84f46c27b"
+     "facet/runtime-domains-schema/r5/558fa98bf4831cecd7b11cd3"
+     "facet/runtime-domains-schema/r5/68d71a6a45ab44eb416b6518"
+     "facet/runtime-domains-schema/r5/7240538dbde5eb3d8d689706"
+     "facet/runtime-domains-schema/r5/6653468e263aa3f53dff62bf"
+     "facet/runtime-domains-schema/r5/8c56ccd8a485eafc06313f40"
+     "facet/runtime-domains-schema/r5/d1e97e4fb4edb7b7a8c7d7e4"
+     "facet/runtime-domains-schema/r5/b44dfc71b22489000ec5321f"
+     "facet/runtime-domains-schema/r5/1726520c1b36d2b26d50a0fb"
+     "facet/runtime-domains-schema/r5/912748b3bb917e4c5320d302"],
+    :historical-obligation
+    "Exclude debug-only services from release artifacts unless explicitly allowed/marked, and prevent debug facilities from performing undeclared external effects.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/debug-service-selection",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Lower artifact/source maps"
+    "Auth effect grants"
+    "Legality selected services"
+    "Runtime observability"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/family-composition/acceptance",
+   :acceptance-and-rejection-outputs
+   ["allowed/rejected composition matrix"
+    "family-selection and service-table artifacts"
+    "incompatible-profile/package and hidden-service diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 37,
+     :raw-sha256
+     "747d7fc36baca118044cdee44eae5f34be11a1f2511db28fb3294a399361e1d8",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/f48bda6a1fafe91e0ff99cebc4f94f512a202640b69c6a55ef7d82479176cef8"],
+     :id "facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1689,
+     :end-line 37,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1622}
+    {:start-line 38,
+     :raw-sha256
+     "3e872ccad887d0d9c6d62fd1c9e23f9c95b45522f7121610e33919a7c481542b",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/7ee46134e6b75b28e43464ec53fe63c6876ae4e8c35d97c2e526a93cc2255902"],
+     :id "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1781,
+     :end-line 39,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1689}
+    {:start-line 40,
+     :raw-sha256
+     "d81fff79002ea97f4cad8d6d64568a001769fc07a5c789620cc12e5d95b98fa3",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/47b727aaa1620c7a3e002b0ad4710f1c824f8ba25bc5cf9502b051742cdbfbe3"],
+     :id "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1873,
+     :end-line 41,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1781}
+    {:start-line 42,
+     :raw-sha256
+     "cbf1bee445b6f63f047e366bcae7ae10bb609e0f945fdf4684a9b2cd5ec03792",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/293aa295dc3fe59bd20e820ebc26004a86b4e9ab4e160f5e9c13d28fa2b2350b"],
+     :id "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1926,
+     :end-line 42,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1873}
+    {:start-line 43,
+     :raw-sha256
+     "f3be6146fbb641a42f43fe239bd9473364b4d3e03001689f4f57af7ace909b47",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/ffe70d63ec80026b3f3f1f32b7b677e6022ef0be086ca1d1abff83e1f0b78e0d"],
+     :id "facet/runtime-domains-schema/r1/74715a508f311335d7b59940",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 2027,
+     :end-line 44,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1926}
+    {:start-line 57,
+     :raw-sha256
+     "eaafd7a9e15c284d564a50727e5f150c784603b3604ef115364e1a8d840d9da2",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/c074eddf2c4de4d7e2c4d3b528e5b92635f5abff0d1d4ce396c30cffe5fd7c7c",
+     :origin-facet-ids
+     ["R1/facet/42c66a358a349c3011efe480159a258cdcf798a4ef548cef1fe73bc1eadc3375"],
+     :id "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974",
+     :kind :artifact,
+     :document-id "R1",
+     :end-byte 2364,
+     :end-line 57,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 2335}
+    {:start-line 58,
+     :raw-sha256
+     "513eb0343a536829bf19557dcf7d0b52d43b835a8be473fa70b893335ef572f8",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/c074eddf2c4de4d7e2c4d3b528e5b92635f5abff0d1d4ce396c30cffe5fd7c7c",
+     :origin-facet-ids
+     ["R1/facet/f87a46d0e979697b7e60892a02e97262cb42aa72ff1f00870e560aee91ce921c"],
+     :id "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89",
+     :kind :artifact,
+     :document-id "R1",
+     :end-byte 2396,
+     :end-line 58,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 2364}
+    {:start-line 95,
+     :raw-sha256
+     "d9a3d635f60c45f975c8a4aed8d74d1434ec85d032ccdd9d85d10eb6a1be9026",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/773b3ae0132c02c0f2d5a4f72da6edfeaa2af4795faf5068733da5ede55d6b0b",
+     :origin-facet-ids
+     ["R1/facet/c999ec79736865710ba78a6c9ade4e26331562b6d53fb924c13ef9a2d279dfc8"],
+     :id "facet/runtime-domains-schema/r1/38c95913aba636ebbf699217",
+     :kind :condition,
+     :document-id "R1",
+     :end-byte 3807,
+     :end-line 96,
+     :unit-ids ["runtime/family-composition"],
+     :start-byte 3712}
+    {:start-line 146,
+     :raw-sha256
+     "2f11b6ef06e5e860c859636abd6b4303389fdc2605d83e65557055a602bf24a1",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/637046ea4f9e2e39950daa50b7f284aa3229909bb02289998f82163884fe022c",
+     :origin-facet-ids
+     ["R1/facet/e7163ee17fd7369504d340ff1b051ead3500785d4a1f24ea66b877dd292ac963"],
+     :id "facet/runtime-domains-schema/r1/8c9183a4287f266155907717",
+     :kind :diagnostic,
+     :document-id "R1",
+     :end-byte 6147,
+     :end-line 147,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 6000}],
+   :status "Open",
+   :id "runtime/family-composition",
+   :partition-record
+   {:primary-source-contract "R1",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809"
+     "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1"
+     "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94"
+     "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e"
+     "facet/runtime-domains-schema/r1/74715a508f311335d7b59940"
+     "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974"
+     "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89"
+     "facet/runtime-domains-schema/r1/38c95913aba636ebbf699217"
+     "facet/runtime-domains-schema/r1/8c9183a4287f266155907717"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Permit runtime-family composition only when selected profiles and package policy allow the combination.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/family-composition",
+    :historical-record-sha256
+    "a56a1f4a548046b0e53c22dc3909c05e2c91b58dae2446266b1a8514456b92e7",
+    :source-facet-records-sha256
+    "15a04832ad2cc3e61f09f890059b392511cfa865fd18f0ce41cfe19d2883c15c",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "For each claimed profile/target pair, resolve the selected combination of R1 runtime families under profile compatibility and package policy, emitting the family-selection record and linked/generated/delegated/external/forbidden service table. Exercise an allowed combination and reject incompatible combinations, undeclared providers and hidden universal-runtime dependencies. Every selected service and typed host adapter retains its effects, capability hook or applicable static proof, startup/failure model and provenance; listing families without checking the combination is not acceptance.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809"
+     "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1"
+     "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94"
+     "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e"
+     "facet/runtime-domains-schema/r1/74715a508f311335d7b59940"
+     "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974"
+     "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89"
+     "facet/runtime-domains-schema/r1/38c95913aba636ebbf699217"
+     "facet/runtime-domains-schema/r1/8c9183a4287f266155907717"],
+    :historical-obligation
+    "Permit runtime-family composition only when selected profiles and package policy allow the combination.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/family-composition",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Legality profile compatibility"
+    "Build package policy"
+    "Lower target/provider requirements"
+    "Auth authority facts"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/foreign-symbol-resolution/acceptance",
+   :acceptance-and-rejection-outputs
+   ["declared-symbol resolution and admitted-loading records"
+    "target ABI/layout and generated-adapter evidence"
+    "symbol/provider/ABI and loading-policy diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 23,
+     :raw-sha256
+     "bdc5330ccfa3ba94ed7225cc531a8a7adc7d93e9ae983d7a8b82cee45977f6fe",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/5e4eb80646a8abc657d693dfb235aa8d03b044b89ca432bc210fa9edb631f159",
+     :origin-facet-ids
+     ["R10/facet/6a2878f60896c565503b149e8f7ce7b48f0a0c5eabc897c55a3214ba78bc903e"],
+     :id "facet/runtime-domains-schema/r10/7bedfdf2be2900fb836d788f",
+     :kind :condition,
+     :document-id "R10",
+     :end-byte 1078,
+     :end-line 25,
+     :unit-ids
+     ["runtime/foreign-symbol-resolution"
+      "runtime/service-policy-enforcement"],
+     :start-byte 902}
+    {:start-line 36,
+     :raw-sha256
+     "f3f856ba390abfd7380209b9ddcb731046f349a8338b57f6bf218bf4b25d037f",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/5e4eb80646a8abc657d693dfb235aa8d03b044b89ca432bc210fa9edb631f159",
+     :origin-facet-ids
+     ["R10/facet/51dea83757a2a17919a0fe3b111b4119b514c4b0efbd000be1781517b4d5b123"],
+     :id "facet/runtime-domains-schema/r10/58a8ee404e4262c4ac4d7c87",
+     :kind :condition,
+     :document-id "R10",
+     :end-byte 1783,
+     :end-line 37,
+     :unit-ids
+     ["runtime/foreign-symbol-resolution"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1698}
+    {:start-line 41,
+     :raw-sha256
+     "e73d15994a3cc9d89a335a90bbdeaf7f77598643f07cbb1c320a64bb00320edc",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/d83a5704ca8295b9093245b5c0f8815b3e4f1d7b1ad211eb96033d34160883d6",
+     :origin-facet-ids
+     ["R10/facet/209fbd2513b1bf7e99c7487d5019a953b68123c74a4f1f86ec9e327233857506"],
+     :id "facet/runtime-domains-schema/r10/b570edd5372f5706f17d2709",
+     :kind :context,
+     :document-id "R10",
+     :end-byte 1886,
+     :end-line 42,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/foreign-boundary-preservation"
+      "runtime/foreign-call-adaptation"
+      "runtime/foreign-callback-entry"
+      "runtime/foreign-symbol-resolution"
+      "runtime/metadata-preservation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1801}
+    {:start-line 43,
+     :raw-sha256
+     "a599e60a030e9539080f7372a93d33565d8d9dcfd391c51f4d01553cf5ff2920",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/d83a5704ca8295b9093245b5c0f8815b3e4f1d7b1ad211eb96033d34160883d6",
+     :origin-facet-ids
+     ["R10/facet/2bef799741aac207db622b23afc6724e28461d46dfb827db9903c07034cbbe6c"],
+     :id "facet/runtime-domains-schema/r10/9f70c3ea07b3a36595bb5de6",
+     :kind :context,
+     :document-id "R10",
+     :end-byte 2001,
+     :end-line 44,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/foreign-boundary-preservation"
+      "runtime/foreign-call-adaptation"
+      "runtime/foreign-callback-entry"
+      "runtime/foreign-symbol-resolution"
+      "runtime/metadata-preservation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1886}
+    {:start-line 45,
+     :raw-sha256
+     "f4738e309438c1e47803c998fef4ad090bc74ca32ff9744e0b8d4e7794307c6f",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/d83a5704ca8295b9093245b5c0f8815b3e4f1d7b1ad211eb96033d34160883d6",
+     :origin-facet-ids
+     ["R10/facet/a2f83455eccd1e24487cb19afc2f65581daac243c6347bcb8c2b17ac312a22f3"],
+     :id "facet/runtime-domains-schema/r10/a3af99a8072b0200934d1fa5",
+     :kind :context,
+     :document-id "R10",
+     :end-byte 2100,
+     :end-line 46,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/foreign-boundary-preservation"
+      "runtime/foreign-call-adaptation"
+      "runtime/foreign-callback-entry"
+      "runtime/foreign-symbol-resolution"
+      "runtime/metadata-preservation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 2001}
+    {:start-line 52,
+     :raw-sha256
+     "33e34eb1d64744a21dee12d7d9546964c9cb5d9ab5bf25aeb2c115db5b5c699b",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/211fb1126ec41fe57587634059b5ebb9e609b1d1a1492b37cfc54701f8f5a1c4",
+     :origin-facet-ids
+     ["R10/facet/817d35b74409c26a580aee166e413e313974eb0bfb9dca6f704fbfb0787ebac4"],
+     :id "facet/runtime-domains-schema/r10/67685c6d907af13933161ef5",
+     :kind :artifact,
+     :document-id "R10",
+     :end-byte 2199,
+     :end-line 52,
+     :unit-ids ["runtime/foreign-symbol-resolution"],
+     :start-byte 2171}
+    {:start-line 126,
+     :raw-sha256
+     "d950da4e86b45e6f2ee0c323bee6eecb36b39d8f987d374341992d126c14cc8b",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/ae0fd9495f9ea0cb4a57d38bf9f698fa723ccecb981ec9f4b42575b7a811c282",
+     :origin-facet-ids
+     ["R10/facet/5dbc4e7af991eb065632376ae699a629d97a55d553dca90f9ae1e7918af8fe48"],
+     :id "facet/runtime-domains-schema/r10/926d9e9f96dcdec786e8e116",
+     :kind :diagnostic,
+     :document-id "R10",
+     :end-byte 4884,
+     :end-line 126,
+     :unit-ids
+     ["runtime/foreign-symbol-resolution"
+      "runtime/service-policy-enforcement"],
+     :start-byte 4808}
+    {:start-line 151,
+     :raw-sha256
+     "39e3d1ae329d7f09b07baff254521b14293b45c5301258b8bbfa3fae673cfe38",
+     :unresolved false,
+     :source-occurrence-id
+     "R10/source/0ef0caeb7ac2bb5e7146f0cb0d823470d7e54674d57f08827c4e3859cb307840",
+     :origin-facet-ids
+     ["R10/facet/f6d082c827ad0013eb126f807bb037ebee69b7f41c67f0138f12c0405f0a107f"],
+     :id "facet/runtime-domains-schema/r10/6a177fda7f297cb19fcb2de4",
+     :kind :acceptance-case,
+     :document-id "R10",
+     :end-byte 5626,
+     :end-line 151,
+     :unit-ids
+     ["runtime/foreign-call-adaptation"
+      "runtime/foreign-symbol-resolution"],
+     :start-byte 5583}],
+   :status "Open",
+   :id "runtime/foreign-symbol-resolution",
+   :partition-record
+   {:primary-source-contract "R10",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r10/7bedfdf2be2900fb836d788f"
+     "facet/runtime-domains-schema/r10/58a8ee404e4262c4ac4d7c87"
+     "facet/runtime-domains-schema/r10/b570edd5372f5706f17d2709"
+     "facet/runtime-domains-schema/r10/9f70c3ea07b3a36595bb5de6"
+     "facet/runtime-domains-schema/r10/a3af99a8072b0200934d1fa5"
+     "facet/runtime-domains-schema/r10/67685c6d907af13933161ef5"
+     "facet/runtime-domains-schema/r10/926d9e9f96dcdec786e8e116"
+     "facet/runtime-domains-schema/r10/6a177fda7f297cb19fcb2de4"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Resolve foreign symbols and dynamically load libraries only under declared package/deployment policy and provider identity.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/foreign-symbol-resolution",
+    :historical-record-sha256
+    "e0dfd85e8bc2e03aa18d1b5efc50102671c6d7769edd596d1d6d951acc10e98a",
+    :source-facet-records-sha256
+    "28bc2f024fffcf2e8e4b8a03dc5a3a08d871a059a0e4a8286e315c5302491f2b",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "Resolve a declared foreign symbol and dynamically load an admitted library/module only under package/deployment policy, the named provider/library/version identity and required effects/grants. Emit the binding, symbol-resolution and generated-adapter records tied to target ABI, calling convention, layout/alignment and source/unsafe audit. Positive fixtures resolve the admitted identity through its safe wrapper/provider; negative fixtures reject wrong/missing symbols, mismatched ABI/layout/provider identity and ungranted or policy-denied dynamic loading. Resolution/loading does not bypass nullability, lifetime/ownership, callback affinity/taint or foreign error conversion contracts. Preserve the delivered split between resolution and loading as two criteria within this same task, without accepting an alias or retiring their history.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r10/7bedfdf2be2900fb836d788f"
+     "facet/runtime-domains-schema/r10/58a8ee404e4262c4ac4d7c87"
+     "facet/runtime-domains-schema/r10/b570edd5372f5706f17d2709"
+     "facet/runtime-domains-schema/r10/9f70c3ea07b3a36595bb5de6"
+     "facet/runtime-domains-schema/r10/a3af99a8072b0200934d1fa5"
+     "facet/runtime-domains-schema/r10/67685c6d907af13933161ef5"
+     "facet/runtime-domains-schema/r10/926d9e9f96dcdec786e8e116"
+     "facet/runtime-domains-schema/r10/6a177fda7f297cb19fcb2de4"],
+    :historical-obligation
+    "Resolve foreign symbols and dynamically load libraries only under declared package/deployment policy and provider identity.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/foreign-symbol-resolution",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Build package/deployment/library identity"
+    "Lower ABI/layout"
+    "Auth loading/foreign-call grants"
+    "Ownership accepted wrappers and callback contracts"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/hot-reload-invalidation/acceptance",
+   :acceptance-and-rejection-outputs
+   ["change-to-invalidation and hot-reload records"
+    "preserved/restarted runtime-state evidence"
+    "stale-artifact, untracked-state and debug-denial diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 10,
+     :raw-sha256
+     "9e459b6fb6985173379b8794a77c3e7c94438bf0b7dcfa27ef29257d3f96eb5c",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/edc6d2662211d444d1b6376f5956b11bc3d49e4b030d8d51b43af01a3389c7d6",
+     :origin-facet-ids
+     ["R9/facet/919ad86b46a4720753366296d0b102756f3381828d124754fb3434ef5d342f58"],
+     :id "facet/runtime-domains-schema/r9/998932561ad33c9c759dedfb",
+     :kind :condition,
+     :document-id "R9",
+     :end-byte 590,
+     :end-line 13,
+     :unit-ids
+     ["runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 333}
+    {:start-line 27,
+     :raw-sha256
+     "9988b9ce2c9ef3970e87b5c8df63d2dfda50711e90ac60881412f2ef57eab2f9",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/b8b06e97f376a566ec3820ffc9cc22d23e7ffeb26be81d2f24a24656f2f93cad",
+     :origin-facet-ids
+     ["R9/facet/b034771702a9c74a8b7c7f45768863b1c6c790932022447e918eab2a97ba468e"],
+     :id "facet/runtime-domains-schema/r9/39812b2a27bf52c8aee8879a",
+     :kind :condition,
+     :document-id "R9",
+     :end-byte 1376,
+     :end-line 29,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1211}
+    {:start-line 36,
+     :raw-sha256
+     "c55cac936874acf820faa9a04b2e72ea821b1e5e5d204656928c63f1c333d3bf",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/b8b06e97f376a566ec3820ffc9cc22d23e7ffeb26be81d2f24a24656f2f93cad",
+     :origin-facet-ids
+     ["R9/facet/18c4f442c88e35d0f257f2dd5e04214c419396decf0a8ea1777e3389bdefb057"],
+     :id "facet/runtime-domains-schema/r9/5b143c5f419af1f0686d993d",
+     :kind :condition,
+     :document-id "R9",
+     :end-byte 1759,
+     :end-line 37,
+     :unit-ids ["runtime/hot-reload-invalidation"],
+     :start-byte 1666}
+    {:start-line 41,
+     :raw-sha256
+     "463fabc00cde3d2085d5aa47c0806872c686448c94b270579bf5f492c559e12d",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/bab12b1341fe6d03be0540c33f21cd7f0a4669ae58a32043ccaa0ef0e887721f",
+     :origin-facet-ids
+     ["R9/facet/a397ba5f843c5753f239cb64a1fa5f6d8e8b80ac985781918298f3df77b4f272"],
+     :id "facet/runtime-domains-schema/r9/b8d1e7c8704e528180faa7aa",
+     :kind :context,
+     :document-id "R9",
+     :end-byte 1855,
+     :end-line 41,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/hot-reload-invalidation"
+      "runtime/interactive-evaluation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1777}
+    {:start-line 42,
+     :raw-sha256
+     "4f8b556f2d53372429536a0f95b4ee8e91a1c8e5916e2f3c9432880f4ff1797e",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/bab12b1341fe6d03be0540c33f21cd7f0a4669ae58a32043ccaa0ef0e887721f",
+     :origin-facet-ids
+     ["R9/facet/6256bdb24b208d6c721ca114d1d3019d54775ad953f3c4f4f5370103333cfc3b"],
+     :id "facet/runtime-domains-schema/r9/3911defd3d7b40e8d8d4fd09",
+     :kind :context,
+     :document-id "R9",
+     :end-byte 1945,
+     :end-line 43,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/hot-reload-invalidation"
+      "runtime/interactive-evaluation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1855}
+    {:start-line 44,
+     :raw-sha256
+     "982cd2499094b88dd48028bb2d9a58b7468eb979a0ccc3890396e87d201df082",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/bab12b1341fe6d03be0540c33f21cd7f0a4669ae58a32043ccaa0ef0e887721f",
+     :origin-facet-ids
+     ["R9/facet/0b6771218a99395a65eb36a436f895a5971269b1d9809fbe1863891b019e27c2"],
+     :id "facet/runtime-domains-schema/r9/512d941231979a93e7b0308c",
+     :kind :context,
+     :document-id "R9",
+     :end-byte 2037,
+     :end-line 45,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/hot-reload-invalidation"
+      "runtime/interactive-evaluation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 1945}
+    {:start-line 46,
+     :raw-sha256
+     "26cfe1fb9c658f19cff7875cb80df3159dd615f11c58c55108d2e04b42c8d34c",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/bab12b1341fe6d03be0540c33f21cd7f0a4669ae58a32043ccaa0ef0e887721f",
+     :origin-facet-ids
+     ["R9/facet/95aac96c389167b7e3dd163aefbb62ff0ee0e749411a38d687da34ccfc853692"],
+     :id "facet/runtime-domains-schema/r9/a12bb02adc6c9ebbe6d2d08e",
+     :kind :context,
+     :document-id "R9",
+     :end-byte 2145,
+     :end-line 47,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/hot-reload-invalidation"
+      "runtime/interactive-evaluation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 2037}
+    {:start-line 59,
+     :raw-sha256
+     "a4b69a954fea9afd6ebfdbbfe4749bc34bea8588d8da63f326bc826dafc60705",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/d84e3198c48cff66dbadd5f38d3753756ba15e1d365ba240030817d02dcc4fe6",
+     :origin-facet-ids
+     ["R9/facet/4599d678ae3c14e887ff548b48c5a42917c9a1513a931f61443a7feb2c9b653d"],
+     :id "facet/runtime-domains-schema/r9/2c2c66e355c76c85fb5e756c",
+     :kind :artifact,
+     :document-id "R9",
+     :end-byte 2407,
+     :end-line 59,
+     :unit-ids
+     ["runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 2372}
+    {:start-line 60,
+     :raw-sha256
+     "e0ff57501c3c950585f6762eaa957337830fcfbcf55d616b1ab888d8523ce53d",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/d84e3198c48cff66dbadd5f38d3753756ba15e1d365ba240030817d02dcc4fe6",
+     :origin-facet-ids
+     ["R9/facet/7b36268863f65068f1f7260899b1a89387ed1b878dd22a6e06b992c42bd3f623"],
+     :id "facet/runtime-domains-schema/r9/e22a348f47a070e8e5d9eb1c",
+     :kind :artifact,
+     :document-id "R9",
+     :end-byte 2428,
+     :end-line 60,
+     :unit-ids ["runtime/hot-reload-invalidation"],
+     :start-byte 2407}
+    {:start-line 65,
+     :raw-sha256
+     "e2a3ea781183c497e6cd22ecdebd847f967e80307cd6723e40e4135a64d5f7cd",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/9b4f6025e5ceb96d8459d520491f29b225d54f0ee69dd803bae0321629134899",
+     :origin-facet-ids
+     ["R9/facet/58c427166af7225b4dba3a6352beea900068972063ed5bea1366ab2fda388e80"],
+     :id "facet/runtime-domains-schema/r9/db6436431064a55322aea761",
+     :kind :example,
+     :document-id "R9",
+     :end-byte 2910,
+     :end-line 75,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 2485}
+    {:start-line 91,
+     :raw-sha256
+     "ae73cb19cec24858d449a90106713547c2cc9adead77a2cc588842c6aeabb811",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/ccb337f51d8b61e7756f0a30e60ea7da1f0c38e91d45fbc4b701f923f5312a3f",
+     :origin-facet-ids
+     ["R9/facet/d65386bd5dddade41eef4cc0b001b6708b4becdbe35217cd4b35ebe758cf0dbd"],
+     :id "facet/runtime-domains-schema/r9/50be64b143689e65852b5d44",
+     :kind :condition,
+     :document-id "R9",
+     :end-byte 3258,
+     :end-line 91,
+     :unit-ids
+     ["integration/build-input-capture"
+      "runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 3227}
+    {:start-line 108,
+     :raw-sha256
+     "48a5065a17796a56b5741c666093e7b2260e6d4a09bc12c62b9ff27a218f98e3",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/78d054015ff37ec51d6a777025024b59481acfc28c9841c6b6c4fbcd0920ddf4",
+     :origin-facet-ids
+     ["R9/facet/40346e57d3be90d794b8b491f21e09f81f381ca003996f67a2ec03eb595eb990"],
+     :id "facet/runtime-domains-schema/r9/6318024c8af3d048b93b3c94",
+     :kind :condition,
+     :document-id "R9",
+     :end-byte 4100,
+     :end-line 112,
+     :unit-ids
+     ["runtime/hot-reload-invalidation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 3765}
+    {:start-line 123,
+     :raw-sha256
+     "cc67d0bbcffcfef190eb8168bd5778de4e4833d97cf7b96e4b1be41ccb627d71",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/6f88124a2d6999868f4f232ae7ea9b57d15e4aff5b7a81361f0922ea3074c3e7",
+     :origin-facet-ids
+     ["R9/facet/a9c09a2d3425c06b769e083f210e7d26925da3bec6f98b602689aaabff4b3e45"],
+     :id "facet/runtime-domains-schema/r9/3c6872e89086e15a4042bdbf",
+     :kind :diagnostic,
+     :document-id "R9",
+     :end-byte 4605,
+     :end-line 124,
+     :unit-ids ["runtime/hot-reload-invalidation"],
+     :start-byte 4505}
+    {:start-line 142,
+     :raw-sha256
+     "c01674eb6894887373537acf4d3340c7edfe09b1ad7da8fc6a4339cf318f86aa",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/05823b898112f337d579df8ae43df60e7f63ee1a531d4e5050672beea86942f5",
+     :origin-facet-ids
+     ["R9/facet/3687b6b216e30cf08138ac1ae2cb81371e911c4cf0888c3c6cd0c1a34f6a4e28"],
+     :id "facet/runtime-domains-schema/r9/eba2cb17245bf345affda7ab",
+     :kind :negative-case,
+     :document-id "R9",
+     :end-byte 5311,
+     :end-line 142,
+     :unit-ids ["runtime/hot-reload-invalidation"],
+     :start-byte 5241}
+    {:start-line 156,
+     :raw-sha256
+     "27054eca45f2c041ad6309ac7e6ec4a2529209e8bcfcbae42aaa3a731060d99a",
+     :unresolved false,
+     :source-occurrence-id
+     "R9/source/f61329447b0ce20e6a016ae4a22f5b62e1055c722c58aa9c71e5f921fba6bf3e",
+     :origin-facet-ids
+     ["R9/facet/50600573a7419b88847f26c82ec4538cf072e008cf1f37398286d15d83da937e"],
+     :id "facet/runtime-domains-schema/r9/f100796c67006bd7f1070959",
+     :kind :acceptance-case,
+     :document-id "R9",
+     :end-byte 5781,
+     :end-line 156,
+     :unit-ids
+     ["runtime/hot-reload-invalidation"
+      "runtime/interactive-evaluation"
+      "runtime/service-policy-enforcement"],
+     :start-byte 5745}],
+   :status "Open",
+   :id "runtime/hot-reload-invalidation",
+   :partition-record
+   {:primary-source-contract "R9",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r9/998932561ad33c9c759dedfb"
+     "facet/runtime-domains-schema/r9/39812b2a27bf52c8aee8879a"
+     "facet/runtime-domains-schema/r9/5b143c5f419af1f0686d993d"
+     "facet/runtime-domains-schema/r9/b8d1e7c8704e528180faa7aa"
+     "facet/runtime-domains-schema/r9/3911defd3d7b40e8d8d4fd09"
+     "facet/runtime-domains-schema/r9/512d941231979a93e7b0308c"
+     "facet/runtime-domains-schema/r9/a12bb02adc6c9ebbe6d2d08e"
+     "facet/runtime-domains-schema/r9/2c2c66e355c76c85fb5e756c"
+     "facet/runtime-domains-schema/r9/e22a348f47a070e8e5d9eb1c"
+     "facet/runtime-domains-schema/r9/db6436431064a55322aea761"
+     "facet/runtime-domains-schema/r9/50be64b143689e65852b5d44"
+     "facet/runtime-domains-schema/r9/6318024c8af3d048b93b3c94"
+     "facet/runtime-domains-schema/r9/3c6872e89086e15a4042bdbf"
+     "facet/runtime-domains-schema/r9/eba2cb17245bf345affda7ab"
+     "facet/runtime-domains-schema/r9/f100796c67006bd7f1070959"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Invalidate affected analysis, syntax/core/MIR/backend/runtime/package artifacts when interactive definitions reload.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/hot-reload-invalidation",
+    :historical-record-sha256
+    "014742cb829bb77d9f5cc43ebfee0ded3a1fad3d32d185ed481a0c774e007e50",
+    :source-facet-records-sha256
+    "d9e13bae5a7b21ef5236ba58bd4103fe22353a4127027b7859c3b9bf0886d708",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "For a changed interactive definition, record changed source, affected namespace/dependency edges and invalidation of stale syntax, analysis, typed core, MIR/domain IR, backend, runtime and package artifacts. Emit a hot-reload/session record distinguishing preserved runtime state from state that must restart, with evaluated-form/source/generated-origin identity. Show an unaffected artifact retained and affected artifacts rebuilt or rejected before reuse; reject a stale analysis/MIR/backend/runtime/package artifact, untracked build-affecting state and debug inspection outside grants/secret policy. Build-affecting session inputs are captured or explicitly nonhermetic; interactive manifests do not imply release runtime support. Build-affecting sessions emit transcripts, evaluated-form artifacts, syntax/core/MIR snapshots, dependency invalidation records and source maps; debug hooks cannot expose raw memory, host process state or model/tool outputs without grants.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r9/998932561ad33c9c759dedfb"
+     "facet/runtime-domains-schema/r9/39812b2a27bf52c8aee8879a"
+     "facet/runtime-domains-schema/r9/5b143c5f419af1f0686d993d"
+     "facet/runtime-domains-schema/r9/b8d1e7c8704e528180faa7aa"
+     "facet/runtime-domains-schema/r9/3911defd3d7b40e8d8d4fd09"
+     "facet/runtime-domains-schema/r9/512d941231979a93e7b0308c"
+     "facet/runtime-domains-schema/r9/a12bb02adc6c9ebbe6d2d08e"
+     "facet/runtime-domains-schema/r9/2c2c66e355c76c85fb5e756c"
+     "facet/runtime-domains-schema/r9/e22a348f47a070e8e5d9eb1c"
+     "facet/runtime-domains-schema/r9/db6436431064a55322aea761"
+     "facet/runtime-domains-schema/r9/50be64b143689e65852b5d44"
+     "facet/runtime-domains-schema/r9/6318024c8af3d048b93b3c94"
+     "facet/runtime-domains-schema/r9/3c6872e89086e15a4042bdbf"
+     "facet/runtime-domains-schema/r9/eba2cb17245bf345affda7ab"
+     "facet/runtime-domains-schema/r9/f100796c67006bd7f1070959"],
+    :historical-obligation
+    "Invalidate affected analysis, syntax/core/MIR/backend/runtime/package artifacts when interactive definitions reload.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/hot-reload-invalidation",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Build dependency/invalidation consumer"
+    "Compiler phase snapshots"
+    "Lower artifact/source maps"
+    "Auth debug/session grants"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/managed-collection-semantics/acceptance",
+   :acceptance-and-rejection-outputs
+   ["host/version collection/value representation manifest"
+    "Gravity-observable equality/hash/serialization/mutability comparison fixtures"
+    "divergence/null/manifest diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 33,
+     :raw-sha256
+     "639c1d1d61d437bf52ce083961f1cc3d5b2d383e071bd8959f40b303fe0a0cd9",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/4573d7eacd1c380fdb80cfd1c58bf0a381bc22907380f6cd5a728eb729f3f9ec",
+     :origin-facet-ids
+     ["R4/facet/147b34ac996e885bae2e93994a33f25eebe0375e5030ef796340e4fddb2c2c77"],
+     :id "facet/runtime-domains-schema/r4/b72b5ecc03ee76ae9fe789b8",
+     :kind :condition,
+     :document-id "R4",
+     :end-byte 1684,
+     :end-line 34,
+     :unit-ids ["runtime/managed-collection-semantics"],
+     :start-byte 1570}
+    {:start-line 42,
+     :raw-sha256
+     "9c054555f07a9c949420d303951a7c8f1e067d4cd48267222c7a33a981268652",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/9e6fd89a66e805e6de99fdad7356a3558ef83a3fa9dc29c2414c368ae548e995"],
+     :id "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 1999,
+     :end-line 42,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1919}
+    {:start-line 43,
+     :raw-sha256
+     "7087eaaa49739cc308c19b4344902b6e5bc6ec7fce4078a6d61b8aad7cbeb02f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/2b8666f5bca80943272c7b29dea9cf6d6307e7d923a5932b9bf13cd0de940bdb"],
+     :id "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2069,
+     :end-line 43,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1999}
+    {:start-line 44,
+     :raw-sha256
+     "f769ff005fa6eb17ffbae98ca8e083e1e158b70c2c19797f4bd42cee6c373290",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/23c3891cd9781d95eb3b6ef7a9515bd47d3fbf526ab744d8b0ab6a400041cfe3"],
+     :id "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2166,
+     :end-line 45,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2069}
+    {:start-line 46,
+     :raw-sha256
+     "829089155b7d61a613ccf82c10ee9e85813b208502aa1f27adc94b3c3693bb7f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/c93db1aa422a45ec668a60f5a0c9b6704dc9f61dc81fefc6fe4aa99e7387ba5b"],
+     :id "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2296,
+     :end-line 47,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2166}
+    {:start-line 53,
+     :raw-sha256
+     "d2af0bb707bccd4761889faca4957906393bcd11f3f7bfd10586da15c707f842",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/d57933340b3b78c044ab424e25346ba0b617822791f217bbedb26c812315f8bd"],
+     :id "facet/runtime-domains-schema/r4/d63557621ad85c43b584038f",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2419,
+     :end-line 53,
+     :unit-ids ["runtime/managed-collection-semantics"],
+     :start-byte 2381}
+    {:start-line 60,
+     :raw-sha256
+     "5e486a87b0cc0af7a2542196e834f4b47a9eeef78986df4c86a5ab947ccc0862",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/a517ed677dabcf43b35b23b23dc97d0b5d66e3b9220077eae4b71c21e6840b2f"],
+     :id "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2652,
+     :end-line 60,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2621}
+    {:start-line 96,
+     :raw-sha256
+     "520ee6ac98b9b6399e0c22a0c59da0bb10a594b0d18f7551e214d2ada9b47978",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/6c45cba69aa0cff97ba6846ea70b33b846d07710380c4b1241eacd427b3f9738",
+     :origin-facet-ids
+     ["R4/facet/675f516f6e6bd2abada88c68d8c25b953690a8e9a09daf74bb72643cc02b2c25"],
+     :id "facet/runtime-domains-schema/r4/ec223030a8479fe338165b5b",
+     :kind :condition,
+     :document-id "R4",
+     :end-byte 3893,
+     :end-line 99,
+     :unit-ids
+     ["runtime/managed-collection-semantics"
+      "runtime/metadata-preservation"],
+     :start-byte 3631}
+    {:start-line 122,
+     :raw-sha256
+     "0f966bb59f83c3538a065e16a6968cfec6618f5549f2e40ac69902aee7dc4910",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/4fbd3607cfe7d59bec4903713eb21061273324134d291cfbf7e1231b9ba7b256",
+     :origin-facet-ids
+     ["R4/facet/ed35fb808b2e4256e24b0331630cc3669d6a9888993d34841e86b4d53a82d314"],
+     :id "facet/runtime-domains-schema/r4/32ea288488bd5fb496c4be31",
+     :kind :diagnostic,
+     :document-id "R4",
+     :end-byte 4897,
+     :end-line 122,
+     :unit-ids ["runtime/managed-collection-semantics"],
+     :start-byte 4817}
+    {:start-line 128,
+     :raw-sha256
+     "4d25036a6fe05308fe68cb661154c630178ab5befcac2b5218c0ac109384055a",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9a94d43b9e5a53d379762d73d0ee01e71d41a0a87d213e2fcdc843a0d4500dac",
+     :origin-facet-ids
+     ["R4/facet/90cfb9c513682a73721ff243f51a085d510dc42f02ae55d28c05c412127b4c36"],
+     :id "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd",
+     :kind :diagnostic,
+     :document-id "R4",
+     :end-byte 5318,
+     :end-line 130,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 5149}
+    {:start-line 140,
+     :raw-sha256
+     "7c28b7e3eff595ae5c73e250c120c8b3b69c9208decc9d7d2138f108f3630949",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/7d1cbe9d223178cc83d4d230edbfdae2356b8ffb3fdcad0d23eebb835be33e2a",
+     :origin-facet-ids
+     ["R4/facet/fa336a0326d33aa36d198253696e6cff91d21644bea0c6917d2d8dc7cc8c859c"],
+     :id "facet/runtime-domains-schema/r4/a0e7d60c4d09a4cebafb9b6b",
+     :kind :negative-case,
+     :document-id "R4",
+     :end-byte 5639,
+     :end-line 141,
+     :unit-ids ["runtime/managed-collection-semantics"],
+     :start-byte 5557}
+    {:start-line 152,
+     :raw-sha256
+     "84fd4551995de3732d5c0b4bd1367bb9be3fcf881b75c7144a5788735faddbe8",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9db75c5a0b5bbd09cec501c006a3ffe8dccbd6f6fa3c4d329e6818b99b07db90",
+     :origin-facet-ids
+     ["R4/facet/9038948f2c535e5f960f456e0c4da57deb84f0da6b7b232cca146e4cd53b4d3c"],
+     :id "facet/runtime-domains-schema/r4/d55b3c6c1fb85b791ccaf9ec",
+     :kind :acceptance-case,
+     :document-id "R4",
+     :end-byte 5997,
+     :end-line 152,
+     :unit-ids ["runtime/managed-collection-semantics"],
+     :start-byte 5967}],
+   :status "Open",
+   :id "runtime/managed-collection-semantics",
+   :partition-record
+   {:primary-source-contract "R4",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/b72b5ecc03ee76ae9fe789b8"
+     "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/d63557621ad85c43b584038f"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/ec223030a8479fe338165b5b"
+     "facet/runtime-domains-schema/r4/32ea288488bd5fb496c4be31"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/a0e7d60c4d09a4cebafb9b6b"
+     "facet/runtime-domains-schema/r4/d55b3c6c1fb85b791ccaf9ec"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Make managed values and persistent collections preserve Gravity-observable equality, hashing, representation and serialization semantics.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/managed-collection-semantics",
+    :historical-record-sha256
+    "d159764314be888c7d99d97d2d09f4ba3773e4c6ab05ec9e5c8b43c1ca2088b8",
+    :source-facet-records-sha256
+    "f2b3fe908b6a5b23315551812a8053397e7379669dc7845e560d77b7a24f2455",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "For each claimed managed host/version and collection implementation, execute Gravity-observable value/collection fixtures for host representation, nullability, equality, hashing, serialization, mutability, identity and taint. Emit the managed-value/collection manifest and source-bound comparison results for persistent values adapted from host collections or implemented by Gravity. Reject observable host equality/hash/serialization/mutation behavior that diverges from the declared Gravity contract, unchecked nulls and a collection implementation missing from the host manifest; host convenience cannot define portable core meaning.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/b72b5ecc03ee76ae9fe789b8"
+     "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/d63557621ad85c43b584038f"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/ec223030a8479fe338165b5b"
+     "facet/runtime-domains-schema/r4/32ea288488bd5fb496c4be31"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/a0e7d60c4d09a4cebafb9b6b"
+     "facet/runtime-domains-schema/r4/d55b3c6c1fb85b791ccaf9ec"],
+    :historical-obligation
+    "Make managed values and persistent collections preserve Gravity-observable equality, hashing, representation and serialization semantics.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/managed-collection-semantics",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Core value semantics"
+    "Types nullability"
+    "Stdlib persistent collections"
+    "Lower managed-host adapter"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/managed-dynamic-state/acceptance",
+   :acceptance-and-rejection-outputs
+   ["dynamic-variable/thread/async and namespace/session records"
+    "binding/context propagation fixtures"
+    "unmanifested-state, authority and profile-leak diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 42,
+     :raw-sha256
+     "9c054555f07a9c949420d303951a7c8f1e067d4cd48267222c7a33a981268652",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/9e6fd89a66e805e6de99fdad7356a3558ef83a3fa9dc29c2414c368ae548e995"],
+     :id "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 1999,
+     :end-line 42,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1919}
+    {:start-line 43,
+     :raw-sha256
+     "7087eaaa49739cc308c19b4344902b6e5bc6ec7fce4078a6d61b8aad7cbeb02f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/2b8666f5bca80943272c7b29dea9cf6d6307e7d923a5932b9bf13cd0de940bdb"],
+     :id "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2069,
+     :end-line 43,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1999}
+    {:start-line 44,
+     :raw-sha256
+     "f769ff005fa6eb17ffbae98ca8e083e1e158b70c2c19797f4bd42cee6c373290",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/23c3891cd9781d95eb3b6ef7a9515bd47d3fbf526ab744d8b0ab6a400041cfe3"],
+     :id "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2166,
+     :end-line 45,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2069}
+    {:start-line 46,
+     :raw-sha256
+     "829089155b7d61a613ccf82c10ee9e85813b208502aa1f27adc94b3c3693bb7f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/c93db1aa422a45ec668a60f5a0c9b6704dc9f61dc81fefc6fe4aa99e7387ba5b"],
+     :id "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2296,
+     :end-line 47,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2166}
+    {:start-line 54,
+     :raw-sha256
+     "9b8d60271dd311bfc311a5bded40bbda9a8e019eb3c9897a963e032e671ac572",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/da36afa0191b3a2daba3e984fa3710221409201727982cd0d8c3a6bf722efc6a"],
+     :id "facet/runtime-domains-schema/r4/3402da332abbfe89aff707ed",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2468,
+     :end-line 54,
+     :unit-ids ["runtime/managed-dynamic-state"],
+     :start-byte 2419}
+    {:start-line 60,
+     :raw-sha256
+     "5e486a87b0cc0af7a2542196e834f4b47a9eeef78986df4c86a5ab947ccc0862",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/a517ed677dabcf43b35b23b23dc97d0b5d66e3b9220077eae4b71c21e6840b2f"],
+     :id "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2652,
+     :end-line 60,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2621}
+    {:start-line 101,
+     :raw-sha256
+     "db4757a30b5c3cc95809eff92c6c9827770031a89982aefc11f45703051c37ec",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/e9c0f59f8b449792c62b6613e53855980be5f58860e7b316ec773cbbfbf13ae5",
+     :origin-facet-ids
+     ["R4/facet/4a73fa8881fabb99fcbcb862403bcd92ca9d69783ebd82cd2e6413650aa411e9"],
+     :id "facet/runtime-domains-schema/r4/b69df369f9a21d6f8b7b74ec",
+     :kind :condition,
+     :document-id "R4",
+     :end-byte 4087,
+     :end-line 103,
+     :unit-ids
+     ["runtime/hosted-profile-isolation"
+      "runtime/managed-dynamic-state"],
+     :start-byte 3894}
+    {:start-line 128,
+     :raw-sha256
+     "4d25036a6fe05308fe68cb661154c630178ab5befcac2b5218c0ac109384055a",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9a94d43b9e5a53d379762d73d0ee01e71d41a0a87d213e2fcdc843a0d4500dac",
+     :origin-facet-ids
+     ["R4/facet/90cfb9c513682a73721ff243f51a085d510dc42f02ae55d28c05c412127b4c36"],
+     :id "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd",
+     :kind :diagnostic,
+     :document-id "R4",
+     :end-byte 5318,
+     :end-line 130,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 5149}
+    {:start-line 155,
+     :raw-sha256
+     "ec5dbf585dc22b37a29df0ded98615ff10a7d0d4961012833cf6e6dc4cc40eb1",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9db75c5a0b5bbd09cec501c006a3ffe8dccbd6f6fa3c4d329e6818b99b07db90",
+     :origin-facet-ids
+     ["R4/facet/04fe350ca4af2acb88d71da2ebb0902f943a0fbd7bb848c19b462d873c6ef588"],
+     :id "facet/runtime-domains-schema/r4/bc90628421e0b084d74d9b2b",
+     :kind :acceptance-case,
+     :document-id "R4",
+     :end-byte 6116,
+     :end-line 155,
+     :unit-ids ["runtime/managed-dynamic-state"],
+     :start-byte 6074}],
+   :status "Open",
+   :id "runtime/managed-dynamic-state",
+   :partition-record
+   {:primary-source-contract "R4",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/3402da332abbfe89aff707ed"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/b69df369f9a21d6f8b7b74ec"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/bc90628421e0b084d74d9b2b"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Manifest dynamic variables, thread-local/async context, namespaces, REPL state and hot reload rather than treating them as implicit hosted capabilities.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/managed-dynamic-state",
+    :historical-record-sha256
+    "8d0f5dbc870c8ba1436b67a447302c2bc2e507697013db6ce2d7a749cafbd135",
+    :source-facet-records-sha256
+    "f618147eb54e2cff57d93b1686c4fb411662a52f0cb1fdf9cfd6b66c5a733a5b",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "Manifest dynamic variables, thread-local values, async context, namespace loading, REPL state and hot reload for the selected host/version/module system. Show declared binding/context behavior through thread and async boundaries and namespace/session changes, retaining source maps, taint, error translation and resource policy. Reject unmanifested state, ambient host reflection/eval/dynamic import/package globals without effects/grants and hosted dynamic state leaking into a lower profile without a legal facade/artifact. Session state influencing build artifacts is captured or nonhermetic, not an implicit capability.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/3402da332abbfe89aff707ed"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/b69df369f9a21d6f8b7b74ec"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/bc90628421e0b084d74d9b2b"],
+    :historical-obligation
+    "Manifest dynamic variables, thread-local/async context, namespaces, REPL state and hot reload rather than treating them as implicit hosted capabilities.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/managed-dynamic-state",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Core dynamic binding semantics"
+    "Concurrency context provider"
+    "Legality hosted/profile boundary"
+    "Build session capture"
+    "Auth effects/grants"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/managed-null-conversion/acceptance",
+   :acceptance-and-rejection-outputs
+   ["host adapter and exception/null translation map"
+    "null/undefined/non-null conversion fixtures"
+    "unchecked-null, type/policy and profile-leak diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 25,
+     :raw-sha256
+     "7a52117e473f45f11380692cf3bce9549fc1f988b39f05dc557d474d96c8c4c5",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/4573d7eacd1c380fdb80cfd1c58bf0a381bc22907380f6cd5a728eb729f3f9ec",
+     :origin-facet-ids
+     ["R4/facet/b8e3f940706590f2909ee4b132283e956b2e584d19145a86cfc323852ec92a82"],
+     :id "facet/runtime-domains-schema/r4/511602e12f26759c2fe907eb",
+     :kind :condition,
+     :document-id "R4",
+     :end-byte 1209,
+     :end-line 26,
+     :unit-ids ["runtime/managed-null-conversion"],
+     :start-byte 1085}
+    {:start-line 42,
+     :raw-sha256
+     "9c054555f07a9c949420d303951a7c8f1e067d4cd48267222c7a33a981268652",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/9e6fd89a66e805e6de99fdad7356a3558ef83a3fa9dc29c2414c368ae548e995"],
+     :id "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 1999,
+     :end-line 42,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1919}
+    {:start-line 43,
+     :raw-sha256
+     "7087eaaa49739cc308c19b4344902b6e5bc6ec7fce4078a6d61b8aad7cbeb02f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/2b8666f5bca80943272c7b29dea9cf6d6307e7d923a5932b9bf13cd0de940bdb"],
+     :id "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2069,
+     :end-line 43,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 1999}
+    {:start-line 44,
+     :raw-sha256
+     "f769ff005fa6eb17ffbae98ca8e083e1e158b70c2c19797f4bd42cee6c373290",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/23c3891cd9781d95eb3b6ef7a9515bd47d3fbf526ab744d8b0ab6a400041cfe3"],
+     :id "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2166,
+     :end-line 45,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2069}
+    {:start-line 46,
+     :raw-sha256
+     "829089155b7d61a613ccf82c10ee9e85813b208502aa1f27adc94b3c3693bb7f",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/2631f364bfb90ec9dc4eec6a2d87410fc9c6a39d010b804fc0eb1ebcc60f8573",
+     :origin-facet-ids
+     ["R4/facet/c93db1aa422a45ec668a60f5a0c9b6704dc9f61dc81fefc6fe4aa99e7387ba5b"],
+     :id "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4",
+     :kind :context,
+     :document-id "R4",
+     :end-byte 2296,
+     :end-line 47,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2166}
+    {:start-line 55,
+     :raw-sha256
+     "5479159064ccb4344f20c932ecbabf03d59443a1368f52e1cd5ff85509f4be4a",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/ad5790756bb5ab730db308f30bff2dbdac9b3c2627df33c3a26115dcb7922640"],
+     :id "facet/runtime-domains-schema/r4/2d4deaba02de30efe8a2f507",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2502,
+     :end-line 55,
+     :unit-ids
+     ["runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"],
+     :start-byte 2468}
+    {:start-line 60,
+     :raw-sha256
+     "5e486a87b0cc0af7a2542196e834f4b47a9eeef78986df4c86a5ab947ccc0862",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/8b162e7450ffa30d7a0e53870f970063b61a05919c126fda35d8e103b7a2c792",
+     :origin-facet-ids
+     ["R4/facet/a517ed677dabcf43b35b23b23dc97d0b5d66e3b9220077eae4b71c21e6840b2f"],
+     :id "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b",
+     :kind :artifact,
+     :document-id "R4",
+     :end-byte 2652,
+     :end-line 60,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 2621}
+    {:start-line 118,
+     :raw-sha256
+     "6291f1632e994dbf04d32198381be05b9f2ea2379298d38ce5ee39a8617db3a9",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/4fbd3607cfe7d59bec4903713eb21061273324134d291cfbf7e1231b9ba7b256",
+     :origin-facet-ids
+     ["R4/facet/a2e578602d48db190a28959f5fb5e1e5c9f94bc2f2fbd05b60c406260fbca667"],
+     :id "facet/runtime-domains-schema/r4/4266bc3dbae99aadf732fe8e",
+     :kind :diagnostic,
+     :document-id "R4",
+     :end-byte 4629,
+     :end-line 118,
+     :unit-ids ["runtime/managed-null-conversion"],
+     :start-byte 4572}
+    {:start-line 128,
+     :raw-sha256
+     "4d25036a6fe05308fe68cb661154c630178ab5befcac2b5218c0ac109384055a",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9a94d43b9e5a53d379762d73d0ee01e71d41a0a87d213e2fcdc843a0d4500dac",
+     :origin-facet-ids
+     ["R4/facet/90cfb9c513682a73721ff243f51a085d510dc42f02ae55d28c05c412127b4c36"],
+     :id "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd",
+     :kind :diagnostic,
+     :document-id "R4",
+     :end-byte 5318,
+     :end-line 130,
+     :unit-ids
+     ["runtime/deterministic-resource-cleanup"
+      "runtime/family-selection"
+      "runtime/hosted-profile-isolation"
+      "runtime/managed-collection-semantics"
+      "runtime/managed-dynamic-state"
+      "runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/typed-host-delegation"],
+     :start-byte 5149}
+    {:start-line 136,
+     :raw-sha256
+     "4b6c536210231feb3dc013a4a840ac719d2173a1a924d141363156a14290bc5c",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/d09df849bdc59fc8aff2110e521cd9d2a5aace4db2c891788e7ad25f53df2701",
+     :origin-facet-ids
+     ["R4/facet/3afdc4d79d4acc9d5df5cb6dc53691e76c1a7aef4e69c52e1bea47dd49d5b561"],
+     :id "facet/runtime-domains-schema/r4/5e278789e180ee93c832af27",
+     :kind :negative-case,
+     :document-id "R4",
+     :end-byte 5473,
+     :end-line 136,
+     :unit-ids
+     ["runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"],
+     :start-byte 5404}
+    {:start-line 150,
+     :raw-sha256
+     "e748e59e2e2b112fdb1dc4c7d6b498acd0f8b92a999b5e8c57d80207fb725e2c",
+     :unresolved false,
+     :source-occurrence-id
+     "R4/source/9db75c5a0b5bbd09cec501c006a3ffe8dccbd6f6fa3c4d329e6818b99b07db90",
+     :origin-facet-ids
+     ["R4/facet/95aa8d0520a0fa340e8ab74bc66e6bff65360a0dd9e90d5a1bcbe773b8d51ebb"],
+     :id "facet/runtime-domains-schema/r4/563c331986b45f01aa1a850e",
+     :kind :acceptance-case,
+     :document-id "R4",
+     :end-byte 5908,
+     :end-line 150,
+     :unit-ids
+     ["runtime/managed-failure-translation"
+      "runtime/managed-null-conversion"],
+     :start-byte 5855}],
+   :status "Open",
+   :id "runtime/managed-null-conversion",
+   :partition-record
+   {:primary-source-contract "R4",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/511602e12f26759c2fe907eb"
+     "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/2d4deaba02de30efe8a2f507"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/4266bc3dbae99aadf732fe8e"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/5e278789e180ee93c832af27"
+     "facet/runtime-domains-schema/r4/563c331986b45f01aa1a850e"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Convert host null/undefined through declared Option/Result, checked wrapper or opaque foreign-value boundaries.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/managed-null-conversion",
+    :historical-record-sha256
+    "60d809ffab35b89cdc870480bef69674616812d8a282f00480c4c6aac237999e",
+    :source-facet-records-sha256
+    "6eb373a280789804253b77aa51b35cdc1eb9cf0b7c2cae12586529e9448794f6",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "At each claimed host adapter, manifest host/Gravity representation and nullability and convert host null or undefined through the selected Option, Result, checked-wrapper or opaque-foreign-value contract. Execute null, undefined and non-null fixtures for that declared boundary, retaining taint, errors and source/generated-origin diagnostics. Reject unchecked host null/undefined entering a safe Gravity value, a conversion inconsistent with its Gravity type or a missing adapter/null policy; an opaque foreign value does not authorize unchecked access or leakage into lower profiles. Alternative conversion policies are conditional choices, not a requirement to apply every conversion to one value. Exception/null boundary fixtures also reject untranslated host exceptions or rejected promises and preserve the declared Gravity error/panic/effect channel.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r4/511602e12f26759c2fe907eb"
+     "facet/runtime-domains-schema/r4/9756cac18b11cb3f7bebb42e"
+     "facet/runtime-domains-schema/r4/5769a284b28ac29f8d777350"
+     "facet/runtime-domains-schema/r4/f6e8b4cea0a80c86cd2f8801"
+     "facet/runtime-domains-schema/r4/f922993e32714229a50a55e4"
+     "facet/runtime-domains-schema/r4/2d4deaba02de30efe8a2f507"
+     "facet/runtime-domains-schema/r4/e581d1885ad7a8ee71900c8b"
+     "facet/runtime-domains-schema/r4/4266bc3dbae99aadf732fe8e"
+     "facet/runtime-domains-schema/r4/020899463b4dc65c2594ffcd"
+     "facet/runtime-domains-schema/r4/5e278789e180ee93c832af27"
+     "facet/runtime-domains-schema/r4/563c331986b45f01aa1a850e"],
+    :historical-obligation
+    "Convert host null/undefined through declared Option/Result, checked wrapper or opaque foreign-value boundaries.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/managed-null-conversion",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Types Option/Result/nullability"
+    "Lower host representation"
+    "Legality profile boundary"
+    "Auth foreign effects"
+    "Runtime typed adapter"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"},
+   :implementation-acceptance :unassessed}
+  {:criterion-id "runtime/manifest-consumption/acceptance",
+   :acceptance-and-rejection-outputs
+   ["five-consumer manifest-to-service agreement report"
+    "runtime architecture/native helper and capability/startup/failure records"
+    "missing/contradictory manifest/service/provenance diagnostics"],
+   :adoption :pending-independent-source-review,
+   :disposition :proposed-finite-actionable-task-criterion,
+   :source-facets
+   [{:start-line 32,
+     :raw-sha256
+     "06f94de0b8cb823ef0726abfeecbb6361cb380cf234bf447111e9a1bfbc383ec",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/884b9907cece3d189ea21035a4884776d6598a4db4bf144af5db559d7e32cf3f",
+     :origin-facet-ids
+     ["R1/facet/b609f2166a5671d4ef8c66bd568ae0cb5ede1a282e9c6929ddd09dd04b1b4343"],
+     :id "facet/runtime-domains-schema/r1/c202323781bad881e6aa5327",
+     :kind :condition,
+     :document-id "R1",
+     :end-byte 1604,
+     :end-line 33,
+     :unit-ids ["runtime/manifest-consumption"],
+     :start-byte 1470}
+    {:start-line 37,
+     :raw-sha256
+     "747d7fc36baca118044cdee44eae5f34be11a1f2511db28fb3294a399361e1d8",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/f48bda6a1fafe91e0ff99cebc4f94f512a202640b69c6a55ef7d82479176cef8"],
+     :id "facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1689,
+     :end-line 37,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1622}
+    {:start-line 38,
+     :raw-sha256
+     "3e872ccad887d0d9c6d62fd1c9e23f9c95b45522f7121610e33919a7c481542b",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/7ee46134e6b75b28e43464ec53fe63c6876ae4e8c35d97c2e526a93cc2255902"],
+     :id "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1781,
+     :end-line 39,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1689}
+    {:start-line 40,
+     :raw-sha256
+     "d81fff79002ea97f4cad8d6d64568a001769fc07a5c789620cc12e5d95b98fa3",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/47b727aaa1620c7a3e002b0ad4710f1c824f8ba25bc5cf9502b051742cdbfbe3"],
+     :id "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1873,
+     :end-line 41,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1781}
+    {:start-line 42,
+     :raw-sha256
+     "cbf1bee445b6f63f047e366bcae7ae10bb609e0f945fdf4684a9b2cd5ec03792",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/293aa295dc3fe59bd20e820ebc26004a86b4e9ab4e160f5e9c13d28fa2b2350b"],
+     :id "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 1926,
+     :end-line 42,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1873}
+    {:start-line 43,
+     :raw-sha256
+     "f3be6146fbb641a42f43fe239bd9473364b4d3e03001689f4f57af7ace909b47",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d4b02a5c2580c042f4d2848d8abe095c3baff715b6b0845bd3ab642b236fe84a",
+     :origin-facet-ids
+     ["R1/facet/ffe70d63ec80026b3f3f1f32b7b677e6022ef0be086ca1d1abff83e1f0b78e0d"],
+     :id "facet/runtime-domains-schema/r1/74715a508f311335d7b59940",
+     :kind :context,
+     :document-id "R1",
+     :end-byte 2027,
+     :end-line 44,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 1926}
+    {:start-line 57,
+     :raw-sha256
+     "eaafd7a9e15c284d564a50727e5f150c784603b3604ef115364e1a8d840d9da2",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/c074eddf2c4de4d7e2c4d3b528e5b92635f5abff0d1d4ce396c30cffe5fd7c7c",
+     :origin-facet-ids
+     ["R1/facet/42c66a358a349c3011efe480159a258cdcf798a4ef548cef1fe73bc1eadc3375"],
+     :id "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974",
+     :kind :artifact,
+     :document-id "R1",
+     :end-byte 2364,
+     :end-line 57,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 2335}
+    {:start-line 58,
+     :raw-sha256
+     "513eb0343a536829bf19557dcf7d0b52d43b835a8be473fa70b893335ef572f8",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/c074eddf2c4de4d7e2c4d3b528e5b92635f5abff0d1d4ce396c30cffe5fd7c7c",
+     :origin-facet-ids
+     ["R1/facet/f87a46d0e979697b7e60892a02e97262cb42aa72ff1f00870e560aee91ce921c"],
+     :id "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89",
+     :kind :artifact,
+     :document-id "R1",
+     :end-byte 2396,
+     :end-line 58,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 2364}
+    {:start-line 146,
+     :raw-sha256
+     "2f11b6ef06e5e860c859636abd6b4303389fdc2605d83e65557055a602bf24a1",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/637046ea4f9e2e39950daa50b7f284aa3229909bb02289998f82163884fe022c",
+     :origin-facet-ids
+     ["R1/facet/e7163ee17fd7369504d340ff1b051ead3500785d4a1f24ea66b877dd292ac963"],
+     :id "facet/runtime-domains-schema/r1/8c9183a4287f266155907717",
+     :kind :diagnostic,
+     :document-id "R1",
+     :end-byte 6147,
+     :end-line 147,
+     :unit-ids
+     ["runtime/failure-strategy"
+      "runtime/family-composition"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/nondeterminism-recording"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"
+      "runtime/typed-host-delegation"],
+     :start-byte 6000}
+    {:start-line 173,
+     :raw-sha256
+     "175701ff94ae9b55f98c153bcdbf95a518167a1e6424e5d60211049f17667faa",
+     :unresolved false,
+     :source-occurrence-id
+     "R1/source/d30f7e9ce940afbcccacd92fe27659439969e6deea4e825149b7554668b5099c",
+     :origin-facet-ids
+     ["R1/facet/a1980458c8ac7103d7f2b5a980d8e542a89627b4b446986189317693931f1eb9"],
+     :id "facet/runtime-domains-schema/r1/9f6687a5aa9f63396ec88fa0",
+     :kind :acceptance-case,
+     :document-id "R1",
+     :end-byte 6997,
+     :end-line 174,
+     :unit-ids ["runtime/manifest-consumption"],
+     :start-byte 6907}
+    {:start-line 39,
+     :raw-sha256
+     "02bfe6371ac30f91d83469755cef7bc3a15afe1027a8ae6050eedda9b2c2a958",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/622059aefcfd47d705475a7587b75faf4680fb2741091afbf3f96fb7a67c994c"],
+     :id "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 1787,
+     :end-line 39,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1752}
+    {:start-line 40,
+     :raw-sha256
+     "2f63c577ad1e462d33d658b393a1fe65e9a496337aae10ada267a2ff87a2c8ca",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/39123e8bba75b6857a0b79b4470fae0720ebc4bbd9e93817e1bbe5223975f2cb"],
+     :id "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 1873,
+     :end-line 41,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1787}
+    {:start-line 42,
+     :raw-sha256
+     "987d3934ae9c41cac69db4dbd645ec37b84e560c664d69736cbbbe13a5ddd178",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/76882896be788e714dd8499b464ebc24294f859d28383a386e38d4d13264e532"],
+     :id "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 2027,
+     :end-line 43,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 1873}
+    {:start-line 44,
+     :raw-sha256
+     "45a8a47ce1acdaca787565276db5bbe53800b35d3d5718e731fedfb17209778c",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/75f19a0621d1327b866a4d40e8b3893d7c9b6d5664941d520353ab024ddb06e1",
+     :origin-facet-ids
+     ["R3/facet/4c5648cac0fa90867d2b725662049d73bd7c8b85421770c1c706a2db51b465ab"],
+     :id "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7",
+     :kind :context,
+     :document-id "R3",
+     :end-byte 2147,
+     :end-line 45,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 2027}
+    {:start-line 59,
+     :raw-sha256
+     "04e7bde76404290d7983354f4ee08ce2e1572bbb3cd1bd8a034cf22f46b88aa1",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/3cb508df523ac0ee2597c44b18a8a3460c5be3fc62cda54ba4d0847c644f3889",
+     :origin-facet-ids
+     ["R3/facet/8ad2a955ee6dc611b5b96d4192b37473dc55422d092a7bf09a780c12412685cc"],
+     :id "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa",
+     :kind :artifact,
+     :document-id "R3",
+     :end-byte 2524,
+     :end-line 59,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 2486}
+    {:start-line 126,
+     :raw-sha256
+     "e6468db4c50a44f2272ae97ac411867533d61242bb4a62f67f984f6e142abc66",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/56518bf5469fe80f1009ba82e245068eaa9e959c4e1fa9472bf55fd0200614a7",
+     :origin-facet-ids
+     ["R3/facet/7753ce864d59800552faa4d0ca10ac2a1853194c2edac2904b803084c9e730ef"],
+     :id "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748",
+     :kind :diagnostic,
+     :document-id "R3",
+     :end-byte 5140,
+     :end-line 127,
+     :unit-ids
+     ["runtime/allocation-policy"
+      "runtime/check-proof-preservation"
+      "runtime/concurrency-memory-order"
+      "runtime/debug-service-selection"
+      "runtime/deterministic-resource-cleanup"
+      "runtime/failure-strategy"
+      "runtime/family-selection"
+      "runtime/forbidden-service-rejection"
+      "runtime/foreign-boundary-preservation"
+      "runtime/freestanding-layout"
+      "runtime/manifest-consumption"
+      "runtime/metadata-preservation"
+      "runtime/service-manifest"
+      "runtime/service-policy-enforcement"
+      "runtime/startup-cleanup-order"],
+     :start-byte 4995}
+    {:start-line 155,
+     :raw-sha256
+     "13cd364f090b27e361532f0a00ae5e603912dac69f45d4017807b6f086f25002",
+     :unresolved false,
+     :source-occurrence-id
+     "R3/source/c72c2948d88565303143708a5a6a37de9b2ff11c6b57f3236100d8af40c2c1f2",
+     :origin-facet-ids
+     ["R3/facet/8291782754132bfdd5e72acaf17f51288b20da1e136a5c7062bac988b30ae84a"],
+     :id "facet/runtime-domains-schema/r3/25c52f956750ad2ce32465d4",
+     :kind :acceptance-case,
+     :document-id "R3",
+     :end-byte 6054,
+     :end-line 155,
+     :unit-ids
+     ["runtime/manifest-consumption" "runtime/metadata-preservation"],
+     :start-byte 6005}],
+   :status "Open",
+   :id "runtime/manifest-consumption",
+   :partition-record
+   {:primary-source-contract "R1",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r1/c202323781bad881e6aa5327"
+     "facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809"
+     "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1"
+     "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94"
+     "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e"
+     "facet/runtime-domains-schema/r1/74715a508f311335d7b59940"
+     "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974"
+     "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89"
+     "facet/runtime-domains-schema/r1/8c9183a4287f266155907717"
+     "facet/runtime-domains-schema/r1/9f6687a5aa9f63396ec88fa0"
+     "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329"
+     "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a"
+     "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0"
+     "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7"
+     "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa"
+     "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748"
+     "facet/runtime-domains-schema/r3/25c52f956750ad2ce32465d4"],
+    :affected-source-families ["phase-08"],
+    :historical-obligation
+    "Make runtime manifests usable by the declared backend, package, observability, conformance and self-hosting consumers.",
+    :primary-dispatch-family "phase-08",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "runtime/manifest-consumption",
+    :historical-record-sha256
+    "051eb7e8dcd12ff088a213ce9c8ebc5208d9907d7e8db09ea792f234f3d81b0c",
+    :source-facet-records-sha256
+    "f47a43fb4311fa333cb40738b325fa9d2e915bb27f60ebb9e136865371c9c4c3",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :criterion
+   "Have backend, package, observability, conformance and self-hosting consumers read the emitted runtime manifest and cross-check it against the actual selected service/helper/provider graph. Emit consumer agreement evidence for family/profile/target, service classification, linked support objects, generated helpers, delegated typed adapters, external providers, forbidden services, capability enforcement hooks or static proofs, startup/initialization/cleanup/failure policy and runtime diagnostic schema/provenance. Reject an absent/unreadable manifest, omitted or contradictory service/provider, hidden forbidden dependency, missing enforcement hook/proof or lost artifact/source-origin edge. A manifest link or producer-only record cannot establish consumer integration. Native backend integration includes C and LLVM artifacts for the claimed target matrix; fixture inspection alone does not claim those targets implemented.",
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/r1/c202323781bad881e6aa5327"
+     "facet/runtime-domains-schema/r1/80ab3f132324b7c0c1915809"
+     "facet/runtime-domains-schema/r1/5f84e37d5dd5771f45a4a2c1"
+     "facet/runtime-domains-schema/r1/904c998f1937535bc8eb9d94"
+     "facet/runtime-domains-schema/r1/c6338360d04e4d1bb544f16e"
+     "facet/runtime-domains-schema/r1/74715a508f311335d7b59940"
+     "facet/runtime-domains-schema/r1/d917c24ab2f94aa656d89974"
+     "facet/runtime-domains-schema/r1/b53d10927852bd278a975c89"
+     "facet/runtime-domains-schema/r1/8c9183a4287f266155907717"
+     "facet/runtime-domains-schema/r1/9f6687a5aa9f63396ec88fa0"
+     "facet/runtime-domains-schema/r3/841cf2795ee2d92ee1b44329"
+     "facet/runtime-domains-schema/r3/919f2fa90af98a16bf7acf7a"
+     "facet/runtime-domains-schema/r3/77e7138d17f1ec0db388e9a0"
+     "facet/runtime-domains-schema/r3/d4dd74fdda3050b7151565d7"
+     "facet/runtime-domains-schema/r3/727f55e05d9128dc51efc4aa"
+     "facet/runtime-domains-schema/r3/640194d443c6dc8f4a788748"
+     "facet/runtime-domains-schema/r3/25c52f956750ad2ce32465d4"],
+    :historical-obligation
+    "Make runtime manifests usable by the declared backend, package, observability, conformance and self-hosting consumers.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "runtime/manifest-consumption",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :dependencies
+   ["Lower backend artifacts"
+    "Build package consumer"
+    "Runtime observability"
+    "Testing conformance consumer"
+    "Self-hosting evidence consumer"
+    "Auth enforcement facts"],
+   :task-reference
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :id
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"},
+   :implementation-acceptance :unassessed}]}
