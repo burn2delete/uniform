@@ -42,6 +42,49 @@ contracts continue to reject unsupported inputs. The Core artifact schema
 remains 1, independently of source-interface version 3. Core and C11 policy
 digest domains remain the responsibility of the actual C11/Core owner.
 
+## Explicit downstream source-contract binding
+
+After the public C11 verifier returns, the explicit constructor selects
+`p15-s23-c11-mir-contract-binding` using the already validated header version
+and derives its exact rule with `p15-s23-c11-mir-source-rule-record`. These are
+existing Native owner definitions at f66; no source tuple is caller-supplied or
+selected from report labels. The helper compares this rule to both the original
+C11 artifact and the fresh report using the owner's strict structural comparator.
+
+The original artifact/report ingress values must match. The actual Core/context
+and policy go to the owner's existing versioned policy DATA validator, followed
+by its policy-binding projection. The resulting distinct Core-policy binding ID
+and C11-policy hash must match the artifact's independent verification report,
+MIR pass record and B1 preflight binding. This is additional relative wiring
+after fresh public authority; it is not a standalone report admission API.
+
+The packet retains this selection under `[:c11 :source-contract-selection]`.
+The existing packet semantic projection includes the complete C11 record;
+semantic, artifact and physical-provenance binding identities are recomputed.
+Versioned verification reconstructs that same selection through the fresh
+public path and strictly compares the complete packet. Coherently recomputing
+an input packet's digest cannot replace the fresh expected packet. Legacy
+construction does not add the selection field.
+
+No Gravity source pin was changed. C14/B1's historical rule gates still reject
+unsupported source tuples; binding the selected C11 contract does not confer
+new lowering acceptance. That requires independently reviewed downstream source
+contracts and their real source/plan/function identities.
+
+Source-only main comparison used main 6276c94b0b753c888ef8fecc794bcc81245ea3b3
+and merge base 0c3c3706126d3262a1fd9cf6a31372de1124995d. Main had no changes
+in the two edited packet components or their packet semantic projection since
+that base. Main still lacks the versioned C11 source-interface module and public
+arities. Their exact producer-owned composition gate remains Native f66's
+versioned public constructor/verifier and fixed contract/rule helpers; the
+consumer does not import or reimplement them. This comparison is not a merge
+or composed runtime acceptance.
+
+The three versioned policy/contract dependencies are declared without local
+implementations so the legacy baseline can still resolve the source forms.
+Declarations preserve existing Native Var roots and leave missing definitions
+unbound; they do not install a fallback or confer versioned acceptance.
+
 Genuine Core/context, separately fresh Core report, versioned C11 artifact/report,
 actual downstream acceptance and substitution negatives remain UNACCEPTED.
 No compiler, producer, authentication, broker or process inspection ran.
@@ -66,7 +109,7 @@ Commands observed before review:
 
 ```text
 clojure -J-Xmx256m -Sdeps '{:paths ["bootstrap/clojure/test"]}' -M -e "(require 'gravity.self-hosting.downstream-selection-test)(let [r (clojure.test/run-tests 'gravity.self-hosting.downstream-selection-test)] (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1)))"
-6 tests, 64 assertions, zero failures/errors.
+9 tests, 113 assertions, zero failures/errors.
 The earlier dispatch-only increment passed 3 tests, 27 assertions.
 
 clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test

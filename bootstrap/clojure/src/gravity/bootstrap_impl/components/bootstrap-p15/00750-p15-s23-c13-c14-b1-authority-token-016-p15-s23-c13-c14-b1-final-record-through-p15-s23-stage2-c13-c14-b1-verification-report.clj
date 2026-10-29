@@ -78,6 +78,57 @@
      (p15-s23-stage2-c11-mir-verification-report
       c11-artifact checked-core context))))
 
+;; The legacy base has no versioned policy API. Declarations keep its existing
+;; paths loadable; only the explicit path calls these producer-owned definitions.
+;; A composed Native owner must supply them, with no local implementation/fallback.
+(declare p15-s23-c11-mir-contract-binding
+         p15-s23-c11-mir-require-core-policy-data!
+         p15-s23-c11-mir-core-policy-binding)
+
+(defn- p15-s23-c13-c14-b1-selected-source-contract!
+  [c11-artifact checked-core context c11-report interface-header]
+  ;; Called only after the public C11 owner validates this exact header and
+  ;; authenticates/replays this original artifact/Core/context tuple.
+  ;; Selection comes from that explicit header, never supplied report labels.
+  (let [version (:version interface-header)
+        source-path (p15-s23-c11-ingress-source-path context)
+        binding (p15-s23-c11-mir-contract-binding version)
+        rule (p15-s23-c11-mir-source-rule-record binding)
+        ingress (:checked-core-ingress c11-artifact)
+        policy (:source-policy ingress)]
+    (doseq [observed [(:source-rule c11-artifact) (:source-rule c11-report)]]
+      (p15-s23-c11-mir-require-strict-structure!
+       source-path rule observed :selected-downstream-c11-source-contract))
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path ingress (:checked-core-ingress c11-report)
+     :selected-downstream-core-ingress)
+    (p15-s23-c11-mir-require-core-policy-data!
+     checked-core context policy version)
+    (let [policy-binding (p15-s23-c11-mir-core-policy-binding version policy)]
+      (doseq [observed [(get-in c11-artifact [:verification-report :checked-core-source-policy-binding])
+                        (get-in c11-artifact [:mir-module :pass-execution-record :checked-core-source-policy-binding])
+                        (get-in c11-artifact [:b1-preflight :binding :checked-core-source-policy-binding])]]
+        (p15-s23-c11-mir-require-strict-structure!
+         source-path policy-binding observed :selected-downstream-core-policy-binding))
+      {:source-interface interface-header
+       :source-contract binding
+       :source-rule rule
+       ;; These are distinct owner-computed domains, preserved without
+       ;; rehashing or substituting either identity for the other.
+       :checked-core-source-policy-binding policy-binding})))
+
+(defn- p15-s23-c13-c14-b1-bind-selected-source-contract
+  [packet selection]
+  (let [base (assoc-in packet [:c11 :source-contract-selection] selection)
+        semantic-id (p15-s23-c13-c14-b1-semantic-id base)]
+    (assoc base
+           :semantic-id semantic-id
+           :artifact-id (p15-s23-c11-mir-digest
+                         {:kind (:kind base) :schema-version 1 :semantic-id semantic-id})
+           :actual-path-binding-id
+           (p15-s23-c13-c14-b1-actual-path-binding-id
+            semantic-id (:actual-path-provenance base)))))
+
 (defn p15-s23-stage2-c13-c14-b1-packet-from-c11!
   "Explicit selection delegates header/version checks and fresh Core replay to
    the public C11 owner. Requires its versioned API (Native f66d9ff4 or a
@@ -87,11 +138,15 @@
    ;; compiler or backend work. Do not inspect untrusted header/report DATA here.
    (let [c11-report (p15-s23-stage2-c11-mir-verification-report
                      c11-artifact checked-core context interface-header)
+         selection (p15-s23-c13-c14-b1-selected-source-contract!
+                    c11-artifact checked-core context c11-report interface-header)
          source-path (p15-s23-c11-ingress-source-path context)]
      (try
-       (p15-s23-c13-c14-b1-build-verified-internal!
-        p15-s23-c13-c14-b1-authority-token
-        c11-artifact checked-core context c11-report)
+       (p15-s23-c13-c14-b1-bind-selected-source-contract
+        (p15-s23-c13-c14-b1-build-verified-internal!
+         p15-s23-c13-c14-b1-authority-token
+         c11-artifact checked-core context c11-report)
+        selection)
        (catch InterruptedException interrupted
          (.interrupt (Thread/currentThread))
          (throw interrupted))

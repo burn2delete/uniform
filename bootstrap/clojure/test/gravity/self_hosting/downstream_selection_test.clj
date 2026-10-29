@@ -58,13 +58,16 @@
   ;; Private artifact*/report* remain injected: semantic authentication is NOT run.
   (let [header (create-ns (gensym "header-controls-"))
         c11 (create-ns (gensym "c11-controls-"))
+        contract-space (create-ns (gensym "contract-controls-"))
         api (create-ns (gensym "c11-api-controls-"))]
     (try
       (doseq [[space forms alias-name alias-ns]
               [[header (pinned-source "bootstrap/clojure/src/gravity/source_interface_header.clj"
                                       "55bfa783c61d2a2c4e97dd31aadb48ecf012259edd26aef8033b7598665aaf23") nil nil]
                [c11 (pinned-source "bootstrap/clojure/src/gravity/c11_mir/source_interface.clj"
-                                   "4fa3f5cc22aa267e26647b5b705a5176e5200ad0779f251e4060b4d466a6747e") 'header header]]]
+                                   "4fa3f5cc22aa267e26647b5b705a5176e5200ad0779f251e4060b4d466a6747e") 'header header]
+               [contract-space (pinned-source "bootstrap/clojure/src/gravity/c11_mir/source_contract.clj"
+                                              "3d538701ae77a5a14bbf2d3beab37e738168dd4f1157af9c9f4b0115e040cebe") nil nil]]]
         (binding [*ns* space]
           (clojure.core/refer 'clojure.core)
           (when alias-name (alias alias-name (ns-name alias-ns)))
@@ -72,6 +75,24 @@
       (binding [*ns* api]
         (clojure.core/refer 'clojure.core)
         (alias 'c11-source-interface (ns-name c11))
+        (alias 'c11-source-contract (ns-name contract-space))
+        (let [forms (pinned-source
+                      "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00732-p15-s23-c11-mir-owned-upstream-diagnostic.clj"
+                      "4cef77f8f0afa7990609dd8c07ddeae2ec85033efbf0cf4db4ae31053e7f7bab")
+              selected (mapv #(definition forms %)
+                             '[p15-s23-c11-mir-contract p15-s23-c11-mir-versioned-record
+                               p15-s23-c11-mir-selected-builder-function p15-s23-c11-mir-selected-verifier-function
+                               p15-s23-c11-mir-contract-binding])]
+          ;; Legacy constants are not supplied by this v3 dependency fixture.
+          ;; Resolve them for compilation; executing a missing legacy branch fails.
+          (doseq [sym (filter #(and (symbol? %) (.startsWith (name %) "p15-s23-"))
+                             (tree-seq coll? seq selected))]
+            (intern api sym ::unavailable-legacy-constant))
+          (doseq [form selected] (eval form)))
+        (eval (definition
+                (pinned-source "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00741-p15-s23-c11-mir-map-blocks.clj"
+                               "52318894cdda3bbba54ae0dd7c893f50567e33767665d241af6f7db6f6276c8d")
+                'p15-s23-c11-mir-source-rule-record))
         (intern api 'artifact* (fn [& _] (throw (ex-info "Uninjected artifact owner" {}))))
         (intern api 'report* (fn [& _] (throw (ex-info "Uninjected report owner" {}))))
         (let [forms (pinned-source
@@ -80,7 +101,7 @@
           (doseq [sym '[p15-s23-stage2-c11-mir-artifact p15-s23-stage2-c11-mir-verification-report]]
             (eval (definition forms sym))))
         (f api))
-      (finally (doseq [space [api c11 header]] (remove-ns (ns-name space)))))))
+      (finally (doseq [space [api contract-space c11 header]] (remove-ns (ns-name space)))))))
 
 (deftest explicit-header-and-fresh-report-forwarding
   (let [artifact (Object.) core (Object.) context (Object.)
@@ -93,6 +114,12 @@
          (is (= 4 (count args)))
          (doseq [[actual expected] (map vector args [artifact core context header])]
            (is (identical? actual expected))) report)
+       'p15-s23-c13-c14-b1-selected-source-contract!
+       (fn [a c x fresh h]
+         (is (every? true? (map identical? [a c x fresh h] [artifact core context report header])))
+         (swap! calls conj :selection) :selection)
+       'p15-s23-c13-c14-b1-bind-selected-source-contract
+       (fn [packet selection] (is (= :selection selection)) packet)
        'p15-s23-c13-c14-b1-build-verified-internal!
        (fn [_ a c x fresh]
          (swap! calls conj :downstream)
@@ -101,7 +128,7 @@
          :synthetic-downstream)}
       (fn [invoke]
         (is (= :synthetic-downstream (invoke artifact core context header)))
-        (is (= [:owner :downstream] @calls))))))
+        (is (= [:owner :selection :downstream] @calls))))))
 
 (deftest owner-rejections-precede-all-downstream-work
   ;; These are injected owner outcomes, not execution of the real header,
@@ -152,6 +179,8 @@
         (with-entrypoint
           {'p15-s23-c11-ingress-source-path (fn [_] "synthetic")
            'p15-s23-stage2-c11-mir-verification-report public-report
+           'p15-s23-c13-c14-b1-selected-source-contract! (fn [& _] :synthetic-selection)
+           'p15-s23-c13-c14-b1-bind-selected-source-contract (fn [packet _] packet)
            'p15-s23-c13-c14-b1-build-verified-internal!
            (fn [_ _ _ _ fresh] (is (identical? report fresh)) :synthetic)}
           (fn [invoke]
@@ -228,3 +257,113 @@
           (is (true? (authentic? :packet :core :context)))
           (is (= [[:packet :core :context]] (mapv vec @calls)))
           (is (false? (authentic? :packet))))))))
+
+(deftest selected-source-contract-uses-native-fixed-rule-and-policy-joins
+  (with-pinned-c11
+    (fn [api]
+      (let [select-binding (var-get (ns-resolve api 'p15-s23-c11-mir-contract-binding))
+            make-rule (var-get (ns-resolve api 'p15-s23-c11-mir-source-rule-record))
+            binding (select-binding 3) rule (make-rule binding)
+            header {:interface :gravity/c11-mir :version 3}
+            ;; Synthetic policy identities remain distinct. Their real digest
+            ;; computation and fresh authority are owned by C11, not this test.
+            policy-binding {:source-policy-binding-id :synthetic-core-domain
+                            :source-policy-hash :synthetic-c11-domain}
+            policy {:synthetic-policy true}
+            ingress {:schema-version 3 :source-policy policy}
+            artifact {:source-rule rule :checked-core-ingress ingress
+                      :verification-report {:checked-core-source-policy-binding policy-binding}
+                      :mir-module {:pass-execution-record {:checked-core-source-policy-binding policy-binding}}
+                      :b1-preflight {:binding {:checked-core-source-policy-binding policy-binding}}}
+            report {:source-rule rule :checked-core-ingress ingress}
+            core {:schema-version 1} context {:synthetic true} calls (atom [])]
+        (is (= :closed-flat-bool-literal-sequence (:semantic-family binding)))
+        (is (= "sha256:4ca2bf8c551c9b0e7aefbeab84e7f7c9b5742bdeee10f68e74aff3470d35b3dd"
+               (:source-content-hash binding)))
+        (with-dispatch
+          '[p15-s23-c13-c14-b1-selected-source-contract!]
+          {'p15-s23-c11-ingress-source-path (fn [_] "synthetic")
+           'p15-s23-c11-mir-contract-binding select-binding
+           'p15-s23-c11-mir-source-rule-record make-rule
+           'p15-s23-c11-mir-require-strict-structure!
+           ;; Injected relative comparator, not owner authentication evidence.
+           (fn [_ expected observed fact]
+             (when-not (= (pr-str expected) (pr-str observed))
+               (throw (ex-info "Injected structural rejection" {:missing-fact fact}))))
+           'p15-s23-c11-mir-require-core-policy-data!
+           (fn [c x p v]
+             (is (identical? core c)) (is (identical? context x))
+             (is (identical? policy p)) (is (= 3 v))
+             (swap! calls conj :policy))
+           'p15-s23-c11-mir-core-policy-binding
+           (fn [v p] (is (= 3 v)) (is (identical? policy p)) policy-binding)}
+          (fn [select!]
+            (let [selection (select! artifact core context report header)]
+              (is (identical? header (:source-interface selection)))
+              (is (= binding (:source-contract selection)))
+              (is (= rule (:source-rule selection)))
+              (is (identical? policy-binding (:checked-core-source-policy-binding selection)))
+              (is (= [:policy] @calls)))
+            (doseq [[a r fact]
+                    [[(assoc-in artifact [:source-rule :source-content-hash] "stale") report
+                      :selected-downstream-c11-source-contract]
+                     [artifact (assoc-in report [:source-rule :semantic-family] :other)
+                      :selected-downstream-c11-source-contract]
+                     [(assoc-in artifact [:source-rule :source-byte-count] 597279N) report
+                      :selected-downstream-c11-source-contract]
+                     [artifact (assoc-in report [:checked-core-ingress :source-policy] {:crossed true})
+                      :selected-downstream-core-ingress]
+                     [(assoc-in artifact [:verification-report :checked-core-source-policy-binding]
+                                (assoc policy-binding :source-policy-hash :synthetic-core-domain)) report
+                      :selected-downstream-core-policy-binding]
+                     [(update-in artifact [:mir-module :pass-execution-record] dissoc :checked-core-source-policy-binding)
+                      report :selected-downstream-core-policy-binding]
+                     [(assoc-in artifact [:b1-preflight :binding :checked-core-source-policy-binding]
+                                {:source-policy-binding-id :crossed :source-policy-hash :crossed})
+                      report :selected-downstream-core-policy-binding]]]
+              (is (= fact (:missing-fact
+                            (try (select! a core context r header) nil
+                                 (catch clojure.lang.ExceptionInfo e (ex-data e)))))))))))))
+
+(deftest selected-source-contract-is-included-in-packet-identities
+  (let [packet {:kind :synthetic-packet :c11 {:artifact-id :synthetic-c11}
+                :actual-path-provenance {:source :synthetic}}
+        selection {:source-interface {:interface :gravity/c11-mir :version 3}
+                   :source-contract {:source-content-hash :synthetic}}]
+    (with-dispatch
+      '[p15-s23-c13-c14-b1-bind-selected-source-contract]
+      {'p15-s23-c13-c14-b1-semantic-id
+       (fn [p] (dissoc p :semantic-id :artifact-id :actual-path-binding-id))
+       'p15-s23-c11-mir-digest identity
+       'p15-s23-c13-c14-b1-actual-path-binding-id vector}
+      (fn [bind-selection]
+        (let [result (bind-selection packet selection)
+              changed (bind-selection packet (assoc selection :source-contract :crossed))]
+          (is (identical? selection (get-in result [:c11 :source-contract-selection])))
+          (is (= :synthetic-c11 (get-in result [:c11 :artifact-id])))
+          (is (not= (:semantic-id result) (:semantic-id changed)))
+          (is (not= (:artifact-id result) (:artifact-id changed)))
+          (is (not= (:actual-path-binding-id result) (:actual-path-binding-id changed)))))))
+  (binding [*packet-source-path* "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/001-source-authority-and-paths.clj"]
+    (with-dispatch
+      '[p15-s23-c13-c14-b1-semantic-input]
+      {'p15-s23-c13-c14-b1-path-neutral-value identity
+       'p15-s23-c13-c14-b1-stage-semantic-projection identity}
+      (fn [project]
+        (is (= {:source-contract-selection :synthetic-selection}
+               (:c11 (project {:c11 {:source-contract-selection :synthetic-selection}}))))))))
+
+(deftest versioned-declarations-preserve-owner-definitions-without-fallback
+  (let [space (create-ns (gensym "declaration-controls-"))
+        form (first (filter #(and (seq? %) (= 'declare (first %))
+                                 (= 'p15-s23-c11-mir-contract-binding (second %)))
+                            (tree-seq coll? seq (read-forms (slurp *packet-source-path*)))))]
+    (try
+      (binding [*ns* space]
+        (clojure.core/refer 'clojure.core)
+        (intern space 'p15-s23-c11-mir-contract-binding :existing-owner)
+        (eval form)
+        (is (= :existing-owner (var-get (ns-resolve space 'p15-s23-c11-mir-contract-binding))))
+        (doseq [sym '[p15-s23-c11-mir-require-core-policy-data! p15-s23-c11-mir-core-policy-binding]]
+          (is (false? (bound? (ns-resolve space sym))))))
+      (finally (remove-ns (ns-name space))))))
