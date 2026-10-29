@@ -76,12 +76,12 @@ requirement, release, self-hosting or seed-retirement credit is claimed.
 From the repository root:
 
 ```bash
-clojure -J-Xmx512m -M specs/requirement-reconciliation/profile-system/check.clj
+clojure -J-Xmx512m -M specs/requirement-reconciliation/profile-system/profile_requirements.clj
 ```
 
 An optional sole argument identifies the preserved applying manifest locally;
 its exact digest and all absent-field guards must match. Private paths and raw
-logs are not part of the published patch. [check.clj](check.clj) reads the exact
+logs are not part of the published patch. [profile_requirements.clj](profile_requirements.clj) reads the exact
 Git occurrence API's three helper declarations, original source and canonical
 task sources. It never loads compiler/proof entrypoints or writes canonical
 files. It previews all six task projectors in memory, preserving status and
