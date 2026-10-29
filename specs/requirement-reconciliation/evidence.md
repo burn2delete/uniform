@@ -12,9 +12,12 @@ whole-requirement evidence remain unassessed. This candidate awaits independent
 composed review and the scope auditor's concrete interface correction.
 
 All 240 original contracts retain explicit source dispositions. The 833 finite
-interface/evidence/architecture decisions are work within existing tasks and
-are excluded from the task denominator. Historical missing-interface IDs and
-retirements are preserved separately. The overlap proposal resolves ten source
+interface/evidence/architecture records are excluded from this provisional task
+denominator pending concrete allocation, entailment and granularity review;
+293 have no supporting task reference. The accountability link alone does not
+put their necessary work inside the counted tasks. The census therefore makes
+no whole-project ratio claim. Historical missing-interface IDs and retirements
+are preserved separately. The overlap proposal resolves ten source
 relations and adds intermediate stage/module admission criteria to the existing
 stage task; it grants no implementation credit or requirement-manifest adoption.
 
@@ -34,6 +37,15 @@ the symbolic HEAD name; it was replaced by the explicit source identity above.
 The family source-composition record and overlap record retain the exact inputs
 and criteria amendments. No compiler/runtime execution or release claim is
 supplied by this planning increment.
+
+Static CI on `b9fb1bd0c09d26a313bd94206b97e48ea6cf797a` passed after four
+imported family-tool warnings were corrected. Core source controls passed
+3 tests / 191 assertions. The AI control initially rejected the composed task
+hash, then an incorrect parser field failed its new inclusion assertion. The
+corrected control validates the exact reviewed historical task source and the
+current task's preserved projection, identity and Open status; 3 tests / 20
+assertions passed. The boundary gate again passed 6 / 11. Neither source test
+failure is treated as implementation evidence.
 
 ## Frozen input observation
 

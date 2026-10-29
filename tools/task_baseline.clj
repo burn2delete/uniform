@@ -33,7 +33,7 @@
      :open (get counts :open 0) :partial (get counts :partial 0)
      :recorded-blocked (get counts :blocked 0) :status-unassessed (get counts :unassessed 0)
      :unweighted-ratio {:numerator accepted :denominator total}
-     :qualification "Recorded task states only. Scoped accepted tasks do not close components, normative documents, requirements, milestones or release. Unrecorded dependency blocking and whole-requirement evidence remain unassessed."}))
+     :qualification "Provisional scoped task states only, not a whole-project ratio. Task granularity and complete source-to-task entailment remain unassessed. Scoped accepted tasks do not close components, normative documents, requirements, milestones or release. Unrecorded dependency blocking and whole-requirement evidence remain unassessed."}))
 (defn build [ref]
   (let [source (edn/read-string (pinned-text ref disposition-path))
         docs (:original-documents source)
@@ -69,10 +69,12 @@
     (doseq [{:keys [path current-sha256]} docs]
       (require! (= current-sha256 (sh-inventory/sha256 (pinned-text ref path))) (str "Contract source drift: " path)))
     (require! (every? (set (map :id tasks)) (keep :accountable-task decisions)) "Missing accountable task for remaining decision")
-    {:kind :canonical-derived-task-baseline :schema-version 1 :authority :read-only-derived-task-census
+    {:kind :provisional-derived-task-census :schema-version 1 :authority :read-only-derived-task-census
      :source-commit ref :inventory-sha256 (sh-inventory/sha256 inventory)
      :dispositions {:path disposition-path :sha256 (sh-inventory/sha256 (slurp disposition-path))}
      :scope {:original-contracts 240 :original-source-families 18
+             :whole-project-task-coverage :unestablished
+             :task-granularity :pending-concrete-interface-and-coverage-review
              :component-task-count (count rows)
              :release-task-ids (mapv :id (filter #(= "release" (:component %)) rows))
              :release-counting :already-included-in-component-task-count
@@ -82,7 +84,10 @@
              :requirement-candidate-denominator :not-adopted
              :phase-and-migration-checkboxes :not-counted}
      :progress (progress tasks) :tasks (vec (sort-by :id tasks))
-     :remaining-decisions {:count (count decisions) :source disposition-path :counting :acceptance-and-dependency-work-not-additional-tasks}
+     :remaining-decisions {:count (count decisions) :source disposition-path
+                           :without-supporting-task-references (count (filter #(empty? (:supporting-task-ids %)) decisions))
+                           :allocation-to-counted-tasks :unassessed
+                           :counting :excluded-pending-concrete-task-entailment-and-granularity-review}
      :independent-composed-review :required-separately
      :nonclaims [:no-implementation-credit-from-proposals :no-document-or-milestone-completion
                  :no-seedless-release-or-runtime-claim :no-target-or-product-selection]}))
