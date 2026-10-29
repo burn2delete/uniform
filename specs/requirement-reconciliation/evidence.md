@@ -599,3 +599,38 @@ controls passed 4 tests / 13 assertions, including proof-link precedence and
 refusal of an empty claimed allocation. Preparation reader/identity-field
 checks refused before writes and were corrected against the explicit stored
 semantic-source field; no identity alias was guessed or restored.
+
+## Governance12 and Core31 current source composition
+
+Task source `53ebb7f4f0bc712b253436b8f53182b07e3399df` composes the
+source-reviewed Governance12 and Core31 criteria. The selected public receipt
+is `governance-core43-current-composition.edn`, SHA256
+`31e305a915413ab8b56d7b54931754cc31c09ba067458a23600dd7b6698dedd1`.
+Ten Governance artifact producers are new Open tasks. Eleven Core predicates
+for the same semantic-change adoption decision share `evolution/change-review`;
+no duplicate Release adoption task is added. The exact union adjudication has
+SHA256 `1021f6e2ac13348386eb40a222450db5916c7d5883c7ecf6aa2b176af5b77b0c`.
+Ordinary development gains no per-run permission prerequisite.
+
+Eleven existing task fields retain their later prefixes and receive only their
+reviewed suffixes. Exact comparison against the preceding source confirms the
+148 declared decision-field changes, all 833 Open identities and all 303 prior
+criterion allocations. These source refinements grant no additional allocation
+or implementation credit. Public records contain no private filesystem paths.
+
+`current-criterion-bindings-473.edn`, SHA256
+`423fcc2b0dc7358147db355600857f0507935dc1297bc1e5b07030a06ef10278`,
+rebinds all 430 predecessors and 43 new historical criteria to actual committed
+task bytes and complete task contexts. Eighty-eight historical mappings remain
+unbound. Acceptance remains 430 of 561, with 131 unadopted until independent
+review of the actual composition. The provisional task census is 3 Accepted
+of 181, with 178 remaining; final scope and granularity remain under review.
+
+The new Evolution projection controls passed 2 tests / 13 assertions. Affected
+Backends passed 5/211, Build 5/86, Domains 7/213, Expand 4/41, Runtime 4/67 and
+Stdlib 5/79. Census controls passed 4/13, the language-boundary gate 6/11, and
+both canonical documentation validators passed. The first combined projection
+test invocation exposed shared `user` namespace collisions; separate processes
+passed. The SH projection test initially read during its concurrent regeneration
+and passed after generation completed: 12 tests / 416 assertions. No full CI result is claimed
+for this source checkpoint.
