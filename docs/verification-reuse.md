@@ -1549,6 +1549,56 @@ resolution before capture-v1 serialization. All original RV2 real-producer,
 miss/hit, unrelated reuse, per-lexical-input invalidation, provenance and
 fresh-policy acceptance obligations remain OPEN.
 
+#### Fresh workload reachability and startup attribution
+
+The source trace below starts from the `:test` main entrypoint in `deps.edn`,
+with exactly `gravity.c2-artifact-identity-test`, a contained `result.edn`, and
+`:observe-producer? true` in the existing development-cache options. It covers
+the observer surrounding execution, rather than treating the test body as the
+whole workload. This is a source assessment, not an observed execution.
+
+| Reachable source boundary | Source result |
+| --- | --- |
+| `self_hosting_test_runner.clj` namespace initialization | Requires EDN, I/O, string, test and component-dependency namespaces. Its selectable namespace set calls `dependency-index`, which reads and validates the dependency contract; it does not require all selectable tests. Dedicated test discovery inventories paths. |
+| `-main` optional wiring load | `requiring-resolve` loads `sh01_development_loop_wiring.clj`, including basis, digest, component dependencies, cache and broker namespaces. Cache/broker initialization defines constants, functions and process-local atoms; loading them does not itself acquire a broker lease or run a producer. |
+| `observe-fresh-producer!` bookends | Each `observe-fresh-producer-binding!` calls `effective-child-runtime`, `prepare-context`, declared-file/inventory reads and `run-git-bytes!` for clean status. `prepare-context` also creates/checks private coordination directories; fresh-only does not mean no observation I/O. |
+| Repository identity subprocesses | `git-repository-root`/`git-common-directory`, `incremental-observation`, full-snapshot fallback and revision collection call the same `run-git-bytes!` port. Commands include `rev-parse`, `ls-files`, `config`, `check-attr` and `status`. This port constructs `["git" ...]`, starts a ProcessBuilder, writes stdin on a daemon thread, drains merged output, joins the writer and waits for the root. It does not retain a canonical ownership token or descendant finalization record. |
+| Selected test loading and callbacks | `run-one-namespace` requires the selected namespace immediately before `clojure.test/run-tests`. The test requires both C2 facades; identity requires its five extracted modules, lexical validation its three modules, with `clojure.string` in lexical product. These bodies perform collection projection, hashing, span and graph checks. The test's operation callbacks and printer interpositions exercise those bodies, local atoms and explicit exceptions; the callback APIs are not general effect restrictions. |
+| Report and parent boundary | The child atomically publishes its validated report, prints its summary and calls `shutdown-agents`. The merged parent adapter receives an already launched Process, retains one token and delegates wait/capture/finalization to the canonical runner. The serializer consumes a report and separately supplied terminal facts; it neither launches nor discovers descendants. |
+
+The identity facade, its five modules, lexical facade, its three modules and
+selected test have no direct subprocess launch in their reviewed bodies. That
+finite finding does not close initialization, Git's own execution or arbitrary
+callback/host behavior. In particular, the Git helper inherits its executable
+search and configuration environment. `base-runtime-identities` identifies
+Clojure, Java and the test command, not the executable launched as bare `git`.
+Child environment/property fingerprints and repository byte identity do not
+establish Git's effective executable/configuration or its descendant set.
+There is no complete source-created child-set proof for the whole workload.
+Root death and tracked-handle completion therefore still leave global cleanup
+and selected-workload descendant reachability unresolved.
+
+The trace also found a concrete attribution gap: the fresh-only branch returns
+before the ordinary reusable-child startup snapshot check. Equal fresh
+observer bookends could therefore describe a new clean snapshot after runner
+code had loaded from an older prelaunch snapshot. The fresh observer now
+compares its context snapshot with the parent's supplied repository identity
+before collecting the binding. Missing or changed identity rejects with
+`SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE` and `:input-kind :child-startup`.
+Injected controls cover both refusals and the matching-identity path; they do
+not launch Git or the selected producer.
+
+An executable capture method remains unprepared: its exact resolved launcher,
+Java/basis/ordered classpath and startup inputs, Git execution/configuration
+and lifecycle scope, parent/child bounds, and unique contained report/capture
+destinations must be bound together. The child report writer uses atomic
+replacement of contained `result.edn`; it is not a one-shot capture publisher.
+The parent adapter does not yet read that report or publish capture bytes.
+Resolving those concrete gaps requires affected method review before a
+separately authorized execution. This source correction does not establish
+descendant coverage, set capture readiness, enable cache admission or satisfy
+real miss/hit, unrelated reuse or per-lexical-input acceptance.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
