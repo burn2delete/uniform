@@ -1318,3 +1318,145 @@ compatibility read/effect/representation or necessity decision, RV1's
 transitive mutation/equivalence or necessity decision, and whole RV4 remain
 open. Superseding PR529 neither executes those cases nor transfers restricted
 warm evidence or uncertain operations.
+
+### RV2/RV4: offline Reader producer evidence driver
+
+`gravity.build.producer-evidence`, under `bootstrap/clojure/test/gravity/build/`,
+checks retained public Reader producer captures without starting a producer,
+loading Bootstrap, acquiring a broker, probing processes, or reading cache
+state. This is the next bounded implementation of the existing RV2/RV4 evidence
+criterion. The current catalog freshness policy and production runners are
+unchanged. No real expanded-closure producer or reuse result is supplied here.
+
+The driver reads exactly three explicitly supplied local files: a capture-specific
+method manifest, the dependency contract, and the capture envelope. The caller
+supplies the method's SHA-256 from independent exact-artifact review. The method
+pins the other two files by their raw byte digests. Replacing a capture and
+recomputing its own hash cannot satisfy the independently pinned method. The
+capture-specific manifest is instantiated after capture; it is not the separate
+pre-execution method review or runtime admission required above.
+
+The closed `:gravity/reader-producer-method-v1` map has `:contract-sha256`,
+`:capture-sha256` and `:binding`. The binding contains:
+
+- `:source`: exact Git `:commit`, `:tree`, complete `:repository-identity` and
+  `:clean? true`;
+- `:inputs`: every declared Reader input, including all four lexical files,
+  consumed runners, tests and contracts, in declaration order, retaining
+  `:path`, `:role` and the runner's framed `:sha256` identity;
+- `:inventories` and `:shadow-inputs`: the pinned runner's complete material,
+  including absent-path identities, used to recompute the existing explicit
+  `:consumed-input-identity` without changing its encoding;
+- `:classpath-identities`: the actual ordered child classpath identities;
+  `:runtime-tool-inputs`: identified runtime/tool bytes; and
+  `:child-runtime-identity`: the actual-child runtime fingerprints, including
+  basis, basis file, configuration, JVM arguments, environment and properties.
+
+The `:gravity/reader-producer-capture-v1` envelope repeats the binding in
+`:binding-before` and `:binding-after`, retains `:producer-provenance` separately
+from `:applying-source`, and holds the complete emitted batch report as
+`:report-edn`. Its `:terminal` requires natural exit zero, no timeout, complete
+stdout/stderr, completed cleanup and a dead process root. The report must select
+exactly the Reader identity namespace, attempt it successfully, reconcile its
+nonzero test/assertion totals and retain untruncated namespace output. Missing,
+changed, mismatched, tagged, trailing or incomplete evidence is rejected with
+`PRODUCER-EVIDENCE-INVALID` and a stable `:field`; malformed EDN/UTF-8 also fails.
+
+Invoke only on explicitly supplied unrestricted artifacts:
+
+```bash
+clojure -J-Xmx256m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.build.producer-evidence \
+  REVIEWED_METHOD_SHA256 METHOD_EDN CONTRACT_EDN CAPTURE_EDN
+```
+
+A successful result says `:status :consistent`, `:cache-admission? false`,
+`:real-evidence-accepted? false` and `:producer-executed-by-driver? false`.
+The checker compares supplied observations; it does not independently measure
+or authenticate a child, discover effects/resources, establish that the supplied
+shadow inventory is complete, or prove that terminal observations occurred.
+Independent source/method and retained-result review must establish those facts.
+The controls use explicitly synthetic captures and do not count as real evidence.
+Real cold miss/producer, unchanged-selection hit with original provenance,
+unrelated documentation/test-body reuse, each lexical input's real invalidation,
+actual runtime attribution and final independent admission remain OPEN under
+RV2/RV4. Broader RV1 and compatibility closure obligations are unchanged.
+
+#### Complete captured output and frozen operational requirements
+
+The offline checker follows the existing batch runner's captured-output format:
+`:bytes`, `:observed-bytes` and `:limit-bytes` must be nonnegative integers,
+retained bytes cannot exceed the recorded capture limit, and complete output
+requires equal retained/observed/UTF-8 byte counts with `:truncated? false`.
+The initial driver omitted the capture-limit checks and could accept a missing
+or negative limit on an otherwise complete-looking record. The correction
+rejects those records through `PRODUCER-EVIDENCE-INVALID` / `:complete-output`,
+even when a synthetic method is repinned to the malformed capture. This is
+validation of the actual host capture record, not a compiler work allowance.
+Focused stdout/stderr controls retain valid exact-limit multibyte UTF-8 output,
+reject missing/mismatched metadata, and round-trip the public result with
+unchanged input byte hashes and a recorded serialized output hash.
+
+The existing RV2/RV4 operational evidence requirements remain fixed at this
+seam; the capture-specific method pins the source, declaration, runtime,
+ordered classpath, producer/applying provenance and terminal observations
+already specified above. A successful offline check never substitutes for the
+following observations:
+
+| Existing required observation | Exact evidence still required |
+| --- | --- |
+| Real cold miss and producer | Separately reviewed/admitted operational method; actual child execution and its original producer provenance, input/key identities, complete report and natural terminal bookends. The current driver accepts only fresh non-cacheable reports and does not validate an admitted miss. |
+| Unchanged-selection hit | Same consumed input, runtime and ordered classpath identities; no newly executed tests; original producer provenance retained and applying source recorded separately. The current driver rejects a hit report. |
+| Unrelated documentation/existing-test-body reuse | Exact applying source delta; unchanged consumed declarations, runner/contracts, inventories, shadows and runtime/classpath; original result/provenance retained. A declared test or contract mutation is not unrelated. |
+| Each lexical input's invalidation | Separate facade, operations, primitives and product mutations; changed identity/key and refusal of the old result, followed by a separately observed real fresh producer. Hypothetical repinning or synthetic failure checks are not these observations. |
+| Failure, missing input and tampering | Nonpassing terminal/report outcomes, absent or changed bytes, wrong owners/shadows/inventories, and mismatched provenance must refuse admission. No successful report or hash hides a failed or incomplete process. |
+
+The next operational gate is independent review of the exact public expanded-
+closure capture method and its observer/serializer, including how it obtains
+actual runtime and terminal facts and represents the later miss/hit cases,
+followed by separate runtime admission. No producer is authorized by this pure
+correction. Fresh-only policy stays active; real execution/result review and
+any later cache admission remain OPEN. The original 8/86 controls retain their
+source attribution; the changed output guard receives focused new controls
+rather than a repeated broad suite. Merged-commit CI40783760547 is terminal
+cancelled and supplies no successful result; it was not rerun or cancelled by
+this correction.
+
+#### Source-defined producer snapshot serialization
+
+The existing development wiring attaches its complete `:snapshot` as
+`:test-producer-provenance :repository-snapshot`. The offline driver's initial
+exact-map comparison instead required only `:repository-identity`, rejecting
+those source-defined records unless their metadata was removed. The correction
+accepts the existing closed snapshot shapes without changing their encoding:
+
+- `:gravity/sh01-complete-repository-snapshot-v1` / `:full-content-v1`;
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-full-content-v2`; and
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-overlay-v2`, including tracked and overlay path counts.
+
+These shapes come directly from `full-repository-snapshot`,
+`full-index-repository-snapshot` and `incremental-repository-snapshot` in
+`sh01_development_loop_wiring.clj`. Their required counters are nonnegative
+integers, their schema/engine pairing is exact, and their repository identity
+must match the pinned binding. Missing/extra fields, unknown schema/engine
+pairs and wrong identities fail with `:producer-snapshot`. The legacy
+hash-only v1 record remains a supplied declaration. Source revision, consumed
+identity, ordered classpath, runtime and terminal checks remain intact.
+
+The original snapshot metadata remains in the raw capture bytes pinned by the
+method; no observer fields are dropped or reconstructed. An injected metadata
+change changes the capture/method pin, and the old pin rejects it. Schema and
+engine names identify serialization shapes, not proof that an observer ran.
+All new controls supply these fields and terminal facts explicitly; none are
+captured runtime observations. The consistency result retains
+`:real-evidence-accepted? false` and `:cache-admission? false`.
+
+This does not add a runtime observer or a new miss/hit format. The current
+fresh-only wiring returns before producing the cache-enabled runtime/provenance
+bundle; that operational observation gap remains. Miss/hit claims, failed
+terminal records, and mismatched source/runtime/classpath provenance still
+refuse. Independent review of the actual observer/serializer method, separately
+admitted execution, real producer/reuse/invalidation evidence and result review
+remain the original RV2/RV4 gates. No schema-shaped fixture discharges them.

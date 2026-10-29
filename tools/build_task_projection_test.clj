@@ -1,9 +1,56 @@
 (load-file "tools/build_task_projection.clj")
-(require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
+(require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str] '[clojure.edn :as edn]
          '[clojure.java.io :as io])
 (def tasks (slurp build-task-projection/task-path))
 (def roadmap (slurp build-task-projection/roadmap-path))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
+
+(defn interface-sha [text]
+  (format "%064x" (java.math.BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-256") (.getBytes text "UTF-8")))))
+(defn check-interface [a task-text source-text]
+  (let [before (:before a) after (:after a) ref (:task-reference after)
+        ids #{"facet/ai-build-tools/pkg5/1694-1763" "facet/ai-build-tools/pkg5/2238-2273"
+              "facet/ai-build-tools/pkg5/3538-3616" "facet/ai-build-tools/pkg5/4019-4066"}
+        source-bytes (.getBytes source-text "UTF-8")
+        row (first (build-task-projection/records task-text))]
+    (when-not (and (= [:task-reference :task-gap] (:allowed-fields a))
+                   (= "behavior/pkg5/yank-revocation-admission" (:requirement-id a) (:id before) (:id after))
+                   (= (dissoc before :task-reference :task-gap) (dissoc after :task-reference :task-gap))
+                   (= (:task-gap before) (get-in after [:task-gap :prior-gap]))
+                   (= 4 (count (:source-facets a)))
+                   (= ids (set (:source-facet-ids before)) (set (map :id (:source-facets a))))
+                   (= "build-implementation-tasks" (:marker ref))
+                   (= build-task-projection/task-path (:path ref))
+                   (= (:id row) (:id ref)) (= "Open" (:status row))
+                   (= (:sha256 ref) (interface-sha task-text))
+                   (= (get-in a [:source-document :sha256]) (interface-sha source-text)))
+      (throw (ex-info "Changed task-interface identity, fields or source hash" {})))
+    (doseq [f (:source-facets a)]
+      (when-not (= (:raw-sha256 f)
+                   (interface-sha (String. (java.util.Arrays/copyOfRange source-bytes (:start-byte f) (:end-byte f)) "UTF-8")))
+        (throw (ex-info "Changed source facet span" {}))))
+    (doseq [term ["yank/revocation policy" "signature/revocation status" "historical rebuild"
+                  "PKG5006" "without silently replacing or erasing locked history"]]
+      (when-not (str/includes? (:acceptance row) term)
+        (throw (ex-info "Missing yank/revocation acceptance predicate" {}))))
+    true))
+
+(deftest exact-yank-interface-and-field-conservation
+  (let [a (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
+        source (slurp (get-in a [:source-document :path]))]
+    (is (check-interface a tasks source))
+    (is (= :unassessed (get-in a [:conservation :implementation-acceptance])))
+    (doseq [bad [(assoc a :allowed-fields [:task-reference :task-gap :atomicity])
+                 (assoc-in a [:after :atomicity] :accepted)
+                 (assoc-in a [:after :id] "invented")
+                 (assoc-in a [:after :task-reference :marker] "other-tasks")
+                 (assoc-in a [:after :task-reference :id] "build/unknown")
+                 (update a :source-facets conj (first (:source-facets a)))
+                 (assoc-in a [:after :task-reference :sha256] (apply str (repeat 64 "0")))
+                 (assoc-in a [:source-facets 0 :raw-sha256] (apply str (repeat 64 "0")))]]
+      (is (rejects? #(check-interface bad tasks source))))
+    (is (rejects? #(check-interface a (str tasks "\nchanged") source)))
+    (is (rejects? #(check-interface a tasks (str source "\nchanged"))))))
 
 (deftest canonical-records-and-generated-boundaries
   (let [rows (build-task-projection/records tasks)]

@@ -1,0 +1,61 @@
+{:kind :selected-source-consumer-preparation-evidence
+ :owner-thread "01a183df-1179-7b83-8bc0-dcabf4141f9d"
+ :scope :portable-harness-and-cheap-injected-controls
+ :PR 544 :state :draft
+ :source-reconciliation
+ {:preserved-candidate "b83e8b1c24201e052bce4bc6617d5f3b4c9ffe96"
+  :composed-main "43112981c2e6ee47e1cc1451dbe3b750f88ee874"
+  :merge "65b7e166fb5e231aebd1b0a03c20d11008de1f4f"
+  :merge-tree "cd642dd1415b7d4fb28707b1d6847cf493195122"
+  :first-harness-commit "015df53969ef527b89c90523bc70218195a2a04d"
+  :later-main-reconciliation :pending
+  :latest-fetch :filesystem-FETCH_HEAD-permission-failure-no-retry
+  :local-origin-main-at-failure-readback "68a127520c2465a90a4a9b06742cb58ebaffca77"
+  :ref-change-attribution :not-established}
+ :reviewed-inputs
+ {:harness {:path "bootstrap/clojure/test/gravity/resolve/selected_source_harness.clj"
+            :sha256 "467a604871676deda9f37b1811647a22047c927d1fe89e3f542b3dfcb6e6c5d9"}
+  :controls {:path "bootstrap/clojure/test/gravity/resolve/selected_source_harness_test.clj"
+             :sha256 "55989950d95176ec43edf2f8bffd1b442efda46a70ae5d9bce4b0ec529108745"}
+  :existing-causal-kernel
+  {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-03.clj"
+   :sha256 "6365e48cc889349419e450eb58563ba8aca9f698e9c7f9fe7be56304378163f0"}}
+ :local-validation
+ {:cheap-controls {:tests 7 :assertions 177 :fail 0 :error 0 :exit 0
+                   :heap-option "-J-Xmx256m" :Bootstrap-loaded false
+                   :runner :direct-clojure-test-with-explicit-src-and-test-classpath
+                   :namespace gravity.resolve.selected-source-harness-test
+                   :claim :injected-harness-and-actual-pure-causal-leaf-controls-only}
+  :language-boundary {:command "clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+                      :tests 6 :assertions 11 :fail 0 :error 0 :exit 0}
+  :whitespace :passed
+  :optional-local-clj-kondo :unavailable-command-not-found}
+ :independent-review
+ {:reviewer :review_selected_harness
+  :first-disposition :changes-required
+  :findings [:incomplete-C2-span-comparisons :source-origin-cardinality
+             :empty-expected-diagnostic-origin :ambiguous-owner-not-last]
+  :corrections [:all-eight-span-fields-and-required-keys :sole-source-origin
+                :nonempty-transported-origin :duplicate-entire-stream]
+  :re-review :scoped-accept-no-remaining-blocking-finding
+  :exact-input-hashes :match-reviewed-inputs
+  :reviewer-execution :none
+  :limits [:normal-C3-verifier-owns-exact-history-root-validation
+           :cheap-test-source-lookup-is-checkout-relative
+           :injected-owner-or-prepared-map-is-not-authentication-evidence
+           :inherited-selected-source-implementation-and-admission-not-accepted]}
+ :preserved [:four-original-checkout-variants :separate-draft-PR512-at-5b5f0a05
+             :original-Reader-controls :original-handoff-and-private-receipts
+             :initial-read-failure-and-successful-same-actor-Git-recovery-history]
+ :runtime {:constructor-calls 0 :Bootstrap-loaded-by-controls false
+           :broker-or-process-probes 0 :unknown-operation-replays 0
+           :original22232 :unknown :Reader-continuation :not-resent}
+ :remaining-acceptance
+ [:latest-main-reconciliation-after-supported-filesystem-access
+  :routine-current-head-CI-and-composed-source-review
+  :reviewed-normal-owner-prepared-input-and-runtime-tuple
+  :supported-resolution-of-actual-admission-safety
+  :genuine-selected-binding-Guest-AE-and-C5-composition
+  :real-generated-diagnostic-composition :paired-extension-and-relocation-if-claimed]
+ :nonclaims [:runtime-admission :inherited-implementation-acceptance :ACC13-closure
+             :frozen-public-authority :C12 :release]}

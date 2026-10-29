@@ -311,7 +311,10 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+ {"bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+  {:namespace gravity.reader.dispatch-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
   {:namespace gravity.self-hosting.private-collection-chain-test
    :slice "SH-08" :owner :sh-types}
   "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
