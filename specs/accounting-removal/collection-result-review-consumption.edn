@@ -1,0 +1,150 @@
+{:historical-width1025
+ :covered-by-preserved-stronger-result-descriptor-consumer-table,
+ :production-qualification
+ "All five current APIs and complete forms match the census and parent. Historical hashes below record actual differences; pins do not establish transitive semantics or runtime equivalence. Existing accounting and outer interfaces remain separate obligations.",
+ :nonclaims
+ [:main-CI
+  :current-main-preflight
+  :integration
+  :whole-ACC01
+  :PR502-closure
+  :runtime-acceptance
+  :APPROVE],
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-owner-tests :UNRUN,
+  :target-kernels :UNRUN},
+ :negative-controls
+ [{:name :constructor-selected-field,
+   :rejected true,
+   :failed-contracts [:constructor-complete]}
+  {:name :remove-depth192,
+   :rejected true,
+   :failed-contracts [:depth192]}
+  {:name :omit-depth129,
+   :rejected true,
+   :failed-contracts [:depths-and-descriptor :nested-invalid]}
+  {:name :omit-descriptor-return,
+   :rejected true,
+   :failed-contracts [:depths-and-descriptor]}
+  {:name :omit-nested-invalid,
+   :rejected true,
+   :failed-contracts [:nested-invalid]}
+  {:name :omit-width1025,
+   :rejected true,
+   :failed-contracts [:width1025]}
+  {:name :omit-late-invalid,
+   :rejected true,
+   :failed-contracts [:late-invalid]}],
+ :candidate "70e953057b840c0b6ace94d099d644ef9c7c139d",
+ :main-reconciliation :pending,
+ :integration :pending-coordinator,
+ :scope :independent-source-only,
+ :production
+ [{:name sh08-lc-validate-types,
+   :arguments [arguments],
+   :current-form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+   :historical-arguments [arguments],
+   :historical-form-sha256
+   "b9c0d0a219e4985ec89ead54e0ea66aa861901dfd66b5089b5d0ddfa6110ea47",
+   :historical-byte-form-equivalence false}
+  {:name sh08-lq-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :current-form-sha256
+   "de1734096d2276bd9a185418202ebe4a38454fe0cf4f422c413aff2bcf106428",
+   :historical-arguments
+   [core node call edge nodes bindings types forms budget],
+   :historical-form-sha256
+   "0791b278e035e53b3fc440bb7834c020b213cb8a1a965cb1fff6deea59a49305",
+   :historical-byte-form-equivalence false}
+  {:name sh08-vrest-inferred-call,
+   :arguments [core node call edge nodes bindings types budget],
+   :current-form-sha256
+   "6b23ad0a56b9bc94ef1bc2385f4b28d282ac844883cc40105f4d5bfd435364a1",
+   :historical-arguments
+   [core node call edge nodes bindings types budget],
+   :historical-form-sha256
+   "6b23ad0a56b9bc94ef1bc2385f4b28d282ac844883cc40105f4d5bfd435364a1",
+   :historical-byte-form-equivalence true}
+  {:name sh08-pl-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :current-form-sha256
+   "80ceb90398321506519b4294a539605e3815732a0b8c9ac9cfc2ca886d3eb1d7",
+   :historical-arguments
+   [core node call edge nodes bindings types forms budget],
+   :historical-form-sha256
+   "c80d0baedcb21067cc886cc451aad3c94a0ea913a9149165548f102b0c16fd08",
+   :historical-byte-form-equivalence false}
+  {:name sh08-pl-inferred-call-valid?,
+   :arguments [core node call edge nodes bindings types],
+   :current-form-sha256
+   "5fce7f00dbc6e72ef5d607046d8814c6ec3e7705c7a2c75f26263d2c668cb112",
+   :historical-arguments [core node call edge nodes bindings types],
+   :historical-form-sha256
+   "2d68e4e6326f857857887e3592147282c07f538521d19b67b91a36dd03fb0f09",
+   :historical-byte-form-equivalence false}],
+ :CI
+ {:candidate "70e953057b840c0b6ace94d099d644ef9c7c139d",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernel-evidence false},
+ :consumption
+ {:receipt-tree-parent-census-test-files-five-source-forms :verified,
+  :new-execution false,
+  :reviewer-or-owner-message-sent false},
+ :fresh-independent-composition :pending,
+ :lint
+ {:version "2025.10.23",
+  :base {:error 0, :warning 71, :info 0},
+  :candidate {:error 0, :warning 71, :info 0},
+  :normalized-complete-multisets :identical,
+  :policy-change false,
+  :cache false,
+  :repro true},
+ :current-main-source-observation
+ {:commit "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+  :five-named-dependency-forms :identical,
+  :new-composition-or-transitive-acceptance false},
+ :kind :verified-collection-result-source-review-consumption,
+ :historical-list-block :byte-identical,
+ :receipt-sha256
+ "c760842dcc553bd461e5de401c3e10e3f807811c69e356c8a1d8c5b214b23cb7",
+ :verdict :PASS,
+ :test-byte-conservation :exact-full-file-recovery,
+ :source-checks 51,
+ :generator
+ {:language :clojure,
+  :sha256
+  "899c662ece216c0313be00c48246607ad1a290bd67e20d10a4a7e585a278f2ef",
+  :preserved-locally true},
+ :historical-call-differences
+ [{:name sh08-lc-validate-types,
+   :added-direct-call-symbols
+   (sh08-lc-ancestor?
+    sh08-lc-native-arguments
+    sh08-lc-native-map?
+    sh08-lc-native-view?),
+   :removed-direct-call-symbols (map? sh08-vf-original-data vector?)}
+  {:name sh08-lq-derive,
+   :added-direct-call-symbols (),
+   :removed-direct-call-symbols ()}
+  {:name sh08-vrest-inferred-call,
+   :added-direct-call-symbols (),
+   :removed-direct-call-symbols ()}
+  {:name sh08-pl-derive,
+   :added-direct-call-symbols
+   (sh08-lc-native-map? sh08-pl-validate-types),
+   :removed-direct-call-symbols (- contains? sh08-pl-type-work)}
+  {:name sh08-pl-inferred-call-valid?,
+   :added-direct-call-symbols (sh08-pl-validate-types),
+   :removed-direct-call-symbols (sh08-pl-type-work)}],
+ :verified-census-sha256
+ "ded1116f2bc5afc51d2c4a239467c4d60e2905ed7fa97d3bea2e615e0f6ed47a",
+ :base "0f508ea87b75ce0718000d11d588c191c2123838",
+ :pr 632,
+ :owner :ACC-01,
+ :historical-comparison-note
+ "Argument lists are preserved for all five APIs. Only sh08-vrest-inferred-call has the same complete read form as PR502; the other four differ and cannot inherit historical execution results. Direct call-symbol changes below are structural evidence, not a claim of semantic equivalence.",
+ :candidate-tree "29c69a05babcc3434473f876362a8e3b6c567e18"}

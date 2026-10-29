@@ -613,6 +613,19 @@ helper mappings remain explicit rather than being treated as missing features.
   Existing CI seven successes/two skips is separate. Genuine tests remain UNRUN;
   PR568 acceptance, main extraction/dependency reconciliation and integration
   are not conferred, and the DSE launch denial stays stopped.
+- Exact PR632 `70e95305`, tree `29c69a05`, now has independent SOURCE PASS,
+  receipt SHA256
+  `c760842dcc553bd461e5de401c3e10e3f807811c69e356c8a1d8c5b214b23cb7`.
+  [Consumption](collection-result-review-consumption.edn) verifies receipt/tree,
+  parent, census/test hashes and all five current C7 dependency forms. Fifty-one
+  static checks and seven source-weakening refusals pass; exact edit reversal
+  reconstructs the base test bytes, and the restored List block matches original
+  bytes. All current late-invalid/result/width checks remain. Independent lint
+  reproduces zero errors and identical 71-warning multisets under unchanged
+  configuration. Four historical helper differences remain explicit; no prior
+  execution or transitive equivalence is inherited. The five named dependency
+  forms also match observed main `a6f5b2f9`, a source observation only. Genuine
+  tests stay UNRUN; changed-base composition, preflight and integration are open.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
