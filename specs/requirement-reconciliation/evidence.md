@@ -1,5 +1,29 @@
 # Requirement reconciliation evidence
 
+## Historical-input CI closure repair
+
+Public CI at `40f87272` passed static, bootstrap, leaf and snapshot jobs but
+failed the Build historical receipt test: the old `git show` input exited
+nonzero in CI, followed by the missing task-region error. The original source
+object was available locally but was not a declared portable test input.
+
+The committed historical fixture preserves the exact original task source
+`3bd7e21145dfe5d71f45375f6e787b384d361e2e`, SHA256
+`6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0`,
+and the original roadmap bytes, independently matched to the unchanged yank
+receipt and source-version bridge. Fixture SHA256:
+`6a51024ad2cd04f3dce9979adb699f95ac3ea1c3dd7701bd30b23bfb9266df30`.
+It is immutable historical input, not another editable task authority. The
+Build test rejects wrong commit/path/kind/hash, absent text and changed text;
+SH checks both historical file hashes and the actual current Git-pinned
+sources. Current-prefix, provenance, link, symlink and tamper checks remain.
+
+Build passed 5 tests / 86 assertions, SH passed 11 / 326 and the boundary
+passed 6 / 11. An initial fixture-builder reader typo refused before writing;
+the corrected, pre-read helper completed. Other unchanged passing projection
+families were not rerun. The accepted 200-mapping artifact SHA256 remains
+`1496c831e3cbf1a5f2a88b586db496fc5d7e83b8aa213e0be1fecbbc37675f03`.
+
 ## Accepted 200-mapping composition increment
 
 Independent affected-composition review accepted exactly the enumerated 200

@@ -178,14 +178,18 @@
     (is (every? #(= "Open" (get-in % [:after :status])) rows))
     (is (:historical-suffix-unchanged lineage))
     (let [successor (or (get-in view [:mapping-review :historical-criterion-source-composition :source-commit])
-                        (get-in view [:mapping-review :family-task-source-composition :source-commit]))]
+                        (get-in view [:mapping-review :family-task-source-composition :source-commit]))
+          historical (edn/read-string (slurp "specs/build-workflow/fixtures/yank-task-source.edn"))]
+      (is (= (:applying-task-source bridge) (:source-commit historical)))
       (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
         (is (= (or successor (:applying-task-source bridge))
                (get-in view [:applying-source-pins path])))
         (when successor
           (is (= (slurp path) (sh-crosswalk/git-source successor path)))
-          (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
-                 (sh-inventory/sha256 (sh-crosswalk/git-source (:applying-task-source bridge) path)))))))
+          (let [old (if (= path (:path historical)) historical (:roadmap-source historical))]
+            (is (= path (:path old)))
+            (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
+                   (:sha256 old) (sh-inventory/sha256 (:text old))))))))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
     (is (= "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57"

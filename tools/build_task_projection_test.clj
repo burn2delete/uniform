@@ -1,6 +1,6 @@
 (load-file "tools/build_task_projection.clj")
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str] '[clojure.edn :as edn]
-         '[clojure.java.io :as io] '[clojure.java.shell :as shell])
+         '[clojure.java.io :as io])
 (def tasks (slurp build-task-projection/task-path))
 (def roadmap (slurp build-task-projection/roadmap-path))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
@@ -35,12 +35,21 @@
         (throw (ex-info "Missing yank/revocation acceptance predicate" {}))))
     true))
 
+(defn historical-task-source [a fixture]
+  (when-not (and (= :historical-build-task-source (:kind fixture))
+                 (= (:task-source-commit a) (:source-commit fixture))
+                 (= (get-in a [:after :task-reference :path]) (:path fixture))
+                 (string? (:text fixture))
+                 (= (get-in a [:after :task-reference :sha256]) (:sha256 fixture)
+                    (interface-sha (:text fixture))))
+    (throw (ex-info "Changed historical yank task source" {})))
+  (:text fixture))
+
 (deftest exact-yank-interface-and-field-conservation
   (let [a (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
         source (slurp (get-in a [:source-document :path]))
-        historical (shell/sh "git" "show" (str (:task-source-commit a) ":" build-task-projection/task-path))
-        _ (is (zero? (:exit historical)))
-        pinned-tasks (:out historical)
+        historical (edn/read-string (slurp "specs/build-workflow/fixtures/yank-task-source.edn"))
+        pinned-tasks (historical-task-source a historical)
         prior-row (first (build-task-projection/records pinned-tasks))
         current-row (first (build-task-projection/records tasks))]
     ;; This immutable receipt binds its original complete file, not every later
@@ -49,6 +58,13 @@
     (is (= (select-keys prior-row [:id :title :status :evidence])
            (select-keys current-row [:id :title :status :evidence])))
     (is (str/starts-with? (:acceptance current-row) (:acceptance prior-row)))
+    (doseq [bad [(assoc historical :source-commit "wrong")
+                 (assoc historical :path "other/tasks.md")
+                 (assoc historical :sha256 "wrong")
+                 (dissoc historical :text)
+                 (update historical :text str "changed")
+                 (assoc historical :kind :current-implementation-acceptance)]]
+      (is (rejects? #(historical-task-source a bad))))
     (is (= :unassessed (get-in a [:conservation :implementation-acceptance])))
     (doseq [bad [(assoc a :allowed-fields [:task-reference :task-gap :atomicity])
                  (assoc-in a [:after :atomicity] :accepted)
