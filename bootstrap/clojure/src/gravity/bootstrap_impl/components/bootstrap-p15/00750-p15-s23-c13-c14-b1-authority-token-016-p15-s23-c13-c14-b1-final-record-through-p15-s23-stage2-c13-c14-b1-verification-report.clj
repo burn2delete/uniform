@@ -38,15 +38,9 @@
            (p15-s23-c13-c14-b1-actual-path-binding-id
             semantic-id actual-path-provenance))))
 
-(defn- p15-s23-c13-c14-b1-build-internal!
-  [candidate c11-artifact checked-core context]
-  (let [source-path (p15-s23-c11-ingress-source-path context)
-        sorted-policy (p15-s23-c11-carrier-sorted-policy checked-core)]
-    (p15-s23-c13-c14-b1-require-trusted!
-     source-path :c13-c14-b1-c11-ingress c11-artifact sorted-policy)
-    (let [c11-report
-          (p15-s23-stage2-c11-mir-verification-report
-           c11-artifact checked-core context)]
+(defn- p15-s23-c13-c14-b1-build-verified-internal!
+  [candidate c11-artifact checked-core context c11-report]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
       (when-not (= :passed (:status c11-report))
         (p15-s23-b3-llvm-fail!
          "B1-INPUT" source-path c11-artifact
@@ -70,10 +64,54 @@
              (:b1 bindings))]
         (p15-s23-c13-c14-b1-final-record
          source-path c11-artifact checked-core c11-report bindings
-         c13-record c14-record b1-record)))))
+         c13-record c14-record b1-record))))
+
+(defn- p15-s23-c13-c14-b1-build-internal!
+  [candidate c11-artifact checked-core context]
+  ;; Retain the legacy carrier gate before its unversioned fresh owner call.
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (p15-s23-c13-c14-b1-require-trusted!
+     source-path :c13-c14-b1-c11-ingress c11-artifact
+     (p15-s23-c11-carrier-sorted-policy checked-core))
+    (p15-s23-c13-c14-b1-build-verified-internal!
+     candidate c11-artifact checked-core context
+     (p15-s23-stage2-c11-mir-verification-report
+      c11-artifact checked-core context))))
 
 (defn p15-s23-stage2-c13-c14-b1-packet-from-c11!
-  [c11-artifact checked-core context]
+  "Explicit selection delegates header/version checks and fresh Core replay to
+   the public C11 owner. Requires its versioned API (Native f66d9ff4 or a
+   validated composition). This does not extend downstream source contracts."
+  ([c11-artifact checked-core context interface-header]
+   ;; The owner rejects unsupported/mixed headers before downstream source,
+   ;; compiler or backend work. Do not inspect untrusted header/report DATA here.
+   (let [c11-report (p15-s23-stage2-c11-mir-verification-report
+                     c11-artifact checked-core context interface-header)
+         source-path (p15-s23-c11-ingress-source-path context)]
+     (try
+       (p15-s23-c13-c14-b1-build-verified-internal!
+        p15-s23-c13-c14-b1-authority-token
+        c11-artifact checked-core context c11-report)
+       (catch InterruptedException interrupted
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
+       (catch StackOverflowError _
+         (p15-s23-b3-llvm-fail!
+          "B1-INPUT" source-path {}
+          {:missing-fact :bounded-hostile-c13-c14-b1-host-stack}))
+       (catch AssertionError error
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-c13-c14-b1-assertion error))
+       (catch LinkageError error
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-c13-c14-b1-linkage error))
+       (catch clojure.lang.ExceptionInfo exception
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-c13-c14-b1-diagnostic exception))
+       (catch Exception exception
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-c13-c14-b1-host-failure exception)))))
+  ([c11-artifact checked-core context]
   (let [source-path (p15-s23-c11-ingress-source-path context)]
     (try
       (p15-s23-c13-c14-b1-build-internal!
@@ -97,7 +135,7 @@
          source-path :contained-c13-c14-b1-diagnostic exception))
       (catch Exception exception
         (p15-s23-b3-llvm-contain-exception!
-         source-path :contained-c13-c14-b1-host-failure exception)))))
+         source-path :contained-c13-c14-b1-host-failure exception))))))
 
 (def p15-s23-c13-c14-b1-final-packet-keys
   #{:kind :schema-version :status :c11 :c13 :c14 :b1 :optimized-mir
