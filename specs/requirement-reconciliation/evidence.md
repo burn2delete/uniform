@@ -1575,6 +1575,13 @@ review remain separate. The historical 561 mapping adoptions and prior source
 predicate reviews do not confer whole-facet entailment, granularity acceptance,
 legacy ACC adjudication, final count acceptance, release, or self-hosting credit.
 
+The generated census and its check now confirm those provisional states at
+source `145442c5434cad807870505fb75d523a0ef22998`. The finite source tuple in
+`granularity13-frozen-source-tuple.edn` records before/after task, projector,
+roadmap, decision-data, and witness hashes, the thirteen literal identities,
+and conservation of all 240 original document bytes. It is review input;
+independent granularity acceptance remains pending.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten

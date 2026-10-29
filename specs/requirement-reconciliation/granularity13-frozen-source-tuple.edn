@@ -1,0 +1,183 @@
+{:new-task-ids
+ ["math/eml-normalization-and-search"
+  "math/certified-implementation-synthesis"
+  "math/interval-and-real-proof-production"
+  "math/symbolic-rule-and-trace-production"
+  "math/independent-proof-and-certificate-checking"
+  "schema/compatibility-and-migration"
+  "schema/checked-consumer-projection"
+  "stdlib/remaining-tasks-and-evidence/implement-query-and-transaction-adapters"
+  "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters"
+  "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters"
+  "stdlib/remaining-tasks-and-evidence/implement-compiler-and-syntax-adapters"
+  "stdlib/remaining-tasks-and-evidence/implement-cryptographic-adapters"
+  "stdlib/remaining-tasks-and-evidence/implement-ui-and-event-adapters"],
+ :decision-data-change
+ {:before
+  {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+   :path "specs/requirement-reconciliation/source-dispositions.edn",
+   :sha256
+   "e82d9360ab921f51ffc1c4504cc7752dbf7b5a4362f124b9aadbe0a6db675c9d"},
+  :after
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path "specs/requirement-reconciliation/source-dispositions.edn",
+   :sha256
+   "ca3d33afa9c1e93f5b4bd987b5f047ffb051e9966a3bc99f2ebcdf0a14abba20"}},
+ :witness-change
+ {:before
+  {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+   :path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn",
+   :sha256
+   "ce86c5aacc8c7cea39e2785a51889c762f0e4661010813dcafcbc73c368c41d1"},
+  :after
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+   :sha256
+   "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982"}},
+ :source-tree "778f856c1d304778cd8a579196a1875dfb9231fe",
+ :integration :coordinator-only,
+ :new-open-leaves 13,
+ :original-documents
+ {:count 240,
+  :all-byte-unchanged true,
+  :paths-sha256
+  "ed6cb22641a952fab2ebb2ede7a29c6bf5f1f5adb5583ec6cab640d9eec2b314"},
+ :source-commit "145442c5434cad807870505fb75d523a0ef22998",
+ :preservation
+ {:new-envelope-review :pending-independent-granularity-review,
+  :whole-facet-entailment :pending,
+  :prior-review-scope :original-predicates-only,
+  :current-spans 4819,
+  :legacy-ACC13 :separate-pending-scope-adjudication,
+  :historical-ids 561,
+  :legacy-context-envelopes
+  :preserved-history-without-independent-authentication-claim,
+  :current-owning-criterion-witnesses 931,
+  :new-allocation-reviews-pending 0,
+  :implementation-credit :none,
+  :refined-references 170,
+  :stable-open-decisions 833,
+  :qualified-predicate-reviews 530},
+ :kind :finite-granularity13-source-and-witness-tuple,
+ :routing-source-commit "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
+ :task-and-projector-changes
+ [{:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "specs/domains-workflow/tasks.md",
+    :sha256
+    "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "specs/domains-workflow/tasks.md",
+    :sha256
+    "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1"}}
+  {:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "specs/stdlib-workflow/tasks.md",
+    :sha256
+    "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "specs/stdlib-workflow/tasks.md",
+    :sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25"}}
+  {:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "docs/component-roadmaps/domains.md",
+    :sha256
+    "1743243312822cf2a2f333c5ec95fef40bc61231ef16c2965680a710d0071ac9"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "docs/component-roadmaps/domains.md",
+    :sha256
+    "7ef5c26ed10bbcb5b90f922aa6f658bbd8d50fe4641c3cc6129da962d7490e78"}}
+  {:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "docs/component-roadmaps/stdlib.md",
+    :sha256
+    "5409e16e1bc93fab87d346b3e9541af81841767fd10c444e33c0195e722142c6"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "docs/component-roadmaps/stdlib.md",
+    :sha256
+    "6eb43dec9967005687004334d954feb4f75c1ab0812aa05ac3b732c5aa739c37"}}
+  {:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "tools/domains_task_projection.clj",
+    :sha256
+    "4d97c210c93f97a3fbfe8ad5d514776d372d9bb9164ec9e4fa3b70d3156f5a1e"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "tools/domains_task_projection.clj",
+    :sha256
+    "bc5d7c98be24b2d1e84900882a0c43ab74ff02caad96ad8ecdc56f4176df9bb7"}}
+  {:before
+   {:source-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+    :path "tools/stdlib_task_projection.clj",
+    :sha256
+    "4a09484ecad8e37e391606b65e6ff9b13e0fe1bd57f53f1219db27f54b2d95ab"},
+   :after
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path "tools/stdlib_task_projection.clj",
+    :sha256
+    "7492c00bfd247ecf1eccec3571e9f83f7b1e9d2425f8dda639fda783a23386dd"}}],
+ :predecessor-commit "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+ :artifacts
+ [{:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-current-partition.edn",
+   :sha256
+   "a63b8c315a95ad7a1d48a997cd12b6c096c33c050f8db16371f8c25b18299f4a"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-current-task-composition.edn",
+   :sha256
+   "f090b0acec61ffe3b1db12303efba7b9a56b9ff9bc2b7f28cd511843b105c456"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-library-consumer-interfaces.edn",
+   :sha256
+   "f0fa3b097d100f490af1fc03d6597039d4fe2220065e59fd2a21e9e36f29d700"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-task-application-checks.edn",
+   :sha256
+   "b29734b1bee2a4d3e1a72ddc29bd6a208c4c7b2e907172838169bd500cef9d74"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-current-decision-routing.edn",
+   :sha256
+   "a95352c879b6aba88a85c10fd162bad2376929f6220beced2259046ac8696a13"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-historical-witness-refinement.edn",
+   :sha256
+   "6d74c169b3eb557722db31b9e000b6721252473e0d6a355967c5cb1930b630d6"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/granularity13-routing-checks.edn",
+   :sha256
+   "7bf1b8bdf54920adb499c184303a061943510783cfdaf9580808dfb0143ee5df"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/all833-granularity13-current-criterion-conservation.edn",
+   :sha256
+   "7e97517ec15d548d63b29c0807a2fb9b285efc860d0fcebf7b82005833fc5552"}
+  {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+   :sha256
+   "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982"}],
+ :task-source-commit "90392ba9eb4b43443941065593950af0188d9354",
+ :refreshed-decision-records 321,
+ :census
+ {:path "specs/requirement-reconciliation/task-baseline.edn",
+  :sha256
+  "53765e0cfd2353f21aadffe46bc1b82974d63604ddd8bdee88b33ba1cca691a6",
+  :source-commit "145442c5434cad807870505fb75d523a0ef22998",
+  :total 195,
+  :accepted 3,
+  :remaining 192,
+  :authority :provisional-scoped-states-only}}
