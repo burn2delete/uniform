@@ -1,0 +1,1574 @@
+{:original-source
+ {:ref "a1b991be499d50579a8b4366976c519ae8949224",
+  :path "docs/component-roadmaps/platform.md",
+  :sha256
+  "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+  :scope :separate-declared-project-extension},
+ :nonclaims
+ [:no-target-choice
+  :no-physical-purchase
+  :no-product-implementation
+  :no-original240-change
+  :no-sh-crosswalk-change],
+ :family "platform-product",
+ :completed-mapping-count 7,
+ :authority :proposal-only-canonical-owner-adopts,
+ :task-count-delta 0,
+ :task-field-edits
+ [{:path "specs/platform-workflow/tasks.md",
+   :before-present? true,
+   :field-path [:criterion],
+   :marker "platform-implementation-tasks",
+   :after
+   "Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+   :label "Declared completion and remaining work",
+   :id "hardware",
+   :before
+   "Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed",
+   :collection :canonical-task-records}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-present? true,
+   :field-path [:criterion],
+   :marker "platform-implementation-tasks",
+   :after
+   "Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+   :label "Declared completion and remaining work",
+   :id "firmware",
+   :before
+   "Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed",
+   :collection :canonical-task-records}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-present? true,
+   :field-path [:criterion],
+   :marker "platform-implementation-tasks",
+   :after
+   "Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+   :label "Declared completion and remaining work",
+   :id "kernel",
+   :before
+   "Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed",
+   :collection :canonical-task-records}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-present? true,
+   :field-path [:criterion],
+   :marker "platform-implementation-tasks",
+   :after
+   "Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+   :label "Declared completion and remaining work",
+   :id "devices",
+   :before
+   "Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior",
+   :collection :canonical-task-records}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-present? true,
+   :field-path [:criterion],
+   :marker "platform-product-implementation-tasks",
+   :after
+   "Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+   :label "Closing evidence",
+   :id "platform-product/adopt-physical-boundary",
+   :before
+   "Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners",
+   :collection :canonical-task-records}],
+ :per-id
+ [{:id "platform/device-provider-conformance",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Implement ownership-aware MMIO/interrupt/transfer device adapters and verify grant denial, lifetimes and device failure translation.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/device-provider-conformance",
+    :historical-record-sha256
+    "5faa790042b6691b7eed14a565d5cd671d66ea1fcfb1aa0715fec7634c2289ff",
+    :source-facet-records-sha256
+    "b6175e990d54c12f336a80dcce4c6283ca6d3aeaa278b8b0a607669f7ce75a91",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/device-provider-conformance",
+     :original-record-sha256
+     "428b72d3dbffdeeda6ee11082f126db8f6efcb7b223194b836eecc0fe1c3a35e",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["DOM4" "L15" "SAFE3" "SAFE7"]}},
+    :obligation
+    "Implement ownership-aware MMIO/interrupt/transfer device adapters and verify grant denial, lifetimes and device failure translation.",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/device-provider-conformance",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 39,
+     :raw-sha256
+     "db28dd658bbd419de803fa114e7c964178686efebee68dc1b7769106212fb71a",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/fb02bd8d5f3a3288c2083b64"],
+     :id "facet/extension/ed7c0ecd3830ac7df77a452a",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1847,
+     :end-line 39,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1773}
+    {:start-line 40,
+     :raw-sha256
+     "a9e436d2babd638ade86791e162e7de5a6b1b3128c6ae9ed93504fbf3c53dc93",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/5f9a62e2bef7b436e57b8bf0"],
+     :id "facet/extension/70402e8cb232dd79d50ad393",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1867,
+     :end-line 40,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1847}
+    {:start-line 41,
+     :raw-sha256
+     "d92e8de545afb35fecf1277657089efe362acad79727207f788df07ca2ca493e",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/329b057d5106365eebc0f566"],
+     :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2216,
+     :end-line 41,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1867}
+    {:start-line 42,
+     :raw-sha256
+     "65f9bc60c4c0dee5576210b1fd30ffbd5ddb96dfb444196ec80d60cd1bbe4ea8",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7a1fbf04349c9a8f2eb315f7"],
+     :id "facet/extension/ee630855078eaef6b70e812c",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2550,
+     :end-line 42,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2216}
+    {:start-line 43,
+     :raw-sha256
+     "fb4f5fff48067b729a85a26ffadb7f1ac4425da94739ea6d0b123694349bd323",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7c437b905829c01c11c244a8"],
+     :id "facet/extension/db3504f343e95aa12b940c47",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2899,
+     :end-line 43,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2550}
+    {:start-line 44,
+     :raw-sha256
+     "749b77249e6ebf72c3d4c5c5a135e16710434a5ca2d09f6140499e0fea2bb912",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/1c23a2e6ac090378d88e7ffc"],
+     :id "facet/extension/76522348020c9b41fc2ad242",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 3232,
+     :end-line 44,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2899}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "devices",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, ownership, FFI and runtime device boundaries",
+      :source-basis
+      "[Device contract](../../docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md)",
+      :criterion-source
+      {:start-byte 8588,
+       :end-byte 10199,
+       :raw-sha256
+       "1a6f3760804b34283c169c798a022aec8beb2042aecbd129d2c6ba33d41a16be",
+       :raw
+       "Declared completion and remaining work: Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Full historical obligation retained in the named existing task criteria; no task execution or implementation acceptance is inferred."}}
+  {:id "platform/external-tool-dependency-provenance",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids ["facet/extension/0c1dbf6de184685dd9d63854"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Record required synthesis/simulation/place-and-route/FPGA/foundry/board/signing/device prerequisites with versions, licenses, provenance, availability and accountable owners.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/external-tool-dependency-provenance",
+    :historical-record-sha256
+    "03984dfabf0ff397c34c83c6f3527c3403a7dfbffdf350080d9d28584951bb3f",
+    :source-facet-records-sha256
+    "213e07b14bdbbb7f5e497269b86e2ef53699189860a10a4057b7101f62d0cc1a",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "platform/external-tool-dependency-provenance",
+     :original-record-sha256
+     "235af5db703597ba46371305b02b74183e6668f25317fe52d6af08a20992ef8a",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."}}},
+    :obligation
+    "Record required synthesis/simulation/place-and-route/FPGA/foundry/board/signing/device prerequisites with versions, licenses, provenance, availability and accountable owners.",
+    :source-facet-ids ["facet/extension/0c1dbf6de184685dd9d63854"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/external-tool-dependency-provenance",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 114,
+     :raw-sha256
+     "5cc33f62d0213c2a62e884e097af18e16c3202a33a9f15931cec107db750bd5e",
+     :unresolved
+     [["Product ISA/device/OS/application/physical decisions remain unadopted; future obligations are in scope and not closed by architecture or target conformance."]],
+     :source-occurrence-id
+     "platform-product/source/13ca3a46d52e23ebeee19b9060c1a0d3f8ab255456834e25317392af3bc3a8b9",
+     :origin-facet-ids ["origin/extension/5ac5af4f86335add6f8ca135"],
+     :id "facet/extension/0c1dbf6de184685dd9d63854",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 8676,
+     :end-line 120,
+     :unit-ids ["platform/external-tool-dependency-provenance"],
+     :start-byte 8160}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-product-implementation-tasks",
+      :task-id "platform-product/adopt-physical-boundary",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+      :dependencies
+      "The existing physical product boundary decision record; accountable hardware/product owner remains unassigned",
+      :source-basis nil,
+      :criterion-source
+      {:start-byte 15918,
+       :end-byte 16731,
+       :raw-sha256
+       "277429a19de882a0dbc2b352eacd14354fd37ad1fd697da8cf09b43f42ce8c55",
+       :raw
+       "Closing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record."}}],
+    :qualification
+    "Full historical obligation retained in the named existing task criteria; no task execution or implementation acceptance is inferred."}}
+  {:id "platform/firmware-target-conformance",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Execute the adopted firmware startup/interrupt/MMIO/allocation slice on its device or named emulator and verify image/link map and forbidden-service rejection.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/firmware-target-conformance",
+    :historical-record-sha256
+    "14dc1724fb0d475be0e8b065221e960d3cad75f2f83263e42de2b56d381306c4",
+    :source-facet-records-sha256
+    "b6175e990d54c12f336a80dcce4c6283ca6d3aeaa278b8b0a607669f7ce75a91",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/firmware-target-conformance",
+     :original-record-sha256
+     "91589e0a1098bd8f413bf5bc113730ce0bd3d15bd8aab081b8134ec9698e7103",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["DOM2" "P6"]}},
+    :obligation
+    "Execute the adopted firmware startup/interrupt/MMIO/allocation slice on its device or named emulator and verify image/link map and forbidden-service rejection.",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/firmware-target-conformance",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 39,
+     :raw-sha256
+     "db28dd658bbd419de803fa114e7c964178686efebee68dc1b7769106212fb71a",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/fb02bd8d5f3a3288c2083b64"],
+     :id "facet/extension/ed7c0ecd3830ac7df77a452a",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1847,
+     :end-line 39,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1773}
+    {:start-line 40,
+     :raw-sha256
+     "a9e436d2babd638ade86791e162e7de5a6b1b3128c6ae9ed93504fbf3c53dc93",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/5f9a62e2bef7b436e57b8bf0"],
+     :id "facet/extension/70402e8cb232dd79d50ad393",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1867,
+     :end-line 40,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1847}
+    {:start-line 41,
+     :raw-sha256
+     "d92e8de545afb35fecf1277657089efe362acad79727207f788df07ca2ca493e",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/329b057d5106365eebc0f566"],
+     :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2216,
+     :end-line 41,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1867}
+    {:start-line 42,
+     :raw-sha256
+     "65f9bc60c4c0dee5576210b1fd30ffbd5ddb96dfb444196ec80d60cd1bbe4ea8",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7a1fbf04349c9a8f2eb315f7"],
+     :id "facet/extension/ee630855078eaef6b70e812c",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2550,
+     :end-line 42,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2216}
+    {:start-line 43,
+     :raw-sha256
+     "fb4f5fff48067b729a85a26ffadb7f1ac4425da94739ea6d0b123694349bd323",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7c437b905829c01c11c244a8"],
+     :id "facet/extension/db3504f343e95aa12b940c47",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2899,
+     :end-line 43,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2550}
+    {:start-line 44,
+     :raw-sha256
+     "749b77249e6ebf72c3d4c5c5a135e16710434a5ca2d09f6140499e0fea2bb912",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/1c23a2e6ac090378d88e7ffc"],
+     :id "facet/extension/76522348020c9b41fc2ad242",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 3232,
+     :end-line 44,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2899}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "firmware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering and runtime memory/startup boundaries",
+      :source-basis
+      "[Firmware contract](../../docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md)",
+      :criterion-source
+      {:start-byte 3507,
+       :end-byte 5893,
+       :raw-sha256
+       "75f21500be450ad78a5dd8c94ea537b669cf81f1c5611730dc8ddf8332e51fbb",
+       :raw
+       "Declared completion and remaining work: Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Full historical obligation retained in the named existing task criteria; no task execution or implementation acceptance is inferred."}}
+  {:id "platform/hardware-target-conformance",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Lower and simulate the adopted clock/reset state-machine design, check timing/reset invariants, reject illegal dynamic/runtime operations and emit a traceable hardware artifact.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/hardware-target-conformance",
+    :historical-record-sha256
+    "bfdc9773142d935cfa56628f4f5744cb198d4d9204a516e6f80a439b96e254d8",
+    :source-facet-records-sha256
+    "b6175e990d54c12f336a80dcce4c6283ca6d3aeaa278b8b0a607669f7ce75a91",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/hardware-target-conformance",
+     :original-record-sha256
+     "910f48dbfc366ff1eb487e5e233e0684e9534db0ec401d54911eba80ab3dd686",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["DOM1" "B9" "P8"]}},
+    :obligation
+    "Lower and simulate the adopted clock/reset state-machine design, check timing/reset invariants, reject illegal dynamic/runtime operations and emit a traceable hardware artifact.",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/hardware-target-conformance",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 39,
+     :raw-sha256
+     "db28dd658bbd419de803fa114e7c964178686efebee68dc1b7769106212fb71a",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/fb02bd8d5f3a3288c2083b64"],
+     :id "facet/extension/ed7c0ecd3830ac7df77a452a",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1847,
+     :end-line 39,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1773}
+    {:start-line 40,
+     :raw-sha256
+     "a9e436d2babd638ade86791e162e7de5a6b1b3128c6ae9ed93504fbf3c53dc93",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/5f9a62e2bef7b436e57b8bf0"],
+     :id "facet/extension/70402e8cb232dd79d50ad393",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1867,
+     :end-line 40,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1847}
+    {:start-line 41,
+     :raw-sha256
+     "d92e8de545afb35fecf1277657089efe362acad79727207f788df07ca2ca493e",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/329b057d5106365eebc0f566"],
+     :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2216,
+     :end-line 41,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1867}
+    {:start-line 42,
+     :raw-sha256
+     "65f9bc60c4c0dee5576210b1fd30ffbd5ddb96dfb444196ec80d60cd1bbe4ea8",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7a1fbf04349c9a8f2eb315f7"],
+     :id "facet/extension/ee630855078eaef6b70e812c",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2550,
+     :end-line 42,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2216}
+    {:start-line 43,
+     :raw-sha256
+     "fb4f5fff48067b729a85a26ffadb7f1ac4425da94739ea6d0b123694349bd323",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7c437b905829c01c11c244a8"],
+     :id "facet/extension/db3504f343e95aa12b940c47",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2899,
+     :end-line 43,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2550}
+    {:start-line 44,
+     :raw-sha256
+     "749b77249e6ebf72c3d4c5c5a135e16710434a5ca2d09f6140499e0fea2bb912",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/1c23a2e6ac090378d88e7ffc"],
+     :id "facet/extension/76522348020c9b41fc2ad242",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 3232,
+     :end-line 44,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2899}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "hardware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, HDL lowering, no-runtime and safety/proof consumers",
+      :source-basis
+      "[Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)",
+      :criterion-source
+      {:start-byte 560,
+       :end-byte 3308,
+       :raw-sha256
+       "8feba90a5ebea53467e86ffba120c2affbe212ddfd0aa2b5316c509edf553cae",
+       :raw
+       "Declared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Full historical obligation retained in the named existing task criteria; no task execution or implementation acceptance is inferred."}}
+  {:id "platform/kernel-target-conformance",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Implement and verify the adopted kernel initialization/memory/scheduling slice with explicit ABI, unsafe boundaries, no hidden hosted services and provenance.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/kernel-target-conformance",
+    :historical-record-sha256
+    "e34752733e4d967826e66aa15a3d52262a4b9a7f489e7dffd117375c8f351dab",
+    :source-facet-records-sha256
+    "b6175e990d54c12f336a80dcce4c6283ca6d3aeaa278b8b0a607669f7ce75a91",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/kernel-target-conformance",
+     :original-record-sha256
+     "df798bf51dd7c6279e218b1d49fa571e04340f2cd737afcb6043b8593b3794be",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["DOM3" "P7"]}},
+    :obligation
+    "Implement and verify the adopted kernel initialization/memory/scheduling slice with explicit ABI, unsafe boundaries, no hidden hosted services and provenance.",
+    :source-facet-ids
+    ["facet/extension/ed7c0ecd3830ac7df77a452a"
+     "facet/extension/70402e8cb232dd79d50ad393"
+     "facet/extension/bd6b008cf43a9d14cf95ea9e"
+     "facet/extension/ee630855078eaef6b70e812c"
+     "facet/extension/db3504f343e95aa12b940c47"
+     "facet/extension/76522348020c9b41fc2ad242"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/kernel-target-conformance",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 39,
+     :raw-sha256
+     "db28dd658bbd419de803fa114e7c964178686efebee68dc1b7769106212fb71a",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/fb02bd8d5f3a3288c2083b64"],
+     :id "facet/extension/ed7c0ecd3830ac7df77a452a",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1847,
+     :end-line 39,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1773}
+    {:start-line 40,
+     :raw-sha256
+     "a9e436d2babd638ade86791e162e7de5a6b1b3128c6ae9ed93504fbf3c53dc93",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/5f9a62e2bef7b436e57b8bf0"],
+     :id "facet/extension/70402e8cb232dd79d50ad393",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1867,
+     :end-line 40,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1847}
+    {:start-line 41,
+     :raw-sha256
+     "d92e8de545afb35fecf1277657089efe362acad79727207f788df07ca2ca493e",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/329b057d5106365eebc0f566"],
+     :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2216,
+     :end-line 41,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 1867}
+    {:start-line 42,
+     :raw-sha256
+     "65f9bc60c4c0dee5576210b1fd30ffbd5ddb96dfb444196ec80d60cd1bbe4ea8",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7a1fbf04349c9a8f2eb315f7"],
+     :id "facet/extension/ee630855078eaef6b70e812c",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2550,
+     :end-line 42,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2216}
+    {:start-line 43,
+     :raw-sha256
+     "fb4f5fff48067b729a85a26ffadb7f1ac4425da94739ea6d0b123694349bd323",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/7c437b905829c01c11c244a8"],
+     :id "facet/extension/db3504f343e95aa12b940c47",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 2899,
+     :end-line 43,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2550}
+    {:start-line 44,
+     :raw-sha256
+     "749b77249e6ebf72c3d4c5c5a135e16710434a5ca2d09f6140499e0fea2bb912",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/c28da7d5203f7a409e77b95a4f5586469dc4eec50620e92326f40fa19110fa9a",
+     :origin-facet-ids ["origin/extension/1c23a2e6ac090378d88e7ffc"],
+     :id "facet/extension/76522348020c9b41fc2ad242",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 3232,
+     :end-line 44,
+     :unit-ids
+     ["platform/device-provider-conformance"
+      "platform/firmware-target-conformance"
+      "platform/hardware-target-conformance"
+      "platform/kernel-target-conformance"],
+     :start-byte 2899}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "kernel",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering, ownership and runtime/FFI boundaries",
+      :source-basis
+      "[Kernel contract](../../docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md)",
+      :criterion-source
+      {:start-byte 6089,
+       :end-byte 8385,
+       :raw-sha256
+       "ef7618e93ad25f7f1437173ed3f11ed3048fcf23bb57669e590806453920f6c3",
+       :raw
+       "Declared completion and remaining work: Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Full historical obligation retained in the named existing task criteria; no task execution or implementation acceptance is inferred."}}
+  {:id "platform/target-adoption-record",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids ["facet/extension/24438ccaefd540cf5c11465a"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Adopt a concrete target/ABI, artifact kind, simulator/device evidence and required service set before claiming a target implementation scope.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/target-adoption-record",
+    :historical-record-sha256
+    "53b565b48d3273c3e12d72d2ac0b250d3b0eb8e84bd0652099d782e84d989285",
+    :source-facet-records-sha256
+    "19ba66cf037359b9ee45c9aeae2e8eea6f8f6ba99cbb5b41503983d13abd80e1",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/target-adoption-record",
+     :original-record-sha256
+     "86db4d7cabff37893b598c6d1e55b87f66de4911c9623e485e242c8ce46dce78",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["DOM1" "DOM2" "DOM3" "DOM4" "B1"]}},
+    :obligation
+    "Adopt a concrete target/ABI, artifact kind, simulator/device evidence and required service set before claiming a target implementation scope.",
+    :source-facet-ids ["facet/extension/24438ccaefd540cf5c11465a"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/target-adoption-record",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 54,
+     :raw-sha256
+     "4f0921fcc1df377ae22d7ea6c8cfabe979a67c8c919a8382903b7164270d3a7f",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/5fd80ed5724a30c21dbdb4f26308196cbe6e5ac4030f3eee87719aa4dc3d09ce",
+     :origin-facet-ids ["origin/extension/ac67d9ca1aaba1b82bc94e86"],
+     :id "facet/extension/24438ccaefd540cf5c11465a",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 4254,
+     :end-line 61,
+     :unit-ids ["platform/target-adoption-record"],
+     :start-byte 3651}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "hardware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, HDL lowering, no-runtime and safety/proof consumers",
+      :source-basis
+      "[Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)",
+      :criterion-source
+      {:start-byte 560,
+       :end-byte 3308,
+       :raw-sha256
+       "8feba90a5ebea53467e86ffba120c2affbe212ddfd0aa2b5316c509edf553cae",
+       :raw
+       "Declared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "firmware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering and runtime memory/startup boundaries",
+      :source-basis
+      "[Firmware contract](../../docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md)",
+      :criterion-source
+      {:start-byte 3507,
+       :end-byte 5893,
+       :raw-sha256
+       "75f21500be450ad78a5dd8c94ea537b669cf81f1c5611730dc8ddf8332e51fbb",
+       :raw
+       "Declared completion and remaining work: Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "kernel",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering, ownership and runtime/FFI boundaries",
+      :source-basis
+      "[Kernel contract](../../docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md)",
+      :criterion-source
+      {:start-byte 6089,
+       :end-byte 8385,
+       :raw-sha256
+       "ef7618e93ad25f7f1437173ed3f11ed3048fcf23bb57669e590806453920f6c3",
+       :raw
+       "Declared completion and remaining work: Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "devices",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, ownership, FFI and runtime device boundaries",
+      :source-basis
+      "[Device contract](../../docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md)",
+      :criterion-source
+      {:start-byte 8588,
+       :end-byte 10199,
+       :raw-sha256
+       "1a6f3760804b34283c169c798a022aec8beb2042aecbd129d2c6ba33d41a16be",
+       :raw
+       "Declared completion and remaining work: Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Every adopted target must satisfy its own four-project criteria; the full product and target selection remain separate Open work."}}
+  {:id "platform/target-integration-evidence",
+   :before
+   {:primary-source-contract "platform-product",
+    :source-facet-ids
+    ["facet/extension/78724acd4f83819148927cf9"
+     "facet/extension/ba57e41b8f78fac13abb46f4"
+     "facet/extension/7d8bb9e45f5a2876c31bdb27"],
+    :affected-source-families ["platform-product"],
+    :historical-obligation
+    "Integrate each adopted target's Lower/Emit artifacts, explicit runtime/no-runtime execution and required library adapters with actual simulation/execution and auditable layout/clock/interrupt/grant/provenance evidence.",
+    :primary-dispatch-family "platform-product",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "platform/target-integration-evidence",
+    :historical-record-sha256
+    "911caa20b91804c6cf773a879c7cef0161daaba69932d26a7b21a30297bb7181",
+    :source-facet-records-sha256
+    "76a5ef62c99d732b719a0d0a194d19b51a1fcc45a2a92ae4cf1d2f34b711a9dd",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :preserved-historical-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id "platform/target-integration-evidence",
+     :original-record-sha256
+     "af77c74685fbb52d68db56b64ff3dbbfb8bca7ca99e5919212a7ada083e00790",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :open,
+       :reason
+       "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+      :original-joins ["C14" "B13" "R1" "STD16"]}},
+    :obligation
+    "Integrate each adopted target's Lower/Emit artifacts, explicit runtime/no-runtime execution and required library adapters with actual simulation/execution and auditable layout/clock/interrupt/grant/provenance evidence.",
+    :source-facet-ids
+    ["facet/extension/78724acd4f83819148927cf9"
+     "facet/extension/ba57e41b8f78fac13abb46f4"
+     "facet/extension/7d8bb9e45f5a2876c31bdb27"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :open,
+     :reason
+     "Source declares future in-scope output but its actual target/product parameters and yes/no fixtures require the adopted decision records. No implementation owner or finite SKU is invented."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "platform/target-integration-evidence",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :preserved-facets
+   [{:start-line 20,
+     :raw-sha256
+     "c1ec7fed504e7e7a315748fa6f44783b00132f872c38801db020605a107d68bc",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/e2be197f2495b329443d0a5bd5a434cdf87074e46d881d87e415938ab0b5924e",
+     :origin-facet-ids ["origin/extension/b85cf59d1f13f7d78ac18862"],
+     :id "facet/extension/78724acd4f83819148927cf9",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1079,
+     :end-line 23,
+     :unit-ids ["platform/target-integration-evidence"],
+     :start-byte 770}
+    {:start-line 27,
+     :raw-sha256
+     "08a4e0fb04e03b59a5e85463d72b6d469fc8649b150a9750da3dc2ac4cd25b44",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/0c5e21c5bdfe6fcf40e05195ae4b8a0392d57c4c1414acf06b395e270c4c26f0",
+     :origin-facet-ids ["origin/extension/304bf8de7cb4c212b36003b5"],
+     :id "facet/extension/ba57e41b8f78fac13abb46f4",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 1572,
+     :end-line 32,
+     :unit-ids ["platform/target-integration-evidence"],
+     :start-byte 1112}
+    {:start-line 65,
+     :raw-sha256
+     "68bbec605e92b61f06fc43b6f622266ebc3d15c42a5cd1e85240c1fed5256c15",
+     :unresolved nil,
+     :source-occurrence-id
+     "platform-product/source/fd39a883b2ea74d1428d2f1a9ce0ed577ea951f63899dbe6db70ebf5beea0660",
+     :origin-facet-ids ["origin/extension/e18a34209c74d6696070b788"],
+     :id "facet/extension/7d8bb9e45f5a2876c31bdb27",
+     :kind :requirement,
+     :document-id "platform-product",
+     :end-byte 4759,
+     :end-line 70,
+     :unit-ids ["platform/target-integration-evidence"],
+     :start-byte 4286}],
+   :after
+   {:coverage-disposition :concrete-criterion-witness-proposed,
+    :implementation-acceptance :unassessed,
+    :task-status :open,
+    :criterion-witnesses
+    [{:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "hardware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, HDL lowering, no-runtime and safety/proof consumers",
+      :source-basis
+      "[Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)",
+      :criterion-source
+      {:start-byte 560,
+       :end-byte 3308,
+       :raw-sha256
+       "8feba90a5ebea53467e86ffba120c2affbe212ddfd0aa2b5316c509edf553cae",
+       :raw
+       "Declared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "firmware",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering and runtime memory/startup boundaries",
+      :source-basis
+      "[Firmware contract](../../docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md)",
+      :criterion-source
+      {:start-byte 3507,
+       :end-byte 5893,
+       :raw-sha256
+       "75f21500be450ad78a5dd8c94ea537b669cf81f1c5611730dc8ddf8332e51fbb",
+       :raw
+       "Declared completion and remaining work: Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator. DOM2 acceptance requires memory map, startup/reset, interrupt vectors, stack/static-allocation/section and panic/BSP records; typed volatile/ordered/capability-checked MMIO and audited wrappers; declared interrupt effects and synchronization. Exercise timer sensor reset/acknowledgement/buffer/panic behavior and UART, reject hidden hosted services and unauthorized MMIO, and emit image/link/source/audit maps with boot/simulator evidence. Dependencies: profile legality, native lowering and runtime memory/startup boundaries; physical memory representability remains separate from removed project accounting ; P6 target conformance requires explicit stack/static/region/arena/provider capacity/reset/failure policy and no hidden GC/host services; unknown stack use rejects in strict mode. Check device-map address/width/alignment/volatility/order/grants, interrupt source/priority/shared-state/atomic/reentrancy/stack/latency/context, and required physical loop/recursion/blocking-timeout evidence; missing evidence rejects or requires the policy-permitted unsafe audit. Reject invalid maps, missing device authority, host calls and unbounded handler behavior. Emit image/linker/memory/device/vector/interrupt/latency/safety manifests with source provenance. Physical memory/timing requirements are not compiler work allowances; product target choice remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "kernel",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, native lowering, ownership and runtime/FFI boundaries",
+      :source-basis
+      "[Kernel contract](../../docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md)",
+      :criterion-source
+      {:start-byte 6089,
+       :end-byte 8385,
+       :raw-sha256
+       "ef7618e93ad25f7f1437173ed3f11ed3048fcf23bb57669e590806453920f6c3",
+       :raw
+       "Declared completion and remaining work: Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance. DOM3 acceptance requires typed syscall/user-pointer taint, capability and error mapping; raw-memory safe-wrapper/audit, allocation/panic/preemption/interrupt and ABI records. Exercise valid/invalid syscall, interrupt, allocator and page-table cases, reject ambient authority and hosted assumptions, and emit kernel object/boot image, syscall/interrupt tables, audit/capability/source maps and named emulator smoke evidence. Dependencies: profile legality, native lowering, ownership and runtime/FFI boundaries; OS product architecture remains unadopted ; P7 target conformance requires explicit page/frame/pinned/address-space/DMA and interrupt-safe allocator/failure/concurrency policy; reject hidden allocation/hosted services and unsupported atomics/fences. Check interrupt reentrancy/shared state/stack/latency/effects and scheduler block/sleep/preempt/allocate/context/lock rules; reject blocking in invalid lock or interrupt context. Driver ABI/device/grant/buffer/DMA/callback/error/unsafe-wrapper records retain provenance; actual device transfer and callback entry are separate Runtime/Devices consumers. Emit capability/memory/device/interrupt/scheduler/atomic/ABI/unsafe/no-hidden-allocation evidence. OS architecture/product selection remains unassessed For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}
+     {:path "specs/platform-workflow/tasks.md",
+      :marker "platform-implementation-tasks",
+      :task-id "devices",
+      :file-sha256
+      "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd",
+      :criterion-text
+      "Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.",
+      :dependencies
+      "profile legality, ownership, FFI and runtime device boundaries",
+      :source-basis
+      "[Device contract](../../docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md)",
+      :criterion-source
+      {:start-byte 8588,
+       :end-byte 10199,
+       :raw-sha256
+       "1a6f3760804b34283c169c798a022aec8beb2042aecbd129d2c6ba33d41a16be",
+       :raw
+       "Declared completion and remaining work: Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation. DOM4 acceptance requires register address/width/alignment/endian/volatile/order and audited-wrapper records, DMA ownership/lifetime/pinning/coherency/synchronization/completion, interrupt effects/cleanup and hosted/mobile permission/lifecycle/thread/null/error/taint contracts where applicable. Exercise UART transmit/receive/overflow/acknowledgement plus DMA lifetime and grant-denial cases; emit register/MMIO/DMA/interrupt/capability manifests and simulator/device evidence. Dependencies: profile legality, ownership, FFI and runtime device boundaries; vendor calls alone establish no safe behavior For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product."}}],
+    :qualification
+    "Every adopted target must satisfy its own four-project criteria; the full product and target selection remain separate Open work."}}],
+ :partition
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :path
+  "specs/requirement-reconciliation/historical-gap-partition.edn",
+  :sha256
+  "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+  :coverage-receipt-sha256
+  "a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f",
+  :assignment
+  {:family "platform-product",
+   :owner :existing-source-family-owner,
+   :in-thirteen-family-cohort false,
+   :count 7,
+   :ids
+   ["platform/device-provider-conformance"
+    "platform/external-tool-dependency-provenance"
+    "platform/firmware-target-conformance"
+    "platform/hardware-target-conformance"
+    "platform/kernel-target-conformance"
+    "platform/target-adoption-record"
+    "platform/target-integration-evidence"]}},
+ :inherited-product-interfaces
+ {:source-bindings
+  [{:task-id "platform-product/adopt-hardware-contract",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 4172,
+     :end-byte 4466,
+     :start-line 79,
+     :end-line 79,
+     :sha256
+     "be25106045e55054c2a1c4b87ce8becefc8f1f6efb898f0d971a132ee39b793a"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/adopt-hardware-contract",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/adopt-kernel-contract",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 4467,
+     :end-byte 4764,
+     :start-line 80,
+     :end-line 80,
+     :sha256
+     "0c6d1611081c9e77f36fba1cd847ab9f787e02a9c9181c1e45e075ab23fc0456"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/adopt-kernel-contract",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/adopt-application-contract",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 4765,
+     :end-byte 5019,
+     :start-line 81,
+     :end-line 81,
+     :sha256
+     "ffe4e164089b1f8d45dd767548a52a5a76800dbff58fa9ef3ce1fb213143082e"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/adopt-application-contract",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/adopt-physical-boundary",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5020,
+     :end-byte 5299,
+     :start-line 82,
+     :end-line 82,
+     :sha256
+     "e7d708ab43a69060d0fe694236366136462d456641668bd0fb88bf1a518c43a8"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/adopt-physical-boundary",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/implement-hardware",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5363,
+     :end-byte 5412,
+     :start-line 84,
+     :end-line 85,
+     :sha256
+     "d891fc72d042a60a156d21d304a06dc78b339534df8a134e6db9a32c12539a94"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/implement-hardware",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/implement-firmware",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5414,
+     :end-byte 5437,
+     :start-line 85,
+     :end-line 85,
+     :sha256
+     "ab79bc83c1755f43432203b4f15714c6bf59a16e208dfde43cc951a1722fe7db"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/implement-firmware",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/implement-os",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5439,
+     :end-byte 5487,
+     :start-line 85,
+     :end-line 86,
+     :sha256
+     "819542322d061bafd851104a051168547284f010d1bc2fb8eec9f092e33ebfa3"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/implement-os",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/implement-drivers",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5489,
+     :end-byte 5513,
+     :start-line 86,
+     :end-line 86,
+     :sha256
+     "8114500ce7f51d72cd13bfc8a984065cb0ad1432d500f548dac2d73ab9708a14"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/implement-drivers",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/implement-applications",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5515,
+     :end-byte 5549,
+     :start-line 86,
+     :end-line 87,
+     :sha256
+     "819e2967a2bc61f4ddcff475d29156140672a4602125f80f091bf827af6664f7"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/implement-applications",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/integrate-execution",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5551,
+     :end-byte 5608,
+     :start-line 87,
+     :end-line 87,
+     :sha256
+     "747cdc5d261a5cc848802f01b405c1f0982f09b23b1621abc401d89eea02312b"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/integrate-execution",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}
+   {:task-id "platform-product/distribute-product",
+    :source
+    {:path "specs/platform-workflow/tasks.md",
+     :start-byte 5610,
+     :end-byte 5701,
+     :start-line 88,
+     :end-line 89,
+     :sha256
+     "b2bbb9571b4a8924720210fd8e351367c1d610bdb12acc504f600aaf67001448"},
+    :task-reference
+    {:path "specs/platform-workflow/tasks.md",
+     :marker "platform-product-implementation-tasks",
+     :id "platform-product/distribute-product",
+     :sha256
+     "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+     :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+    :status :open,
+    :implementation-acceptance :unassessed}],
+  :schema-version 1,
+  :conservation
+  {:old-file-recovered-by-removing-interface-insertion true,
+   :original-target-records 4,
+   :architecture-decisions 4,
+   :conditional-product-outputs 7,
+   :old-scope-and-history :byte-identical,
+   :all-new-interfaces :open},
+  :source
+  {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+   :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+   :path "specs/platform-workflow/tasks.md",
+   :sha256
+   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :marker "platform-product-scope"},
+  :scope :existing-platform-product-extension,
+  :task-source
+  {:commit "99de41da4e1f9d22a9112238b52877b825cbfd4f",
+   :path "specs/platform-workflow/tasks.md",
+   :sha256
+   "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82"},
+  :kind :platform-product-task-interface-reconciliation,
+  :independent-review :pending,
+  :qualification
+  "Known conditional product outputs remain in scope while architecture dependencies are open. This interface addition adopts no target, architecture, application inventory or physical deliverable and authorizes no external action. Final all-project task scope/count requires independent review of the complete reconciliation.",
+  :scope-relation
+  :distinct-from-four-language-target-conformance-projects,
+  :implementation-acceptance :unassessed},
+ :source-version-history
+ [{:live-sha256
+   "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364",
+   :applying-blob "2e49f62a9be9c3b06fd99c1610998f0f6525c16b",
+   :review-state :reviewed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :authority
+   "Integrated Platform task-authority transfer PR472, preserving all original source clauses and scope.",
+   :review-reference
+   {:head "1ddf714a93222e59055db445ae60a75cfaf9ddda",
+    :tree "42bad72ad713700fd13b57efd1b56f805c1f65c2",
+    :receipt-sha256
+    "205c9bf4bc6ffc76416ca30b7462c9afa34f7f5be3fa7b226025be3efe2f3740",
+    :scope :platform-layout-source-view-only,
+    :result :exact-marker-stanza-and-both-git-snapshots-verified,
+    :qualification
+    "This incorporates only the independently verified Platform transfer source view. The receipt's separate supersession-layout objection remains historical and is resolved by d529deff's distinct guard receipt; no semantic denominator or implementation acceptance is conferred."},
+   :kind :platform-task-authority-layout-only,
+   :document-id "platform-product",
+   :applying-ref "5e84b5acb59f605d8f71cc2d5cf21cc24d15a662",
+   :qualification
+   "Only the exact added navigation stanza and four projection marker lines are removed to recover baseline bytes. New task authority remains in its integrated ledger; no implementation or product decision is accepted by this bridge.",
+   :baseline-sha256
+   "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+   :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"}],
+ :unresolved-mapping-ids [],
+ :task-source
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :path "specs/platform-workflow/tasks.md",
+  :before-sha256
+  "492bd1f82712b8d2d0d0183a8bfbd67a4b14c9b03a912bba514098591d42f0c6",
+  :after-sha256
+  "ea6df73031cb60e9eacc4329844e375f6b62d81c1bfe4380b192489f2e59d9dd"},
+ :kind :bounded-platform-residual-completion,
+ :independent-review :pending,
+ :historical-populations
+ {:historical 577,
+  :criterion-witnesses 13,
+  :retired-history 3,
+  :unverified-residual 561},
+ :version 1,
+ :inherited-interface-qualification
+ :retained-history-current-criteria-pinned-separately,
+ :published-manifest
+ {:ref "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :sha256
+  "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"},
+ :implementation-acceptance :unassessed,
+ :canonical-adoption :not-performed}

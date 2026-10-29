@@ -1,6 +1,6 @@
 (load-file "tools/build_task_projection.clj")
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str] '[clojure.edn :as edn]
-         '[clojure.java.io :as io])
+         '[clojure.java.io :as io] '[clojure.java.shell :as shell])
 (def tasks (slurp build-task-projection/task-path))
 (def roadmap (slurp build-task-projection/roadmap-path))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
@@ -37,8 +37,18 @@
 
 (deftest exact-yank-interface-and-field-conservation
   (let [a (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
-        source (slurp (get-in a [:source-document :path]))]
-    (is (check-interface a tasks source))
+        source (slurp (get-in a [:source-document :path]))
+        historical (shell/sh "git" "show" (str (:task-source-commit a) ":" build-task-projection/task-path))
+        _ (is (zero? (:exit historical)))
+        pinned-tasks (:out historical)
+        prior-row (first (build-task-projection/records pinned-tasks))
+        current-row (first (build-task-projection/records tasks))]
+    ;; This immutable receipt binds its original complete file, not every later
+    ;; task amendment. Preserve the actual current yank criterion separately.
+    (is (check-interface a pinned-tasks source))
+    (is (= (select-keys prior-row [:id :title :status :evidence])
+           (select-keys current-row [:id :title :status :evidence])))
+    (is (str/starts-with? (:acceptance current-row) (:acceptance prior-row)))
     (is (= :unassessed (get-in a [:conservation :implementation-acceptance])))
     (doseq [bad [(assoc a :allowed-fields [:task-reference :task-gap :atomicity])
                  (assoc-in a [:after :atomicity] :accepted)
@@ -48,9 +58,9 @@
                  (update a :source-facets conj (first (:source-facets a)))
                  (assoc-in a [:after :task-reference :sha256] (apply str (repeat 64 "0")))
                  (assoc-in a [:source-facets 0 :raw-sha256] (apply str (repeat 64 "0")))]]
-      (is (rejects? #(check-interface bad tasks source))))
-    (is (rejects? #(check-interface a (str tasks "\nchanged") source)))
-    (is (rejects? #(check-interface a tasks (str source "\nchanged"))))))
+      (is (rejects? #(check-interface bad pinned-tasks source))))
+    (is (rejects? #(check-interface a (str pinned-tasks "\nchanged") source)))
+    (is (rejects? #(check-interface a pinned-tasks (str source "\nchanged"))))))
 
 (deftest canonical-records-and-generated-boundaries
   (let [rows (build-task-projection/records tasks)]
@@ -132,7 +142,8 @@
       (doseq [path (concat ["tools/task_projection.clj" "tools/task_projection_links.clj" "tools/build_task_projection.clj"
                            build-task-projection/task-path roadmap-path]
                     (for [row (build-task-projection/records tasks)
-                          [_ _ target] (re-seq build-task-projection/link-pattern (:evidence row))]
+                          field [(:evidence row) (:acceptance row)]
+                          [_ _ target] (re-seq build-task-projection/link-pattern field)]
                       (str (build-task-projection/relative-target build-task-projection/task-path target))))]
         (io/make-parents (io/file root path)) (spit (io/file root path) (slurp path)))
       (spit sentinel "Outside write boundary")

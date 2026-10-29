@@ -1,5 +1,40 @@
 # Requirement reconciliation evidence
 
+## Reviewed additive residual successor
+
+AI94, Schema5, Profile34 and Product7 add 140 source-reviewed criterion
+proposals to the earlier Foundation52/Runtime8 cohort. Nineteen fields across
+five existing task authorities changed, preserving 12 later criterion prefixes.
+No task IDs or implementation states changed. Five additional composition
+controls reject wrong fields, stale prefixes, replacement rather than addition,
+duplicate additions and missing before-values. The first helper compile
+attempt refused before writes; the corrected helper read all forms before
+executing and completed the guarded composition.
+
+The immutable source-review receipts are AI94 `152d65a68512f7403af153163d2eaa6a670db8392e488f9b061bfbbd40c22fcd`,
+Schema5 `e144d8f4c9823d4f832d4bdd14eb385e34e44581462072469240ac413a02c36b`,
+Profile34 `e5dd9e58dde628ec449803faf27bae6f886a6c15c5d254312db7169bcc961225`
+and Product7 `6ecfc29213598088fa6f3f8511b9c45abadba28a7bfec4e9f6ac6d99a8c99ba6`.
+Foundation52 and Runtime8 subsequently received independent source PASS
+receipts `88157f94a1686dc1b522f280005ee0a63d95b5d4b12e615a7c5588c5fc5f911b`
+and `a10a54532a464c7139a9463e152c3e5671250db0778f146af4b9d348ecd603c4`.
+Current witness rebinding remains necessary before recording mapping adoption.
+These reviews do not establish full entailment of broad inherited facet lists,
+whole-project granularity or implementation acceptance. The canonical-pass-order
+decision, four AI policy obligations and retained mixed-clause/profile contexts
+remain Open.
+
+The `f115e76e` projection CI failure is preserved. Actual Auth child stderr
+reported a missing link target in its temporary fixture. Auth, Build and
+Legality fixtures now copy acceptance-link dependencies as well as evidence
+links. Build's immutable yank receipt is checked against its original Git
+source while the current acceptance prefix is independently preserved. The
+Release oracle checks the full pinned `f1cb3501` criterion and its concrete
+matrix/refusal clauses, rather than the obsolete short text. Symlink and
+source-tamper checks remain active. Auth passed 4 tests / 61 assertions, Build
+5 / 81, Legality 4 / 59 and Release 6 / 105. Domains passed 6 / 103, Platform
+5 / 86, both document validators passed, and the boundary gate passed 6 / 11.
+
 ## Historical residual criterion cohort
 
 The exact 561-record partition is frozen at `bd37ab50c50d27094dce664b34831fcc43c3e9c3`,

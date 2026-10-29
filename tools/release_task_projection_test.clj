@@ -1,6 +1,6 @@
 (load-file "tools/release_task_projection.clj")
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
-         '[clojure.java.io :as io])
+         '[clojure.java.io :as io] '[clojure.java.shell :as shell])
 (def tasks (slurp release-task-projection/task-path))
 (def roadmap (slurp release-task-projection/roadmap-path))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
@@ -55,11 +55,20 @@
 (deftest governance-consumers-reference-existing-open-record
   (let [rows (release-task-projection/records tasks)
         row (first rows)
-        plan (slurp "specs/release-workflow/plan.md")]
+        plan (slurp "specs/release-workflow/plan.md")
+        historical (shell/sh "git" "show"
+                            "f1cb35013c9a132cda4557f7806616b19af0f3ed:specs/release-workflow/tasks.md")
+        _ (is (zero? (:exit historical)))
+        pinned-row (first (release-task-projection/records (:out historical)))]
     (is (= 5 (count rows)))
     (is (= "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance" (:id row)))
     (is (= "Open" (:status row)))
-    (is (= "Component outcome receipts, positive/negative programs and explicit unsupported surface" (:acceptance row)))
+    (is (= (dissoc pinned-row :acceptance) (dissoc row :acceptance)))
+    (is (str/starts-with? (:acceptance row) (:acceptance pinned-row)))
+    (doseq [required ["all 240 original contracts" "missing producer/checker/consumer interface"
+                      "an accountability link does not establish an implementation interface"
+                      "bind actual component evidence" "does not block ordinary semantic development"]]
+      (is (str/includes? (:acceptance row) required)))
     (is (str/includes? plan (:id row)))
     (doseq [required ["Ownerless changes" "Missing required sections" "Accidental experimental use"
                       "removal before the approved window" "on/off fixtures" "expiry, rollback"
