@@ -1,0 +1,46 @@
+{:kind :source-family-task-interface-receipt
+ :date "2026-10-28"
+ :scope-key "requirement-reconciliation/phase-02-safety"
+ :owner-role :assigned-safety-source-family-implementation-owner
+ :canonical-adoption-owner-thread "01a18424-d867-7c12-8a04-07484900100c"
+ :base {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+        :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
+ :proposal {:path "specs/requirement-reconciliation/phase-02-safety/proposal.edn"
+            :sha256 "9f4ba7b4d40891638684ed14e151400651e325ec7e5c8ae5c7a720a6a6a6c525"}
+ :checker {:path "specs/requirement-reconciliation/phase-02-safety/check.clj"
+           :sha256 "188ab013e13c676069be9c8846fe84ab9759f312f193fab039ac10d5f4409ba6"}
+ :conservation {:documents 16 :occurrences 1908 :nonlayout-dispositions 962
+                :source-facets 1055 :acceptance-rule-facets 757
+                :unmapped-acceptance-rule-facets 0 :inherited-unit-records 119
+                :historical-receipt-paths 16 :guarded-field-edits 329
+                :existing-task-interfaces 18 :changed-acceptance-records 14
+                :new-task-ids 0 :semantic-or-alias-edits 0
+                :status-changes 0 :canonical-manifest-writes 0}
+ :inherited-source-qualification-unit-ids
+ ["safety/safe5/terminal-flow" "safety/safe9/conversions"]
+ :inherited-source-qualification-facet-ids
+ ["safe5/linear-states/block-3/slice-2712-2760"
+  "safe9/requirements/rule-3/slice-970-1068"
+  "safe9/casts-and-conversions/block-2/slice-3834-3901"]
+ :controls {:positive-construction :pass :missing-or-renamed-task :reject
+            :wrong-marker :reject :wrong-task-hash :reject :wrong-source-hash :reject
+            :wrong-occurrence :reject :lost-negative-facet :reject :lost-unit :reject
+            :alias-with-different-context :reject :duplicate-application :reject
+            :stale-predecessor :reject}
+ :focused-projection-tests {:legality {:tests 4 :assertions 59 :failures 0 :errors 0}
+                            :auth {:tests 4 :assertions 61 :failures 0 :errors 0}
+                            :runtime {:tests 4 :assertions 67 :failures 0 :errors 0}
+                            :build {:tests 5 :assertions 80 :failures 0 :errors 0}
+                            :domains {:tests 6 :assertions 103 :failures 0 :errors 0}}
+ :other-checks {:generated-projections :pass :whitespace :pass
+                :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+                :canonical-documents {:result :pass :documents 240 :phase-indexes 19}
+                :full-language-roadmap :pass}
+ :historical-build-yank-pin :preserved-and-refuses-current-task-byte-drift
+ :global-source-pin-composition :pending-central-adoption
+ :independent-exact-candidate-review :pending-coordinator-routing
+ :canonical-adoption :pending :integration :pending
+ :implementation-acceptance :all-proposal-unit-ids-unassessed
+ :limits [:no-compiler-execution :no-runtime-execution :no-broker-job
+          :no-heavy-historical-tests :no-overall-denominator-or-rate
+          :no-release-self-hosting-or-seed-retirement-credit]}
