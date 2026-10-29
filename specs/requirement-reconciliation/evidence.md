@@ -529,3 +529,32 @@ remain final-baseline work. Focused Compiler API 5 / 77, Release 6 / 129 and
 Build 5 / 86 passed, along with their generated projections, boundary 6 / 11,
 both document validators and whitespace. No compiler/runtime execution or
 implementation completion is claimed.
+
+## Independent CompilerTesting85 adoption
+
+The exact 85-mapping composition passed independent review at
+`8b4543c35a1c267722428691ef7da62c5feb9d87`, tree
+`baea0213bc800a41acd4c48da51fe1e263d93a24`, criterion source
+`d7ff9de2d916918acb5aeabfa3f2409784a33f2a`. Receipt SHA256:
+`17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579`.
+It verifies all 345 predecessor witnesses, all 85 new criteria, thirteen Open
+interfaces, the four C12 family fixtures, 32 dependency interfaces and ten
+negative controls. Exact accepted-new-ID file SHA256:
+`ac8ed72ba23cfe90235e9399e0046f47d8462b45198f492007471dec55abef2d`.
+
+The aggregate `accepted-historical-mappings-430.edn`, SHA256
+`996a2d56fe9f58a5e776e1c7f071d5e0b1fc289cd100f88b7cf16da96f0b6ff0`,
+records 430 accepted historical mappings and 131 unadopted. The normalized
+accepted-ID vector has SHA256
+`f49fd0565a48c49802f05b050615215788933a00a7b638fab95e7c2a5af32fcc`.
+All predecessor acceptance artifacts remain unchanged. Before adoption every
+current criterion and nested context again matched its actual named-task
+UTF8 span and raw/file hashes. All 833 decision records and Open states remain
+unchanged. The thirteen Open tasks were already in the 171-record census;
+mapping adoption adds zero tasks and zero completed implementations.
+
+The remaining historical cohorts are Governance12, Accounting8, Bootstrap12,
+Core31 and Build68. All have finite source-review inputs, but their actual
+current composition and acceptance remain separate. Full source-facet
+dispositions, concrete allocation of all 833 decisions and the final scope,
+granularity, status and unweighted-count audit remain baseline work.

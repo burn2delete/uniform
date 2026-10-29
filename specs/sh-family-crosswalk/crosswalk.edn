@@ -12880,14 +12880,18 @@
  :mapping-review
  {:compiler-testing85-current-composition
   {:new-source-reviewed-and-rebound-criteria 85,
-   :canonical-mapping-adoptions 0,
+   :canonical-mapping-adoptions 85,
    :original-routing-positions :preserved,
    :current-witnesses
    "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+   :mapping-composition-receipt-sha256
+   "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579",
    :previously-accepted-mappings-preserved 345,
    :source-commit "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
    :status
-   :pending-independent-actual-composed-binding-and-task-scope-review,
+   :accepted-finite-historical-mapping-and-thirteen-open-task-composition,
    :new-task-status :open,
    :task-population-change 13,
    :current-witnesses-sha256
@@ -12972,53 +12976,72 @@
    :predecessor-input-fingerprint
    "4bcec6acf693dac79dcf249bf759e2a3c5be9f96f5a0a08ec4ade3143bdd6de1"},
   :accepted-historical-mapping-source-successor
-  {:current-retention-source
-   "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
-   :reviewed-candidate "64303ba2ccc254b6eb04c775c93c2f62c87ba1b8",
-   :remaining-unadopted-dispatch-ids 216,
+  {:reviewed-candidate "8b4543c35a1c267722428691ef7da62c5feb9d87",
+   :remaining-unadopted-dispatch-ids 131,
+   :thirteen-open-producer-tasks :already-in-declared171-census,
    :whole-sh-source-version :pending,
    :current-witnesses
-   "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+   "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
    :independent-receipt-sha256
-   "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612",
+   "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579",
    :accepted-manifest
-   "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
-   :task-count-delta 9,
+   "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
    :implementation-credit :none,
-   :other-85-bindings-and-thirteen-open-tasks
-   :pending-independent-composition-and-task-scope-review,
-   :accepted-delta 70,
-   :source-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+   :accepted-delta 85,
+   :source-commit "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
    :status :accepted-finite-historical-mapping-composition,
    :predecessor
    {:current-retention-source
-    "19e1120301643581e6a8b55b933ec12643d0ba2f",
-    :reviewed-candidate "1f38064e22494ceee03f7fafc22fc93741110a9a",
-    :remaining-unadopted-dispatch-ids 286,
+    "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
+    :reviewed-candidate "64303ba2ccc254b6eb04c775c93c2f62c87ba1b8",
+    :remaining-unadopted-dispatch-ids 216,
     :whole-sh-source-version :pending,
     :current-witnesses
-    "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
-    :independent-receipt-sha256
-    "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb",
-    :accepted-manifest
-    "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
-    :task-count-delta 0,
-    :implementation-credit :none,
-    :accepted-delta 75,
-    :source-commit "6905570c41d81afb1d2917a479cf4d92b2304b30",
-    :status :accepted-finite-historical-mapping-composition,
-    :current-witnesses-sha256
-    "6abfff77840a7a12abdd3eb6b11096424871058fd67976cbfbb2d80bd3c9ceea",
-    :current-retention-witnesses
     "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
-    :accepted-mappings 275,
-    :other-70-bindings
-    :pending-independent-composition-and-task-scope-review},
+    :independent-receipt-sha256
+    "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612",
+    :accepted-manifest
+    "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
+    :task-count-delta 9,
+    :implementation-credit :none,
+    :other-85-bindings-and-thirteen-open-tasks
+    :pending-independent-composition-and-task-scope-review,
+    :accepted-delta 70,
+    :source-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+    :status :accepted-finite-historical-mapping-composition,
+    :predecessor
+    {:current-retention-source
+     "19e1120301643581e6a8b55b933ec12643d0ba2f",
+     :reviewed-candidate "1f38064e22494ceee03f7fafc22fc93741110a9a",
+     :remaining-unadopted-dispatch-ids 286,
+     :whole-sh-source-version :pending,
+     :current-witnesses
+     "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
+     :independent-receipt-sha256
+     "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb",
+     :accepted-manifest
+     "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+     :task-count-delta 0,
+     :implementation-credit :none,
+     :accepted-delta 75,
+     :source-commit "6905570c41d81afb1d2917a479cf4d92b2304b30",
+     :status :accepted-finite-historical-mapping-composition,
+     :current-witnesses-sha256
+     "6abfff77840a7a12abdd3eb6b11096424871058fd67976cbfbb2d80bd3c9ceea",
+     :current-retention-witnesses
+     "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+     :accepted-mappings 275,
+     :other-70-bindings
+     :pending-independent-composition-and-task-scope-review},
+    :current-witnesses-sha256
+    "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
+    :current-retention-witnesses
+    "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+    :accepted-mappings 345},
    :current-witnesses-sha256
-   "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
-   :current-retention-witnesses
-   "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
-   :accepted-mappings 345},
+   "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
+   :accepted-mappings 430,
+   :task-count-delta-on-adoption 0},
   :family-task-source-composition
   {:source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
    :main-composition "60f59d225b03338eb30cdc22850838ecebd07303",
