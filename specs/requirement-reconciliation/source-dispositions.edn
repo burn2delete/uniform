@@ -9,6 +9,13 @@
  {:path "specs/requirement-reconciliation/source-task-inputs.edn",
   :sha256
   "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"},
+ :source-metadata-admissions
+ [{:path
+   "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
+   :sha256
+   "1b4e9d6e9e317fb2f12eb300172ce466d7192dfdad56a65b3600ccb44a36474d",
+   :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
+   :scope :exact-two-supporting-source-contexts}],
  :authority :derived-source-disposition-and-review-input-only,
  :schema-version 1,
  :reviewed-family-inputs
@@ -113520,6 +113527,13 @@
        :status "Open; partial source evidence above is not closure",
        :end-byte 5041,
        :start-byte 4681}}],
+    :source-metadata-admission
+    {:path
+     "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
+     :sha256
+     "1b4e9d6e9e317fb2f12eb300172ce466d7192dfdad56a65b3600ccb44a36474d",
+     :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
+     :scope :exact-two-supporting-source-contexts},
     :decision-status :open,
     :qualified-review-adoption
     {:path
@@ -113549,26 +113563,26 @@
       {:path "specs/domains-workflow/tasks.md",
        :marker "domains-implementation-tasks",
        :task-id "gpu",
-       :source-commit "a91ba41db8921492dde452b7c3cf0854afb1ecd2",
+       :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
        :file-sha256
-       "27b29869e230f07321513c7a00fb7e7ea3c6708875385b74ce08df307c9351b1",
-       :start-byte 277517,
-       :end-byte 278495,
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 310372,
+       :end-byte 311444,
        :raw-sha256
-       "4c7baa0cc139b02c2eb9eb3c50851350575732165222b1014014a00e1614e075"},
+       "247ddacffe11b6bd26aa654462942951ccf988217cdedc19a4a39ad37e70f994"},
       :additional-criterion-witnesses [],
       :task-context
       {:path "specs/domains-workflow/tasks.md",
        :task-id "gpu",
        :file-sha256
-       "27b29869e230f07321513c7a00fb7e7ea3c6708875385b74ce08df307c9351b1",
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
        :raw-sha256
-       "a0507ac304f7ac7556eaf34cd32226b4ec1737c212c062e556734a66f6a008e9",
+       "66dd98affab2e61293a872c93691d56414d86b8205f39384e63f061f6dab3952",
        :marker "domains-implementation-tasks",
-       :source-commit "a91ba41db8921492dde452b7c3cf0854afb1ecd2",
+       :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
        :status "Open",
-       :end-byte 278495,
-       :start-byte 268838}}],
+       :end-byte 311444,
+       :start-byte 301693}}],
     :task-composition
     {:path
      "specs/requirement-reconciliation/domains30-current-composition.edn",
@@ -113588,16 +113602,21 @@
        :required-artifact
        "target ABI/layout and accepted lowering facts",
        :relation :consume-output-not-whole-task-completion}],
-     :unresolved-facet-metadata-ids
-     ["finite18/facet/286b01af7d666fc04c3011ab61aa6f9a"
-      "finite18/facet/961d8f6d6eac0325dd1b1a8351d4a2e6"],
+     :unresolved-facet-metadata-ids [],
      :basis
      "Current acceptance context lacks this explicit operational role/refusal/output guarantee; append only the supplied source-backed criterion.",
      :full-attached-facet-entailment :not-conferred,
      :scope :minimal-proposed-operation-criterion,
+     :source-metadata-admission
+     {:path
+      "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
+      :sha256
+      "1b4e9d6e9e317fb2f12eb300172ce466d7192dfdad56a65b3600ccb44a36474d",
+      :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
+      :scope :exact-two-supporting-source-contexts},
      :accepted-parent-criterion-ids [],
      :refusals
-     "Reject missing accepted-verifier facts, lost source/layout/authority/synchronization/numeric evidence or unsupported IR transitions. Host dispatch/transfers and backend kernel-code emission remain separate consumers; retain both unresolved facet metadata IDs.",
+     "Reject missing accepted-verifier facts, lost source/layout/authority/synchronization/numeric evidence or unsupported IR transitions. Host dispatch/transfers and backend kernel-code emission remain separate consumers; preserve both original facet IDs with authenticated metadata-only source binding; these example/diagnostic contexts add no requirements.",
      :accountability-field-does-not-override-actual-task true,
      :producer-consumer-role :producer,
      :source-evidence
@@ -113657,19 +113676,110 @@
        :document-id "DOM13",
        :end-byte 1905,
        :start-byte 1886}
-      {:id "finite18/facet/286b01af7d666fc04c3011ab61aa6f9a",
-       :document-id nil,
-       :missing-source-metadata true,
-       :source-binding-state :unresolved-source-metadata,
+      {:path
+       "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+       :shared-member-routes
+       [{:original-id "domain/gpu-dispatch",
+         :replacement-ids ["domain/gpu-dispatch"],
+         :role :external-unmodified}
+        {:original-id "domain/gpu-kernel-validation",
+         :replacement-ids ["domain/lower-accepted-gpu-kernel"],
+         :role :bounded-interface-attribution}
+        {:original-id "domain/gpu-reduction-integration",
+         :replacement-ids ["domain/gpu-reduction-integration"],
+         :role :external-unmodified}
+        {:original-id "runtime/check-proof-preservation",
+         :replacement-ids ["runtime/check-proof-preservation"],
+         :role :external-unmodified}
+        {:original-id "runtime/device-memory-transfer",
+         :replacement-ids ["runtime/device-memory-transfer"],
+         :role :external-unmodified}],
+       :owning-context
+       {:start-byte 2122,
+        :end-byte 2531,
+        :raw-sha256
+        "4bf769222fa0873db12f7f9ce92f63f535612c421d997607494fa1ca10316259",
+        :source-occurrence-id
+        "DOM13/source/d111405d27fd19c46bb51342190890db32f949b60d882c0a913391ebbbe66923"},
+       :raw-sha256
+       "054bbbe1cf83a7da4968b42dfcccb5c7a401301cf045cf8e6be0dac0fe728ff6",
+       :current-document-sha256
+       "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7",
+       :original-facet-id
+       "facet/runtime-domains-schema/dom13/4ab9951ffe93bd923948983b",
+       :source-occurrence-id
+       "DOM13/source/d111405d27fd19c46bb51342190890db32f949b60d882c0a913391ebbbe66923",
+       :origin-facet-ids
+       ["facet/runtime-domains-schema/dom13/4ab9951ffe93bd923948983b"
+        "DOM13/facet/55f47c01d9aae1ef3bd8bd5a699fd27b5afdfbc0fbbd3e3561a82c144fff1f83"],
+       :id "finite18/facet/286b01af7d666fc04c3011ab61aa6f9a",
+       :kind :example,
+       :document-id "DOM13",
+       :end-byte 2279,
        :qualification
-       "Retain the dispatched missing facet metadata; no document, span, source hash or closure is invented."}
-      {:id "finite18/facet/961d8f6d6eac0325dd1b1a8351d4a2e6",
-       :document-id nil,
-       :missing-source-metadata true,
-       :source-binding-state :unresolved-source-metadata,
+       :supporting-example-or-diagnostic-context-no-additional-requirement,
+       :unit-ids
+       ["domain/gpu-dispatch"
+        "domain/gpu-reduction-integration"
+        "domain/lower-accepted-gpu-kernel"
+        "runtime/check-proof-preservation"
+        "runtime/device-memory-transfer"],
+       :start-byte 2186,
+       :original-before-sha256
+       "daff6a55ef6abe756c783fd9d19b7d9c5f2c266bb5799149ac383c9977a8366e",
+       :source-binding-state :accepted-source-context-metadata}
+      {:path
+       "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+       :shared-member-routes
+       [{:original-id "domain/gpu-dispatch",
+         :replacement-ids ["domain/gpu-dispatch"],
+         :role :external-unmodified}
+        {:original-id "domain/gpu-kernel-validation",
+         :replacement-ids
+         ["domain/lower-accepted-gpu-kernel"
+          "domain/gpu-kernel-validation"],
+         :role :bounded-interface-attribution}
+        {:original-id "runtime/check-proof-preservation",
+         :replacement-ids ["runtime/check-proof-preservation"],
+         :role :external-unmodified}
+        {:original-id "runtime/device-memory-transfer",
+         :replacement-ids ["runtime/device-memory-transfer"],
+         :role :external-unmodified}],
+       :owning-context
+       {:start-byte 3916,
+        :end-byte 4058,
+        :raw-sha256
+        "d0bea8bd99bbd5f61517bf32cf2f656da19f99ce1a914e12577324d858743a5a",
+        :source-occurrence-id
+        "DOM13/source/0cd32d07021231e365b41b17afdd949c33305b02c673a50af9d3514fb3278b33"},
+       :raw-sha256
+       "227ba1cfd634e57a3a509e701a52ea00edeb262cc29cbb1c50331017ec265d4a",
+       :current-document-sha256
+       "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7",
+       :original-facet-id
+       "facet/runtime-domains-schema/dom13/d5d72c93f364e2ec05fa200e",
+       :source-occurrence-id
+       "DOM13/source/0cd32d07021231e365b41b17afdd949c33305b02c673a50af9d3514fb3278b33",
+       :origin-facet-ids
+       ["facet/runtime-domains-schema/dom13/d5d72c93f364e2ec05fa200e"
+        "DOM13/facet/a34c2d27a1e8f3bdd6381ed046cc25c5a517bceec02488d39c9ef3e87bf7431c"],
+       :id "finite18/facet/961d8f6d6eac0325dd1b1a8351d4a2e6",
+       :kind :diagnostic,
+       :document-id "DOM13",
+       :end-byte 4058,
        :qualification
-       "Retain the dispatched missing facet metadata; no document, span, source hash or closure is invented."}]},
-    :task-source-commit "a91ba41db8921492dde452b7c3cf0854afb1ecd2",
+       :supporting-example-or-diagnostic-context-no-additional-requirement,
+       :unit-ids
+       ["domain/gpu-dispatch"
+        "domain/gpu-kernel-validation"
+        "domain/lower-accepted-gpu-kernel"
+        "runtime/check-proof-preservation"
+        "runtime/device-memory-transfer"],
+       :start-byte 3991,
+       :original-before-sha256
+       "d6c7d10c440a224a269540682f6c6b587048bbf88eb5b99853696dcec7b832ef",
+       :source-binding-state :accepted-source-context-metadata}]},
+    :task-source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
     :implementation-acceptance :unassessed},
    :families ["phase-09"]}
   {:source-document-ids [],
