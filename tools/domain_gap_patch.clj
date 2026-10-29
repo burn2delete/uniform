@@ -1,10 +1,12 @@
+;; The legacy projection script dispatches on command-line arguments at load.
+;; Load it once without CLI arguments, then declare the ordinary static alias.
+(binding [*command-line-args* nil] (require 'domains-task-projection))
+
 (ns domain-gap-patch
   "Read-only guarded composition of the assigned Domain historical-gap proposals."
-  (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.set :as set]
-            [domain-requirement-patch :as source]))
-
-(binding [*command-line-args* nil]
-  (require '[domains-task-projection :as domains]))
+  (:require [clojure.edn :as edn] [clojure.string :as str]
+            [domain-requirement-patch :as source]
+            [domains-task-projection :as domains]))
 
 (def patch-path "specs/requirement-reconciliation/domain-gap-completion.edn")
 (defn require! [p message] (source/require! p message))

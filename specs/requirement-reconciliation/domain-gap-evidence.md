@@ -88,6 +88,12 @@ blank-line separation before the proposed new records; no canonical task
 source was written by either attempt. The corrected proposed records pass the
 existing domain record validator under the explicit proposed key extension.
 
+CI run `40813465738` on the first completion candidate `0bce75fc` rejected an
+unused namespace and the dynamically established Domains alias. The successor
+removes the unused import and declares a static alias after loading the legacy
+projection CLI with no arguments. These lint failures remain in history;
+neither the linter nor its warning policy is changed.
+
 No compiler, runtime, producer, broker, live provider or process operation was
 run. Shared source-version metadata and canonical task files remain untouched.
 The patch must be independently reviewed and composed by the canonical owner,
