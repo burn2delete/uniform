@@ -1,0 +1,4896 @@
+{:kind :reconciliation-source-and-task-inputs,
+ :schema-version 1,
+ :authority :immutable-input-snapshot-only,
+ :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+ :source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+ :original-source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+ :inventory
+ {:path "docs/document-inventory.json",
+  :sha256
+  "2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"},
+ :proposal-format
+ {:ref "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :path ".specify/requirement-proposal-format.edn",
+  :sha256
+  "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"},
+ :original-documents
+ [{:id "D0",
+   :sequence 1N,
+   :path
+   "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+   :source-family "phase-00",
+   :original-sha256
+   "9b16a7773d0d283a2f6b595e6b65c0fdee7be66d602275a2aebea3bcc79e763e",
+   :current-sha256
+   "9b16a7773d0d283a2f6b595e6b65c0fdee7be66d602275a2aebea3bcc79e763e"}
+  {:id "D1",
+   :sequence 2N,
+   :path
+   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+   :source-family "phase-00",
+   :original-sha256
+   "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+   :current-sha256
+   "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75"}
+  {:id "D2",
+   :sequence 3N,
+   :path
+   "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+   :source-family "phase-00",
+   :original-sha256
+   "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+   :current-sha256
+   "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc"}
+  {:id "D3",
+   :sequence 4N,
+   :path
+   "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+   :source-family "phase-00",
+   :original-sha256
+   "7aae837fbf1063910b9bd147fff013c76cfee2e38a5d86766e2874e0759121a1",
+   :current-sha256
+   "7aae837fbf1063910b9bd147fff013c76cfee2e38a5d86766e2874e0759121a1"}
+  {:id "D4",
+   :sequence 5N,
+   :path
+   "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md",
+   :source-family "phase-00",
+   :original-sha256
+   "9e87f163026d4b94190e7cf1e5f1194b0b427987800382baf5d697b0ec745c70",
+   :current-sha256
+   "9e87f163026d4b94190e7cf1e5f1194b0b427987800382baf5d697b0ec745c70"}
+  {:id "D5",
+   :sequence 6N,
+   :path
+   "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+   :source-family "phase-00",
+   :original-sha256
+   "2dfc71f40ec14f7a17b65c73dcce873185c82f08ea18590a1bff635178805cb8",
+   :current-sha256
+   "2dfc71f40ec14f7a17b65c73dcce873185c82f08ea18590a1bff635178805cb8"}
+  {:id "D6",
+   :sequence 7N,
+   :path
+   "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+   :source-family "phase-00",
+   :original-sha256
+   "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+   :current-sha256
+   "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2"}
+  {:id "D7",
+   :sequence 8N,
+   :path
+   "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+   :source-family "phase-00",
+   :original-sha256
+   "d7caee8ea7431a61e33bdf8c8e78a97d0fff56a54231a6c8a314cf2d27f650ea",
+   :current-sha256
+   "d7caee8ea7431a61e33bdf8c8e78a97d0fff56a54231a6c8a314cf2d27f650ea"}
+  {:id "D8",
+   :sequence 9N,
+   :path
+   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+   :source-family "phase-00",
+   :original-sha256
+   "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63",
+   :current-sha256
+   "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63"}
+  {:id "D9",
+   :sequence 10N,
+   :path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :source-family "phase-00",
+   :original-sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b",
+   :current-sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}
+  {:id "L1",
+   :sequence 11N,
+   :path
+   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "e31900e670779fdc908d2059e43df84dd9f5543b73aefa88114cc13d0bcc9c39",
+   :current-sha256
+   "e31900e670779fdc908d2059e43df84dd9f5543b73aefa88114cc13d0bcc9c39"}
+  {:id "L2",
+   :sequence 12N,
+   :path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :source-family "phase-01",
+   :original-sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f",
+   :current-sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:id "L3",
+   :sequence 13N,
+   :path
+   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "28f65b8ec7980f9533cd7b44f6b70bd561f4d8f8a8a9a0c111094ceef3c318a0",
+   :current-sha256
+   "28f65b8ec7980f9533cd7b44f6b70bd561f4d8f8a8a9a0c111094ceef3c318a0"}
+  {:id "L4",
+   :sequence 14N,
+   :path
+   "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9",
+   :current-sha256
+   "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9"}
+  {:id "L5",
+   :sequence 15N,
+   :path
+   "docs/phase-01-core-language/015-l5-type-system-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c",
+   :current-sha256
+   "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c"}
+  {:id "L6",
+   :sequence 16N,
+   :path
+   "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5",
+   :current-sha256
+   "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5"}
+  {:id "L7",
+   :sequence 17N,
+   :path
+   "docs/phase-01-core-language/017-l7-pattern-matching-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "269f8fe78745780be7550cad32095cd1ddab9bf491dc2b411d805f89d14ea2b9",
+   :current-sha256
+   "269f8fe78745780be7550cad32095cd1ddab9bf491dc2b411d805f89d14ea2b9"}
+  {:id "L8",
+   :sequence 18N,
+   :path
+   "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "71cf1fd126f4e0bd249dfad4f2b85504ce66328f6ef17c0605a65b0866f73c05",
+   :current-sha256
+   "71cf1fd126f4e0bd249dfad4f2b85504ce66328f6ef17c0605a65b0866f73c05"}
+  {:id "L9",
+   :sequence 19N,
+   :path
+   "docs/phase-01-core-language/019-l9-error-handling-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "0f154c2a10c21458e123b868d3225ec29f56dbf072097ad7824fe48c82c805f5",
+   :current-sha256
+   "0f154c2a10c21458e123b868d3225ec29f56dbf072097ad7824fe48c82c805f5"}
+  {:id "L10",
+   :sequence 20N,
+   :path
+   "docs/phase-01-core-language/020-l10-memory-model-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "71ad7ba6873f0f81b145c6f84d6aa99eb36d105afa54b416cc11316974070496",
+   :current-sha256
+   "71ad7ba6873f0f81b145c6f84d6aa99eb36d105afa54b416cc11316974070496"}
+  {:id "L11",
+   :sequence 21N,
+   :path
+   "docs/phase-01-core-language/021-l11-concurrency-model-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "f26a0e5c8744abbecee352b95209a1337e4df566a9567b54dd978f265d147bd8",
+   :current-sha256
+   "f26a0e5c8744abbecee352b95209a1337e4df566a9567b54dd978f265d147bd8"}
+  {:id "L12",
+   :sequence 22N,
+   :path
+   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333",
+   :current-sha256
+   "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333"}
+  {:id "L13",
+   :sequence 23N,
+   :path
+   "docs/phase-01-core-language/023-l13-standard-library-design-principles.md",
+   :source-family "phase-01",
+   :original-sha256
+   "c14b680b66c13f20ef383d4e872fe72bf3e707405706396c0d21cb9e1b1268cd",
+   :current-sha256
+   "c14b680b66c13f20ef383d4e872fe72bf3e707405706396c0d21cb9e1b1268cd"}
+  {:id "L14",
+   :sequence 24N,
+   :path
+   "docs/phase-01-core-language/024-l14-language-facet-system-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "14646a93de90f03ad7134174cfe09975485e7852626b9ea1bff803979f2ea645",
+   :current-sha256
+   "14646a93de90f03ad7134174cfe09975485e7852626b9ea1bff803979f2ea645"}
+  {:id "L15",
+   :sequence 25N,
+   :path
+   "docs/phase-01-core-language/025-l15-capability-provider-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "81a875ffbbc43bf05f95aafd60774aaf1b1fa2e54c0eb9331b03dd28597f6ae5",
+   :current-sha256
+   "81a875ffbbc43bf05f95aafd60774aaf1b1fa2e54c0eb9331b03dd28597f6ae5"}
+  {:id "L16",
+   :sequence 26N,
+   :path
+   "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md",
+   :source-family "phase-01",
+   :original-sha256
+   "9f9c89bff8f960b9f60b5e4324c467c1e90e808b80739df0d52bc8998bafef06",
+   :current-sha256
+   "9f9c89bff8f960b9f60b5e4324c467c1e90e808b80739df0d52bc8998bafef06"}
+  {:id "L17",
+   :sequence 27N,
+   :path
+   "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md",
+   :source-family "phase-01",
+   :original-sha256
+   "cb7250d8c07548738922357b9926ff76fd69c6a07c1d8640427dd63b733e4bf9",
+   :current-sha256
+   "cb7250d8c07548738922357b9926ff76fd69c6a07c1d8640427dd63b733e4bf9"}
+  {:id "L18",
+   :sequence 28N,
+   :path
+   "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md",
+   :source-family "phase-01",
+   :original-sha256
+   "dda6be41db92f0d78160ab54e937b2187ea2960b2b995a17214315c793f899bf",
+   :current-sha256
+   "dda6be41db92f0d78160ab54e937b2187ea2960b2b995a17214315c793f899bf"}
+  {:id "L19",
+   :sequence 29N,
+   :path
+   "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md",
+   :source-family "phase-01",
+   :original-sha256
+   "93b025b627dac0101995ed15fb68efad958e04146bbec41a0b4124dc813f6abb",
+   :current-sha256
+   "93b025b627dac0101995ed15fb68efad958e04146bbec41a0b4124dc813f6abb"}
+  {:id "SAFE1",
+   :sequence 30N,
+   :path "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+   :source-family "phase-02",
+   :original-sha256
+   "220615f64d0041ab248dbf34c2ef5118a9a40ba07bed86b86436d2b0cb9bc3df",
+   :current-sha256
+   "220615f64d0041ab248dbf34c2ef5118a9a40ba07bed86b86436d2b0cb9bc3df"}
+  {:id "SAFE2",
+   :sequence 31N,
+   :path "docs/phase-02-safety/031-safe2-memory-safety-model.md",
+   :source-family "phase-02",
+   :original-sha256
+   "1b5c26b14508a63ce429437c45da7fa07b52b63967bacf28bfb68a5fb87deee2",
+   :current-sha256
+   "1b5c26b14508a63ce429437c45da7fa07b52b63967bacf28bfb68a5fb87deee2"}
+  {:id "SAFE3",
+   :sequence 32N,
+   :path
+   "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md",
+   :source-family "phase-02",
+   :original-sha256
+   "8864531ea94eb6280b10d71c35a2860886840f5cf6bb2d5f8476e35e28bc8f46",
+   :current-sha256
+   "8864531ea94eb6280b10d71c35a2860886840f5cf6bb2d5f8476e35e28bc8f46"}
+  {:id "SAFE4",
+   :sequence 33N,
+   :path "docs/phase-02-safety/033-safe4-region-and-arena-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "db20fd993e0a5a339bf6c55e4e46aa15c5c2b1ae61d574c1638b26914db38593",
+   :current-sha256
+   "db20fd993e0a5a339bf6c55e4e46aa15c5c2b1ae61d574c1638b26914db38593"}
+  {:id "SAFE5",
+   :sequence 34N,
+   :path "docs/phase-02-safety/034-safe5-linear-resource-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "74988831746eb60d550d44f48a57a5e8830d8d0b3cb810a24361a37bfcaeeb65",
+   :current-sha256
+   "74988831746eb60d550d44f48a57a5e8830d8d0b3cb810a24361a37bfcaeeb65"}
+  {:id "SAFE6",
+   :sequence 35N,
+   :path
+   "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+   :source-family "phase-02",
+   :original-sha256
+   "ead50f3f54d0a3e46d6dedeb0abbd6d7c2dc135e9be06476598957174b1cbd6f",
+   :current-sha256
+   "ead50f3f54d0a3e46d6dedeb0abbd6d7c2dc135e9be06476598957174b1cbd6f"}
+  {:id "SAFE7",
+   :sequence 36N,
+   :path "docs/phase-02-safety/036-safe7-ffi-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "f17437cabd542f5f84677922990f00c0302537b19ab1009b4ca4cf1b7c116a00",
+   :current-sha256
+   "f17437cabd542f5f84677922990f00c0302537b19ab1009b4ca4cf1b7c116a00"}
+  {:id "SAFE8",
+   :sequence 37N,
+   :path
+   "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "e00b32aa593538fb6d6df646f0edd023fa2fa7c625d618088ed8ef6a503e8bc3",
+   :current-sha256
+   "e00b32aa593538fb6d6df646f0edd023fa2fa7c625d618088ed8ef6a503e8bc3"}
+  {:id "SAFE9",
+   :sequence 38N,
+   :path "docs/phase-02-safety/038-safe9-numeric-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "b0a1403e4d6651f4e0b1e9a7f55671f3f65374b1136b430344f7c9a57e3407b3",
+   :current-sha256
+   "b0a1403e4d6651f4e0b1e9a7f55671f3f65374b1136b430344f7c9a57e3407b3"}
+  {:id "SAFE10",
+   :sequence 39N,
+   :path
+   "docs/phase-02-safety/039-safe10-capability-security-model.md",
+   :source-family "phase-02",
+   :original-sha256
+   "2dd2fa436ec3d3d3ac7fcae4070d712c66cd157d171b62acf929936bbfc12449",
+   :current-sha256
+   "2dd2fa436ec3d3d3ac7fcae4070d712c66cd157d171b62acf929936bbfc12449"}
+  {:id "SAFE11",
+   :sequence 40N,
+   :path
+   "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "ae5ea71755d62725dc555c90bb7ad212ad1454ea8ba497925c6c57bccd2b1902",
+   :current-sha256
+   "ae5ea71755d62725dc555c90bb7ad212ad1454ea8ba497925c6c57bccd2b1902"}
+  {:id "SAFE12",
+   :sequence 41N,
+   :path "docs/phase-02-safety/041-safe12-macro-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "c047aa9506d418d23b34422cc3e44a1c2494b1341178c29bd0198c1c48ec6fa5",
+   :current-sha256
+   "c047aa9506d418d23b34422cc3e44a1c2494b1341178c29bd0198c1c48ec6fa5"}
+  {:id "SAFE13",
+   :sequence 42N,
+   :path "docs/phase-02-safety/042-safe13-ai-tool-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "482eb30b3035a84dd0bfc7dc32bdc6b7f9dda619b84d7937486f5c21b02bf1ca",
+   :current-sha256
+   "482eb30b3035a84dd0bfc7dc32bdc6b7f9dda619b84d7937486f5c21b02bf1ca"}
+  {:id "SAFE14",
+   :sequence 43N,
+   :path "docs/phase-02-safety/043-safe14-supply-chain-safety.md",
+   :source-family "phase-02",
+   :original-sha256
+   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
+   :current-sha256
+   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5"}
+  {:id "SAFE15",
+   :sequence 44N,
+   :path
+   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+   :source-family "phase-02",
+   :original-sha256
+   "5e6a89a21baf9c7ace71e9065cc5e65483c769d0d8b1d0e213b9288a6f1d9759",
+   :current-sha256
+   "5e6a89a21baf9c7ace71e9065cc5e65483c769d0d8b1d0e213b9288a6f1d9759"}
+  {:id "SAFE16",
+   :sequence 45N,
+   :path
+   "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+   :source-family "phase-02",
+   :original-sha256
+   "9d6f56b496118a9680a7b963568dd25dc8c775e21c4ec6ec9d490022adcc0eb4",
+   :current-sha256
+   "9d6f56b496118a9680a7b963568dd25dc8c775e21c4ec6ec9d490022adcc0eb4"}
+  {:id "P1",
+   :sequence 46N,
+   :path
+   "docs/phase-03-profile-system/046-p1-profile-system-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "3fe9fcaf0e9c6fca4e0fba40fcbc3241eca3f5b2a24b956a6a40e73c42f2806b",
+   :current-sha256
+   "3fe9fcaf0e9c6fca4e0fba40fcbc3241eca3f5b2a24b956a6a40e73c42f2806b"}
+  {:id "P2",
+   :sequence 47N,
+   :path
+   "docs/phase-03-profile-system/047-p2-core-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "2b798e10ec4b716252d697b190f6735ac2a2db9332c448ed6bfa0f5a8f3f8645",
+   :current-sha256
+   "2b798e10ec4b716252d697b190f6735ac2a2db9332c448ed6bfa0f5a8f3f8645"}
+  {:id "P3",
+   :sequence 48N,
+   :path
+   "docs/phase-03-profile-system/048-p3-meta-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "be58978f718cd94f43f9797adfb58056677ed99c856930abd499dd590d05538e",
+   :current-sha256
+   "be58978f718cd94f43f9797adfb58056677ed99c856930abd499dd590d05538e"}
+  {:id "P4",
+   :sequence 49N,
+   :path
+   "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "398fa6ef060559ad16006444279b6e138b1f164be855c3d8094d6ec7910217f7",
+   :current-sha256
+   "398fa6ef060559ad16006444279b6e138b1f164be855c3d8094d6ec7910217f7"}
+  {:id "P5",
+   :sequence 50N,
+   :path
+   "docs/phase-03-profile-system/050-p5-native-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "7b6c5957d685afc2f9999a7c4047aac6144e030fc05e6b254dc9992978012083",
+   :current-sha256
+   "7b6c5957d685afc2f9999a7c4047aac6144e030fc05e6b254dc9992978012083"}
+  {:id "P6",
+   :sequence 51N,
+   :path
+   "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "fea9852e5d73c313aca5030cba74494d541844d22215ea3cbb742169f9204cbe",
+   :current-sha256
+   "fea9852e5d73c313aca5030cba74494d541844d22215ea3cbb742169f9204cbe"}
+  {:id "P7",
+   :sequence 52N,
+   :path
+   "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "c9d3782e4ec071c20976b7c89d2c5c46b34bb4bedbfaa264271e7842db67ce68",
+   :current-sha256
+   "c9d3782e4ec071c20976b7c89d2c5c46b34bb4bedbfaa264271e7842db67ce68"}
+  {:id "P8",
+   :sequence 53N,
+   :path
+   "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "70baf8abb2fc77bc0c5ef18ea53df98cb0e2429e23d7664e597987114f6d3e18",
+   :current-sha256
+   "70baf8abb2fc77bc0c5ef18ea53df98cb0e2429e23d7664e597987114f6d3e18"}
+  {:id "P9",
+   :sequence 54N,
+   :path
+   "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "1d5c3fc42905ce65ff1422d773f97e900773ec090113aaff56c2a12e6ee3780e",
+   :current-sha256
+   "1d5c3fc42905ce65ff1422d773f97e900773ec090113aaff56c2a12e6ee3780e"}
+  {:id "P10",
+   :sequence 55N,
+   :path
+   "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+   :current-sha256
+   "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf"}
+  {:id "P11",
+   :sequence 56N,
+   :path
+   "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "887f756ac2a98e6789ecb9a2702011979c57fe193c6627e5987ba447102b9f7c",
+   :current-sha256
+   "887f756ac2a98e6789ecb9a2702011979c57fe193c6627e5987ba447102b9f7c"}
+  {:id "P12",
+   :sequence 57N,
+   :path
+   "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md",
+   :source-family "phase-03",
+   :original-sha256
+   "30a974a8b15b2bdb5abd5cc702ec941953558be3488a64cb9d022c194fb64471",
+   :current-sha256
+   "30a974a8b15b2bdb5abd5cc702ec941953558be3488a64cb9d022c194fb64471"}
+  {:id "P13",
+   :sequence 58N,
+   :path
+   "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md",
+   :source-family "phase-03",
+   :original-sha256
+   "893f3ee2c953d51946e9623485787c9680b69a35a1a4a8eb1807f71b9637634c",
+   :current-sha256
+   "893f3ee2c953d51946e9623485787c9680b69a35a1a4a8eb1807f71b9637634c"}
+  {:id "PERF1",
+   :sequence 59N,
+   :path
+   "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+   :source-family "phase-04",
+   :original-sha256
+   "997e030a2c08f86ea8136ad8988251e5392fcdb3800df5c6c77b37d56d24712c",
+   :current-sha256
+   "997e030a2c08f86ea8136ad8988251e5392fcdb3800df5c6c77b37d56d24712c"}
+  {:id "PERF2",
+   :sequence 60N,
+   :path
+   "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+   :source-family "phase-04",
+   :original-sha256
+   "6c41e7474b1b571aba72b4c872c1b38117e1a5b857de77e9de2c72181e29235c",
+   :current-sha256
+   "6c41e7474b1b571aba72b4c872c1b38117e1a5b857de77e9de2c72181e29235c"}
+  {:id "PERF3",
+   :sequence 61N,
+   :path
+   "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md",
+   :source-family "phase-04",
+   :original-sha256
+   "36caaca7f3f2510cd5ea36c375953a00f191e908765344fe1f8a31a2efdb2f97",
+   :current-sha256
+   "36caaca7f3f2510cd5ea36c375953a00f191e908765344fe1f8a31a2efdb2f97"}
+  {:id "PERF4",
+   :sequence 62N,
+   :path
+   "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md",
+   :source-family "phase-04",
+   :original-sha256
+   "def870f86bd705c83828cae306443739ae636337615a80cb5a05f337122e16ef",
+   :current-sha256
+   "def870f86bd705c83828cae306443739ae636337615a80cb5a05f337122e16ef"}
+  {:id "PERF5",
+   :sequence 63N,
+   :path
+   "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md",
+   :source-family "phase-04",
+   :original-sha256
+   "18601e5a666bb33d58afb6346a89e91452ffcf2ac4cbb679888606d62c1b4c75",
+   :current-sha256
+   "18601e5a666bb33d58afb6346a89e91452ffcf2ac4cbb679888606d62c1b4c75"}
+  {:id "PERF6",
+   :sequence 64N,
+   :path
+   "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md",
+   :source-family "phase-04",
+   :original-sha256
+   "e207531a7d7b9652820614f0d61f48510b4f570d28d8efd4b3f177df0e70c8a2",
+   :current-sha256
+   "e207531a7d7b9652820614f0d61f48510b4f570d28d8efd4b3f177df0e70c8a2"}
+  {:id "PERF7",
+   :sequence 65N,
+   :path
+   "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md",
+   :source-family "phase-04",
+   :original-sha256
+   "a250d679c2c03e5343684e64d252a722db76b31226f57196cff9df05f38d28db",
+   :current-sha256
+   "a250d679c2c03e5343684e64d252a722db76b31226f57196cff9df05f38d28db"}
+  {:id "PERF8",
+   :sequence 66N,
+   :path
+   "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md",
+   :source-family "phase-04",
+   :original-sha256
+   "1089aa25876565f44f1c9f969a4a5c9421de978a97111082783ce678acdeb34c",
+   :current-sha256
+   "1089aa25876565f44f1c9f969a4a5c9421de978a97111082783ce678acdeb34c"}
+  {:id "PERF9",
+   :sequence 67N,
+   :path
+   "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md",
+   :source-family "phase-04",
+   :original-sha256
+   "64f59df6baab4c5f1c333409e0b6a2f87bc52ec6d7710844d49baba810136533",
+   :current-sha256
+   "64f59df6baab4c5f1c333409e0b6a2f87bc52ec6d7710844d49baba810136533"}
+  {:id "PERF10",
+   :sequence 68N,
+   :path
+   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+   :source-family "phase-04",
+   :original-sha256
+   "52a34276599945c7cfc88fbc64f3af1d56d359ae8a48ddf22afa443af72f24e3",
+   :current-sha256
+   "52a34276599945c7cfc88fbc64f3af1d56d359ae8a48ddf22afa443af72f24e3"}
+  {:id "MATH1",
+   :sequence 69N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "2720ac946f5c1bf521cd9d1acf0b1d5a197d91f0eea2f348cf326f12739474aa",
+   :current-sha256
+   "2720ac946f5c1bf521cd9d1acf0b1d5a197d91f0eea2f348cf326f12739474aa"}
+  {:id "MATH2",
+   :sequence 70N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "5c4d9bc48545c969a8b2b7f0c28ddde89dbc0a84c6e74f3d47558b2256b634ea",
+   :current-sha256
+   "5c4d9bc48545c969a8b2b7f0c28ddde89dbc0a84c6e74f3d47558b2256b634ea"}
+  {:id "MATH3",
+   :sequence 71N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "4694bd43ac3a18543427349bb32522646308bd5a44a0bfd05fe9271cfc77ffca",
+   :current-sha256
+   "4694bd43ac3a18543427349bb32522646308bd5a44a0bfd05fe9271cfc77ffca"}
+  {:id "MATH4",
+   :sequence 72N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md",
+   :source-family "phase-05",
+   :original-sha256
+   "df3613be7932354a0efa846b27365c7e7f5c9a404b2a788113857912bf5d14eb",
+   :current-sha256
+   "df3613be7932354a0efa846b27365c7e7f5c9a404b2a788113857912bf5d14eb"}
+  {:id "MATH5",
+   :sequence 73N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "565940c73831288ac9b02a1cc51e9c8ec437ffd409ea435145ed3f5a5ed93e2b",
+   :current-sha256
+   "565940c73831288ac9b02a1cc51e9c8ec437ffd409ea435145ed3f5a5ed93e2b"}
+  {:id "MATH6",
+   :sequence 74N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md",
+   :source-family "phase-05",
+   :original-sha256
+   "63f546d33861178d96cad29b34a09db83c28a6d6e17ce1a66e391cd5ced417d8",
+   :current-sha256
+   "63f546d33861178d96cad29b34a09db83c28a6d6e17ce1a66e391cd5ced417d8"}
+  {:id "MATH7",
+   :sequence 75N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md",
+   :source-family "phase-05",
+   :original-sha256
+   "0170483a0bcbf7d298ee306338aa62d4da38d3bb62971221755482bbb1a654d3",
+   :current-sha256
+   "0170483a0bcbf7d298ee306338aa62d4da38d3bb62971221755482bbb1a654d3"}
+  {:id "MATH8",
+   :sequence 76N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "c8152ca2b4eb1d85d4a2d18299cf4cf23ab9bb56208430152b143618c50dd914",
+   :current-sha256
+   "c8152ca2b4eb1d85d4a2d18299cf4cf23ab9bb56208430152b143618c50dd914"}
+  {:id "MATH9",
+   :sequence 77N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md",
+   :source-family "phase-05",
+   :original-sha256
+   "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410",
+   :current-sha256
+   "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410"}
+  {:id "MATH10",
+   :sequence 78N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md",
+   :source-family "phase-05",
+   :original-sha256
+   "a62d165ee6e5a4118f9a17e1ce47ed438c84481d43a5b99219f97afa89f21cb9",
+   :current-sha256
+   "a62d165ee6e5a4118f9a17e1ce47ed438c84481d43a5b99219f97afa89f21cb9"}
+  {:id "MATH11",
+   :sequence 79N,
+   :path
+   "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md",
+   :source-family "phase-05",
+   :original-sha256
+   "dd12dd1177291ec7cb518ec5e44fb317ad1f2c802f0659ff1b45c137ec9b37f5",
+   :current-sha256
+   "dd12dd1177291ec7cb518ec5e44fb317ad1f2c802f0659ff1b45c137ec9b37f5"}
+  {:id "C1",
+   :sequence 80N,
+   :path
+   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+   :source-family "phase-06",
+   :original-sha256
+   "030fa2eca59ce7be61371bc12e02c312de2f0aa413ef0d12dc2858e531c84c36",
+   :current-sha256
+   "030fa2eca59ce7be61371bc12e02c312de2f0aa413ef0d12dc2858e531c84c36"}
+  {:id "C2",
+   :sequence 81N,
+   :path
+   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "be907d124ba32874ca6c0cf1e94c4f0551e3e28c20865ea1b66517d28e652ad7",
+   :current-sha256
+   "be907d124ba32874ca6c0cf1e94c4f0551e3e28c20865ea1b66517d28e652ad7"}
+  {:id "C3",
+   :sequence 82N,
+   :path
+   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+   :source-family "phase-06",
+   :original-sha256
+   "058a066f8443800a3cf79681ecf4b46aa048924a433fb7441d27d9d152459d48",
+   :current-sha256
+   "058a066f8443800a3cf79681ecf4b46aa048924a433fb7441d27d9d152459d48"}
+  {:id "C4",
+   :sequence 83N,
+   :path
+   "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "0a2428520a9c5fb23336e9bcd9bd73c4f074426f4cec82b97bf0df140e994cee",
+   :current-sha256
+   "0a2428520a9c5fb23336e9bcd9bd73c4f074426f4cec82b97bf0df140e994cee"}
+  {:id "C5",
+   :sequence 84N,
+   :path
+   "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "f61931ada4a1759bcdac74ef5c114e34f674d1eee9199f0833b72a5c31c205b0",
+   :current-sha256
+   "f61931ada4a1759bcdac74ef5c114e34f674d1eee9199f0833b72a5c31c205b0"}
+  {:id "C6",
+   :sequence 85N,
+   :path
+   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+   :current-sha256
+   "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3"}
+  {:id "C7",
+   :sequence 86N,
+   :path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a",
+   :current-sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:id "C8",
+   :sequence 87N,
+   :path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+   :current-sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:id "C9",
+   :sequence 88N,
+   :path
+   "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "5cfe07027452c3e3d920c7f634c2ee00b7e8b7fd1f5ddd99a1490931ed7a0f79",
+   :current-sha256
+   "5cfe07027452c3e3d920c7f634c2ee00b7e8b7fd1f5ddd99a1490931ed7a0f79"}
+  {:id "C10",
+   :sequence 89N,
+   :path
+   "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "a31b94a1c53f9e1610e5c31ef30d53e0047c9d07c4be034cae8356d20780c657",
+   :current-sha256
+   "a31b94a1c53f9e1610e5c31ef30d53e0047c9d07c4be034cae8356d20780c657"}
+  {:id "C11",
+   :sequence 90N,
+   :path
+   "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md",
+   :source-family "phase-06",
+   :original-sha256
+   "208940e6497948a3c80c8184e19a46daa07e82494032d275526bad38f14cfd39",
+   :current-sha256
+   "208940e6497948a3c80c8184e19a46daa07e82494032d275526bad38f14cfd39"}
+  {:id "C12",
+   :sequence 91N,
+   :path
+   "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+   :source-family "phase-06",
+   :original-sha256
+   "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+   :current-sha256
+   "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74"}
+  {:id "C13",
+   :sequence 92N,
+   :path
+   "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "fd4a1be6d951b54b17e2b694da6f61a5c4e38bea2dbcdb3a90f394f3d0b4c89d",
+   :current-sha256
+   "fd4a1be6d951b54b17e2b694da6f61a5c4e38bea2dbcdb3a90f394f3d0b4c89d"}
+  {:id "C14",
+   :sequence 93N,
+   :path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :source-family "phase-06",
+   :original-sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405",
+   :current-sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:id "C15",
+   :sequence 94N,
+   :path
+   "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+   :source-family "phase-06",
+   :original-sha256
+   "6947ad905feb04d2e6d4d5e029bb6d4253a859ea30ceb43510caed5bda202e70",
+   :current-sha256
+   "6947ad905feb04d2e6d4d5e029bb6d4253a859ea30ceb43510caed5bda202e70"}
+  {:id "C16",
+   :sequence 95N,
+   :path
+   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+   :source-family "phase-06",
+   :original-sha256
+   "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+   :current-sha256
+   "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662"}
+  {:id "C17",
+   :sequence 96N,
+   :path
+   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+   :source-family "phase-06",
+   :original-sha256
+   "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+   :current-sha256
+   "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2"}
+  {:id "C18",
+   :sequence 97N,
+   :path
+   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+   :source-family "phase-06",
+   :original-sha256
+   "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+   :current-sha256
+   "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f"}
+  {:id "B1",
+   :sequence 98N,
+   :path
+   "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md",
+   :source-family "phase-07",
+   :original-sha256
+   "ff1844b73f44d0ea7616debe5d227a91ea688efef9bc65f90728e8aabe2e70d1",
+   :current-sha256
+   "ff1844b73f44d0ea7616debe5d227a91ea688efef9bc65f90728e8aabe2e70d1"}
+  {:id "B2",
+   :sequence 99N,
+   :path
+   "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1",
+   :current-sha256
+   "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1"}
+  {:id "B3",
+   :sequence 100N,
+   :path
+   "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "643212252bdf2fc09e25d316caffa9d480132e9240784e9647443984afbeb41a",
+   :current-sha256
+   "643212252bdf2fc09e25d316caffa9d480132e9240784e9647443984afbeb41a"}
+  {:id "B4",
+   :sequence 101N,
+   :path
+   "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "11fd415cecfe91c29429daa8c678c5b5c31e27dac9f3b56ceaf17ef4d212c860",
+   :current-sha256
+   "11fd415cecfe91c29429daa8c678c5b5c31e27dac9f3b56ceaf17ef4d212c860"}
+  {:id "B5",
+   :sequence 102N,
+   :path
+   "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "dee9677025f85b344fe1c3419538e13bf6599a510841e47eec10bdc35dcb456d",
+   :current-sha256
+   "dee9677025f85b344fe1c3419538e13bf6599a510841e47eec10bdc35dcb456d"}
+  {:id "B6",
+   :sequence 103N,
+   :path
+   "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "3f75907be68c0f4e8f576c1a0882e5fd007d88472140fe322b38b6d371b23d8c",
+   :current-sha256
+   "3f75907be68c0f4e8f576c1a0882e5fd007d88472140fe322b38b6d371b23d8c"}
+  {:id "B7",
+   :sequence 104N,
+   :path
+   "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "c76ddae9fd4c93e5578e1923189a85adee01af69eb94361f143f9df392266bc7",
+   :current-sha256
+   "c76ddae9fd4c93e5578e1923189a85adee01af69eb94361f143f9df392266bc7"}
+  {:id "B8",
+   :sequence 105N,
+   :path
+   "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "c4b1d16534ad3083bf41bfc2378deaba0c0d8b453198d998ec7562a421d2fb28",
+   :current-sha256
+   "c4b1d16534ad3083bf41bfc2378deaba0c0d8b453198d998ec7562a421d2fb28"}
+  {:id "B9",
+   :sequence 106N,
+   :path
+   "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "2aa1d61efcee7b32d98989d2f54cc44b20be83631044fa57645fa3ae58a85c91",
+   :current-sha256
+   "2aa1d61efcee7b32d98989d2f54cc44b20be83631044fa57645fa3ae58a85c91"}
+  {:id "B10",
+   :sequence 107N,
+   :path
+   "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "3f7dade6029b9340de99a94c22e3fb0bace79017fcde8f08428f69adb90e126e",
+   :current-sha256
+   "3f7dade6029b9340de99a94c22e3fb0bace79017fcde8f08428f69adb90e126e"}
+  {:id "B11",
+   :sequence 108N,
+   :path
+   "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "fbac218c8cf97522c2274c95c8752a72b3ee491ada15e0ff211dfe9741f463f8",
+   :current-sha256
+   "fbac218c8cf97522c2274c95c8752a72b3ee491ada15e0ff211dfe9741f463f8"}
+  {:id "B12",
+   :sequence 109N,
+   :path
+   "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md",
+   :source-family "phase-07",
+   :original-sha256
+   "8e54f6ecc81f0e80f5d0bdd241a2543c5606846f27b14223de069810a2f30be7",
+   :current-sha256
+   "8e54f6ecc81f0e80f5d0bdd241a2543c5606846f27b14223de069810a2f30be7"}
+  {:id "B13",
+   :sequence 110N,
+   :path
+   "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md",
+   :source-family "phase-07",
+   :original-sha256
+   "3a417a1b51db3223e2ce28982c6e51ae634f45b15a6c706f603382c88707e0df",
+   :current-sha256
+   "3a417a1b51db3223e2ce28982c6e51ae634f45b15a6c706f603382c88707e0df"}
+  {:id "B14",
+   :sequence 111N,
+   :path
+   "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md",
+   :source-family "phase-07",
+   :original-sha256
+   "0c94ff483ec95bae7e6c2052f1d1166c5d07e684c3ab730975daa13d511b61c2",
+   :current-sha256
+   "0c94ff483ec95bae7e6c2052f1d1166c5d07e684c3ab730975daa13d511b61c2"}
+  {:id "R1",
+   :sequence 112N,
+   :path
+   "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+   :source-family "phase-08",
+   :original-sha256
+   "c8b69b53960bc7257e797db4b77deff7cc76cc747890d107a4a0e4b660631a20",
+   :current-sha256
+   "c8b69b53960bc7257e797db4b77deff7cc76cc747890d107a4a0e4b660631a20"}
+  {:id "R2",
+   :sequence 113N,
+   :path
+   "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+   :source-family "phase-08",
+   :original-sha256
+   "d2eae424530f2b4feb929d54da5fad6499b82f0adba5da488ec2841275207797",
+   :current-sha256
+   "d2eae424530f2b4feb929d54da5fad6499b82f0adba5da488ec2841275207797"}
+  {:id "R3",
+   :sequence 114N,
+   :path
+   "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "81fd2dc117abe860a6a98aa1ac5fe9bcbec918a23b2e05ca0ff872c9a79e7094",
+   :current-sha256
+   "81fd2dc117abe860a6a98aa1ac5fe9bcbec918a23b2e05ca0ff872c9a79e7094"}
+  {:id "R4",
+   :sequence 115N,
+   :path
+   "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297",
+   :current-sha256
+   "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297"}
+  {:id "R5",
+   :sequence 116N,
+   :path
+   "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "01eaca3690fb061e949679f4ff27d07d969219c7778afc0bb9436a7f27a244a8",
+   :current-sha256
+   "01eaca3690fb061e949679f4ff27d07d969219c7778afc0bb9436a7f27a244a8"}
+  {:id "R6",
+   :sequence 117N,
+   :path
+   "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550",
+   :current-sha256
+   "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550"}
+  {:id "R7",
+   :sequence 118N,
+   :path
+   "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66",
+   :current-sha256
+   "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66"}
+  {:id "R8",
+   :sequence 119N,
+   :path
+   "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+   :current-sha256
+   "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b"}
+  {:id "R9",
+   :sequence 120N,
+   :path
+   "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "47db5a67d42bd821a5f8438c944066838c4be4bdd2a956e52de2153560d193a7",
+   :current-sha256
+   "47db5a67d42bd821a5f8438c944066838c4be4bdd2a956e52de2153560d193a7"}
+  {:id "R10",
+   :sequence 121N,
+   :path
+   "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b04ba44656a7cbb41020fe2cd60fa36d6c4cad692c09a8a3a8acd8d06dda3de8",
+   :current-sha256
+   "b04ba44656a7cbb41020fe2cd60fa36d6c4cad692c09a8a3a8acd8d06dda3de8"}
+  {:id "R11",
+   :sequence 122N,
+   :path
+   "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5",
+   :current-sha256
+   "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5"}
+  {:id "R12",
+   :sequence 123N,
+   :path
+   "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+   :source-family "phase-08",
+   :original-sha256
+   "b66d26b2aa5e93a8fbb4952f5f379050e5311b94a1d163208cb25bc482070439",
+   :current-sha256
+   "b66d26b2aa5e93a8fbb4952f5f379050e5311b94a1d163208cb25bc482070439"}
+  {:id "DOM1",
+   :sequence 124N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "90efda24979b22d3ba26e3d639e4b84b16705ae038b8eabec74f75c189ab2bba",
+   :current-sha256
+   "90efda24979b22d3ba26e3d639e4b84b16705ae038b8eabec74f75c189ab2bba"}
+  {:id "DOM2",
+   :sequence 125N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "097cbde7de9f86113be8ea8ad6de71d60a1811a6940273407f5e5f324184f1f6",
+   :current-sha256
+   "097cbde7de9f86113be8ea8ad6de71d60a1811a6940273407f5e5f324184f1f6"}
+  {:id "DOM3",
+   :sequence 126N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "22a5f619266820fe13348c78cbf40de664cfdb7913a84f7ed88746cbe34cb5a1",
+   :current-sha256
+   "22a5f619266820fe13348c78cbf40de664cfdb7913a84f7ed88746cbe34cb5a1"}
+  {:id "DOM4",
+   :sequence 127N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "f03c616d73419110ef1ed18baf935cab8e3c2d12c3ed6bfadaf8f8901ad3ae4d",
+   :current-sha256
+   "f03c616d73419110ef1ed18baf935cab8e3c2d12c3ed6bfadaf8f8901ad3ae4d"}
+  {:id "DOM5",
+   :sequence 128N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "ac89c3ee3d2b856779a9cc3b6d2629179fcc0e0f4105904dfa87108912102386",
+   :current-sha256
+   "ac89c3ee3d2b856779a9cc3b6d2629179fcc0e0f4105904dfa87108912102386"}
+  {:id "DOM6",
+   :sequence 129N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "ea9d710d1015178f4a29f04255290162f5ddd79aa3a8f5e88cd78992c9e31127",
+   :current-sha256
+   "ea9d710d1015178f4a29f04255290162f5ddd79aa3a8f5e88cd78992c9e31127"}
+  {:id "DOM7",
+   :sequence 130N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "d3db88d5f0fc8148c7d72d7cbe00e1078d027bc48ae8c086be46bdb1878f6946",
+   :current-sha256
+   "d3db88d5f0fc8148c7d72d7cbe00e1078d027bc48ae8c086be46bdb1878f6946"}
+  {:id "DOM8",
+   :sequence 131N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "451161712decc17bef78e2d464fb8a93682041eaa238f671e7d8dbb1f193f608",
+   :current-sha256
+   "451161712decc17bef78e2d464fb8a93682041eaa238f671e7d8dbb1f193f608"}
+  {:id "DOM9",
+   :sequence 132N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "4163904637527cf503bd141dfe288d08af93e0568d99cde6357d390817e5dca6",
+   :current-sha256
+   "4163904637527cf503bd141dfe288d08af93e0568d99cde6357d390817e5dca6"}
+  {:id "DOM10",
+   :sequence 133N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "a6423b612df21ea27aa9965c20f3336f2a7f77fd8856d680d0b6821ad2a326eb",
+   :current-sha256
+   "a6423b612df21ea27aa9965c20f3336f2a7f77fd8856d680d0b6821ad2a326eb"}
+  {:id "DOM11",
+   :sequence 134N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "c8c9a8a3a5ef5c28ae7af4f3fdf6f7f0e3c432fcac6b87523991c882850304ec",
+   :current-sha256
+   "c8c9a8a3a5ef5c28ae7af4f3fdf6f7f0e3c432fcac6b87523991c882850304ec"}
+  {:id "DOM12",
+   :sequence 135N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "735e242b98a13d31adfc2d2f28f18505d9c561f95a355b634f0a22b9e0d06a8e",
+   :current-sha256
+   "735e242b98a13d31adfc2d2f28f18505d9c561f95a355b634f0a22b9e0d06a8e"}
+  {:id "DOM13",
+   :sequence 136N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7",
+   :current-sha256
+   "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7"}
+  {:id "DOM14",
+   :sequence 137N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "60a6ac426528b99c0bc5f84b8cd92a6e00d5706be73e1fc83b7e7f8c7720d171",
+   :current-sha256
+   "60a6ac426528b99c0bc5f84b8cd92a6e00d5706be73e1fc83b7e7f8c7720d171"}
+  {:id "DOM15",
+   :sequence 138N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "598430ff37be43934d9cbb959b15e5cb6582210c89276bd1fc078a1af5fcf3d6",
+   :current-sha256
+   "598430ff37be43934d9cbb959b15e5cb6582210c89276bd1fc078a1af5fcf3d6"}
+  {:id "DOM16",
+   :sequence 139N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "e771187c1d838f44e144f4801ae8cd9837fbd63d5c49810a7863bbcb8406cb1f",
+   :current-sha256
+   "e771187c1d838f44e144f4801ae8cd9837fbd63d5c49810a7863bbcb8406cb1f"}
+  {:id "DOM17",
+   :sequence 140N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+   :current-sha256
+   "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69"}
+  {:id "DOM18",
+   :sequence 141N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "aa88558c78b8911eaf869fe8cb0dd7ed2e450761bdc6998a423e68b6df0b9e50",
+   :current-sha256
+   "aa88558c78b8911eaf869fe8cb0dd7ed2e450761bdc6998a423e68b6df0b9e50"}
+  {:id "DOM19",
+   :sequence 142N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "5866e543a74eaa8292db70083394f6233e7139b76790f349845e913b4d9579b5",
+   :current-sha256
+   "5866e543a74eaa8292db70083394f6233e7139b76790f349845e913b4d9579b5"}
+  {:id "DOM20",
+   :sequence 143N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "be33097a4224d64b7f16f43250ad9717dce5e03f3bdb594c40629baac5a1638c",
+   :current-sha256
+   "be33097a4224d64b7f16f43250ad9717dce5e03f3bdb594c40629baac5a1638c"}
+  {:id "DOM21",
+   :sequence 144N,
+   :path
+   "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+   :source-family "phase-09",
+   :original-sha256
+   "85eb07c094c0c17fed31f618df4f4e1f51af95dc498b09dc280bdc5a8a60e388",
+   :current-sha256
+   "85eb07c094c0c17fed31f618df4f4e1f51af95dc498b09dc280bdc5a8a60e388"}
+  {:id "S1",
+   :sequence 145N,
+   :path
+   "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "d5f947c8dbc5c20110b8e7ba33e8fb2e4af2b8374d99cdb9616327c529141de0",
+   :current-sha256
+   "d5f947c8dbc5c20110b8e7ba33e8fb2e4af2b8374d99cdb9616327c529141de0"}
+  {:id "S2",
+   :sequence 146N,
+   :path
+   "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "d0a17a5106117fe209eb9fc6b030ebebc1c4f2a9d34995a1715163d3a805a4b6",
+   :current-sha256
+   "d0a17a5106117fe209eb9fc6b030ebebc1c4f2a9d34995a1715163d3a805a4b6"}
+  {:id "S3",
+   :sequence 147N,
+   :path
+   "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "67872d650f6899255fbcf188bfd86e29280b41b525df91b97db3890dc653e4a0",
+   :current-sha256
+   "67872d650f6899255fbcf188bfd86e29280b41b525df91b97db3890dc653e4a0"}
+  {:id "S4",
+   :sequence 148N,
+   :path
+   "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+   :source-family "phase-10",
+   :original-sha256
+   "ef34df8afad57d4d364c4bb21d0cefb184c82c366cf8370b1bbd7cef586cfa67",
+   :current-sha256
+   "ef34df8afad57d4d364c4bb21d0cefb184c82c366cf8370b1bbd7cef586cfa67"}
+  {:id "S5",
+   :sequence 149N,
+   :path
+   "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md",
+   :source-family "phase-10",
+   :original-sha256
+   "02e231ed2f359c46ed179cb0524bf35c12dfe5176adf055a4c0bd439d1d5c188",
+   :current-sha256
+   "02e231ed2f359c46ed179cb0524bf35c12dfe5176adf055a4c0bd439d1d5c188"}
+  {:id "S6",
+   :sequence 150N,
+   :path
+   "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+   :source-family "phase-10",
+   :original-sha256
+   "8e5a5f89582eb973356a92dee62dd08d6c77f312f6751fc39a47a4dfbc43c692",
+   :current-sha256
+   "8e5a5f89582eb973356a92dee62dd08d6c77f312f6751fc39a47a4dfbc43c692"}
+  {:id "S7",
+   :sequence 151N,
+   :path
+   "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "6826cfc0e8f6a3c299b086f09b64f645f9a4c58ced59a27f2c6b050bd6786647",
+   :current-sha256
+   "6826cfc0e8f6a3c299b086f09b64f645f9a4c58ced59a27f2c6b050bd6786647"}
+  {:id "S8",
+   :sequence 152N,
+   :path
+   "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "b9067190de850a10200277d2ce8d9bd8b3ceabb45acbb244ca8125af175cd4ac",
+   :current-sha256
+   "b9067190de850a10200277d2ce8d9bd8b3ceabb45acbb244ca8125af175cd4ac"}
+  {:id "S9",
+   :sequence 153N,
+   :path
+   "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+   :source-family "phase-10",
+   :original-sha256
+   "43efc2c36c338899d42d7a6a4e4c07fc62faf7ffe5335a4be9c91161e1b37138",
+   :current-sha256
+   "43efc2c36c338899d42d7a6a4e4c07fc62faf7ffe5335a4be9c91161e1b37138"}
+  {:id "A1",
+   :sequence 154N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "6b9bac09636fbbb6f85a7dcf4c1985aa01f86273a366c6737d148cd9078f755e",
+   :current-sha256
+   "6b9bac09636fbbb6f85a7dcf4c1985aa01f86273a366c6737d148cd9078f755e"}
+  {:id "A2",
+   :sequence 155N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "203fd3b56ff427e0aaa091881115005761bbe8e91fbf06be314379cb4bfd857c",
+   :current-sha256
+   "203fd3b56ff427e0aaa091881115005761bbe8e91fbf06be314379cb4bfd857c"}
+  {:id "A3",
+   :sequence 156N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "529b5ac5b7990959e1a9b7040f2c3965c3be33a40457472324b44d08f37f7db8",
+   :current-sha256
+   "529b5ac5b7990959e1a9b7040f2c3965c3be33a40457472324b44d08f37f7db8"}
+  {:id "A4",
+   :sequence 157N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "b77cb764ba1108aab17b74321c9a13c5bd8ed146fdf497dd072a6a2ae19c70bf",
+   :current-sha256
+   "b77cb764ba1108aab17b74321c9a13c5bd8ed146fdf497dd072a6a2ae19c70bf"}
+  {:id "A5",
+   :sequence 158N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "92a4ff266eddc156152c59b35d58d75786d041afb7d394d09a76ea4192a8d86a",
+   :current-sha256
+   "92a4ff266eddc156152c59b35d58d75786d041afb7d394d09a76ea4192a8d86a"}
+  {:id "A6",
+   :sequence 159N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "cd418638f117af98501032681cbbfa7b5a9c74991c44fdfa129d0c63b81388bc",
+   :current-sha256
+   "cd418638f117af98501032681cbbfa7b5a9c74991c44fdfa129d0c63b81388bc"}
+  {:id "A7",
+   :sequence 160N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "c55cad9b7336b59874d749540e5382d77ba67d5c30fbed3990485edaa665d0ed",
+   :current-sha256
+   "c55cad9b7336b59874d749540e5382d77ba67d5c30fbed3990485edaa665d0ed"}
+  {:id "A8",
+   :sequence 161N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md",
+   :source-family "phase-11",
+   :original-sha256
+   "a5d165c8e304494df298f74b2153f4bb003613d723afc8f70fe5c64179bd8fda",
+   :current-sha256
+   "a5d165c8e304494df298f74b2153f4bb003613d723afc8f70fe5c64179bd8fda"}
+  {:id "A9",
+   :sequence 162N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md",
+   :source-family "phase-11",
+   :original-sha256
+   "61cde7536f8ab51f4b0705af885250a003c00fc445e43f4e50c374e0c56d2b87",
+   :current-sha256
+   "61cde7536f8ab51f4b0705af885250a003c00fc445e43f4e50c374e0c56d2b87"}
+  {:id "A10",
+   :sequence 163N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "7239980a8ba903ac11adab08722b478e159fd760bd6e1772ec745e5c0e24fc8f",
+   :current-sha256
+   "7239980a8ba903ac11adab08722b478e159fd760bd6e1772ec745e5c0e24fc8f"}
+  {:id "A11",
+   :sequence 164N,
+   :path
+   "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md",
+   :source-family "phase-11",
+   :original-sha256
+   "22f9f6f562983169fe449fd0582b25b58c2436ef0334ae9232a565097e1c5215",
+   :current-sha256
+   "22f9f6f562983169fe449fd0582b25b58c2436ef0334ae9232a565097e1c5215"}
+  {:id "PKG1",
+   :sequence 165N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+   :current-sha256
+   "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd"}
+  {:id "PKG2",
+   :sequence 166N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+   :source-family "phase-12",
+   :original-sha256
+   "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8",
+   :current-sha256
+   "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8"}
+  {:id "PKG3",
+   :sequence 167N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e",
+   :current-sha256
+   "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e"}
+  {:id "PKG4",
+   :sequence 168N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "77f491fbb0803b8fb24e4da6df0af9b4233c38f66a3f1c56dbab2f3cdb8e2515",
+   :current-sha256
+   "77f491fbb0803b8fb24e4da6df0af9b4233c38f66a3f1c56dbab2f3cdb8e2515"}
+  {:id "PKG5",
+   :sequence 169N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "2fc55b3c00387a525fec352d9bb1c4d2f5ce5c94c9fc4cf1172e7940ac8962b6",
+   :current-sha256
+   "2fc55b3c00387a525fec352d9bb1c4d2f5ce5c94c9fc4cf1172e7940ac8962b6"}
+  {:id "PKG6",
+   :sequence 170N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+   :current-sha256
+   "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3"}
+  {:id "PKG7",
+   :sequence 171N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+   :current-sha256
+   "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933"}
+  {:id "PKG8",
+   :sequence 172N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "ebbd66e76c3db534b4cb5a750c81e9409e174512cfa10d69f7c3961dfdee26d3",
+   :current-sha256
+   "ebbd66e76c3db534b4cb5a750c81e9409e174512cfa10d69f7c3961dfdee26d3"}
+  {:id "PKG9",
+   :sequence 173N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+   :source-family "phase-12",
+   :original-sha256
+   "d9166cf0f33c631b63c63258906c4f8f007ce3d05bae92a4567bb0d5560bd6a0",
+   :current-sha256
+   "d9166cf0f33c631b63c63258906c4f8f007ce3d05bae92a4567bb0d5560bd6a0"}
+  {:id "PKG10",
+   :sequence 174N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "6e63f5d8972b0d18b3f010af818a0eda8f785cb2ad3d9c0cf676f24ca35de225",
+   :current-sha256
+   "6e63f5d8972b0d18b3f010af818a0eda8f785cb2ad3d9c0cf676f24ca35de225"}
+  {:id "PKG11",
+   :sequence 175N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "0806cef13ee841b47c3bd087ba142ca7ca35bfa3f578d9a976efbd1161359608",
+   :current-sha256
+   "0806cef13ee841b47c3bd087ba142ca7ca35bfa3f578d9a976efbd1161359608"}
+  {:id "PKG12",
+   :sequence 176N,
+   :path
+   "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+   :source-family "phase-12",
+   :original-sha256
+   "df81fdb35cb8ca798410f6cc99d467df918c4c2271141a83482a413a0810436c",
+   :current-sha256
+   "df81fdb35cb8ca798410f6cc99d467df918c4c2271141a83482a413a0810436c"}
+  {:id "T1",
+   :sequence 177N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "359d631dbb0330508657ef107bbc39c03ababf9c93f3b852db1def1a9fab1d23",
+   :current-sha256
+   "359d631dbb0330508657ef107bbc39c03ababf9c93f3b852db1def1a9fab1d23"}
+  {:id "T2",
+   :sequence 178N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "87b37472e48dac58a867b1d567ec5f320a2586321abff9d41d105ed7c95d7548",
+   :current-sha256
+   "87b37472e48dac58a867b1d567ec5f320a2586321abff9d41d105ed7c95d7548"}
+  {:id "T3",
+   :sequence 179N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "a9e15e18331837d7cd5254b1df80fb16cd473e9f5b361245ea3f2138bef8ba39",
+   :current-sha256
+   "a9e15e18331837d7cd5254b1df80fb16cd473e9f5b361245ea3f2138bef8ba39"}
+  {:id "T4",
+   :sequence 180N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "fcd60e3dd8fe94725d6beca29df0c6fd2edf04245034b837e683a5772668bf3f",
+   :current-sha256
+   "fcd60e3dd8fe94725d6beca29df0c6fd2edf04245034b837e683a5772668bf3f"}
+  {:id "T5",
+   :sequence 181N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "3d5d2159f9b5b61c6dcaa678a6d5451a1bb21d8760192d0831401d123f423585",
+   :current-sha256
+   "3d5d2159f9b5b61c6dcaa678a6d5451a1bb21d8760192d0831401d123f423585"}
+  {:id "T6",
+   :sequence 182N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "1fb3a120c4b66a96d7ddd6cc3e40d5690e520e21c898df5ded2edcbe46a5a992",
+   :current-sha256
+   "1fb3a120c4b66a96d7ddd6cc3e40d5690e520e21c898df5ded2edcbe46a5a992"}
+  {:id "T7",
+   :sequence 183N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "d98d6875f3396a50d29a0c5c44924f1893294247e340757fd9c757df941c3794",
+   :current-sha256
+   "d98d6875f3396a50d29a0c5c44924f1893294247e340757fd9c757df941c3794"}
+  {:id "T8",
+   :sequence 184N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "797c50c0346b8ae435d5bbf1b1af7db6928e76d89650d4cca8c178d177660bff",
+   :current-sha256
+   "797c50c0346b8ae435d5bbf1b1af7db6928e76d89650d4cca8c178d177660bff"}
+  {:id "T9",
+   :sequence 185N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "4a9d0d82290ba9b1885e1f75d7eeff293958b0a512a37ee7ffc339b610c57617",
+   :current-sha256
+   "4a9d0d82290ba9b1885e1f75d7eeff293958b0a512a37ee7ffc339b610c57617"}
+  {:id "T10",
+   :sequence 186N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "ad38ff16e808b0f97ca67789ed435f8c201202a62d5132bf53d334625144791f",
+   :current-sha256
+   "ad38ff16e808b0f97ca67789ed435f8c201202a62d5132bf53d334625144791f"}
+  {:id "T11",
+   :sequence 187N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "d3626f32bd86d876292a0947b1531daf6186a86f553af6521a6ee044c8e9d570",
+   :current-sha256
+   "d3626f32bd86d876292a0947b1531daf6186a86f553af6521a6ee044c8e9d570"}
+  {:id "T12",
+   :sequence 188N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md",
+   :source-family "phase-13",
+   :original-sha256
+   "c1a1ecbe9c56af1f4f15e9d1d85721e2d5f213184225f3900f5330a95b892bf4",
+   :current-sha256
+   "c1a1ecbe9c56af1f4f15e9d1d85721e2d5f213184225f3900f5330a95b892bf4"}
+  {:id "T13",
+   :sequence 189N,
+   :path
+   "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md",
+   :source-family "phase-13",
+   :original-sha256
+   "a06da161ec3bdd52bca08750f477b870bfbfa7725fa76f4e42c1b940b993e64d",
+   :current-sha256
+   "a06da161ec3bdd52bca08750f477b870bfbfa7725fa76f4e42c1b940b993e64d"}
+  {:id "TEST1",
+   :sequence 190N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "6f454ef9cc8045b28ebc029df643616610ea4a2e676b3c04ace57a219e2434c4",
+   :current-sha256
+   "6f454ef9cc8045b28ebc029df643616610ea4a2e676b3c04ace57a219e2434c4"}
+  {:id "TEST2",
+   :sequence 191N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md",
+   :source-family "phase-14",
+   :original-sha256
+   "89795b7e8618e88988914ee5f3b9280a8b1b115309fcf35177b73145df05b7d0",
+   :current-sha256
+   "89795b7e8618e88988914ee5f3b9280a8b1b115309fcf35177b73145df05b7d0"}
+  {:id "TEST3",
+   :sequence 192N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md",
+   :source-family "phase-14",
+   :original-sha256
+   "c9456336441ef6492c64f069e9ac5ab538d131a2182f5723ff2428cbcbc41144",
+   :current-sha256
+   "c9456336441ef6492c64f069e9ac5ab538d131a2182f5723ff2428cbcbc41144"}
+  {:id "TEST4",
+   :sequence 193N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "51898a2877a201945dab17a04ee1d09d5f45c1c4c2665df14cc84a996a4bd31e",
+   :current-sha256
+   "51898a2877a201945dab17a04ee1d09d5f45c1c4c2665df14cc84a996a4bd31e"}
+  {:id "TEST5",
+   :sequence 194N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "7aa8588d955bb97f9371ad5b5c90eee2fb6bb3fd26e87dafe871d739259b739f",
+   :current-sha256
+   "7aa8588d955bb97f9371ad5b5c90eee2fb6bb3fd26e87dafe871d739259b739f"}
+  {:id "TEST6",
+   :sequence 195N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "4506cab535967ee5dff482ac522c5e9a95990dc07ffbfca61930057b1b0d5495",
+   :current-sha256
+   "4506cab535967ee5dff482ac522c5e9a95990dc07ffbfca61930057b1b0d5495"}
+  {:id "TEST7",
+   :sequence 196N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md",
+   :source-family "phase-14",
+   :original-sha256
+   "47b5be23480707358b9f790c2f16e4a85305e4190e5b7428784a952a9990b810",
+   :current-sha256
+   "47b5be23480707358b9f790c2f16e4a85305e4190e5b7428784a952a9990b810"}
+  {:id "TEST8",
+   :sequence 197N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md",
+   :source-family "phase-14",
+   :original-sha256
+   "016d272bb500590a6f72230bfbb529d5767c354b0865a876f25fb3a53f81074f",
+   :current-sha256
+   "016d272bb500590a6f72230bfbb529d5767c354b0865a876f25fb3a53f81074f"}
+  {:id "TEST9",
+   :sequence 198N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "ed5bb1686ffde66aa1e2b1b5cf05dc26be182e8bd3b5bd4ead36b9f86bfcc812",
+   :current-sha256
+   "ed5bb1686ffde66aa1e2b1b5cf05dc26be182e8bd3b5bd4ead36b9f86bfcc812"}
+  {:id "TEST10",
+   :sequence 199N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md",
+   :source-family "phase-14",
+   :original-sha256
+   "35e8d90f7255fa0ff41885219357018efae93fb71d1529bec5568cb0c326db3e",
+   :current-sha256
+   "35e8d90f7255fa0ff41885219357018efae93fb71d1529bec5568cb0c326db3e"}
+  {:id "TEST11",
+   :sequence 200N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "f8fd10e7b2cd8a0caff20ee15258cc1ae39c0b25eb97984be4a25763a9969872",
+   :current-sha256
+   "f8fd10e7b2cd8a0caff20ee15258cc1ae39c0b25eb97984be4a25763a9969872"}
+  {:id "TEST12",
+   :sequence 201N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "7d48260cb0d39c67f0ea0d972474e83556b60244670421caa7837fa7697ba8ca",
+   :current-sha256
+   "7d48260cb0d39c67f0ea0d972474e83556b60244670421caa7837fa7697ba8ca"}
+  {:id "TEST13",
+   :sequence 202N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md",
+   :source-family "phase-14",
+   :original-sha256
+   "426a541df33b1b1ee418bf4a38c8080720bc87932e1e395fe23c614f1e1c1ba6",
+   :current-sha256
+   "426a541df33b1b1ee418bf4a38c8080720bc87932e1e395fe23c614f1e1c1ba6"}
+  {:id "BOOT1",
+   :sequence 203N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md",
+   :source-family "phase-15",
+   :original-sha256
+   "2384ef64ff33c999c66e81fcc9ccab8b6c9fac61890528f39c42b148274b156e",
+   :current-sha256
+   "2384ef64ff33c999c66e81fcc9ccab8b6c9fac61890528f39c42b148274b156e"}
+  {:id "BOOT2",
+   :sequence 204N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+   :source-family "phase-15",
+   :original-sha256
+   "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018",
+   :current-sha256
+   "fb177f872ff98bd1c5dc8ce410032cb30cfd769637ec2af5ee1b2ede6f59d018"}
+  {:id "BOOT3",
+   :sequence 205N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+   :source-family "phase-15",
+   :original-sha256
+   "4805de2caf1fc03562162b9906de5df1d2cafd2260776d629f5f8c899269773c",
+   :current-sha256
+   "4805de2caf1fc03562162b9906de5df1d2cafd2260776d629f5f8c899269773c"}
+  {:id "BOOT4",
+   :sequence 206N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+   :source-family "phase-15",
+   :original-sha256
+   "1c4018f12eebc593bd1cbedae41abd8ef9ca9780b6e2c5543134bd265cb2707e",
+   :current-sha256
+   "1c4018f12eebc593bd1cbedae41abd8ef9ca9780b6e2c5543134bd265cb2707e"}
+  {:id "BOOT5",
+   :sequence 207N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md",
+   :source-family "phase-15",
+   :original-sha256
+   "4cd285404788bb95a7a7a51eca57d4a49bf583e1322dcee98819acb0acd10623",
+   :current-sha256
+   "4cd285404788bb95a7a7a51eca57d4a49bf583e1322dcee98819acb0acd10623"}
+  {:id "BOOT6",
+   :sequence 208N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
+   :source-family "phase-15",
+   :original-sha256
+   "ce8b11af26a5e2760221fbec72ce30fba3263a1522745bf12d7a3c0e7336e860",
+   :current-sha256
+   "ce8b11af26a5e2760221fbec72ce30fba3263a1522745bf12d7a3c0e7336e860"}
+  {:id "BOOT7",
+   :sequence 209N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+   :source-family "phase-15",
+   :original-sha256
+   "d4bcdb03479049bdfb30b3c59591f2c97242102aee07e8ce714d52664a6aa75f",
+   :current-sha256
+   "d4bcdb03479049bdfb30b3c59591f2c97242102aee07e8ce714d52664a6aa75f"}
+  {:id "BOOT8",
+   :sequence 210N,
+   :path
+   "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+   :source-family "phase-15",
+   :original-sha256
+   "769fc29e7c1872f4b9634f0b542f2d6da6174b77fd84c8240f6a0eb9aa2a40d5",
+   :current-sha256
+   "769fc29e7c1872f4b9634f0b542f2d6da6174b77fd84c8240f6a0eb9aa2a40d5"}
+  {:id "STD1",
+   :sequence 211N,
+   :path
+   "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+   :source-family "phase-16",
+   :original-sha256
+   "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a",
+   :current-sha256
+   "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a"}
+  {:id "STD2",
+   :sequence 212N,
+   :path
+   "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "a1fa8f9d63041a88e3789d8f65696986d76281a887188b03a65e63448479987f",
+   :current-sha256
+   "a1fa8f9d63041a88e3789d8f65696986d76281a887188b03a65e63448479987f"}
+  {:id "STD3",
+   :sequence 213N,
+   :path
+   "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
+   :current-sha256
+   "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d"}
+  {:id "STD4",
+   :sequence 214N,
+   :path
+   "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "abcb402eaf0f2c2a6b44b78ff33c252590d57bd2bcb62fed67a8e4e9176b14b0",
+   :current-sha256
+   "abcb402eaf0f2c2a6b44b78ff33c252590d57bd2bcb62fed67a8e4e9176b14b0"}
+  {:id "STD5",
+   :sequence 215N,
+   :path
+   "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "8ec0481d0c4314bf267aec3518836660ff25461da1e26435ff31ded3ccdbb8d6",
+   :current-sha256
+   "8ec0481d0c4314bf267aec3518836660ff25461da1e26435ff31ded3ccdbb8d6"}
+  {:id "STD6",
+   :sequence 216N,
+   :path
+   "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "9263b2f9b34e83c361b093dee31cfe815c30dbcd535e78dec5028c8fe8cfdea5",
+   :current-sha256
+   "9263b2f9b34e83c361b093dee31cfe815c30dbcd535e78dec5028c8fe8cfdea5"}
+  {:id "STD7",
+   :sequence 217N,
+   :path
+   "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "87c329b8a0cb468f22ac7c2b937b224b6647378456d10b935c018afc5b08ea37",
+   :current-sha256
+   "87c329b8a0cb468f22ac7c2b937b224b6647378456d10b935c018afc5b08ea37"}
+  {:id "STD8",
+   :sequence 218N,
+   :path
+   "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "b9cdaa067cc760eeaf98458d326fa68e33900cca87063e75ec1ddf51c3c73a5e",
+   :current-sha256
+   "b9cdaa067cc760eeaf98458d326fa68e33900cca87063e75ec1ddf51c3c73a5e"}
+  {:id "STD9",
+   :sequence 219N,
+   :path
+   "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "fbcdf804d9f956f3f0dfb9dc81342f738fde0be9ee066707978307af2dd9e992",
+   :current-sha256
+   "fbcdf804d9f956f3f0dfb9dc81342f738fde0be9ee066707978307af2dd9e992"}
+  {:id "STD10",
+   :sequence 220N,
+   :path
+   "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "14c2bd6363e0b812df44f5460c260bfa2d8dde0b1ad977902ab3349663fd41b9",
+   :current-sha256
+   "14c2bd6363e0b812df44f5460c260bfa2d8dde0b1ad977902ab3349663fd41b9"}
+  {:id "STD11",
+   :sequence 221N,
+   :path
+   "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "ffe8cc05de173fc6339d4bc3bb146d4eb7233964fb5d81b2781edbb6e0d61e67",
+   :current-sha256
+   "ffe8cc05de173fc6339d4bc3bb146d4eb7233964fb5d81b2781edbb6e0d61e67"}
+  {:id "STD12",
+   :sequence 222N,
+   :path
+   "docs/phase-16-standard-library/222-std12-workflow-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "2065de63512a16e52761a5624d1495ee07156557488a5b982d63e771067d6c83",
+   :current-sha256
+   "2065de63512a16e52761a5624d1495ee07156557488a5b982d63e771067d6c83"}
+  {:id "STD13",
+   :sequence 223N,
+   :path
+   "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "b578d3d39ed72930f3b6c838349fa3dbcdebe77698b98b88f3d93531f87a853f",
+   :current-sha256
+   "b578d3d39ed72930f3b6c838349fa3dbcdebe77698b98b88f3d93531f87a853f"}
+  {:id "STD14",
+   :sequence 224N,
+   :path
+   "docs/phase-16-standard-library/224-std14-testing-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "d7b3e4cf575b1f56aae0bf6932ab8e4ae7801454da0c290c2d80231a1854463e",
+   :current-sha256
+   "d7b3e4cf575b1f56aae0bf6932ab8e4ae7801454da0c290c2d80231a1854463e"}
+  {:id "STD15",
+   :sequence 225N,
+   :path
+   "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "8bb95675653cf2698c1aa45f0db6a83d2d455e5af04fd7c747f8fc03cedd8481",
+   :current-sha256
+   "8bb95675653cf2698c1aa45f0db6a83d2d455e5af04fd7c747f8fc03cedd8481"}
+  {:id "STD16",
+   :sequence 226N,
+   :path
+   "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "f2dadfbdd6251a0d38753f1e4953c018eb2566e70ffd1cab618cff49415a09db",
+   :current-sha256
+   "f2dadfbdd6251a0d38753f1e4953c018eb2566e70ffd1cab618cff49415a09db"}
+  {:id "STD17",
+   :sequence 227N,
+   :path
+   "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "1f3812f38f67ee129d0a98181a10d5b6ef678bec68ad83e682ee50c37db8d5ed",
+   :current-sha256
+   "1f3812f38f67ee129d0a98181a10d5b6ef678bec68ad83e682ee50c37db8d5ed"}
+  {:id "STD18",
+   :sequence 228N,
+   :path
+   "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "4f2047ff53bfc866f80a917d9dd3c5e743cd87aa11ad1f6880e76cf4f85926f0",
+   :current-sha256
+   "4f2047ff53bfc866f80a917d9dd3c5e743cd87aa11ad1f6880e76cf4f85926f0"}
+  {:id "STD19",
+   :sequence 229N,
+   :path
+   "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+   :source-family "phase-16",
+   :original-sha256
+   "e4ece5195135ad1e874d15ee6a98b5157318fb3d76cc18f4af5bc2ad7d0b599b",
+   :current-sha256
+   "e4ece5195135ad1e874d15ee6a98b5157318fb3d76cc18f4af5bc2ad7d0b599b"}
+  {:id "STD20",
+   :sequence 230N,
+   :path
+   "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+   :source-family "phase-16",
+   :original-sha256
+   "c5e3783328f9a2d32f2f6addf77b6f0b60296ba835e61fa77e88ae0e1839af58",
+   :current-sha256
+   "c5e3783328f9a2d32f2f6addf77b6f0b60296ba835e61fa77e88ae0e1839af58"}
+  {:id "GOV1",
+   :sequence 231N,
+   :path
+   "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md",
+   :source-family "phase-17",
+   :original-sha256
+   "72ef40bd9d37c5f6f9eb343e8d2fa32a0657b20f15beacbebb854702de25afa5",
+   :current-sha256
+   "72ef40bd9d37c5f6f9eb343e8d2fa32a0657b20f15beacbebb854702de25afa5"}
+  {:id "GOV2",
+   :sequence 232N,
+   :path
+   "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "3a6dcb880a2acb51f8358886f5be5c0ccd216c64fffef56050a9a59d8dc313fc",
+   :current-sha256
+   "3a6dcb880a2acb51f8358886f5be5c0ccd216c64fffef56050a9a59d8dc313fc"}
+  {:id "GOV3",
+   :sequence 233N,
+   :path
+   "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md",
+   :source-family "phase-17",
+   :original-sha256
+   "3c845abca44819d5453340b5e78b2578f291df041ae903e5f9310678818b4635",
+   :current-sha256
+   "3c845abca44819d5453340b5e78b2578f291df041ae903e5f9310678818b4635"}
+  {:id "GOV4",
+   :sequence 234N,
+   :path
+   "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md",
+   :source-family "phase-17",
+   :original-sha256
+   "6c644f5923ddf8a425d7e17276d2e9026151ec3ec3cda331874fcaa7577c30b3",
+   :current-sha256
+   "6c644f5923ddf8a425d7e17276d2e9026151ec3ec3cda331874fcaa7577c30b3"}
+  {:id "GOV5",
+   :sequence 235N,
+   :path
+   "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "b72c7018ed038d81e2b261ef8aa2e2b8eacd0e70f4f47468685d60c68251280e",
+   :current-sha256
+   "b72c7018ed038d81e2b261ef8aa2e2b8eacd0e70f4f47468685d60c68251280e"}
+  {:id "GOV6",
+   :sequence 236N,
+   :path
+   "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md",
+   :source-family "phase-17",
+   :original-sha256
+   "fbee9634298c30c72c56330c0fcf288e8356f5485e58926bfef9bab87feb78bc",
+   :current-sha256
+   "fbee9634298c30c72c56330c0fcf288e8356f5485e58926bfef9bab87feb78bc"}
+  {:id "GOV7",
+   :sequence 237N,
+   :path
+   "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "e859902fb09d5b0ea088580460e91347132049f310094642dece515a9471db1a",
+   :current-sha256
+   "e859902fb09d5b0ea088580460e91347132049f310094642dece515a9471db1a"}
+  {:id "GOV8",
+   :sequence 238N,
+   :path
+   "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "7904ea5f93378116281c25449f077c6a0d833b2ae5c12aa2d7e7218f3db9ec36",
+   :current-sha256
+   "7904ea5f93378116281c25449f077c6a0d833b2ae5c12aa2d7e7218f3db9ec36"}
+  {:id "GOV9",
+   :sequence 239N,
+   :path
+   "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "bbbdde5659ff2bb6305511c8df81ba75b4d3870f6f160cd4c2644d47e6b63ead",
+   :current-sha256
+   "bbbdde5659ff2bb6305511c8df81ba75b4d3870f6f160cd4c2644d47e6b63ead"}
+  {:id "GOV10",
+   :sequence 240N,
+   :path
+   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md",
+   :source-family "phase-17",
+   :original-sha256
+   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
+   :current-sha256
+   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3"}],
+ :extension-sources
+ [{:id "release-extension",
+   :path
+   "docs/phase-18-binary-distribution-and-seedless-release/README.md",
+   :original-sha256
+   "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5",
+   :current-sha256
+   "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
+  {:id "release-tasks",
+   :path
+   "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+   :original-sha256
+   "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+   :current-sha256
+   "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57"}
+  {:id "platform-product",
+   :path "docs/component-roadmaps/platform.md",
+   :original-sha256
+   "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+   :current-sha256
+   "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364"}
+  {:id "accounting-policy",
+   :path "AGENTS.md",
+   :original-sha256
+   "52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac",
+   :current-sha256
+   "52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac"}
+  {:id "accounting-removal",
+   :path "specs/accounting-removal/spec.md",
+   :original-sha256
+   "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321",
+   :current-sha256
+   "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321"}],
+ :source-families
+ [{:id "phase-00",
+   :document-ids ["D0" "D1" "D2" "D3" "D4" "D5" "D6" "D7" "D8" "D9"]}
+  {:id "phase-01",
+   :document-ids
+   ["L1"
+    "L2"
+    "L3"
+    "L4"
+    "L5"
+    "L6"
+    "L7"
+    "L8"
+    "L9"
+    "L10"
+    "L11"
+    "L12"
+    "L13"
+    "L14"
+    "L15"
+    "L16"
+    "L17"
+    "L18"
+    "L19"]}
+  {:id "phase-02",
+   :document-ids
+   ["SAFE1"
+    "SAFE2"
+    "SAFE3"
+    "SAFE4"
+    "SAFE5"
+    "SAFE6"
+    "SAFE7"
+    "SAFE8"
+    "SAFE9"
+    "SAFE10"
+    "SAFE11"
+    "SAFE12"
+    "SAFE13"
+    "SAFE14"
+    "SAFE15"
+    "SAFE16"]}
+  {:id "phase-03",
+   :document-ids
+   ["P1"
+    "P2"
+    "P3"
+    "P4"
+    "P5"
+    "P6"
+    "P7"
+    "P8"
+    "P9"
+    "P10"
+    "P11"
+    "P12"
+    "P13"]}
+  {:id "phase-04",
+   :document-ids
+   ["PERF1"
+    "PERF2"
+    "PERF3"
+    "PERF4"
+    "PERF5"
+    "PERF6"
+    "PERF7"
+    "PERF8"
+    "PERF9"
+    "PERF10"]}
+  {:id "phase-05",
+   :document-ids
+   ["MATH1"
+    "MATH2"
+    "MATH3"
+    "MATH4"
+    "MATH5"
+    "MATH6"
+    "MATH7"
+    "MATH8"
+    "MATH9"
+    "MATH10"
+    "MATH11"]}
+  {:id "phase-06",
+   :document-ids
+   ["C1"
+    "C2"
+    "C3"
+    "C4"
+    "C5"
+    "C6"
+    "C7"
+    "C8"
+    "C9"
+    "C10"
+    "C11"
+    "C12"
+    "C13"
+    "C14"
+    "C15"
+    "C16"
+    "C17"
+    "C18"]}
+  {:id "phase-07",
+   :document-ids
+   ["B1"
+    "B2"
+    "B3"
+    "B4"
+    "B5"
+    "B6"
+    "B7"
+    "B8"
+    "B9"
+    "B10"
+    "B11"
+    "B12"
+    "B13"
+    "B14"]}
+  {:id "phase-08",
+   :document-ids
+   ["R1" "R2" "R3" "R4" "R5" "R6" "R7" "R8" "R9" "R10" "R11" "R12"]}
+  {:id "phase-09",
+   :document-ids
+   ["DOM1"
+    "DOM2"
+    "DOM3"
+    "DOM4"
+    "DOM5"
+    "DOM6"
+    "DOM7"
+    "DOM8"
+    "DOM9"
+    "DOM10"
+    "DOM11"
+    "DOM12"
+    "DOM13"
+    "DOM14"
+    "DOM15"
+    "DOM16"
+    "DOM17"
+    "DOM18"
+    "DOM19"
+    "DOM20"
+    "DOM21"]}
+  {:id "phase-10",
+   :document-ids ["S1" "S2" "S3" "S4" "S5" "S6" "S7" "S8" "S9"]}
+  {:id "phase-11",
+   :document-ids
+   ["A1" "A2" "A3" "A4" "A5" "A6" "A7" "A8" "A9" "A10" "A11"]}
+  {:id "phase-12",
+   :document-ids
+   ["PKG1"
+    "PKG2"
+    "PKG3"
+    "PKG4"
+    "PKG5"
+    "PKG6"
+    "PKG7"
+    "PKG8"
+    "PKG9"
+    "PKG10"
+    "PKG11"
+    "PKG12"]}
+  {:id "phase-13",
+   :document-ids
+   ["T1"
+    "T2"
+    "T3"
+    "T4"
+    "T5"
+    "T6"
+    "T7"
+    "T8"
+    "T9"
+    "T10"
+    "T11"
+    "T12"
+    "T13"]}
+  {:id "phase-14",
+   :document-ids
+   ["TEST1"
+    "TEST2"
+    "TEST3"
+    "TEST4"
+    "TEST5"
+    "TEST6"
+    "TEST7"
+    "TEST8"
+    "TEST9"
+    "TEST10"
+    "TEST11"
+    "TEST12"
+    "TEST13"]}
+  {:id "phase-15",
+   :document-ids
+   ["BOOT1" "BOOT2" "BOOT3" "BOOT4" "BOOT5" "BOOT6" "BOOT7" "BOOT8"]}
+  {:id "phase-16",
+   :document-ids
+   ["STD1"
+    "STD2"
+    "STD3"
+    "STD4"
+    "STD5"
+    "STD6"
+    "STD7"
+    "STD8"
+    "STD9"
+    "STD10"
+    "STD11"
+    "STD12"
+    "STD13"
+    "STD14"
+    "STD15"
+    "STD16"
+    "STD17"
+    "STD18"
+    "STD19"
+    "STD20"]}
+  {:id "phase-17",
+   :document-ids
+   ["GOV1"
+    "GOV2"
+    "GOV3"
+    "GOV4"
+    "GOV5"
+    "GOV6"
+    "GOV7"
+    "GOV8"
+    "GOV9"
+    "GOV10"]}],
+ :canonical-task-inputs
+ [{:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 3842,
+    :end-byte 4664,
+    :start-line 79,
+    :end-line 93,
+    :sha256
+    "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "ai",
+   :checked false}
+  {:path "specs/auth-workflow/tasks.md",
+   :file-sha256
+   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/auth-workflow/tasks.md",
+    :start-byte 1721,
+    :end-byte 2116,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "d823fa5050f22767ada14780a81269b150c549a4dc5ebfda7456070636239e7c"},
+   :observed-status "Open",
+   :component "auth",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity",
+   :checked false}
+  {:path "specs/auth-workflow/tasks.md",
+   :file-sha256
+   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/auth-workflow/tasks.md",
+    :start-byte 1303,
+    :end-byte 1719,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "e1be8c5ab7dc6e56ccc98b8d867d23a1a226df00815207674ee3f708c66c883d"},
+   :observed-status "Open",
+   :component "auth",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+   :checked false}
+  {:path "specs/auth-workflow/tasks.md",
+   :file-sha256
+   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/auth-workflow/tasks.md",
+    :start-byte 501,
+    :end-byte 890,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "959da73500c643eb6815d742dd159cdd02e97e719282ff53cce9f1eb74f80eeb"},
+   :observed-status "Open",
+   :component "auth",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection",
+   :checked false}
+  {:path "specs/auth-workflow/tasks.md",
+   :file-sha256
+   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/auth-workflow/tasks.md",
+    :start-byte 892,
+    :end-byte 1301,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "12fdebcee716c2303459dace017bca2e65d3b5f63db760436c32a767dfced750"},
+   :observed-status "Open",
+   :component "auth",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+   :checked false}
+  {:path "specs/auth-workflow/tasks.md",
+   :file-sha256
+   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/auth-workflow/tasks.md",
+    :start-byte 2118,
+    :end-byte 2490,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "9059cec7d841cef36cad9ba2bb84d2d60a9a2940a2a5ed0ec26115930a121555"},
+   :observed-status "Open",
+   :component "auth",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 9901,
+    :end-byte 10883,
+    :start-line 176,
+    :end-line 191,
+    :sha256
+    "6cde5f44b42a3a601dc3ed2ea1bb1ab3b09c3bccb6ef8940e659afcc8d56b543"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-ai",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 1599,
+    :end-byte 2521,
+    :start-line 31,
+    :end-line 45,
+    :sha256
+    "5b5d508c4a8d74e69ea17a99f18248d49af568efeab150dcf7de60fc96c6a180"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-c",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 13755,
+    :end-byte 14836,
+    :start-line 243,
+    :end-line 259,
+    :sha256
+    "fe606d870140b009a13d0c55291a2e4b94313a517d80a9418df4014fd417259f"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-conformance",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 12853,
+    :end-byte 13753,
+    :start-line 227,
+    :end-line 241,
+    :sha256
+    "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-emission",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 7246,
+    :end-byte 8132,
+    :start-line 129,
+    :end-line 143,
+    :sha256
+    "7e27932eba82dd96eaed9c9ac11cf760462ef62c45547d9122d014583a774971"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-gpu",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 8134,
+    :end-byte 9041,
+    :start-line 145,
+    :end-line 159,
+    :sha256
+    "d423a993767f75b7e1282830bf31709607ac7d7c0344253e7f5850c1795ae963"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-hdl",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 704,
+    :end-byte 1597,
+    :start-line 16,
+    :end-line 29,
+    :sha256
+    "65f56a1a3a0aa4c7e0db6f912c0ddbab1933840f4cd8a472deb14f4165f41cfa"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-interface",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 5474,
+    :end-byte 6376,
+    :start-line 97,
+    :end-line 111,
+    :sha256
+    "0f00f1910fd0a0a8aea8a1d5225590e63bee331ea04384e48ffe02abf2ba1a5a"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-js",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 4555,
+    :end-byte 5472,
+    :start-line 81,
+    :end-line 95,
+    :sha256
+    "8dab12bc027e436503df0eb287c2d79c324e1819e61f9a4cde519eca8ae93184"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-jvm",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 2523,
+    :end-byte 3531,
+    :start-line 47,
+    :end-line 62,
+    :sha256
+    "90e31ba376154ceb3f69d0874d004fe70063ac619c3a969d098921606ef1f278"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-llvm",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 6378,
+    :end-byte 7244,
+    :start-line 113,
+    :end-line 127,
+    :sha256
+    "5b107f0e835582a0d8bcb7a753b6877eb32e60694a7835381a918a3601324861"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-mlir",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 11798,
+    :end-byte 12851,
+    :start-line 209,
+    :end-line 225,
+    :sha256
+    "6bc0b395b6e7a9ff489a31b486678d6c3e6bcb33ed48841983a378b6adbd6d7b"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-mobile",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 10885,
+    :end-byte 11796,
+    :start-line 193,
+    :end-line 207,
+    :sha256
+    "fd43b4f51cc9becd190f608958df14c0b1c5f63958eb3c074c480c42540c9079"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-query",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 3533,
+    :end-byte 4553,
+    :start-line 64,
+    :end-line 79,
+    :sha256
+    "83387d2824cd381c8ce5391e5d6dc5dbcf75a338ec9e10ba7dda1d408ebedae0"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-wasm",
+   :checked false}
+  {:path "specs/backends-workflow/tasks.md",
+   :file-sha256
+   "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/backends-workflow/tasks.md",
+    :start-byte 9043,
+    :end-byte 9899,
+    :start-line 161,
+    :end-line 174,
+    :sha256
+    "c2308b168b23577336eb936fda7d74097112d75c5420202de9f4eb53ae6bf4ed"},
+   :observed-status "Open",
+   :component "backends",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "backend-workflow",
+   :checked false}
+  {:path "specs/build-workflow/tasks.md",
+   :file-sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/build-workflow/tasks.md",
+    :start-byte 2511,
+    :end-byte 2901,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "e8987cc8863981527889461d9af2194c2a0b17393b82ca6f83e8a555581b5ebe"},
+   :observed-status "Open",
+   :component "build",
+   :source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+   :id
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :checked false}
+  {:path "specs/build-workflow/tasks.md",
+   :file-sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/build-workflow/tasks.md",
+    :start-byte 1362,
+    :end-byte 1746,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "bd3ece7385d43b00746b4d36bdd8d4ae7f6fac527650b03d08166a16518713f8"},
+   :observed-status "Open",
+   :component "build",
+   :source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+   :id
+   "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+   :checked false}
+  {:path "specs/build-workflow/tasks.md",
+   :file-sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/build-workflow/tasks.md",
+    :start-byte 1748,
+    :end-byte 2096,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e"},
+   :observed-status "Open",
+   :component "build",
+   :source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+   :id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :checked false}
+  {:path "specs/build-workflow/tasks.md",
+   :file-sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/build-workflow/tasks.md",
+    :start-byte 591,
+    :end-byte 1360,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958"},
+   :observed-status "Open",
+   :component "build",
+   :source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+   :id
+   "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+   :checked false}
+  {:path "specs/build-workflow/tasks.md",
+   :file-sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/build-workflow/tasks.md",
+    :start-byte 2098,
+    :end-byte 2509,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "23ef09b364fb42c5b5a82282754a86aca93485960a84b7f867055d9db121c035"},
+   :observed-status "Open",
+   :component "build",
+   :source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+   :id
+   "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+   :checked false}
+  {:path "specs/cli-workflow/tasks.md",
+   :file-sha256
+   "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/cli-workflow/tasks.md",
+    :start-byte 951,
+    :end-byte 1338,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "9214938d797eb51dd04ab193cb16775b1ded3a1bd7266794e71141d29dca097b"},
+   :observed-status "Open",
+   :component "cli",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+   :checked false}
+  {:path "specs/cli-workflow/tasks.md",
+   :file-sha256
+   "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/cli-workflow/tasks.md",
+    :start-byte 1340,
+    :end-byte 1766,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "70ba47946ef7a5ab4cc6a8cde0c84b41f7460ca4675cc67988a36504d3788245"},
+   :observed-status "Open",
+   :component "cli",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+   :checked false}
+  {:path "specs/cli-workflow/tasks.md",
+   :file-sha256
+   "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/cli-workflow/tasks.md",
+    :start-byte 1768,
+    :end-byte 2131,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "6702b627e490d8d941d97ea5b18e59eaa78492794d834b5bfcbda3f5675168e3"},
+   :observed-status "Open",
+   :component "cli",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+   :checked false}
+  {:path "specs/cli-workflow/tasks.md",
+   :file-sha256
+   "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/cli-workflow/tasks.md",
+    :start-byte 2133,
+    :end-byte 2472,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "81b68508adefa16c8ea7f5c43e48e6d304f5ad0273039c29d799931194db9166"},
+   :observed-status "Open",
+   :component "cli",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
+   :checked false}
+  {:path "specs/cli-workflow/tasks.md",
+   :file-sha256
+   "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/cli-workflow/tasks.md",
+    :start-byte 587,
+    :end-byte 949,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "5a499ccec0886f4704b46dcef2ae6a9662f7c6d26381ed48b5b53841dc04b180"},
+   :observed-status "Open",
+   :component "cli",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+   :checked false}
+  {:path "specs/core-workflow/tasks.md",
+   :file-sha256
+   "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/core-workflow/tasks.md",
+    :start-byte 1010,
+    :end-byte 1340,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "1039f707b4d8e9831a1dcde2c433a2612914a43ccebffbee9f8852385ac5825d"},
+   :observed-status "Open",
+   :component "core",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :checked false}
+  {:path "specs/core-workflow/tasks.md",
+   :file-sha256
+   "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/core-workflow/tasks.md",
+    :start-byte 1342,
+    :end-byte 1705,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "d450fdf5a94f69b7a57ac915743fe801251794738bd009cfed1b3e15acc0b390"},
+   :observed-status "Open",
+   :component "core",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+   :checked false}
+  {:path "specs/core-workflow/tasks.md",
+   :file-sha256
+   "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/core-workflow/tasks.md",
+    :start-byte 1707,
+    :end-byte 2053,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "15db35b4ebd301fb0a4fe0914bffee71f5fcce4de905de289c90ec700c7d594e"},
+   :observed-status "Open",
+   :component "core",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+   :checked false}
+  {:path "specs/core-workflow/tasks.md",
+   :file-sha256
+   "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/core-workflow/tasks.md",
+    :start-byte 2055,
+    :end-byte 2387,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "4c716e64d835666a615b99a1f3b0de13be3d991f2baeb99a15a5baa88241b21f"},
+   :observed-status "Open",
+   :component "core",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+   :checked false}
+  {:path "specs/core-workflow/tasks.md",
+   :file-sha256
+   "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/core-workflow/tasks.md",
+    :start-byte 2389,
+    :end-byte 2770,
+    :start-line 44,
+    :end-line 48,
+    :sha256
+    "b25a1031ad5c7601756ad3a5b9bc27e638888ea52d7f03c087e0bd6a93cb0d53"},
+   :observed-status "Open",
+   :component "core",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+   :checked false}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :file-sha256
+   "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :start-byte 6338,
+    :end-byte 8854,
+    :start-line 76,
+    :end-line 104,
+    :sha256
+    "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7"},
+   :observed-status "Open",
+   :component "compiler-api",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "development-boundaries",
+   :checked false}
+  {:path "specs/platform-workflow/tasks.md",
+   :file-sha256
+   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 1800,
+    :end-byte 2218,
+    :start-line 37,
+    :end-line 43,
+    :sha256
+    "5493075b464fce8a99cee1dd7c10c45511708a0b80f2def02682f39d3d636873"},
+   :observed-status "Open",
+   :component "platform",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "devices",
+   :checked false}
+  {:path "specs/diag-workflow/tasks.md",
+   :file-sha256
+   "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/diag-workflow/tasks.md",
+    :start-byte 1315,
+    :end-byte 1663,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "de1a0a4888a69505f9a0d79584ddeaefde98a00bde3c1585cbb331f201d0829c"},
+   :observed-status "Open",
+   :component "diag",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+   :checked false}
+  {:path "specs/diag-workflow/tasks.md",
+   :file-sha256
+   "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/diag-workflow/tasks.md",
+    :start-byte 1665,
+    :end-byte 2039,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "daeaf70c28ec25bb0996b2fb74350050a98292a42ef63d75013bda88cb6f21bf"},
+   :observed-status "Open",
+   :component "diag",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+   :checked false}
+  {:path "specs/diag-workflow/tasks.md",
+   :file-sha256
+   "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/diag-workflow/tasks.md",
+    :start-byte 943,
+    :end-byte 1313,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "abc35e8ee3ccf11b73b404af4f770308b9384eaf693600c02b8484362583b3a3"},
+   :observed-status "Open",
+   :component "diag",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+   :checked false}
+  {:path "specs/diag-workflow/tasks.md",
+   :file-sha256
+   "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/diag-workflow/tasks.md",
+    :start-byte 508,
+    :end-byte 941,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "c0d65bcbe161656ac20e9c8765829e15800f03e70d6293a305f53c30a37fc125"},
+   :observed-status "Open",
+   :component "diag",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+   :checked false}
+  {:path "specs/effects-workflow/tasks.md",
+   :file-sha256
+   "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/effects-workflow/tasks.md",
+    :start-byte 1031,
+    :end-byte 1394,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709"},
+   :observed-status "Open",
+   :component "effects",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+   :checked false}
+  {:path "specs/effects-workflow/tasks.md",
+   :file-sha256
+   "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/effects-workflow/tasks.md",
+    :start-byte 1396,
+    :end-byte 1755,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83"},
+   :observed-status "Open",
+   :component "effects",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+   :checked false}
+  {:path "specs/effects-workflow/tasks.md",
+   :file-sha256
+   "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/effects-workflow/tasks.md",
+    :start-byte 1757,
+    :end-byte 2136,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270"},
+   :observed-status "Open",
+   :component "effects",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+   :checked false}
+  {:path "specs/effects-workflow/tasks.md",
+   :file-sha256
+   "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/effects-workflow/tasks.md",
+    :start-byte 2138,
+    :end-byte 2526,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366"},
+   :observed-status "Open",
+   :component "effects",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+   :checked false}
+  {:path "specs/effects-workflow/tasks.md",
+   :file-sha256
+   "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/effects-workflow/tasks.md",
+    :start-byte 2528,
+    :end-byte 2899,
+    :start-line 44,
+    :end-line 48,
+    :sha256
+    "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456"},
+   :observed-status "Open",
+   :component "effects",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+   :checked false}
+  {:path "specs/emit-workflow/tasks.md",
+   :file-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/emit-workflow/tasks.md",
+    :start-byte 492,
+    :end-byte 951,
+    :start-line 14,
+    :end-line 18,
+    :sha256
+    "82a9e382769dfae3c7f5afdbeba786b9121ebce54439110d524b34fdae54f41b"},
+   :observed-status "Open",
+   :component "emit",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts",
+   :checked false}
+  {:path "specs/emit-workflow/tasks.md",
+   :file-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/emit-workflow/tasks.md",
+    :start-byte 953,
+    :end-byte 1309,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "dbad5506bdf155416b1e4bbd548cbee9bf291f9958f4afe8ea1619cd73c63a93"},
+   :observed-status "Open",
+   :component "emit",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs",
+   :checked false}
+  {:path "specs/emit-workflow/tasks.md",
+   :file-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/emit-workflow/tasks.md",
+    :start-byte 1311,
+    :end-byte 1672,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "f75ee02176f47d5c782aef8bf02fd9d80ed266890ee59e900b5b9d8c8d1b43d4"},
+   :observed-status "Open",
+   :component "emit",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes",
+   :checked false}
+  {:path "specs/emit-workflow/tasks.md",
+   :file-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/emit-workflow/tasks.md",
+    :start-byte 1674,
+    :end-byte 2053,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151"},
+   :observed-status "Open",
+   :component "emit",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+   :checked false}
+  {:path "specs/emit-workflow/tasks.md",
+   :file-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/emit-workflow/tasks.md",
+    :start-byte 2055,
+    :end-byte 2442,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6"},
+   :observed-status "Open",
+   :component "emit",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers",
+   :checked false}
+  {:path "specs/expand-workflow/tasks.md",
+   :file-sha256
+   "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/expand-workflow/tasks.md",
+    :start-byte 1062,
+    :end-byte 1379,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "af0b38ab9868f3725abb69f963eb7d6f92984cc8b93e2a5b1d3197bdd00d868f"},
+   :observed-status "Open",
+   :component "expand",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros",
+   :checked false}
+  {:path "specs/expand-workflow/tasks.md",
+   :file-sha256
+   "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/expand-workflow/tasks.md",
+    :start-byte 1381,
+    :end-byte 1736,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "178db44352da5972d39250ffba54fcacf582d427cf35ea70062721dfdc761576"},
+   :observed-status "Open",
+   :component "expand",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+   :checked false}
+  {:path "specs/expand-workflow/tasks.md",
+   :file-sha256
+   "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/expand-workflow/tasks.md",
+    :start-byte 1738,
+    :end-byte 2100,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "f154f46aa295ce68c765a282f757cc646ef3402fd9367155794508a4ca71c11e"},
+   :observed-status "Open",
+   :component "expand",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+   :checked false}
+  {:path "specs/expand-workflow/tasks.md",
+   :file-sha256
+   "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/expand-workflow/tasks.md",
+    :start-byte 2102,
+    :end-byte 2458,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867"},
+   :observed-status "Open",
+   :component "expand",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination",
+   :checked false}
+  {:path "specs/expand-workflow/tasks.md",
+   :file-sha256
+   "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/expand-workflow/tasks.md",
+    :start-byte 2460,
+    :end-byte 2826,
+    :start-line 44,
+    :end-line 48,
+    :sha256
+    "9975c918d281f7077dd4c353933367286be810fa946f6da357cca13db496ed3e"},
+   :observed-status "Open",
+   :component "expand",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
+   :checked false}
+  {:path "specs/platform-workflow/tasks.md",
+   :file-sha256
+   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 943,
+    :end-byte 1363,
+    :start-line 21,
+    :end-line 27,
+    :sha256
+    "29180b42245235fc2cb5ab4a80ff35e808fe9f4586ebb420c9bbc7dfdec902d9"},
+   :observed-status "Open",
+   :component "platform",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "firmware",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 4666,
+    :end-byte 5375,
+    :start-line 95,
+    :end-line 108,
+    :sha256
+    "199625388d95a5fd135a9ec6e63094df6658a645b3ccfed345244016fd48c3a2"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "gpu",
+   :checked false}
+  {:path "specs/platform-workflow/tasks.md",
+   :file-sha256
+   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 506,
+    :end-byte 941,
+    :start-line 13,
+    :end-line 19,
+    :sha256
+    "1e4481216e89658444b6830c16e702a5180f49033f3f07b1eda7216e7177b7c7"},
+   :observed-status "Open",
+   :component "platform",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "hardware",
+   :checked false}
+  {:path "specs/platform-workflow/tasks.md",
+   :file-sha256
+   "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 1365,
+    :end-byte 1798,
+    :start-line 29,
+    :end-line 35,
+    :sha256
+    "5dbfd482e65831287c53bf6f91c6d1a5788ae792168447c126a38c3937a0021e"},
+   :observed-status "Open",
+   :component "platform",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "kernel",
+   :checked false}
+  {:path "specs/legality-workflow/tasks.md",
+   :file-sha256
+   "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/legality-workflow/tasks.md",
+    :start-byte 2068,
+    :end-byte 2455,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "10d87f565b8ab6ce18dd2b4601da0471878ea53ffece867893a496f791ab81f8"},
+   :observed-status "Open",
+   :component "legality",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+   :checked false}
+  {:path "specs/legality-workflow/tasks.md",
+   :file-sha256
+   "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/legality-workflow/tasks.md",
+    :start-byte 902,
+    :end-byte 1305,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "d45a044d24757dc2bd87c437f4bba206e3023c0e0681376d445bfb32f5c1db8a"},
+   :observed-status "Open",
+   :component "legality",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+   :checked false}
+  {:path "specs/legality-workflow/tasks.md",
+   :file-sha256
+   "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/legality-workflow/tasks.md",
+    :start-byte 513,
+    :end-byte 900,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51"},
+   :observed-status "Open",
+   :component "legality",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+   :checked false}
+  {:path "specs/legality-workflow/tasks.md",
+   :file-sha256
+   "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/legality-workflow/tasks.md",
+    :start-byte 1307,
+    :end-byte 1690,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c"},
+   :observed-status "Open",
+   :component "legality",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :checked false}
+  {:path "specs/legality-workflow/tasks.md",
+   :file-sha256
+   "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/legality-workflow/tasks.md",
+    :start-byte 1692,
+    :end-byte 2066,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "32d3c5b5450bedc27d7dd6e709396dee4335dcbe53273030a0f8690aa59ea907"},
+   :observed-status "Open",
+   :component "legality",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+   :checked false}
+  {:path "specs/lower-workflow/tasks.md",
+   :file-sha256
+   "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/lower-workflow/tasks.md",
+    :start-byte 495,
+    :end-byte 828,
+    :start-line 14,
+    :end-line 18,
+    :sha256
+    "c640667fed0375261d824acedb06e7db04ad8a0f333bc82f2bf65484698372d7"},
+   :observed-status "Open",
+   :component "lower",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+   :checked false}
+  {:path "specs/lower-workflow/tasks.md",
+   :file-sha256
+   "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/lower-workflow/tasks.md",
+    :start-byte 830,
+    :end-byte 1190,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "dc9021fa815a023918979cc515260521568bef241fa172953e90c3eb785c632d"},
+   :observed-status "Open",
+   :component "lower",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+   :checked false}
+  {:path "specs/lower-workflow/tasks.md",
+   :file-sha256
+   "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/lower-workflow/tasks.md",
+    :start-byte 1192,
+    :end-byte 1541,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "f2a1e9832b747f5f614301e3d06234fa83ba52cd1a8579e956d3c849c82aacc4"},
+   :observed-status "Open",
+   :component "lower",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+   :checked false}
+  {:path "specs/lower-workflow/tasks.md",
+   :file-sha256
+   "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/lower-workflow/tasks.md",
+    :start-byte 1543,
+    :end-byte 1927,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "beeeac04d85e7d704f74b9d0eac35b3e869a63fbca2b6664b118f98fe99fb01c"},
+   :observed-status "Open",
+   :component "lower",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+   :checked false}
+  {:path "specs/lower-workflow/tasks.md",
+   :file-sha256
+   "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/lower-workflow/tasks.md",
+    :start-byte 1929,
+    :end-byte 2353,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "bea71cfcf6e99dac9285833ca027126fb34d835638f0771a4a5645959884132f"},
+   :observed-status "Open",
+   :component "lower",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 591,
+    :end-byte 1542,
+    :start-line 14,
+    :end-line 30,
+    :sha256
+    "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "math",
+   :checked false}
+  {:path "specs/mir-workflow/tasks.md",
+   :file-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/mir-workflow/tasks.md",
+    :start-byte 489,
+    :end-byte 878,
+    :start-line 14,
+    :end-line 18,
+    :sha256
+    "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e"},
+   :observed-status "Open",
+   :component "mir",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+   :checked false}
+  {:path "specs/mir-workflow/tasks.md",
+   :file-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/mir-workflow/tasks.md",
+    :start-byte 880,
+    :end-byte 1198,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "b57db7a2502b96d5c8f2f1572f28f34a71edf545dbb604d426aef0d96a8b034e"},
+   :observed-status "Open",
+   :component "mir",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :checked false}
+  {:path "specs/mir-workflow/tasks.md",
+   :file-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/mir-workflow/tasks.md",
+    :start-byte 1200,
+    :end-byte 1571,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5"},
+   :observed-status "Open",
+   :component "mir",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+   :checked false}
+  {:path "specs/mir-workflow/tasks.md",
+   :file-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/mir-workflow/tasks.md",
+    :start-byte 1573,
+    :end-byte 1890,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "bd1dc62f7fa16a12f5b6a1cc4928445bd204f01ad15bad6e80d18b1d5a0e24af"},
+   :observed-status "Open",
+   :component "mir",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+   :checked false}
+  {:path "specs/mir-workflow/tasks.md",
+   :file-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/mir-workflow/tasks.md",
+    :start-byte 1892,
+    :end-byte 2294,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1"},
+   :observed-status "Open",
+   :component "mir",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+   :checked false}
+  {:path "specs/opt-workflow/tasks.md",
+   :file-sha256
+   "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/opt-workflow/tasks.md",
+    :start-byte 489,
+    :end-byte 843,
+    :start-line 14,
+    :end-line 18,
+    :sha256
+    "c744d2dcd220f157204784c99f3add5b1aaa5254e8727c22857c8170ac9e0d81"},
+   :observed-status "Open",
+   :component "opt",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+   :checked false}
+  {:path "specs/opt-workflow/tasks.md",
+   :file-sha256
+   "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/opt-workflow/tasks.md",
+    :start-byte 845,
+    :end-byte 1241,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "4fcd4344581902ff2839efd2cfeb06ab5ef12a02dc7f1115daaf2d4018e84645"},
+   :observed-status "Open",
+   :component "opt",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+   :checked false}
+  {:path "specs/opt-workflow/tasks.md",
+   :file-sha256
+   "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/opt-workflow/tasks.md",
+    :start-byte 1243,
+    :end-byte 1621,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f"},
+   :observed-status "Open",
+   :component "opt",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+   :checked false}
+  {:path "specs/opt-workflow/tasks.md",
+   :file-sha256
+   "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/opt-workflow/tasks.md",
+    :start-byte 1623,
+    :end-byte 1967,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4"},
+   :observed-status "Open",
+   :component "opt",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+   :checked false}
+  {:path "specs/opt-workflow/tasks.md",
+   :file-sha256
+   "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/opt-workflow/tasks.md",
+    :start-byte 1969,
+    :end-byte 2369,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "7a43c72b313fd9e9515824402ca6d7d96b8e98fa036f7f8aa15dce324946ce75"},
+   :observed-status "Open",
+   :component "opt",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+   :checked false}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :file-sha256
+   "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :start-byte 4551,
+    :end-byte 6336,
+    :start-line 56,
+    :end-line 74,
+    :sha256
+    "9de4f866e91973223f0aac28e8d0db814884996855ce5d80761a7ef79d7ca1fe"},
+   :observed-status "Open",
+   :component "compiler-api",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "pass-evidence",
+   :checked false}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :file-sha256
+   "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :start-byte 669,
+    :end-byte 2640,
+    :start-line 15,
+    :end-line 34,
+    :sha256
+    "78aceee899208c2ac288baf526d0acba962add5da52804a13c86392526548b7e"},
+   :observed-status "Open",
+   :component "compiler-api",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "pipeline",
+   :checked false}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :file-sha256
+   "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :start-byte 2642,
+    :end-byte 4549,
+    :start-line 36,
+    :end-line 54,
+    :sha256
+    "4824afbf2aeb7ec2918afb06d70358bdfecbbdcffad80c1854c51408343a5219"},
+   :observed-status "Open",
+   :component "compiler-api",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "plugins",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 2351,
+    :end-byte 3092,
+    :start-line 49,
+    :end-line 62,
+    :sha256
+    "afe44dc4f5bb228ee11a15256d0a6898b5bd24b25d21c974dcf9d0db6b136c9b"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "query",
+   :checked false}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 5159,
+    :end-byte 5743,
+    :start-line 48,
+    :end-line 52,
+    :sha256
+    "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4"},
+   :observed-status "Partial",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id
+   "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+   :checked false}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 6851,
+    :end-byte 7302,
+    :start-line 60,
+    :end-line 64,
+    :sha256
+    "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1"},
+   :observed-status "Open",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id "reader/finite-remaining-work/component-release-evidence",
+   :checked false}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 1246,
+    :end-byte 1796,
+    :start-line 24,
+    :end-line 28,
+    :sha256
+    "5384b59a84c9b592f0afb5c024dad95945f27591a4732736a4431d3d21513134"},
+   :observed-status "Open",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id "reader/finite-remaining-work/contract-coverage-reconciliation",
+   :checked false}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 1798,
+    :end-byte 3103,
+    :start-line 30,
+    :end-line 34,
+    :sha256
+    "10181f7316b5ed1f0d8afd76186c03c14b41abe4cd1b2f602ae046ac9b17ba5f"},
+   :observed-status "Accepted",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id
+   "reader/finite-remaining-work/decode-and-source-identity-closure",
+   :checked true}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 4422,
+    :end-byte 5157,
+    :start-line 42,
+    :end-line 46,
+    :sha256
+    "998df90d9d51633518ebb2dd4320364345274b6df9581b2043af24ed1f775433"},
+   :observed-status "Extension records/projected views exist",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id "reader/finite-remaining-work/extension-policy-closure",
+   :checked false}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 5745,
+    :end-byte 6849,
+    :start-line 54,
+    :end-line 58,
+    :sha256
+    "2c49f48824c011e20bb47d9311082042f382271c14fc40ead8fa325e8db475ab"},
+   :observed-status "Accepted",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id "reader/finite-remaining-work/fresh-syntax-handoff",
+   :checked true}
+  {:path "specs/reader-workflow/tasks.md",
+   :file-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/reader-workflow/tasks.md",
+    :start-byte 3105,
+    :end-byte 4420,
+    :start-line 36,
+    :end-line 40,
+    :sha256
+    "998960c40a18b5a4ca2e9d33391b1c1c04fd6a79696156f06355d340b3a5e6dd"},
+   :observed-status "Accepted",
+   :component "reader",
+   :source-commit "2e0292c61603aad200df397e397e94e3c7d24818",
+   :id
+   "reader/finite-remaining-work/lexical-products-and-origins-closure",
+   :checked true}
+  {:path "specs/release-workflow/tasks.md",
+   :file-sha256
+   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/release-workflow/tasks.md",
+    :start-byte 595,
+    :end-byte 972,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8"},
+   :observed-status "Open",
+   :component "release",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+   :checked false}
+  {:path "specs/release-workflow/tasks.md",
+   :file-sha256
+   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/release-workflow/tasks.md",
+    :start-byte 2263,
+    :end-byte 2685,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1"},
+   :observed-status "Open",
+   :component "release",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+   :checked false}
+  {:path "specs/release-workflow/tasks.md",
+   :file-sha256
+   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/release-workflow/tasks.md",
+    :start-byte 974,
+    :end-byte 1415,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c"},
+   :observed-status "Open",
+   :component "release",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+   :checked false}
+  {:path "specs/release-workflow/tasks.md",
+   :file-sha256
+   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/release-workflow/tasks.md",
+    :start-byte 2687,
+    :end-byte 3092,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d"},
+   :observed-status "Open",
+   :component "release",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+   :checked false}
+  {:path "specs/release-workflow/tasks.md",
+   :file-sha256
+   "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/release-workflow/tasks.md",
+    :start-byte 1417,
+    :end-byte 2261,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "ae4d6a913a262ccf365ad6e93b5f810f689a3f6f82703013235318f9a4ccb1b3"},
+   :observed-status "Open",
+   :component "release",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution",
+   :checked false}
+  {:path "specs/resolve-workflow/tasks.md",
+   :file-sha256
+   "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/resolve-workflow/tasks.md",
+    :start-byte 1289,
+    :end-byte 1659,
+    :start-line 24,
+    :end-line 28,
+    :sha256
+    "0664c4603e73f01ff9656c11c8005ae151b793f7a389251a02f63c64c7601588"},
+   :observed-status "Open",
+   :component "resolve",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+   :checked false}
+  {:path "specs/resolve-workflow/tasks.md",
+   :file-sha256
+   "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/resolve-workflow/tasks.md",
+    :start-byte 1661,
+    :end-byte 2047,
+    :start-line 30,
+    :end-line 34,
+    :sha256
+    "3eef7599e1eda201691a267e16fd1b2127ab235180bab472aa7d637bbe388109"},
+   :observed-status "Open",
+   :component "resolve",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+   :checked false}
+  {:path "specs/resolve-workflow/tasks.md",
+   :file-sha256
+   "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/resolve-workflow/tasks.md",
+    :start-byte 2049,
+    :end-byte 2412,
+    :start-line 36,
+    :end-line 40,
+    :sha256
+    "63e2140352e6f96d03578d7f7bca628f20ef440b40546ef29362d37565629c45"},
+   :observed-status "Open",
+   :component "resolve",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+   :checked false}
+  {:path "specs/resolve-workflow/tasks.md",
+   :file-sha256
+   "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/resolve-workflow/tasks.md",
+    :start-byte 2414,
+    :end-byte 2756,
+    :start-line 42,
+    :end-line 46,
+    :sha256
+    "61bfa7a043bccb0a8de89a9d52f9189bf7d1dc10c6790b41f705a40180800f2b"},
+   :observed-status "Open",
+   :component "resolve",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+   :checked false}
+  {:path "specs/resolve-workflow/tasks.md",
+   :file-sha256
+   "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/resolve-workflow/tasks.md",
+    :start-byte 2758,
+    :end-byte 3142,
+    :start-line 48,
+    :end-line 52,
+    :sha256
+    "91ff008797efcf58987e6a0c2ec6ac31c7637278dbcc61e071c98b9d53796456"},
+   :observed-status "Open",
+   :component "resolve",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+   :checked false}
+  {:path "specs/runtime-workflow/tasks.md",
+   :file-sha256
+   "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/runtime-workflow/tasks.md",
+    :start-byte 2395,
+    :end-byte 2789,
+    :start-line 48,
+    :end-line 54,
+    :sha256
+    "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4"},
+   :observed-status "Open",
+   :component "runtime",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+   :checked false}
+  {:path "specs/runtime-workflow/tasks.md",
+   :file-sha256
+   "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/runtime-workflow/tasks.md",
+    :start-byte 2022,
+    :end-byte 2393,
+    :start-line 40,
+    :end-line 46,
+    :sha256
+    "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb"},
+   :observed-status "Open",
+   :component "runtime",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+   :checked false}
+  {:path "specs/runtime-workflow/tasks.md",
+   :file-sha256
+   "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/runtime-workflow/tasks.md",
+    :start-byte 1141,
+    :end-byte 1647,
+    :start-line 24,
+    :end-line 30,
+    :sha256
+    "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3"},
+   :observed-status "Open",
+   :component "runtime",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+   :checked false}
+  {:path "specs/runtime-workflow/tasks.md",
+   :file-sha256
+   "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/runtime-workflow/tasks.md",
+    :start-byte 688,
+    :end-byte 1139,
+    :start-line 16,
+    :end-line 22,
+    :sha256
+    "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653"},
+   :observed-status "Open",
+   :component "runtime",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+   :checked false}
+  {:path "specs/runtime-workflow/tasks.md",
+   :file-sha256
+   "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/runtime-workflow/tasks.md",
+    :start-byte 1649,
+    :end-byte 2020,
+    :start-line 32,
+    :end-line 38,
+    :sha256
+    "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c"},
+   :observed-status "Open",
+   :component "runtime",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 1544,
+    :end-byte 2349,
+    :start-line 32,
+    :end-line 47,
+    :sha256
+    "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "schema",
+   :checked false}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :file-sha256
+   "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/stdlib-workflow/tasks.md",
+    :start-byte 1119,
+    :end-byte 1510,
+    :start-line 23,
+    :end-line 29,
+    :sha256
+    "d6dba01cc5862abf0e7e9fa28b0bc03506168c4fe18886e09514a5d2dfebedde"},
+   :observed-status "Open",
+   :component "stdlib",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+   :checked false}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :file-sha256
+   "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/stdlib-workflow/tasks.md",
+    :start-byte 1512,
+    :end-byte 1845,
+    :start-line 31,
+    :end-line 37,
+    :sha256
+    "6fdefc5db18cbc2ecea392ca97facc12adcbc4442fad0f1e3cd505a2c36e41da"},
+   :observed-status "Open",
+   :component "stdlib",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+   :checked false}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :file-sha256
+   "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/stdlib-workflow/tasks.md",
+    :start-byte 1847,
+    :end-byte 2207,
+    :start-line 39,
+    :end-line 45,
+    :sha256
+    "5b65dff3a242d3f4a6f9125164e372aaca2befadf7ae66c016496702cbfc9e82"},
+   :observed-status "Open",
+   :component "stdlib",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+   :checked false}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :file-sha256
+   "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/stdlib-workflow/tasks.md",
+    :start-byte 2209,
+    :end-byte 2582,
+    :start-line 47,
+    :end-line 53,
+    :sha256
+    "92195297b80728f6eeb60f502c4b906dd5f97eb9c9886bfed645f48a770c0174"},
+   :observed-status "Open",
+   :component "stdlib",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+   :checked false}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :file-sha256
+   "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/stdlib-workflow/tasks.md",
+    :start-byte 668,
+    :end-byte 1117,
+    :start-line 15,
+    :end-line 21,
+    :sha256
+    "9b5f486da30222f4ee7daa9723316a3716e1fc0ba9c0dd03fdd871b2588d7518"},
+   :observed-status "Open",
+   :component "stdlib",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+   :checked false}
+  {:path "specs/syntax-workflow/tasks.md",
+   :file-sha256
+   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/syntax-workflow/tasks.md",
+    :start-byte 1014,
+    :end-byte 1385,
+    :start-line 21,
+    :end-line 25,
+    :sha256
+    "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f"},
+   :observed-status "Open",
+   :component "syntax",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+   :checked false}
+  {:path "specs/syntax-workflow/tasks.md",
+   :file-sha256
+   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/syntax-workflow/tasks.md",
+    :start-byte 1387,
+    :end-byte 1738,
+    :start-line 27,
+    :end-line 31,
+    :sha256
+    "84d3aa63bf55f23327cdf2cbc7ef6ffeb8da508190f990d3b3edaf84a2c4c880"},
+   :observed-status "Open",
+   :component "syntax",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+   :checked false}
+  {:path "specs/syntax-workflow/tasks.md",
+   :file-sha256
+   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/syntax-workflow/tasks.md",
+    :start-byte 1740,
+    :end-byte 2060,
+    :start-line 33,
+    :end-line 37,
+    :sha256
+    "7171e5828524f6e427e1fbaa6dded8c092598bedcb3bf38f5a6a74370e41c569"},
+   :observed-status "Open",
+   :component "syntax",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts",
+   :checked false}
+  {:path "specs/syntax-workflow/tasks.md",
+   :file-sha256
+   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/syntax-workflow/tasks.md",
+    :start-byte 2062,
+    :end-byte 2416,
+    :start-line 39,
+    :end-line 43,
+    :sha256
+    "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9"},
+   :observed-status "Open",
+   :component "syntax",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify",
+   :checked false}
+  {:path "specs/syntax-workflow/tasks.md",
+   :file-sha256
+   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/syntax-workflow/tasks.md",
+    :start-byte 2418,
+    :end-byte 2780,
+    :start-line 45,
+    :end-line 49,
+    :sha256
+    "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00"},
+   :observed-status "Open",
+   :component "syntax",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 6992,
+    :end-byte 7638,
+    :start-line 102,
+    :end-line 108,
+    :sha256
+    "40d7b73ae6f9255d48d9451bb8071500f18c4c84672a8c9b359ae76486281e5e"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 2367,
+    :end-byte 2941,
+    :start-line 38,
+    :end-line 44,
+    :sha256
+    "d677a56900b22f330f4a85e74cda0143e2af31ab98f2711cc01f004642720e6e"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 5270,
+    :end-byte 5834,
+    :start-line 78,
+    :end-line 84,
+    :sha256
+    "51df7063860bc42222f2d7c07b19c8e2fca505c6ff978447be39d5b20c650250"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 4714,
+    :end-byte 5268,
+    :start-line 70,
+    :end-line 76,
+    :sha256
+    "58b8999aab357fed7f61008dd312d9628d45e7c1c53e39f79f15e871914c2d85"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 589,
+    :end-byte 1167,
+    :start-line 14,
+    :end-line 20,
+    :sha256
+    "3fc9086fe811e75aad4d3da742497e659b79eff9058797b2b8bd64c584b2c0a4"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 3524,
+    :end-byte 4120,
+    :start-line 54,
+    :end-line 60,
+    :sha256
+    "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 1748,
+    :end-byte 2365,
+    :start-line 30,
+    :end-line 36,
+    :sha256
+    "0f790030034098f822efa5b6903f40fce800c05a42e2d099667f12bb413d67a2"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 1169,
+    :end-byte 1746,
+    :start-line 22,
+    :end-line 28,
+    :sha256
+    "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 4122,
+    :end-byte 4712,
+    :start-line 62,
+    :end-line 68,
+    :sha256
+    "21e65d171dffa5751eacacd1f1a7ab9b75678041b687e6cb787470b792f792c6"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 5836,
+    :end-byte 6417,
+    :start-line 86,
+    :end-line 92,
+    :sha256
+    "2d44c419d75759d044d2d2b80328aa5189e7e15d211569e58c0f126a59d905e4"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 2943,
+    :end-byte 3522,
+    :start-line 46,
+    :end-line 52,
+    :sha256
+    "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+   :checked false}
+  {:path "specs/tools-workflow/tasks.md",
+   :file-sha256
+   "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/tools-workflow/tasks.md",
+    :start-byte 6419,
+    :end-byte 6990,
+    :start-line 94,
+    :end-line 100,
+    :sha256
+    "5ae94c9d508491ce7715089bbd64159e07ed20bbea02d1cd68fb0176399b347a"},
+   :observed-status "Open",
+   :component "tools",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+   :checked false}
+  {:path "specs/types-workflow/tasks.md",
+   :file-sha256
+   "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/types-workflow/tasks.md",
+    :start-byte 1017,
+    :end-byte 1362,
+    :start-line 20,
+    :end-line 24,
+    :sha256
+    "a794f77307bb1b6110061de5dcd5d5b7e88253cb96d0018ee512fce84c64c4b9"},
+   :observed-status "Open",
+   :component "types",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+   :checked false}
+  {:path "specs/types-workflow/tasks.md",
+   :file-sha256
+   "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/types-workflow/tasks.md",
+    :start-byte 1364,
+    :end-byte 1707,
+    :start-line 26,
+    :end-line 30,
+    :sha256
+    "b9b6f16ff0cbf9a5fe48c56a58bc6fc7775b03fda28151fb957e072bc9eca4e4"},
+   :observed-status "Open",
+   :component "types",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+   :checked false}
+  {:path "specs/types-workflow/tasks.md",
+   :file-sha256
+   "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/types-workflow/tasks.md",
+    :start-byte 1709,
+    :end-byte 2103,
+    :start-line 32,
+    :end-line 36,
+    :sha256
+    "7ef5bec73af724d2ed5123b19f03b5b29460ee0f4416a822ae4461143ca2446e"},
+   :observed-status "Open",
+   :component "types",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+   :checked false}
+  {:path "specs/types-workflow/tasks.md",
+   :file-sha256
+   "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/types-workflow/tasks.md",
+    :start-byte 2105,
+    :end-byte 2478,
+    :start-line 38,
+    :end-line 42,
+    :sha256
+    "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa"},
+   :observed-status "Open",
+   :component "types",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+   :checked false}
+  {:path "specs/types-workflow/tasks.md",
+   :file-sha256
+   "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/types-workflow/tasks.md",
+    :start-byte 2480,
+    :end-byte 2843,
+    :start-line 44,
+    :end-line 48,
+    :sha256
+    "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49"},
+   :observed-status "Open",
+   :component "types",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id
+   "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 5377,
+    :end-byte 6124,
+    :start-line 110,
+    :end-line 123,
+    :sha256
+    "a2dd19a85e7c0ce7a7a336d6142f2d6d550a6c55e99c3c3d6dfb23910af44e18"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "ui",
+   :checked false}
+  {:path "specs/domains-workflow/tasks.md",
+   :file-sha256
+   "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :authority :component-implementation-ledger,
+   :source
+   {:path "specs/domains-workflow/tasks.md",
+    :start-byte 3094,
+    :end-byte 3840,
+    :start-line 64,
+    :end-line 77,
+    :sha256
+    "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae"},
+   :observed-status "Open",
+   :component "domains",
+   :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :id "workflow",
+   :checked false}],
+ :observed-task-counts
+ {:total 138,
+  :accepted-with-checked-marker 3,
+  :open 133,
+  :partial 1,
+  :unassessed 1},
+ :count-qualification
+ "The 3/138 component-task observation is not an all-project requirement completion ratio. This snapshot adds no task, acceptance, source disposition or denominator authority.",
+ :composition-rules
+ ["Preserve original and current source identities."
+  "Reuse delivered decisions before proposing a new source-family correction."
+  "Field edits identify collection, record ID, field path, before presence/value and after value."
+  "Reject stale predecessors, duplicate application, dropped source spans and unsupported alias entailment."
+  "Keep accepted release/platform scope relations separate from the original 240 documents."
+  "Only central independently reviewed composition changes canonical task scope or count authority."]}
