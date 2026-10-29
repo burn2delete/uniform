@@ -851,6 +851,24 @@
  :source-recovery-review :pending-independent-review,
  :new-task-fields 16,
  :total-concrete-links 665}
+    :package7-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/package7-qualified-review-adoption.edn",
+ :remaining-allocation-work 168,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 355,
+ :source-commit "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 10,
+ :reviewed-predicates 7,
+ :total-concrete-links 665,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/package7-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

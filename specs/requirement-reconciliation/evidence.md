@@ -1043,3 +1043,35 @@ validators and the generated SH check passed. Pinned clj-kondo 2025.10.23
 reports zero findings on both changed SH files. Independent acceptance,
 full-facet disposition, granularity, legacy ACC scope, final counting and
 integration remain open.
+
+## Qualified Package7 independent-review adoption
+
+The independent Package7 receipt, SHA256
+`6c3ec14bec6668e57826329afc74af39fec4e4296bf50f0581d903a9ca02802e`,
+passes precisely seven allocations at frozen source
+`16cdeb5e741310eb1cde09bfb0558b92140ed431`. The canonical applicability
+record checks source `5c35d04ab888b5f533fc626d01c95aaea7e55c7c`: all seven
+decision records and ten criterion predicates/role identities are unchanged.
+All 42 Profile74 and 16 Safety107 field operations reconstruct their complete
+files from exact predecessor bytes, preserving every later addition. Current
+criterion and task-context spans are recorded separately from the frozen
+independent review. The five declared bootstrap dependency interfaces remain
+prerequisites, without completion credit.
+
+Adoption source `176eed5dd0d0a8cf3ab034602f3574bbd5282180` changes only the
+seven allocation review states and their qualified adoption references. Its
+reversible transaction preserves all other decision fields and all 833 Open
+states. Later added predicates retain separate pending review. Concrete links
+remain 665, with 355 pending allocation reviews and 168 decisions still to
+allocate. Historical acceptance stays 430/561, with 131 pending; task census
+stays provisionally 3 Accepted / 182. There is no new historical mapping,
+alias, retirement, task or implementation acceptance.
+
+The successor historical binding snapshot retains all 561 exact witnesses;
+all 1,262 current file/raw span hashes pass. SH passed 12/522, census 4/13,
+boundary 6/11 and the generated SH check. Pinned clj-kondo 2025.10.23 reports
+zero findings on the changed SH file. Two scratch join assertions refused
+before writes; corrected checks follow successive file stages and both
+canonical status markers. Independent review remains scoped to the frozen
+Package predicates. Full-facet disposition, later predicate reviews,
+granularity, legacy ACC scope, final counting and integration remain open.

@@ -13590,6 +13590,24 @@
    "78d7a2759be0ead125417d15aed3b8cad37e29ad918fae61166b3b9e38b9b437",
    :predecessor-input-fingerprint
    "014bb7e69aefa10c63d6a29869d842cf7d897574ac0707b92de9596d52f182c2"},
+  :package7-qualified-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/package7-qualified-review-adoption.edn",
+   :remaining-allocation-work 168,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :previously-accepted-mappings-preserved 430,
+   :total-allocation-review-pending 355,
+   :source-commit "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :new-historical-mapping-adoptions 0,
+   :criterion-witnesses 10,
+   :reviewed-predicates 7,
+   :total-concrete-links 665,
+   :later-added-predicates :pending-separate-review,
+   :applicability
+   "specs/requirement-reconciliation/package7-current-applicability.edn"},
   :tooling65-current-composition
   {:allocation-source-commit
    "f1b78d6d368ea6b636e131d258ec342decc88fba",
