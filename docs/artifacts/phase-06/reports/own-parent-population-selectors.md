@@ -24,10 +24,14 @@ namespace now has separate exact selectors for each original
 
 Each selector constructs its own real prefix. No saved report, artifact, prior
 test PASS or cross-selector product supplies acceptance. The positive retains
-the actual source identity, path, project provenance, Reader revision, complete
-C2/C3 and Macro/Resolve/Core parents, and the explicitly empty schema-1 module
+the actual source identity, path, project provenance, Reader revision, the owning
+C3 Reader view and Macro/Resolve/Core parents, and the explicitly empty schema-1 module
 input. It executes the existing fresh public checks after construction. This
 is the finite paired pilot population, not every compiler-owner source module.
+The C3 parent is compared with the actual invocation-aware
+`c3-reader-artifact-view`, not the full C2 record. The retained current Reader
+descriptor revision is compared with that view and the actual owner's current
+invocation binding using its source/plan/function identity projection.
 
 The three mutation selectors remove the immediate parent, supply the actual
 Core product as a wrong-stage parent, or substitute the real parent facade ID.
