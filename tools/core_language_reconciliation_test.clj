@@ -1,5 +1,5 @@
 (ns core-language-reconciliation-test
-  (:require [clojure.test :refer :all] [clojure.edn :as edn] [clojure.string :as str]))
+  (:require [clojure.test :refer [deftest is run-tests]] [clojure.edn :as edn] [clojure.string :as str]))
 (binding [*command-line-args* nil] (load-file "tools/core_language_reconciliation.clj")
                                 (load-file "tools/runtime_task_projection.clj"))
 (require '[core-language-reconciliation :as family] '[runtime-task-projection :as runtime])

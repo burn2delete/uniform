@@ -82,7 +82,7 @@
                       "Closing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement; before user code, validate selected provider existence, artifact versions, grant scopes, compiled contracts, profile/target compatibility and enabled safety/audit requirements; reject a missing required provider unless a declared fallback applies, with positive fallback and negative mismatch fixtures under [L15 runtime providers](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md)")
         current-ref (fn [r]
                       (require! (task-inputs [(:path r) (:id r)]) "Missing/renamed canonical task")
-                      (let [t (if (= runtime-path (:path r)) runtime-text (slurp (:path r))) marker (:marker r)]
+                      (let [t (if (= runtime-path (:path r)) runtime-text (slurp (:path r)))]
                         (validate-task! (assoc r :sha256 (sha256 t)) t)
                         (require! (= (get-in task-inputs [[(:path r) (:id r)] :file-sha256])
                                      (sha256 (slurp (:path r)))) "Frozen task source drift")

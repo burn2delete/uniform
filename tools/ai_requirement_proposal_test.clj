@@ -1,10 +1,11 @@
 (ns ai-requirement-proposal-test
   "Source-only controls for the bounded A1-A11 task-interface proposal."
-  (:require [clojure.edn :as edn] [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
             [clojure.java.shell :as shell] [clojure.string :as str]
             [clojure.test :refer [deftest is run-tests]]))
 
 (binding [*command-line-args* nil] (load-file "tools/domains_task_projection.clj"))
+(require '[domains-task-projection])
 (def proposal-path "specs/requirement-reconciliation/phase-11-proposal.edn")
 (def source-ref "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30")
 (defn check! [ok message] (when-not ok (throw (ex-info message {}))))
@@ -47,7 +48,10 @@
   (into {} (for [r (:requirements applying) :when (expected-ids (:id r))]
              [(:id r) (if (= (:id r) (get-in bridge [:target-edit :id]))
                         (get-in bridge [:target-edit :after]) r)])))
-(def task-text (slurp "specs/domains-workflow/tasks.md"))
+(def task-source-ref "cac16db049f191f0f44310f4da15c3fe2222d066")
+(def task-text
+  (let [{:keys [exit out]} (shell/sh "git" "show" (str task-source-ref ":specs/domains-workflow/tasks.md"))]
+    (check! (zero? exit) "Reviewed AI task source unavailable") out))
 (def task-rows (into {} (map (juxt :id identity) (domains-task-projection/records task-text))))
 (def source-bytes (into {} (map (fn [{:keys [id path]}] [id (.getBytes (slurp path) "UTF-8")]) expected-docs)))
 (defn qualified [f]
@@ -118,7 +122,12 @@
   (is (= [11 697 1174 110 220 21]
          (mapv #(count (% proposal)) [:source-documents :source-occurrences :source-facets
                                      :units :field-operations :unresolved-facet-ids])))
-  (is (domains-task-projection/check-projection task-text (slurp domains-task-projection/roadmap-path))))
+  (let [current (slurp domains-task-projection/task-path)
+        rows (into {} (map (juxt :id identity) (domains-task-projection/records current)))]
+    (is (= (set (keys task-rows)) (set (keys rows))))
+    (is (str/includes? (:projection (rows "ai")) (:projection (task-rows "ai"))))
+    (is (= "Open" (:status (rows "ai"))))
+    (is (domains-task-projection/check-projection current (slurp domains-task-projection/roadmap-path)))))
 
 (deftest refuses-source-and-task-pin-drift
   (doseq [p [(assoc-in proposal [:source-documents 0 :sha256] "wrong")
