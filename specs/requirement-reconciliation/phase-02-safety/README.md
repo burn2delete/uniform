@@ -55,7 +55,7 @@ central adoption must reconcile their changed task-source identities.
 
 ## Validation and consumption
 
-The [Clojure checker](check.clj) evaluates only the three pure definitions from
+The [Clojure checker](../../../tools/safety_task_interfaces.clj) evaluates only the three pure definitions from
 the exact `c0dc5790197a1bbd3a8aa285e5458c272d877220` occurrence API. It does not
 load the original compiler/evidence entrypoints. Supply the preserved applying
 manifest as `MANIFEST`; its required SHA256 is
@@ -63,7 +63,7 @@ manifest as `MANIFEST`; its required SHA256 is
 The committed PR445 manifest has different bytes and is refused.
 
 ```bash
-clojure -J-Xmx512m -M specs/requirement-reconciliation/phase-02-safety/check.clj --check MANIFEST
+clojure -J-Xmx512m -M tools/safety_task_interfaces.clj --check MANIFEST
 ```
 
 The positive construction and ten negative controls pass: missing/renamed task,
@@ -80,6 +80,16 @@ roadmap, generated views and whitespace checks pass. Initial projection
 fixtures omitted acceptance-field link targets; their copy inputs now include
 both evidence and acceptance links. No compiler, runtime, broker or historical
 heavy suite ran.
+
+The initial `dfc21989` CI result identified three checker loading/name errors.
+The checker now lives at its matching semantic tool filename, declares its
+immutable dynamically loaded occurrence API and resolves the loaded projection
+region explicitly. Standalone checker lint passes with zero errors/warnings;
+the source/pin/corruption controls still pass and proposal bytes are unchanged.
+The local changed-file comparison harness stopped at its first Git inventory
+child with `Operation not permitted (sysctl failed)`. That failed attempt is
+retained, not retried through another executor; remote successor CI remains
+pending. No lint suppression or check weakening was added.
 
 Next adoption step: the canonical reconciliation owner routes independent
 review of the immutable candidate and resolves exact later predecessor

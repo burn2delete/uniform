@@ -7,8 +7,8 @@
         :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
  :proposal {:path "specs/requirement-reconciliation/phase-02-safety/proposal.edn"
             :sha256 "9f4ba7b4d40891638684ed14e151400651e325ec7e5c8ae5c7a720a6a6a6c525"}
- :checker {:path "specs/requirement-reconciliation/phase-02-safety/check.clj"
-           :sha256 "188ab013e13c676069be9c8846fe84ab9759f312f193fab039ac10d5f4409ba6"}
+ :checker {:path "tools/safety_task_interfaces.clj"
+           :sha256 "721b169ec4d17430490647a92cc9e9ce94542affe18a590d11cb7af3951f44e8"}
  :conservation {:documents 16 :occurrences 1908 :nonlayout-dispositions 962
                 :source-facets 1055 :acceptance-rule-facets 757
                 :unmapped-acceptance-rule-facets 0 :inherited-unit-records 119
@@ -37,6 +37,15 @@
                 :canonical-documents {:result :pass :documents 240 :phase-indexes 19}
                 :full-language-roadmap :pass}
  :historical-build-yank-pin :preserved-and-refuses-current-task-byte-drift
+ :static-successor {:prior-head "dfc21989138234fd3f1540b921c454b4708d589c"
+                    :prior-ci-blockers [:namespace-name-mismatch :unresolved-occurrence-api :unresolved-projection-region]
+                    :repair :semantic-tool-filename-explicit-api-declaration-and-loaded-var-resolution
+                    :standalone-checker-lint {:errors 0 :warnings 0}
+                    :changed-file-comparison :blocked-local-host-sysctl-permission
+                    :blocked-action :first-git-inventory-child-through-ci-harness
+                    :retry :not-attempted :suppression :none
+                    :source-controls :pass :proposal-bytes :unchanged
+                    :remote-successor-ci :pending}
  :global-source-pin-composition :pending-central-adoption
  :independent-exact-candidate-review :pending-coordinator-routing
  :canonical-adoption :pending :integration :pending
