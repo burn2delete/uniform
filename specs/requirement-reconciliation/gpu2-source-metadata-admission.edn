@@ -1,0 +1,158 @@
+{:new-recovery-records 0,
+ :independent-source-review-sha256
+ "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+ :denominator-credit :none,
+ :full-facet-entailment :not-conferred,
+ :canonical-facet-index-adoption :no-blanket-index-adoption,
+ :target-decision-id "interface/domain/lower-accepted-gpu-kernel",
+ :task-count-delta 0,
+ :schema-version 1,
+ :new-original-facet-ids 0,
+ :ids
+ ["finite18/facet/286b01af7d666fc04c3011ab61aa6f9a"
+  "finite18/facet/961d8f6d6eac0325dd1b1a8351d4a2e6"],
+ :implementation-credit :none,
+ :kernel-lowering :unchanged,
+ :dispatch-transfer-backend-emission :separate-consumers-unchanged,
+ :canonical-disposition
+ :accepted-exact-two-source-context-metadata-records,
+ :independent-operation-review-sha256
+ "280738cee3b533cfa43b8d4d66e8daaec58005122b2c36d08f67f308236504f2",
+ :handoff-sha256
+ "cee4b5f8d46981b3c1baa05924d38dff98554a440de280cde6380e15558431ce",
+ :kind :canonical-two-gpu-source-metadata-admission,
+ :operations
+ [{:path "specs/domains-workflow/tasks.md",
+   :applying-after-sha256
+   "9c2b22f070c7cde9a9cf6f25c17b6a7ba1d2623af865fcaa00982699388b3e68",
+   :old-criterion-sha256
+   "4c7baa0cc139b02c2eb9eb3c50851350575732165222b1014014a00e1614e075",
+   :field :projection,
+   :applying-before-sha256
+   "9e620cbc4c1da90eeabe2998bd58d6d435a743c2f2775ce09e03ef7ff1ff2abf",
+   :after
+   "Outcome: kernels execute on the adopted target with validated memory/barrier\nbehavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU\nIR/checking; lower kernel and host dispatch; execute numeric/result and illegal\nmemory-space/barrier fixtures. Yes/no acceptance: do kernels produce the\nspecified results? Are invalid synchronization and target features rejected?\nIntegration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner:\naccelerator maintainer; recommendation: one named reference target first,\nadditional targets only by their own conformance evidence. Target choice is\nnot silently adopted by this roadmap.\n\nP11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.\n\nCriterion profile-gap/gpu/host-device-boundary (Open): Input: Separate host orchestration and GPU kernel artifacts with argument address-space/layout/alignment/alias/lifetime and declared target feature/workgroup/grid/occupancy/launch configuration. Accept: Validate kernel-only legality, construct the typed host/device ABI boundary and transfer/lifetime records, and check target launch/features independently. Host profile remains explicit; device orchestration cannot import ambient host semantics into a kernel. Reject: Host IO/reflection/eval/allocation/GC/exceptions/ordinary threads in kernels, unsupported recursion/dispatch, missing argument or transfer boundary, invalid target or launch configuration. Required outputs: Host/device and target/launch/occupancy manifests, kernel IR, typed argument ABI and accepted/rejected kernel/launch/feature fixtures with kernel/buffer/address-space/origin context. Dependencies: backend-interface, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/host-device-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/memory-synchronization (Open): Input: GPU buffers/slices and transfer/queue/kernel/barrier graph with ownership/lifetime/address-space/alignment/layout/alias/visibility and sharing-provider facts. Accept: Treat buffers as linear unless provider-backed sharing is proved; validate use/release and host/device visibility; preserve launch/fence/workgroup barrier/atomic/queue/transfer-completion order and address spaces through backend lowering. Actual transfer execution consumes the validated graph separately. Reject: Use-after-free, double release, unsynchronized host read, invalid device alias, missing barrier/queue dependency/transfer completion or unsupported host allocation. Required outputs: Lifetime report and transfer/synchronization graphs, accepted ownership/transfer/barrier cases and P11-DEVICE-MEMORY/TRANSFER/SYNC/ALIAS/RAW diagnostics with exact buffer/address-space/edge/target/origin. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/memory-synchronization; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/numeric-mode-contract (Open): Input: GPU/EFIR numeric operations with declared precision, rounding, fusion, denormal, approximation error, provider, certificate/validation and device feature facts. Accept: Check the selected device implementation and target mapping against every declared numeric/accuracy fact and preserve the certificate contract or emit a diagnostic. Reject: Implicit backend approximate math, missing mode/provider/certificate or accuracy record, undeclared denormal/fusion change and unsupported target features. Required outputs: Math-mode/feature manifest and approximation certificate bundle, accepted/failed numeric-preservation cases and P11-MATH/TARGET-FEATURE context with kernel/target/origin/certificate. Dependencies: math, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/numeric-mode-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.\n\nCriterion `domain/gpu-dispatch`: Dispatch declared kernels using explicit buffer state, transfer, layout, ownership and synchronization contracts. Accepted fixture: Dispatch a declared kernel through explicit host/device buffer layout, ownership/lifetime, transfer state and synchronization contracts. Negative fixture: Reject implicit transfer, invalid lifetime/aliasing or unsynchronized device-state use. Required evidence: host adapter, launch descriptor and transfer/synchronization graphs; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nCriterion `domain/gpu-kernel-validation`: Validate/lower GPU kernels under explicit target/features/geometry/memory-space/barrier/atomic and numeric/certificate constraints. Accepted fixture: Validate selected target/features, launch geometry, address spaces, layout, barriers/atomics and numeric/certificate mode before kernel lowering. Negative fixture: Reject host effects, unsupported recursion/dynamic allocation, invalid launch geometry or unjustified fast math. Required evidence: checked GPU IR, device memory and numeric/feature reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nCriterion `domain/gpu-reduction-integration`: Demonstrate declared reduction against reference with selected numeric ordering and target/launch/layout/performance evidence. Accepted fixture: Run the selected reduction with explicit deterministic or relaxed order and compare device output with CPU/MIR reference using pinned launch/layout/input context. Negative fixture: Reject deterministic-mode nondeterminism, host IO, invalid synchronization or unsupported target feature assumptions. Required evidence: kernel/host artifacts, reference comparison and performance context; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nDecision criterion `interface/domain/lower-accepted-gpu-kernel` (Open): Lower the accepted typed GPU kernel to declared device/kernel IR while retaining layout/address-space, source/generated origins, effects/authority, synchronization/race and numeric/proof facts required by its backend. Refuse: Reject missing accepted-verifier facts, lost source/layout/authority/synchronization/numeric evidence or unsupported IR transitions. Host dispatch/transfers and backend kernel-code emission remain separate consumers; preserve both original facet IDs with authenticated metadata-only source binding; these example/diagnostic contexts add no requirements. Required outputs: verified device/kernel IR and preserved-fact/provenance table with stable lowering diagnostics. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout as typed operation artifacts, not whole-component completion. Preserve every source facet and unresolved metadata ID in the exact phase-09 decision allocation; no implementation acceptance is inferred.",
+   :new-criterion-sha256
+   "247ddacffe11b6bd26aa654462942951ccf988217cdedc19a4a39ad37e70f994",
+   :id "gpu",
+   :kind :source-metadata-qualification-replacement,
+   :replacement-before "retain both unresolved facet metadata IDs.",
+   :before
+   "Outcome: kernels execute on the adopted target with validated memory/barrier\nbehavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU\nIR/checking; lower kernel and host dispatch; execute numeric/result and illegal\nmemory-space/barrier fixtures. Yes/no acceptance: do kernels produce the\nspecified results? Are invalid synchronization and target features rejected?\nIntegration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner:\naccelerator maintainer; recommendation: one named reference target first,\nadditional targets only by their own conformance evidence. Target choice is\nnot silently adopted by this roadmap.\n\nP11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.\n\nCriterion profile-gap/gpu/host-device-boundary (Open): Input: Separate host orchestration and GPU kernel artifacts with argument address-space/layout/alignment/alias/lifetime and declared target feature/workgroup/grid/occupancy/launch configuration. Accept: Validate kernel-only legality, construct the typed host/device ABI boundary and transfer/lifetime records, and check target launch/features independently. Host profile remains explicit; device orchestration cannot import ambient host semantics into a kernel. Reject: Host IO/reflection/eval/allocation/GC/exceptions/ordinary threads in kernels, unsupported recursion/dispatch, missing argument or transfer boundary, invalid target or launch configuration. Required outputs: Host/device and target/launch/occupancy manifests, kernel IR, typed argument ABI and accepted/rejected kernel/launch/feature fixtures with kernel/buffer/address-space/origin context. Dependencies: backend-interface, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/host-device-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/memory-synchronization (Open): Input: GPU buffers/slices and transfer/queue/kernel/barrier graph with ownership/lifetime/address-space/alignment/layout/alias/visibility and sharing-provider facts. Accept: Treat buffers as linear unless provider-backed sharing is proved; validate use/release and host/device visibility; preserve launch/fence/workgroup barrier/atomic/queue/transfer-completion order and address spaces through backend lowering. Actual transfer execution consumes the validated graph separately. Reject: Use-after-free, double release, unsynchronized host read, invalid device alias, missing barrier/queue dependency/transfer completion or unsupported host allocation. Required outputs: Lifetime report and transfer/synchronization graphs, accepted ownership/transfer/barrier cases and P11-DEVICE-MEMORY/TRANSFER/SYNC/ALIAS/RAW diagnostics with exact buffer/address-space/edge/target/origin. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/memory-synchronization; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/numeric-mode-contract (Open): Input: GPU/EFIR numeric operations with declared precision, rounding, fusion, denormal, approximation error, provider, certificate/validation and device feature facts. Accept: Check the selected device implementation and target mapping against every declared numeric/accuracy fact and preserve the certificate contract or emit a diagnostic. Reject: Implicit backend approximate math, missing mode/provider/certificate or accuracy record, undeclared denormal/fusion change and unsupported target features. Required outputs: Math-mode/feature manifest and approximation certificate bundle, accepted/failed numeric-preservation cases and P11-MATH/TARGET-FEATURE context with kernel/target/origin/certificate. Dependencies: math, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping gpu/numeric-mode-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.\n\nCriterion `domain/gpu-dispatch`: Dispatch declared kernels using explicit buffer state, transfer, layout, ownership and synchronization contracts. Accepted fixture: Dispatch a declared kernel through explicit host/device buffer layout, ownership/lifetime, transfer state and synchronization contracts. Negative fixture: Reject implicit transfer, invalid lifetime/aliasing or unsynchronized device-state use. Required evidence: host adapter, launch descriptor and transfer/synchronization graphs; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nCriterion `domain/gpu-kernel-validation`: Validate/lower GPU kernels under explicit target/features/geometry/memory-space/barrier/atomic and numeric/certificate constraints. Accepted fixture: Validate selected target/features, launch geometry, address spaces, layout, barriers/atomics and numeric/certificate mode before kernel lowering. Negative fixture: Reject host effects, unsupported recursion/dynamic allocation, invalid launch geometry or unjustified fast math. Required evidence: checked GPU IR, device memory and numeric/feature reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nCriterion `domain/gpu-reduction-integration`: Demonstrate declared reduction against reference with selected numeric ordering and target/launch/layout/performance evidence. Accepted fixture: Run the selected reduction with explicit deterministic or relaxed order and compare device output with CPU/MIR reference using pinned launch/layout/input context. Negative fixture: Reject deterministic-mode nondeterminism, host IO, invalid synchronization or unsupported target feature assumptions. Required evidence: kernel/host artifacts, reference comparison and performance context; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nDecision criterion `interface/domain/lower-accepted-gpu-kernel` (Open): Lower the accepted typed GPU kernel to declared device/kernel IR while retaining layout/address-space, source/generated origins, effects/authority, synchronization/race and numeric/proof facts required by its backend. Refuse: Reject missing accepted-verifier facts, lost source/layout/authority/synchronization/numeric evidence or unsupported IR transitions. Host dispatch/transfers and backend kernel-code emission remain separate consumers; retain both unresolved facet metadata IDs. Required outputs: verified device/kernel IR and preserved-fact/provenance table with stable lowering diagnostics. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout as typed operation artifacts, not whole-component completion. Preserve every source facet and unresolved metadata ID in the exact phase-09 decision allocation; no implementation acceptance is inferred.",
+   :replacement-after
+   "preserve both original facet IDs with authenticated metadata-only source binding; these example/diagnostic contexts add no requirements."}],
+ :all-shared-member-routes :retained,
+ :applying-source "1a9f2f2e38cf92509e50a995cb727c98109dbc63",
+ :qualification
+ "Existing authenticated and independently reviewed metadata is admitted for these exact two supporting source fragments. No source/routing/context hold survives the current exact join. Only the current unresolved disclaimer is superseded; operational verifier, source/layout/authority/synchronization/numeric and unsupported-transition refusals are unchanged. Frozen proposals and receipts retain their original qualifications.",
+ :existing-recovery-sha256
+ "8130e18442f7db8ce591b0f304114b7fcb0e1a7df14bbac1097d6ff6904a28a3",
+ :superseded-qualification
+ :exact-two-unresolved-metadata-references-only,
+ :metadata
+ [{:path
+   "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+   :shared-member-routes
+   [{:original-id "domain/gpu-dispatch",
+     :replacement-ids ["domain/gpu-dispatch"],
+     :role :external-unmodified}
+    {:original-id "domain/gpu-kernel-validation",
+     :replacement-ids ["domain/lower-accepted-gpu-kernel"],
+     :role :bounded-interface-attribution}
+    {:original-id "domain/gpu-reduction-integration",
+     :replacement-ids ["domain/gpu-reduction-integration"],
+     :role :external-unmodified}
+    {:original-id "runtime/check-proof-preservation",
+     :replacement-ids ["runtime/check-proof-preservation"],
+     :role :external-unmodified}
+    {:original-id "runtime/device-memory-transfer",
+     :replacement-ids ["runtime/device-memory-transfer"],
+     :role :external-unmodified}],
+   :owning-context
+   {:start-byte 2122,
+    :end-byte 2531,
+    :raw-sha256
+    "4bf769222fa0873db12f7f9ce92f63f535612c421d997607494fa1ca10316259",
+    :source-occurrence-id
+    "DOM13/source/d111405d27fd19c46bb51342190890db32f949b60d882c0a913391ebbbe66923"},
+   :raw-sha256
+   "054bbbe1cf83a7da4968b42dfcccb5c7a401301cf045cf8e6be0dac0fe728ff6",
+   :current-document-sha256
+   "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7",
+   :original-facet-id
+   "facet/runtime-domains-schema/dom13/4ab9951ffe93bd923948983b",
+   :source-occurrence-id
+   "DOM13/source/d111405d27fd19c46bb51342190890db32f949b60d882c0a913391ebbbe66923",
+   :origin-facet-ids
+   ["facet/runtime-domains-schema/dom13/4ab9951ffe93bd923948983b"
+    "DOM13/facet/55f47c01d9aae1ef3bd8bd5a699fd27b5afdfbc0fbbd3e3561a82c144fff1f83"],
+   :id "finite18/facet/286b01af7d666fc04c3011ab61aa6f9a",
+   :kind :example,
+   :document-id "DOM13",
+   :end-byte 2279,
+   :qualification
+   :supporting-example-or-diagnostic-context-no-additional-requirement,
+   :unit-ids
+   ["domain/gpu-dispatch"
+    "domain/gpu-reduction-integration"
+    "domain/lower-accepted-gpu-kernel"
+    "runtime/check-proof-preservation"
+    "runtime/device-memory-transfer"],
+   :start-byte 2186,
+   :original-before-sha256
+   "daff6a55ef6abe756c783fd9d19b7d9c5f2c266bb5799149ac383c9977a8366e",
+   :source-binding-state :accepted-source-context-metadata}
+  {:path
+   "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+   :shared-member-routes
+   [{:original-id "domain/gpu-dispatch",
+     :replacement-ids ["domain/gpu-dispatch"],
+     :role :external-unmodified}
+    {:original-id "domain/gpu-kernel-validation",
+     :replacement-ids
+     ["domain/lower-accepted-gpu-kernel"
+      "domain/gpu-kernel-validation"],
+     :role :bounded-interface-attribution}
+    {:original-id "runtime/check-proof-preservation",
+     :replacement-ids ["runtime/check-proof-preservation"],
+     :role :external-unmodified}
+    {:original-id "runtime/device-memory-transfer",
+     :replacement-ids ["runtime/device-memory-transfer"],
+     :role :external-unmodified}],
+   :owning-context
+   {:start-byte 3916,
+    :end-byte 4058,
+    :raw-sha256
+    "d0bea8bd99bbd5f61517bf32cf2f656da19f99ce1a914e12577324d858743a5a",
+    :source-occurrence-id
+    "DOM13/source/0cd32d07021231e365b41b17afdd949c33305b02c673a50af9d3514fb3278b33"},
+   :raw-sha256
+   "227ba1cfd634e57a3a509e701a52ea00edeb262cc29cbb1c50331017ec265d4a",
+   :current-document-sha256
+   "479c012b946108130db3b787a97e5b780ba8d1a59d87ce0e22f4ff9393be89a7",
+   :original-facet-id
+   "facet/runtime-domains-schema/dom13/d5d72c93f364e2ec05fa200e",
+   :source-occurrence-id
+   "DOM13/source/0cd32d07021231e365b41b17afdd949c33305b02c673a50af9d3514fb3278b33",
+   :origin-facet-ids
+   ["facet/runtime-domains-schema/dom13/d5d72c93f364e2ec05fa200e"
+    "DOM13/facet/a34c2d27a1e8f3bdd6381ed046cc25c5a517bceec02488d39c9ef3e87bf7431c"],
+   :id "finite18/facet/961d8f6d6eac0325dd1b1a8351d4a2e6",
+   :kind :diagnostic,
+   :document-id "DOM13",
+   :end-byte 4058,
+   :qualification
+   :supporting-example-or-diagnostic-context-no-additional-requirement,
+   :unit-ids
+   ["domain/gpu-dispatch"
+    "domain/gpu-kernel-validation"
+    "domain/lower-accepted-gpu-kernel"
+    "runtime/check-proof-preservation"
+    "runtime/device-memory-transfer"],
+   :start-byte 3991,
+   :original-before-sha256
+   "d6c7d10c440a224a269540682f6c6b587048bbf88eb5b99853696dcec7b832ef",
+   :source-binding-state :accepted-source-context-metadata}],
+ :target-record-before-sha256
+ "aca50345a73200705cb9f99824f611c5f6939d98cd927b27de57515934e1af34",
+ :new-requirement-ids 0}
