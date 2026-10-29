@@ -209,3 +209,26 @@ The language boundary passes 6 / 11, canonical governance validates 184
 workstreams with this candidate back in draft, and document validation passes
 240 documents / 19 phase indexes. These controls do not replace the required
 new independent source and final lifecycle/composition acceptance.
+
+## Resumed current-main composition
+
+The prior `1f6ca278` metadata review completed and was superseded by independent
+receipt `c882cfe71813c50c9a49e72ae7564c5797cb9b8395505d083a3c023a0aa7c33d`.
+Its earlier approval wait is historical, not a standing blocker. The newer held
+storage correction requires its own exact-source acceptance before use.
+
+Current main `ba9dce87` composes PR567's completed dispatch-test registration and
+PR555's parent-membership validation change. Both merge normally. This branch's
+already-owned `gravity.reader.normal-dispatch-test` also receives its matching
+complete standalone dependency declaration with freshness required and no
+narrowed cache closure. Actual owner, normal resource class, changed-path
+selection, explicit runner selection and physical namespace resource are tested;
+the complete repository fallback remains unchanged. The candidate stays draft
+until exact-source review, actual clean freeze and subsequent lawful metadata.
+
+The composed working source passed 35 tests / 1837 assertions across Reader,
+parent-membership and preflight controls, planner 66 / 661, boundary 6 / 11 and
+canonical governance. These source controls do not establish genuine Reader
+parsing/authentication, adapter execution, fresh reconstruction or mapping
+promotion. The next receipt binds the immutable committed source separately
+from later lifecycle metadata and the complete integration tuple.

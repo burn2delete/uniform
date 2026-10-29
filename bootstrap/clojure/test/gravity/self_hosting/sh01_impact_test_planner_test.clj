@@ -523,6 +523,28 @@
       (is (= [path] (:ownership-only-paths data)))
       (is (empty? (:dependency-only-paths data))))))
 
+(deftest normal-reader-dispatch-registration-is-exact-and-fresh
+  (let [path "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+        namespace 'gravity.reader.normal-dispatch-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])
+        plan (planner/build-plan {:changed-paths [path]})]
+    (is (= {:namespace namespace :slice "SH-03" :owner :sh-reader}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (= "reader-normal-dispatch" (:test-id entry) (:jvm-group entry)))
+    (is (= {:deterministic? true :performance? false :proof? false :freshness-required? true}
+           (:test-policy entry)))
+    (is (= [namespace] (:namespaces plan)))
+    (is (= ["SH-03"] (:direct-slices plan)))
+    (is (= :normal (get-in plan [:shards 0 :resource-class])))
+    (is (nil? (component-dependencies/reviewed-cache-closure namespace)))
+    (is (= [namespace] (:namespaces (runner/select-tests ["--namespace" (str namespace)]))))
+    (let [resources (vec (enumeration-seq (.getResources (.getContextClassLoader (Thread/currentThread))
+                                                        "gravity/reader/normal_dispatch_test.clj")))]
+      (is (= 1 (count resources)))
+      (is (= (.getCanonicalFile (io/file path))
+             (.getCanonicalFile (io/file (.toURI (first resources)))))))))
+
 (deftest reader-dispatch-fresh-policy-retains-full-snapshot-inputs
   ;; Pure snapshot/request construction in a temporary Git repository. No
   ;; broker, cache operation, test producer or compiler is launched.
