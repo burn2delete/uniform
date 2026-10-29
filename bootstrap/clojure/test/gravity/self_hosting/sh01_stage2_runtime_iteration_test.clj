@@ -4994,7 +4994,7 @@
         n :gravity.type/nil k :gravity.type/keyword nk (nullable k)]
     (doseq [[left right] [[n k] [k n] [nk n]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
-            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms])
             row (c7 'sh08-ij-row [(:premise derived)])
             types (assoc types (:node-id node) nk)
             facts {:type-table types :constraint-ledger [row]}
@@ -5019,7 +5019,7 @@
         (doseq [[condition-type condition] [[:gravity.type/bool true] [:gravity.type/bool false]
                                             [(nullable :gravity.type/bool) nil] [(nullable :gravity.type/bool) false]]]
           (let [actual-types (assoc types (nids :condition) condition-type)
-                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms])
                 actual-row (c7 'sh08-ij-row [(:premise actual-join)])
                 actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
                 actual-checked (invoke 'p15-s23-ij-context core actual-facts bindings forms 65536)
@@ -5066,7 +5066,7 @@
     (doseq [[left right] [[(finite [s]) (finite [])] [(finite []) (finite [s])]
                          [homogeneous (finite [])] [(finite [s s]) homogeneous]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
-            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms])
             row (c7 'sh08-ij-row [(:premise derived)])
             types (assoc types (:node-id node) homogeneous)
             facts {:type-table types :constraint-ledger [row]}
@@ -5114,7 +5114,7 @@
           (let [condition-type (cond (nil? condition) :gravity.type/nil (keyword? condition) :gravity.type/keyword
                                      (string? condition) :gravity.type/string :else :gravity.type/bool)
                 actual-types (assoc types (nids :condition) condition-type)
-                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms])
                 actual-row (c7 'sh08-ij-row [(:premise actual-join)])
                 actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
                 actual-checked (check actual-facts 65536)
