@@ -928,3 +928,42 @@ clj-kondo 2025.10.23 reports zero findings on the changed SH source. Independent
 source/composition acceptance, full-facet disposition, task granularity, legacy
 ACC scope, final counting and integration remain separate work.
 SH passed 12/495, census 4/13, and the generated SH projection check passed.
+
+## Twenty runtime decision allocations
+
+Task source `21b7070328589f5d8ecc7fd732e470f3e7257135` composes eleven proposed
+clauses and three explicit source-recovery criteria across four existing Runtime
+fields; six existing criteria are reused. No task identity or state changes.
+The composition record has SHA256
+`b20cf735c0adc38756d05ed53e2d00a9dbabacede0db8eda51a70fb7bb7afe9d`.
+All 2,131 source memberships verify, including fourteen recovered incidences
+across ten metadata IDs. Source supplement SHA256
+`c04f4c76aae6360f8dd47d5e9ff545c30d6e0c81c7c3f53b226226e96c4d4a97`
+preserves the exact source-facet order and complete DOM8/DOM13 owning clauses.
+Recovery, task entailment and independent acceptance remain distinct. R7 and
+Behavior A4 ownership, parent-or-lifecycle-owner and cleanup rules, GPU checking,
+lowering, transfer and numeric-proof ownership, required kernel rejection and
+applicable static-elimination alternatives are preserved. Project accounting
+remains excluded; actual provider billing and platform constraints stay separate.
+
+Allocation source `714c9e057bb89e9af0fc87e921da6106e5fd1f29` adds only twenty
+fields after exact record/semantic-ID/absence guards, preserving all 464 prior
+allocations and all 833 Open identity/status pairs. An initial primary-only
+span binding refused three cross-task witness associations before writing any
+decision fields. The corrected binding preserves each witness's originally
+declared task ID and refreshes its actual criterion/context span; no witness
+is dropped or reassigned by heading inference. The transaction has SHA256
+`a618179fc6b921c576a5b4c03cf4bc4cb9797379da71467adbdf7dfdd7ea397f`.
+There are 484 concrete allocations, 181 pending independent current-composition
+review, and 349 decisions left to allocate. Task status remains provisionally
+3 Accepted / 182, with no implementation credit from these links.
+
+`current-criterion-bindings-561-runtime20.edn`, SHA256
+`0aac9654a12c73cedd795afc1e1bff89583360ddf675757a2b7d00d1a6e79cb8`,
+preserves all 561 historical IDs and all 1,262 current source spans. Historical
+acceptance remains 430, with 131 pending and none unbound. Runtime passed 4/67,
+SH 12/495, census 4/13 and boundary 6/11; both document validators and generated
+SH check passed. Pinned clj-kondo 2025.10.23 reports zero findings on the changed
+SH source. Independent source-recovery/composition acceptance, full-facet
+disposition, task granularity, legacy ACC scope, final count and integration
+remain required.
