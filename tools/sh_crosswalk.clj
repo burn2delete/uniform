@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "e446f3268ecc8ce25408236631a41c5939e7a952", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "6a1c9f8521318dea1924a90ceb2cd59943d5ded0", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -505,8 +505,10 @@
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
 (def mapping-review
 {:status :pending-source-version-review,
+ :native-v2-source-version-bridge "specs/sh-family-crosswalk/source-version-bridge.edn",
+ :pre-native-v2-input-fingerprint "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
  :input-fingerprint
- "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
+ "bf3e5bc759089b133536039e3fa0cce74d32c852656172b05c4e56c51b4bcad3",
  :predecessor-review
  {:status :pending-source-version-review,
   :input-fingerprint
@@ -576,7 +578,7 @@
    "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
   :scope :finite-task-interface-and-source-conservation-only},
  :qualification
- "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
+ "Composed Reader, Build and Native v2 ownership source pins; predecessor histories are retained. Native source/test registration changes only routing metadata. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))

@@ -24,7 +24,6 @@
                            :projected-syntax-id (:syntax-id form)})
                         [:parameter-vector :parameter-name :annotation-marker :annotation-type]
                         (into [original] source) (into [parameters] forms))}))
-
 (defn p15-s23-c6c10-normalize-deferred-ratios-in-plan
   [source-path literal-authentication raw-plan]
   (let [body-form-ids
@@ -43,7 +42,6 @@
      (mapv #(p15-s23-c6c10-normalize-deferred-ratio-instruction
              source-path literal-authentication %1 %2)
            instructions body-form-ids))))
-
 (defn p15-s23-c6c10-private-stage2-plan-occurrences
   [source-path literal-authentication plan]
   (let [forms-by-id (:forms-by-id literal-authentication)
@@ -87,7 +85,6 @@
           (map vector instructions body-form-ids)))]
     (p15-s23-c6c10-merge-occurrences
      body-occurrences instruction-occurrences)))
-
 (defn p15-s23-c6c10-project-plan
   [source-path source-content-hash literal-authentication raw-plan]
   (let [raw-plan
@@ -121,7 +118,6 @@
          {:domain :gravity/c6-c10-private-stage2-plan-v1
           :plan (dissoc neutral :plan-id)})]
     (assoc neutral :plan-id plan-id)))
-
 (defn p15-s23-c6c10-project-authoritative-module
   [source-content-hash raw-module front-end]
   (p15-s23-c6c10-path-neutral-value
@@ -133,20 +129,15 @@
                         :exports :safety :requires :imports :providers
                         :metadata :doc])
           {:forms (vec (rest (:forms front-end)))})))
-
-(defn- p15-s23-c6c10-private-stage2-plan
-  [emitter source-path source-text authoritative-module]
-  ;; The module is parsed exactly once from genuine C2/C3 forms.  Invoke only
-  ;; the pinned Gravity compiler artifact's construction seam: public P1/math,
-  ;; effect, capability, and safety admission belongs after this boundary to
-  ;; the Gravity C6-C10 module.
-  (let [function-table (stage0-function-table authoritative-module)]
-    (p15-s23-stage2-construct-emitted-core-plan
-     emitter source-path source-text authoritative-module function-table)))
-
+(declare sh03-reader-resolve-source-path p15-s23-c6c10-source-program-contract
+         ^:private p15-s23-c6c10-current-reader-envelope-state!)
 (defn- p15-s23-c6c10-private-ingress-products
   ([source-path source-text] (p15-s23-c6c10-private-ingress-products source-path source-text nil))
   ([source-path source-text reader-source-path]
+   (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path nil))
+  ([source-path source-text reader-source-path source-policy-version]
+   (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path source-policy-version nil))
+  ([source-path source-text reader-source-path source-policy-version selected-reader-binding]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -155,6 +146,12 @@
      (if (string? source-path) source-path "<c6-c10>")
      :co-canonical-source-path-and-text
      {:source-path source-path}))
+  (when (some? source-policy-version)
+    (p15-s23-c6c10-source-program-contract source-policy-version)
+    (when-not (and (= 2 source-policy-version) (string? reader-source-path)
+                   (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
+                      (.getCanonicalPath (java.io.File. reader-source-path))))
+      (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :selected-current-reader-invocation-policy {})))
   ;; C2/C3 construction is deliberately first and occurs exactly once under
   ;; the actual normative project context.  The private projection then
   ;; rebuilds every path-sensitive derived hash rather than lying about the
@@ -216,8 +213,11 @@
        :plan-emitter-rule
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
-        parameter? (assoc :resolved-parameter resolved-parameter))))))
-
+        parameter? (assoc :resolved-parameter resolved-parameter)
+        (= 2 source-policy-version)
+        (assoc :source-policy-receipt
+               (p15-s23-c6c10-current-reader-envelope-state!
+                source-path raw-front-end reader-source-path selected-reader-binding)))))))
 (defn p15-s23-c6c10-resolve-source-path
   []
   (let [relative p15-s23-c6c10-source-relative-path
@@ -240,7 +240,6 @@
                       :else nil))))
               roots)
         relative)))
-
 (defn p15-s23-c6c10-function-order-key
   [source-path function-name]
   (p15-s23-c6c10-canonical-sort-key

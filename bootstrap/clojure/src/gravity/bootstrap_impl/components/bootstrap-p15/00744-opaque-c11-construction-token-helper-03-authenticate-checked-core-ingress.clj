@@ -2,7 +2,9 @@
   (let [classify-checked-core-ingress-pair __gravity_bootstrap_lexical_119416_classify-checked-core-ingress-pair
         invoke-checked-core-verifier! __gravity_bootstrap_lexical_119416_invoke-checked-core-verifier]
     (fn authenticate-checked-core-ingress!
-      [checked-core context boundary-prefix]
+      ([checked-core context boundary-prefix]
+       (authenticate-checked-core-ingress! checked-core context boundary-prefix 1))
+      ([checked-core context boundary-prefix version]
       ;; Comparator-safe bounded carrier walks intentionally precede all map
       ;; lookups.  Family classification remains top-level only; canonical
       ;; replay and C11 source lookup wait for the exact pair and the stricter
@@ -45,7 +47,7 @@
                         (p15-s23-c11-mir-diagnostic-context
                          checked-core context {})]
                 (invoke-checked-core-verifier!
-                 checked-core context ingress-mode boundary-prefix))
+                 checked-core context ingress-mode boundary-prefix version))
               expected
               (p15-s23-c11-mir-expected-ingress-semantic
                checked-core context)]
@@ -82,4 +84,7 @@
                      (:checked-core-ingress-mode expected)))
              "C11-MODULE" (:source-path context) {}
              :explicit-effectful-reference-checked-core-authority))
-          expected)))))
+          (if (= 2 version)
+            (assoc expected :schema-version 2 :source-policy
+                   (p15-s23-c11-mir-core-policy-projection checked-core context report))
+            expected)))))))

@@ -12641,11 +12641,15 @@
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
-  "e0c1374138a3836f188cefe70ba7ca00278c10945cfbc05371fb0f93220f7e98"},
+  "87f6a1f914930336ebd9e495209578cca6a07d975193d13af07cedd448894399"},
  :mapping-review
  {:status :pending-source-version-review,
-  :input-fingerprint
+  :native-v2-source-version-bridge
+  "specs/sh-family-crosswalk/source-version-bridge.edn",
+  :pre-native-v2-input-fingerprint
   "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
+  :input-fingerprint
+  "bf3e5bc759089b133536039e3fa0cce74d32c852656172b05c4e56c51b4bcad3",
   :predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -12761,7 +12765,7 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :qualification
-  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
+  "Composed Reader, Build and Native v2 ownership source pins; predecessor histories are retained. Native source/test registration changes only routing metadata. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16224,7 +16228,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "d8b3c24d7c619ab28bfc2a7bd70dde086c27b0b851e563d28cbfd3c79a5f631f",
+  "a2d48a4bb7ae6384e834e426a0b07ee9d7ada22d3eb8390ea8f32b439ff5dd5e",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16279,7 +16283,7 @@
   "docs/component-roadmaps/reader.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/self-hosting-slice-ownership.edn"
-  "e446f3268ecc8ce25408236631a41c5939e7a952",
+  "6a1c9f8521318dea1924a90ceb2cd59943d5ded0",
   "specs/reader-workflow/tasks.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
