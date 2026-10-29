@@ -25,6 +25,15 @@
   (let [text (slurp path)]
     (require! (= text (sh-crosswalk/git-source ref path)) (str "Uncommitted or stale source: " path))
     text))
+(defn decision-task-ids [decision]
+  (if-let [allocation (:criterion-task-allocation decision)]
+    (let [links (:task-links allocation)]
+      (require! (and (seq links) (every? #(and (string? (:task-id %)) (not (str/blank? (:task-id %)))) links))
+                "Criterion allocation needs explicit task identities")
+      (set (map :task-id links)))
+    (set (concat (when-let [id (:accountable-task decision)] [id]) (:supporting-task-ids decision)))))
+(defn task-decisions [decisions task-id]
+  (vec (sort (for [d decisions :when (contains? (decision-task-ids d) task-id)] (:id d)))))
 (defn progress [tasks]
   (let [ids (map :id tasks) counts (frequencies (map #(get-in % [:status :state]) tasks))
         accepted (get counts :accepted 0) total (count tasks)]
@@ -55,13 +64,13 @@
                                 :sha256 (sh-inventory/sha256 text) :commit ref}
                   :dependencies-source {:path plan :sha256 (sh-inventory/sha256 plan-text) :commit ref}
                   :remaining-decision-ids
-                  (vec (sort (for [d decisions :when (or (= (:id row) (:accountable-task d))
-                                                        (some #{(:id row)} (:supporting-task-ids d)))] (:id d))))}))
+                  (task-decisions decisions (:id row))}))
         tasks (into (mapv task rows)
                     (for [row product]
                       {:id (:id row) :component "platform-product"
                        :status (status (str/starts-with? (:status row) "Accepted;") (str "Status: " (:status row)))
                        :criteria (:acceptance row) :dependencies (:dependencies row)
+                       :remaining-decision-ids (task-decisions decisions (:id row))
                        :task-source {:path platform-task-projection/task-path :marker "platform-product-implementation-tasks"
                                      :sha256 (sh-inventory/sha256 product-text) :commit ref}}))]
     (require! (= 240 (count docs) (count (set (map :id docs)))) "Original contract disposition loss or duplication")
@@ -72,6 +81,7 @@
     (doseq [{:keys [path current-sha256]} docs]
       (require! (= current-sha256 (sh-inventory/sha256 (pinned-text ref path))) (str "Contract source drift: " path)))
     (require! (every? (set (map :id tasks)) (keep :accountable-task decisions)) "Missing accountable task for remaining decision")
+    (require! (every? (set (map :id tasks)) (mapcat decision-task-ids decisions)) "Missing task for criterion allocation")
     {:kind :provisional-derived-task-census :schema-version 1 :authority :read-only-derived-task-census
      :source-commit ref :inventory-sha256 (sh-inventory/sha256 inventory)
      :dispositions {:path disposition-path :sha256 (sh-inventory/sha256 (slurp disposition-path))}
@@ -89,8 +99,11 @@
      :progress (progress tasks) :tasks (vec (sort-by :id tasks))
      :remaining-decisions {:count (count decisions) :source disposition-path
                            :without-supporting-task-references (count (filter #(empty? (:supporting-task-ids %)) decisions))
-                           :allocation-to-counted-tasks :unassessed
-                           :counting :excluded-pending-concrete-task-entailment-and-granularity-review}
+                           :criterion-witness-bound (count (filter :criterion-task-allocation decisions))
+                           :remaining-criterion-allocation-work (count (remove :criterion-task-allocation decisions))
+                           :allocation-to-counted-tasks (if (some :criterion-task-allocation decisions) :partially-criterion-witness-bound :unassessed)
+                           :full-attached-facet-entailment :pending-complete-source-disposition-audit
+                           :counting :necessary-work-addressed-through-task-criteria-not-additional-task-units}
      :independent-composed-review :required-separately
      :nonclaims [:no-implementation-credit-from-proposals :no-document-or-milestone-completion
                  :no-seedless-release-or-runtime-claim :no-target-or-product-selection]}))

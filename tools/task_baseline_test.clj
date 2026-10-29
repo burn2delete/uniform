@@ -19,4 +19,12 @@
   (with-redefs [clojure.core/slurp (constantly "changed")
                 sh-crosswalk/git-source (fn [_ _] "pinned")]
     (is (rejects? #(baseline/pinned-text "source" "task.md")))))
+(deftest concrete-criterion-links-control-work-association
+  (let [legacy {:id "decision" :accountable-task "release" :supporting-task-ids ["consumer"]}
+        bound (assoc legacy :criterion-task-allocation {:task-links [{:task-id "producer"}]})]
+    (is (= #{"release" "consumer"} (baseline/decision-task-ids legacy)))
+    (is (= #{"producer"} (baseline/decision-task-ids bound)))
+    (is (= ["decision"] (baseline/task-decisions [bound] "producer")))
+    (is (empty? (baseline/task-decisions [bound] "release")))
+    (is (rejects? #(baseline/decision-task-ids (assoc legacy :criterion-task-allocation {:task-links []}))))))
 (let [r (run-tests)] (shutdown-agents) (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

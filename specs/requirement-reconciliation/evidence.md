@@ -558,3 +558,44 @@ Core31 and Build68. All have finite source-review inputs, but their actual
 current composition and acceptance remain separate. Full source-facet
 dispositions, concrete allocation of all 833 decisions and the final scope,
 granularity, status and unweighted-count audit remain baseline work.
+
+## Concrete allocation of the first 303 current decisions
+
+The independent allocation audit supplied 218 guarded direct bindings at
+source `8b4543c3`; proposal SHA256
+`51adcaf2e9cc3229b0f1ec52c50397461f60f633b51bce627c17781ed5bf304f`.
+Its seven conservation/stale/duplicate/corruption controls have SHA256
+`444ee1982131167fa2e9905db8e1ac96200721a4c1b5ff5c18d00cea4a47c6d1`.
+After Compiler/Testing85 adoption, the next 85 direct allocation operations
+arrived with SHA256
+`531f35574daf2f3ccb10df9bdf2f02709b710c62cefd54366ca3338dcd02a833`
+and six passing controls. These are decision-allocation fields, not additional
+historical mappings, task records or implementation acceptance.
+
+Canonical application verified every complete predecessor-record hash,
+field presence/value, stored semantic-source identity, accepted historical
+identity, current task identity/path/status, actual criterion/context byte
+hashes and containment. Each criterion matches its accepted 430-witness
+snapshot. Only `criterion-task-allocation` is added; removing those fields
+recovers every original decision predicate. All 833 IDs and Open states,
+accepted 430 mappings, task IDs and task states are preserved.
+
+The selected public transaction receipts are
+`criterion-task-allocation-218.edn`, SHA256
+`dcaad4d706159e3db0984206040a60e8446715561fd02813ef09150e99496819`,
+and `criterion-task-allocation-303.edn`, SHA256
+`88aca050733c5d744ec730800c5c222c9ea006b5c621296ecaf4dc442ebe2dcd`.
+They record 303 current decisions with actual criterion/task links and 530
+remaining source-specific/alias allocation cases. Full attached-facet entailment
+is not conferred by these finite direct bindings; the separate complete source
+disposition audit remains required.
+
+The census now uses concrete criterion-task links for execution-work routing
+when present. The retained accountability field does not override those actual
+task interfaces. Product tasks receive the same association treatment. Partial
+allocation is reported explicitly rather than leaving all 833 globally
+unallocated or adding decisions to the task denominator. Focused census
+controls passed 4 tests / 13 assertions, including proof-link precedence and
+refusal of an empty claimed allocation. Preparation reader/identity-field
+checks refused before writes and were corrected against the explicit stored
+semantic-source field; no identity alias was guessed or restored.
