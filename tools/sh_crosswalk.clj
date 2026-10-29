@@ -1208,6 +1208,25 @@
  :new-task-fields 3,
  :historical-adoptions-preserved 493,
  :total-concrete-links 777}
+    :compiler-testing34-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/compiler-testing34-qualified-review-adoption.edn",
+ :remaining-allocation-work 56,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 440,
+ :pending-allocation-review 34,
+ :source-commit "79876421a2576008e005b6cbcc31b5570db8ad6f",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :unresolved-source-metadata-gaps 3,
+ :reviewed-predicates 34,
+ :later-fields-reconstructed 30,
+ :current-criteria 37,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777,
+ :applicability
+ "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

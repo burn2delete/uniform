@@ -1436,3 +1436,39 @@ Both document validators, generated SH check and pinned changed-file lint pass.
 No compiler/runtime/probe execution or implementation credit is added. Full
 facets, granularity, legacy ACC, independent final counting and integration
 remain open.
+
+## Existing Compiler/Testing34 review adoption at current source
+
+The existing completed independent receipt has SHA256
+`454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b`
+and freezes `c21258a8d3a4b98f97f11c1a5acb1d061b8ae548`. Its3125 controls
+and six artifact hashes are verified. The separate receipt-resolution handoff
+is authenticated; no duplicate review is performed. The stopped old303/Syntax
+request remains untouched conservation history and is not retried or rerouted.
+
+`compiler-testing34-qualified-current-applicability.edn` checks actual source
+`5a018077684a36c921e65a037f4af85314771788`: all34 allocation payloads match
+the reviewed after-values,37 criteria remain in their owning task contexts,
+34 task contexts and44 dependency interfaces are freshly rebound, and35 original
+source documents are unchanged. Thirty later Safety/Stdlib/Math/GPU/Foundation
+field operations reconstruct ten complete changed task files, preserving every
+later addition without inheriting its acceptance.
+
+D1/C1 ordering ambiguity, C18 mandatory minimum versus optional evidence,
+actual/unavailable counterexamples, TEST6 comparator availability, SAFE5 source
+terminal-flow qualification, and C12 EFIR/schema/workflow/identified-HDL domain
+registration AND verification remain explicit. Three source-metadata gaps stay
+unassessed. No source/evidence condition is silently converted to implementation
+acceptance.
+
+Adoption source `79876421` changes only34 qualified review states/references.
+All833 stay Open;777 concrete allocations,56 unallocated and493 historical
+adoptions remain. Qualified current source reviews total440, leaving34 pending:
+Schema25,Accounting-policy1,Product1 andFoundation7. Historical68 remain pending;
+provisional task status3/182 receives no new credit.
+
+The new561-binding snapshot preserves the exact Foundation7 binding vector and
+its1262 verified current spans. SH12/522,census4/13,boundary6/11,generated SH
+check and pinned changed-file lint pass. Full-facet, granularity, legacy ACC,
+independent final counting and integration remain open; no runtime/probe or
+implementation result is added.
