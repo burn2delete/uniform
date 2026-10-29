@@ -93,6 +93,17 @@
     (is (instance? clojure.lang.BigInt (get-in r [:raw-process-result :stdout-bytes])))
     (is (= :published (:publication r)))))
 
+(deftest acquisition-order-comes-from-the-explicit-coverage-decision
+  (let [f (fixture) guards (vec (reverse (get-in f [:request :guards])))
+        request (-> (:request f) (assoc :guards guards) (assoc-in [:coverage :ordered-guards] guards))
+        observation (select-keys request controller/identity-fields)
+        r (execute f {:observe (fn [] observation)} request observation)]
+    (is (= :passed (:status r)))
+    (is (= [[:acquire :canonical] [:acquire :exclusive] [:acquire :broker]]
+           (filter #(and (vector? %) (= :acquire (first %))) @(:events f))))
+    (is (= [[:release :broker] [:release :exclusive] [:release :canonical]]
+           (filter #(and (vector? %) (= :release (first %))) @(:events f))))))
+
 (deftest denied-admission-and-output-reservation-never-start-or-publish
   (doseq [port [:admit :reserve]]
     (let [f (fixture) r (execute f {port (fn [& _] (swap! (:events f) conj [:denied port]) false)})]
