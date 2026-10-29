@@ -33,9 +33,16 @@ semantic incorporation of the other changes.
   `0cd2f29427ca67ae6127c7983eb51896b564f977`. Their initializer/literal/conversion
   scope does not accept typed LSET/Map-key mixed-ledger or DSE composition.
 - DSE's existing accountable owner is `01a18531-8bc4-7a13-ad7c-3a110bc3e314`.
-  Supported readback shows an active whole-feature source/fixture port. No
-  published immutable draft/head was verified for it in this assessment. Do not
-  duplicate that implementation or infer completed coverage from its assignment.
+  Later supported readback verified draft PR568 at
+  `b165ca5ab0d540754ec04f5320314e64a5b9d070`, tree
+  `39cde5040fe9eca1336d6ea5a9ad51d4e98a5e5e`, based on main `9017f370`.
+  Its `specs/accounting-removal/set-equality-census.edn` maps historical DSE
+  definitions and source hunks to the three current owners. Its
+  `specs/accounting-removal/set-equality.md` retains the genuine acceptance gate.
+  Six tests / 233 assertions are source-bound Clojure model/injected controls
+  only. Original fixture spellings remain pinned, absent and unconsumed; their
+  source/typed/emitted/runtime acceptance is pending. This is concrete finite
+  draft coverage, not independent implementation or semantic acceptance.
 
 ## Every original authored path
 
@@ -70,8 +77,8 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-qualified-map-get.qst` | Preserve paired qualified Map-get verifier fixture with the complete verifier obligation. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-work-ledger.gravity` | Classify accounting assertions separately from ordinary Map-get return/source/fresh-verifier behavior; retain the latter. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-work-ledger.qst` | Preserve paired ordinary Map-get source; its filename does not establish that all behavior is accounting-only. |
-| `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.gravity` | Existing DSE owner covers the whole source/type/effect/lowering/runtime feature. Verify its immutable published draft and fixture coverage before counting disposition. |
-| `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.qst` | Preserve paired DSE source and the same real acceptance requirements. |
+| `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.gravity` | DSE draft PR568 pins the original fixture blob and retains genuine source/typed/emitted/runtime composition in its finite acceptance gate. This spelling remains absent, unconsumed and unaccepted on that candidate. |
+| `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.qst` | PR568 pins the paired original source and explicitly retains its same acceptance requirements; source pairing/model controls do not accept this spelling. |
 | `specs/accounting-removal/tasks.md` | Incorporated as historical task input. Current main remains task truth with stable ACC IDs; do not replace it with old checkboxes or discard unresolved obligations. |
 | `specs/accounting-removal/evidence.md` | Incorporated as historical evidence input. Original passing and failed receipts retain exact source provenance; no new current-main result follows. |
 
@@ -87,3 +94,9 @@ This assessment evaluated no Gravity source and ran no compiler/runtime job.
 Source-form equality is a limited textual/reader fact, not semantic acceptance.
 Independent review of this new disposition input is pending. No original ACC
 row, release, self-hosting or seed-retirement claim is closed by this table.
+
+Normal composition with main `9017f37003369920eb2c25caa77047eb20d0c593` imports
+only impact-planner tests and incremental dependency metadata. The three
+disposition documents and all assessed historical/compiler source bytes are
+conserved. The assessment remains pinned to `6276c94b`; only the later DSE
+readback above describes the new finite draft, not new integration evidence.
