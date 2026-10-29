@@ -1643,8 +1643,9 @@ or protection against change-and-restore between observations.
 Injected controls cover launch, retain, stream, wait, cleanup, interruption,
 identity drift and bookend scope restoration. The ACC13 implementation was a
 source reference only; its request, admission, roots, profile and review are
-not RV2 authority. The direct seam is not yet connected to a frozen supported
-CLI launch. Git's inherited root wait/full-stream protocol still needs the
+not RV2 authority. The source seam now has the opt-in supported entrypoint
+described below; its exact operational launch remains unfrozen. Git's
+inherited root wait/full-stream protocol still needs the
 exact outer watchdog binding; this patch does not claim a bounded producer
 method or termination of unobserved helpers. Exact executable configuration,
 native/helper reachability, loader, watchdog and report/capture publication
@@ -1657,8 +1658,8 @@ The existing `--development-cache` request now also accepts
 `:producer-git-binding` with schema `:gravity/rv2-git-binding-v1`, together
 with `:observe-producer? true`. This route requires exactly
 `gravity.c2-artifact-identity-test`; another or mixed selection, a missing
-opt-in, unknown schema, or arbitrary lifecycle-hook data is rejected before
-dispatch. The actual binding is still revalidated against its explicit
+opt-in, malformed root, unknown schema, or extra top-level lifecycle-hook data
+is rejected before dispatch. The actual binding is still revalidated against its explicit
 filesystem inputs before each Git command. Parsing this data is not method
 approval or executable authentication.
 

@@ -229,7 +229,8 @@
   (let [base {:cache-directory "/tmp/unused-rv2-cli-control" :timeout-ms 1000
               :repository-identity (str "sha256:" (apply str (repeat 64 "a")))}
         options (assoc base :observe-producer? true
-                            :producer-git-binding {:schema :gravity/rv2-git-binding-v1})
+                            :producer-git-binding {:schema :gravity/rv2-git-binding-v1
+                                                   :root "/tmp/unused-rv2-cli-control"})
         select (fn [options namespaces]
                  (child-runner/select-tests
                   (into ["--development-cache" (pr-str options)]
@@ -241,13 +242,28 @@
                      (assoc options :observe-producer? false)
                      (assoc options :producer-git-binding nil)
                      (assoc options :producer-git-binding {:schema :unknown})
+                     (assoc options :producer-git-binding {:schema :gravity/rv2-git-binding-v1})
+                     (assoc-in options [:producer-git-binding :root] nil)
+                     (assoc-in options [:producer-git-binding :root] 42)
+                     (assoc-in options [:producer-git-binding :root] "relative")
+                     (assoc-in options [:producer-git-binding :root] "\u0000invalid")
                      (assoc options :producer-git-lifecycle {})]]
-      (is (false? (child-runner/valid-development-cache-options? invalid))))
+      (is (false? (child-runner/valid-development-cache-options? invalid)))
+      (is (= "SH01-TEST-USAGE"
+             (try (select invalid ['gravity.c2-artifact-identity-test]) nil
+                  (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))
     (doseq [namespaces [['gravity.c11-mir-test]
                         ['gravity.c2-artifact-identity-test 'gravity.c11-mir-test]]]
       (is (= "SH01-TEST-USAGE"
              (try (select options namespaces) nil
                   (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))))
+
+(deftest direct-source-entrypoint-refuses-malformed-roots-before-dispatch
+  (doseq [binding [nil {} {:root nil} {:root 42} {:root "relative"} {:root "\u0000invalid"}]]
+    (with-redefs [wiring/run-child-unit! (fn [& _] (throw (AssertionError. "unexpected dispatch")))]
+      (is (= {:id "RV2-GIT-OBSERVATION" :field :binding-shape}
+             (try (git/run-selected! binding (atom []) {} (fn [] :unused)) nil
+                  (catch clojure.lang.ExceptionInfo error (ex-data error))))))))
 
 (deftest actual-main-dispatch-preserves-default-and-git-routes
   (let [dispatch (ns-resolve 'gravity.self-hosting-test-runner 'run-development-child-unit!)

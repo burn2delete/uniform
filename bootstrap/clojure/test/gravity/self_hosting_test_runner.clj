@@ -284,6 +284,10 @@
        (or (not (contains? options :producer-git-binding))
            (and (true? (:observe-producer? options))
                 (map? (:producer-git-binding options))
+                (let [root (get-in options [:producer-git-binding :root])]
+                  (and (string? root)
+                       (try (.isAbsolute (Paths/get root (make-array String 0)))
+                            (catch Exception _ false))))
                 (= :gravity/rv2-git-binding-v1
                    (get-in options [:producer-git-binding :schema]))))
        (string? (:cache-directory options))

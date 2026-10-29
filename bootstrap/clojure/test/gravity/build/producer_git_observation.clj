@@ -170,6 +170,9 @@
   may supply a frozen Git binding; raw Process/token/handles remain local.
   Serialization of these observations supplies no capture/cache admission."
   [binding records options operation]
+  (require! (and (map? binding) (string? (:root binding))
+                 (try (.isAbsolute (.toPath (io/file (:root binding))))
+                      (catch Exception _ false))) :binding-shape)
   (require! (= (:root binding) (.getCanonicalPath (io/file (System/getProperty "user.dir")))) :root)
   (let [report (wiring/run-child-unit! ['gravity.c2-artifact-identity-test]
                                       (assoc options :observe-producer? true
