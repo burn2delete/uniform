@@ -700,14 +700,14 @@
           read-check (invoke 'runtime-module-reads functions {})]
       (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
-      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
+      (is (= :unsupported-module-initializer (:reason (invoke 'runtime-validate-initializer (set-ir [(lit \a)])))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
                           (set-ir [(lit :one)])))))
     (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
           result (evaluate quoted)]
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
+      (is (= :accepted (:status (invoke 'runtime-validate-initializer quoted))))
       (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [failure (AssertionError. "original Keyword representation failure") original-str str
           observed (with-redefs [clojure.core/str (fn [& values]
@@ -3013,7 +3013,7 @@
                  'p15-s23-runtime-evaluate-indexed-operation 6
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
-                 'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
+                 'runtime-validate-initializer 1 'p15-s23-runtime-initializer-type? 2
                  'p15-s23-runtime-string-set-insertion-work 3 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
                  'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-character-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-keyword-list-set-work 2
@@ -5295,7 +5295,7 @@
       (is (= (invoke 'p15-s23-runtime-atomic-equality a b) (equal [a] [b]))))
     (is (= modes original))
     (is (= :unsupported (invoke 'p15-s23-runtime-atomic-equality modes modes)))
-    (is (= :rejected (:status (invoke 'p15-s23-runtime-initializer-work {:op :literal :value modes} 65536))))
+    (is (= :rejected (:status (invoke 'runtime-validate-initializer {:op :literal :value modes}))))
     (let [equiv-calls (atom 0) hash-calls (atom 0)
           hostile (HostilePersistentCallee. equiv-calls hash-calls (AssertionError. "payload executed"))]
       (doseq [unsupported [[1] 1.5 {} '(:inert call) #{"unsupported"} (Object.) hostile]
@@ -25144,14 +25144,14 @@
           read-check (invoke 'runtime-module-reads functions {})]
       (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
-      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
+      (is (= :unsupported-module-initializer (:reason (invoke 'runtime-validate-initializer (set-ir [(lit \a)])))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
                           (set-ir [(lit \a)])))))
     (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
           result (evaluate quoted)]
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
+      (is (= :accepted (:status (invoke 'runtime-validate-initializer quoted))))
       (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [scalar (bootstrap/sh03-reader-host-character-value! "<duplicate-character-construction>" {:codepoint 0x1f600})
           same-codepoint (assoc scalar :text "xy") result (work [scalar same-codepoint] 65536)]
@@ -26854,9 +26854,6 @@
                       type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count values) :gravity.type/keyword))}
                       initializer {:op :set-literal :items (mapv lit values)}]
                   (walk/postwalk-replace {old-type type (:initializer base) initializer} base)))
-        reservation (fn [values]
-                      (let [n (count values) units (reduce + 0 (map #(count (str %)) values))]
-                        (+ 1 (* 3 n) (quot (* n (dec n)) 2) (* (inc n) units))))
         constructor-calls (atom 0)
         scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped-var
@@ -26870,17 +26867,10 @@
         (doseq [values [[] [:one] [:proven-safe :runtime-checked :rejected :unsafe-island] [a b]]]
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
-                checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
+                checked (invoke 'runtime-validate-initializer initializer)
+                census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
-            (is (= charge (:work-count checked)))
-            (is (= :exact-logical-content-reservation (:work-count-kind checked)))
-            (is (= :not-established (:provider-cpu-bound checked)))
-            (is (= {:set-literal 1} (:constructors checked)))
-            (is (= (quot (* (count values) (dec (count values))) 2) (:comparison-attempts checked)))
-            (is (= checked (invoke 'p15-s23-runtime-initializer-work initializer charge)))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
+            (is (= {:status :accepted :constructors {:set-literal 1}} checked))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
             (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
@@ -26927,28 +26917,25 @@
                            [{:op :quote :value :a}] [{:op :namespace-read :binding-id "missing"}]
                            [{:op :throw :value (lit :stop)}] [(assoc (lit :a) :extra true)]]]
           (is (= :unsupported-module-initializer
-                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items bad-items} 65536)))))
+                 (:reason (invoke 'runtime-validate-initializer {:op :set-literal :items bad-items})))))
         (let [duplicate {:op :set-literal :items [(lit :same) (lit :same)]}
-              result (invoke 'p15-s23-runtime-initializer-work duplicate 65536)]
+              result (invoke 'runtime-validate-initializer duplicate)]
           (is (= :unsupported-module-initializer (:reason result)))
           (is (= :duplicate-set-literal-keyword (:initializer-reason result)))
-          (is (= (reservation [:same :same]) (:work-count result)))
-          (is (= 1 (:comparison-attempts result))))
-        (let [long-key (keyword (apply str (repeat 20000 "x")))
-              limited (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items [(lit long-key)]} 100)]
-          (is (= :module-initialization-work-limit (:reason limited)))
-          (is (= 101 (:work-count limited)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind limited))))
+          (is (= #{:status :reason :initializer-reason} (set (keys result)))))
+        (let [long-key (keyword (apply str (repeat 80000 "x")))
+              checked (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-key)]})]
+          (is (= {:status :accepted :constructors {:set-literal 1}} checked)))
         (let [long-key (keyword (apply str (repeat 20000 "x")))
               {:keys [plan definition root initializer]} (input [long-key])
               unused (assoc (root 3 :literal 'unused) :type (:type definition))
               two (-> plan (update-in [:module-initialization :roots] conj unused)
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
-              one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
+              one (invoke 'runtime-validate-initializer initializer)
               census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
-          (is (= (reservation [long-key]) (:work-count one)))
+          (is (= {:set-literal 1} (:constructors one)))
           (is (= :accepted (:status census)))
           (is (not (contains? census :work-count)))
           (is (not (contains? census :work-count-kind)))
@@ -26966,7 +26953,7 @@
                        (toString [] (swap! callbacks inc) (throw (AssertionError. "payload printing"))))]
           (doseq [values [[opaque] [:valid opaque] [opaque :valid]]]
             (is (= :unsupported-module-initializer
-                   (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items (mapv lit values)} 65536)))))
+                   (:reason (invoke 'runtime-validate-initializer {:op :set-literal :items (mapv lit values)})))))
           (is (= 0 @callbacks)))
         (let [{:keys [initializer definition]} (input [:one])]
           (doseq [type [:gravity.type/set
@@ -26975,7 +26962,7 @@
                         {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword] :extra true}]]
             (is (false? (invoke 'p15-s23-runtime-initializer-type? (assoc definition :type type) initializer))))
           (is (= :unsupported-module-initializer
-                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :vector-literal :items [initializer]} 65536)))))))))
+                 (:reason (invoke 'runtime-validate-initializer {:op :vector-literal :items [initializer]})))))))))
 
 (deftest current-gravity-module-keyword-set-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -27267,9 +27254,6 @@
                       type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count values) :gravity.type/string))}
                       initializer {:op :set-literal :items (mapv lit values)}]
                   (walk/postwalk-replace {old-type type (:initializer base) initializer} base)))
-        reservation (fn [values]
-                      (let [n (count values) units (reduce + 0 (map count values))]
-                        (+ 1 (* 3 n) (quot (* n (dec n)) 2) (* (inc n) units))))
         constructor-calls (atom 0)
         scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped-var
@@ -27284,17 +27268,10 @@
         (doseq [values [[] [""] ["left" "right"] [a b] [composed decomposed] ["line\nvalue","quote\"value","slash\\value"] ["B14-COVERAGE","B14-TARGET","B14-POSITIVE","B14-NEGATIVE","B14-DIFFERENTIAL","B14-METADATA","B14-ARTIFACT","B14-NONDETERMINISM","B14-SKIP","B14-EVIDENCE"]]]
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
-                checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
+                checked (invoke 'runtime-validate-initializer initializer)
+                census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
-            (is (= charge (:work-count checked)))
-            (is (= :exact-logical-content-reservation (:work-count-kind checked)))
-            (is (= :not-established (:provider-cpu-bound checked)))
-            (is (= {:set-literal 1} (:constructors checked)))
-            (is (= (quot (* (count values) (dec (count values))) 2) (:comparison-attempts checked)))
-            (is (= checked (invoke 'p15-s23-runtime-initializer-work initializer charge)))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
+            (is (= {:status :accepted :constructors {:set-literal 1}} checked))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
             (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
@@ -27343,28 +27320,25 @@
                            [{:op :quote :value "text"}] [{:op :namespace-read :binding-id "missing"}]
                            [{:op :throw :value (lit :stop)}] [(assoc (lit "text") :extra true)]]]
           (is (= :unsupported-module-initializer
-                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items bad-items} 65536)))))
+                 (:reason (invoke 'runtime-validate-initializer {:op :set-literal :items bad-items})))))
         (let [duplicate {:op :set-literal :items [(lit "same") (lit "same")]}
-              result (invoke 'p15-s23-runtime-initializer-work duplicate 65536)]
+              result (invoke 'runtime-validate-initializer duplicate)]
           (is (= :unsupported-module-initializer (:reason result)))
           (is (= :duplicate-set-literal-string (:initializer-reason result)))
-          (is (= (reservation ["same" "same"]) (:work-count result)))
-          (is (= 1 (:comparison-attempts result))))
-        (let [long-string (apply str (repeat 20000 "x"))
-              limited (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items [(lit long-string)]} 100)]
-          (is (= :module-initialization-work-limit (:reason limited)))
-          (is (= 101 (:work-count limited)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind limited))))
+          (is (= #{:status :reason :initializer-reason} (set (keys result)))))
+        (let [long-string (apply str (repeat 80000 "x"))
+              checked (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-string)]})]
+          (is (= {:status :accepted :constructors {:set-literal 1}} checked)))
         (let [long-string (apply str (repeat 20000 "x"))
               {:keys [plan definition root initializer]} (input [long-string])
               unused (assoc (root 3 :literal 'unused) :type (:type definition))
               two (-> plan (update-in [:module-initialization :roots] conj unused)
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
-              one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
+              one (invoke 'runtime-validate-initializer initializer)
               census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
-          (is (= (reservation [long-string]) (:work-count one)))
+          (is (= {:set-literal 1} (:constructors one)))
           (is (= :accepted (:status census)))
           (is (not (contains? census :work-count)))
           (is (not (contains? census :work-count-kind)))
@@ -27382,16 +27356,16 @@
                        (toString [] (swap! callbacks inc) (throw (AssertionError. "payload printing"))))]
           (doseq [values [[opaque] ["valid" opaque] [opaque "valid"]]]
             (is (= :unsupported-module-initializer
-                   (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items (mapv lit values)} 65536)))))
+                   (:reason (invoke 'runtime-validate-initializer {:op :set-literal :items (mapv lit values)})))))
           (is (= 0 @callbacks)))
         (let [value "no-string-conversion-probe" calls (atom 0) original-str str
               result (with-redefs [clojure.core/str (fn [& args]
                                                      (if (= [value] args)
                                                        (do (swap! calls inc) (throw (AssertionError. "String converted")))
                                                        (apply original-str args)))]
-                       (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items [(lit value)]} 65536))]
+                       (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit value)]}))]
           (is (= :accepted (:status result)))
-          (is (= (reservation [value]) (:work-count result)))
+          (is (= {:set-literal 1} (:constructors result)))
           (is (= 0 @calls)))
         (let [{:keys [initializer definition]} (input ["one"])]
           (doseq [type [:gravity.type/set
@@ -27400,7 +27374,7 @@
                         {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string] :extra true}]]
             (is (false? (invoke 'p15-s23-runtime-initializer-type? (assoc definition :type type) initializer))))
           (is (= :unsupported-module-initializer
-                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :vector-literal :items [initializer]} 65536)))))))))
+                 (:reason (invoke 'runtime-validate-initializer {:op :vector-literal :items [initializer]})))))))))
 
 (deftest current-gravity-module-string-set-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
