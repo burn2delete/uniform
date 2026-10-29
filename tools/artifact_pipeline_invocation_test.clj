@@ -522,4 +522,3 @@
 
 (let [result (run-tests 'artifact-pipeline-invocation-test)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
-
