@@ -13340,7 +13340,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -13766,6 +13767,17 @@
       :source-sha256
       "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
       :qualification :required-predicate-retained}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg1/project-entrypoint-resolution",
     :task-links
     [{:task-id
@@ -14355,7 +14367,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -14994,6 +15007,17 @@
       :source-sha256
       "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
       :qualification :required-predicate-retained}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg6/derived-capability-manifest",
     :task-links
     [{:task-id
@@ -15148,7 +15172,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -15631,6 +15656,17 @@
       "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
       :qualification
       :retained-context-not-independent-whole-output-proof}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg6/request-grant-separation",
     :task-links
     [{:task-id
@@ -15756,7 +15792,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -15924,6 +15961,17 @@
       :source-sha256
       "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
       :qualification :required-predicate-retained}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg6/runtime-permission-audit",
     :task-links
     [{:task-id
@@ -16024,7 +16072,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -16094,6 +16143,17 @@
       :source-sha256
       "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
       :qualification :required-predicate-retained}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg6/transitive-deny-precedence",
     :task-links
     [{:task-id
@@ -16327,7 +16387,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :decision-status :open,
     :source-adjudication-references [],
@@ -17413,6 +17474,17 @@
       :source-sha256
       "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a",
       :qualification :required-predicate-retained}],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "behavior/pkg7/recorded-build-recipe",
     :task-links
     [{:task-id
@@ -291602,7 +291674,8 @@
     :source-adjudication-references-state
     :retained-history-no-new-alias-or-retirement-admission,
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces
     ["Build normalization and package verification producers"
      "Conformance and equivalence producers for declared compiler subset"
@@ -291659,6 +291732,17 @@
        "Intermediate declared gaps may be owned or explicitly deferred within the claimed subset; only release candidates must have no unreviewed claimed-support gaps."
        "Ordinary source edits and focused tests are development, not authoritative migration and do not require a renewed admission gate."]}],
     :source-facet-witnesses [],
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/package7-current-applicability.edn",
+     :sha256
+     "3941de6bb999f8228416e714ea624ed2423bdb333c1e761e40f7acebd3ad6b51",
+     :independent-reviewed-source
+     "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+     :current-applicability-source
+     "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+     :scope :seven-unchanged-source-predicates-and-role-identities,
+     :later-added-predicates :pending-separate-review},
     :task-links
     [{:task-id
       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",

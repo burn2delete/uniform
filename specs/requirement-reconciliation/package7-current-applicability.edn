@@ -1,0 +1,403 @@
+{:later-additive-compositions
+ [{:path
+   "specs/requirement-reconciliation/profile74-current-composition.edn",
+   :sha256
+   "51dbd2bd4443045b525490a37f9c7a88a9a62dc595ad96d31576ea13db2b669a",
+   :applying-source "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+   :task-source "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+   :operations 42,
+   :complete-files-reconstructed 10,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/safety107-current-composition.edn",
+   :sha256
+   "2d773f4b85bf33673ae68263b6929e483908ab4bbb93faf02876301e6cab9b83",
+   :applying-source "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+   :task-source "bc485c7e4b0197873f6a3104021764711215b3b1",
+   :operations 16,
+   :complete-files-reconstructed 6,
+   :prefixes-and-all-added-predicates-preserved true}],
+ :remaining-gates
+ [:later-added-predicate-review
+  :full-facet-disposition
+  :task-granularity
+  :legacy-ACC-scope
+  :final-count-review
+  :integration],
+ :bindings
+ [{:id "decision/package-bootstrap-admission",
+   :unchanged-decision-record-sha256
+   "17347216e719ab6b5adf83655f55239ef403ae0e0f9c13bc5a583cf0e0b46666",
+   :declared-dependency-interfaces
+   ["Build normalization and package verification producers"
+    "Conformance and equivalence producers for declared compiler subset"
+    "BOOT3 module manifest and ownership matrix"
+    "BOOT7 comparison modes and reviewed deltas"
+    "Separate intermediate and final Release consumers"],
+   :task-links
+   [{:task-id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :path "specs/build-workflow/tasks.md",
+     :role :dependency-selection-producer,
+     :criterion-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :start-byte 949,
+      :end-byte 2177,
+      :raw-sha256
+      "4a0bcce0cf2388eb62b15ff4ab2671be4ee2f1cc5acad20fc99f70c7616e2c09"},
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :raw-sha256
+      "2dc0b02c1293a1d74729a26a0ace983e4e7d4527cc05b3dad62b8c80f0327631",
+      :marker "build-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 15531,
+      :start-byte 591},
+     :reviewed-criterion-preserved true}
+    {:task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :path "specs/build-workflow/tasks.md",
+     :role :acquisition-and-consumer-verification-producer,
+     :criterion-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :start-byte 27557,
+      :end-byte 28484,
+      :raw-sha256
+      "fd44508b8a3a087ffe3e3c92da7c9d3304dfd495c94075f99ae10bb645c8f891"},
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :raw-sha256
+      "61f22bb63b09b2f2b8adaa2175d749f24e52c862b1fedef02274ad6f8ae50012",
+      :marker "build-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 47767,
+      :start-byte 27239},
+     :reviewed-criterion-preserved true}
+    {:task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :path "specs/release-workflow/tasks.md",
+     :role :intermediate-authoritative-admission-consumer,
+     :criterion-witness
+     {:path "specs/release-workflow/tasks.md",
+      :marker "release-implementation-tasks",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+      :start-byte 13847,
+      :end-byte 18349,
+      :raw-sha256
+      "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971"},
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :file-sha256
+      "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+      :raw-sha256
+      "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+      :marker "release-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 19836,
+      :start-byte 13483},
+     :reviewed-criterion-preserved true}
+    {:task-id
+     "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+     :path "specs/release-workflow/tasks.md",
+     :role :final-release-consumer,
+     :criterion-witness
+     {:path "specs/release-workflow/tasks.md",
+      :marker "release-implementation-tasks",
+      :task-id
+      "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+      :start-byte 27626,
+      :end-byte 29176,
+      :raw-sha256
+      "b74a419b9c8857fb3e3d2002ef1ca66d1cefedab072869748d1912cff5c3e51b"},
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+      :file-sha256
+      "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
+      :raw-sha256
+      "ae62e84bdff9602626ab15cbc1103cc987b5956d13cc40d91ddb730cd8dfaa32",
+      :marker "release-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 29176,
+      :start-byte 27293},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg1/project-entrypoint-resolution",
+   :unchanged-decision-record-sha256
+   "7d6e1aaa26f97ca653cb2c7ac6e06643004597f3224393198cb6a8f82abb5739",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+     :path "specs/resolve-workflow/tasks.md",
+     :role :namespace-analysis-producer,
+     :criterion-witness
+     {:path "specs/resolve-workflow/tasks.md",
+      :marker "resolve-implementation-tasks",
+      :task-id
+      "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+      :start-byte 1885,
+      :end-byte 2538,
+      :raw-sha256
+      "3d6ff75174650f2c5913517133a39dbc5ab5b0eb18ac68b37413dfb34c409073"},
+     :task-context
+     {:path "specs/resolve-workflow/tasks.md",
+      :task-id
+      "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+      :file-sha256
+      "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+      :raw-sha256
+      "6bd2a7104f795b6b8681bc8b5d0daa7185299842f1a0307dfd06d095ec6cbd90",
+      :marker "resolve-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 2538,
+      :start-byte 1661},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg6/derived-capability-manifest",
+   :unchanged-decision-record-sha256
+   "29255b3ddc52971f2d3eb59e54c8086be20ea17c497b896681dd2940e215b004",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :path "specs/effects-workflow/tasks.md",
+     :role :effect-analysis-summary-producer,
+     :criterion-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :start-byte 3422,
+      :end-byte 4225,
+      :raw-sha256
+      "73c95f76f4005076727941e42d7111d7ef9d25d1a9772b41467eea4d568561aa"},
+     :task-context
+     {:path "specs/effects-workflow/tasks.md",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :marker "effects-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 4225,
+      :start-byte 3186},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg6/request-grant-separation",
+   :unchanged-decision-record-sha256
+   "b158213358d6f92a0ead6a49e537ef1aec4288906980deb0a0d09351ba695e4b",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+     :path "specs/auth-workflow/tasks.md",
+     :role :deployment-and-runtime-authority-checker,
+     :criterion-witness
+     {:path "specs/auth-workflow/tasks.md",
+      :marker "auth-implementation-tasks",
+      :task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :start-byte 14791,
+      :end-byte 16296,
+      :raw-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"},
+     :task-context
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "6bff88e2c330ddbdab35770e07b775e4c1e1a48421be287fdc41b8eba606308e",
+      :marker "auth-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 17960,
+      :start-byte 14457},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg6/runtime-permission-audit",
+   :unchanged-decision-record-sha256
+   "3ee1468eff5962e9ef0237efb8430e44a56fe451ed4c461ce14b5d6802539087",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :runtime-audit-producer,
+     :criterion-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :start-byte 54223,
+      :end-byte 57568,
+      :raw-sha256
+      "332fac084e19c6a7f65e24fc0e1344ef9d5780c6fb0b8485a48e8a3ff4c0e7ff"},
+     :task-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :marker "runtime-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 60960,
+      :start-byte 53908},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg6/transitive-deny-precedence",
+   :unchanged-decision-record-sha256
+   "7616b0dc2262fb7ee0a6d297704e71d3ecee41a0b099d19ee1598c2ecff1499f",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+     :path "specs/auth-workflow/tasks.md",
+     :role :deployment-and-runtime-authority-checker,
+     :criterion-witness
+     {:path "specs/auth-workflow/tasks.md",
+      :marker "auth-implementation-tasks",
+      :task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :start-byte 14791,
+      :end-byte 16296,
+      :raw-sha256
+      "e82a98bd4623c3b0fd391e737eb3a5e4831ed1911d2e093ef0c0cb897507c20f"},
+     :task-context
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "6bff88e2c330ddbdab35770e07b775e4c1e1a48421be287fdc41b8eba606308e",
+      :marker "auth-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 17960,
+      :start-byte 14457},
+     :reviewed-criterion-preserved true}]}
+  {:id "interface/behavior/pkg7/recorded-build-recipe",
+   :unchanged-decision-record-sha256
+   "f6ecd56c0d5be4f299e26822c9332b18246a7fe8b0ccfdb5f3a5a7309551f47c",
+   :declared-dependency-interfaces nil,
+   :task-links
+   [{:task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :path "specs/build-workflow/tasks.md",
+     :role :build-recipe-and-rebuild-evidence-producer,
+     :criterion-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :start-byte 54287,
+      :end-byte 56107,
+      :raw-sha256
+      "32a4b9439365cd0f2ca7b60ecdd3861a0914b9a6c977256a8d920662b271cd56"},
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+      :status "Open",
+      :end-byte 56107,
+      :start-byte 47769},
+     :reviewed-criterion-preserved true}]}],
+ :task-count-delta 0,
+ :schema-version 1,
+ :all-833-decisions-open true,
+ :implementation-credit :none,
+ :current-composition-qualification
+ "Canonical owner verifies exact unchanged seven decision records, ten criterion predicates and role identities, and reconstructs all later Profile74/Safety107 task additions without loss. Independent PASS remains scoped to the frozen source; later added predicates retain their separate pending review. Declared five bootstrap dependency interfaces remain prerequisites, not completed outputs. This adoption adds no historical mappings or task acceptance.",
+ :full-attached-facet-entailment :not-conferred,
+ :source-commit "5c35d04ab888b5f533fc626d01c95aaea7e55c7c",
+ :independent-source-review
+ {:verdict :pass,
+  :candidate "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+  :tree "660d52cc849a9da5bd0332d04014e75a25658768",
+  :receipt-sha256
+  "6c3ec14bec6668e57826329afc74af39fec4e4296bf50f0581d903a9ca02802e",
+  :audit-commit "20a98cfb518008a855a29a28b8b3c8bbc83b0a8b",
+  :scope :seven-finite-source-task-allocations,
+  :not-approved
+  [:other-allocations
+   :newer-composition
+   :whole-facet-entailment
+   :new-aliases
+   :retirements
+   :implementation
+   :denominator
+   :runtime-operation
+   :publication]},
+ :kind :canonical-package7-qualified-current-applicability,
+ :new-historical-mapping-adoptions 0,
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-package7.edn",
+  :sha256
+  "952394005ecc063e04633403947a2f0e0a3ffabb86db6a3b30d28aab8fe7be17",
+  :unchanged-from-reviewed-source true},
+ :canonical-adoption
+ :independent-finite-source-review-accepted-current-join-verified}
