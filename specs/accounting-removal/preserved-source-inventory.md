@@ -488,3 +488,24 @@ Three new consumption records verify exact independent source receipts:
 Genuine kernels, actual Effects/producer/runtime composition, authentication and
 main integration remain open. These source results do not clear any old denial
 or confer whole ACC/PR502 authority. Immutable inventory counts are unchanged.
+
+## Reconciled loop candidate and LC source review
+
+PR619 now has normal reconciliation candidate `c5fc3c57`, tree `998aee8e`,
+with parents reviewed `8330e468` and current main `7a74f6e3`. The fresh
+applicability record proves exact precomputed merge-tree identity, main ancestry,
+complete reviewed C7/evidence bytes, 1087 definitions/30 loops and conservation
+of every other main tree path. Boundary 6/11 and docs/roadmap pass. Read-only
+preflight passes ancestry/expected identities but retains clean-worktree/all-pass
+false for the same untracked lint cache. No cleanup, exclusion, alternate
+checkout or main integration occurred. Old reviewed commits/receipts remain
+history; fresh independent composition, current-head CI and coordinator
+integration/preflight remain pending.
+
+PR623 exact `c5e9fccd` source-only PASS receipt SHA256
+`94f70e5279164d8f10ddcced4d0bc8301bc59c2e9c9a30e04259101890e01a86` is
+verified in `list-construction-review-consumption.edn`: tree/seven input hashes,
+4 reader tests/167 assertions, nine refused altered-source controls, coherent
+header/derive/step/caller changes and retained newer native/exact guards. Genuine
+owner kernels, fresh main composition and integration remain pending. Original
+inventory counts and source-only authority limits remain unchanged.

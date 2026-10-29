@@ -433,6 +433,25 @@ helper mappings remain explicit rather than being treated as missing features.
   candidates survive. See [the consumption](effects-local-review-consumption.edn).
   None of these reviews supplies genuine kernels, authentication, transitive
   helper equivalence, whole ACC/PR502 closure or main integration.
+- PR619 is normally reconciled with main `7a74f6e3` at
+  `c5fc3c57c05a4f94e8513ec86ed197818f2ac668`, tree
+  `998aee8ef4c7b18e2ed973318133d3c7badd1dce`, preserving reviewed `8330e468`
+  as its other parent. The [fresh assessment](loop-reconciled-source-applicability.md)
+  verifies exact precomputed tree identity, current-main ancestry, full reviewed
+  C7/evidence bytes, 1087 definitions/30 loops and the original three-path main
+  delta. Boundary 6/11, docs/roadmap and whitespace pass. Read-only preflight
+  now passes ancestry/expected identities but NOT clean-worktree/all-pass because
+  the same lint cache remains untracked. No cleanup/exclusion/alternate checkout
+  or main merge occurred. Fresh independent composition disposition, current-
+  head CI and coordinator integration/preflight remain separate pending gates.
+- Exact PR623 `c5e9fccd` source-only PASS is consumed, receipt SHA256
+  `94f70e5279164d8f10ddcced4d0bc8301bc59c2e9c9a30e04259101890e01a86`.
+  [Receipt/input verification](list-construction-review-consumption.edn) covers
+  its tree and seven source/test/census hashes, 4 reader tests/167 assertions
+  and nine refused altered-source controls. Three header ceilings, derive/step
+  and caller migrations preserve newer native/exact guards and all semantic
+  negatives. Genuine owner kernels, current-main composition and integration
+  remain open; no full accounting or PR502 credit follows.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
