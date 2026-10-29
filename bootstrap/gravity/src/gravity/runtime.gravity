@@ -257,7 +257,9 @@
 (defn p15-s23-runtime-initializer-type? [definition instruction]
   ; Module census first validates this immutable initializer IR and its
   ; semantic constructor occurrences; this join checks the declared root type.
-  (let [type (get definition :type) kind (if (map? type) (get type :kind) type)
+  (if (= :passed (get (hosted-native-data-preflight definition) :status))
+    (if (= :passed (get (hosted-native-data-preflight instruction) :status))
+      (let [type (get definition :type) kind (if (map? type) (get type :kind) type)
         op (get instruction :op) value (get instruction :value)]
     (if (= :gravity.type/vector kind) (if (= :vector-literal op) true (if (= :quote op) (vector? value) false))
     (if (= :gravity.type/map kind) (if (= :map-literal op) true (if (= :quote op) (map? value) false))
@@ -268,7 +270,7 @@
           (if (if (map? type) (if (= 3 (count type))
                 (if (contains? type :kind) (if (contains? type :shape) (contains? type :element-types) false) false) false) false)
             (if (if (= :literal (get type :shape)) (if (vector? members) (vector? items) false) false)
-              (if (if (= (count members) (count items)) (<= (count items) 1024) false)
+              (if (= (count members) (count items))
                 (if (= 0 (count members)) true
                   (let [value (get (get items 0) :value)
                         expected (if (string? value) :gravity.type/string (if (keyword? value) :gravity.type/keyword nil))]
@@ -286,7 +288,8 @@
         (if (= :gravity.type/character kind)
           (if (char? value) true
             (if (map? value) (if (= :gravity/unicode-scalar-character (get value :artifact))
-                              (= true (p15-s23-runtime-atomic-equality value value)) false) false)) false))))))) false)))))))
+                              (= true (p15-s23-runtime-atomic-equality value value)) false) false)) false))))))) false))))))
+      false) false))
 
 (defn p15-s23-runtime-function-valid? [function arity]
   (if (map? function)
@@ -1231,150 +1234,82 @@
   (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
     (if (= :accepted (get result :status)) (get result :value) :unsupported)))
 
-(defn p15-s23-runtime-keyword-set-construction-work [input budget]
-  ; Logical selected-JVM content reservation, not a provider CPU bound.
-  ; Freeze one supported literal family before equality or host insertion.
-  ; Integer leaf units establish no precision, CPU or heap bound; no formatting is used.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [limit (if (< budget 65536) budget 65536)]
+(defn runtime-construct-scalar-set [input]
+  ; Validate original native DATA and every member before equality or insertion.
+  (let [native (hosted-native-data-preflight input)]
+    (if (= :passed (get native :status))
       (if (vector? input)
-        (let [n (count input)]
-          (if (if (< n 0) true (> n 1024)) {:status :rejected :reason :set-literal-value-width :work-count 1 :comparison-attempts 0 :insertions 0}
-            (let [base (+ 1 (* 2 n))]
-              (if (> base limit)
-                {:status :rejected :reason :set-literal-work-limit :work-count base :work-count-kind :validation-reservation
-                 :comparison-attempts 0 :insertions 0}
-                (let [strings? (if (> n 0) (string? (get input 0)) false)
-                      integers? (if (> n 0) (integer? (get input 0)) false)
-                      domain-reason (if integers? :set-literal-integer-domain-required (if strings? :set-literal-string-domain-required :set-literal-keyword-domain-required))
-                      checked (loop [i 0 values []]
-                                (if (= i n) {:status :accepted :values values}
-                                  (let [value (get input i)]
-                                    (if (if integers? (integer? value) (if strings? (string? value) (keyword? value))) (recur (+ i 1) (conj values value))
-                                      {:status :rejected :reason domain-reason}))))]
-                  (if (= false (= :accepted (get checked :status)))
-                    (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0 :insertions 0)
-                    (let [values (get checked :values)
-                          measured (loop [i 0 units 0]
-                                     (if (= i n) {:status :accepted :units units}
-                                       (let [size (if integers? 1 (if strings? (count (get values i)) (count (str (get values i)))))]
-                                         (if (> size (- limit units))
-                                           {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                                            :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                                           (recur (+ i 1) (+ units size))))))]
-                      (if (= false (= :accepted (get measured :status))) measured
-                        (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
-                              a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
-                          (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
-                            {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                             :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                            (let [pairs (* a b) remaining (- limit base pairs)]
-                              (if (> units (quot remaining (+ n 1)))
-                                {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                                 :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                                (let [work (+ base pairs (* (+ n 1) units))
-                                      distinct (loop [i 0 attempts 0]
-                                                 (if (= i n) {:status :accepted :comparison-attempts attempts}
-                                                   (let [checked (loop [j (+ i 1) used attempts]
-                                                                   (if (= j n) {:status :accepted :comparison-attempts used}
-                                                                     (let [left (get values i) right (get values j)]
-                                                                       (if (if strings? (if (string? left) (string? right) false)
-                                                                                 (if integers? (if (integer? left) (integer? right) false)
-                                                                                 (if (keyword? left) (keyword? right) false)))
-                                                                         (let [equal (p15-s23-runtime-atomic-equality left right) next-attempt (+ used 1)]
-                                                                           (if (= false equal) (recur (+ j 1) next-attempt)
-                                                                             {:status :rejected :reason (if integers? :duplicate-set-literal-integer (if strings? :duplicate-set-literal-string :duplicate-set-literal-keyword)) :comparison-attempts next-attempt}))
-                                                                         {:status :rejected :reason domain-reason :comparison-attempts used}))))]
-                                                     (if (= :accepted (get checked :status))
-                                                       (recur (+ i 1) (get checked :comparison-attempts)) checked))))
-                                      result (if (= :accepted (get distinct :status))
-                                               {:status :accepted :value (loop [i 0 out #{}]
-                                                                         (if (= i n) out (recur (+ i 1) (conj out (get values i)))))
-                                                :comparison-attempts (get distinct :comparison-attempts) :insertions n}
-                                               (assoc distinct :insertions 0))
-                                      result (if integers? (assoc result :precision-bound :not-established :provider-heap-bound :not-established) result)]
-                                  (assoc result :work-count work :work-count-kind :exact-logical-content-reservation
-                                    :input-element-count n :representation-units units :representation (if integers? :original-integer-values :jvm-utf16-code-units)
-                                    :value-work-model (if integers? :gravity/literal-integer-set-logical-leaf-work-v1
-                                                       (if strings? :gravity/literal-string-set-logical-content-work-v1
-                                                         :gravity/literal-keyword-set-logical-content-work-v1))
-                                    :provider-cpu-bound :not-established))))))))))))))
-        {:status :rejected :reason :set-literal-keyword-domain-required :work-count 0 :comparison-attempts 0 :insertions 0}))
-    {:status :rejected :reason :set-literal-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
+        (let [n (count input) strings? (string? (get input 0)) integers? (integer? (get input 0))
+              reason (if integers? :set-literal-integer-domain-required
+                       (if strings? :set-literal-string-domain-required :set-literal-keyword-domain-required))
+              checked (loop [i 0]
+                        (if (= i n) true
+                          (if (if integers? (integer? (get input i))
+                                (if strings? (string? (get input i)) (keyword? (get input i))))
+                            (recur (+ i 1)) false)))]
+          (if checked
+            (let [distinct (loop [i 0 attempts 0]
+                             (if (= i n) {:status :accepted :comparison-attempts attempts}
+                               (let [pair (loop [j (+ i 1) used attempts]
+                                            (if (= j n) {:status :accepted :comparison-attempts used}
+                                              (if (= false (p15-s23-runtime-atomic-equality (get input i) (get input j)))
+                                                (recur (+ j 1) (+ used 1))
+                                                {:status :rejected :reason (if integers? :duplicate-set-literal-integer
+                                                                            (if strings? :duplicate-set-literal-string :duplicate-set-literal-keyword))
+                                                 :comparison-attempts (+ used 1)})))]
+                                 (if (= :accepted (get pair :status))
+                                   (recur (+ i 1) (get pair :comparison-attempts)) pair))))]
+              (if (= :accepted (get distinct :status))
+                {:status :accepted :value (loop [i 0 out #{}]
+                                           (if (= i n) out (recur (+ i 1) (conj out (get input i)))))
+                 :input-element-count n :comparison-attempts (get distinct :comparison-attempts) :insertions n}
+                (assoc distinct :insertions 0)))
+            {:status :rejected :reason reason :comparison-attempts 0 :insertions 0}))
+        {:status :rejected :reason :set-literal-keyword-domain-required :comparison-attempts 0 :insertions 0})
+      {:status :rejected :reason :set-literal-native-data-required :native-reason (get native :reason)
+       :comparison-attempts 0 :insertions 0})))
 
-(defn p15-s23-runtime-character-set-construction-work [input budget]
-  ; Logical selected-JVM content reservation, not a provider CPU bound.
-  ; Freeze Character values before comparing them or inserting into a host Set.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [limit (if (< budget 65536) budget 65536)]
+(defn runtime-construct-character-set [input]
+  (let [native (hosted-native-data-preflight input)]
+    (if (= :passed (get native :status))
       (if (vector? input)
-        (let [n (count input)]
-          (if (if (< n 0) true (> n 1024)) {:status :rejected :reason :set-literal-value-width :work-count 1 :comparison-attempts 0 :insertions 0}
-            (let [base (+ 1 (* 2 n))]
-              (if (> base limit)
-                {:status :rejected :reason :set-literal-work-limit :work-count base :work-count-kind :validation-reservation
-                 :comparison-attempts 0 :insertions 0}
-                (let [checked (loop [i 0 values []]
-                                (if (= i n) {:status :accepted :values values}
-                                  (let [value (get input i)]
-                                    (if (if (char? value) true
-    (if (map? value)
-      (if (if (= 4 (count value))
-            (loop [fields (keys value)]
-              (if (= 0 (count fields)) true
-                (if (keyword? (first fields)) (recur (rest fields)) false))) false)
-        (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
-          (if (= :gravity/unicode-scalar-character (get value :artifact))
-            (if (= 1 (get value :schema-version))
-              (if (integer? (get value :codepoint))
-                (if (<= 65536 (get value :codepoint) 1114111)
-                  (if (string? (get value :text)) (= 2 (count (get value :text))) false) false) false) false) false) false) false) false)) (recur (+ i 1) (conj values value))
-                                      {:status :rejected :reason :set-literal-character-domain-required}))))]
-                  (if (= false (= :accepted (get checked :status)))
-                    (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0 :insertions 0)
-                    (let [values (get checked :values)
-                          measured (loop [i 0 units 0]
-                                     (if (= i n) {:status :accepted :units units}
-                                       (let [size (if (char? (get values i)) 1 2)]
-                                         (if (> size (- limit units))
-                                           {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                                            :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                                           (recur (+ i 1) (+ units size))))))]
-                      (if (= false (= :accepted (get measured :status))) measured
-                        (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
-                              a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
-                          (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
-                            {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                             :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                            (let [pairs (* a b) remaining (- limit base pairs)]
-                              (if (> units (quot remaining (+ n 1)))
-                                {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
-                                 :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
-                                (let [work (+ base pairs (* (+ n 1) units))
-                                      distinct (loop [i 0 attempts 0]
-                                                 (if (= i n) {:status :accepted :comparison-attempts attempts}
-                                                   (let [checked (loop [j (+ i 1) used attempts]
-                                                                   (if (= j n) {:status :accepted :comparison-attempts used}
-                                                                     (let [left (get values i) right (get values j)]
-                                                                       (if true
-                                                                         (let [equal (p15-s23-runtime-atomic-equality left right) next-attempt (+ used 1)]
-                                                                           (if (= false equal) (recur (+ j 1) next-attempt)
-                                                                             {:status :rejected :reason :duplicate-set-literal-character :comparison-attempts next-attempt}))
-                                                                         {:status :rejected :reason :set-literal-character-domain-required :comparison-attempts used}))))]
-                                                     (if (= :accepted (get checked :status))
-                                                       (recur (+ i 1) (get checked :comparison-attempts)) checked))))
-                                      result (if (= :accepted (get distinct :status))
-                                               {:status :accepted :value (loop [i 0 out #{}]
-                                                                         (if (= i n) out (recur (+ i 1) (conj out (get values i)))))
-                                                :comparison-attempts (get distinct :comparison-attempts) :insertions n}
-                                               (assoc distinct :insertions 0))]
-                                  (assoc result :work-count work :work-count-kind :exact-logical-content-reservation
-                                    :input-element-count n :representation-units units :representation :jvm-utf16-code-units
-                                    :value-work-model :gravity/literal-character-set-logical-content-work-v1
-                                    :character-premise :existing-atomic-character-ir-values :source-decoding :c2-owned
-                                    :provider-cpu-bound :not-established))))))))))))))
-        {:status :rejected :reason :set-literal-character-domain-required :work-count 0 :comparison-attempts 0 :insertions 0}))
-    {:status :rejected :reason :set-literal-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
+        (let [n (count input)
+              checked (loop [i 0]
+                        (if (= i n) true
+                          (let [value (get input i)]
+                            (if (if (char? value) true
+                                  (if (map? value)
+                                    (if (if (= 4 (count value))
+                                          (loop [fields (keys value)]
+                                            (if (= 0 (count fields)) true
+                                              (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                                      (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                        (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                          (if (= 1 (get value :schema-version))
+                                            (if (integer? (get value :codepoint))
+                                              (if (<= 65536 (get value :codepoint) 1114111)
+                                                (if (string? (get value :text)) (= 2 (count (get value :text))) false) false) false) false) false) false) false) false))
+                              (recur (+ i 1)) false))))]
+          (if checked
+            (let [distinct (loop [i 0 attempts 0]
+                             (if (= i n) {:status :accepted :comparison-attempts attempts}
+                               (let [pair (loop [j (+ i 1) used attempts]
+                                            (if (= j n) {:status :accepted :comparison-attempts used}
+                                              (if (= false (p15-s23-runtime-atomic-equality (get input i) (get input j)))
+                                                (recur (+ j 1) (+ used 1))
+                                                {:status :rejected :reason :duplicate-set-literal-character :comparison-attempts (+ used 1)})))]
+                                 (if (= :accepted (get pair :status))
+                                   (recur (+ i 1) (get pair :comparison-attempts)) pair))))]
+              (if (= :accepted (get distinct :status))
+                {:status :accepted :value (loop [i 0 out #{}]
+                                           (if (= i n) out (recur (+ i 1) (conj out (get input i)))))
+                 :input-element-count n :comparison-attempts (get distinct :comparison-attempts) :insertions n
+                 :character-premise :existing-atomic-character-ir-values :source-decoding :c2-owned}
+                (assoc distinct :insertions 0)))
+            {:status :rejected :reason :set-literal-character-domain-required :comparison-attempts 0 :insertions 0}))
+        {:status :rejected :reason :set-literal-character-domain-required :comparison-attempts 0 :insertions 0})
+      {:status :rejected :reason :set-literal-native-data-required :native-reason (get native :reason)
+       :comparison-attempts 0 :insertions 0})))
 
 (defn p15-s23-runtime-keyword-vector-set-work [input budget]
   ; Logical selected-JVM content reservation, not a provider CPU bound.
@@ -1572,8 +1507,8 @@
                                 (if (map? (get entry :value)) (recur (rest remaining) (conj seen (get key :value))) false)) false) false) false)))) false) false) false)
           (if (= operation :set-literal)
             (if (= fields #{:op :items})
-              (if (vector? (get instruction :items))
-                (if (<= (count (get instruction :items)) 1024)
+              (if (= :passed (get (hosted-native-data-preflight instruction) :status))
+                (if (vector? (get instruction :items))
                   (loop [remaining (get instruction :items) family nil]
                     (if (= 0 (count remaining)) true
                       (let [item (first remaining)]
@@ -1743,14 +1678,14 @@
         (if (= :normal (get arguments 2))
           (let [values (first arguments) first-value (first values)
                 constructed (if (string? first-value)
-                              (p15-s23-runtime-keyword-set-construction-work values 65536)
+                              (runtime-construct-scalar-set values)
                               (if (if (char? first-value) true (map? first-value))
-                                (p15-s23-runtime-character-set-construction-work values 65536)
-                                (p15-s23-runtime-keyword-set-construction-work values 65536)))]
+                                (runtime-construct-character-set values)
+                                (runtime-construct-scalar-set values)))]
             (if (= :accepted (get constructed :status))
               [(get constructed :value) (second arguments) :normal]
               [{:diagnostic "P15S23X002" :reason (get constructed :reason) :operation operation
-                :work-count (get constructed :work-count) :work-count-kind (get constructed :work-count-kind)}
+                :native-reason (get constructed :native-reason)}
                (second arguments) :rejected])) arguments))
     (if (= operation :vector-literal)
       (p15-s23-runtime-evaluate-arguments-in-context (get instruction :items) environment output [] functions path [] pool)

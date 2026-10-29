@@ -13,7 +13,7 @@ including implemented work whose required acceptance has not completed.
 | ACC-06 | C7 `lc-validate-types`, `lc-type-work`, construction helpers; Effects/emitter `lc/pl/lr-type-work` | ACC-02 release | Work/depth/width admission removed with complete nested type, Never, parity and late malformed/opaque validation |
 | ACC-07 | C7 `ft-effective-work-policy`, `ft-invalid-work-policy`, `ft-work-allowance`, `ft-infer-acyclic-with-context`, `ft-inference-round-bound`, `ft-infer-pass-products-prepared`, public work-policy entrypoints | ACC-02 release; ACC-01 call graph | Remove allowances/debits/reservations and policy API premises; preserve fixed-point/cycle/conflict semantics and genuine fresh result verification |
 | ACC-08 | C7 module products; Effects `body-analyze-module` and imports; emitter `typed-compile-node` | ACC-03/05/06/07 as interfaces require | Remove module/profile-validation work and cumulative pools coherently; genuine complete joins, typed emission, effects/capabilities and tamper rejection |
-| ACC-09 | Runtime initializer validation, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, module census/reads; emitter callers | Module reads merged in PR433 and census/uniqueness in PR444 at `6b2e63b3`, reviewed tree `68609de1`; initializer removal accepted historically at `22898a29`, with Native446 registration/current-main integration pending; ACC-01 | Census allowance/shared initializer pool removal and its metadata integration are complete. Remaining initializer integration, collection/type/runtime-shape policies and exhaustive dispositions stay open; preserve genuine source/type/uniqueness/constructor/callback/collision/Unicode checks; whole-plan foreign ingress and broader acceptance remain open |
+| ACC-09 | Runtime initializer validation, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, module census/reads; emitter callers | Module reads merged in PR433 and census/uniqueness in PR444 at `6b2e63b3`, reviewed tree `68609de1`; initializer `22898a29` and Set literal `8bda620f` accepted historically, with Native446 registration/current-main integration pending; ACC-01 | Census allowance/shared initializer pool removal and its metadata integration are complete. Initializer/Set integration, remaining collection/type/runtime-shape policies and exhaustive dispositions stay open; preserve genuine source/type/uniqueness/constructor/callback/collision/Unicode checks; whole-plan foreign ingress and broader acceptance remain open |
 | ACC-10 | Existing MIR PR378/421 and Native PR383/parameter paths | Existing owners; shared codec resolution | Exact producer/consumer removal acceptance, genuine source replay and negative controls, independently reviewed current-main integration; helper passes alone insufficient |
 | ACC-11 | Existing PR370 optimization/lowering owners and consumers | Existing PR370 owner | Actual opt/lower composition, source/fact/profile/safety preservation, independent review and current-main integration |
 | ACC-12 | Accounting-only tests/docs/schema premises and final main reconciliation | Every other applicable ACC item | No current accounting requirement or orphan producer/consumer field, reviewed exhaustive dispositions, current-main regression/integration receipts and explicit restricted boundaries |
@@ -777,3 +777,23 @@ runtime policy, PMK and ANE still require their own coherent migrations and
 acceptance. DSE and the separate historical mode operation remain unresolved.
 This finite integration does not establish authenticated-source, runtime, Core,
 C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.
+## ACC-09 runtime Set literal increment
+
+The separate successor `8bda620f` removes the two literal constructor budgets,
+their caller debits and width/content refusals, the Set instruction width check,
+and the root Set type width check. Both constructors and every caller migrate
+to one-argument semantic interfaces. Original native DATA checks precede vector
+traversal; the type join checks its actual definition and instruction operands
+separately. Full member validation, duplicate rejection, actual comparison/
+insertion observations and input extents remain. The runtime root initializer
+domain remains String/Keyword; direct literal construction supports the existing
+Integer/String/Keyword/Character domains.
+
+This is direct closed-IR runtime acceptance. ACC-08 still owns the typed Set leaf
+and shared lowering pool; a runtime success does not establish widened typed
+source admission. Conversion intentionally deduplicates and remains a separate
+ACC-09 family, as do membership, insertion and equality policies. Whole-plan
+early header ingress, authenticated/public runtime and release remain open.
+The original PR450 candidate and its evidence remain unchanged. Native API
+registration and current-main integration are pending dependencies, not inferred
+from this successor's local test result. No ACC checkbox closes for this unit.

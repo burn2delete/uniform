@@ -2138,3 +2138,99 @@ bookends and complete cleanup. This is separate evidence, not a summed count.
 | Runtime source | `fb1bcb794a2e379bf06e4f4a8438ee7921178501c80f0139723c33085ce55e7a` |
 | Census/initializer tests | `959fcb92e2449a1f18e9358e474798f6659d963a7bf1aa57d6dad8b0e3b71e75` |
 | Runtime caller tests | `42457123388ccba3e724e613315f33220912eeb150a0e56dfe6870646137d584` |
+
+## Runtime Set literal construction successor
+
+This successor preserves the separate initializer candidate PR450. Its frozen
+baseline is `97a525851f528544d390ee9daebbbdbdc2c9bdc0`, tree
+`c0ef20fa13115e68d2a2dfdedfac5b39a7e43ac2`, a normal composition of current
+main `3bf69cbcd16be840fac8e687adfcf8e52b65696e`, the unchanged Native API
+dependency PR446, and the initializer consumer. Neither dependency is granted
+integration acceptance by this local successor.
+
+### Actual old-family baseline
+
+An independently reviewed read-only diagnostic exited naturally with code 0 in
+8935 ms on exact clean bookends. All four small literal domains, the empty
+family, direct Character-empty construction and equivalent Unicode scalar
+duplicates exercised actual constructor and closed-IR dispatch paths. Small
+positive outputs matched the entire expected Set; duplicate construction made
+zero insertions. At 1030 members, every direct constructor returned the exact
+width refusal while actual dispatch returned the instruction-shape rejection.
+80000-unit String/Keyword members hit the independent content-work refusal.
+Native definition DATA with 1030 positional types passed representation checking
+while the old root-type join still returned false.
+
+A bounded foreign type-map fixture established a distinct ingress dependency:
+the old type join accepted it while invoking three lookups, one count and three
+membership callbacks. Checking the same definition as inert quoted DATA through
+the existing native boundary rejected it with zero callbacks. That observation
+establishes a representation boundary, not type authority. Preflighting only the
+initializer instruction would not protect the separate definition/type operand.
+
+The diagnostic requested 2 GiB and the existing 120-second watchdog; it did not
+record the actual heap. Stdout was complete at 3260 bytes, stderr empty, cleanup
+complete and the process dead. Independent retained-record review accepted this
+baseline. Separate fixture controls passed 1 test/10 assertions without a compiler
+or provider run. These are separate scopes and counts.
+
+### Coherent runtime producer/consumer change
+
+Candidate `8bda620fcd30866fc3618c78a71257dc24fb5ebf`, tree
+`e929c2c389aa6d6e66bba48a185d5e9f825e8280`, changes exactly three runtime/test
+paths. `runtime-construct-scalar-set [input]` and
+`runtime-construct-character-set [input]` replace both old budget APIs. Their
+first operation validates the original native DATA, followed by complete member
+domain validation before equality or insertion. All width/content allowances,
+pair reservations, budget arguments, work-model/provider-cost fields and caller
+debits disappear. Input extents, actual comparison observations, insertion
+counts and semantic duplicate reasons remain; none governs an allowance.
+
+The root type join independently checks the original definition and instruction
+before reading their fields. The Set instruction branch checks original IR
+before reading its item vector. This explicitly rejects foreign/cyclic DATA and
+metadata at these interfaces; it is not preserved arbitrary foreign admission.
+Earlier generic whole-plan header reads remain outside this finite claim.
+
+Every tracked constructor caller, runtime arity inventory and budget-only test
+expectation migrates together. String hash collisions and distinct Unicode
+spellings, Keyword namespace/name collisions, Integer equality without formatting,
+Character duplicate-codepoint semantics, the existing C2-owned atomic Character
+IR premise, quote DATA, invalid side-effecting operands and source/type/constructor
+checks survive. The existing Character IR convention is not expanded into a
+source-decoding claim. Root Set initializer support remains String/Keyword only.
+
+Independent exact-source review accepted the finite candidate and its test plan.
+The actual batch passed 22 tests/1234 assertions with zero failures or errors:
+seven census/initializer tests, nine runtime caller kernels and six language
+tests. It exited naturally with code 0 in 113865 ms, observed heap 2147483648,
+with unchanged 120-second watchdog and resource guards. Complete stdout was
+2964 bytes; complete stderr was 379 bytes, only the existing controlled native
+cycle fixture warning. No VM flags changed. Bookends were exact and clean;
+cleanup completed with no live child. Retained-result independent review is
+recorded separately from execution; the reviewer did not rerun semantic tests.
+
+Coverage includes full 1030-member results in all four literal domains, direct
+constructor and actual dispatch, complete String/Keyword module execution with
+shared initialized object identity, long-content execution, late bad type/source
+controls, foreign/metadata/cycle/view/type-operand rejection with zero callbacks,
+and no early comparison or insertion after a late opaque member. Broader Set
+conversion, membership, insertion and equality policies remain open. ACC-08's
+typed leaf/shared lowering allowance remains open; no widened typed-source
+positive or public/authenticated runtime acceptance is claimed.
+
+Separate cheap checks on the same candidate passed 11 tests/23 assertions and
+the 2031-file repository LOC gate with maximum 250 physical lines. Native PR446's
+seven implementation/test/document blobs remain unchanged. Registration,
+current-main integration, whole-plan ingress, C12, release and whole accounting
+completion remain pending or unrun. No original receipt is relabelled as a new
+execution and no counts are summed across scopes.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Old Set-family baseline receipt | `c99df07282e1c1867da013c8c3701c86cd29379de98fc8576a484d64b40b97e6` |
+| Runtime Set candidate receipt | `2b2511df880adf45050461c5827c832ed0b5ca10013f46772d0cd8e6e852319b` |
+| Separate cheap checks receipt | `1cadda87688f2a873bec3140eee4564df56747177f6a05609db46249d4ce735c` |
+| Runtime source | `44bae0bd65ca12ca9a9046876e83d286432443ac042141c6d1b00ebb20a0f5d5` |
+| Census/initializer tests | `6bd206f8ced0e43a5a4a2c3d487db146fb19599caa327803879149113d75e97f` |
+| Runtime caller tests | `e54af3b0eb5a1036b27dbb117b6baa0ea142c21f9b6bf9055651cc6b040b255d` |
