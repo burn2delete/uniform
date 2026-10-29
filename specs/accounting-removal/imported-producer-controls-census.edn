@@ -1,0 +1,117 @@
+{:nonclaims
+ [:authenticated-producer-acceptance
+  :whole-import-accounting-removal
+  :transitive-callgraph-equivalence
+  :genuine-compiler-runtime-acceptance
+  :main-acceptance
+  :PR502-closure
+  :release
+  :self-hosting],
+ :integration :UNRUN,
+ :retained-obligations
+ [:memo-request-equality
+  :active-cycle
+  :retained-producer-membership
+  :producer-uniqueness
+  :input-schema-and-vector-shape
+  :requests-4097
+  :native-data-scalar-16777217
+  :finite-data-is-not-authentication],
+ :independent-acceptance :pending,
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :base-file-sha256
+  "f957e3b088efeae70eb4285a34e7e41fd0299608b152e0b4769ce25be72eacb4",
+  :all-production-bytes-unchanged true,
+  :actual-entrypoints
+  [sh08-im-derive
+   sh08-im-producers
+   sh08-im-inputs-check
+   sh08-carrier-preflight],
+  :entrypoint-and-immediate-source-targets
+  [{:name sh08-carrier-preflight,
+    :base-form-sha256
+    "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502",
+    :historical-form-sha256
+    "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502",
+    :historical-form-identical true}
+   {:name sh08-exact-keys?,
+    :base-form-sha256
+    "8d624e29472c453c72fba5212d954d5335918142bb7b50385ced3405adf6f9ff",
+    :historical-form-sha256
+    "8d624e29472c453c72fba5212d954d5335918142bb7b50385ced3405adf6f9ff",
+    :historical-form-identical true}
+   {:name sh08-im-derive,
+    :base-form-sha256
+    "a84544a70f8b451ea92de4146195af85fa912c0635ddd219b0dbc4e91581aa31",
+    :historical-form-sha256
+    "a84544a70f8b451ea92de4146195af85fa912c0635ddd219b0dbc4e91581aa31",
+    :historical-form-identical true}
+   {:name sh08-im-derive-with-allowance,
+    :base-form-sha256
+    "7e8b169ed1fa918ab1fd848c93c8df8d018f52054976a39cb7a58f97713c48c4",
+    :historical-form-sha256
+    "351e0c037d3a704e7f8cf50e1ac223b115019ff445236210f870a5d4f5af0b97",
+    :historical-form-identical false}
+   {:name sh08-im-failure,
+    :base-form-sha256
+    "134a2799bd61fa57b594456476cd900c9b5f46ca2b27bb9acf2747c8f651aeee",
+    :historical-form-sha256
+    "134a2799bd61fa57b594456476cd900c9b5f46ca2b27bb9acf2747c8f651aeee",
+    :historical-form-identical true}
+   {:name sh08-im-inputs-check,
+    :base-form-sha256
+    "e7e357023d15f5ab9b30e94cab68e8ec8bc16346fb225492f54774d9ee2d1afd",
+    :historical-form-sha256
+    "e7e357023d15f5ab9b30e94cab68e8ec8bc16346fb225492f54774d9ee2d1afd",
+    :historical-form-identical true}
+   {:name sh08-im-producers,
+    :base-form-sha256
+    "8c78940be575f9aae787b59d2602c34a0d2c6d720a4600c14a3a2c3d5be4dae5",
+    :historical-form-sha256
+    "8c78940be575f9aae787b59d2602c34a0d2c6d720a4600c14a3a2c3d5be4dae5",
+    :historical-form-identical true}
+   {:name sh08-im-producers-with-allowance,
+    :base-form-sha256
+    "dfed1af3b1443f06cdfdab03eaa4a577b87a382130fe02d485b6e6cdff0690d2",
+    :historical-form-sha256
+    "dfed1af3b1443f06cdfdab03eaa4a577b87a382130fe02d485b6e6cdff0690d2",
+    :historical-form-identical true}
+   {:name sh08-vf-original-data,
+    :base-form-sha256
+    "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+    :historical-form-sha256
+    "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+    :historical-form-identical true}],
+  :whole-callgraph-proof false},
+ :kind :original-imported-producer-controls,
+ :parent-acceptance-inherited false,
+ :generator
+ {:language :clojure,
+  :sha256
+  "8665799ff07caeb1e28446d395cab0f71b4136f785fdd9525f58b4dcc1183fc1",
+  :preserved-locally true},
+ :base-tree "c8600e2c52f4ba47f1366fae4035248d23365623",
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-checks :passed,
+  :genuine-execution :UNRUN},
+ :base "3a1a553dbb1b3eb0ae472f5bf806171c02a71109",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :test
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :name sh08-imported-producer-validation-development-kernel,
+  :base-file-sha256
+  "4b86b518d90227dd24c20abd013d8b78a2b8bc6f4a5678327976a67b10cdc444",
+  :candidate-file-sha256
+  "285718db34abcb07449ffb7b144ff29afa7dfa123097b54735b8104e4ce267e6",
+  :raw-original-span-sha256
+  "e37b2ccc6157b1d46b5e729af379f6e31dd5b42268532eee476dc4d99941ca31",
+  :complete-form-sha256
+  "f275f8938e31794d8e8299d3b2bc9f41497f7078481fb9ff97311a14fb584f74",
+  :raw-byte-identical true,
+  :all-prior-bytes-unchanged true},
+ :owner :ACC-01}

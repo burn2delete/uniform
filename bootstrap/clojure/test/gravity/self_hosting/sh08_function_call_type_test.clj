@@ -23836,3 +23836,36 @@
     (is (not (contains? cold :quote-work-count)))
     (doseq [value [nil 0 1 97]]
       (is (= cold (invoke-c7 'sh08-is-cold-evidence [(assoc input :quoted-products {:work-count value})]))))))
+
+(deftest sh08-imported-producer-validation-development-kernel
+  ;; Invocation-local state is not public authentication authority.
+  (let [id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        c5 {:artifact-id module-id}
+        request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
+        memo {id {:request request :result {:status :accepted}}}]
+    (is (= {:status :accepted} (:result (invoke-c7 'sh08-im-derive [request memo {}]))))
+    (is (= :substituted-module-type-request
+           (get-in (invoke-c7 'sh08-im-derive [(assoc request :extra true) memo {}]) [:result :diagnostics 0 :reason])))
+    (is (= :cyclic-module-type-request
+           (get-in (invoke-c7 'sh08-im-derive [request {} {id true}]) [:result :diagnostics 0 :reason])))
+    (is (= :undeclared-module-type-producer (:reason (invoke-c7 'sh08-im-producers [[request] memo {} []]))))
+    (is (= :undeclared-module-type-producer
+           (:reason (invoke-c7 'sh08-im-producers [[request] memo {} [(assoc c5 :forged true)]]))))
+    (is (= :duplicate-or-invalid-module-type-producer
+           (:reason (invoke-c7 'sh08-im-producers [[request request] memo {} [c5]]))))
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-im-inputs-check
+                      [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
+                        :module-requests (vec (repeat 4097 request))}]))))
+    (doseq [inputs [{:artifact :gravity/sh08-module-type-inputs :schema-version 2 :module-requests []}
+                    {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests '()}
+                    {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [] :forged true}]]
+      (is (= :malformed-module-type-inputs (:reason (invoke-c7 'sh08-im-inputs-check [inputs])))))
+    (let [duplicated-proof (String. (char-array 16777217 \x))
+          supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
+                    :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
+      ;; Finite DATA does not establish a producer's authenticated source.
+      (is (= {:status :accepted} (invoke-c7 'sh08-carrier-preflight [supplied])))
+      (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
+      (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
