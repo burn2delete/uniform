@@ -439,3 +439,12 @@ interfaces and unknown-ID rejection. Other affected tests passed: Compiler API
 All six generated projections, boundary 6 / 11, both document validators and
 whitespace checks passed. The frozen 75-mapping review at `1f38064e` remains
 independent of this later candidate; neither batch has been promoted here.
+
+The first SH successor check failed four assertions because its Build source
+selector stopped at the older Foundation composition. The follow-up selects
+the explicitly declared Domains successor, verifies its exact source pin and
+bytes, and reconstructs the complete Build file from the guarded predecessor
+plus the one declared additive operation. The original PKG5 fixture hashes,
+five-task lineage and review-history checks remain. The corrected SH suite
+passed 11 tests / 345 assertions; boundary passed 6 / 11. The failed check
+remains recorded here and does not confer acceptance.
