@@ -148493,8 +148493,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/change-review",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -152405,8 +152415,18 @@
     "GOV1 accountable change and GOV2 compatibility/migration evidence; GOV4 emergency authorization where applicable; GOV7 experiment closure when relevant; GOV3/STD20 library owner supplies export stability, compatibility reports and signed provenance; affected compiler/docs/package/migration/test/release owners produce actual consumer conformance and retained tests. The accountable lifecycle record does not substitute for their implementations.",
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/deprecation-removal",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -153305,8 +153325,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/experiment-lifecycle",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -154485,8 +154515,18 @@
     "Experiment lifecycle producer supplies owned state/expiry/rollback and reviewed extension/exit; library-admission supplies module/export stability metadata; actual compiler/package/build owners supply opt-in artifact and on/off conformance results; GOV2 compatibility-safe isolation and relevant GOV4/GOV9/GOV10 exposure decisions remain separately produced inputs. The governance checker consumes these artifacts and does not implement all downstream compilers or package tools.",
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/experimental-use-admission",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -155307,8 +155347,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/library-admission",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -157538,8 +157588,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/namespace-decision",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -158245,8 +158305,18 @@
        :start-byte 27239},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/package-policy-consumption",
     :task-links
     [{:path "specs/build-workflow/tasks.md",
@@ -158508,8 +158578,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/registry-release-admission",
     :task-links
     [{:path "specs/build-workflow/tasks.md",
@@ -159828,8 +159908,18 @@
        :start-byte 27239},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/registry-yank",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -160244,8 +160334,18 @@
        :start-byte 705},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/rfc-review",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -162668,8 +162768,18 @@
        :start-byte 591},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/security-response",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -163422,8 +163532,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/security-review",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -165549,8 +165669,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/stabilization-decision",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",
@@ -166650,8 +166780,18 @@
        :start-byte 758},
       :task-completion-prerequisite false}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+     :sha256
+     "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+     :independent-receipt-sha256
+     "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+     :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+     :scope :exact14-current-source-composition-joins},
     :semantic-source-id "governance/target-support-admission",
     :task-links
     [{:path "specs/evolution-workflow/tasks.md",

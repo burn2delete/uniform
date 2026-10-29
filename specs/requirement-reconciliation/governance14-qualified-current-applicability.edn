@@ -1,0 +1,1329 @@
+{:all-original-documents-unchanged 240,
+ :reviewer-tooling-platform-predicates
+ :no-new-independent-semantic-acceptance,
+ :performance-ai17-semantics :not-reviewed,
+ :assigned-ids
+ ["interface/governance/change-review"
+  "interface/governance/deprecation-removal"
+  "interface/governance/experiment-lifecycle"
+  "interface/governance/experimental-use-admission"
+  "interface/governance/library-admission"
+  "interface/governance/namespace-decision"
+  "interface/governance/package-policy-consumption"
+  "interface/governance/registry-release-admission"
+  "interface/governance/registry-yank"
+  "interface/governance/rfc-review"
+  "interface/governance/security-response"
+  "interface/governance/security-review"
+  "interface/governance/stabilization-decision"
+  "interface/governance/target-support-admission"],
+ :later-field-appends-inverted 8,
+ :independent-receipt-sha256
+ "67b11a2a6843981709ff412f6d10372916e134662166cc767a612ad7f5c598a3",
+ :task-plan-paths
+ ["specs/compiler-api-workflow/tasks.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/reader-workflow/tasks.md"
+  "specs/reader-workflow/plan.md"
+  "specs/syntax-workflow/tasks.md"
+  "specs/syntax-workflow/plan.md"
+  "specs/expand-workflow/tasks.md"
+  "specs/expand-workflow/plan.md"
+  "specs/resolve-workflow/tasks.md"
+  "specs/resolve-workflow/plan.md"
+  "specs/core-workflow/tasks.md"
+  "specs/core-workflow/plan.md"
+  "specs/types-workflow/tasks.md"
+  "specs/types-workflow/plan.md"
+  "specs/effects-workflow/tasks.md"
+  "specs/effects-workflow/plan.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/legality-workflow/plan.md"
+  "specs/auth-workflow/tasks.md"
+  "specs/auth-workflow/plan.md"
+  "specs/mir-workflow/tasks.md"
+  "specs/mir-workflow/plan.md"
+  "specs/opt-workflow/tasks.md"
+  "specs/opt-workflow/plan.md"
+  "specs/lower-workflow/tasks.md"
+  "specs/lower-workflow/plan.md"
+  "specs/emit-workflow/tasks.md"
+  "specs/emit-workflow/plan.md"
+  "specs/backends-workflow/tasks.md"
+  "specs/backends-workflow/plan.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/runtime-workflow/plan.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/stdlib-workflow/plan.md"
+  "specs/build-workflow/tasks.md"
+  "specs/build-workflow/plan.md"
+  "specs/cli-workflow/tasks.md"
+  "specs/cli-workflow/plan.md"
+  "specs/tools-workflow/tasks.md"
+  "specs/tools-workflow/plan.md"
+  "specs/diag-workflow/tasks.md"
+  "specs/diag-workflow/plan.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/domains-workflow/plan.md"
+  "specs/platform-workflow/tasks.md"
+  "specs/platform-workflow/plan.md"
+  "specs/release-workflow/tasks.md"
+  "specs/release-workflow/plan.md"
+  "specs/evolution-workflow/tasks.md"
+  "specs/evolution-workflow/plan.md"],
+ :bindings
+ [{:id "interface/governance/change-review",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/change-review",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 872,
+       :end-byte 1168,
+       :raw-sha256
+       "89ac75c9a17c65b71a0f4e47c4e341446433f857fb510a160f07624be927be9a"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 1188,
+       :end-byte 13897,
+       :raw-sha256
+       "fc92e497827bc91c976258ff1246fec534473aca7f8482dada7c7264e13b8369"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 15229,
+       :end-byte 15697,
+       :raw-sha256
+       "ef0ecdb14cce228e9232f4a520a57a87c78bd94109d5cb8bf91ccbd615b4bf07"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 15713,
+       :end-byte 16090,
+       :raw-sha256
+       "71fee6a065ffc3c29b3e102a9fce01d45fe55c9fb26e890e2e3bfd3869af555f"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/change-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 19506,
+      :start-byte 705}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/deprecation-removal",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/stabilization-decision",
+     :role
+     :accountable-deprecation-removal-record-producer-and-window-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 49479,
+       :end-byte 51390,
+       :raw-sha256
+       "983639dbeaf7d2900720c58924e85ec765ec25b5aa2512a714f00f13fead1f4e"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 52323,
+       :end-byte 53151,
+       :raw-sha256
+       "0c2c9be334d3665d35effe1a39108762fe7e20079a3ea5276b70dcdb50b154e4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 48986,
+       :end-byte 49459,
+       :raw-sha256
+       "8292d9170e167f8b3109f7265526ea7b533e0bb778cfcd6c54b9a26a3c788eb1"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 51421,
+       :end-byte 52307,
+       :raw-sha256
+       "3d8d2954ce865602a4ea50bbba286e7a1169eec8052b8bd46a7a9eaec97c8560"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/stabilization-decision",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "f236db5992ef5d2c8d665da57c878074c2b613c9f8a42e1042330f2b9ff3cfc1",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 54447,
+      :start-byte 48793}}],
+   :dependency-interfaces []}
+  {:id "interface/governance/experiment-lifecycle",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/experiment-lifecycle",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 19695,
+       :end-byte 20144,
+       :raw-sha256
+       "c18bd419995b88f948c4fce6c6e45fa363d26a351e311e5b9c1b93687b19bcb4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 20164,
+       :end-byte 21603,
+       :raw-sha256
+       "444cd4ece1c976975ada66ea64c1175e80b664cf1a53e86cc2a3f56b232a94b6"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 21634,
+       :end-byte 22505,
+       :raw-sha256
+       "25bb95d668887c837310e4bc505e16a93de67f215704abcaff908b6c70290cba"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 22521,
+       :end-byte 23332,
+       :raw-sha256
+       "6ee9a3c76106cc8d9a072254ef3a68a30ae7f861e108a01aceb1b7682ba8c626"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/experiment-lifecycle",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "19579dfaaf009a32ca3e551f7576466caedc3f0e9fc2b0a4bd3fbc5b39f9dbb5",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 24946,
+      :start-byte 19508}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/experimental-use-admission",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/experiment-lifecycle",
+     :role :experimental-use-admission-checker-and-metadata-consumer,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 20164,
+       :end-byte 21603,
+       :raw-sha256
+       "444cd4ece1c976975ada66ea64c1175e80b664cf1a53e86cc2a3f56b232a94b6"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 22521,
+       :end-byte 23332,
+       :raw-sha256
+       "6ee9a3c76106cc8d9a072254ef3a68a30ae7f861e108a01aceb1b7682ba8c626"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 19695,
+       :end-byte 20144,
+       :raw-sha256
+       "c18bd419995b88f948c4fce6c6e45fa363d26a351e311e5b9c1b93687b19bcb4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/experiment-lifecycle",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 21634,
+       :end-byte 22505,
+       :raw-sha256
+       "25bb95d668887c837310e4bc505e16a93de67f215704abcaff908b6c70290cba"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/experiment-lifecycle",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "19579dfaaf009a32ca3e551f7576466caedc3f0e9fc2b0a4bd3fbc5b39f9dbb5",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 24946,
+      :start-byte 19508}}],
+   :dependency-interfaces []}
+  {:id "interface/governance/library-admission",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/library-admission",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/library-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 25131,
+       :end-byte 25305,
+       :raw-sha256
+       "f22ae2255f399720ece1daa755a5588a5064e1e2e899b29e21af0712932ab7e2"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/library-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 25325,
+       :end-byte 26066,
+       :raw-sha256
+       "8cb55a8d2a52f4f7e4d302476f0a5516bf85c162cc19ccad0281b75eb37f5d78"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/library-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 26097,
+       :end-byte 26519,
+       :raw-sha256
+       "eaf58e677dd1845f5c222ac31b54a66fb64da8809c5c414f0a186fcdca7d36c2"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/library-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 26535,
+       :end-byte 26843,
+       :raw-sha256
+       "1b7312e7fe5cc62efced5e35a15d40a5172444eb7650aba6ddb8b557cc788b6a"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/library-admission",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "2dece797665044aab58377a3a9f7a6578196c3abfb5a843fb27d0f50bc9b0b8b",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 30047,
+      :start-byte 24948}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/namespace-decision",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/namespace-decision",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/namespace-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 30234,
+       :end-byte 30326,
+       :raw-sha256
+       "375ff3f494e7c2464683ebc8fe76ca6bfb9bbe4203fab34195b7e6c0dd59894a"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/namespace-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 30346,
+       :end-byte 30889,
+       :raw-sha256
+       "157c128715c85f100ee53503f1027e1fd6095c9f6cba199bb8b20314b9d467b4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/namespace-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 30920,
+       :end-byte 31324,
+       :raw-sha256
+       "fdd9a566364c1cacf06a04b590c4f04f40e8644f22a21cc5ce3a538321f4c3ae"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/namespace-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 31340,
+       :end-byte 31605,
+       :raw-sha256
+       "b84576bea6c323822dda473174702d89b850a0b4f285679c85ea4e55515f6227"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/namespace-decision",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "e746b7258bc661ab9fb8dbdcac47de1cd2e902bfd0865cc534a83497c94fc5bf",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 32424,
+      :start-byte 30049}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/package-policy-consumption",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :role :policy-admission-checker-and-governance-artifact-consumer,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 949,
+       :end-byte 8834,
+       :raw-sha256
+       "f81b9e0ab2343abf015df8eb2a291f1b4b7eb8c5e6b45391c13eac2020c4962f"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2dc0b02c1293a1d74729a26a0ace983e4e7d4527cc05b3dad62b8c80f0327631",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 15531,
+      :start-byte 591}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :secondary-declared-source-role-interface,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}]}
+  {:id "interface/governance/registry-release-admission",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :policy-admission-checker-and-governance-artifact-consumer,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 27557,
+       :end-byte 44376,
+       :raw-sha256
+       "6c6ba391677469dd30825acf0b6cd1ef3fc4abc1e9d28267ed68256e8501cb9b"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/registry-yank",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/registry-yank",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/registry-yank",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 32599,
+       :end-byte 32761,
+       :raw-sha256
+       "2a592f13c31becd9ec844f6ef9feab506edf01823277008f4ce6d3dce95f054a"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/registry-yank",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 32781,
+       :end-byte 33284,
+       :raw-sha256
+       "f29a094a7a43953bd2cfe86171c36a74a6b5b5ca68a7f93dae2f34eae095040e"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/registry-yank",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 33315,
+       :end-byte 33698,
+       :raw-sha256
+       "3b715726e7ea0f3986199ec6da572ccaab94705595d5c3811d7b7456fd3bcb07"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/registry-yank",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 33714,
+       :end-byte 34005,
+       :raw-sha256
+       "2e7e71cbfb8a383c1d512a05dc184568f5ff112c2300666704230e357734d74a"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/registry-yank",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "4ca4a02ef0b70068ff1ea32fe0d90638f8cb3d90c4eee6db9b30cd7b3677bbe5",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 34135,
+      :start-byte 32426}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :role :secondary-declared-source-role-interface,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2dc0b02c1293a1d74729a26a0ace983e4e7d4527cc05b3dad62b8c80f0327631",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 15531,
+      :start-byte 591}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :secondary-declared-source-role-interface,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}]}
+  {:id "interface/governance/rfc-review",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/rfc-review",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/rfc-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 34304,
+       :end-byte 34497,
+       :raw-sha256
+       "47357e4ee5ec06d73cf08abda0a83373d5448339e35fec01c8c32bd5cd41eac4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/rfc-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 34517,
+       :end-byte 35427,
+       :raw-sha256
+       "662cbe015d5072fb812ceb865190934a7ff615718d876e04e83b4c48c77129f0"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/rfc-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 35458,
+       :end-byte 35987,
+       :raw-sha256
+       "64ce383ea5a347e661357b51a93f872671df5ce18809a64ad43c59eea9aacfa4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/rfc-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 36003,
+       :end-byte 36332,
+       :raw-sha256
+       "fc9a0abf45989189810de04be40f9676aedc5166632290c995c77f2827cebafb"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/rfc-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "d61f7316dbb4c1e8704c4a74c8594a37a65929fe6659768416be754b95796aa4",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 39854,
+      :start-byte 34137}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}
+    {:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/change-review",
+     :role :secondary-declared-source-role-interface,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/change-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 19506,
+      :start-byte 705}}]}
+  {:id "interface/governance/security-response",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/security-response",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-response",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 40038,
+       :end-byte 40223,
+       :raw-sha256
+       "b09e18acdbf848f0ef08a5aaa83999dcf60259e6de9442df08886506a7b52d34"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-response",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 40243,
+       :end-byte 40973,
+       :raw-sha256
+       "8c63ec4d0f5e788b2f7490a37493149da2af6a7b7cb3f4c944e6a7746336ee5c"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-response",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 41004,
+       :end-byte 41440,
+       :raw-sha256
+       "c371f35899645edf6e60097240b034f91f3bd389fff917fb9dde9fc25203e331"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-response",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 41456,
+       :end-byte 41759,
+       :raw-sha256
+       "ad992b8c7440ee88b52b96c31a18b0330dfe24d3328c5ceedfea0b49f4cc20b6"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/security-response",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "ed17bf35315a11476ce68a55cbeb6aec68c9d8b76bad2f9c89e6466aeb904f6e",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 42472,
+      :start-byte 39856}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :role :secondary-declared-source-role-interface,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2dc0b02c1293a1d74729a26a0ace983e4e7d4527cc05b3dad62b8c80f0327631",
+      :marker "build-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 15531,
+      :start-byte 591}}]}
+  {:id "interface/governance/security-review",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/security-review",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 42642,
+       :end-byte 42813,
+       :raw-sha256
+       "29847ba3a3a0c90deb7301f7c0f18a230da29f63c2d4b3bc84ff0ebf327d233a"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 42833,
+       :end-byte 43682,
+       :raw-sha256
+       "9ee76b97371c484c0479cbdb5aba5ed74b036fd31668605ba9709b70c7ebcf06"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 44933,
+       :end-byte 45461,
+       :raw-sha256
+       "4ab71869bdbde0595f272892bba0649868f5df9e8744f52923aaa3a907e55e68"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-review",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 45477,
+       :end-byte 45799,
+       :raw-sha256
+       "5813ebc9b8a3711de8435d8e36ed3d6fcc855a1db4db83a238abb74139138bed"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/security-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 48791,
+      :start-byte 42474}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/stabilization-decision",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/stabilization-decision",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 48986,
+       :end-byte 49459,
+       :raw-sha256
+       "8292d9170e167f8b3109f7265526ea7b533e0bb778cfcd6c54b9a26a3c788eb1"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 49479,
+       :end-byte 51390,
+       :raw-sha256
+       "983639dbeaf7d2900720c58924e85ec765ec25b5aa2512a714f00f13fead1f4e"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 51421,
+       :end-byte 52307,
+       :raw-sha256
+       "3d8d2954ce865602a4ea50bbba286e7a1169eec8052b8bd46a7a9eaec97c8560"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/stabilization-decision",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 52323,
+       :end-byte 53151,
+       :raw-sha256
+       "0c2c9be334d3665d35effe1a39108762fe7e20079a3ea5276b70dcdb50b154e4"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/stabilization-decision",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "f236db5992ef5d2c8d665da57c878074c2b613c9f8a42e1042330f2b9ff3cfc1",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 54447,
+      :start-byte 48793}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/target-support-admission",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/target-support-admission",
+     :role :governance-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/target-support-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 54645,
+       :end-byte 54814,
+       :raw-sha256
+       "106b62e6df418d7d46be8c9097fddf34664d3bd17dda212b9f2a830590ada6c4"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/target-support-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 54834,
+       :end-byte 55680,
+       :raw-sha256
+       "d39b33242f0f9943483e064369990433a7a3520fcdff84b4074dec20a9683e38"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/target-support-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 55711,
+       :end-byte 56194,
+       :raw-sha256
+       "3160226845cf1febb3ce2b72758e682d6ba5769746159ec7801e9c03f87310dc"}
+      {:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/target-support-admission",
+       :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 56210,
+       :end-byte 56565,
+       :raw-sha256
+       "c0753ff4aba77aec6edcb90949d5f6d35263a30747885cfeb5475afb133a72b5"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/target-support-admission",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "3d86587463e05ac891ca247492e4430db7aa0c3171697624abaeaa3875cd3066",
+      :marker "evolution-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 59345,
+      :start-byte 54449}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}],
+ :new-tasks 0,
+ :independent-receipt
+ {:semantic-assessment
+  ["Change and RFC records require substantive lifecycle, affected-contract, compatibility/safety/profile/conformance and implementation links; accepted-for-implementation, implemented and stabilized remain different states. The eleven retained Core clauses are conditional instances of the same source-change producer, not extra tasks or evidence of underlying Core implementation."
+   "Experiment lifecycle and per-use admission preserve explicit opt-in/artifact metadata, owner/scope/profile/default/expiry/rollback, compatibility-safe stable isolation, specialist review, on/off fixtures and reviewed expiry/exit. Export stability is visible to downstream consumers."
+   "Stabilization and deprecation/removal preserve exact surfaces, conformance/negative history, compatibility/security/library review, replacement or explicit rationale, structured diagnostics and schedules, migration, support/tests until removal and explicit GOV4/GOV2 emergency exception. STD20 source/behavior/effect/capability/diagnostic/artifact/profile/conformance dimensions stay explicit."
+   "Library admission preserves owners, export/profile/effect/capability/provider/unsafe metadata, positive/negative conformance, compatibility and signed release provenance; it does not implement the underlying library."
+   "Security review/response preserve actual trust-boundary evidence, secret/taint/capability/unsafe/AI/supply-chain controls, residual risk, embargo/advisory/patch/backport/version/mitigation and compatibility exceptions. No human security decision is selected."
+   "Target support requires actual tier/owner/profile/backend/runtime/debug/package/performance/security evidence and guarded removal. No target tier is selected by this allocation."
+   "Namespace ownership/reservation/transfer/takeover remains accountable policy; Build/Auth mechanics consume that decision. Yank production records reasons/replacement/resolution while retaining locked rebuild identity and explicit emergency policy."
+   "Build selection/install and registry admission consume governance/advisory/namespace/emergency inputs, preserve locks, deny undeclared authority and emit explainable policy or accept/reject/quarantine outcomes. Their broad existing fields supply concrete output entailment; summary wording alone is not treated as a witness."
+   "Governance producers point to Release as a downstream consumer, never as a whole-task prerequisite. Declared artifact inputs remain conditional planning prerequisites; Open interfaces and nil required-output fields do not prove that artifacts or implementation already exist."],
+  :findings [],
+  :assigned-count 14,
+  :canonical-owner "01a18424-d867-7c12-8a04-07484900100c",
+  :tree "3f50a43e51df88cda74c80155d2dbe45225588d8",
+  :counts
+  {:Gov14-decisions 14,
+   :source-memberships 469,
+   :original-source-documents 9,
+   :shared-allocation-operations-conserved 31,
+   :shared-field-appends-reconstructed 10,
+   :historical-bindings-checked 561,
+   :current-decisions 833,
+   :new-task-ids 0},
+  :prior-PerformanceAI17-d8ec0f58
+  {:scope :other17-only, :Gov14-acceptance-inherited false},
+  :assigned-ids
+  ["interface/governance/change-review"
+   "interface/governance/deprecation-removal"
+   "interface/governance/experiment-lifecycle"
+   "interface/governance/experimental-use-admission"
+   "interface/governance/library-admission"
+   "interface/governance/namespace-decision"
+   "interface/governance/package-policy-consumption"
+   "interface/governance/registry-release-admission"
+   "interface/governance/registry-yank"
+   "interface/governance/rfc-review"
+   "interface/governance/security-response"
+   "interface/governance/security-review"
+   "interface/governance/stabilization-decision"
+   "interface/governance/target-support-admission"],
+  :candidate "63284c853d93526cda4ff1e0c94dae2a95831f98",
+  :reviewer-thread "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+  :composition-predecessor "f117fd1e311703cac73dc5fa2359d5b8a98a2db8",
+  :reproduction
+  {"review.clj"
+   "569a71c1d314eb8ffb8f69ff243be5c0456214e9edc5c9471a26164351c1ace3",
+   "review.log"
+   "16630ad97130e5713089c35b9c8042e40f9dee7177f4cacc1ce5a8e21e363afd",
+   "controls.edn"
+   "4de4e9a79aa8486c7058de25e6e6cba93a697a2b40d7da6c2cc7ad6b393a112f"},
+  :schema-version 1,
+  :controls-executed
+  [:stale-predecessor
+   :allocation-replay
+   :duplicate-allocation
+   :stale-task-input
+   :duplicate-field-operation
+   :forged-record-hash
+   :forged-witness-hash
+   :forged-task-id
+   :forged-implementation-state
+   :coherently-rehashed-missing-required-refusal-for-each-of14
+   :reversed-Release-dependency-direction
+   :forged-facet],
+  :conservation
+  {:prior-field-prefixes :preserved,
+   :shared-task-identities-and-status-lines :unchanged,
+   :all833-identities-order-and-open-states :preserved,
+   :historical561-binding-raw-hashes-and-contexts :valid,
+   :context-refinement :original-field-content-reconstructs,
+   :two-unrelated-later-adoptions :not-overwritten,
+   :shared31-payloads :preserved-not-all-accepted,
+   :scoped14-application :no-outside14-record-change,
+   :no-human-policy-choice true,
+   :accepted-historical-manifests :byte-identical},
+  :source-documents
+  {"docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md"
+   "c5e3783328f9a2d32f2f6addf77b6f0b60296ba835e61fa77e88ae0e1839af58",
+   "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md"
+   "72ef40bd9d37c5f6f9eb343e8d2fa32a0657b20f15beacbebb854702de25afa5",
+   "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md"
+   "e859902fb09d5b0ea088580460e91347132049f310094642dece515a9471db1a",
+   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
+   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
+   "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md"
+   "6c644f5923ddf8a425d7e17276d2e9026151ec3ec3cda331874fcaa7577c30b3",
+   "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md"
+   "7904ea5f93378116281c25449f077c6a0d833b2ae5c12aa2d7e7218f3db9ec36",
+   "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md"
+   "3c845abca44819d5453340b5e78b2578f291df041ae903e5f9310678818b4635",
+   "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md"
+   "fbee9634298c30c72c56330c0fcf288e8356f5485e58926bfef9bab87feb78bc",
+   "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md"
+   "b72c7018ed038d81e2b261ef8aa2e2b8eacd0e70f4f47468685d60c68251280e"},
+  :checks {:test 4, :pass 2489, :fail 0, :error 0, :type :summary},
+  :goal-evidence
+  {:create_goal :performed,
+   :get_goal :active-readback,
+   :prior-completed-goals :left-closed},
+  :inputs
+  {"current-decision-allocation-governance-ai31.edn"
+   "17a114476ccfc0ce8f35f7a5c903e365fdf7b2fc8a66c456705fffdce9c1c4e2",
+   "governance-ai31-current-composition.edn"
+   "20ae121c5f777898fad41cd3f63b771666723387e2509794d4b9522fa6d1fdfb",
+   "current-criterion-bindings-561-governance-ai31.edn"
+   "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786",
+   "governance-ai31-context-refinement.edn"
+   "de7b9ad6b0c7f87242f1c58047fe62c0f438ffe118be66cee678d87b65e35109",
+   "source-proposal.edn"
+   "79951c3cc776857b474c4ef5e1912d5f7aea885628ff48264f26d9fd257007b1"},
+  :task-source "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+  :result :pass,
+  :kind :independent-Gov14-exact-source-criterion-review,
+  :next-step
+  "Canonical owner verifies exact receipt and current applicability, reconciles any changed predecessor/field and records scoped Gov14 source-review adoption; no automatic future-composition acceptance.",
+  :authorship-and-reservation
+  {:latest-helper-and-canonical-intake :checked,
+   :other-active-exact-Gov14-review :none-observed,
+   :prior-Core31-review :stopped-for-author-conflict-not-denied,
+   :prior-conflict-receipt-sha256
+   "0e658214c0d090125124a29a6b784b3b1e3efb1ca30d1ba02fc8bce1e0a9b4e2",
+   :own-Tooling65-predicate-overlaps 0,
+   :own-PlatformProduct-suffix-overlaps 0,
+   :own-task-authorities :disjoint,
+   :eleven-Core-predicates :not-authored-by-this-reviewer},
+  :limits
+  [:no-whole-attached-facet-credit
+   :no-implementation-credit
+   :no-task-denominator-credit
+   :no-new-historical-adoption
+   :no-current-canonical-adoption
+   :no-AI17-semantic-acceptance
+   :no-later-Bootstrap-semantic-acceptance
+   :no-canonical-writes
+   :no-runtime-or-probes
+   :no-GitHub-APPROVE
+   :no-denied-action-retry],
+  :current-applicability
+  {:path "current-applicability.edn",
+   :sha256
+   "3b82cfd1ece8fadc520f53bf7dd7d7bd39e63070cd9a2a680807460208019849",
+   :source "094521aa31d03ee1f7c9ccdc3c9c64a3c5571089",
+   :scope :separate-unchanged-Gov14-predicates-only,
+   :later-Bootstrap-appends 8,
+   :later-predicate-acceptance :not-conferred}},
+ :implementation-credit :none,
+ :full-attached-facet-entailment :not-conferred,
+ :scope :only14-reviewed-predicates,
+ :source-memberships 469,
+ :decision-records :all14-unchanged,
+ :source-commit "bd2d96dfe53ec9828437da6b4e5651df5271316b",
+ :later-bootstrap25-predicates :not-reviewed,
+ :kind :exact-governance14-current-source-review-applicability,
+ :later-composition
+ {:path
+  "specs/requirement-reconciliation/bootstrap25-current-composition.edn",
+  :sha256
+  "b0477962a72f09918b3fcd940aab43a12d8f1572893b120cccc72d013129a2d2"},
+ :current-criteria 50}
