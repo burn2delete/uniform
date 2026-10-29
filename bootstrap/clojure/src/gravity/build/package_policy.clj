@@ -36,7 +36,13 @@
   The caller must authorize registry access before obtaining private metadata."
   [{:keys [record locked-records mode policy registry visibility registry-grants
            requested-range constraint-chain profile target]}]
-  (let [access? (and (keyword? registry)
+  (let [record-scope? (fn [value]
+                        (or (not (map? value))
+                            (= registry (:registry value))))
+        access? (and (keyword? registry)
+                     (record-scope? record)
+                     (or (not (vector? locked-records))
+                         (every? record-scope? locked-records))
                      (or (= :public visibility)
                          (and (= :private visibility)
                               (= :read (get registry-grants registry)))))
@@ -100,10 +106,10 @@
                              restricted)]
         (cond
           invalid
-          (assoc report :policy-decision :reject
-                 :diagnostics [(assoc context
-                                      :diagnostic "PACKAGE-POLICY-INPUT"
-                                      :policy-rule invalid)])
+          (assoc base :policy-decision :reject
+                 :diagnostics [{:registry registry
+                                :diagnostic "PACKAGE-POLICY-INPUT"
+                                :policy-rule invalid}])
 
           (seq refused)
           (assoc report :policy-decision :reject

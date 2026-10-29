@@ -84,7 +84,6 @@
                  (dissoc request :mode)
                  (dissoc request :constraint-chain)
                  (assoc request :locked-records nil)
-                 (assoc-in request [:record :registry] :other)
                  (assoc request :mode :historical-rebuild :record true)
                  (assoc request :mode :historical-rebuild :locked-records [true])
                  (update request :record dissoc :signature-status)
@@ -133,3 +132,21 @@
     (is (identical? (:locked-records input) (:locked-records result)))
     (is (= [old record old] (:locked-records result)))
     (is (= record (:record request)))))
+
+(deftest mismatched-registry-and-malformed-input-reports-do-not-echo-metadata
+  (let [private-record (assoc record :registry :private-registry
+                              :package "private/secret"
+                              :private-metadata "private-internal-value")]
+    (doseq [input [(assoc request :record private-record)
+                   (assoc request :locked-records [record private-record])
+                   (assoc request :locked-records {:private private-record})]]
+      (let [result (policy/decide input)
+            encoded (pr-str result)]
+        (is (= :reject (:policy-decision result)))
+        (is (not (contains? result :record)))
+        (is (not (contains? result :locked-records)))
+        (is (not (.contains encoded "private/secret")))
+        (is (not (.contains encoded "private-internal-value")))))
+    (is (= "PKG5005"
+           (get-in (policy/decide (assoc request :record private-record))
+                   [:diagnostics 0 :diagnostic])))))

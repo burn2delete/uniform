@@ -50,9 +50,12 @@ input lock vector, order, duplicates, old statuses and custom history survive
 verbatim. There is no candidate sorting, selection, installation or lock write.
 
 Registry visibility and read grants come from caller policy, separately from
-package metadata. Private evaluation requires `:read` for the exact registry;
+package metadata. This seam evaluates one registry: candidate and all supplied
+locked records must name that registry before any metadata is returned.
+Private evaluation requires `:read` for the exact registry;
 latent/unknown visibility fails closed in this limited interface. Access denial
-returns `PKG5005` without package metadata/history. No callback is accepted or
+returns `PKG5005` without package metadata/history. Malformed-input reports also
+omit supplied records/history. No callback is accepted or
 invoked. A future metadata provider must authorize before fetching; this pure
 function cannot undo an earlier unauthorized retrieval or authenticate grants.
 
@@ -77,13 +80,24 @@ Commands run from the candidate checkout on 2026-10-28:
 
 | Command | Observed result |
 | --- | --- |
-| `clojure -J-Xmx256m -M:dev-test --namespace gravity.build.package-policy-test` | Exit 0; 6 tests, 134 assertions, zero failures/errors |
+| `clojure -J-Xmx256m -M:dev-test --namespace gravity.build.package-policy-test` | Exit 0; 7 tests, 148 assertions, zero failures/errors |
 | `clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | Exit 0; 6 tests, 11 assertions |
 | `clojure -J-Xmx256m -M tools/build_task_projection.clj --check` | Exit 0; no implementation acceptance inferred |
+| `clojure -J-Xmx256m -M tools/build_task_projection_test.clj` | Exit 0; 5 tests, 78 assertions |
 | `clojure -J-Xmx256m -M tools/validate_gravity_docs.clj` | Exit 0; 240 docs, 19 phase indexes, ASCII, no placeholders |
 | `clojure -J-Xmx256m -M tools/validate_full_language_roadmap.clj` | Exit 0 |
 
 ## Remaining evidence
+
+Independent reviewer `01a183df-1fb7-74c1-8456-625260c888c2` returned
+changes required on candidate `6d5abdedf27d7e8edcbe0ad572dbcf5ba0a22a4f`,
+tree `904dc450739e60ebe5fd4d30cc5c151af18a66d6`: mismatched registry input
+was rejected while its record was still echoed. Review receipt SHA256:
+`a02a02cbcab7ea44bf04dcf38a3d204c1ffc1b0301ecf5661fe41c1483063245`.
+That candidate remains rejected review evidence. The successor checks registry
+scope before report construction and omits raw inputs from malformed reports;
+regressions cover candidate mismatch, mixed lock history and malformed history.
+The successor requires its own exact-source disposition.
 
 Exact source review is requested only after commit, through the existing
 eligible reviewer routed by the coordinator. No self-review is acceptance.
