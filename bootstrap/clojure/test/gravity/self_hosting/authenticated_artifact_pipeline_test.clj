@@ -18,6 +18,9 @@
   (or (ns-resolve 'gravity.authenticated-artifact-pipeline name)
       (throw (ex-info "Missing facade implementation" {:name name}))))
 
+(defn- owner-call [name & args]
+  (apply (pipeline-function 'bootstrap-call) name args))
+
 (def ^:private owner-parent-fields
   {:syntax :c2-reader-artifact :macroexpansion :sh04-syntax-artifact
    :resolution :sh05-macro-artifact :checked-core :sh06-resolution-artifact})
@@ -26,23 +29,23 @@
   (let [parent (:payload (peek previous))
         reader (:reader-source-path invocation)]
     (case stage
-      :reader (pipeline/bootstrap-call 'compiler-c2-reader-source-artifact
+      :reader (owner-call 'compiler-c2-reader-source-artifact
                                        path text context nil nil reader invocation)
-      :syntax (pipeline/bootstrap-call 'compiler-c3-syntax-source-artifact
+      :syntax (owner-call 'compiler-c3-syntax-source-artifact
                                        path text context parent
                                        (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-internal-product-authority))
                                        nil invocation)
-      :macroexpansion (pipeline/bootstrap-call 'sh05-macro-artifact-from-c3-artifact path parent invocation)
-      :resolution (pipeline/bootstrap-call 'sh06-resolution-artifact-from-sh05-artifact
+      :macroexpansion (owner-call 'sh05-macro-artifact-from-c3-artifact path parent invocation)
+      :resolution (owner-call 'sh06-resolution-artifact-from-sh05-artifact
                                            path parent module-inputs reader invocation)
-      :checked-core (pipeline/bootstrap-call 'sh07-core-from-resolution-artifact parent invocation))))
+      :checked-core (owner-call 'sh07-core-from-resolution-artifact parent invocation))))
 
 (defn- owner-prefix! [source-path]
   (let [source (pipeline/stage-artifact
                  (pipeline/run-pipeline {:source-path source-path :target-stage :source :mode :fresh}) :source)
         path (get-in source [:provenance :actual-path])
         inputs {:path path :text (slurp path :encoding "UTF-8")
-                :context (pipeline/bootstrap-call 'reader-project-context-for-source path)
+                :context (owner-call 'reader-project-context-for-source path)
                 :invocation {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
                              :authenticated-envelope-options {:source :development-current}}
                 :module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}}
@@ -88,7 +91,7 @@
         {:keys [path text invocation module-inputs]} inputs
         [_ reader syntax macro resolution core] (mapv :payload prefix)]
     (is (= pipeline/stages (mapv :stage prefix)))
-    (is (= text (pipeline/bootstrap-call 'c2-reader-artifact-source-text path reader)))
+    (is (= text (owner-call 'c2-reader-artifact-source-text path reader)))
     (is (= path (get-in reader [:source-unit-record :path])))
     (is (= reader (:c2-reader-artifact syntax)))
     (is (some? (get-in reader [:sh03-reader-authentication :reader-source-revision])))
@@ -111,11 +114,11 @@
         (if (= :reader stage)
           ((pipeline-function 'authenticate-reader-source!) path (:source-identity child) (:payload child))
           ((pipeline-function 'authenticate-embedded-parent!) stage (:payload child) parents))))
-    (pipeline/bootstrap-call 'c2-reader-validate! path reader)
-    (pipeline/bootstrap-call 'c3-syntax-validate! path syntax invocation)
-    (doseq [report [(pipeline/bootstrap-call 'sh05-macro-artifact-verification macro invocation)
-                    (pipeline/bootstrap-call 'sh06-resolution-artifact-verification resolution :gravity.bootstrap/legacy invocation)
-                    (pipeline/bootstrap-call 'sh07-core-artifact-verification core invocation)]]
+    (owner-call 'c2-reader-validate! path reader)
+    (owner-call 'c3-syntax-validate! path syntax invocation)
+    (doseq [report [(owner-call 'sh05-macro-artifact-verification macro invocation)
+                    (owner-call 'sh06-resolution-artifact-verification resolution :gravity.bootstrap/legacy invocation)
+                    (owner-call 'sh07-core-artifact-verification core invocation)]]
       (is (= :passed (:status report)))
       (is (empty? (:failed-checks report))))))
 
