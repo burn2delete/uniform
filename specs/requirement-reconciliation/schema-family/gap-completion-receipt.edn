@@ -40,6 +40,12 @@
   :terminal-history-sha256
   "2e685a9cb4b0fed8d027fcf26d5055891ef369d72708b50b7c88191c6dd46488",
   :no-other-history-edits true},
+ :prepared-predecessor
+ {:head "852bb4653545b524c9d8e6eeba28f5d3a4e2803c",
+  :tree "f514e08f12cac1383368ab20a487532d211e0455",
+  :receipt-sha256
+  "69cc645cbf76c85d54beaf3f7a786e04f0d537a5ac1970cc51228895c46366db",
+  :correction :explicit-criterion-task-id-after-merge},
  :canonical-partition
  {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
   :path
@@ -68,7 +74,7 @@
  :artifacts
  [{:path "tools/schema_gap_completion.clj",
    :sha256
-   "4da9b1834f1e2f9e19b0d0f708d07db38322509720405e3f7a409685c5d99991"}
+   "ddea7968322facbf31f3c2b296a07d9104cd7b9f091f8847b345ef66b57e1314"}
   {:path
    "specs/requirement-reconciliation/schema-family/gap-completion-input.edn",
    :sha256
@@ -76,11 +82,11 @@
   {:path
    "specs/requirement-reconciliation/schema-family/gap-completion.edn",
    :sha256
-   "526ff988f53d34613bef2130ea3ceea78a95f65017d8928d5c19fd2d0c64a684"}
+   "c923eb3da6f799d5bc72a0938917f09f7b6635ff2d7d2233ffa7a1fd2ae3ed29"}
   {:path
    "specs/requirement-reconciliation/schema-family/gap-completion.md",
    :sha256
-   "dfa947d2891346b4675d3f803d18b06a861151782d94edb8b2cfd1c36c002669"}
+   "5c50f9cff2fb42f5054bd53a8b369c4e2d6d20045b0fcf37751045f70f0e36b7"}
   {:path "specs/domains-workflow/tasks.md",
    :sha256
    "7f67d299cb01671756a442e7165a0b61e5c710c79081daf05c13664d0b9b0fb6"}

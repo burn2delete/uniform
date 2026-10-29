@@ -88,7 +88,8 @@
      :historical-record historical-record :partition-record partition-row
      :after (merge before-coverage
             {:coverage-disposition :finite-actionable-task-interface-proposal
-             :criterion-id criterion-id :criterion-text text :criterion-sha256 (sha256 text)
+             :criterion-id criterion-id :criterion-task-id "schema"
+             :criterion-text text :criterion-sha256 (sha256 text)
              :criterion-source (merge {:path task-path :sha256 (sha256 task-text)
                                        :marker "domains-implementation-tasks" :task-id "schema"}
                                       (criterion-span text))

@@ -1013,7 +1013,7 @@
     :coverage-disposition :finite-actionable-task-interface-proposal,
     :status :open,
     :id "schema/artifact-validation",
-    :criterion-task-id nil,
+    :criterion-task-id "schema",
     :outputs
     "The named generated artifacts, accepted/rejected fixture reports, diagnostics and exact source/compiler/policy hashes in this criterion. No execution is claimed.",
     :whole-facet-entailment-acceptance :not-conferred,
@@ -1335,7 +1335,7 @@
     :coverage-disposition :finite-actionable-task-interface-proposal,
     :status :open,
     :id "schema/configuration-reload",
-    :criterion-task-id nil,
+    :criterion-task-id "schema",
     :outputs
     "The named generated artifacts, accepted/rejected fixture reports, diagnostics and exact source/compiler/policy hashes in this criterion. No execution is claimed.",
     :whole-facet-entailment-acceptance :not-conferred,
@@ -2178,7 +2178,7 @@
     :coverage-disposition :finite-actionable-task-interface-proposal,
     :status :open,
     :id "schema/database-mapping",
-    :criterion-task-id nil,
+    :criterion-task-id "schema",
     :outputs
     "The named generated artifacts, accepted/rejected fixture reports, diagnostics and exact source/compiler/policy hashes in this criterion. No execution is claimed.",
     :whole-facet-entailment-acceptance :not-conferred,
@@ -2974,7 +2974,7 @@
     :coverage-disposition :finite-actionable-task-interface-proposal,
     :status :open,
     :id "schema/graphql-generation",
-    :criterion-task-id nil,
+    :criterion-task-id "schema",
     :outputs
     "The named generated artifacts, accepted/rejected fixture reports, diagnostics and exact source/compiler/policy hashes in this criterion. No execution is claimed.",
     :whole-facet-entailment-acceptance :not-conferred,
@@ -3616,7 +3616,7 @@
     :coverage-disposition :finite-actionable-task-interface-proposal,
     :status :open,
     :id "schema/release-evidence-gating",
-    :criterion-task-id nil,
+    :criterion-task-id "schema",
     :outputs
     "The named generated artifacts, accepted/rejected fixture reports, diagnostics and exact source/compiler/policy hashes in this criterion. No execution is claimed.",
     :whole-facet-entailment-acceptance :not-conferred,

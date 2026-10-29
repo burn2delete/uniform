@@ -16,6 +16,12 @@ do not change that assignment. The four other rows in the initial nine-row
 incidence scan are excluded from this patch and remain with their assigned
 owners.
 
+Prepared candidate `852bb4653545b524c9d8e6eeba28f5d3a4e2803c` remains in Git
+history. A final pointer check corrected the inherited nil `criterion-task-id`
+in each proposed after record to the explicit `schema` task ID. The before
+records retain their original nil values; criterion/task source bytes and
+source-facet bindings are unchanged by that metadata correction.
+
 The frozen coverage receipt is `acc11-composed-coverage-review.edn`, SHA256
 `a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f`.
 Its 577 original histories, 13 criterion witnesses and three retirements are
