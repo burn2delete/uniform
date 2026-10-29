@@ -243,8 +243,7 @@
          :plan plan}))))
 
 ;; Pure built-in contract selection; no constructor or verifier is invoked.
-(require '[gravity.c11-mir.source-interface :as c11-source-interface]
-         '[gravity.c11-mir.source-contract :as c11-source-contract])
+(require '[gravity.c11-mir.source-contract :as c11-source-contract])
 
 (defn p15-s23-c11-mir-contract
   [version]

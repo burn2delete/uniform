@@ -52,3 +52,17 @@ independent review of the immutable pure slice; and normal current-main
 composition/CI before integration. Genuine Core/C11 production is not an
 acceptance criterion for this pure source-selection increment and receives no
 credit from it.
+
+Observed source-only validation: pure helpers 2 tests / 41 assertions;
+header and ownership/catalog controls 5 tests / 586 assertions; component
+catalog 1 test / 6 assertions; language boundary 6 tests / 11 assertions;
+documents 240 / 19 and full-language roadmap passed. Bootstrap remained
+unloaded in the synthetic/ownership controls. Initial projection attempts
+failed on the predecessor fingerprint and then on the unrebound whole-file
+ownership hash; those attempts are not passing evidence. The successor bridge
+binds the actual committed ownership file and keeps prior review history.
+The corrected crosswalk passed 12 tests / 144 assertions. A draft preparation
+initially copied an older bridge adapter; final diff review caught the missing
+newer Reader history before publication. The final adapter retains current
+main's complete history and changes only the ownership pin, successor
+fingerprint/qualification and the historical-versus-current ownership checks.
