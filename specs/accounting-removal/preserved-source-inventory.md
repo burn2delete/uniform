@@ -343,3 +343,21 @@ stack, PR569, live loop or whole-ACC acceptance is inferred.
 PR622 exact head `47a0f756` subsequently completed routine CI with seven
 successes/two configured skips. Its restored genuine recursive-type controls
 and independent acceptance remain open.
+
+## Actual current-main loop applicability and preflight
+
+The separate current-main applicability record assesses reviewed PR619/8330e468
+against observed main `e047157d` without changing the immutable inventory.
+Conflict-free proposed merge tree `f26f96d713d8964246ca7809aee8dd573f4d8ca3`
+retains complete reviewed C7 bytes, 1087 definitions, 30 loop functions, scoped
+reference results and both reviewed evidence files. All other main tree paths
+are unchanged; the six intervening main paths are disjoint. No commit/branch
+mutation or integration occurred. Read-only preflight inspect completed with
+all-pass false: divergent ancestry and the retained untracked lint cache prevent
+integration eligibility. The earlier rejected cleanup is not retried, excluded
+or worked around. Integration-mode preflight and coordinator disposition remain
+pending. Source checks and docs/roadmap pass without compiler/runtime execution.
+
+PR623 exact head `c5e9fccd` completed routine CI with seven successes/two
+configured skips. This does not run the new genuine LC kernels or supply
+independent source/result acceptance.

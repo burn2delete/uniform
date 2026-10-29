@@ -322,6 +322,16 @@ helper mappings remain explicit rather than being treated as missing features.
   parent dependencies, PR569 and genuine execution excluded. Exact-head CI has
   seven successes/two configured skips. Fresh-current-main applicability and
   integration preflight remain separate and pending.
+- The [current-main applicability assessment](loop-current-main-applicability.md)
+  checks reviewed PR619 against main `e047157d`. Proposed merge tree
+  `f26f96d713d8964246ca7809aee8dd573f4d8ca3` is conflict-free; its complete
+  C7 source equals reviewed `8330e468`, all 1087 definitions/30 loop functions
+  survive, and every other main path is conserved outside the two unchanged
+  reviewed evidence files. The six intervening main paths are disjoint. No
+  commit/branch change or integration occurred. Actual read-only preflight
+  inspect is NOT integration-eligible: divergent ancestry and existing untracked
+  lint cache remain. Neither condition is waived or routed around; integration
+  preflight remains UNRUN and coordinator-owned.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
@@ -336,7 +346,7 @@ helper mappings remain explicit rather than being treated as missing features.
 - Routine CI completed with seven successes and two skips for PR591 at
   `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`,
   PR599 at `b786b464`, PR610 at `2b70fac2`, PR611 at `edef2c00`, PR613 at `5ebff5ca`,
-  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70`, PR618 at `3a1a553d`, PR619 at both `ab33cc5f` and corrected `8330e468`, PR621 at `6c8d7029`, PR622 at `47a0f756`
+  PR614 at `c506514d`, PR615 at `bb3a9acf`, PR616 at `2f2f8f70`, PR618 at `3a1a553d`, PR619 at both `ab33cc5f` and corrected `8330e468`, PR621 at `6c8d7029`, PR622 at `47a0f756`, PR623 at `c5e9fccd`
   and this evidence draft's prior heads `279fe99c` and `9df7b2d3`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
