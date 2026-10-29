@@ -363,3 +363,35 @@ Focused source controls passed: CLI 5 tests / 88 assertions, Release 6 / 105,
 SH crosswalk 11 / 326, task census 3 / 8, boundary 6 / 11, both document
 validators, and whitespace. The prior fixture repair at `92d0ff73` passed CI
 run `40820815160`; the earlier failed run remains historical evidence.
+
+## Math48 and Performance11 current composition
+
+Source commit `6905570c41d81afb1d2917a479cf4d92b2304b30`, tree
+`33070af0936895c4d051f41e32ad18293da165a8`, adds the reviewed 48 Math and
+11 Performance criteria through six existing fields in four task authorities.
+The frozen current joins have SHA256
+`40e59daec2353b63ad6acaf1883a79aef90223d1ff153e7d298933b95c981c04`
+and `8754d537e7c6bcd14d2624f6db0acadce128bd288374c9c6291ba2f25e21bab4`.
+Their source reviews remain applicable to the unchanged criteria. Actual
+composed-source acceptance is pending.
+
+The sole advanced join input was the derived census. Its exact old and current
+hashes are recorded in `math-performance-current-composition.edn`; scope,
+progress, task identities and declared statuses are identical. Every other
+guarded input matched. Complete current field prefixes and the prior Release16
+composition are retained. The existing Profile numeric support-matrix consumer
+and Math producer criteria both remain; no semantic alias or new task is
+inferred. The proposed decision-record edits were not applied by this finite
+criterion composition, and all 833 Open decision records remain unchanged.
+
+`current-criterion-bindings-275.edn` locates all 275 criteria in the committed
+source: 200 accepted mappings, 16 pending Release-extension mappings, and the
+59 added Math/Performance mappings. Accepted mappings remain 200; all 75 new
+bindings require independent actual-composition acceptance. The remaining
+unbound historical mappings number 286, distinct from the 361 unadopted IDs.
+Task delta is zero. The provisional scoped census remains 3 / 149, with 146
+remaining, and is not a whole-project completion ratio.
+
+Focused task-source tests passed: Domains 6 / 103, Opt 6 / 68, Legality 4 / 59,
+and Developer Tools 4 / 80. All four generated task projections and whitespace
+checks passed.
