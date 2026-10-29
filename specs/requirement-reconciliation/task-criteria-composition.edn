@@ -1,0 +1,892 @@
+{:unchanged
+ [:task-identities
+  :task-statuses
+  :historical-suffixes
+  :normative-source-bytes],
+ :schema-version 1,
+ :history
+ ["Initial preparation rejected unrecognized criterion labels before any task writes."
+  "Three source-qualified conflicts were retained and resolved explicitly. A subsequent already-present AI payload was deduplicated without replaying or erasing its supplements."],
+ :scope :existing-canonical-task-records-only,
+ :new-task-count 0,
+ :kind :reviewed-task-criteria-composition,
+ :base-source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+ :amendments
+ [{:family "phase-01",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3",
+   :reviewed-after-sha256
+   "e156058967c4a6ba39fdc58343205a1c68c16b0cd8da93bcfe56279782912871",
+   :composed-before-sha256
+   "e156058967c4a6ba39fdc58343205a1c68c16b0cd8da93bcfe56279782912871",
+   :composed-after-sha256
+   "e156058967c4a6ba39fdc58343205a1c68c16b0cd8da93bcfe56279782912871"}
+  {:family "phase-02",
+   :path "specs/auth-workflow/tasks.md",
+   :id
+   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "12fdebcee716c2303459dace017bca2e65d3b5f63db760436c32a767dfced750",
+   :reviewed-after-sha256
+   "0cac89c653317d90a16d4af9e68bbadaec743216dc8f4cb113a9e97354e202d8",
+   :composed-before-sha256
+   "12fdebcee716c2303459dace017bca2e65d3b5f63db760436c32a767dfced750",
+   :composed-after-sha256
+   "0cac89c653317d90a16d4af9e68bbadaec743216dc8f4cb113a9e97354e202d8"}
+  {:family "phase-02",
+   :path "specs/auth-workflow/tasks.md",
+   :id
+   "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "e1be8c5ab7dc6e56ccc98b8d867d23a1a226df00815207674ee3f708c66c883d",
+   :reviewed-after-sha256
+   "f09ed54b382d78bee1f8499c98cf71f2f468265579c9df8cddf5d23a6520bff1",
+   :composed-before-sha256
+   "e1be8c5ab7dc6e56ccc98b8d867d23a1a226df00815207674ee3f708c66c883d",
+   :composed-after-sha256
+   "f09ed54b382d78bee1f8499c98cf71f2f468265579c9df8cddf5d23a6520bff1"}
+  {:family "phase-02",
+   :path "specs/build-workflow/tasks.md",
+   :id
+   "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
+   :reviewed-after-sha256
+   "c2c501938fb0883658ff8d98af26dce7ed887377225d195d5ef26a4bfa38e491",
+   :composed-before-sha256
+   "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
+   :composed-after-sha256
+   "c2c501938fb0883658ff8d98af26dce7ed887377225d195d5ef26a4bfa38e491"}
+  {:family "phase-02",
+   :path "specs/build-workflow/tasks.md",
+   :id
+   "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "bd3ece7385d43b00746b4d36bdd8d4ae7f6fac527650b03d08166a16518713f8",
+   :reviewed-after-sha256
+   "07755aa8fd5cef95becdc0c0a06340e19ecffd1434d9aefe83bd0df3ad2687ac",
+   :composed-before-sha256
+   "bd3ece7385d43b00746b4d36bdd8d4ae7f6fac527650b03d08166a16518713f8",
+   :composed-after-sha256
+   "07755aa8fd5cef95becdc0c0a06340e19ecffd1434d9aefe83bd0df3ad2687ac"}
+  {:family "phase-02",
+   :path "specs/build-workflow/tasks.md",
+   :id
+   "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "23ef09b364fb42c5b5a82282754a86aca93485960a84b7f867055d9db121c035",
+   :reviewed-after-sha256
+   "8a38e816779feb09eae93fcd0d8619fcb9a05d30b571ea80e32803e3703cbe06",
+   :composed-before-sha256
+   "23ef09b364fb42c5b5a82282754a86aca93485960a84b7f867055d9db121c035",
+   :composed-after-sha256
+   "8a38e816779feb09eae93fcd0d8619fcb9a05d30b571ea80e32803e3703cbe06"}
+  {:family "phase-02",
+   :path "specs/domains-workflow/tasks.md",
+   :id "math",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
+   :reviewed-after-sha256
+   "682f4d52320c45d2cbbf9840f262702112678a38ecf4941fde185c09737185d2",
+   :composed-before-sha256
+   "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
+   :composed-after-sha256
+   "682f4d52320c45d2cbbf9840f262702112678a38ecf4941fde185c09737185d2"}
+  {:family "phase-02",
+   :path "specs/domains-workflow/tasks.md",
+   :id "ai",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
+   :reviewed-after-sha256
+   "5f260a247b90a0ce5106cb980c7629b04e04b0a9c05994db005c195b4d52b8d4",
+   :composed-before-sha256
+   "9febcd82a99ece1051b037edf3d9d358c335eebdfa93334cacba8526ed59ae84",
+   :composed-after-sha256
+   "0bae923d89bcc3893e5e2c9ffedc248ccb74044cad3ee649029ab6876fe9a104"}
+  {:family "phase-02",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
+   :reviewed-after-sha256
+   "c732419bfa0b3462f9968cc116c2aed9b89b8e903bc8c5e358e0734d27354f6a",
+   :composed-before-sha256
+   "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
+   :composed-after-sha256
+   "c732419bfa0b3462f9968cc116c2aed9b89b8e903bc8c5e358e0734d27354f6a"}
+  {:family "phase-02",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "d45a044d24757dc2bd87c437f4bba206e3023c0e0681376d445bfb32f5c1db8a",
+   :reviewed-after-sha256
+   "be09977ee50bd83486ef0e2a47f2a57727d9da7a3daae11157113530806aa89f",
+   :composed-before-sha256
+   "d45a044d24757dc2bd87c437f4bba206e3023c0e0681376d445bfb32f5c1db8a",
+   :composed-after-sha256
+   "be09977ee50bd83486ef0e2a47f2a57727d9da7a3daae11157113530806aa89f"}
+  {:family "phase-02",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
+   :reviewed-after-sha256
+   "f75c416cb4c3c9794f4241122f60ca138183beba873a6d09cfb88ddcadeda545",
+   :composed-before-sha256
+   "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
+   :composed-after-sha256
+   "f75c416cb4c3c9794f4241122f60ca138183beba873a6d09cfb88ddcadeda545"}
+  {:family "phase-02",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "32d3c5b5450bedc27d7dd6e709396dee4335dcbe53273030a0f8690aa59ea907",
+   :reviewed-after-sha256
+   "29422030427094705642da7d0117f3801f52af6c174c8e24117531c5cc7a0001",
+   :composed-before-sha256
+   "32d3c5b5450bedc27d7dd6e709396dee4335dcbe53273030a0f8690aa59ea907",
+   :composed-after-sha256
+   "29422030427094705642da7d0117f3801f52af6c174c8e24117531c5cc7a0001"}
+  {:family "phase-02",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "10d87f565b8ab6ce18dd2b4601da0471878ea53ffece867893a496f791ab81f8",
+   :reviewed-after-sha256
+   "ea9a107ebe558c6f6554dbaed7107a9918284a94a838275da659e59c11856fc2",
+   :composed-before-sha256
+   "10d87f565b8ab6ce18dd2b4601da0471878ea53ffece867893a496f791ab81f8",
+   :composed-after-sha256
+   "ea9a107ebe558c6f6554dbaed7107a9918284a94a838275da659e59c11856fc2"}
+  {:family "phase-02",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+   :reviewed-after-sha256
+   "d437d8592970cae32715e295353a23fcd4029439d88763bdafdea5d3500e0ce5",
+   :composed-before-sha256
+   "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+   :composed-after-sha256
+   "d437d8592970cae32715e295353a23fcd4029439d88763bdafdea5d3500e0ce5"}
+  {:family "phase-02",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb",
+   :reviewed-after-sha256
+   "bdf04c2bfb8f8b591cb976b0847614dd383f302f3d74d7641200321adec1ec5f",
+   :composed-before-sha256
+   "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb",
+   :composed-after-sha256
+   "bdf04c2bfb8f8b591cb976b0847614dd383f302f3d74d7641200321adec1ec5f"}
+  {:family "phase-08",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653",
+   :reviewed-after-sha256
+   "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81",
+   :composed-before-sha256
+   "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653",
+   :composed-after-sha256
+   "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81"}
+  {:family "phase-08",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3",
+   :reviewed-after-sha256
+   "484d2a2da455306f87414415dd661deb645f48d1eab2b022d69d2b56aeb8ec72",
+   :composed-before-sha256
+   "e156058967c4a6ba39fdc58343205a1c68c16b0cd8da93bcfe56279782912871",
+   :composed-after-sha256
+   "1b93114f3c7519bba2f6ddda82400a14f0ea14bcbdd09e50a48a627f7ab89762"}
+  {:family "phase-08",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+   :reviewed-after-sha256
+   "0521ed3c6f86962bea7bce7089b1d89c84f3b5d7af39758391b31ec232359ea8",
+   :composed-before-sha256
+   "d437d8592970cae32715e295353a23fcd4029439d88763bdafdea5d3500e0ce5",
+   :composed-after-sha256
+   "9d9467772a9498e6111bc9b7b870661d44ac5e4ec248e75629379ffad798950e"}
+  {:family "phase-08",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb",
+   :reviewed-after-sha256
+   "e67e7b79d7d7a6cebfac63b607b803adbdf47ebe7d6eed0f7814e7d25452efea",
+   :composed-before-sha256
+   "bdf04c2bfb8f8b591cb976b0847614dd383f302f3d74d7641200321adec1ec5f",
+   :composed-after-sha256
+   "05d458fd32d96a58a53e9052760807713ffe1723cdfa4868955a8ec8e5dc4a3f"}
+  {:family "phase-08",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4",
+   :reviewed-after-sha256
+   "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b",
+   :composed-before-sha256
+   "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4",
+   :composed-after-sha256
+   "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b"}
+  {:family "phase-09",
+   :path "specs/domains-workflow/tasks.md",
+   :id "workflow",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae",
+   :reviewed-after-sha256
+   "8a096a87214e4603ad9d26ba9e243da9f53dabb5ff62ba8e23f2432d3554beb4",
+   :composed-before-sha256
+   "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae",
+   :composed-after-sha256
+   "8a096a87214e4603ad9d26ba9e243da9f53dabb5ff62ba8e23f2432d3554beb4"}
+  {:family "phase-09",
+   :path "specs/domains-workflow/tasks.md",
+   :id "ui",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "a2dd19a85e7c0ce7a7a336d6142f2d6d550a6c55e99c3c3d6dfb23910af44e18",
+   :reviewed-after-sha256
+   "d447fcbe82d3cdaa9408ee5a40b6229c4508b601d63f515908e296a13ebc530a",
+   :composed-before-sha256
+   "a2dd19a85e7c0ce7a7a336d6142f2d6d550a6c55e99c3c3d6dfb23910af44e18",
+   :composed-after-sha256
+   "d447fcbe82d3cdaa9408ee5a40b6229c4508b601d63f515908e296a13ebc530a"}
+  {:family "phase-09",
+   :path "specs/platform-workflow/tasks.md",
+   :id "hardware",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "1e4481216e89658444b6830c16e702a5180f49033f3f07b1eda7216e7177b7c7",
+   :reviewed-after-sha256
+   "b6b942f28dec56b496287d0c1ce1e185ad7e237a9a7b2febfcba03bde8d4b12d",
+   :composed-before-sha256
+   "1e4481216e89658444b6830c16e702a5180f49033f3f07b1eda7216e7177b7c7",
+   :composed-after-sha256
+   "b6b942f28dec56b496287d0c1ce1e185ad7e237a9a7b2febfcba03bde8d4b12d"}
+  {:family "phase-09",
+   :path "specs/platform-workflow/tasks.md",
+   :id "firmware",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "29180b42245235fc2cb5ab4a80ff35e808fe9f4586ebb420c9bbc7dfdec902d9",
+   :reviewed-after-sha256
+   "bc7f804b650876140ca7ca4f63139b055522da08e615ab4de3fe48b52c719488",
+   :composed-before-sha256
+   "29180b42245235fc2cb5ab4a80ff35e808fe9f4586ebb420c9bbc7dfdec902d9",
+   :composed-after-sha256
+   "bc7f804b650876140ca7ca4f63139b055522da08e615ab4de3fe48b52c719488"}
+  {:family "phase-09",
+   :path "specs/platform-workflow/tasks.md",
+   :id "kernel",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "5dbfd482e65831287c53bf6f91c6d1a5788ae792168447c126a38c3937a0021e",
+   :reviewed-after-sha256
+   "e0d5a4ea398d5d440d7bc297fcb3d0c1977753ac3b6a47cf3bf161bfc4f59ff9",
+   :composed-before-sha256
+   "5dbfd482e65831287c53bf6f91c6d1a5788ae792168447c126a38c3937a0021e",
+   :composed-after-sha256
+   "e0d5a4ea398d5d440d7bc297fcb3d0c1977753ac3b6a47cf3bf161bfc4f59ff9"}
+  {:family "phase-09",
+   :path "specs/platform-workflow/tasks.md",
+   :id "devices",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "5493075b464fce8a99cee1dd7c10c45511708a0b80f2def02682f39d3d636873",
+   :reviewed-after-sha256
+   "f36970d280aebd2fac7ced87d930045eb12110daec0db48d36b7a014ed6dcdad",
+   :composed-before-sha256
+   "5493075b464fce8a99cee1dd7c10c45511708a0b80f2def02682f39d3d636873",
+   :composed-after-sha256
+   "f36970d280aebd2fac7ced87d930045eb12110daec0db48d36b7a014ed6dcdad"}
+  {:family "phase-10",
+   :path "specs/domains-workflow/tasks.md",
+   :id "schema",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
+   :reviewed-after-sha256
+   "5f6ba9372fd2fac165acf78c19a6d22409b9b4bf537b59cfac64107905bcfa02",
+   :composed-before-sha256
+   "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
+   :composed-after-sha256
+   "5f6ba9372fd2fac165acf78c19a6d22409b9b4bf537b59cfac64107905bcfa02"}
+  {:family "phase-11",
+   :path "specs/domains-workflow/tasks.md",
+   :id "ai",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
+   :reviewed-after-sha256
+   "9febcd82a99ece1051b037edf3d9d358c335eebdfa93334cacba8526ed59ae84",
+   :composed-before-sha256
+   "0bae923d89bcc3893e5e2c9ffedc248ccb74044cad3ee649029ab6876fe9a104",
+   :composed-after-sha256
+   "0bae923d89bcc3893e5e2c9ffedc248ccb74044cad3ee649029ab6876fe9a104"}
+  {:family "phase-13",
+   :path "specs/cli-workflow/tasks.md",
+   :id
+   "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "5a499ccec0886f4704b46dcef2ae6a9662f7c6d26381ed48b5b53841dc04b180",
+   :reviewed-after-sha256
+   "b81a97778f37d0a69df25433d6b24e0b11ec33e09ba20bfe9c4a3d0bead0c235",
+   :composed-before-sha256
+   "5a499ccec0886f4704b46dcef2ae6a9662f7c6d26381ed48b5b53841dc04b180",
+   :composed-after-sha256
+   "b81a97778f37d0a69df25433d6b24e0b11ec33e09ba20bfe9c4a3d0bead0c235"}
+  {:family "phase-13",
+   :path "specs/cli-workflow/tasks.md",
+   :id
+   "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "9214938d797eb51dd04ab193cb16775b1ded3a1bd7266794e71141d29dca097b",
+   :reviewed-after-sha256
+   "38ff18f77795a313f60094fc4c846ed57fa48d35baffd408f3904cb3ec5c0dc4",
+   :composed-before-sha256
+   "9214938d797eb51dd04ab193cb16775b1ded3a1bd7266794e71141d29dca097b",
+   :composed-after-sha256
+   "38ff18f77795a313f60094fc4c846ed57fa48d35baffd408f3904cb3ec5c0dc4"}
+  {:family "phase-13",
+   :path "specs/cli-workflow/tasks.md",
+   :id
+   "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "70ba47946ef7a5ab4cc6a8cde0c84b41f7460ca4675cc67988a36504d3788245",
+   :reviewed-after-sha256
+   "b5ac863ea80309f5adf89d45039ade188762d2c4d78b94ad787c130c4ff5ca11",
+   :composed-before-sha256
+   "70ba47946ef7a5ab4cc6a8cde0c84b41f7460ca4675cc67988a36504d3788245",
+   :composed-after-sha256
+   "b5ac863ea80309f5adf89d45039ade188762d2c4d78b94ad787c130c4ff5ca11"}
+  {:family "phase-13",
+   :path "specs/cli-workflow/tasks.md",
+   :id
+   "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "6702b627e490d8d941d97ea5b18e59eaa78492794d834b5bfcbda3f5675168e3",
+   :reviewed-after-sha256
+   "0916905de22c9c42aa9cc9ecf45416d7e6e534664e1a3671341f63a2051f896f",
+   :composed-before-sha256
+   "6702b627e490d8d941d97ea5b18e59eaa78492794d834b5bfcbda3f5675168e3",
+   :composed-after-sha256
+   "0916905de22c9c42aa9cc9ecf45416d7e6e534664e1a3671341f63a2051f896f"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5",
+   :reviewed-after-sha256
+   "1d1b0cec530ff4bf3dfe7bcea3c423daf67614845759efea5117bee9ac42cc2c",
+   :composed-before-sha256
+   "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5",
+   :composed-after-sha256
+   "1d1b0cec530ff4bf3dfe7bcea3c423daf67614845759efea5117bee9ac42cc2c"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "21e65d171dffa5751eacacd1f1a7ab9b75678041b687e6cb787470b792f792c6",
+   :reviewed-after-sha256
+   "dfe9bd243d3220dd3385391f1512bf5a3859e54fa923c4b70adf29bfed02b060",
+   :composed-before-sha256
+   "21e65d171dffa5751eacacd1f1a7ab9b75678041b687e6cb787470b792f792c6",
+   :composed-after-sha256
+   "dfe9bd243d3220dd3385391f1512bf5a3859e54fa923c4b70adf29bfed02b060"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "40d7b73ae6f9255d48d9451bb8071500f18c4c84672a8c9b359ae76486281e5e",
+   :reviewed-after-sha256
+   "8f88a5ad9abe9141267f151c1cf3597ca906c26a3f740eeabe54cfa57fea15a5",
+   :composed-before-sha256
+   "40d7b73ae6f9255d48d9451bb8071500f18c4c84672a8c9b359ae76486281e5e",
+   :composed-after-sha256
+   "8f88a5ad9abe9141267f151c1cf3597ca906c26a3f740eeabe54cfa57fea15a5"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5",
+   :reviewed-after-sha256
+   "c378a61d8a6e83250c6129297d8c61fe3319a3b74ae21be02bd8b309aaaf65b6",
+   :composed-before-sha256
+   "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5",
+   :composed-after-sha256
+   "c378a61d8a6e83250c6129297d8c61fe3319a3b74ae21be02bd8b309aaaf65b6"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "5ae94c9d508491ce7715089bbd64159e07ed20bbea02d1cd68fb0176399b347a",
+   :reviewed-after-sha256
+   "4d20dcaae783ad4d27b33e05ad236c858fc50998c1d2c8b58c5201811f2c1640",
+   :composed-before-sha256
+   "5ae94c9d508491ce7715089bbd64159e07ed20bbea02d1cd68fb0176399b347a",
+   :composed-after-sha256
+   "4d20dcaae783ad4d27b33e05ad236c858fc50998c1d2c8b58c5201811f2c1640"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "d677a56900b22f330f4a85e74cda0143e2af31ab98f2711cc01f004642720e6e",
+   :reviewed-after-sha256
+   "e6b4c8885868f65032fa87a05efd36ffbc5a0ee8d742ec56e33d1fd751eb5c1f",
+   :composed-before-sha256
+   "d677a56900b22f330f4a85e74cda0143e2af31ab98f2711cc01f004642720e6e",
+   :composed-after-sha256
+   "e6b4c8885868f65032fa87a05efd36ffbc5a0ee8d742ec56e33d1fd751eb5c1f"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e",
+   :reviewed-after-sha256
+   "41a0bae0ddd4a58fc1bd6f94336f0af055f3d2e7435fe9b523a7ec70db10d738",
+   :composed-before-sha256
+   "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e",
+   :composed-after-sha256
+   "41a0bae0ddd4a58fc1bd6f94336f0af055f3d2e7435fe9b523a7ec70db10d738"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "58b8999aab357fed7f61008dd312d9628d45e7c1c53e39f79f15e871914c2d85",
+   :reviewed-after-sha256
+   "a4164630f16b5f97d610353ced14b21bbe953279823549716dbc693209f1a9a1",
+   :composed-before-sha256
+   "58b8999aab357fed7f61008dd312d9628d45e7c1c53e39f79f15e871914c2d85",
+   :composed-after-sha256
+   "a4164630f16b5f97d610353ced14b21bbe953279823549716dbc693209f1a9a1"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "2d44c419d75759d044d2d2b80328aa5189e7e15d211569e58c0f126a59d905e4",
+   :reviewed-after-sha256
+   "ad31e127a37809e285574c64f9fd276488f7a4354d8c03a93a43b18c2e0ff94b",
+   :composed-before-sha256
+   "2d44c419d75759d044d2d2b80328aa5189e7e15d211569e58c0f126a59d905e4",
+   :composed-after-sha256
+   "ad31e127a37809e285574c64f9fd276488f7a4354d8c03a93a43b18c2e0ff94b"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "0f790030034098f822efa5b6903f40fce800c05a42e2d099667f12bb413d67a2",
+   :reviewed-after-sha256
+   "991ee5b74ade961b50f82ee008966d6dd9d15da1cf1b8a8fc8700721bc7a133e",
+   :composed-before-sha256
+   "0f790030034098f822efa5b6903f40fce800c05a42e2d099667f12bb413d67a2",
+   :composed-after-sha256
+   "991ee5b74ade961b50f82ee008966d6dd9d15da1cf1b8a8fc8700721bc7a133e"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "3fc9086fe811e75aad4d3da742497e659b79eff9058797b2b8bd64c584b2c0a4",
+   :reviewed-after-sha256
+   "a4000a121c9ec60dd9db49ff2079657add3e7c790dff78bdba27628409d84f66",
+   :composed-before-sha256
+   "3fc9086fe811e75aad4d3da742497e659b79eff9058797b2b8bd64c584b2c0a4",
+   :composed-after-sha256
+   "a4000a121c9ec60dd9db49ff2079657add3e7c790dff78bdba27628409d84f66"}
+  {:family "phase-13",
+   :path "specs/tools-workflow/tasks.md",
+   :id
+   "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+   :field-names ["Closing evidence and governing contract"],
+   :reviewed-before-sha256
+   "51df7063860bc42222f2d7c07b19c8e2fca505c6ff978447be39d5b20c650250",
+   :reviewed-after-sha256
+   "5a4f78e0a9c6fa269fe97e72c86ad697ad7278ed1d61497f72b1b6c103a93086",
+   :composed-before-sha256
+   "51df7063860bc42222f2d7c07b19c8e2fca505c6ff978447be39d5b20c650250",
+   :composed-after-sha256
+   "5a4f78e0a9c6fa269fe97e72c86ad697ad7278ed1d61497f72b1b6c103a93086"}
+  {:family "phase-16",
+   :path "specs/stdlib-workflow/tasks.md",
+   :id
+   "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "9b5f486da30222f4ee7daa9723316a3716e1fc0ba9c0dd03fdd871b2588d7518",
+   :reviewed-after-sha256
+   "b4bdfbe7e9805832389b4881d7e52af38af666bf21e249501a7576383a0fd54f",
+   :composed-before-sha256
+   "9b5f486da30222f4ee7daa9723316a3716e1fc0ba9c0dd03fdd871b2588d7518",
+   :composed-after-sha256
+   "b4bdfbe7e9805832389b4881d7e52af38af666bf21e249501a7576383a0fd54f"}
+  {:family "phase-16",
+   :path "specs/stdlib-workflow/tasks.md",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "d6dba01cc5862abf0e7e9fa28b0bc03506168c4fe18886e09514a5d2dfebedde",
+   :reviewed-after-sha256
+   "8f182ad7d0a1c20af7b093c4a69bff2c3d557dac2de1899bf8faadc6dc6c4623",
+   :composed-before-sha256
+   "d6dba01cc5862abf0e7e9fa28b0bc03506168c4fe18886e09514a5d2dfebedde",
+   :composed-after-sha256
+   "8f182ad7d0a1c20af7b093c4a69bff2c3d557dac2de1899bf8faadc6dc6c4623"}
+  {:family "phase-16",
+   :path "specs/stdlib-workflow/tasks.md",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "6fdefc5db18cbc2ecea392ca97facc12adcbc4442fad0f1e3cd505a2c36e41da",
+   :reviewed-after-sha256
+   "e60ec167c3f10a481bbc5cb3c7f73b09f0f0ea0b72d5ceb963f6a613c510aeb1",
+   :composed-before-sha256
+   "6fdefc5db18cbc2ecea392ca97facc12adcbc4442fad0f1e3cd505a2c36e41da",
+   :composed-after-sha256
+   "e60ec167c3f10a481bbc5cb3c7f73b09f0f0ea0b72d5ceb963f6a613c510aeb1"}
+  {:family "phase-16",
+   :path "specs/stdlib-workflow/tasks.md",
+   :id
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "5b65dff3a242d3f4a6f9125164e372aaca2befadf7ae66c016496702cbfc9e82",
+   :reviewed-after-sha256
+   "6742c9a779dbfee053d0f6f8090a92d594052d0269fa3b031b0c9c987eede64e",
+   :composed-before-sha256
+   "5b65dff3a242d3f4a6f9125164e372aaca2befadf7ae66c016496702cbfc9e82",
+   :composed-after-sha256
+   "6742c9a779dbfee053d0f6f8090a92d594052d0269fa3b031b0c9c987eede64e"}
+  {:family "phase-16",
+   :path "specs/stdlib-workflow/tasks.md",
+   :id
+   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "92195297b80728f6eeb60f502c4b906dd5f97eb9c9886bfed645f48a770c0174",
+   :reviewed-after-sha256
+   "def6ec2b208234b28e279c4491c215a4d987a6e9aa44568aa1f6b3872be94949",
+   :composed-before-sha256
+   "92195297b80728f6eeb60f502c4b906dd5f97eb9c9886bfed645f48a770c0174",
+   :composed-after-sha256
+   "def6ec2b208234b28e279c4491c215a4d987a6e9aa44568aa1f6b3872be94949"}
+  {:family "phase-03",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
+   :reviewed-after-sha256
+   "66f20217a4f97194b418a7f719c25501e351d064f870604a5d9469c58985aa88",
+   :composed-before-sha256
+   "c732419bfa0b3462f9968cc116c2aed9b89b8e903bc8c5e358e0734d27354f6a",
+   :composed-after-sha256
+   "11e9a40e88295fe91d133767005f9bdc7dd45654ad92c0fdf63f805a13515e01"}
+  {:family "phase-03",
+   :path "specs/legality-workflow/tasks.md",
+   :id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
+   :reviewed-after-sha256
+   "e206782b95c8339ce2d9a0d4414646b2bbec79a3217554e930ed83ae5956d67b",
+   :composed-before-sha256
+   "f75c416cb4c3c9794f4241122f60ca138183beba873a6d09cfb88ddcadeda545",
+   :composed-after-sha256
+   "3886742ed4123805516fc9d08fdcd246463ff33dc19bb578d883aa6cc9015001"}
+  {:family "phase-03",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3",
+   :reviewed-after-sha256
+   "3fd021f321ec4fa126f3d902f426af718500b5f6b2640f2aec15a1dc0d1825f5",
+   :composed-before-sha256
+   "1b93114f3c7519bba2f6ddda82400a14f0ea14bcbdd09e50a48a627f7ab89762",
+   :composed-after-sha256
+   "91804aef9d3c28c5a6a5264c90bddbfd5ecc6b9fc79258c6490c7524aa032817"}
+  {:family "phase-03",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+   :reviewed-after-sha256
+   "5ed9c29bb75aa228d0695848964e006d210855c3ddb0b33f9755403173d50dbd",
+   :composed-before-sha256
+   "9d9467772a9498e6111bc9b7b870661d44ac5e4ec248e75629379ffad798950e",
+   :composed-after-sha256
+   "03dcea5cf666ce62cea7b2c722d9299a3845fff0b1d6bb34cc868dd28c03a039"}
+  {:family "phase-03",
+   :path "specs/runtime-workflow/tasks.md",
+   :id
+   "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4",
+   :reviewed-after-sha256
+   "d5dddfbb228945cb5da3d58cded04fbbafa08d897fc667ea0af527060a656245",
+   :composed-before-sha256
+   "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b",
+   :composed-after-sha256
+   "b7eb1b48af34c3ca8ea1e678b28faaec31114e5dd117b6fe5144c0fee2040abf"}
+  {:family "phase-03",
+   :path "specs/domains-workflow/tasks.md",
+   :id "math",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
+   :reviewed-after-sha256
+   "76aea1bca6d4cc6bf11c756bbc417012cbafc3b490d50eaff1bfcac34fd3b732",
+   :composed-before-sha256
+   "682f4d52320c45d2cbbf9840f262702112678a38ecf4941fde185c09737185d2",
+   :composed-after-sha256
+   "1179cebf48223c9403f5457e24f3d2dc655ffecc99744f9fa11c19523323a184"}
+  {:family "phase-03",
+   :path "specs/domains-workflow/tasks.md",
+   :id "workflow",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae",
+   :reviewed-after-sha256
+   "ba21d6ff8945a3983ed09ecc0a0ec6caa91df10a0fc1697acf5cad8f2f601487",
+   :composed-before-sha256
+   "8a096a87214e4603ad9d26ba9e243da9f53dabb5ff62ba8e23f2432d3554beb4",
+   :composed-after-sha256
+   "cda326245f32d1fc95979d1327f08133148cf6ad5bb1150f08c72dc4cb185b59"}
+  {:family "phase-03",
+   :path "specs/domains-workflow/tasks.md",
+   :id "ai",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
+   :reviewed-after-sha256
+   "dd26104b1c4d05bff5e386216710e2adc823ce008c450947180408ea6c7c1389",
+   :composed-before-sha256
+   "0bae923d89bcc3893e5e2c9ffedc248ccb74044cad3ee649029ab6876fe9a104",
+   :composed-after-sha256
+   "1ad09abcd5a03e8429dd7ddc01ffec4021f07e4dbd517fd479704dd5f6d8ae6d"}
+  {:family "phase-03",
+   :path "specs/domains-workflow/tasks.md",
+   :id "gpu",
+   :field-names [:projected],
+   :reviewed-before-sha256
+   "199625388d95a5fd135a9ec6e63094df6658a645b3ccfed345244016fd48c3a2",
+   :reviewed-after-sha256
+   "baebb2475d84883890c0344d0b1a1ff2d5ec83fcc7d2080ec33c29855c859019",
+   :composed-before-sha256
+   "199625388d95a5fd135a9ec6e63094df6658a645b3ccfed345244016fd48c3a2",
+   :composed-after-sha256
+   "baebb2475d84883890c0344d0b1a1ff2d5ec83fcc7d2080ec33c29855c859019"}
+  {:family "phase-03",
+   :path "specs/platform-workflow/tasks.md",
+   :id "hardware",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "1e4481216e89658444b6830c16e702a5180f49033f3f07b1eda7216e7177b7c7",
+   :reviewed-after-sha256
+   "2ed6a1c2ac676ab3895b6e03e8dd56877d74e139a6c65d1b84f822ea8a73860a",
+   :composed-before-sha256
+   "b6b942f28dec56b496287d0c1ce1e185ad7e237a9a7b2febfcba03bde8d4b12d",
+   :composed-after-sha256
+   "033a5967751d898f71dfa828ed7b56e3f6fa472df76fcc417bb5c58cff097834"}
+  {:family "phase-03",
+   :path "specs/platform-workflow/tasks.md",
+   :id "firmware",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "29180b42245235fc2cb5ab4a80ff35e808fe9f4586ebb420c9bbc7dfdec902d9",
+   :reviewed-after-sha256
+   "3d98573e745c81b5001d24d48167bec127573cd86c7b1cca94efdd763252d483",
+   :composed-before-sha256
+   "bc7f804b650876140ca7ca4f63139b055522da08e615ab4de3fe48b52c719488",
+   :composed-after-sha256
+   "c313cfac443fcd9451b9e3ef91056f2ef840c2fe1a0484601f35519f8f775c40"}
+  {:family "phase-03",
+   :path "specs/platform-workflow/tasks.md",
+   :id "kernel",
+   :field-names ["Declared completion and remaining work"],
+   :reviewed-before-sha256
+   "5dbfd482e65831287c53bf6f91c6d1a5788ae792168447c126a38c3937a0021e",
+   :reviewed-after-sha256
+   "df6ca80451a74b3964bbcffaf5960578e5f3aa9e74e875e5aba296cc677be970",
+   :composed-before-sha256
+   "e0d5a4ea398d5d440d7bc297fcb3d0c1977753ac3b6a47cf3bf161bfc4f59ff9",
+   :composed-after-sha256
+   "eaedc0e6482ea75b74693fee51a101f1bf73728f28873975eeb712ba150cfb7a"}
+  {:family "phase-03",
+   :path "specs/lower-workflow/tasks.md",
+   :id
+   "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+   :field-names ["Done when (yes/no)"],
+   :reviewed-before-sha256
+   "c640667fed0375261d824acedb06e7db04ad8a0f333bc82f2bf65484698372d7",
+   :reviewed-after-sha256
+   "8f5909fe72af57b8ee35606589195df9df541955c855d5ff67370e2f9164ad7d",
+   :composed-before-sha256
+   "c640667fed0375261d824acedb06e7db04ad8a0f333bc82f2bf65484698372d7",
+   :composed-after-sha256
+   "8f5909fe72af57b8ee35606589195df9df541955c855d5ff67370e2f9164ad7d"}
+  {:family "phase-03",
+   :path "specs/resolve-workflow/tasks.md",
+   :id
+   "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+   :field-names ["Done when (yes/no)"],
+   :reviewed-before-sha256
+   "63e2140352e6f96d03578d7f7bca628f20ef440b40546ef29362d37565629c45",
+   :reviewed-after-sha256
+   "efba7ec438550baf5ecee6c3aa8cc396cabb47167b2b17a0de979fcfb84e9163",
+   :composed-before-sha256
+   "63e2140352e6f96d03578d7f7bca628f20ef440b40546ef29362d37565629c45",
+   :composed-after-sha256
+   "efba7ec438550baf5ecee6c3aa8cc396cabb47167b2b17a0de979fcfb84e9163"}
+  {:family "phase-15",
+   :path "specs/release-workflow/tasks.md",
+   :id
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c",
+   :reviewed-after-sha256
+   "c80dffb989a50c75e2946578ae32f3e31427a839dd2aeb25532f1225eefeb713",
+   :composed-before-sha256
+   "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c",
+   :composed-after-sha256
+   "c80dffb989a50c75e2946578ae32f3e31427a839dd2aeb25532f1225eefeb713"}
+  {:family "phase-15",
+   :path "specs/release-workflow/tasks.md",
+   :id
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1",
+   :reviewed-after-sha256
+   "0568f8a145be160b60d5e78a073860c1a36454dbf2cbbedc5579ec3035d6afd8",
+   :composed-before-sha256
+   "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1",
+   :composed-after-sha256
+   "0568f8a145be160b60d5e78a073860c1a36454dbf2cbbedc5579ec3035d6afd8"}
+  {:family "phase-15",
+   :path "specs/release-workflow/tasks.md",
+   :id
+   "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d",
+   :reviewed-after-sha256
+   "9acb78d01e3f07eb86414e97b85298320bb2a86906d9c3f9b776d34b39131b96",
+   :composed-before-sha256
+   "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d",
+   :composed-after-sha256
+   "9acb78d01e3f07eb86414e97b85298320bb2a86906d9c3f9b776d34b39131b96"}
+  {:family "phase-17",
+   :path "specs/build-workflow/tasks.md",
+   :id
+   "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
+   :reviewed-after-sha256
+   "e61b2f778fa2ecaeeb75f0233fff6ad83f3c58da67adc35d5b7da2de2c604681",
+   :composed-before-sha256
+   "c2c501938fb0883658ff8d98af26dce7ed887377225d195d5ef26a4bfa38e491",
+   :composed-after-sha256
+   "90539d2a20660e9b93b262c41a7f0b90307f583d0cc753331cdc91c5bfb19c86"}
+  {:family "phase-17",
+   :path "specs/build-workflow/tasks.md",
+   :id
+   "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+   :field-names ["Closing evidence"],
+   :reviewed-before-sha256
+   "23ef09b364fb42c5b5a82282754a86aca93485960a84b7f867055d9db121c035",
+   :reviewed-after-sha256
+   "78e366b524b76e89bbc1f63ac9c81ae8e32141ba8a79399da38fc9917d8562d3",
+   :composed-before-sha256
+   "8a38e816779feb09eae93fcd0d8619fcb9a05d30b571ea80e32803e3703cbe06",
+   :composed-after-sha256
+   "3cf32f037d1e081b874a43dd0bd35c589e674b130c64528ce356968a55d8221a"}],
+ :implementation-acceptance :not-conferred,
+ :resolved-overlaps
+ [{:task-id "ai",
+   :contexts ["A1-A11" "SAFE13" "P10"],
+   :decision
+   "Retain the complete AI criteria and append the independently reviewed safety and profile clauses; no context grants authority or substitutes for actual validation."}
+  {:task-id
+   "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+   :contexts ["R6" "R7/R8" "SAFE8/SAFE13"],
+   :decision
+   "Use the reviewed no-undeclared-duplication predicate, preserve graph-declared authorized R6 repetition only outside R7/R8 recorded-output obligations, and retain all safety replay/audit/retention clauses."}]}

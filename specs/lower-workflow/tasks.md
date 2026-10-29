@@ -15,7 +15,7 @@ separate from implementation completion. Existing admission rules remain in forc
 
 Current evidence/status: Open; partial source evidence above is not closure
 
-Done when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices.
+Done when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces.
 
 - [ ] `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` lower/2: Derive ABI and layout
 

@@ -25,7 +25,7 @@ Status: Open
 
 Evidence baseline: [Authority implementation](../../bootstrap/clojure/src/gravity/capability_validation/authority.clj)
 
-Closing evidence: Real allowed operation and denied widening/revoked/wrong-phase operations
+Closing evidence: Real allowed operation and denied widening/revoked/wrong-phase operations. Enforce [SAFE10](../../docs/phase-02-safety/039-safe10-capability-security-model.md) intersection across source/function, package/dependency, workspace, profile, invocation/deployment and runtime scope. Reject undeclared ambient authority and forbidden declared ambient contexts; check each capability family's scope. Record parent/derived attenuation and lifetime without expansion; enforce provider-specific revocation or reject unsupported requirements unless a static lifetime substitute is valid. Separate build/runtime secrets and prevent public diagnostic, generated-code, cache-key and artifact leakage. Actual external model billing policy remains separate from removed project accounting.
 
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
@@ -33,7 +33,7 @@ Status: Open
 
 Evidence baseline: [Runtime enforcement contract](../../docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md)
 
-Closing evidence: No externally visible operation after denial; explicit grant provenance end to end
+Closing evidence: No externally visible operation after denial; explicit grant provenance end to end. For SAFE10/SAFE13/SAFE14, execute service-boundary allowed/denied fixtures with provider presence/scope, typed error or declared panic and required audit/telemetry; redact secrets. Tool schema checks, side-effect class and human-review policy must precede invocation; package/build authority cannot silently become runtime grants. A compiler authorization record alone is insufficient runtime enforcement evidence.
 
 - [ ] `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity` Bind artifact trust to exact source, compiler and policy identity
 

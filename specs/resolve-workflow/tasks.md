@@ -37,7 +37,7 @@ Done when (yes/no): Resolve aliases/imports/exports against actual module artifa
 
 Current evidence/status: Open; partial source evidence above is not closure
 
-Done when (yes/no): Record dependency versions and initialization edges; reject unapproved cycles and illegal cross-profile imports, preserving effect/capability metadata.
+Done when (yes/no): Record dependency versions and initialization edges; reject unapproved cycles and illegal cross-profile imports, preserving effect/capability metadata. P1/P2/P4/P13: validate direct/facade-required/artifact-only/rejected edges after expansion/resolution; artifact consumption never implies source import. Check facade symbols/effects/grants/memory/runtime/error/safety/provider/provenance evidence against the actual producer/consumer matrix. Record all dependency edges and missing evidence; reject macro-hidden edges and package widening. Core imports require core support or already-present authority-free artifact data; kernel native facades must establish no-GC/no-hidden-allocation/no-throw and supported atomics.
 
 - [ ] `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes` resolve/4: Publish stable indexes
 

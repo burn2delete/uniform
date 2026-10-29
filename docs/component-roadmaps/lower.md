@@ -49,7 +49,7 @@ The following table is generated; edit the ledger and run
 <!-- lower-task-projection:start -->
 | Task | Status | Concrete exit evidence |
 | --- | --- | --- |
-| lower/1: Validate lowering inputs | Open; partial source evidence above is not closure | Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. |
+| lower/1: Validate lowering inputs | Open; partial source evidence above is not closure | Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces. |
 | lower/2: Derive ABI and layout | Open; partial source evidence above is not closure | Implement calling conventions, data/closure/error/resource representations and FFI layouts from actual target rules, rejecting unrepresentable requests. |
 | lower/3: Select explicit providers | Open; partial source evidence above is not closure | Match runtime services and providers to effects/capabilities/profile; reject hidden hosted services and authority-widening fallbacks. |
 | lower/4: Preserve proofs and origins | Open; partial source evidence above is not closure | Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math. |

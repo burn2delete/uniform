@@ -102,3 +102,62 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 - [PERF7](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md#requirements): Reject invalid candidates before benchmarking; emit reproducible selection evidence, complete guards and a valid baseline fallback.
 - [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#requirements): Vector/cache preparation preserves lane independence, alias/bounds proofs, effect order, numeric modes and volatile/MMIO constraints.
 - [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#requirements): Elide checks only under a named dominating proof valid after intervening transforms; record proof/pass/profile/target and invalidation. Regenerate invalidated proof, retain residual checks or reject no-checks compilation; never remove policy checks merely for speed.
+
+## Performance acceptance interfaces
+
+The following source-qualified cases refine the existing Open Opt outcomes in
+[the canonical task source](tasks.md#implementation-tasks). They introduce no
+task IDs or implementation acceptance. The bounded
+[phase-04 proposal](../requirement-reconciliation/performance-family-proposal.edn)
+preserves exact source occurrences, facets, prior decisions and unresolved
+interfaces. Independent source review accepted these qualified criteria in
+receipt `114b87550e9ac475bda1d7d957602485e947954d5ae196af55c0a38716ac6041`.
+Implementation remains unassessed; the broad task text is not proof of full PERF
+coverage.
+
+- `opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts` consumes
+  PERF6 source, typed-core, MIR, compiler, profile, target, provider and workload
+  identities. Exercise accepted, advisory, stale, rejected and required-missing
+  profile-data states; reject required mismatches and silent use of stale data
+  in release optimization. PERF3 reuse tests change each semantic key input,
+  including dependency, provider, build-effect/replay and proof inputs, and
+  require invalidation. This depends on actual typed/MIR identity producers.
+- `opt/current-evidence-and-remaining-work/opt2-implement-structural-families`
+  consumes PERF7 candidate spaces and type/effect/profile/capability/safety/math
+  evidence before measurement. Invalid candidates never reach benchmarking.
+  Exercise complete deterministic guards, overlap rejection and valid fallback
+  when no guard matches. Retain generic-to-specialized source maps and
+  compatibility metadata. This depends on the relevant proof checkers, target
+  feature records and a benchmark producer; a fabricated measurement cannot
+  close it. PERF8 fixtures retain lane/tail/mask, alias/bounds/alignment and
+  numeric conditions, including strict-mode reassociation rejection and ordered
+  volatile/MMIO/atomic/synchronization behavior.
+- `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` and
+  `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` consume
+  PERF10 dominating proof facts and invalidation conditions at each transformed
+  operation. Exercise each check class in its elision table, partial proof with
+  narrower residual checks, missing/non-dominating/invalidated proof rejection,
+  and backend width/alignment/order/exception/numeric assumption changes.
+  Policy checks, including AI human review, require equivalent policy artifacts;
+  speed alone never discharges them. This depends on Legality proof producers
+  and Lower assumption-preservation results, not metadata asserting verification.
+- `opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`
+  exposes PERF2 before/after IR, equivalent handwritten form and actual erased
+  and residual operations. Include allocation, boxing, dispatch, reflection,
+  synchronization, checks, provider/FFI/host calls, closure/iterator state and
+  guards; acceptable residual work is still reported. False zero-cost claims
+  reject. PERF6 decisions retain hot/cold maps, pass/input/benefit/fact/proof
+  records and reproduce from pinned data/compiler inputs. PERF7 selection
+  records retain objective, constraints, rejected alternatives, source/MIR,
+  compiler/backend/provider, target, benchmark and random-seed identities;
+  runtime guard overhead is measured or modeled unless statically erased.
+
+The benchmark producer and reviewed baseline-update authority in PERF5 remain
+unlocated as exact canonical task interfaces. Profiler sample capture alone does
+not entail benchmark statistics, correctness/safety gates or baseline history.
+PERF9's physical latency/jitter contracts, required worst-case or fingerprinted
+empirical evidence, bounded checks/providers and rejection of hidden services or
+unbounded latency also remain explicit missing interfaces. Those physical
+constraints are separate from removed project work accounting. PGO production
+trace privacy/access/retention enforcement and the general non-macro compile-time
+evaluator likewise remain unresolved beyond the scoped consuming tasks.

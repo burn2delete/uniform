@@ -66,6 +66,8 @@ rewrites require checked evidence? Do strict-mode results match the selected
 semantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib
 numeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as
 adjacent proof/search representation, never ordinary runtime equality authority.
+
+SAFE9 acceptance: execute checked/panic/wrapping/saturating/arbitrary-precision/proof-required integer modes, exceptional divisor/shift/minimum-negation cases and explicit float conversion behavior; reject implicit narrowing, hidden target defaults and unapproved relaxed math. Inspect strict/relaxed floating contracts including NaN, infinity, signed zero, rounding and fusion; elementary providers expose domain/range/accuracy/target evidence. Invalidated numeric proofs restore checks or reprove; target instructions preserve mode or are guarded/rejected. Explicit wrapping/saturating narrowing retains the source conflict with checked/proven narrowing until adjudicated. P2/P12 profile interface: check portable/core and exact/symbolic/interval/bitvector/rounded/certified mode eligibility and explicit conversions/assumptions; reject hidden target-default or provider-dependent core math. Formal symbolic lowering emits symbolic IR, theorem/assumption/trusted-kernel records and checked conclusions; imported proof validation and actual arithmetic remain distinct interfaces. Dependencies consume Types/Legality facts and declared proof-provider outputs, not completion of another component.
 <!-- domains-task-projection/math:end -->
 
 ## Schema
@@ -89,6 +91,71 @@ invalid values? Are migration loss and secret exposure prevented or explicitly
 rejected? Integration: Types to schema, Emit generated artifacts, Build schema
 identity, Query/AI/Stdlib consumers. Decision owner: schema maintainer;
 recommendation: shared canonical schema IR with explicit target adapters.
+
+Source-specific acceptance for S1-S9 remains open. S1: expanded manifests and
+static types preserve every declared schema family, recursive strategy,
+refinement classification, version, hash, source span, compatibility mode,
+validation boundary and derivation target. Shared validators cover API,
+database, message, workflow, AI, config, decoded-data, FFI and artifact sinks;
+schema validation alone cannot clear stronger sink taint. Semantic diffs cover
+field removal/rename, nullability, enums/variants, refinements and binary layout;
+missing compatibility or migration policy rejects.
+
+S2: codecs declare representability, unknown/duplicate/missing-field,
+numeric/string/byte/variant and conversion policies, retain schema hashes and
+pass round trips. Reject schemaless or unbounded polymorphic decoding, implicit
+lossy conversion and decoded values used before intended-boundary validation.
+Recursion/length checks may enforce concrete encoding or target representation
+legality; arbitrary input/work quotas confer no acceptance authority.
+
+S3: byte-for-byte vectors cover every supported canonical type family and
+schema/version identity, encoded-byte map/set ordering, absent versus null,
+numeric special values, UTF-8/normalization, timestamps and metadata policy.
+Host order, identity, timezone and layout cannot affect bytes. Reject values
+outside the declared domain and noncanonical hash/signature inputs.
+
+S4/S5: generated GraphQL SDL/resolvers and OpenAPI routes, errors, validators
+and contract tests preserve source constraints, nullability, auth/grants,
+effects, provenance and compatibility. Route method/path, parameter/header/body
+schemas, response/status/error models, versioning and required idempotency
+policy remain explicit. Unsupported mappings require explicit
+validated adapters or rejection. Typed clients retain schema/operation hashes
+and operation validation. Reject hidden resolver/handler effects, weakened
+types, unvalidated HTTP input and undeclared breaking changes.
+
+S6: declared-dialect tables/views, constraints, indexes and typed row adapters
+preserve source schemas. Typed migration plans record from/to identities,
+transaction/backfill policy, rollback or forward-only behavior and deployment
+order. Additive, breaking and destructive fixtures require data-loss decisions,
+any policy-required review and evidence; execution requires write/admin grants.
+Check shared API/client/AI compatibility and fixture databases or equivalent
+plan validation. Reject lossy adapters, hidden dialect dependence in portable
+claims, unauthorized migration and string-only migration without schema diffs.
+
+S7: schema-hash-bound binary codecs and FFI inputs declare field widths/order,
+endian, alignment/padding, discriminants, pointer ownership/lifetime, target and
+calling convention. Cross-target byte vectors reject implicit host layouts,
+uninitialized padding and unstable fields in stable formats. Runtime wrapper
+execution remains a Runtime consumer, separate from layout production.
+
+S8: config loaders record deterministic source precedence, defaults/required
+fields, environment identity, secret access/rotation/audit and redaction policy.
+Reads require declared effects and grants; external inputs stay tainted until
+validated. Hermetic builds capture config inputs or reject the reads. Reload
+fixtures require compatibility, lifecycle and observability policy. Reject
+ambient reads, missing validation and secrets in logs, manifests, source maps,
+prompts, traces or diagnostics except policy-allowed redacted markers.
+
+S9: validators cover each declared artifact kind and the common versioned
+source/compiler/dependency/pass provenance, profile/target/backend/runtime,
+effects/grants, content identity, safety/proof/diagnostic/conformance envelope.
+Preserve relevant unsafe-island, AI/tool, generated-code and redaction records;
+require canonical hash/signing/replay/release inputs, bootstrap provenance for
+graph cycles, and compatibility/migration records for version changes. Missing
+required release evidence rejects at the schema gate; Release owns the actual
+release decision. Each S1-S9 fixture records its stable diagnostic family,
+schema/artifact identity, failing path or edge, applicable source/target/boundary
+and remediation. These clauses specify future evidence, not passing results.
 <!-- domains-task-projection/schema:end -->
 
 ## Query
@@ -131,6 +198,16 @@ calls deduplicated? Are invalid transitions rejected? Integration: MIR/Schema,
 Runtime durability, AI review steps, Stdlib workflows. Decision owner: workflow
 maintainer; recommendation: versioned event log as replay input, explicit
 provider boundary for storage rather than a hidden database choice.
+
+DOM9 acceptance also requires declared CRDT identity/order/merge/update and
+serialization laws, causal history, offline authorization, conflict visibility,
+tombstone/compaction and migration policy. Classify coordination as free,
+required or deferred; reject nonmonotonic rules without an explicit mechanism.
+The checkout fixture must not double-charge on replay. The local-first cart
+fixture must converge after partition/heal, duplicate/reordered delivery,
+restart and migration, and reject invalid merge laws or hidden intent loss.
+Dependencies: Schema state/event versions, Runtime durable storage/replay and
+Auth grants. These criteria add no acceptance credit or provider selection. P9 profile interface: emit typed step input/output/effect/grant/retry/timeout/cancellation/idempotency/compensation and event/replay records; validate versioned messages and persisted state with migration/taint/retention/order/delivery policy. Execute recovery separately from admitted step construction; replay must consume recorded nondeterminism without repeating external actions. Reject schema drift without migration, untyped external failure, unrecorded replay inputs and missing required compensation. Service-boundary admission consumes Schema/Auth and Runtime facts, not their whole-task completion.
 <!-- domains-task-projection/workflow:end -->
 
 ## AI
@@ -253,6 +330,10 @@ remain data? Are actions denied without grants/review? Are evaluations bound to
 exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
 Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
 artifacts and explicit model identity, never a vendor SDK side path.
+
+SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions.
+
+P10 profile interface: keep model admission/execution, tool schema/grant/review admission, generated-program compiler validation, prompt-role/taint checks, memory retention/deletion/privacy and secret-sink gates distinct. Emit prompt/model/provider/tool/policy/review/input/output/error/retry/generated-code digests and replay records. An evaluation hook emits separately identified results and grants no action authority. Reject prompt policy escalation, unvalidated outputs, missing applicable review, ungranted destructive tools and unauthorized secret disclosure. Provider billing limits remain external; no compiler work quota is introduced. Runtime model/tool/memory and Schema/Auth/generated-code APIs supply interface facts.
 <!-- domains-task-projection/ai:end -->
 
 ## GPU
@@ -274,6 +355,8 @@ Integration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner
 accelerator maintainer; recommendation: one named reference target first,
 additional targets only by their own conformance evidence. Target choice is
 not silently adopted by this roadmap.
+
+P11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.
 <!-- domains-task-projection/gpu:end -->
 
 ## UI
@@ -294,6 +377,17 @@ rendering follow typed semantics? Are unsafe or unauthorized actions rejected?
 Integration: Types/MIR, Lower/Emit, Runtime and Stdlib UI. Decision owner: UI
 maintainer; recommendation: explicit adapter contract rather than browser host
 semantics defining the language. Backend choice remains an explicit decision.
+
+DOM6 browser acceptance requires the ticket-list slice, typed API/schema drift
+checks and source-mapped loading, validation and unsafe-sink failures. DOM7
+mobile acceptance separately requires an adopted platform adapter with permission,
+lifecycle, main-thread/actor, null/error and taint contracts; background timeout,
+retry and cancellation; local schema/migration/encryption/retention/conflict
+policy; and keychain/keystore grants and redaction. The offline ticket fixture
+must exercise permission denial, offline edit, sync retry and crash source maps
+on a named simulator/device. Dependencies: Schema generated clients and local
+migrations, Auth grants, Runtime lifecycle and Backend mobile artifacts. Browser
+evidence cannot establish mobile conformance; both remain Open.
 <!-- domains-task-projection/ui:end -->
 
 ## Rollup and nonclaims
