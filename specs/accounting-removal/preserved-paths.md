@@ -90,8 +90,24 @@ semantic incorporation of the other changes.
   `sh08-ft-call-constraints-with-context` at observed main `e3d990e9`. This is
   an incorporation proposal pending independent disposition, not a code rewrite
   or whole-caller equivalence claim.
+- ACC-01 owns stacked mixed-ledger draft PR598 at
+  `d58d61c4a83f09ebd3c742a3cc13b9d000244759`, tree
+  `5b895b67131de6d209b50585551840fd3954011f`, based on PR595's exact
+  `99893151`. Its `mixed-ledgers.md` and `mixed-ledgers-census.edn` bind the
+  two preserved List-to-Set/public Map-key test files and four emitter censuses.
+  Missing optional ordinary tags are accepted as in the historical source;
+  reserved payload/domain/descriptor identities keep stripped owned-family
+  records subject to full reconstruction, canonical equality and uniqueness.
+  A native record guard precedes field lookup. Both complete positive test
+  bodies, all 30 original malformed-candidate cases and negative assertions
+  remain; 16 stripped-tag and eight native-record cases are added. Payment-only
+  assertions are retired while their semantic complete-status assertion remains.
+  Source conservation, boundary 6/11 and lint pass; all six genuine tests,
+  actual native callbacks and composed acceptance remain unrun. Surrounding
+  lowering accounting, DSE, private Map-key and runtime implementation are not
+  covered by this semantic source increment.
 - Routine CI completed with seven successes and two skips for PR591 at
-  `1c0d699f`, PR593 at `c8f16877` and this evidence draft's prior head
+  `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151` and this evidence draft's prior head
   `a6406f7f`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
@@ -198,7 +214,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | --- | --- |
 | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, private GIS3 products, native DATA/comparison arenas and C7 nil/List joins with acceptance pending. The ordinary parameter-choice rule is already exactly inlined on assessed main; its source-incorporation proposal awaits independent disposition. General verifier integration and remaining descriptor/derive/step deltas still lack complete successor disposition. |
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. DSE joins, remaining predicate/query/construction headers, nil/List element contracts and ordinary-local-call composition remain. |
-| `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. Typed-direct-call compatibility/argument validation, typed LSET/Map-key census and remaining descriptor consumers need explicit disposition. |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. Typed-direct-call compatibility/argument validation and remaining descriptor consumers still need explicit disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores six GIS3 and three native DATA/comparison tests; PR595 restores five complete nil/List join tests. Listed adaptations and genuine UNRUN status remain explicit. Public fresh-verifier, ordinary-function, structural-vector, opaque-ordering and other old-only cases still need test-level mapping, not a whole-file incorporation claim. |
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
@@ -209,8 +225,8 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Original reader controls remain NONPASS with five failures. Supplemental source comparisons isolate four superseded routing-mismatch assertions and the missing native-guard name correspondence after checking complete guard bodies. All original results and current source/tamper obligations remain explicit pending independent adaptation disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. Six helper differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. The source proposal awaits independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | PR462 is runtime conversion only. Typed LSET both-order row/fact composition and forged joins still require disposition separately from payment assertions. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | Private alias repair does not establish all public Map-key mixed-ledger controls. Retain semantic composition/forgeries while classifying payment-only assertions. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and every original negative assertion/candidate. It adds eight stripped-tag and four native-record mutations; payment-only assertions are removed while the semantic complete-status assertion remains. Actual C7/emitter and consumer/runtime acceptance remain unrun, separate from PR462's runtime conversion scope. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and all original public Map-key composition/forgery controls. Eight stripped-tag and four native-record mutations are added; the payment test retains its semantic assertion only. Genuine acceptance and independent source/results disposition remain pending; private alias repair alone supplies no acceptance. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | PR595 migrates four direct C7 join calls only; it claims no runtime implementation or genuine execution. DSE lowering, authenticated composition and runtime kernels belong to the full DSE successor. Runtime drafts do not accept DSE or all old-only assertions. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj` | PR595 migrates two C7 join derive calls only, leaving Effects implementation and genuine composition open. DSE and ordinary-local-call LSET/Map-key effect joins remain separate from PR533's PMK-only aggregate preparation. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.gravity` | ACC-01 draft PR593 restores exact original bytes under `sh-08/preserved` with the complete private source-product implementation and positive/coherent-negative tests. Actual source/Core/product acceptance remains unrun; numeric proof is explicitly not established. |
