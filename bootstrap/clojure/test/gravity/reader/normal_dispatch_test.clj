@@ -34,6 +34,7 @@
 
 (declare sh03-reader-host-bigint! sh03-reader-host-decimal-value!
          sh03-reader-host-character-value! sh03-reader-host-values!
+         reader-standard-dispatch-products-match?
          sh03-reader-semantic-value-reference-keys sh03-reader-source-slice-keys
          standard-reader-policy sh03-reader-source-scalar-boundaries!
          sh03-reader-semantic-value-closure! sh03-reader-form-value-reference!
@@ -50,7 +51,7 @@
             sh03-reader-codepoints-text! sh03-reader-semantic-reference-value!])
 (install! (str reader-root "00815-sh03-reader-normalization-deferred.clj")
           '[sh03-reader-host-atomic-value! sh03-reader-metadata-map!
-            sh03-reader-host-values! sh03-reader-host-products-match?])
+            sh03-reader-host-values! reader-standard-dispatch-products-match?])
 (install! "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/146156-sh03-reader-adapt-identities.clj"
           '[semantic-late-sh03-reader-adapt-products!-identities])
 
@@ -255,6 +256,26 @@
                                  (assoc-in input [:source-unit :identity-inputs :extra] value)))))))
     (is (zero? @calls))))
 
+(deftest direct-path-and-normal-span-refuse-before-callbacks
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        calls (atom [])
+        foreign-path (proxy [Object] []
+                       (toString [] (swap! calls conj :string) "foreign.gravity"))
+        foreign-span (proxy [java.util.HashMap] []
+                       (get [_] (swap! calls conj :get) 0))
+        handler-calls (atom 0) original reader-dispatch/dispatch]
+    (with-redefs [reader-dispatch/dispatch
+                  (fn [& args] (swap! handler-calls inc) (apply original args))]
+      (is (= :text
+             (:reason (failure #(reader-dispatch/dispatch-standard-tag
+                                 (assoc (:source-unit input) :path foreign-path)
+                                 standard-reader-policy 'uuid (first (:forms input))
+                                 "550e8400-e29b-41d4-a716-446655440000")))))
+      (is (= :native-map
+             (:reason (failure #(execute (assoc-in input [:forms 0 :span] foreign-span))))))
+      (is (empty? @calls))
+      (is (zero? @handler-calls)))))
+
 (defn- reconstruction-fixture [input]
   (let [result (execute input)
         ids {"form/0" :form-0 "form/1" :form-1}]
@@ -265,7 +286,7 @@
      :observations (:extension-dispatch-observations result)}))
 
 (defn- reconstructed? [input candidate]
-  (sh03-reader-host-products-match?
+  (reader-standard-dispatch-products-match?
    (get-in input [:source-unit :path]) (:bytes input) (:content-id input)
    (:boundaries input) (:forms input) (:index input) (:source-unit input)
    (:ids candidate) (:forms candidate) (:observations candidate)))

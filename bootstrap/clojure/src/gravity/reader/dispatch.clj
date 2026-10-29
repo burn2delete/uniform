@@ -293,6 +293,15 @@
                                    key [:line :column]] (get position key))))
     (reject! :span)))
 
+(defn validate-standard-form!
+  "Check native source-form provenance before hashing or span inspection."
+  [form]
+  (native-map! form clojure.lang.Keyword)
+  (when-not (= :source (:origin form)) (reject! :origin))
+  (text! (:form-id form))
+  (span! (:span form))
+  form)
+
 (defn dispatch-standard-tag
   "Normal SH03 host-decoding seam, after the existing source/result checks.
 
@@ -302,11 +311,9 @@
   [source-unit reader-policy tag form payload]
   (let [policy (validate-standard-tags! source-unit reader-policy [tag])
         policy-id (:id policy)]
-    (native-map! form clojure.lang.Keyword)
-    (when-not (= :source (:origin form)) (reject! :origin))
-    (text! (:form-id form))
+    (validate-standard-form! form)
+    (text! (:path source-unit))
     (text! payload)
-    (span! (:span form))
     (let [seed {:source-id (:source-id source-unit) :form-id (:form-id form)
                 :source-path (:path source-unit) :origin (:origin form)
                 :span (:span form) :datum payload}

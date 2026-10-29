@@ -46,7 +46,7 @@ Clojure definitions with injected parsed graphs and semantic tables, real
 source-unit construction, byte hashes and registered Date/UUID handlers.
 It does not fabricate a successful authenticator or launch a Gravity parser.
 
-- Normal/direct dispatch: 17 tests, 207 assertions, zero failures/errors.
+- Normal/direct dispatch: 18 tests, 211 assertions, zero failures/errors.
 - Language boundary through the prescribed `-M:test` command: 6 tests,
   11 assertions, zero failures/errors.
 - All changed production files read successfully with `*read-eval* false`.
@@ -84,3 +84,23 @@ Independent exact-source review and genuine adapter execution remain separate
 gates. Full extension-policy/authentication completion, effectful normal tags,
 arbitrary handlers, mapping, release, self-hosting and seed retirement remain
 open. The canonical Reader task and accepted historical receipts are unchanged.
+
+## Independent review correction
+
+ACC12 requested changes on `1c10242e4c1bc68557f70c1ed932e2a3615ac464`,
+receipt SHA256
+`21440cddd43920a232f19b2e75eb013e70e4cab2a59e7bca042075674ab36446`.
+A direct standard-dispatch caller could supply a foreign source-path object
+that reached canonical hashing before the String check. The corrected direct
+entry validates the path before seed hashing; an Object `toString` tripwire
+requires zero callbacks and zero handler invocations. The normal host walk
+also validates the native form/span before inspecting its byte extent, with a
+foreign map `get` tripwire requiring zero callbacks. The new comparison helper
+uses the semantic name `reader-standard-dispatch-products-match?`; historical
+declarations and wire identifiers are unchanged. The earlier source remains
+changes-requested evidence. The successor requires its own review.
+
+The earlier CI static job also rejected the missing declaration of the
+test-loaded comparison helper. Its semantic name is now declared alongside
+the existing exact-definition fixture entrypoints. No lint exemption or
+workflow change is introduced.

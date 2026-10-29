@@ -75,7 +75,7 @@
              (sh03-reader-semantic-value-closure!
               source-path source-bytes source-content-id boundaries
               raw-tokens raw-forms semantic-index)
-             (sh03-reader-host-products-match?
+             (reader-standard-dispatch-products-match?
               source-path source-bytes source-content-id boundaries raw-forms
               semantic-index source-unit form-id-map form-tree
               (:extension-dispatch-observations products)))))))

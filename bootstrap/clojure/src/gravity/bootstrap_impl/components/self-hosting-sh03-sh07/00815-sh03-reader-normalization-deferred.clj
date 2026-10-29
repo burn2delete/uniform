@@ -102,6 +102,7 @@
                   (when-not (= 1 (count child-values))
                     (sh03-reader-boundary-fail!
                      source-path :sh03-reader-tag-payload form {}))
+                  (reader-dispatch/validate-standard-form! form)
                   (when-not (and (integer? (get-in form [:span :byte-start]))
                                  (integer? (get-in form [:span :byte-end]))
                                  (<= 0 (get-in form [:span :byte-start])
@@ -167,7 +168,7 @@
                  (cond-> observations dispatch-result
                    (conj (:observation dispatch-result)))))))))
 
-(defn sh03-reader-host-products-match?
+(defn reader-standard-dispatch-products-match?
   [source-path source-bytes source-content-id scalar-boundaries raw-forms
    semantic-index source-unit form-id-map form-tree observations]
   ;; Only the registered pure standard handlers enter this reconstruction.
