@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit four project records and the complete full-product scope only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections retain generated views and unchanged architecture/acceptance boundaries:
+Edit four project records and the complete full-product scope only in [tasks.md](tasks.md#implementation-tasks). The product scope now gives its four existing decision records and seven existing conditional implementation outputs literal Open task interfaces. These original roadmap sections retain generated views and unchanged architecture/acceptance boundaries:
 
 - [finite projects and remaining tasks](../../docs/component-roadmaps/platform.md#finite-projects-and-remaining-tasks)
 - [architecture decision gate](../../docs/component-roadmaps/platform.md#architecture-decision-gate)

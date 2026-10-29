@@ -28,10 +28,39 @@ a task interface. Those inventories do not establish the final task scope.
 ## Current review and composition
 
 The coordinator routed existing reviewers for Foundation82, Math/Backends134
-and 65 applied Compiler/Testing aliases. The 65 alias edges remain proposed.
+and 65 applied Compiler/Testing aliases. The 65 alias identities and their
+conservation now have independent source-only acceptance, retained in
+[alias-decisions.edn](alias-decisions.edn), SHA256
+`a8fd4dd9123a764137dab609c1389ffed717a2035a3843b51771114ba8a403fc`.
+Review receipt:
+`11410e1bf915276ec07b8f7cf73b41f882b302c4893278d70234b553ba46d1cc`.
+The four Testing predicate corrections are accepted at source-predicate scope.
+The unlocated historical Testing review is still unauthenticated; the current
+review does not replace it. The 366 source-entailment flags and all 577
+original missing-interface records remain visible, including the three later
+retired records whose gaps survive in history. No implementation credit follows.
+
+Foundation82 review receipt
+`db4f00723aab9d3bb3ce8a238f283e847c7a3507af5ed63646924121511403a1`
+supplied four field corrections. Their exact predecessors were checked against
+the later serialized source compositions, and the refreshed field projection
+is retained in [foundation-task-interfaces.edn](foundation-task-interfaces.edn),
+SHA256 `d1e9844ae25fc866fa54ed73a89f7576df5fb8e736ceca2d31a552a0a0b03f57`.
+MIR verification and nondeterministic replay gain existing supplementary task
+links; two runtime gap descriptions acknowledge current stable IDs while
+retaining missing whole-predicate coverage. Reapplication and a forged gap
+predecessor reject; referenced task hashes and literal IDs match. No task is
+added by these four mappings. Full canonical manifest composition is pending.
+
 Later accepted isolated source compositions and their history are preserved;
 the D1/D2 proposed residual count is not adopted as an accepted baseline.
 No new canonical manifest application or implementation acceptance is claimed.
+
+The Platform Product extension has eleven proposed Open task interfaces in
+its existing authority: four declared architecture decisions and seven
+conditional product outputs. These are separate from the 138 frozen component
+inputs, which include only four Platform target-conformance records. Their
+independent scope/count review remains pending; no final denominator is claimed.
 
 ## Validation boundary
 

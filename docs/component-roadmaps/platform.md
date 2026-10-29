@@ -118,6 +118,102 @@ outputs into concrete interfaces and yes/no fixtures before implementation
 completion can be claimed; until then this is explicitly an architecture
 tranche, not a falsely closed full-platform roadmap.
 
+The following task interfaces make those existing outputs actionable. The four
+architecture records and seven product outputs are distinct from the four
+language target-conformance projects above. All remain Open; naming their
+interfaces adopts no architecture and supplies no implementation evidence.
+Product tasks remain in scope while their declared prerequisites are open.
+
+<!-- platform-product-implementation-tasks:start -->
+- [ ] `platform-product/adopt-hardware-contract` Adopt the product hardware contract
+
+Status: Open
+
+Closing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration
+
+Dependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned
+
+- [ ] `platform-product/adopt-kernel-contract` Adopt the product kernel and service contracts
+
+Status: Open
+
+Closing evidence: Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot
+
+Dependencies: The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned
+
+- [ ] `platform-product/adopt-application-contract` Adopt the product application inventory
+
+Status: Open
+
+Closing evidence: Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory
+
+Dependencies: The existing application surface decision record; accountable product owner remains unassigned
+
+- [ ] `platform-product/adopt-physical-boundary` Adopt the product physical delivery boundary
+
+Status: Open
+
+Closing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners
+
+Dependencies: The existing physical product boundary decision record; accountable hardware/product owner remains unassigned
+
+- [ ] `platform-product/implement-hardware` Implement and verify the adopted hardware
+
+Status: Open
+
+Closing evidence: Uniform-authored selected hardware design satisfies the adopted execution, timing/reset and device contract through named simulation or hardware workloads, rejects incompatible operations and retains source-to-artifact provenance
+
+Dependencies: platform-product/adopt-hardware-contract and platform-product/adopt-physical-boundary; applicable hardware target-conformance evidence remains separately required
+
+- [ ] `platform-product/implement-firmware` Implement and verify the adopted boot firmware
+
+Status: Open
+
+Closing evidence: Uniform-authored firmware performs the adopted startup and boot handoff on the selected substrate, with failure cases, device/memory boundaries and image/link provenance verified
+
+Dependencies: Adopted hardware, kernel/boot and physical contracts plus platform-product/implement-hardware; applicable firmware target-conformance evidence remains separate
+
+- [ ] `platform-product/implement-os` Implement and verify the adopted OS services
+
+Status: Open
+
+Closing evidence: Uniform-authored selected OS services satisfy the adopted memory, scheduling, IPC and isolation contracts, execute accepted workloads and enforce declared failure and authority cases
+
+Dependencies: platform-product/adopt-kernel-contract and the adopted hardware/firmware interfaces; kernel target-conformance alone does not prove this selected product implementation
+
+- [ ] `platform-product/implement-drivers` Implement and verify the adopted device drivers
+
+Status: Open
+
+Closing evidence: Uniform-authored drivers implement the adopted device interfaces with ownership, grants, transfer/lifetime and device-failure tests on the named simulator or device
+
+Dependencies: Adopted hardware/device and kernel/service contracts; device target-conformance remains separate from the selected product drivers
+
+- [ ] `platform-product/implement-applications` Implement and verify the adopted applications
+
+Status: Open
+
+Closing evidence: Uniform-authored adopted applications execute each declared workload and its success/failure fixtures through the selected OS and device services, retaining source and dependency provenance
+
+Dependencies: platform-product/adopt-application-contract and its declared OS/driver interfaces; compiler example execution is insufficient
+
+- [ ] `platform-product/integrate-execution` Verify product boot-to-application execution
+
+Status: Open
+
+Closing evidence: The integrated hardware, firmware, OS, driver and application stack boots on the adopted substrate, runs the declared workloads and enforces isolation, authority and device-failure cases with exact composition provenance
+
+Dependencies: The five selected product implementation tasks; passing each component independently does not prove their integrated execution
+
+- [ ] `platform-product/distribute-product` Produce the reproducible product distribution
+
+Status: Open
+
+Closing evidence: Reproducible product distribution binds the integrated sources, tools, artifacts and hardware boundary to verification records; physical deliverable and bring-up evidence exist when required by the adopted physical scope
+
+Dependencies: platform-product/integrate-execution and platform-product/adopt-physical-boundary; fabrication and physical access remain conditional, and no purchase or external service action is authorized here
+<!-- platform-product-implementation-tasks:end -->
+
 External prerequisites are not language features: HDL synthesis, simulation,
 place-and-route, FPGA/programming tools, foundry/fabrication, board manufacture,
 firmware signing and physical device access may be required by the adopted

@@ -1,5 +1,27 @@
 # Evidence: Platform workflow migration
 
+## Current product task-interface reconciliation
+
+Against input `6276c94b0b753c888ef8fecc794bcc81245ea3b3`, the unchanged
+product scope already named four architecture decision records and seven
+conditional product outputs. Those eleven outputs now have literal Open task
+IDs in the same sole task authority. The four original language target project
+records and historical migration suffix are retained. No ISA, kernel model,
+application inventory, physical deliverable or implementation is adopted.
+
+The product parser and generated roadmap conserve all eleven interfaces
+separately from the four target-conformance records. Focused validation passed
+5 tests / 86 assertions, including duplicate identity, missing region and false
+acceptance rejection. The initial added test omitted its clojure.set require
+and failed to compile; the explicit require corrected it before the passing
+run. Both document validators and the boundary gate (6 tests / 11 assertions)
+passed. No target execution or external action occurred.
+
+The first SH projection check rejected the changed source fingerprint. Its
+prior review must remain historical while an explicit pending source-version
+successor binds the new task/roadmap bytes. Independent acceptance of these
+eleven source-derived interfaces and their all-project count remains pending.
+
 ## Source and scope
 
 Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
