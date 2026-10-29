@@ -117,8 +117,70 @@
     (is (:historical-reader-suffix-unchanged bridge))
     (is (= 3 (count (:accepted-current-scoped-evidence view))))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
-    (is (= (:applying-main bridge)
-           (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"])))))
+    (let [successor (edn/read-string
+                     (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
+          historical-source (first (:source-files successor))
+          source (first (:source-files (or (:current-main-composition successor) successor)))]
+      (is (= (:applying-main bridge) (get-in historical-source [:before :commit])))
+      (is (= (get-in source [:after :commit])
+             (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"]))))))
+
+(deftest reader-dispatch-successor-retains-exact-source-and-open-acceptance
+  (let [view (sh-crosswalk/build)
+        historical (edn/read-string
+                    (slurp "specs/sh-family-crosswalk/reader-dispatch-source-version.edn"))
+        bridge (or (:current-main-composition historical) historical)]
+    (is (= :pending-independent-source-version-review (:status bridge)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= sh-crosswalk/predecessor-mapping-review
+           (get-in view [:mapping-review :predecessor-review :predecessor-review])))
+    (is (= (:applying-input-fingerprint bridge)
+           (get-in view [:mapping-review :predecessor-review :input-fingerprint])))
+    (is (not= (:applying-input-fingerprint bridge)
+              (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
+    (doseq [{:keys [path before after]} (:source-files bridge)]
+      (is (= (:commit after) (get-in view [:applying-source-pins path])))
+      (is (= (:sha256 before)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+      (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+      (is (= (:sha256 after)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path)))))
+    (let [path "specs/reader-workflow/tasks.md"
+          source (first (:source-files bridge))
+          before (sh-crosswalk/git-source (get-in source [:before :commit]) path)
+          after (slurp path)
+          predicates #"(?m)^- \[[ x]\] `reader/[^\n]+|^Done when \(yes/no\): [^\n]+"]
+      (is (= (re-seq predicates before) (re-seq predicates after)))
+      (is (= (second (str/split before #"<!-- reader-implementation-tasks:end -->" 2))
+             (second (str/split after #"<!-- reader-implementation-tasks:end -->" 2))))
+      (is (str/includes? after "normal Reader integration and independent acceptance remain open.")))
+    (when-let [incoming (:incoming-main bridge)]
+      (let [path "docs/self-hosting-slice-ownership.edn"
+            own (edn/read-string (sh-crosswalk/git-source
+                                 "2e0292c61603aad200df397e397e94e3c7d24818" path))
+            main (edn/read-string (sh-crosswalk/git-source incoming path))
+            current (edn/read-string (slurp path))]
+        (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main))
+               (:standalone-test-owners current)))))))
+
+(deftest pkg5-task-source-successor-preserves-population-and-review-history
+  (let [view (sh-crosswalk/build)
+        bridge (:pkg5-interface-successor (edn/read-string (slurp "specs/sh-family-crosswalk/source-version-bridge.edn")))
+        lineage (get (edn/read-string (slurp "specs/sh-family-crosswalk/task-authority-lineage.edn")) "build")
+        rows (:retained-records lineage)]
+    (is (= 5 (count rows)))
+    (is (empty? (:added-ids lineage)))
+    (is (= 4 (count (filter :unchanged rows))))
+    (is (= ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"] (:changed-records lineage)))
+    (is (every? #(= "Open" (get-in % [:after :status])) rows))
+    (is (:historical-suffix-unchanged lineage))
+    (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
+      (is (= (:applying-task-source bridge) (get-in view [:applying-source-pins path]))))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
+    (is (= "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57"
+           (get-in view [:mapping-review :pkg5-source-review :receipt-sha256])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

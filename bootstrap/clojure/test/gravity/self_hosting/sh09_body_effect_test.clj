@@ -647,11 +647,11 @@
         (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
           (is (= :rejected (:status (leaf 'body-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))
         (is (= :not-applicable (:status (leaf 'body-lp-compatibility core call edge callee 0 :gravity.type/list nodes bindings 65536))))))
-    (is (= {:status :accepted :work-count 2} (leaf 'body-lc-type-work [type] 2)))
-    (is (= :work-limit (:reason (leaf 'body-lc-type-work [type] 1))))
-    (is (= :accepted (:status (leaf 'body-lc-type-work [{:kind :gravity.type/vector :shape :literal :element-types [type]}] 3))))
+    (is (= {:status :accepted} (leaf 'body-lc-validate-types [type])))
+
+    (is (= :accepted (:status (leaf 'body-lc-validate-types [{:kind :gravity.type/vector :shape :literal :element-types [type]}]))))
     (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :ownership :owned)]]
-      (is (= :rejected (:status (leaf 'body-lc-type-work [bad] 65536)))))))
+      (is (= :rejected (:status (leaf 'body-lc-validate-types [bad])))))))
 
 (deftest body-homogeneous-list-head-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -1128,7 +1128,7 @@
     (let [inherited (leaf 'body-node-record node nil (assoc-in graph [:input :transitive] #{:error/throw}) (:type type-result))]
       (is (= #{:memory/allocate} (:direct inherited)))
       (is (= #{:memory/allocate :error/throw} (:transitive inherited))))
-    (is (true? (valid (assoc-in facts [:list-query-context :type-checks :present-get :work-count] 0))))
+    (is (true? (valid (assoc-in facts [:list-query-context :type-checks :present-get :status] :rejected))))
     (is (true? (valid (assoc-in facts [:list-query-context :type-checks] {}))))
     (doseq [changed [((ns-resolve upstream 'private-map-keys-cross-family-descriptor) descriptor)
                      (assoc descriptor :entry-proof-work 0)
@@ -2153,7 +2153,7 @@
             (is (false? (leaf 'body-call-joins-with-foreign-valid? changed-core changed-facts changed-bindings {})))
             (is (empty? @callbacks))))
         (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains] {}))))
-        (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains (ids :call) :work-count] 0))))
+        (is (true? (valid (assoc-in facts [:equality-context :keyword-set-domains (ids :call) :status] :rejected))))
         (doseq [mutate [#(assoc % :call-type-facts [])
                         #(update % :call-type-facts into (:call-type-facts %))
                         #(assoc-in % [:call-type-facts 0 :dispatch] :direct-keyword-set-equality)
@@ -2439,7 +2439,7 @@
     (doseq [bad [(assoc nk :extra true) (assoc nk :value-type n) (assoc nk :value-type :gravity.type/integer)]]
       (is (false? (leaf 'body-first-order-value-type? bad)))
       (is (false? (leaf 'body-normal-compatible? bad bad)))
-      (is (= :rejected (:status (leaf 'body-lc-type-work [bad] 65536)))))
+      (is (= :rejected (:status (leaf 'body-lc-validate-types [bad])))))
     (is (true? (leaf 'body-normal-compatible? nk nk)))
     (is (false? (leaf 'body-normal-compatible? nk k)))))
 
@@ -2534,10 +2534,9 @@
                  :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
     (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
       (let [type {:kind :gravity.type/list :shape :homogeneous :element-type element}
-            result (leaf 'body-lr-type-work type (positional members) 65536)]
-        (is (= :accepted (:status result)))
-        (is (= result (leaf 'body-lr-type-work type (positional members) (:work-count result))))
-        (is (= :list-return-work-limit (:reason (leaf 'body-lr-type-work type (positional members) (dec (:work-count result))))))))
+            result (leaf 'body-lr-validate-types type (positional members))]
+        (is (= {:status :accepted :relation :all-positional-elements-match
+                 :checked-member-count (count members)} result))))
     (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}
           actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
           {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
@@ -2573,7 +2572,7 @@
     (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
                     (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
                     (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]
-      (is (= :rejected (:status (leaf 'body-lr-type-work {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual 65536)))))))
+      (is (= :rejected (:status (leaf 'body-lr-validate-types {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual)))))))
 
 (deftest body-list-prepend-development-kernel
   (let [s :gravity.type/string homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
@@ -2629,7 +2628,10 @@
           row (first (:constraint-ledger facts))]
       (is (= :accepted (:status context)) (pr-str context))
       (is (= {:list-prepend 2 :vector-append 1} (frequencies (vals (get-in context [:context :families])))))
-      (is (> (get-in context [:context :type-checks nested-id :work-count]) 1024))
+      (let [checked (get-in context [:context :type-checks nested-id])]
+        (is (not-any? #(contains? checked %) [:work-count :construction-work]))
+        (is (= (positional [nested]) (:result-type checked)))
+        (is (not-any? #(contains? checked %) [:operand-work :result-work])))
       (is (true? (leaf 'body-call-joins-with-foreign-valid? core facts bindings {})))
       (is (= context (leaf 'body-va-context request facts bindings (:work-count context))))
       (is (= :body-deferred-work-limit (:reason (leaf 'body-va-context request facts bindings (dec (:work-count context))))))
@@ -8677,8 +8679,8 @@
 
 (deftest body-string-set-carrier-private-values-development-kernel
   ;; Independent original C8 reconstruction of inferred entry and return domains.
-  (let [invoke (fn [function args] (apply leaf function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+  (let [invoke (fn [function args] (apply leaf function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
         record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
         call (fn [id args] {:core-node-id id :argument-node-ids args})
         edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
@@ -8702,14 +8704,14 @@
     (is (true? (invoke 'body-ss-type? [carrier])))
     (is (true? (invoke 'body-is-value-type? [carrier])))
     (is (false? (invoke 'body-ds-type? [carrier])))
-    (let [produced (:result-type (invoke 'body-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
-          checked (invoke 'body-lc-type-work [[produced] 2])
+    (let [produced (:result-type (invoke (quote body-ssin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} s]]))
+          checked (invoke 'body-lc-validate-types [[produced]])
           nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
       (is (= carrier produced))
-      (is (= {:status :accepted :work-count 2} checked))
-      (is (= {:status :rejected :reason :work-limit :work-count 1} (invoke 'body-lc-type-work [[produced] 1])))
-      (is (= {:status :accepted :work-count 3} (invoke 'body-lc-type-work [[nested] 3])))
-      (is (= :work-limit (:reason (invoke 'body-lc-type-work [[nested] 2]))))
+      (is (= {:status :accepted} checked))
+
+      (is (= {:status :accepted} (invoke 'body-lc-validate-types [[nested]])))
+
       (require 'gravity.self-hosting.sh08-function-call-type-test)
       (doseq [[input-name family expected] [['list-construction-input "lc" nested]
                                            ['keyword-predicate-input "kp" b]
@@ -8757,9 +8759,8 @@
                      (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'body-is-value-type? [wrong])))
-        (is (= :rejected (:status (invoke 'body-lc-type-work [[wrong] 65536]))))
-        (is (zero? @callbacks)))))))
-
+        (is (= :rejected (:status (invoke 'body-lc-validate-types [[wrong]]))))
+        (is (zero? @callbacks))))))
 (deftest body-string-set-carrier-comparison-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} s :gravity.type/string
@@ -9532,36 +9533,35 @@
       (is (zero? @callbacks)))))
 
 (deftest body-symbol-set-carrier-development-kernel
-  (let [invoke (fn [function args] (apply leaf function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+  (let [invoke (fn [function args] (apply leaf function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
-        work #(invoke 'body-lc-type-work [%1 %2])
-        produced (:result-type (invoke 'body-syin-type-work [[(finite []) s] 65536]))]
+        work #(invoke 'body-lc-validate-types [%1])
+        produced (:result-type (invoke (quote body-syin-validate-types) [[(finite []) s]]))]
     (is (= carrier produced))
     (is (true? (invoke 'body-syc-type? [produced])))
     (is (false? (invoke 'body-ss-type? [produced])))
     (is (false? (invoke 'body-is-value-type? [produced])))
     (is (false? (invoke 'body-ds-type? [produced])))
-    (is (= {:status :accepted :work-count 2} (work [produced] 2)))
-    (is (= {:status :rejected :reason :work-limit :work-count 1} (work [produced] 1)))
-    (is (= {:status :rejected :reason :work-limit :work-count 0} (work [produced] 0)))
-    (is (= {:status :accepted :work-count 3} (work [nested] 3)))
-    (is (= {:status :rejected :reason :work-limit :work-count 2} (work [nested] 2)))
-    (is (= {:status :accepted :work-count 2} (work [string-carrier] 2)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/set] 1)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/never] 1)))
-    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}] 65536))))
-    (is (= :rejected (:status (invoke 'body-syin-type-work [[:gravity.type/set s] 65536]))))
-    (is (= :rejected (:status (invoke 'body-syin-type-work [[:gravity.type/unknown s] 65536]))))
+    (is (= {:status :accepted} (work [produced])))
+
+
+    (is (= {:status :accepted} (work [nested])))
+
+    (is (= {:status :accepted} (work [string-carrier])))
+    (is (= {:status :accepted} (work [:gravity.type/set])))
+    (is (= {:status :accepted} (work [:gravity.type/never])))
+    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}]))))
+    (is (= :rejected (:status (invoke (quote body-syin-validate-types) [[:gravity.type/set s]]))))
+    (is (= :rejected (:status (invoke (quote body-syin-validate-types) [[:gravity.type/unknown s]]))))
     (doseq [value [s :gravity.type/never]]
-      (let [checked (invoke 'body-syin-type-work [[carrier value] 65536]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
+      (let [checked (invoke (quote body-syin-validate-types) [[carrier value]]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
         (is (= :accepted (:status checked)))
         (is (= expected (:result-type checked)))
         (is (nil? (:input-extent checked)))
-        (is (= checked (invoke 'body-syin-type-work [[carrier value] (:work-count checked)])))
-        (is (= :symbol-set-insertion-work-limit (:reason (invoke 'body-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
+        (is (not-any? #(contains? checked %) [:work-count :operand-work :result-work :construction-work]))))
     (is (= :accepted (:status (invoke 'body-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier (finite [s])] 65536]))))
@@ -9572,7 +9572,7 @@
                                          ['keyword-predicate-input "kp" :gravity.type/bool]]]
       (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
             {:keys [core node call edge nodes bindings types module]} input
-            checked (work [produced] 2)
+            checked (work [produced])
             header (invoke (symbol (str "body-" family "-source")) [core node call edge nodes bindings types module checked])
             descriptor (invoke (symbol (str "body-" family "-finish")) [header])]
         (is (map? header))
@@ -9593,27 +9593,20 @@
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'body-syc-type? [wrong])))
-        (doseq [budget [0 1 65536]]
-          (is (= :rejected (:status (work [wrong] budget))))
-          (is (zero? @callbacks)))))
-    (let [nest (fn [n value] (loop [i 0 out value] (if (= i n) out (recur (inc i) {:kind :gravity.type/list :shape :literal :element-types [out]}))))
-          wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
-          row {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 64 carrier))}
-          bulk {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1024 row))}
-          bulk-result (work [bulk] 65536)]
-      (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
-      (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
-      (is (= :rejected (:status (work [wide] 65536))))
-      (is (= :rejected (:status bulk-result)))
-      (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
-      (is (<= (:work-count bulk-result) 65536))))))
-
+        (is (= :rejected (:status (work [wrong]))))
+        (is (zero? @callbacks))))
+    (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
+                     wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
+                     late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                   (is (= {:status :accepted} (work [value]))))
+                 (is (= :unsupported-type (:reason (work [late])))))))
 (deftest body-symbol-set-carrier-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
         c7 (ns-resolve upstream 'invoke-c7)
-        carrier (:result-type (c7 'sh08-syin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/symbol] 65536]))]
+        carrier (:result-type (c7 (quote sh08-syin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} :gravity.type/symbol]]))]
     (doseq [arguments [[carrier :gravity.type/symbol]
                        [carrier :gravity.type/never]]]
       (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
@@ -9736,8 +9729,6 @@
       (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier needle] 65536])))))
 )
 )
-
-
 (defn- vector-first-symbol-loop-c8-cold-input []
   ;; Complete normalized DATA only. No C5/C6, artifact seal, or admission claim.
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)

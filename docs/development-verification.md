@@ -301,8 +301,8 @@ Run `sh22-ordered-map-lookup-preserves-stored-false-and-nil` in
 `gravity.self-hosting.sh22-standard-library-test`. Real G/Q `:ordered-map-assoc`
 results feed `:ordered-map-get`: stored false/Nil yield `Some` with an explicit
 `:value`, while an absent key yields `None` without `:value`. Check insertion,
-replacement/order, original-value preservation, full-256 replacement versus
-new-entry rejection, complete malformed/duplicate validation before a hit and
+replacement/order, original-value preservation, replacement in a 256-entry map
+and insertion of a 257th entry, complete malformed/duplicate validation before a hit and
 fresh producer/consumer verification with result substitutions. The same
 original-delegating lookup observer must record a valid lookup as well as zero
 calls for rejected carriers. Existing collection/boundary and result-verifier
@@ -3351,7 +3351,8 @@ Use the existing development runner and three namespaces above with exact vars
 `current-gravity-symbol-set-carrier-contains-development-kernel` and
 `current-gravity-symbol-set-carrier-contains-fixtures-development-kernel`.
 Retain finite Symbol and Keyword/Character/String membership, insertion, carrier
-storage, quota, source-ID and transfer checks. Independently reconstruct v2
+storage, source-ID and transfer checks; migrate quota-only assertions with their
+enforcing source. Independently reconstruct v2
 descriptor/constraint/fact/ledger joins; v1 records cannot claim carrier input.
 Ordinary unselected producerless rows remain legal; malformed selected rows do
 not. Reuse valid unchanged evidence, not stale policy identities.
@@ -4615,9 +4616,11 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-vector-loop-nth-fixtures-development-kernel
 ```
 
-These checks include exact source/call/edge joins, malformed bounds evidence,
-operand effects and work-limit boundaries. The local throwing-call kernel also
-exercises the actual loop-effect derivation and throwing-call verifier together;
+These checks include exact source/call/edge joins, malformed bounds evidence
+and operand effects; migrate their remaining work-limit assertions with the
+enforcing source while retaining index and extent legality. The local
+throwing-call kernel also exercises the actual loop-effect derivation and
+throwing-call verifier together;
 checked loop/recur nodes must not be excluded by a stale operation whitelist.
 Fixture parsing alone does not establish rejection or execution.
 The existing runtime evaluates index expressions and retains vector, integer
@@ -8276,10 +8279,12 @@ not semantic cache keys. Selection, fail-fast behavior and timeout remain
 keyed. Effective configuration and consumed inputs are revalidated before
 execution, after execution and before admitting a hit.
 
-`gravity.c2-artifact-identity-test`, `gravity.c11-mir-test` and
-`gravity.compiler-pass-manifest-test` use re-audited explicit production
-closures, including their five, six and fifteen nested implementation files
-respectively. The [Reader identity reuse acceptance record](verification-reuse.md)
+`gravity.c11-mir-test` and `gravity.compiler-pass-manifest-test` use re-audited
+explicit production closures, including their six and fifteen nested
+implementation files respectively. `gravity.c2-artifact-identity-test` retains
+its expanded input declaration for audit but requires fresh execution until
+real expanded-closure producer evidence permits renewed cache admission.
+The [Reader identity reuse acceptance record](verification-reuse.md)
 distinguishes unrelated documentation/test bodies from consumed tests and
 governing contracts. The runner never infers `require`
 edges. Declared paths, roles, modes and bytes, runner/contracts, both supported

@@ -1,6 +1,4 @@
 
-(def max-reader-form-depth 512)
-(def max-reader-form-graph-depth (inc max-reader-form-depth))
 (def co-canonical-source-extensions
   source-unit/co-canonical-source-extensions)
 

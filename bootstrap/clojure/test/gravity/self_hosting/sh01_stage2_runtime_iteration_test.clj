@@ -9404,10 +9404,10 @@
           (is (false? (invoke 'p15-s23-typed-parameter-declaration? declaration type (mutate context)))))
         (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
           (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))))
-    (is (= {:status :accepted :work-count 2} (invoke 'p15-s23-lc-type-work [type] 2)))
-    (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [type] 1))))
+    (is (= {:status :accepted} (invoke 'p15-s23-lc-validate-types [type])))
+
     (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :schema :secret)]]
-      (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [bad] 65536)))))))
+      (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [bad])))))))
 
 (deftest current-gravity-homogeneous-list-call-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -11957,7 +11957,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:quote 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -11965,7 +11965,7 @@
                       (is (= [:gravity.type/map] (mapv :type (get-in functions ['classify-map :parameters]))))
                       (is (= [:gravity.type/keyword] (mapv :type (get-in functions ['classify-keyword :parameters]))))
                       (is (nil? (:recursive-proof facts)))
-                      (is (= #{1} (set (map :operand-type-work predicates))))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))))
                   (println (pr-str {:ba-map-predicate-positive name :extension extension :function-table-entry-invocations (count results)
                                     :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                                  :c8-verification (- t4 t3) :entry-execution-including-expectations (- t6 t5)}
@@ -13602,7 +13602,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -13792,7 +13792,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -14030,7 +14030,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -18155,10 +18155,9 @@
                  :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
     (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
       (let [type {:kind :gravity.type/list :shape :homogeneous :element-type element}
-            result (leaf 'p15-s23-lr-type-work type (positional members) 65536)]
-        (is (= :accepted (:status result)))
-        (is (= result (leaf 'p15-s23-lr-type-work type (positional members) (:work-count result))))
-        (is (= :list-return-work-limit (:reason (leaf 'p15-s23-lr-type-work type (positional members) (dec (:work-count result))))))))
+            result (leaf 'p15-s23-lr-validate-types type (positional members))]
+        (is (= {:status :accepted :relation :all-positional-elements-match
+                 :checked-member-count (count members)} result))))
     (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}
           actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
           {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
@@ -18194,7 +18193,7 @@
     (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
                     (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
                     (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]
-      (is (= :rejected (:status (leaf 'p15-s23-lr-type-work {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual 65536)))))))
+      (is (= :rejected (:status (leaf 'p15-s23-lr-validate-types {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual)))))))
 
 (deftest current-gravity-list-prepend-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -25670,11 +25669,11 @@
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
                   {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
       (let [data ((ns-resolve upstream 'finite-present-return-type-control) type)
-            checked (invoke 'p15-s23-pe-selected-work (:header data) {:calls [(:call data)] :parameter-index 0}
-                            [(:shape data)] (:types data) false 65536)
+            checked (invoke 'p15-s23-pe-validate-selected (:header data) {:calls [(:call data)] :parameter-index 0}
+                            [(:shape data)] (:types data) false)
             expected (invoke 'p15-s23-mg-present-finish (:header data) (:shape data))]
         (is (= :accepted (:status checked)))
-        (is (= 0 (:work-count checked)))
+        (is (not (contains? checked :work-count)))
         (is (= (:descriptor data) expected))))
     (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
                      (assoc-in descriptor [:presence-proof :entries] :invalid)
@@ -28340,10 +28339,11 @@
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke 'p15-s23-ssin-type-work [receiver value] 65536)
+                  domain (invoke (quote p15-s23-ssin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
@@ -28370,7 +28370,6 @@
                   rejected (compile context own)]
               (is (= :rejected (:status rejected)))
               (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
-
 (deftest current-gravity-string-set-insertion-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -28736,8 +28735,8 @@
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
-        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))]
-  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
         record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
         call (fn [id args] {:core-node-id id :argument-node-ids args})
         edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
@@ -28761,14 +28760,14 @@
     (is (true? (invoke 'p15-s23-ss-type? [carrier])))
     (is (true? (invoke 'p15-s23-is-value-type? [carrier])))
     (is (false? (invoke 'p15-s23-ds-type? [carrier])))
-    (let [produced (:result-type (invoke 'p15-s23-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
-          checked (invoke 'p15-s23-lc-type-work [[produced] 2])
+    (let [produced (:result-type (invoke (quote p15-s23-ssin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} s]]))
+          checked (invoke 'p15-s23-lc-validate-types [[produced]])
           nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
       (is (= carrier produced))
-      (is (= {:status :accepted :work-count 2} checked))
-      (is (= {:status :rejected :reason :work-limit :work-count 1} (invoke 'p15-s23-lc-type-work [[produced] 1])))
-      (is (= {:status :accepted :work-count 3} (invoke 'p15-s23-lc-type-work [[nested] 3])))
-      (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [[nested] 2]))))
+      (is (= {:status :accepted} checked))
+
+      (is (= {:status :accepted} (invoke 'p15-s23-lc-validate-types [[nested]])))
+
       (require 'gravity.self-hosting.sh08-function-call-type-test)
       (doseq [[input-name family expected] [['list-construction-input "lc" nested]
                                            ['keyword-predicate-input "kp" b]
@@ -28816,9 +28815,8 @@
                      (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
-        (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [[wrong] 65536]))))
-        (is (zero? @callbacks)))))))
-
+        (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [[wrong]]))))
+        (is (zero? @callbacks))))))
 (deftest current-gravity-string-set-carrier-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -33692,10 +33690,11 @@ else
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke 'p15-s23-ksin-type-work [receiver value] 65536)
+                  domain (invoke (quote p15-s23-ksin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
@@ -33722,7 +33721,6 @@ else
                   rejected (compile context own)]
               (is (= :rejected (:status rejected)))
               (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
-
 (deftest current-gravity-keyword-set-insertion-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -35842,10 +35840,11 @@ else
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke 'p15-s23-syin-type-work [receiver value] 65536)
+                  domain (invoke (quote p15-s23-syin-validate-types) [receiver value])
                   rejected (compile candidate 65536)]
               (is (= :rejected (:status rejected)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+              (is (not (contains? domain :work-count)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
                      (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
@@ -35872,7 +35871,6 @@ else
                   rejected (compile context own)]
               (is (= :rejected (:status rejected)))
               (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
-
 (deftest current-gravity-symbol-set-insertion-lowering-id-guard-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -36209,9 +36207,10 @@ else
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:insertion-semantics :carrier-schema])))
         (is (= [:independently-established-symbol-only :guarded-atomic-symbol-value]
                ((juxt :member-domain :member-equality) (:insertion-semantics descriptor))))
-        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
-               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:insertion-semantics descriptor))))
+        (is (not (contains? (:insertion-semantics descriptor) :representation-unit-policy)))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record) (:transitive record)))
         (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
@@ -36264,31 +36263,30 @@ else
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
-        work #(invoke 'p15-s23-lc-type-work [%1 %2])
-        produced (:result-type (invoke 'p15-s23-syin-type-work [[(finite []) s] 65536]))]
+        work #(invoke 'p15-s23-lc-validate-types [%1])
+        produced (:result-type (invoke (quote p15-s23-syin-validate-types) [[(finite []) s]]))]
     (is (= carrier produced))
     (is (true? (invoke 'p15-s23-syc-type? [produced])))
     (is (false? (invoke 'p15-s23-ss-type? [produced])))
     (is (false? (invoke 'p15-s23-is-value-type? [produced])))
     (is (false? (invoke 'p15-s23-ds-type? [produced])))
-    (is (= {:status :accepted :work-count 2} (work [produced] 2)))
-    (is (= {:status :rejected :reason :work-limit :work-count 1} (work [produced] 1)))
-    (is (= {:status :rejected :reason :work-limit :work-count 0} (work [produced] 0)))
-    (is (= {:status :accepted :work-count 3} (work [nested] 3)))
-    (is (= {:status :rejected :reason :work-limit :work-count 2} (work [nested] 2)))
-    (is (= {:status :accepted :work-count 2} (work [string-carrier] 2)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/set] 1)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/never] 1)))
-    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}] 65536))))
-    (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/set s] 65536]))))
-    (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/unknown s] 65536]))))
+    (is (= {:status :accepted} (work [produced])))
+
+
+    (is (= {:status :accepted} (work [nested])))
+
+    (is (= {:status :accepted} (work [string-carrier])))
+    (is (= {:status :accepted} (work [:gravity.type/set])))
+    (is (= {:status :accepted} (work [:gravity.type/never])))
+    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}]))))
+    (is (= :rejected (:status (invoke (quote p15-s23-syin-validate-types) [[:gravity.type/set s]]))))
+    (is (= :rejected (:status (invoke (quote p15-s23-syin-validate-types) [[:gravity.type/unknown s]]))))
     (doseq [value [s :gravity.type/never]]
-      (let [checked (invoke 'p15-s23-syin-type-work [[carrier value] 65536]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
+      (let [checked (invoke (quote p15-s23-syin-validate-types) [[carrier value]]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
         (is (= :accepted (:status checked)))
         (is (= expected (:result-type checked)))
         (is (nil? (:input-extent checked)))
-        (is (= checked (invoke 'p15-s23-syin-type-work [[carrier value] (:work-count checked)])))
-        (is (= :symbol-set-insertion-work-limit (:reason (invoke 'p15-s23-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
+        (is (not-any? #(contains? checked %) [:work-count :operand-work :result-work :construction-work]))))
     (is (= :accepted (:status (invoke 'p15-s23-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier (finite [s])] 65536]))))
@@ -36299,7 +36297,7 @@ else
                                          ['keyword-predicate-input "kp" :gravity.type/bool]]]
       (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
             {:keys [core node call edge nodes bindings types module]} input
-            checked (work [produced] 2)
+            checked (work [produced])
             header (invoke (symbol (str "p15-s23-" family "-source")) [core node call edge nodes bindings types module checked])
             descriptor (invoke (symbol (str "p15-s23-" family "-finish")) [header])]
         (is (map? header))
@@ -36320,20 +36318,14 @@ else
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'p15-s23-syc-type? [wrong])))
-        (doseq [budget [0 1 65536]]
-          (is (= :rejected (:status (work [wrong] budget))))
-          (is (zero? @callbacks)))))
-    (let [nest (fn [n value] (loop [i 0 out value] (if (= i n) out (recur (inc i) {:kind :gravity.type/list :shape :literal :element-types [out]}))))
-          wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
-          row {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 64 carrier))}
-          bulk {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1024 row))}
-          bulk-result (work [bulk] 65536)]
-      (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
-      (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
-      (is (= :rejected (:status (work [wide] 65536))))
-      (is (= :rejected (:status bulk-result)))
-      (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
-      (is (<= (:work-count bulk-result) 65536))))
+        (is (= :rejected (:status (work [wrong]))))
+        (is (zero? @callbacks))))
+    (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
+                     wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
+                     late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                   (is (= {:status :accepted} (work [value]))))
+                 (is (= :unsupported-type (:reason (work [late]))))))
 (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         _ (require upstream) c7 (ns-resolve upstream 'invoke-c7)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}]
@@ -36356,7 +36348,6 @@ else
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= lowered (compile context (:work-count lowered))))
         (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))))))
-
 (deftest current-gravity-symbol-set-carrier-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -36517,9 +36508,10 @@ else
         (is (nil? (:result-extent descriptor)))
         (is (= [:homogeneous-symbol-set-only :gravity/homogeneous-symbol-set-type-v1 :none]
                ((juxt :result-evidence :carrier-schema :cardinality-analysis) (:insertion-semantics descriptor))))
-        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
-               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:insertion-semantics descriptor))))
+        (is (not (contains? (:insertion-semantics descriptor) :representation-unit-policy)))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record) (:transitive record)))
         (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
@@ -36581,7 +36573,7 @@ else
         finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
         k :gravity.type/symbol s :gravity.type/string
-        carrier (:result-type (c7 'sh08-syin-type-work [[(finite []) k] 65536]))
+        carrier (:result-type (c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -36726,7 +36718,6 @@ else
         (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
         (is (nil? (:value rejected)))))
 ))
-
 (deftest current-gravity-symbol-set-carrier-contains-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

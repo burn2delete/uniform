@@ -1,0 +1,164 @@
+{:source-manifest
+ {:checkout-head "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :snapshot-kind :preserved-uncommitted-manifest,
+  :published-manifest-sha256 "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690",
+  :sha256
+  "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"},
+ :nonclaims
+ [:resolver-implementation
+  :GOV10-repair
+  :whole-model-acceptance
+  :canonical-manifest-adoption],
+ :authority :two-field-amendment-not-task-or-acceptance-ledger,
+ :conservation
+ {:accepted-isolated-source-review-backlog 586,
+  :requirements 1225,
+  :unchanged-prefix-sha256
+  "ee2f727bc9bd31988c0722678147e8471555e0c958bc5a315e528917116b3c78",
+  :outside-two-fields :identical,
+  :unchanged-suffix-sha256
+  "ac9ea228eb50b0e41e65d6e7969a7a4aa79c8bc4c48b8b985e459b3ad3ca71e3",
+  :facets 29182,
+  :missing-interface-census :577-not-recomputed,
+  :applied-manifest-sha256
+  "38545162bbcff6c38052e58a296b26aa43e4ac8ec7a4641531d6e7cec5905158",
+  :proposed-unverified-backlog 470,
+  :original-manifest :unchanged,
+  :implementation-acceptance :unassessed},
+ :source-facets
+ [{:id "facet/ai-build-tools/pkg5/1694-1763",
+   :start-line 44,
+   :end-line 44,
+   :start-byte 1694,
+   :end-byte 1763,
+   :raw-sha256
+   "9f19c491e7ea8e13a6997dce55662ebd8d014ca7683f6eb71e6a0453fc6566c5",
+   :source-occurrence-id
+   "PKG5/source/8dc34d347bc84f94d7378a2507499c47d8aab1d82ac7565b97a1c7bbc184bb00",
+   :unit-ids ["behavior/pkg5/yank-revocation-admission"]}
+  {:id "facet/ai-build-tools/pkg5/2238-2273",
+   :start-line 61,
+   :end-line 61,
+   :start-byte 2238,
+   :end-byte 2273,
+   :raw-sha256
+   "f0a754ca77fba4385215872bdd70121747bb2def6aed766f542e8113b2a90646",
+   :source-occurrence-id
+   "PKG5/source/c195583df68dee6677f2e83c8d3554fac5029af21dc3563aa42c7ead5f03fd07",
+   :unit-ids ["behavior/pkg5/yank-revocation-admission"]}
+  {:id "facet/ai-build-tools/pkg5/3538-3616",
+   :start-line 108,
+   :end-line 108,
+   :start-byte 3538,
+   :end-byte 3616,
+   :raw-sha256
+   "3c6e83d6d5907f86755bfd98171e8d904df45328358b77a326e62e6bbd081e38",
+   :source-occurrence-id
+   "PKG5/source/8c099944ea02884166b303ca505e9fcba97ad6afe9d5cad98158c2bc9557b366",
+   :unit-ids
+   ["behavior/pkg5/dependency-authority-admission"
+    "behavior/pkg5/yank-revocation-admission"]}
+  {:id "facet/ai-build-tools/pkg5/4019-4066",
+   :start-line 119,
+   :end-line 119,
+   :start-byte 4019,
+   :end-byte 4066,
+   :raw-sha256
+   "22941527182f6ee11440e9922a82b6193c9d13be193f025c664fe7a01d9228bb",
+   :source-occurrence-id
+   "PKG5/source/1af315b1adbd5a2608874e4cd37ce7b23892e2860bdcd24d434f0db09a1a9cd6",
+   :unit-ids ["behavior/pkg5/yank-revocation-admission"]}],
+ :source-document
+ {:path
+  "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+  :sha256
+  "2fc55b3c00387a525fec352d9bb1c4d2f5ce5c94c9fc4cf1172e7940ac8962b6"},
+ :after
+ {:additional-task-interfaces [],
+  :observable-boundary
+  "Build owns normalization, graph execution, package/artifact production and verification decisions; source semantics and grant issuance remain with their actual components.",
+  :obligation
+  "Apply declared yank/revocation policy without silently replacing or erasing the locked dependency's history.",
+  :source-facet-ids
+  ["facet/ai-build-tools/pkg5/1694-1763"
+   "facet/ai-build-tools/pkg5/2238-2273"
+   "facet/ai-build-tools/pkg5/3538-3616"
+   "facet/ai-build-tools/pkg5/4019-4066"],
+  :acceptance-authority :canonical-task-only,
+  :task-gap
+  {:state :implementation-and-evidence-unassessed,
+   :prior-gap
+   {:path "docs/component-roadmaps/build.md",
+    :source-commit "b9b9cac7346dca78312f4d3618380f09676ad174",
+    :sha256
+    "3501614cb2e8fd97bd649219f21ca0b1f6a84b2a55e1836f0d77b458e7532c20",
+    :marker nil,
+    :id nil,
+    :anchor "remaining-tasks-and-evidence",
+    :reason
+    "Canonical component section has coarse open outcomes/service rows but no exact stable task ID/marker for this observable behavior. Workflow migration T001-T004 are documentation delivery, not its implementation acceptance.",
+    :qualification
+    "No task ID or bounded canonical implementation marker is invented from a roadmap row or checked migration task."},
+   :qualification
+   "Exact current canonical task interface is bound; the task remains Open, implementation is unassessed, and no global missing-interface census is recomputed."},
+  :atomicity :reviewed,
+  :nonoverlap :proposed,
+  :id "behavior/pkg5/yank-revocation-admission",
+  :historical-support [],
+  :scope-reviews
+  [{:artifact-sha256
+    "8b0d1b18f2743d6bcc44faacf6c359cc8f6c18e3b691cb2f640a9375fa95be82",
+    :candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+    :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+    :scope :bounded-family-atomicity,
+    :implementation-acceptance :not-conferred,
+    :global-nonoverlap :pending-cross-family-completion}],
+  :task-reference
+  {:path "specs/build-workflow/tasks.md",
+   :sha256
+   "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :marker "build-implementation-tasks",
+   :id
+   "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"},
+  :proposal-batch "ai-build-tools"},
+ :kind :requirement-task-interface-amendment,
+ :requirement-id "behavior/pkg5/yank-revocation-admission",
+ :before
+ {:additional-task-interfaces [],
+  :observable-boundary
+  "Build owns normalization, graph execution, package/artifact production and verification decisions; source semantics and grant issuance remain with their actual components.",
+  :obligation
+  "Apply declared yank/revocation policy without silently replacing or erasing the locked dependency's history.",
+  :source-facet-ids
+  ["facet/ai-build-tools/pkg5/1694-1763"
+   "facet/ai-build-tools/pkg5/2238-2273"
+   "facet/ai-build-tools/pkg5/3538-3616"
+   "facet/ai-build-tools/pkg5/4019-4066"],
+  :acceptance-authority :canonical-task-only,
+  :task-gap
+  {:path "docs/component-roadmaps/build.md",
+   :source-commit "b9b9cac7346dca78312f4d3618380f09676ad174",
+   :sha256
+   "3501614cb2e8fd97bd649219f21ca0b1f6a84b2a55e1836f0d77b458e7532c20",
+   :marker nil,
+   :id nil,
+   :anchor "remaining-tasks-and-evidence",
+   :reason
+   "Canonical component section has coarse open outcomes/service rows but no exact stable task ID/marker for this observable behavior. Workflow migration T001-T004 are documentation delivery, not its implementation acceptance.",
+   :qualification
+   "No task ID or bounded canonical implementation marker is invented from a roadmap row or checked migration task."},
+  :atomicity :reviewed,
+  :nonoverlap :proposed,
+  :id "behavior/pkg5/yank-revocation-admission",
+  :historical-support [],
+  :scope-reviews
+  [{:artifact-sha256
+    "8b0d1b18f2743d6bcc44faacf6c359cc8f6c18e3b691cb2f640a9375fa95be82",
+    :candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+    :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+    :scope :bounded-family-atomicity,
+    :implementation-acceptance :not-conferred,
+    :global-nonoverlap :pending-cross-family-completion}],
+  :proposal-batch "ai-build-tools"},
+ :allowed-fields [:task-reference :task-gap],
+ :task-source-commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e"}

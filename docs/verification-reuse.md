@@ -78,6 +78,12 @@ compiler replay and does not write the dashboard.
 
 ## Exact Reader leaf closure
 
+The current Reader identity catalog policy requires fresh execution while the
+expanded lexical closure lacks a real producer evidence bundle. Its explicit
+input declaration is retained for audit and regression checks, but the planner
+does not authorize narrowed cache reuse. The earlier producer and reuse results
+below retain only their original source/input scope.
+
 The opt-in is only `gravity.c2-artifact-identity-test`. Its leaf production closure is
 `bootstrap/clojure/src/gravity/c2_artifact_identity.clj` and
 `c2_artifact_identity/{artifacts,canonical,incremental,operations,projections}.clj`.
@@ -1136,3 +1142,351 @@ representation with real producer/hit/invalidation evidence, or a complete
 source-grounded necessity decision, remain open. RV4 still depends on that
 criterion and the separately held RV1 correction. The uncertain RV1 operation
 and candidate are untouched.
+
+### RV2: literal namespace dependency regression fence
+
+The three existing explicit leaf closures now have a non-evaluating regression
+control over the literal `:require` and `:use` declarations in their declared
+Clojure inputs. Every repository namespace must resolve to exactly one source
+or test path already present in that closure. A newly imported helper, missing
+helper, source/test shadow or unsupported dependency spelling fails the control.
+Synthetic mutation controls distinguish an unchanged declaration from an added
+undeclared dependency and its explicitly declared successor; reader evaluation
+is disabled. This control grants no cache admission and does not resolve
+dynamic loads, callbacks, initialization effects or transitive host behavior.
+
+Its finite acceptance is the three current declarations plus the mutation,
+unknown/shadow and non-evaluation negatives, independent exact review and
+integration. Validation and review are pending on this candidate. The held
+compatibility cohort and ACC13 Syntax seam are untouched; original RV1/RV2/RV4
+residual criteria remain open.
+
+The first actual control run on `c2da65a2`, tree `b7925f8a`, failed: two
+tests, 66 passes, one failure, zero errors, natural exit 1 at 256 MiB with
+Bootstrap absent and clean source bookends. It identified a concrete missing
+dependency: the current Reader identity test requires and calls
+`gravity.c2-lexical-validation`. Its facade and three implementation namespaces
+were absent from the explicit closure. The correction binds those four files
+and permits only the three exact nested lexical paths for this existing test.
+No production implementation or other namespace admission changes.
+
+Additional injected cache controls require miss/hit conservation followed by
+comment-only mutation invalidation, a changed renewed key, and missing-file
+rejection for each lexical input, without executing any compiler or leaf body.
+These controls test closure mechanics, not a new real producer proof. Earlier
+producer evidence retains its original consumed-source attribution; it is not
+retroactively evidence for this corrected closure. Renewed controls and
+independent current-source/result review remain required.
+
+The omitted import entered the current test through PR523's depth regression;
+the production facade itself did not acquire that dependency. The corrected
+control run on `baa6319d`, tree `a1bd36d5`, passed 3 tests / 103 assertions,
+natural exit 0 at 256 MiB, Bootstrap absent and clean bookends. These are
+injected cache-mechanics controls. The planner successor also preserves the
+lexical facade's existing paired owner when admitting its three exact nested
+paths; missing ownership and an unknown nested path remain refusals. Its
+renewed planner and control results are pending.
+
+The next exact-source run on `fdab1acd`, tree `1145c8a3`, retained three
+passing controls (103 assertions) but the planner composition test errored on
+main's existing unknown `private-collection-chain-test` catalog entry. Overall:
+4 tests, 103 passes, 0 failures, 1 error, natural exit 1, Bootstrap absent.
+That separate owner's registration remains an integration dependency; the
+candidate neither whitelists the namespace nor changes fail-closed catalog
+behavior. A direct owner-record control is added without weakening the full
+planner test, which must pass after the catalog dependency is integrated.
+
+The direct owner-record successor on `0863b599`, tree `4d0c1bc8`, passed
+4 tests / 118 assertions, natural exit 0 at 256 MiB, Bootstrap absent with clean
+source bookends. Docs passed 240 / 19. Static lint found zero errors and two
+existing planner warnings, which remain visible. The source reader successor
+also rejects caller-provided tagged readers without invoking their callbacks.
+Independent review, the catalog-dependent planner test, a separately reviewed
+real leaf producer proof for the expanded closure, and current-main integration
+remain open. This finite correction does not close whole RV2 or RV4.
+
+Final focused controls passed on `05af79b50728003d2d83d7b94caf329125a5a685`,
+tree `71b903903dc4e0ec894821f4bb67625b21be3032`: 4 tests / 120 assertions,
+natural exit 0, actual 268435456-byte heap, Bootstrap absent, no compiler
+launched and identical clean bookends. This includes tagged-reader callback
+nonexecution. The final log SHA-256 is
+`76c423cfccf416fde13efa79876f7168c56b30b266f524094dc6a9f283b529c1`.
+The two lint warnings match baseline `cbf5c210`; no suppression was added.
+This documentation-only successor retains that source attribution. The full
+catalog-dependent planner test, independent review and real leaf producer
+evidence remain pending; no historical failure is replaced by these passes.
+
+Current-main composition at `ef9e14dc0846c160a599704ae513a2cde14bfe3d`,
+tree `bece619a8a39c8a4ad59e4bca1a841f86da259dc`, normally merges the
+preserved `8406358d` Reader correction with main `2855b6cc`. PR537 supplies
+the already integrated PC registration and independently adopted SH ownership
+source-version metadata. The full affected planner suite passed 63 tests /
+619 assertions, including the catalog-dependent Reader identity closure check;
+the three literal-import and injected lexical invalidation controls passed
+3 tests / 105 assertions. Both results had zero failures/errors, natural exit
+0 at 268435456-byte heap, Bootstrap absent and identical clean source bookends.
+Guarded semantic launcher call counts were zero. The planner's existing
+namespace-listing child was metadata-only; cache/classpath operations remained
+injected and isolated test fixtures did not acquire the shared host broker.
+The new control log SHA-256 is
+`d91d6e8eaad031e02c89466879e43dc9a1d6e65e5892e49fedd735356b5532a9`.
+An initial harness invocation lacked the test classpath and exited before
+loading the controls; its separate failed receipt is retained.
+
+This closes the affected catalog/planner control gap on that composition only.
+The original missing-input/catalog failures, `05af79b5` control attribution,
+`8406358d` static review and separate unpublished `e912852e` variant remain
+history. Independent exact composition review and current-head CI/integration
+remain required. Real expanded-closure producer miss/hit/per-input invalidation
+with actual runtime/classpath/source identities remains OPEN and subject to its
+separate review and runtime admission. No semantic job, runtime admission or
+whole RV1/RV2/RV4 acceptance follows from this compiler-free result.
+
+### Reader identity fresh-only correction
+
+The independent final integration assessment of `baa6bc48` is HOLD: its active
+expanded cache declaration requires real producer miss/hit/per-input
+invalidation evidence with actual runtime, classpath and source identities.
+Planner controls, injected operations and successful CI do not discharge that
+gate, and earlier smaller-closure evidence cannot be promoted.
+
+The separable correction sets `:freshness-required? true` for only
+`gravity.c2-artifact-identity-test` and marks its planner cache closure
+unauthorized. Its four lexical inputs, literal dependency fence, paired owners,
+unknown-path refusals and declared-input validation remain. Parent request
+policy preserves the catalog's fresh flag despite false caller options. Child
+selection reads that actual catalog policy and executes fresh without preparing
+cache or effective-runtime state. Other namespaces retain their policies.
+
+The new compiler-free controls must demonstrate repeated non-cacheable parent
+misses without storage, repeated fresh child operations without cache/runtime
+setup, and rejection of each deleted lexical input before execution. The
+existing hypothetical admitted-policy cache-mechanics controls remain tests of
+the retained declaration, not production cache admission or real producer proof.
+This fresh-only successor requires its own exact independent review and CI;
+the original HOLD remains valid on its original candidate. Future cache
+admission and whole RV1/RV2/RV4 acceptance remain OPEN.
+
+### PR529 supersession and remaining RV2 evidence
+
+[PR529](https://github.com/burn2delete/uniform/pull/529), source
+`8406358dd2b353964299b5f4ad5543b067efbf4c`, tree
+`a64144d9499c516d9cc7b126e0930623e294913f`, is superseded by the integrated
+fresh-only correction in [PR538](https://github.com/burn2delete/uniform/pull/538).
+The actual merge is `9b74ed2cb07465a2f47d2a87f618033fab4f7302`, tree
+`2a70190954586219858ba384adb750bab02ac86a`, identical to independently
+accepted source `db1026230c926515975d31e3f8cfc214fda53954`. This is semantic
+supersession of the finite correction; PR529 itself was not merged. The
+original branch, static review, `05af79b5` controls, missing-input/catalog
+failures, `baa6bc48` active-cache HOLD and separate `e912852e` variant remain
+preserved at their original identities.
+
+| Original PR529 outcome | Disposition in merged PR538 |
+| --- | --- |
+| Bind the consumed lexical facade and its three implementation files to the Reader identity declaration. | Incorporated. The complete C2 input declaration is retained unchanged; it is audit metadata while fresh execution is required. See the [merged dependency contract](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/contracts/stage0-incremental-test-dependencies.edn). |
+| Admit only the three named nested lexical paths under the existing paired owner; reject missing/wrong owners, wrong roles and unknown paths. | Incorporated. The ownership validator and paired-owner regressions remain. The planner retains the closure but marks narrowed reuse unauthorized under the fresh policy. |
+| Check literal imports for the three existing declarations and reject undeclared/missing/shadowed helpers or unsupported forms without evaluation or tagged-reader callbacks. | Incorporated. The literal-import parser and its positive/negative controls are retained. This fence still grants no cache admission or dynamic/effect closure proof. |
+| Preserve injected miss/hit, comment-mutation/key invalidation and deletion controls for all four lexical inputs. | Incorporated as hypothetical admitted-policy mechanics, not real producer evidence. The original control bodies and source attribution remain; the fresh successor also checks deleted inputs through input revalidation without a broker or execution. |
+| Pass the actual catalog-dependent Reader planner check without bypassing unknown-catalog refusal. | Incorporated. PR537 supplies the separately integrated PC registration; the retained full planner suite passes 63 tests / 620 assertions. No unknown namespace is whitelisted. |
+| Obtain exact independent source/result/composition review, current-head CI and integration. | Completed for the fresh-only successor only. Exact changed-head review, committed readback and separate final integration acceptance bind `db1026230` and its tree. [CI40771247212](https://github.com/burn2delete/uniform/actions/runs/40771247212) passed seven routine jobs with two optional skips. Focused fresh/dependency/compatibility controls passed 6 / 171 and the language boundary passed 6 / 11, with zero broker or semantic launches. |
+| Make the expanded declaration available for narrowed cache reuse. | Intentionally disabled by the safer successor: catalog `:freshness-required? true`, planner authorization false, parent non-cacheable/no storage, and child fresh selection before cache/runtime preparation. This does not satisfy the real reuse outcome. |
+| Demonstrate a real expanded-closure producer and independently accept reuse/invalidation with actual runtime/classpath/source identities. | Unimplemented and OPEN under original RV2 and RV4 below. Earlier smaller-closure results and injected controls cannot discharge this obligation. |
+
+The stable task truth remains **RV2** and **RV4** in the governing table at the
+top of this document; no new task population or completion percentage is
+created. The current residual for the expanded Reader declaration is:
+
+- Independently review an exact real-producer method for the four retained
+  lexical inputs and the complete consumed runner/contract/runtime closure.
+- Subject to separate runtime admission, observe a real cold miss/producer,
+  unchanged-selection hit with original producer provenance, and unrelated
+  documentation/existing-test-body reuse only when every consumed input is
+  unchanged. Record the applying revision separately from the producer.
+- For each lexical facade/operations/primitives/product input, prove mutation
+  invalidates the old key/result and requires a fresh real producer; retain
+  missing-input, ownership, shadow, inventory and fresh-policy rejection.
+- Bind actual runtime, ordered classpath, source/contract identities, clean
+  head/tree and complete result bookends, then obtain independent result and
+  exact integration/admission review before clearing the fresh gate. No
+  historical tuple is relabeled as this expanded-closure execution.
+
+These are the original RV2 producer/reuse obligations and RV4 evidence
+obligations, not an optional follow-up. The [fresh-only correction](#reader-identity-fresh-only-correction)
+and [merged controls](https://github.com/burn2delete/uniform/blob/9b74ed2cb07465a2f47d2a87f618033fab4f7302/bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj)
+preserve a non-admitting boundary while they remain open. The broader RV2
+compatibility read/effect/representation or necessity decision, RV1's
+transitive mutation/equivalence or necessity decision, and whole RV4 remain
+open. Superseding PR529 neither executes those cases nor transfers restricted
+warm evidence or uncertain operations.
+
+### RV2/RV4: offline Reader producer evidence driver
+
+`gravity.build.producer-evidence`, under `bootstrap/clojure/test/gravity/build/`,
+checks retained public Reader producer captures without starting a producer,
+loading Bootstrap, acquiring a broker, probing processes, or reading cache
+state. This is the next bounded implementation of the existing RV2/RV4 evidence
+criterion. The current catalog freshness policy and production runners are
+unchanged. No real expanded-closure producer or reuse result is supplied here.
+
+The driver reads exactly three explicitly supplied local files: a capture-specific
+method manifest, the dependency contract, and the capture envelope. The caller
+supplies the method's SHA-256 from independent exact-artifact review. The method
+pins the other two files by their raw byte digests. Replacing a capture and
+recomputing its own hash cannot satisfy the independently pinned method. The
+capture-specific manifest is instantiated after capture; it is not the separate
+pre-execution method review or runtime admission required above.
+
+The closed `:gravity/reader-producer-method-v1` map has `:contract-sha256`,
+`:capture-sha256` and `:binding`. The binding contains:
+
+- `:source`: exact Git `:commit`, `:tree`, complete `:repository-identity` and
+  `:clean? true`;
+- `:inputs`: every declared Reader input, including all four lexical files,
+  consumed runners, tests and contracts, in declaration order, retaining
+  `:path`, `:role` and the runner's framed `:sha256` identity;
+- `:inventories` and `:shadow-inputs`: the pinned runner's complete material,
+  including absent-path identities, used to recompute the existing explicit
+  `:consumed-input-identity` without changing its encoding;
+- `:classpath-identities`: the actual ordered child classpath identities;
+  `:runtime-tool-inputs`: identified runtime/tool bytes; and
+  `:child-runtime-identity`: the actual-child runtime fingerprints, including
+  basis, basis file, configuration, JVM arguments, environment and properties.
+
+The `:gravity/reader-producer-capture-v1` envelope repeats the binding in
+`:binding-before` and `:binding-after`, retains `:producer-provenance` separately
+from `:applying-source`, and holds the complete emitted batch report as
+`:report-edn`. Its `:terminal` requires natural exit zero, no timeout, complete
+stdout/stderr, completed cleanup and a dead process root. The report must select
+exactly the Reader identity namespace, attempt it successfully, reconcile its
+nonzero test/assertion totals and retain untruncated namespace output. Missing,
+changed, mismatched, tagged, trailing or incomplete evidence is rejected with
+`PRODUCER-EVIDENCE-INVALID` and a stable `:field`; malformed EDN/UTF-8 also fails.
+
+Invoke only on explicitly supplied unrestricted artifacts:
+
+```bash
+clojure -J-Xmx256m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.build.producer-evidence \
+  REVIEWED_METHOD_SHA256 METHOD_EDN CONTRACT_EDN CAPTURE_EDN
+```
+
+A successful result says `:status :consistent`, `:cache-admission? false`,
+`:real-evidence-accepted? false` and `:producer-executed-by-driver? false`.
+The checker compares supplied observations; it does not independently measure
+or authenticate a child, discover effects/resources, establish that the supplied
+shadow inventory is complete, or prove that terminal observations occurred.
+Independent source/method and retained-result review must establish those facts.
+The controls use explicitly synthetic captures and do not count as real evidence.
+Real cold miss/producer, unchanged-selection hit with original provenance,
+unrelated documentation/test-body reuse, each lexical input's real invalidation,
+actual runtime attribution and final independent admission remain OPEN under
+RV2/RV4. Broader RV1 and compatibility closure obligations are unchanged.
+
+#### Complete captured output and frozen operational requirements
+
+The offline checker follows the existing batch runner's captured-output format:
+`:bytes`, `:observed-bytes` and `:limit-bytes` must be nonnegative integers,
+retained bytes cannot exceed the recorded capture limit, and complete output
+requires equal retained/observed/UTF-8 byte counts with `:truncated? false`.
+The initial driver omitted the capture-limit checks and could accept a missing
+or negative limit on an otherwise complete-looking record. The correction
+rejects those records through `PRODUCER-EVIDENCE-INVALID` / `:complete-output`,
+even when a synthetic method is repinned to the malformed capture. This is
+validation of the actual host capture record, not a compiler work allowance.
+Focused stdout/stderr controls retain valid exact-limit multibyte UTF-8 output,
+reject missing/mismatched metadata, and round-trip the public result with
+unchanged input byte hashes and a recorded serialized output hash.
+
+The existing RV2/RV4 operational evidence requirements remain fixed at this
+seam; the capture-specific method pins the source, declaration, runtime,
+ordered classpath, producer/applying provenance and terminal observations
+already specified above. A successful offline check never substitutes for the
+following observations:
+
+| Existing required observation | Exact evidence still required |
+| --- | --- |
+| Real cold miss and producer | Separately reviewed/admitted operational method; actual child execution and its original producer provenance, input/key identities, complete report and natural terminal bookends. The current driver accepts only fresh non-cacheable reports and does not validate an admitted miss. |
+| Unchanged-selection hit | Same consumed input, runtime and ordered classpath identities; no newly executed tests; original producer provenance retained and applying source recorded separately. The current driver rejects a hit report. |
+| Unrelated documentation/existing-test-body reuse | Exact applying source delta; unchanged consumed declarations, runner/contracts, inventories, shadows and runtime/classpath; original result/provenance retained. A declared test or contract mutation is not unrelated. |
+| Each lexical input's invalidation | Separate facade, operations, primitives and product mutations; changed identity/key and refusal of the old result, followed by a separately observed real fresh producer. Hypothetical repinning or synthetic failure checks are not these observations. |
+| Failure, missing input and tampering | Nonpassing terminal/report outcomes, absent or changed bytes, wrong owners/shadows/inventories, and mismatched provenance must refuse admission. No successful report or hash hides a failed or incomplete process. |
+
+The next operational gate is independent review of the exact public expanded-
+closure capture method and its observer/serializer, including how it obtains
+actual runtime and terminal facts and represents the later miss/hit cases,
+followed by separate runtime admission. No producer is authorized by this pure
+correction. Fresh-only policy stays active; real execution/result review and
+any later cache admission remain OPEN. The original 8/86 controls retain their
+source attribution; the changed output guard receives focused new controls
+rather than a repeated broad suite. Merged-commit CI40783760547 is terminal
+cancelled and supplies no successful result; it was not rerun or cancelled by
+this correction.
+
+#### Source-defined producer snapshot serialization
+
+The existing development wiring attaches its complete `:snapshot` as
+`:test-producer-provenance :repository-snapshot`. The offline driver's initial
+exact-map comparison instead required only `:repository-identity`, rejecting
+those source-defined records unless their metadata was removed. The correction
+accepts the existing closed snapshot shapes without changing their encoding:
+
+- `:gravity/sh01-complete-repository-snapshot-v1` / `:full-content-v1`;
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-full-content-v2`; and
+- `:gravity/sh01-incremental-repository-snapshot-v2` /
+  `:git-index-overlay-v2`, including tracked and overlay path counts.
+
+These shapes come directly from `full-repository-snapshot`,
+`full-index-repository-snapshot` and `incremental-repository-snapshot` in
+`sh01_development_loop_wiring.clj`. Their required counters are nonnegative
+integers, their schema/engine pairing is exact, and their repository identity
+must match the pinned binding. Missing/extra fields, unknown schema/engine
+pairs and wrong identities fail with `:producer-snapshot`. The legacy
+hash-only v1 record remains a supplied declaration. Source revision, consumed
+identity, ordered classpath, runtime and terminal checks remain intact.
+
+The original snapshot metadata remains in the raw capture bytes pinned by the
+method; no observer fields are dropped or reconstructed. An injected metadata
+change changes the capture/method pin, and the old pin rejects it. Schema and
+engine names identify serialization shapes, not proof that an observer ran.
+All new controls supply these fields and terminal facts explicitly; none are
+captured runtime observations. The consistency result retains
+`:real-evidence-accepted? false` and `:cache-admission? false`.
+
+This does not add a runtime observer or a new miss/hit format. The current
+fresh-only wiring returns before producing the cache-enabled runtime/provenance
+bundle; that operational observation gap remains. Miss/hit claims, failed
+terminal records, and mismatched source/runtime/classpath provenance still
+refuse. Independent review of the actual observer/serializer method, separately
+admitted execution, real producer/reuse/invalidation evidence and result review
+remain the original RV2/RV4 gates. No schema-shaped fixture discharges them.
+
+#### Pure adapter for fresh returns and supplied observations
+
+`serialize-fresh-capture` prepares the existing capture-v1 bytes from a fresh
+return plus an explicit supplied map containing `:binding-before`,
+`:binding-after`, `:producer-provenance`, `:applying-source` and `:terminal`.
+It validates the declared dependency contract and the same binding, report,
+output, snapshot, provenance and terminal rules as `verify-capture!`. It calls
+no observation function or operation and returns no method, trusted review pin,
+authentication result or admission. New serialized bytes need their own pinned
+method and independent review; existing pinned artifacts are never rewritten.
+
+The source-backed fresh-only return can omit runtime/provenance metadata.
+This adapter requires those inputs explicitly instead of deriving observations
+from a report or silently replacing original producer metadata with applying
+metadata. If a return already has `:test-producer-provenance`,
+`:test-applying-revision` or `:test-applying-repository-snapshot`, each must
+match the supplied fresh capture. Both preparation and offline verification
+reject contradictions with `:report-provenance`. This closes an injected
+counterexample where a valid-looking outer envelope concealed a conflicting
+producer inside `:report-edn`. Missing supplied fields, bad types or identities,
+changed bookends, incomplete output/terminals and miss/hit claims still refuse.
+
+All new tests supply their snapshot, runtime and terminal values. They do not
+measure or authenticate them. Complete snapshot metadata and ordered identities
+survive the round-trip and raw byte pins remain explicit. The normal wiring is
+unchanged: its fresh-only branch still does not acquire the missing observation
+bundle. Connecting a real observer/serializer requires exact method review and
+separate runtime admission. Real producer, miss/hit/reuse/per-input invalidation
+and result/admission evidence remain OPEN; fresh-only policy is unchanged.
