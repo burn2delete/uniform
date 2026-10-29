@@ -1075,3 +1075,38 @@ before writes; corrected checks follow successive file stages and both
 canonical status markers. Independent review remains scoped to the frozen
 Package predicates. Full-facet disposition, later predicate reviews,
 granularity, legacy ACC scope, final counting and integration remain open.
+
+## Eighty-three Stdlib decision allocations
+
+Task source `dc20fc5db3c8db3d5d947de56cd4e0d0c8938903` adds 66 clauses
+across four existing Stdlib fields, reuses 16 exact criteria and binds one
+five-interface source disposition to its five distinct execution criteria.
+It adds no task units. All 83 record guards match and all 426 memberships
+over 354 distinct facets match current document and raw UTF8 hashes. Three
+recovered metadata IDs match authenticated original finite18 routes and old/
+current DOM17 bytes. Their source/context review remains pending; recovery
+confers no canonical facet-index adoption. Composition SHA256:
+`bdf4d4392406a203cd3a7d00383b0cbd5abf563e3798f7aa5e98718c6c713b69`.
+Proposed recovery SHA256:
+`b1f5efd6981bbdde30d3f4531e874eb1084bc484ea23cf9c5dbe3f6d7dbad25c`.
+
+Allocation source `848cb140b132109a692ed7e1781f77a589a8c62b` preserves all
+665 prior allocations, the seven qualified Package reviews and all 833 Open
+states. The allocation SHA256 is
+`e4da641ed8d539a59c5033122d267b3d57688142fad1b64933cfa7f5be02a506`.
+Concrete allocations total 748, including 438 pending independent review;
+85 remain to allocate. Actual criteria, task contexts and declared plan inputs
+are source-bound; metadata, a named API or an internal producer cannot replace
+the required actual library call and observable result. Removed project work
+and input quotas are not restored. Task census stays provisionally 3/182.
+
+`current-criterion-bindings-561-stdlib83.edn`, SHA256
+`68c5323dffcce19b8d92a697a6c6ebf61fb46296c0c863a0653c1df1f0666b04`,
+preserves all 561 historical IDs and 1,262 current spans. Historical acceptance
+stays 430, with 131 pending. Stdlib passed 5/79, SH 12/522, census 4/13 and
+boundary 6/11. Both document validators and the generated SH check passed;
+pinned clj-kondo 2025.10.23 reports zero changed-file findings. A scratch
+template substitution changed an expected hash and refused before writes;
+the exact predecessor hash was restored and checked. Independent composition
+acceptance, full-facet disposition, granularity, legacy ACC scope, final count
+and integration remain open. These mappings confer no implementation credit.
