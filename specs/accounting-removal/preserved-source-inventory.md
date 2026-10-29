@@ -378,3 +378,20 @@ semantic equivalence claims. Source checks, boundary 6/11, zero lint errors/same
 independent source/result disposition, API accounting and integration remain
 open. PR533 PMK preparation, PR598 emitter controls and DSE acceptance retain
 their own scope. Immutable source inventory counts remain unchanged.
+
+## Original predicate actual-owner control successor
+
+PR625 at `50c7e58c5fb41a3001bf423b39f6e5157e030566`, tree
+`b9cc661dcfea7fe7859adbd4346e35541bf76c53`, base main `e047157d`, restores
+the entire original predicate-family test file and actual-owner control. Three
+raw edits migrate the two obsolete validation APIs and replace a retired work
+counter with explicit obsolete-field forgery values 0, 1 and nil. All eleven
+family entries and every other original byte remain identical. Actual C7
+derive, complete C7/Effects/lowering descriptor equality, Effects contexts/joins,
+typed lowering, runtime results, coherent forgeries, late invalid types and
+opaque zero-callback controls retain definitions. All production/preexisting
+tests are unchanged. Source integrity, boundary 6/11, zero lint findings,
+docs/roadmap and whitespace pass; census pins 114 owner forms and 22 upstream
+helpers. Genuine execution, independent source/result disposition and integration
+remain pending. Original source-only records and immutable inventory counts
+are unchanged; no semantic credit is inferred from this test restoration.

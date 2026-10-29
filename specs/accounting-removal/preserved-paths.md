@@ -345,6 +345,19 @@ helper mappings remain explicit rather than being treated as missing features.
   boundary 6/11, zero lint errors/same 76 warnings/one info, docs/roadmap and
   whitespace pass. Genuine Effects execution, independent source/result
   disposition and integration remain pending; API accounting remains open.
+- ACC-01 owns main-based test-only PR625 at
+  `50c7e58c5fb41a3001bf423b39f6e5157e030566`, tree
+  `b9cc661dcfea7fe7859adbd4346e35541bf76c53`, base main `e047157d`. It
+  restores the original predicate-family file and complete actual-owner control
+  for all eleven families. Only three raw edits migrate two obsolete validator
+  APIs and replace the retired-counter forgery value with explicit 0/1/nil
+  values; the unknown-field mutation and every other original byte survive.
+  Actual derive, full three-owner descriptors, Effects contexts/joins, lowering,
+  runtime results, coherent forgeries, late invalid types and opaque callbacks
+  retain concrete test definitions. All production/preexisting tests remain
+  unchanged. Source integrity, boundary 6/11, zero lint findings, docs/roadmap
+  and whitespace pass. Census pins 114 owner forms/22 upstream helpers. Genuine
+  execution and independent source/result acceptance remain pending.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
@@ -486,7 +499,7 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. The mapping record identifies four current tests: two complete relocated bodies, the PR507 validation API migration, and stronger active/inactive legacy census controls. Independent disposition of this source mapping remains open. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | The unchanged original reader-only controls pass 4/167 for complete reconstruction parity, semantic field drift and full consumer equality on pinned current source. PR623 also runs the unchanged original reader suite 4/167 against its edited LC headers. This supplies source-level evidence, not a fresh three-owner semantic run or independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Original reader controls remain NONPASS with five failures. Supplemental source comparisons isolate four superseded routing-mismatch assertions and the missing native-guard name correspondence after checking complete guard bodies. All original results and current source/tamper obligations remain explicit pending independent adaptation disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. The supplement pins four of those six differences as complete source tails under explicit parameter/helper renames and identical ID-validator dependencies; the two recursion/loop differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. The source proposal awaits independent disposition. |
+| `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | All eleven families have complete three-owner source/finish/constraint/fact parity under explicit helper correspondences; 30/36 mapped helper bodies match. The supplement pins four of those six differences as complete source tails under explicit parameter/helper renames and identical ID-validator dependencies; the two recursion/loop differences and all actual derive/join/lowering/runtime/forgery/invalid-input controls remain open. PR625 restores the complete original actual-owner test file with only three explicit API/forgery-value adaptations, preserving all eleven families and semantic controls. Genuine execution and both source/result dispositions remain pending. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and every original negative assertion/candidate. It adds eight stripped-tag and four native-record mutations; payment-only assertions are removed while the semantic complete-status assertion remains. PR624 separately restores the original ordinary-local-call Effects composition control with all semantic candidates preserved. Actual C7/emitter/Effects and consumer/runtime acceptance remain unrun, separate from PR462's runtime conversion scope. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | ACC-01 draft PR598 restores the complete positive body and all original public Map-key composition/forgery controls. Eight stripped-tag and four native-record mutations are added; the payment test retains its semantic assertion only. PR624 separately restores the original public Map-key ordinary-local-call Effects composition control with all semantic candidates preserved. Genuine acceptance and independent source/results disposition remain pending; private alias repair alone supplies no acceptance. |
