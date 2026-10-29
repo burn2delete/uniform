@@ -46,6 +46,34 @@ semantic incorporation of the other changes.
 
 ## Every original authored path
 
+### Parameter and return test mapping proposal
+
+[The pinned source mapping](premise-test-mapping.edn) compares the two original
+premise-test files at preserved `6a4f87f0` with their six named SH08 successors
+at observed main `0f7acce5fc93e019062d84a3fd9dcf05643ba7fd`. The assessed SH08
+blob is identical to this branch's SH08 blob. The record contains full-file
+hashes, explicit helper-symbol correspondences, canonical body hashes and
+multiset comparison of complete assertion expressions. It normalizes only the
+listed names and reader-generated anonymous-function symbols. Duplicate deletion
+and changed-assertion controls both detect a missing original assertion.
+
+| Original test | Existing successor and observed difference |
+| --- | --- |
+| `complete-parameter-premises-and-typed-calls` | `sh08-parameter-premise-owner-composition-development-kernel`: all original assertion expressions retained; four added expressions check refinement forgetting, preserved obligations and Effects/emitter Never transfers. Fixtures add a 513-entry Map, move the homogeneous positive from 1,024 to 1,025 members, and replace a removed helper's computed obsolete-cost field with a fixed nonzero forgery. This is not identical whole-test data. |
+| `parameter-invalid-members-and-declaration-controls` | `sh08-parameter-premise-invalid-controls-development-kernel`: all original assertion expressions retained. Fixtures add late malformed/opaque Map and List cases and move late homogeneous failures beyond the former width. Exact fixture equality is not claimed. |
+| `complete-return-premises-and-consumers-agree` | `sh08-list-return-premises-and-consumers-development-kernel`: complete body matches after the listed helper relocation. |
+| `return-contexts-rederive-complete-current-evidence` | `sh08-list-return-context-invalidation-development-kernel`: complete body matches after the listed helper relocation, including coherent/mixed stale evidence mutations. |
+| `return-validation-and-source-checks-remain-effective` | `sh08-list-return-validation-source-development-kernel`: original malformed/opaque fixtures and source mutations retained; the three removed budget APIs become `*-lr-validate-types` with two arguments. Assertion expressions match, but helper invocation semantics require the separately integrated PR507 evidence. |
+| `legacy-return-producers-cannot-escape-the-row-census` | `sh08-list-return-legacy-census-development-kernel`: original four legacy row shapes retained; two foreign-producer/domain variants added. The separate inactive-legacy census successor adds rejection when no declaration is active. |
+
+Seventeen of nineteen mapped helper bodies match after the named relocations.
+The two other bodies add explicit deferred dependency requires in
+`acc02-environment` and `return-premise-effects`; their load timing is not hidden
+as name equivalence. File/hash and source-expression comparisons do not execute
+fixtures, establish helper equivalence, renew the accepted ACC-02/03 receipts,
+or dispose of the other 27 paths. These two path dispositions remain proposals
+until independent acceptance; the stopped successor review is not replayed.
+
 Each row retains its unresolved obligation. "Selected integration" identifies
 only the named subfamily. Rows with unresolved controls are not terminal
 incorporation/rejection decisions. No old-only semantic test is discarded.
@@ -59,8 +87,8 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | Selected ANE/BKA/PMK/public-Map cases migrated to SH08 under PR359. DSE cases remain with the full feature; map all original mutations before terminal disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | Selected PL fields and later helper work integrated separately. Exact old descriptor, stale-field/forgery, late-invalid and zero-callback cases need incorporation mapping. |
 | `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | Dedicated private routing and full constraint/fact alias repair have PR359 evidence. Independent exact historical test-equivalence disposition remains unrecorded. |
-| `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj` | ACC-02 remains closed. Map original complete parameter, invalid-member and declaration controls explicitly; do not replay old receipts as current acceptance. |
-| `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. Map complete fresh-evidence, source-validation and escaped legacy-row census controls explicitly. |
+| `bootstrap/clojure/test/gravity/self_hosting/compatibility_premise_test.clj` | ACC-02 remains closed. The six-test mapping record identifies this file's two current tests, retained assertion expressions, changed boundary fixtures and added refinement/transfer controls. Proposed incorporation still needs independent disposition; old receipts are not replayed as current acceptance. |
+| `bootstrap/clojure/test/gravity/self_hosting/list_return_premise_test.clj` | ACC-03 remains closed. The mapping record identifies four current tests: two complete relocated bodies, the PR507 validation API migration, and stronger active/inactive legacy census controls. Independent disposition of this source mapping remains open. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj` | Source/finish/constraint/fact parity, field-drift controls and full consumer equality remain distinct from recursive type-helper acceptance. No complete incorporated/rejected decision verified. |
 | `bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj` | Selected private-Map route repair does not dispose of query-tail parity, source proofs, malformed routing and explicit helper-normalization controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj` | Complete three-owner predicate descriptor parity remains uncovered by PMK/inferred-insertion drafts; retain actual invalid-input obligations. |
