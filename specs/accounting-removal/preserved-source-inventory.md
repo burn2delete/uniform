@@ -111,6 +111,19 @@ unique unit keys, digest shapes, state totals and all ten fixture byte-copy
 identities. The separate three-definition check confirms the exact Set descriptor
 field difference above. Document/roadmap and whitespace checks passed.
 
+Follow-up draft PR610 implements that finite descriptor-field increment at
+`2b70fac2fccdc4963e47d1a3cf0713cc970b155a`, tree
+`e2534b8db74530208de9393e4d0de6d168c9b3dd`, standalone base
+`8f9af1be55f99a076992086ac95f91364a22924e`. Its `operand-work.md` and
+`operand-work-census.edn` pin three field-only production edits, unchanged
+complete-equality consumers, two C7 absence/forgery controls and five runtime
+metadata assertion replacements. Independent semantic checks are conserved;
+payment and width-only refusal assertions in the two edited C7 tests are
+retired. Source checks, boundary 6/11, docs and roadmap pass; lint retains the
+base's same 147 warnings with zero errors. Genuine execution and independent
+acceptance remain pending. The machine inventory above remains the original
+main/stack snapshot; its counts are not recomputed or credited by this follow-up.
+
 No Gravity/compiler, authenticated pipeline, Effects/emitter, runtime, broker,
 C12 or held selector ran. This inventory does not classify every cost guard,
 prove a call graph, renew an old review, confer independent acceptance or close
