@@ -13666,6 +13666,25 @@
    :prepared-historical-criteria 60,
    :task-population-change 0,
    :status :pending-independent-composed-review},
+  :math20-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/math20-qualified-review-adoption.edn",
+   :unresolved-incidences 13,
+   :remaining-allocation-work 63,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :unresolved-metadata-ids 9,
+   :qualified-source-review-adoptions 406,
+   :pending-allocation-review 61,
+   :source-commit "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :formatting-adjustments-reviewed 1,
+   :reviewed-predicates 20,
+   :historical-adoptions-preserved 493,
+   :total-concrete-links 770,
+   :applicability
+   "specs/requirement-reconciliation/math20-qualified-current-applicability.edn"},
   :reader-normal-source-review
   {:status :pending-source-version-review,
    :input-fingerprint

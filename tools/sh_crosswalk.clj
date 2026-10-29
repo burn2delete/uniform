@@ -1167,6 +1167,25 @@
   :sha256
   "7f306ae45e364a849d5cd861b028d7d0dabdad11d671660a8d7dac838d48720d"},
  :total-concrete-links 770}
+    :math20-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/math20-qualified-review-adoption.edn",
+ :unresolved-incidences 13,
+ :remaining-allocation-work 63,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :unresolved-metadata-ids 9,
+ :qualified-source-review-adoptions 406,
+ :pending-allocation-review 61,
+ :source-commit "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :formatting-adjustments-reviewed 1,
+ :reviewed-predicates 20,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 770,
+ :applicability
+ "specs/requirement-reconciliation/math20-qualified-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

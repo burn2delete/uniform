@@ -1369,3 +1369,36 @@ all1262 current UTF8 file/raw spans pass. Full facets, granularity, legacy ACC,
 independent final counting and integration remain open. The next Foundation
 composition's source guard was checked before this metadata commit and refused
 its uncommitted predecessor; no Foundation task was written by that check.
+
+## Qualified current Math20 composition review adoption
+
+The existing independent reviewer returned
+`pass-scoped-actual-current-composition` for frozen source
+`88c3c80e1e9691b02d56a3f3a7133162e13b69f3`. The receipt covers20 current
+criteria across six fields, their exact producer/checker/dependency roles,
+the single future-type prose rendering adjustment and negative controls for
+stale/duplicate/forged inputs and a coherently rehashed missing refusal.
+The private proposal-only receipt retains its original scope. Nine B4/B6
+metadata IDs across13 incidences/four decisions remain explicitly unassessed.
+
+`math20-qualified-current-applicability.edn` checks the later current source:
+all20 decision records, all canonical task/plan files and all240 original
+documents are identical to the independent frozen source. Exact original
+criterion/context byte witnesses are authenticated against their own source
+commits, then uniquely rebound to current text; an initial scratch check
+incorrectly compared the old complete-file hash directly with the later GPU
+metadata file and refused before writes. The corrected check preserves both
+source identities and validates the same current predicate bytes.
+
+Adoption source `9640d60e` changes only20 qualified review states/references.
+All other record fields,833 Open states, prior386 qualified reviews,770 concrete
+allocations,493 historical adoptions and63 unallocated decisions are preserved.
+Qualified current source reviews total406;61 allocation reviews remain pending:
+Compiler/Testing34,Schema25,Accounting-policy1 andProduct1. Historical68 remain
+pending. Provisional3/182 task status receives no new credit.
+
+The new561-binding snapshot preserves the exact Product1 binding vector and
+unchanged current task bytes; its1262 spans retain their verified applicability.
+SH12/522,census4/13,boundary6/11,generated SH check and pinned changed-file lint
+pass. Full-facet, granularity, legacy ACC, independent final counting and
+integration remain open. No compiler/runtime/backend execution is inferred.
