@@ -842,6 +842,25 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Exact quoted-data fixture restoration
+
+Main-based [PR634](https://github.com/burn2delete/uniform/pull/634) at
+`f540ca1baba2d1a9080a9a600653ff34a7d73815`, tree
+`8804c400b2290f47cb441aff72b3dc65402c4a4c`, base
+`2654d155322f7863dd087065f19000b43c877cbe`, restores the complete original
+recursive quoted-data and Boolean-guard test bodies. Six fixture-expression
+lines replace quoted literals with their original explicit `list` construction;
+all assertions, all other test bytes, both shared helpers and production remain
+unchanged. This retains the historical fixture inputs without assuming host
+carrier/metadata equivalence. Both shared helpers match history. Six direct C7
+APIs are pinned; four match history, while `sh08-qd-node` and
+`sh08-qd-products` remain explicit differences. No PR591 production is copied.
+Raw-span/complete-form conservation, boundary 6/11, docs, roadmap, whitespace
+and pinned lint comparison pass (zero errors, identical 71-warning multisets;
+new EDN zero findings). Independent review and CI remain pending; both genuine
+tests remain UNRUN. This is a concrete finite successor for these two original
+test controls, not whole quoted-data or whole-file acceptance.
+
 ### Four retired validator branch proposals
 
 The [complete source correspondence](retired-validator-branch-correspondence.md)
