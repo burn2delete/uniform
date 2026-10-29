@@ -3,7 +3,9 @@
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is]]
             [gravity.build.producer-evidence :as evidence]
+            [gravity.build.parent-producer-observation :as parent]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting.sh01-parallel-test-runner :as runner]
             [gravity.self-hosting-test-runner :as child-runner]
             [gravity.digest :as digest]))
 
@@ -464,6 +466,63 @@
 
 (defn- fresh-supplied [capture]
   (select-keys capture [:binding-before :binding-after :producer-provenance :applying-source :terminal]))
+
+(deftest retained-parent-observation-connects-to-the-existing-fresh-serializer
+  ;; All parent process facts are injected. The current canonical API never
+  ;; supplies global cleanup=true; this positive is serialization-only.
+  (let [{:keys [capture report]} (fixture-with-snapshot (last (source-shaped-snapshots)))
+        report (assoc report :test-producer-observation
+                      (assoc (select-keys capture [:binding-before :binding-after
+                                                   :producer-provenance :applying-source])
+                             :schema :gravity/sh01-fresh-producer-observation-v1))
+        result {:status :passed :exit-code 0 :wait-interrupted? false :wait-error nil
+                :root-exited? true :tracked-owned-processes-terminal? true
+                :cleanup-complete? true :descendant-coverage :unknown
+                :timeout-containment-unproven? false
+                :stdout-capture-status :complete :stderr-capture-status :complete
+                :stdout-truncated? false :stderr-truncated? false
+                :stdout-capture-forced-close? false :stderr-capture-forced-close? false
+                :stdout-capture-error nil :stderr-capture-error nil}
+        process (Object.) token (Object.) events (atom [])]
+    (with-redefs [runner/retain-owned-process! (fn [p] (is (identical? process p))
+                                               (swap! events conj :retain) token)
+                  runner/process-result (fn [p _ owned]
+                                          (is (identical? process p))
+                                          (is (identical? token owned))
+                                          (swap! events conj :result) result)
+                  runner/retained-process-handles (fn [owned]
+                                                    (is (identical? token owned))
+                                                    (swap! events conj :handles) [(Object.)])
+                  runner/finalize-owned-process! (fn [& _] (throw (AssertionError. "second finalization")))]
+      (let [observation (parent/observe! process {})
+            bytes (parent/serialize-capture contract-bytes report observation)
+            readback (edn/read-string (String. bytes "UTF-8"))]
+        (is (= [:retain :result :handles] @events))
+        (is (= (:terminal capture) (:terminal readback)))
+        (is (= report (edn/read-string (:report-edn readback))))
+        (is (identical? token (:owned-process observation)))
+        (is (= :unknown (:descendant-coverage observation)))
+        (is (false? (:capture-v1-ready? observation)))
+        (doseq [changed [(assoc result :cleanup-complete? nil)
+                         (assoc result :cleanup-complete? false)
+                         (assoc result :root-exited? false)
+                         (assoc result :status :error)
+                         (assoc result :wait-interrupted? true)
+                         (assoc result :wait-error "injected wait error")
+                         (assoc result :timeout-containment-unproven? true)
+                         (assoc result :stdout-capture-status :error)
+                         (assoc result :stderr-truncated? true)
+                         (assoc result :stdout-capture-forced-close? true)
+                         (assoc result :stderr-capture-error "injected stream error")
+                         (dissoc result :timeout-containment-unproven?)
+                         (dissoc result :stdout-truncated?)]]
+          (is (= :terminal
+                 (field #(parent/serialize-capture contract-bytes report
+                                                   (assoc observation :process-result changed))))))
+        (is (= [:retain :result :handles] @events))
+        (is (= "RV2-PARENT-OBSERVATION"
+               (try (parent/serialize-capture contract-bytes report {}) nil
+                    (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))))))
 
 (deftest fresh-return-serialization-retains-explicit-supplied-provenance
   (doseq [snapshot (cons {:repository-identity h} (source-shaped-snapshots))

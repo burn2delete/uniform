@@ -1691,6 +1691,34 @@ separate runtime admission remain open. Real miss/hit, unrelated reuse,
 per-lexical-input invalidation and independent result acceptance remain the
 original RV2 obligations.
 
+#### Retained parent observations connected to capture serialization
+
+`parent-producer-observation/serialize-capture` consumes the child report,
+dependency-contract bytes and the retained parent observation returned by
+`observe!`. It maps the normal runner's exit/wait, root and per-stream
+capture-status/error/truncation/forced-close fields to the existing terminal
+shape, then calls `serialize-observed-fresh-capture`. It copies
+`:cleanup-complete?` from the original process result unchanged. It never
+substitutes `:tracked-owned-processes-terminal?` or a root-exit flag for global
+cleanup, and never waits or finalizes the token again.
+
+Current canonical parent results have global cleanup nil on natural completion
+and false on containment paths. They therefore refuse capture-v1 serialization
+even when root exit and tracked-handle completion are both true. Unknown
+descendant coverage and readiness/cache-admission flags remain unchanged in the
+retained observation. This source connection removes manual terminal-map
+construction; it does not supply the missing workload/containment proof.
+
+The injected positive supplies a synthetic global-cleanup=true result solely
+to check byte/report preservation through the existing serializer. It is not a
+fact produced by the current runner or evidence that the method is ready.
+Negative controls retain the current nil-global/true-tracked case, failed or
+missing wait/root/stream facts, timeout, forced close, truncation and stream
+errors. Raw ownership stays local. Report-file reading, one-shot output
+publication, exact launch/loader/watchdog binding, native/helper reachability,
+independent method review, separate runtime admission and all original real
+producer/reuse/invalidation evidence remain open.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
