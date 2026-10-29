@@ -53,6 +53,10 @@ native ProcessBuilder/startup, filesystem operations, JVM initialization,
 process enumeration, injected callbacks and publication may block or fail
 before control returns. Existing normal runner timeout cleanup is best effort;
 its unproven containment remains a nonpass.
+The owned finalizer receives that same deadline and captured clock together
+with its explicitly declared cleanup interval. The actual normal runner's
+source-bound internal cleanup intervals remain separate runtime inputs; this
+controller does not change them or claim that passing a map overrides them.
 
 Started ownership is finalized once; partial guard acquisitions release once
 in reverse order. Original failure objects survive later cleanup, release or
@@ -74,7 +78,7 @@ records. A metadata receipt alone is never execution acceptance.
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Thirteen tests and 245 assertions passed, with no real port resolution and
+Thirteen tests and 287 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture

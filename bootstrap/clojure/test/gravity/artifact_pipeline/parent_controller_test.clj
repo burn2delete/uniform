@@ -24,7 +24,7 @@
                  :config "fake-source-bound-owner-config"
                  :port-identities (zipmap controller/port-names (repeat "fake-function-source"))
                  :outputs {:attempt "/fake/attempt" :stdout "/fake/stdout" :stderr "/fake/stderr" :final "/fake/final"}
-                 :limits {:whole-ms 100 :capture-bytes 1000 :capture-chars 1000 :capture-wait-ms 5}
+                 :limits {:whole-ms 100 :capture-bytes 1000 :capture-chars 1000 :capture-wait-ms 5 :cleanup-ms 10}
                  :guards guards :coverage {:authority-source "fake-reviewed-config" :decision-id "fake-decision"
                                            :participants participants :covered-participants participants :ordered-guards guards}}
         observation (select-keys request controller/identity-fields)
@@ -46,7 +46,12 @@
                         (is (= controller/argv argv)) (is (= (:cwd request) cwd))
                         (swap! events conj :start) :fake-process)
                :supervise (fn [process _] (is (= :fake-process process)) (swap! events conj :supervise) result)
-               :finish (fn [process _ _] (is (= :fake-process process)) (swap! events conj :finish)
+               :finish (fn [process _ _ bounds]
+                         (is (= :fake-process process))
+                         (is (= 100 (:deadline-ms bounds)))
+                         (is (= 10 (:cleanup-ms bounds)))
+                         (is (fn? (:clock bounds)))
+                         (swap! events conj :finish)
                          {:status :complete :owned-descendants-complete? true :root-alive? false :evidence-id "fake-terminal"})
                :observe (fn [] (swap! events conj :observe) observation)
                :publish (fn [_ receipt] (swap! events conj [:publish (:status receipt)]) {:status :published})}]

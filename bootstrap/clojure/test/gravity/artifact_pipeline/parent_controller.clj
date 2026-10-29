@@ -69,7 +69,7 @@
       {:status :refused :reason :unbound-configuration :missing unbound}
       (let [{:keys [clock admit reserve acquire validate release start supervise finish observe publish]} ports
             limits (:limits request)
-            _ (require! (every? pos-int? (map limits [:whole-ms :capture-bytes :capture-chars :capture-wait-ms])) :invalid-limits)
+            _ (require! (every? pos-int? (map limits [:whole-ms :capture-bytes :capture-chars :capture-wait-ms :cleanup-ms])) :invalid-limits)
             deadline (+ (clock) (:whole-ms limits))
             remaining #(let [left (- deadline (clock))]
                          (require! (pos? left) :whole-deadline) left)
@@ -115,7 +115,8 @@
             (catch Throwable error (record-error! error))
             (finally
               (when @process
-                (try (reset! terminal (finish @process @result @primary))
+                (try (reset! terminal (finish @process @result @primary
+                                              {:deadline-ms deadline :cleanup-ms (:cleanup-ms limits) :clock clock}))
                      (catch Throwable error (record-error! error))))
               (when @process
                 (try
