@@ -58,6 +58,24 @@
 (def ^:dynamic *git-reader*
   "Exact profile-installed Git reader; nil retains compiler-free preparation."
   nil)
+(def ^:dynamic *operation-deadline*
+  "Selected parent operation's single monotonic clock/deadline; nil preserves preparation."
+  nil)
+(defn remaining-wait-ms
+  "Clip a host wait to this operation's remaining time, preserving cleanup reserve.
+  This is host supervision, not compiler input or project accounting."
+  [maximum-ms cleanup-reserve-ms]
+  (require! (and (integer? maximum-ms) (pos? maximum-ms)
+                 (integer? cleanup-reserve-ms) (<= 0 cleanup-reserve-ms)) :operation-deadline)
+  (if-let [{:keys [now expires-ms reserve-ms]} *operation-deadline*]
+    (do
+      (require! (and (fn? now) (integer? expires-ms)
+                     (or (nil? reserve-ms) (and (integer? reserve-ms) (<= 0 reserve-ms)))) :operation-deadline)
+      (let [reserve (if (pos? cleanup-reserve-ms) (max cleanup-reserve-ms (or reserve-ms 0)) 0)
+            remaining (- expires-ms (now) reserve)]
+        (require! (pos? remaining) :operation-deadline)
+        (min maximum-ms remaining)))
+    maximum-ms))
 (defn git-output [root & args]
   (if *git-reader*
     (*git-reader* root (vec args))
@@ -322,19 +340,21 @@
                         :start-outcome (if @process :returned-handle :no-returned-handle)
                         :elapsed-ms (- (now) began) :semantic-acceptance false})]
     (try
-      (let [p (start (conj (get-in request [:frozen :command]) expected-hash) (:cwd request))]
+      (let [_ (remaining-wait-ms (:execution-ms process-bounds) (:accounted-reclamation-base-ms process-bounds))
+            p (start (conj (get-in request [:frozen :command]) expected-hash) (:cwd request))]
         (reset! process p)
         (let [remaining (- deadline (now))
               r (when (pos? remaining)
                   (result p (assoc (select-keys process-bounds
                                     [:capture-wait-ms :output-limit-bytes :output-limit-chars])
-                                  :timeout-ms remaining)))
+                                  :timeout-ms (remaining-wait-ms remaining (:accounted-reclamation-base-ms process-bounds)))))
               _ (when (some? (:cleanup r))
                   (reset! cleanup-attempted? true)
                   (reset! cleaned (:cleanup r)))
               _ (when (:wait-interrupted? r) (throw (InterruptedException. "Process wait interrupted")))
               c (clean!)
               capture-ok? (every? #(= :complete %) [(:stdout-capture-status r) (:stderr-capture-status r)])
+              _ (remaining-wait-ms 1 0)
               why (cond
                     (or (not (pos? remaining)) (>= (now) deadline) (= :timeout (:status r))) :timeout
                     (or (not= true (:tracked-complete? c)) (= false (:complete? c)) (:root-alive? c)
@@ -359,10 +379,12 @@
                            :creation-coverage (:creation-coverage request)
                            :semantic-acceptance false}]
               (reset! publication :unknown)
-              (let [published? (try (publish receipt)
+              (let [_ (remaining-wait-ms 1 0)
+                    published? (try (publish receipt)
                                  (catch InterruptedException e (throw e))
                                  (catch Exception e
                                    (throw (ex-info "Publication outcome unknown" {:reason :publication-failed} e))))]
+                (remaining-wait-ms 1 0)
                 (reset! publication (if (= true published?) :confirmed :failed))
                 (require! (= true published?) :publication-failed))
               receipt))))
@@ -417,7 +439,9 @@
                    (require! (identical? @lease (validate @lease root kind)) :lease-token)
                    (swap! checks conj stage))]
       (try
-        (reset! lease (acquire {:coordination-root root :timeout-ms (:timeout-ms spec)} kind))
+        (reset! lease (acquire {:coordination-root root
+                               :timeout-ms (remaining-wait-ms (:timeout-ms spec)
+                                             (+ 1000 (:accounted-reclamation-base-ms process-bounds)))} kind))
         (require! (some? @lease) :lease-token)
         (check! :acquired)
         (reset! operation

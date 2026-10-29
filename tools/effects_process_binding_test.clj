@@ -192,6 +192,32 @@
     (is (= :timeout (:reason (run! h {:result (fn [& _] (reset! (:time h) 3600001) output)}))))
     (is (not (consumed? h)))))
 
+(deftest operation-deadline-spans-admission-child-cleanup-and-publication
+  (let [h (leased-harness)
+        deadline {:now #(deref (:time h)) :expires-ms 50000 :reserve-ms 15000}
+        acquire (get-in h [:broker-ports :acquire])
+        result (get-in h [:ports :result])
+        h (update h :ports assoc :result
+                  (fn [p opts]
+                    (swap! (:calls h) conj [:bounded-result opts])
+                    (result p opts)))]
+    (binding [a/*operation-deadline* deadline]
+      (is (= :observed (:status (run-leased! h {:acquire (fn [opts kind]
+                                                        (let [token (acquire opts kind)]
+                                                          (reset! (:time h) 12000) token))}))))
+      (is (= 35000 (get-in (first @(:calls h)) [1 :timeout-ms])))
+      (is (= 23000 (get-in (first (filter #(= :bounded-result (first %)) @(:calls h))) [1 :timeout-ms])))))
+  (let [h (harness)]
+    (binding [a/*operation-deadline* {:now #(deref (:time h)) :expires-ms 1000 :reserve-ms 15000}]
+      (is (= :operation-deadline (:reason (run! h {}))))
+      (is (empty? @(:calls h)))))
+  (let [h (harness)]
+    (binding [a/*operation-deadline* {:now #(deref (:time h)) :expires-ms 50000 :reserve-ms 15000}]
+      (is (= :operation-deadline
+             (:reason (run! h {:cleanup (fn [_] (reset! (:time h) 50001) clean)}))))
+      (is (not (consumed? h)))
+      (is (not-any? #(= :publish (first %)) @(:calls h))))))
+
 (deftest failed-process-capture-or-containment-never-consumes-a-result
   (doseq [[r c expected]
           [[(assoc output :status :timeout :exit-code 124) clean :timeout]

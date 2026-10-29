@@ -214,6 +214,33 @@ external deadline is fabricated and no generic wrapper is added. The preserved
 proposal's C/L order is acceptable in principle only; that decision supplies
 neither complete method acceptance nor platform authorization.
 
+A later source-only successor replaces the additive Git schedule with one
+7,500-second monotonic supervisor deadline. Each host wait uses the smaller
+of its per-call maximum and the remaining time minus a 15-second cleanup
+reserve; startup and returning waits do not renew that deadline. The parent
+receives only a remaining duration and uses a subordinate local clock for
+admission, Git and child execution. Absolute `System.nanoTime` readings are
+never compared across JVMs. The containing parent-process wait remains the
+outer authority over child-internal waits. This method may refuse or time out
+before all work fits; measured runtime fit is not required.
+
+The installed JDK's `ScheduledThreadPoolExecutor` supplies a concrete
+cooperative trigger in the existing supervisor. It interrupts the retaining
+owner thread; canonical finalization stays on that thread. Source/hash/decision
+work and process startup are charged to the same outer clock, with late
+returns rejected after cleanup and publication. Immutable supervisor output is
+provisional and cannot claim terminal success before its write returns.
+Scheduler commencement has no real-time guarantee, native or filesystem
+blocking may resist interruption, and the supervisor's own JVM bootstrap and
+pre-trigger helper loading are not externally contained. This is source-bound
+cooperative supervision of the exact parent, not a hard whole-operation kill
+guarantee. The earlier packets remain immutable, and acceptance of this changed
+method and its residual boundaries requires independent affected review.
+If raw-process retention fails, the method does not retry retention. It requests
+direct-root termination and closes its streams, with a returning-port reap wait
+clipped to at most 100 ms and remaining time. That path remains failed evidence
+with no retained-token or global-completion claim.
+
 `lease-validation-request` additionally pins the existing SH-01 broker source and its
 existing acquire, live-token validation and release ports. `observe-under-lease!`
 uses caller-installed ports to acquire the frozen lease in the parent. New PMK

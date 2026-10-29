@@ -1,6 +1,7 @@
 (ns effects-retained-git
   "Selected PMK Git bookends through supplied canonical SH-01 ports."
-  (:require [clojure.java.shell :as shell]))
+  (:require [clojure.java.shell :as shell]
+            [effects-acceptance :as a]))
 
 (defn- require! [condition reason]
   (when-not condition
@@ -15,8 +16,8 @@
   "Keep Git argv/config/environment semantics; return only complete UTF-8 output.
   The selected profile has no sh :in/:dir/:env overrides. Its explicit cwd
   equals the original JVM working directory. No real ports are resolved here."
-  [profile {:keys [start retain close-stdin result terminal finalize restore-interrupt observe]} root arguments]
-  (require! (every? fn? [start retain close-stdin result terminal finalize restore-interrupt observe]) :git-ports)
+  [profile {:keys [start retain abort-unretained close-stdin result terminal finalize restore-interrupt observe]} root arguments]
+  (require! (every? fn? [start retain abort-unretained close-stdin result terminal finalize restore-interrupt observe]) :git-ports)
   (require! (and (nil? shell/*sh-dir*) (nil? shell/*sh-env*)
                 (= "UTF-8" (.name (java.nio.charset.Charset/defaultCharset)))
                 (= (:cwd profile) (str root))
@@ -27,8 +28,11 @@
                      ((juxt :timeout-ms :capture-wait-ms :output-limit-bytes :output-limit-chars) options)) :git-profile)
     (let [argv (into ["git" "-C" (str root)] arguments)
           raw (atom nil) owned (atom nil) primary (atom nil) cleanup (atom nil)
-          finalized? (atom false) observed-result (atom nil)
+          finalized? (atom false) aborted? (atom false) observed-result (atom nil)
           finish! (fn []
+                    (when (and @raw (nil? @owned))
+                      (reset! aborted? true)
+                      (abort-unretained @raw))
                     (when @owned
                       (let [state (terminal @owned)]
                         (cond
@@ -45,11 +49,15 @@
                            (.addSuppressed ^Throwable original error))
                          (do (reset! primary error) (throw error))))]
       (try
+        (a/remaining-wait-ms (:timeout-ms options) (:accounted-reclamation-base-ms a/process-bounds))
         (reset! raw (start argv (:cwd profile)))
-        (reset! owned (retain @raw))
-        (require! (some? @owned) :git-ownership)
+        (let [token (retain @raw)]
+          (require! (and (some? token) (identical? @raw (:process token))) :git-ownership)
+          (reset! owned token))
         (close-stdin @raw)
-        (let [r (result @raw options @owned)
+        (let [r (result @raw (assoc options :timeout-ms
+                                   (a/remaining-wait-ms (:timeout-ms options)
+                                     (:accounted-reclamation-base-ms a/process-bounds))) @owned)
               state (terminal @owned)
               c (:result state)]
           (reset! observed-result r)
@@ -68,6 +76,7 @@
                          (:root-exited? r) (:tracked-owned-processes-terminal? r)
                          (not (:cleanup-failed? r)) (not (:timeout-containment-unproven? r))) :git-read)
           (require! (string? (:stdout r)) :git-capture)
+          (a/remaining-wait-ms 1 0)
           (:stdout r))
         (catch Throwable error
           (reset! primary error)
@@ -81,5 +90,6 @@
                 (observe {:argv argv :cwd (:cwd profile) :raw-process-returned? (some? @raw)
                           :owned-token-retained? (some? @owned) :result @observed-result
                           :cleanup @cleanup :direct-finalizer-attempted? @finalized?
+                          :unretained-abort-attempted? @aborted?
                           :global-descendant-coverage :unknown :failed? (some? @primary)})
                 (catch Throwable error (secondary! error))))))))))

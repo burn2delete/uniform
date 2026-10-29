@@ -18,6 +18,7 @@
   (let [calls (atom []) raw (Object.) token {:process raw :terminal (atom nil)}
         ports {:start (fn [argv cwd] (swap! calls conj [:start argv cwd]) raw)
                :retain (fn [p] (swap! calls conj [:retain p]) token)
+               :abort-unretained (fn [p] (swap! calls conj [:abort-unretained p]))
                :close-stdin (fn [p] (swap! calls conj [:close-stdin p]))
                :result (fn [p opts owned]
                          (swap! calls conj [:result p opts owned])
@@ -180,6 +181,53 @@
     (let [h (harness)]
       (is (= :git-profile (reason #(run h))))
       (is (empty? @(:calls h))))))
+
+(deftest Git-waits-share-the-operation-clock-and-recompute-after-start
+  (let [time (atom 0) h (harness)
+        deadline {:now #(deref time) :expires-ms 25000 :reserve-ms 15000}]
+    (binding [a/*operation-deadline* deadline]
+      (is (= 10000 (a/remaining-wait-ms 30000 11800)))
+      (is (= (:stdout output)
+             (read! h {:start (fn [& _] (reset! time 4000) (:raw h))})))
+      (is (= 6000 (get-in (first (filter #(= :result (first %)) @(:calls h))) [2 :timeout-ms])))
+      (reset! time 9000)
+      (let [next (harness)]
+        (read! next {})
+        (is (= 1000 (get-in (first (filter #(= :result (first %)) @(:calls next))) [2 :timeout-ms])))))))
+
+(deftest expired-operation-refuses-before-start-or-after-return-without-renewal
+  (let [time (atom 10000) h (harness)
+        deadline {:now #(deref time) :expires-ms 25000 :reserve-ms 15000}]
+    (binding [a/*operation-deadline* deadline]
+      (is (= :operation-deadline (reason #(read! h {}))))
+      (is (not-any? #(= :start (first %)) @(:calls h)))
+      (reset! time 0)
+      (let [late (harness)]
+        (is (= :operation-deadline
+               (reason #(read! late {:start (fn [& _] (reset! time 10001) (:raw late))}))))
+        (is (= 1 (count (filter #(= :finalize (first %)) @(:calls late))))))
+      (reset! time 0)
+      (let [late (harness)]
+        (is (= :operation-deadline
+               (reason #(read! late {:result (fn [& _] (reset! time 25000)
+                                              (reset! (:terminal (:token late)) {:result clean}) output)}))))
+        (is (not-any? #(= :finalize (first %)) @(:calls late)))))))
+
+(deftest retention-failure-aborts-the-same-raw-once-without-retrying
+  (doseq [mode [:throw :nil :wrong]]
+    (let [h (harness) original (Exception. "retain")
+          error (try (read! h {:retain (fn [_] (case mode :nil nil :wrong {:process (Object.)} (throw original)))})
+                     nil (catch Throwable error error))]
+      (is (if (= :throw mode) (identical? original error) (= :git-ownership (:reason (ex-data error)))))
+      (is (= [[:abort-unretained (:raw h)]]
+             (filter #(= :abort-unretained (first %)) @(:calls h))))
+      (is (not-any? #(#{:result :finalize} (first %)) @(:calls h)))))
+  (let [h (harness) original (Exception. "retain") secondary (Exception. "abort")
+        error (try (read! h {:retain (fn [_] (throw original))
+                             :abort-unretained (fn [_] (throw secondary))})
+                   nil (catch Throwable error error))]
+    (is (identical? original error))
+    (is (= [secondary] (vec (.getSuppressed original))))))
 
 (let [r (run-tests 'effects-retained-git-test)]
   (prn {:real-process-ports-called 0 :scope :selected-PMK-Git-binding})
