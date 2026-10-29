@@ -60,6 +60,22 @@ review remains historical; the corrected exact tuple needs affected re-review.
 
 ## Host prerequisites still require actual evidence
 
+The C3 candidate follows the resolved no-nesting rule: one confirmed shared
+coordination root C with resource class `:exclusive`, then the separate canonical
+lock L through immediate `tryLock`; release L before C. Historical nested RV/C5
+configurations do not establish an exception. The inert entrypoint now requires
+one frozen configuration file recording C, participating callers, canonical L,
+acquisition mode and both orders. Its exact bytes/hash are checked before owner
+lookup and on exit. Extra broker roots, nonexclusive classes, blocking lock mode
+and reversed release order refuse. This validates a declaration only: participant
+confirmation, actual acquisition/order/release and containment still require
+independent evidence. No actual C root or participant list is selected here.
+The affected compiler-free panel now passes 19 tests / 280 assertions; the
+language-boundary gate passes 6 tests / 11 assertions. Initial invocations using
+the self-hosting runner and then a classpath without test sources refused during
+selection/loading; neither reached an owner. The successful panel uses explicit
+source/test paths and `clojure.test`, without Bootstrap.
+
 The old prepared C5 controller uses the Git-common broker, existing host broker
 and canonical heavy lock, in that order. Its record explicitly leaves global
 participant coverage unestablished. Its child watchdog does not bind the entire

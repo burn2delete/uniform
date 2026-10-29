@@ -1,6 +1,6 @@
 (ns gravity.syntax.selected-revision-acceptance
   "One explicit C2-to-C3 acceptance operation. No loader, launcher or admission port."
-  (:require [clojure.java.io :as io] [clojure.string :as str]
+  (:require [clojure.edn :as edn] [clojure.java.io :as io] [clojure.string :as str]
             [gravity.resolve.selected-source-harness :as h]))
 
 (def selector :syntax/selected-reader-revision)
@@ -8,6 +8,33 @@
   '[reader-project-context-for-source compiler-c3-syntax-source-artifact
     c3-syntax-verification-report c3-artifact-id
     p15-s23-stage2-sh02-descriptor-envelope p15-s23-stage2-sh02-descriptor-envelope-verify!])
+
+(defn guard-configuration!
+  "Read the bound C3 guard declaration. Shape is not participant confirmation,
+  admission, acquisition or evidence that a caller followed this declaration."
+  [{:keys [guard-config-path closure]}]
+  (let [entries (filterv #(= guard-config-path (:path %)) (:config-files closure))]
+    (h/ensure! (= 1 (count entries)) :bound-C3-guard-configuration)
+    (let [input (h/file-input! guard-config-path)
+          _ (h/ensure! (= (select-keys input [:path :bytes :sha256])
+                          (select-keys (first entries) [:path :bytes :sha256])) :C3-guard-configuration-drift)
+          reader (java.io.PushbackReader. (java.io.StringReader. (:text input)))
+          config (edn/read {:eof ::eof} reader)
+          participants (:participants config)]
+      (h/ensure! (and (= ::eof (edn/read {:eof ::eof} reader))
+                      (= #{:coordination-root :resource-class :participants :canonical-lock
+                           :lock-mode :acquire-order :release-order} (set (keys config)))
+                      (string? (:coordination-root config))
+                      (.isAbsolute (io/file (:coordination-root config)))
+                      (= :exclusive (:resource-class config))
+                      (vector? participants) (seq participants)
+                      (every? #(and (string? %) (not (str/blank? %))) participants)
+                      (= (count participants) (count (set participants)))
+                      (= "/private/tmp/gravity-sh07-heavy.lock" (:canonical-lock config))
+                      (= :immediate-try-lock (:lock-mode config))
+                      (= [:C :L] (:acquire-order config))
+                      (= [:L :C] (:release-order config))) :C3-single-root-guard-contract)
+      config)))
 
 (defn source-closure-paths [root]
   (mapv #(str (io/file root %))
@@ -49,6 +76,7 @@
                   (= 192 (get-in inputs [:fixture :bytes]))
                   (= h/fixture-sha (get-in inputs [:fixture :sha256]))) :prepared-C3-input-contract)
   (recheck-closure! prepared)
+  (guard-configuration! prepared)
   (try
     (let [context ((owner 'reader-project-context-for-source) source-path)
           artifact ((owner 'compiler-c3-syntax-source-artifact)
@@ -106,4 +134,4 @@
          :Reader-revision-substitution-artifact revision-copy :Reader-revision-substitution-report revision-report
          :source-bookends :caller-retains-complete-closure-receipts
          :scope :exact-selected-C2-to-C3-only :self-hosting false :release false}))
-    (finally (recheck-closure! prepared))))
+    (finally (recheck-closure! prepared) (guard-configuration! prepared))))

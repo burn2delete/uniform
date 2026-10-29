@@ -66,3 +66,43 @@
                (try (acceptance/recheck-closure! (assoc-in prepared [:closure :source-files] [])) nil
                     (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
       (finally (java.nio.file.Files/deleteIfExists path) (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest guard-declaration-binds-one-exclusive-root-and-reverse-lock-release
+  (let [path (java.nio.file.Files/createTempFile "syntax-guard-control-" ".edn"
+               (make-array java.nio.file.attribute.FileAttribute 0))
+        config {:coordination-root "/fixture/shared-broker" :resource-class :exclusive
+                :participants ["fixture-caller"]
+                :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"
+                :lock-mode :immediate-try-lock :acquire-order [:C :L] :release-order [:L :C]}
+        check (fn [value]
+                (java.nio.file.Files/write path (.getBytes (pr-str value) "UTF-8")
+                  (make-array java.nio.file.OpenOption 0))
+                (let [input (h/file-input! (str path))]
+                  (acceptance/guard-configuration!
+                    {:guard-config-path (:path input) :closure {:config-files [input]}})))]
+    (try
+      (is (= config (check config)))
+      (doseq [bad [(assoc config :resource-class :normal)
+                   (assoc config :coordination-root "relative")
+                   (assoc config :host-root "/fixture/second-broker")
+                   (assoc config :participants [])
+                   (assoc config :participants ["caller" "caller"])
+                   (assoc config :lock-mode :blocking)
+                   (assoc config :canonical-lock "/fixture/other.lock")
+                   (assoc config :acquire-order [:C :host :L])
+                   (assoc config :release-order [:C :L])]]
+        (is (= :C3-single-root-guard-contract
+               (try (check bad) nil
+                    (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
+      (check config)
+      (let [input (h/file-input! (str path)) prepared {:guard-config-path (:path input)
+                                                     :closure {:config-files [input]}}]
+        (is (= :bound-C3-guard-configuration
+               (try (acceptance/guard-configuration! (assoc prepared :closure {})) nil
+                    (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+        (check (assoc config :participants ["different-caller"]))
+        (is (= :C3-guard-configuration-drift
+               (try (acceptance/guard-configuration! prepared) nil
+                    (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
+      (is (nil? (find-ns 'gravity.bootstrap)))
+      (finally (java.nio.file.Files/deleteIfExists path)))))
