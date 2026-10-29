@@ -1,5 +1,29 @@
 # Requirement reconciliation evidence
 
+## Accepted 200-mapping composition increment
+
+Independent affected-composition review accepted exactly the enumerated 200
+historical obligation-to-current-criterion mappings at candidate
+`e959c6daa522c179d82f446f14a218b66b9cabe5`, tree
+`a51e2efbea51f21420ce9aa45f3eec7ec1c9b42f`. Receipt SHA256:
+`217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b`.
+The owner's adoption rechecked every current criterion/context/fragment span
+and file hash, the exact accepted/remaining ID sets and the complete unchanged
+833 decision records before recording the result.
+
+`accepted-historical-mappings.edn` preserves the exact 200 accepted IDs and
+361 remaining dispatched IDs. Original history remains 577 = 13 prior
+criterion witnesses + three retirements + 200 newly accepted mappings + 361
+remaining mappings. The original witness artifact's zero-adoption state is
+retained as its reviewed freeze history, with this later adoption recorded
+separately. No task IDs, implementation states or original history changed.
+
+This accepts the finite source-criterion mappings only. Whole-facet entailment,
+the open canonical-pass-order/AI/profile/runtime policy decisions, whole-project
+task granularity, whole-PR/SH source-version acceptance and integration remain
+outside this receipt. No implementation or roadmap credit is inferred. The
+scoped task census remains provisional.
+
 ## Current witness freeze for affected composition review
 
 `current-criterion-bindings.edn` binds all 200 reviewed historical criteria to

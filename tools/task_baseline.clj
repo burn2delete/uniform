@@ -66,6 +66,9 @@
                                      :sha256 (sh-inventory/sha256 product-text) :commit ref}}))]
     (require! (= 240 (count docs) (count (set (map :id docs)))) "Original contract disposition loss or duplication")
     (require! (= (set (range 1 241)) (set (map :sequence docs))) "Original document sequence changed")
+    (when-let [w (:current-criterion-bindings source)]
+      (require! (= (:sha256 w) (sh-inventory/sha256 (pinned-text ref (:path w))))
+                "Stale current criterion witness artifact"))
     (doseq [{:keys [path current-sha256]} docs]
       (require! (= current-sha256 (sh-inventory/sha256 (pinned-text ref path))) (str "Contract source drift: " path)))
     (require! (every? (set (map :id tasks)) (keep :accountable-task decisions)) "Missing accountable task for remaining decision")

@@ -420,9 +420,10 @@
      :record "specs/requirement-reconciliation/reviewed-residual-composition.edn"
      :current-witnesses "specs/requirement-reconciliation/current-criterion-bindings.edn"
      :source-reviewed-and-rebound-criteria 200
-     :canonical-mapping-adoptions 0
+     :canonical-mapping-adoptions 200
+     :mapping-composition-receipt-sha256 "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"
      :task-population-change 0
-     :status :pending-independent-current-composition-review}
+     :status :accepted-finite-historical-mapping-composition}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

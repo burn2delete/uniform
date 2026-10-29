@@ -12938,17 +12938,19 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :reviewed-criterion-source-composition
-  {:source-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
-   :predecessor-input-fingerprint
-   "4bcec6acf693dac79dcf249bf759e2a3c5be9f96f5a0a08ec4ade3143bdd6de1",
-   :record
-   "specs/requirement-reconciliation/reviewed-residual-composition.edn",
+  {:canonical-mapping-adoptions 200,
+   :source-reviewed-and-rebound-criteria 200,
    :current-witnesses
    "specs/requirement-reconciliation/current-criterion-bindings.edn",
-   :source-reviewed-and-rebound-criteria 200,
-   :canonical-mapping-adoptions 0,
+   :mapping-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b",
+   :source-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+   :status :accepted-finite-historical-mapping-composition,
    :task-population-change 0,
-   :status :pending-independent-current-composition-review},
+   :record
+   "specs/requirement-reconciliation/reviewed-residual-composition.edn",
+   :predecessor-input-fingerprint
+   "4bcec6acf693dac79dcf249bf759e2a3c5be9f96f5a0a08ec4ade3143bdd6de1"},
   :family-task-source-composition
   {:source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
    :main-composition "60f59d225b03338eb30cdc22850838ecebd07303",

@@ -749,8 +749,10 @@
     "runtime/managed-dynamic-state"
     "runtime/managed-null-conversion"
     "runtime/manifest-consumption"],
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
    :task-count-delta 0,
-   :adoption :pending-independent-composed-review,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
    :identity-rule
    "Historical IDs remain history. A criterion binding does not restore IDs, adopt aliases or reclassify a different current semantic unit.",
    :sha256
@@ -759,7 +761,9 @@
    "specs/requirement-reconciliation/runtime-residual-composition.edn",
    :input
    "specs/requirement-reconciliation/runtime-residual-interfaces.edn",
-   :matched-current-semantic-ids []}
+   :matched-current-semantic-ids [],
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}
   {:family "phase-00",
    :historical-ids
    ["gravity/ai-tool-schema-policy-record"
@@ -814,14 +818,18 @@
     "gravity/unified-source-semantics"
     "gravity/unsafe-island-safe-api-eligibility"
     "gravity/verification-evidence-kind"],
-   :input
-   "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :task-count-delta 0,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
    :sha256
    "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
    :composition
    "specs/requirement-reconciliation/foundation-residual-composition.edn",
-   :adoption :pending-independent-composed-review,
-   :task-count-delta 0}
+   :input
+   "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}
   {:family "phase-11",
    :assigned-ids
    ["behavior/a1/credential-source"
@@ -918,13 +926,6 @@
     "behavior/a9/live-eval-policy"
     "behavior/a9/nondeterministic-eval-evidence"
     "behavior/a9/safety-probe-coverage"],
-   :input
-   "specs/requirement-reconciliation/ai-residual-interfaces.edn",
-   :input-sha256
-   "cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7",
-   :source-review-sha256
-   "152d65a68512f7403af153163d2eaa6a670db8392e488f9b061bfbbd40c22fcd",
-   :task-count-delta 0,
    :historical-ids
    ["behavior/a1/credential-source"
     "behavior/a1/declaration-lowering"
@@ -1020,7 +1021,18 @@
     "behavior/a9/live-eval-policy"
     "behavior/a9/nondeterministic-eval-evidence"
     "behavior/a9/safety-probe-coverage"],
-   :adoption :pending-current-source-witness-rebinding}
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :task-count-delta 0,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
+   :input-sha256
+   "cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7",
+   :source-review-sha256
+   "152d65a68512f7403af153163d2eaa6a670db8392e488f9b061bfbbd40c22fcd",
+   :input
+   "specs/requirement-reconciliation/ai-residual-interfaces.edn",
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}
   {:family "phase-10",
    :assigned-ids
    ["schema/artifact-validation"
@@ -1028,20 +1040,24 @@
     "schema/database-mapping"
     "schema/graphql-generation"
     "schema/release-evidence-gating"],
-   :input
-   "specs/requirement-reconciliation/schema-residual-interfaces.edn",
-   :input-sha256
-   "c923eb3da6f799d5bc72a0938917f09f7b6635ff2d7d2233ffa7a1fd2ae3ed29",
-   :source-review-sha256
-   "e144d8f4c9823d4f832d4bdd14eb385e34e44581462072469240ac413a02c36b",
-   :task-count-delta 0,
    :historical-ids
    ["schema/artifact-validation"
     "schema/configuration-reload"
     "schema/database-mapping"
     "schema/graphql-generation"
     "schema/release-evidence-gating"],
-   :adoption :pending-current-source-witness-rebinding}
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :task-count-delta 0,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
+   :input-sha256
+   "c923eb3da6f799d5bc72a0938917f09f7b6635ff2d7d2233ffa7a1fd2ae3ed29",
+   :source-review-sha256
+   "e144d8f4c9823d4f832d4bdd14eb385e34e44581462072469240ac413a02c36b",
+   :input
+   "specs/requirement-reconciliation/schema-residual-interfaces.edn",
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}
   {:family "phase-03",
    :assigned-ids
    ["ai/profile-tool-contract"
@@ -1078,13 +1094,6 @@
     "native/feature-guard"
     "native/ffi-boundary"
     "native/profile-runtime-contract"],
-   :input
-   "specs/requirement-reconciliation/profile-residual-interfaces.edn",
-   :input-sha256
-   "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
-   :source-review-sha256
-   "e5dd9e58dde628ec449803faf27bae6f886a6c15c5d254312db7169bcc961225",
-   :task-count-delta 0,
    :historical-ids
    ["ai/profile-tool-contract"
     "ai/prompt-memory-boundary"
@@ -1120,7 +1129,18 @@
     "native/feature-guard"
     "native/ffi-boundary"
     "native/profile-runtime-contract"],
-   :adoption :pending-current-source-witness-rebinding}
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :task-count-delta 0,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
+   :input-sha256
+   "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
+   :source-review-sha256
+   "e5dd9e58dde628ec449803faf27bae6f886a6c15c5d254312db7169bcc961225",
+   :input
+   "specs/requirement-reconciliation/profile-residual-interfaces.edn",
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}
   {:family "platform-product",
    :assigned-ids
    ["platform/device-provider-conformance"
@@ -1130,13 +1150,6 @@
     "platform/kernel-target-conformance"
     "platform/target-adoption-record"
     "platform/target-integration-evidence"],
-   :input
-   "specs/requirement-reconciliation/platform-residual-interfaces.edn",
-   :input-sha256
-   "6778a1ede4e57076c54a574bcb9f2d1c44d520897a2900d58a4ff46cda63bd69",
-   :source-review-sha256
-   "6ecfc29213598088fa6f3f8511b9c45abadba28a7bfec4e9f6ac6d99a8c99ba6",
-   :task-count-delta 0,
    :historical-ids
    ["platform/device-provider-conformance"
     "platform/external-tool-dependency-provenance"
@@ -1145,7 +1158,18 @@
     "platform/kernel-target-conformance"
     "platform/target-adoption-record"
     "platform/target-integration-evidence"],
-   :adoption :pending-current-source-witness-rebinding}],
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :task-count-delta 0,
+   :adoption :accepted-enumerated-historical-source-criterion-mappings,
+   :input-sha256
+   "6778a1ede4e57076c54a574bcb9f2d1c44d520897a2900d58a4ff46cda63bd69",
+   :source-review-sha256
+   "6ecfc29213598088fa6f3f8511b9c45abadba28a7bfec4e9f6ac6d99a8c99ba6",
+   :input
+   "specs/requirement-reconciliation/platform-residual-interfaces.edn",
+   :independent-composition-receipt-sha256
+   "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"}],
  :original-documents
  [{:path
    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
@@ -49739,16 +49763,20 @@
  :current-criterion-bindings
  {:path
   "specs/requirement-reconciliation/current-criterion-bindings.edn",
-  :remaining-unadopted-dispatch-ids 561,
+  :remaining-unadopted-dispatch-ids 361,
   :source-reviewed-and-current-bound 200,
   :canonical-mapping-adoption
-  :pending-independent-current-composition-review,
-  :canonically-adopted-new-mappings 0,
+  :accepted-enumerated-historical-source-criterion-mappings,
+  :canonically-adopted-new-mappings 200,
+  :accepted-manifest
+  "specs/requirement-reconciliation/accepted-historical-mappings.edn",
   :source-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
   :bound-ids-sha256
   "472dd8fa27e91fc1306782cb132accdb055475bbe877d6091222d591a97b5385",
   :sha256
   "2378fa880c9ecec322a1db2911622dd025ac83710efa22fd52955d5fc7e83b84",
   :qualification
-  "These are independently reviewed historical obligation-to-criterion source bindings with fresh current spans, not implementation acceptance or blanket entailment of every sentence of inherited broad facets. Whole-project scope, granularity and the 833 current Open decision identities remain separate and unassessed."},
+  "These are independently reviewed historical obligation-to-criterion source bindings with fresh current spans, not implementation acceptance or blanket entailment of every sentence of inherited broad facets. Whole-project scope, granularity and the 833 current Open decision identities remain separate and unassessed.",
+  :independent-composition-receipt-sha256
+  "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"},
  :implementation-acceptance :not-conferred}
