@@ -63,6 +63,23 @@
     (is (refuses? (assoc-in proposal [:units 0 :current-acceptance] :accepted)))
     (is (refuses? (assoc-in proposal [:units 0 :nonoverlap] :reviewed)))))
 
+(deftest independent-review-lineage-and-false-closure-regressions
+  (let [n (first (keep-indexed #(when (= [:task-interface-qualification] (:field-path %2)) %1)
+                               (:edits proposal)))
+        mutations
+        [[:drop-input (dissoc proposal :input)]
+         [:wrong-input (assoc proposal :input {:source-commit "wrong" :sha256 "wrong"})]
+         [:drop-dependency-history (dissoc proposal :dependency-history)]
+         [:drop-inherited-lineage (dissoc proposal :inherited-proposal-batch)]
+         [:hide-unresolved (assoc proposal :unresolved-requirement-ids [])]
+         [:false-unit-atomicity (assoc-in proposal [:units 0 :atomicity] :reviewed)]
+         [:false-unit-history (assoc-in proposal [:units 0 :historical-support] [{:state :accepted}])]
+         [:empty-dependency-edit (assoc-in proposal [:edits n :after] {:state :accepted})]
+         [:lose-negative-unit-gap (assoc-in proposal [:units 0 :task-gaps 0]
+                                          {:state :accepted :qualification "Complete"})]]]
+    (doseq [[id mutated] mutations]
+      (is (refuses? mutated) (name id)))))
+
 (let [r (run-tests 'tooling-requirements-test)]
   (shutdown-agents)
   (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

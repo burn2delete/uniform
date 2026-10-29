@@ -92,6 +92,34 @@ The coordinator routes review after consuming the immutable candidate. No
 global completion count, requirement denominator, service/runtime execution,
 release acceptance or self-hosting credit is conferred by this patch.
 
+### Independent review guard correction
+
+The 2026-10-28 independent review returned changes required for the proposal
+checker, receipt SHA256
+`e69a09869b67eaa4af7efd53ea37a4c1dd02581b628376b813debe91abe20411`.
+Its direct source/task review passed the thirteen sources, sixteen amended
+rows, four obligation corrections and retained context-sensitive refinements.
+The original `2ab753db` and namespace-only `1108a447` candidates remain history.
+Independent review did not accept either as the complete consumable candidate.
+
+The author reproduced all nine incorrect acceptances against the original
+checker: absent/wrong input metadata, missing dependency/batch lineage,
+hidden unresolved IDs, false unit atomicity/history, erased qualification
+payload and an accepted/Complete unit gap. The successor pins snapshot and
+proposal-format bytes, binds metadata/lineage and the exact guarded edits to
+the frozen source-qualified proposal, and checks duplicated unit states and
+gaps against the preserved/patched records. Qualification acceptance, owner,
+facet IDs and dependencies must match the actual task and source-qualified
+unit. This reuses independently inspected source clauses; it confers no
+implementation acceptance or acceptance of the old checker.
+
+The repaired focused suite passed 7 tests / 33 assertions, including all nine
+review regressions. The proposal, all 65 requirement IDs, 960 facets, task
+criteria, states and historical records remain byte-identical to `1108a447`.
+No shared SH crosswalk or central source-version composition is changed.
+Affected independent re-review remains with the same reviewer, after its
+existing governance repair, through the coordinator's existing route.
+
 ### Observed transfer checks
 
 Focused projector tests passed 4 tests / 80 assertions, zero failures/errors;
