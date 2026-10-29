@@ -437,30 +437,26 @@
     (>= value 0)
     false))
 
-(defn b1-c11-independent-count-relations-valid?
-  [verifier]
+(defn b1-c11-independent-count-relations-valid? [verifier]
   (let [conditional-count (get verifier :conditional-count)
         block-count (get verifier :block-count)
         operation-count (get verifier :operation-count)
-        runtime-check-count
-        (get (get verifier :runtime-checks) :runtime-check-count)
+        runtime-check-count (get (get verifier :runtime-checks) :runtime-check-count)
         data-flow (get verifier :data-flow)]
     (if (contains? #{0 1} conditional-count)
       (if (> operation-count 0)
-        (if (<= operation-count 256)
-          (if (= block-count (if (= conditional-count 0) 1 4))
-            (if (= (get data-flow :definition-count) operation-count)
-              (if (= (get data-flow :value-count) operation-count)
-                (if (= (get data-flow :terminator-use-count)
-                       (if (= conditional-count 0) 1 4))
-                  (<= runtime-check-count operation-count)
-                  false)
+        (if (= block-count (if (= conditional-count 0) 1 4))
+          (if (= (get data-flow :definition-count) operation-count)
+            (if (= (get data-flow :value-count) operation-count)
+              (if (= (get data-flow :terminator-use-count) (if (= conditional-count 0) 1 4))
+                (<= runtime-check-count operation-count)
                 false)
               false)
             false)
           false)
         false)
       false)))
+
 
 (defn b1-c11-independent-verifier-valid?
   [verifier]
@@ -1011,7 +1007,6 @@
                                     (if (= (get request :target-policy)
                                            {:scope
                                             :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-                                            :maximum-operation-count 256
                                             :whole-c14? false :whole-b1? false
                                             :whole-b3? false :public? false
                                             :release? false :self-hosted? false})
@@ -1055,6 +1050,7 @@
         false)
       false)
     false))
+
 
 (defn b1-bounded-c14-eligibility-valid?
   [eligibility]
@@ -1603,7 +1599,6 @@
                                       (if (= (get request :target-policy)
                                              {:scope
                                               :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-                                              :maximum-operation-count 128
                                               :dialect :c17
                                               :whole-c14? false
                                               :whole-b1? false
@@ -1652,6 +1647,7 @@
         false)
       false)
     false))
+
 
 (defn b1-bounded-c14-c-eligibility-valid?
   [eligibility]
@@ -1866,8 +1862,7 @@
          blocks (rest block-order) operation-ids)
         nil))))
 
-(defn b1-c14-c-bounded-operation-order
-  [mir]
+(defn b1-c14-c-bounded-operation-order [mir]
   (if (map? mir)
     (let [source-core (get mir :source-core)
           functions (get mir :functions)
@@ -1884,33 +1879,29 @@
                 (if (map? function)
                   (let [blocks (get function :blocks)
                         join (get control-flow :join)
-                        conditional?
-                        (b1-c14-c-canonical-join-valid?
-                         join blocks then-id else-id join-id)
-                        block-order
-                        (if conditional?
-                          [entry-id then-id else-id join-id]
-                          [entry-id])]
+                        conditional? (b1-c14-c-canonical-join-valid?
+                                       join
+                                       blocks
+                                       then-id
+                                       else-id
+                                       join-id)
+                        block-order (if conditional?
+                                      [entry-id then-id else-id join-id]
+                                      [entry-id])]
                     (if (map? blocks)
                       (if (= (get function :entry) entry-id)
                         (if (= (get control-flow :entry) entry-id)
-                          (if (if conditional?
-                                true
-                                (= join nil))
+                          (if (if conditional? true (= join nil))
                             (if (= (set (keys blocks)) (set block-order))
-                              (if (b1-c14-c-blocks-valid?
-                                   blocks block-order)
-                                (let [operation-order
-                                      (b1-c14-c-operation-order-from-blocks
-                                       blocks block-order [])]
+                              (if (b1-c14-c-blocks-valid? blocks block-order)
+                                (let [operation-order (b1-c14-c-operation-order-from-blocks
+                                                        blocks
+                                                        block-order
+                                                        [])]
                                   (if (vector? operation-order)
                                     (if (> (count operation-order) 0)
-                                      (if (<= (count operation-order) 128)
-                                        (if (= (count operation-order)
-                                               (count
-                                                (set operation-order)))
-                                          operation-order
-                                          [])
+                                      (if (= (count operation-order) (count (set operation-order)))
+                                        operation-order
                                         [])
                                       [])
                                     []))
@@ -1926,6 +1917,7 @@
           [])
         []))
     []))
+
 
 (defn b1-c14-c-fact-binding-counts-valid?
   [mir facts]
@@ -2163,8 +2155,7 @@
         false)
       false)))
 
-(defn b1-c14-c-payload-valid?
-  [lowering]
+(defn b1-c14-c-payload-valid? [lowering]
   (let [payload (get lowering :bounded-lowering-payload)
         request (get lowering :request)
         input (get request :input)
@@ -2172,50 +2163,55 @@
         facts (get payload :fact-bindings)
         operation-order (b1-c14-c-bounded-operation-order mir)]
     (if (map? payload)
-      (if (= (set (keys payload))
-             #{:artifact :c11-artifact-id :c13-artifact-id
-               :c13-semantic-id :mir :operation-order :fact-bindings})
-        (if (= [(get payload :artifact)
-                (get payload :c11-artifact-id)
-                (get payload :c13-artifact-id)
-                (get payload :c13-semantic-id)]
-               [:gravity/c14-bounded-c-lowering-payload
-                (get input :c11-artifact-id)
-                (get input :artifact-id)
-                (get input :id)])
+      (if (=
+            (set (keys payload))
+            #{:c13-artifact-id
+              :c11-artifact-id
+              :mir
+              :artifact
+              :operation-order
+              :fact-bindings
+              :c13-semantic-id})
+        (if (=
+              [(get payload :artifact)
+               (get payload :c11-artifact-id)
+               (get payload :c13-artifact-id)
+               (get payload :c13-semantic-id)]
+              [:gravity/c14-bounded-c-lowering-payload
+               (get input :c11-artifact-id)
+               (get input :artifact-id)
+               (get input :id)])
           (if (map? mir)
             (if (vector? (get payload :operation-order))
               (if (= (get payload :operation-order) operation-order)
                 (if (> (count operation-order) 0)
-                  (if (<= (count operation-order) 128)
-                    (if (= (count operation-order)
-                           (count (set operation-order)))
+                  (if (= (count operation-order) (count (set operation-order)))
                     (if (map? facts)
-                      (if (= (set (keys facts))
-                             #{:type :effect :ownership :capability :safety
-                               :runtime-checks :proofs :source-map})
+                      (if (=
+                            (set (keys facts))
+                            #{:proofs
+                              :runtime-checks
+                              :type
+                              :capability
+                              :safety
+                              :ownership
+                              :source-map
+                              :effect})
                         (if (b1-content-binding-valid? (get facts :type))
                           (if (b1-content-binding-valid? (get facts :effect))
-                            (if (b1-content-binding-valid?
-                                 (get facts :ownership))
-                              (if (b1-content-binding-valid?
-                                   (get facts :capability))
-                                (if (b1-content-binding-valid?
-                                     (get facts :safety))
-                                  (if (b1-content-binding-valid?
-                                       (get facts :runtime-checks))
-                                    (if (b1-content-binding-valid?
-                                         (get facts :proofs))
-                                      (if (b1-content-binding-valid?
-                                           (get facts :source-map))
-                                        (if (b1-c14-c-fact-binding-counts-valid?
-                                             mir facts)
-                                          (if (b1-c14-c-fact-projections-valid?
-                                               mir request facts)
-                                            (if (b1-c14-c-contract-preimages-valid?
-                                                 mir request)
+                            (if (b1-content-binding-valid? (get facts :ownership))
+                              (if (b1-content-binding-valid? (get facts :capability))
+                                (if (b1-content-binding-valid? (get facts :safety))
+                                  (if (b1-content-binding-valid? (get facts :runtime-checks))
+                                    (if (b1-content-binding-valid? (get facts :proofs))
+                                      (if (b1-content-binding-valid? (get facts :source-map))
+                                        (if (b1-c14-c-fact-binding-counts-valid? mir facts)
+                                          (if (b1-c14-c-fact-projections-valid? mir request facts)
+                                            (if (b1-c14-c-contract-preimages-valid? mir request)
                                               (b1-c14-c-mir-bindings-valid?
-                                               mir request operation-order)
+                                                mir
+                                                request
+                                                operation-order)
                                               false)
                                             false)
                                           false)
@@ -2233,11 +2229,11 @@
                   false)
                 false)
               false)
-              false)
             false)
           false)
         false)
       false)))
+
 
 (defn b1-bounded-c14-c-input-valid?
   [lowering]
@@ -2629,7 +2625,6 @@
                                       (if (= (get request :target-policy)
                                              {:scope
                                               :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-                                              :maximum-operation-count 127
                                               :target-kind :core-module
                                               :whole-c14? false
                                               :whole-b1? false
@@ -2678,6 +2673,7 @@
         false)
       false)
     false))
+
 
 (defn b1-bounded-c14-wasm-eligibility-valid?
   [eligibility]
@@ -2756,8 +2752,7 @@
       false)
     false))
 
-(defn b1-c14-wasm-payload-valid?
-  [lowering]
+(defn b1-c14-wasm-payload-valid? [lowering]
   (let [payload (get lowering :bounded-lowering-payload)
         request (get lowering :request)
         input (get request :input)
@@ -2767,68 +2762,89 @@
         dependencies (get request :dependency-provenance)
         operation-order (b1-c14-c-bounded-operation-order mir)]
     (if (map? payload)
-      (if (= (set (keys payload))
-             #{:artifact :c11-artifact-id :c13-artifact-id
-               :c13-semantic-id :mir :operation-order :fact-bindings})
-        (if (= [(get payload :artifact)
-                (get payload :c11-artifact-id)
-                (get payload :c13-artifact-id)
-                (get payload :c13-semantic-id)]
-               [:gravity/c14-bounded-wasm-lowering-payload
-                (get input :c11-artifact-id)
-                (get input :artifact-id)
-                (get input :id)])
+      (if (=
+            (set (keys payload))
+            #{:c13-artifact-id
+              :c11-artifact-id
+              :mir
+              :artifact
+              :operation-order
+              :fact-bindings
+              :c13-semantic-id})
+        (if (=
+              [(get payload :artifact)
+               (get payload :c11-artifact-id)
+               (get payload :c13-artifact-id)
+               (get payload :c13-semantic-id)]
+              [:gravity/c14-bounded-wasm-lowering-payload
+               (get input :c11-artifact-id)
+               (get input :artifact-id)
+               (get input :id)])
           (if (map? mir)
-            (if (= [(get mir :artifact) (get mir :schema-version)
-                    (get mir :profile) (get mir :source-target)
-                    (get mir :target-request)
-                    (get mir :verification-status)
-                    (get mir :target-independent?)]
-                   [:gravity/mir-module 1 :hosted :jvm :wasm :passed true])
+            (if (=
+                  [(get mir :artifact)
+                   (get mir :schema-version)
+                   (get mir :profile)
+                   (get mir :source-target)
+                   (get mir :target-request)
+                   (get mir :verification-status)
+                   (get mir :target-independent?)]
+                  [:gravity/mir-module 1 :hosted :jvm :wasm :passed true])
               (if (= (get payload :operation-order) operation-order)
                 (if (> (count operation-order) 0)
-                  (if (<= (count operation-order) 127)
-                    (if (= (count operation-order) (count (set operation-order)))
-                      (if (map? facts)
-                        (if (= (set (keys facts))
-                               #{:type :effect :ownership :capability :safety
-                                 :runtime-checks :proofs :source-map})
-                          (if (b1-wasm-content-bindings-valid?
-                               [:type :effect :ownership :capability :safety
-                                :runtime-checks :proofs :source-map]
-                               facts)
-                            (if (= (get facts :runtime-checks)
-                                   {:content-id
-                                    "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
-                                    :entry-count 0})
-                              (if (b1-c14-c-fact-binding-counts-valid? mir facts)
-                                (if (b1-c14-c-fact-projections-valid?
-                                     mir request facts)
-                                  (if (b1-c14-c-contract-preimages-valid?
-                                       mir request)
-                                    (if (= [(get facts :type)
-                                            (get facts :ownership)
-                                            (get facts :safety)
-                                            (get facts :source-map)]
-                                           [(get bindings :type)
-                                            (get bindings :ownership)
-                                            (get bindings :safety)
-                                            (get bindings :source-map)])
-                                      (if (= (get mir :source-core)
-                                             (get dependencies :source-core)
-                                             (get (get (get (get input
-                                                                   :verifier-report)
-                                                          :b1-preflight)
-                                                     :binding)
-                                                :checked-core-artifact-id))
-                                        (if (= (get mir :b1-preflight)
-                                               (get (get input :verifier-report)
-                                                    :b1-preflight))
-                                          (= (get (get mir
-                                                       :pass-execution-record)
-                                                  :record-id)
-                                             (get dependencies :c11-pass))
-                                          false)
+                  (if (= (count operation-order) (count (set operation-order)))
+                    (if (map? facts)
+                      (if (=
+                            (set (keys facts))
+                            #{:proofs
+                              :runtime-checks
+                              :type
+                              :capability
+                              :safety
+                              :ownership
+                              :source-map
+                              :effect})
+                        (if (b1-wasm-content-bindings-valid?
+                              [:type
+                               :effect
+                               :ownership
+                               :capability
+                               :safety
+                               :runtime-checks
+                               :proofs
+                               :source-map]
+                              facts)
+                          (if (=
+                                (get facts :runtime-checks)
+                                {:content-id
+                                 "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+                                 :entry-count 0})
+                            (if (b1-c14-c-fact-binding-counts-valid? mir facts)
+                              (if (b1-c14-c-fact-projections-valid? mir request facts)
+                                (if (b1-c14-c-contract-preimages-valid? mir request)
+                                  (if (=
+                                        [(get facts :type)
+                                         (get facts :ownership)
+                                         (get facts :safety)
+                                         (get facts :source-map)]
+                                        [(get bindings :type)
+                                         (get bindings :ownership)
+                                         (get bindings :safety)
+                                         (get bindings :source-map)])
+                                    (if (=
+                                          (get mir :source-core)
+                                          (get dependencies :source-core)
+                                          (get
+                                            (get
+                                              (get (get input :verifier-report) :b1-preflight)
+                                              :binding)
+                                            :checked-core-artifact-id))
+                                      (if (=
+                                            (get mir :b1-preflight)
+                                            (get (get input :verifier-report) :b1-preflight))
+                                        (=
+                                          (get (get mir :pass-execution-record) :record-id)
+                                          (get dependencies :c11-pass))
                                         false)
                                       false)
                                     false)
@@ -2847,6 +2863,7 @@
           false)
         false)
       false)))
+
 
 (defn b1-bounded-c14-wasm-input-valid?
   [lowering]
