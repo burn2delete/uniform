@@ -64,6 +64,12 @@ helper mappings remain explicit rather than being treated as missing features.
   The later selector/paired copies under `sh-08/preserved` are preparation only
   and outside that exact review. Genuine consumer/runtime acceptance remains
   unrun; the original failure is preserved.
+- Latest supported DSE owner readback confirms managed recovery at that exact
+  `f4c9fdcd` head/tree and source-only preparation 2/38 plus boundary 6/11.
+  Recovery receipt SHA256 is
+  `7070b90845d6a0975d2f51e0cdef25f5d5284b2ed1d5fe3497389bbf3d286594`.
+  The original preparation receipt is unchanged. Genuine launch denial remains
+  STOPPED; recovery does not grant launch authority or activate another writer.
 - ACC-01 now owns finite quoted-data source draft PR591 at
   `1c0d699f06372fe3c52fa003f53aa38ffd40d07c`, tree
   `5daf1c0d0f690a4557c362fc7203ebe589570768`, based on main `b7347f6b`.
@@ -158,10 +164,21 @@ helper mappings remain explicit rather than being treated as missing features.
   separate work accounting and independent acceptance remain open. A prohibited
   cache-cleanup command was rejected and not retried; the generated local lint
   cache remains untracked, without an integration/clean-worktree claim.
+- The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
+  its EDN record bind twelve exact historical dispatch units to existing PR568
+  source: five complete forms under explicit helper aliases, two explicit kind
+  guard differences, three complete conserved else branches, one fallback with
+  an additional selector difference, and one complete caller decomposition.
+  Eight structural source paths pin forwarding through existing BKA entrypoints
+  without claiming semantic reachability. Two complete historical direct-call
+  helper bodies occur exactly once inline on assessed main `98c391a7`; their
+  incorporation proposals need independent disposition. All twelve selected
+  candidate forms remain identical to the existing `ec085f5f` reviewed source.
+  This mapping does not extend that review or claim genuine execution.
 - Routine CI completed with seven successes and two skips for PR591 at
-  `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`
-  PR599 at `b786b464`, PR610 at `2b70fac2` and this evidence draft's prior head
-  `bba49c6c`. Those catalogs do
+  `1c0d699f`, PR593 at `c8f16877`, PR595 at `99893151`, PR598 at `d58d61c4`,
+  PR599 at `b786b464`, PR610 at `2b70fac2`, PR611 at `edef2c00` and this evidence
+  draft's prior head `9f64bb34`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
 ## Every original authored path
@@ -265,9 +282,9 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 
 | Original authored path | Supported disposition and exact remaining obligation |
 | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
-| `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. PR610 removes only the Set source descriptor operand-work field; full-equality consumers remain unchanged and genuine acceptance is pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid control definitions, pending genuine execution and independent acceptance. DSE joins, remaining predicate/query/construction headers, nil/List work accounting and ordinary-local-call composition remain. |
-| `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. PR610 removes only the Set source descriptor operand-work field with unchanged full-equality consumers and genuine acceptance pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid controls, pending genuine execution and independent acceptance. Typed-direct-call compatibility/argument validation, remaining join accounting and descriptor consumers still need explicit disposition. |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, GIS3 products, native arenas and C7 nil/List joins. PR599 pins 28 exact and two explicitly differing Map-get/construction/verifier forms without changing production code. PR610 supplies the finite C7 Set descriptor field retirement and absence/forgery controls, pending genuine acceptance. The dispatch source map separately pins four C7 DSE-dispatch correspondences under explicit helper aliases. Parameter choice is exactly inlined on assessed main. Independent source disposition, general native/public-verifier integration and remaining descriptor/derive/step deltas remain open. |
+| `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. PR610 removes only the Set source descriptor operand-work field; full-equality consumers remain unchanged and genuine acceptance is pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid control definitions, pending genuine execution and independent acceptance. The dispatch source map pins five Effects DSE-dispatch units, including two explicit guard differences and an additional selector difference; independent mapping disposition is pending. DSE joins, remaining predicate/query/construction headers, nil/List work accounting and ordinary-local-call composition remain. |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. PR598 supplies finite typed List-to-Set/public Map-key mixed-ledger census source and native record/tag-stripping controls with genuine acceptance pending. PR610 removes only the Set source descriptor operand-work field with unchanged full-equality consumers and genuine acceptance pending. PR611 supplies the exact historical List-element width deletion with actual-owner positive/late-invalid controls, pending genuine execution and independent acceptance. The dispatch source map pins three emitter DSE forwarding/caller units and two exact inline direct-call helper bodies, pending independent disposition. Direct-call source/type/arity/order acceptance, remaining join accounting and descriptor consumers remain open. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores nine GIS3/native tests; PR595 restores five join tests; PR599 restores the exact ordinary construction test and adds the explicit qualified/fresh-verifier controls. PR610 reconciles two Set kernels with absent metadata and coherent obsolete-field forgeries, retiring their payment/width-only refusal assertions while preserving independent semantic checks. Genuine execution remains unrun. Structural-vector, opaque-ordering, other public-verifier and old-only cases still need test-level mapping, not a whole-file incorporation claim. |
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |

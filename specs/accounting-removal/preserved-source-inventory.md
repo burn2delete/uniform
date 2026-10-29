@@ -78,6 +78,19 @@ inside it. This record grants no owner, review or integration authority.
 
 ## Concrete next work and open decisions
 
+The later [dispatch/direct-call source map](dispatch-source-correspondence.md)
+pins twelve historical units and two exact inline helper-body proposals at
+assessed main `98c391a71c69b8086f15053319de123ee8cbf7fc` and existing DSE PR568
+`f4c9fdcd`. It distinguishes complete alias correspondence, two guard changes,
+three whole fallback correspondences, an additional selector difference and
+the remaining caller decomposition. No guard/schema/argument value is
+normalized away. All twelve selected DSE candidate forms remain identical to
+the existing `ec085f5f` source-only reviewed input. The new mapping and inline
+incorporation proposals remain pending independent disposition; structural
+call paths do not prove semantic reachability. The original machine inventory
+and its counts remain unchanged rather than silently treating renamed DSE
+functions or inlined helpers as absences or completed work.
+
 The 37 stack units still identical to the authored base and the other differing
 units provide exact next-inspection identities. Existing owner routes must be
 checked before source changes; the census is not permission to duplicate DSE,
