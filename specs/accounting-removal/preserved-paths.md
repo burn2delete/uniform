@@ -382,8 +382,10 @@ helper mappings remain explicit rather than being treated as missing features.
   NONPASS with 257 passes/five failures. Boundary 6/11, docs, roadmap,
   governance (185 records), whitespace and four-file zero-finding lint pass.
   Exact-identity inspect preflight passes all conditions on the clean named
-  branch. See `reader-contract-clean-composition.edn`. Current composition
-  independent acceptance and CI remain pending; integration-mode preflight,
+  branch. See `reader-contract-clean-composition.edn`. Later exact-head CI
+  completed with seven successes and two configured skips, recorded in
+  `reader-contract-composed-ci.edn`. Current composition independent
+  acceptance remains pending; integration-mode preflight,
   main integration and genuine owner controls remain UNRUN.
 - ACC-01 owns main-based reader-contract draft PR626 at
   `bcf0bb4ba093a2634bf51b4541aa153040e333aa`, tree
