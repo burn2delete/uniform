@@ -634,3 +634,31 @@ test invocation exposed shared `user` namespace collisions; separate processes
 passed. The SH projection test initially read during its concurrent regeneration
 and passed after generation completed: 12 tests / 416 assertions. No full CI result is claimed
 for this source checkpoint.
+
+## Bootstrap12 current source composition
+
+Task source `8ab091e04b53beac6a4a59c82d116382a5ea9f30` retains the frozen
+Bootstrap12 source criteria while appending eight refinements to four current
+Compiler API/Release fields. One new Open seed/native producer carries the
+other four criteria. The preceding Release and Compiler API fields remain
+prefixes, including their later Compiler/Testing and Governance/Core criteria.
+The selected public composition is `bootstrap12-current-composition.edn`,
+SHA256 `7a30eafae6b5f93f6f469ed982402e4411814b583493049680697ddbe7254a4d`.
+The private whole proposal remains local; its source-review receipt has SHA256
+`bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35`.
+
+`current-criterion-bindings-485.edn`, SHA256
+`68c2314aef87d9dd2dd5d07925c4298ca2d23df5b77f0be0bbc63bf56e55c50e`,
+retains all 473 predecessor witnesses and binds the twelve new criteria to
+their actual committed task records. Accounting8 and Build68 are the remaining
+76 unbound historical mappings. Canonical acceptance remains 430; the pending
+55 composed mappings require independent actual-composition review. All 833
+Open decisions and their 303 previous allocations are unchanged. The declared
+task census becomes 3 Accepted of 182, with 179 remaining, still provisional.
+The original seventeen Release routing positions remain fixed; the seed/native
+producer is appended at position eighteen. No execution or implementation
+acceptance follows from adding this task authority.
+
+Release controls passed 6 tests / 131 assertions, Compiler API 5/77 and the
+language-boundary gate 6/11. Exact task parsers and generated projections passed.
+The task source adds no runtime, compiler, broker or native-observation probe.
