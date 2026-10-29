@@ -393,6 +393,46 @@ helper mappings remain explicit rather than being treated as missing features.
   pins. All prior test bytes/production survive; six historical helper
   differences remain explicit. Genuine kernels, authenticated/executable
   Record/Union behavior and current-main composition/integration remain open.
+- Main-based cold quote-metadata extraction PR628 is published at
+  `46e8f15a2295b0fba52e9c94fb8aa9ea825259fe`, tree
+  `98369cedb783be6430e22690e52f6af79351165f`, base main `e047157d`. Three
+  before/after definition intervals and five added fixture/control forms match
+  reviewed PR618 byte for byte; every other main production/test byte and
+  current callers survive. Main's metered quote-products and absent
+  valid-data helper are explicitly different and unchanged. Source, boundary
+  6/11, lint zero errors/same 223 warnings/one info, docs/roadmap pass. Fresh
+  independent main-composition review, genuine acceptance, CI and preflight
+  remain separate; PR618 source acceptance is not inherited into main.
+- PR626 predecessor `bcf0bb4b` static job `123752212872`/run `40960649429`
+  failed on its newly restored List-query file's unused testing refer. Its
+  historical warning was not an unchanged main baseline. Corrected same-PR
+  head `70eba308480d5d09e85d1657bf1f3a7473f03228`, tree
+  `5adafde0ec3dd4e0ac8bee94455f054c1dc00b09`, removes only that unused import
+  and refreshes the ninth explicit adaptation/file evidence. Reader suites
+  remain 14/666 passing; original query 257-pass/5-failure NONPASS is preserved.
+  Boundary 6/11 and unchanged strict lint report zero baseline/zero blocking
+  findings; no lint policy or fixture assertions change. Old CI is retained;
+  corrected-head automatic CI remains separate.
+- Exact PR621 `6c8d7029` source PASS is consumed with receipt SHA256
+  `45103e9648abf38fc0850f9e7fec0abbc22edee263358b43268318eeab5e9b02`: 3
+  source tests/69 assertions, nine dependency pins and exact parent test prefix.
+  The 4097-request/16777217-character cases were read as definitions only, with
+  no large allocation or producer execution. PR613 carrier acceptance remains
+  excluded. See [the consumption](imported-producer-review-consumption.edn).
+- Exact PR622 `47a0f756` scoped-source PASS is consumed with receipt SHA256
+  `6acc15a62eea2cbf0837bc8309c5935e2671ca1fa7482df81a2e8da93e82cfbd`: nine
+  C7 pins and seven refused source mutations. The complete List kernel is raw
+  byte-exact; Symbol depth192 is added to the CURRENT constructor only. Whole
+  historical Symbol-body/constructor equivalence and auxiliary reader-serialized
+  test-form hashes are NOT independently endorsed. See
+  [the consumption](recursive-type-review-consumption.edn).
+- Exact PR624 `9f9dce89` scoped-source PASS is consumed with receipt SHA256
+  `17c28f920d5268fc9ddb0e68d05b7e99f05b759d3944e5033accf2f9caf8bea4`: 3
+  source tests/60 assertions, six inert negative controls and 22 dependency pins
+  with five differences explicit. Shared helper/all prior bytes and semantic
+  candidates survive. See [the consumption](effects-local-review-consumption.edn).
+  None of these reviews supplies genuine kernels, authentication, transitive
+  helper equivalence, whole ACC/PR502 closure or main integration.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind

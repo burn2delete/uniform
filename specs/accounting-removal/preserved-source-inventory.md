@@ -449,3 +449,42 @@ the source result. Genuine owner kernels, authenticated/executable Record/Union
 behavior, current-main composition and integration remain pending. No transitive
 helper equivalence or full ACC/PR502 acceptance is inferred. Immutable inventory
 counts and snapshots remain unchanged.
+
+## Main quote extraction, reader CI correction and further source reviews
+
+PR628 exact `46e8f15a`, tree `98369ced`, extracts only PR618's three reviewed
+definition intervals and five raw fixture/control forms onto main `e047157d`.
+All other main bytes/callers survive. Main's metered quote-products and absent
+valid-data helper remain explicit changed-composition boundaries; no parent
+stack is imported. Source checks, boundary 6/11, unchanged lint multiplicities
+and docs/roadmap pass. Independent main-composition review, genuine acceptance,
+CI and preflight remain pending.
+
+PR626 predecessor `bcf0bb4b` static job `123752212872`, run `40960649429`,
+failed on the new List-query file's unused testing import (zero main baseline,
+one blocking warning). Successor `70eba308`, tree `5adafde0`, removes only that
+refer and refreshes the ninth exact adaptation/file hashes. Reader results
+remain 14/666; original query NONPASS remains separate. Boundary 6/11 and the
+unchanged strict lint checker pass with zero baseline/zero blocking findings.
+The CI failure is retained and corrected-head automatic CI is separate.
+
+Three new consumption records verify exact independent source receipts:
+
+- PR621 `6c8d7029`, SHA256
+  `45103e9648abf38fc0850f9e7fec0abbc22edee263358b43268318eeab5e9b02`: 3/69,
+  nine dependency pins, original kernel/comments and parent test prefix. Large
+  4097/16777217 cases were definitions only, not allocated or executed; PR613
+  carrier acceptance remains excluded.
+- PR622 `47a0f756`, SHA256
+  `6acc15a62eea2cbf0837bc8309c5935e2671ca1fa7482df81a2e8da93e82cfbd`: raw
+  List kernel/file conservation, nine C7 pins and seven refused source mutations.
+  Symbol192 uses the current constructor; historical constructor/body equivalence
+  and auxiliary reader-serialized test hashes are not independently endorsed.
+- PR624 `9f9dce89`, SHA256
+  `17c28f920d5268fc9ddb0e68d05b7e99f05b759d3944e5033accf2f9caf8bea4`: 3/60,
+  six inert negative controls, 22 dependency pins/five explicit differences,
+  shared helper and semantic candidate conservation.
+
+Genuine kernels, actual Effects/producer/runtime composition, authentication and
+main integration remain open. These source results do not clear any old denial
+or confer whole ACC/PR502 authority. Immutable inventory counts are unchanged.
