@@ -8,6 +8,7 @@
 (def baseline-sha "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980")
 (def inputs-sha "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94")
 (binding [*command-line-args* nil] (load-file "tools/task_projection.clj"))
+(def task-region (ns-resolve 'task-projection 'region))
 (defn require! [p message] (when-not p (throw (ex-info message {}))))
 (defn sha256 [s]
   (format "%064x" (BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-256")
@@ -22,6 +23,7 @@
 ;; Its namespace and compiler/evidence loaders are deliberately not executed.
 (def occurrence-api-source
   (git-source "c0dc5790197a1bbd3a8aa285e5458c272d877220" "tools/requirement_reconciliation.clj"))
+(declare source-occurrences)
 (with-open [r (java.io.PushbackReader. (java.io.StringReader. occurrence-api-source))]
   (loop []
     (let [f (read {:eof ::eof} r)]
@@ -198,7 +200,7 @@
                    (= :unassessed (:current-acceptance u))) "Changed semantic context or acceptance")
     (doseq [{:keys [path marker id sha256]} (:task-references u)]
       (let [s (slurp path)
-            body (:body (task-projection/region s marker))]
+            body (:body (task-region s marker))]
         (require! (and (= sha256 (safety-task-interfaces/sha256 s))
                        (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote (str "`" id "`"))) body))))
                   "Missing, renamed or wrong-hash task"))))
@@ -234,7 +236,7 @@
           (build-proposal m (checked input-path inputs-sha))
           (edn/read-string (slurp (str directory "proposal.edn"))))
       results (controls m p)]
-  (require! (#{"--build" "--check"} mode) "Usage: check.clj --build MANIFEST INPUTS | --check MANIFEST")
+  (require! (#{"--build" "--check"} mode) "Usage: safety_task_interfaces.clj --build MANIFEST INPUTS | --check MANIFEST")
   (require! (every? true? (vals results)) "A negative control failed")
   (when (= "--build" mode)
     (with-open [w (io/writer (str directory "proposal.edn"))]
