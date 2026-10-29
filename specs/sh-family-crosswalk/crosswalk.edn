@@ -13182,6 +13182,21 @@
    :qualification
    "Normal Reader dispatch fixture ownership added at 4d96671d; prior Reader/task/roadmap and all predecessor reviews retained. Changed ownership source awaits independent source-version review. No implementation acceptance or task credit.",
    :source-commit "afe5d20b3d013beabec45fa23768949ea05f2611"},
+  :release-residual-current-composition
+  {:new-source-reviewed-and-rebound-criteria 16,
+   :canonical-mapping-adoptions 0,
+   :current-join-review-sha256
+   "1d9173a7670998d3ccb0a93cc586be94e3e74d7b2fd3086cbd3f67a687fdbd61",
+   :current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-216.edn",
+   :previously-accepted-mappings-preserved 200,
+   :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
+   :status :pending-independent-actual-composed-binding-review,
+   :task-population-change 0,
+   :record
+   "specs/requirement-reconciliation/release-residual-current-composition.edn",
+   :predecessor-input-fingerprint
+   "c6a6b6e57c6dc40d51e0531ff806ac49e1f9298ae860717dcdba52c1ee48a510"},
   :stdlib-interface-source-composition
   {:source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
    :predecessor-input-fingerprint
@@ -13196,7 +13211,7 @@
   :qualification
   "Family task criteria and current-main Reader source histories composed. Changed task/evidence source mapping awaits independent composed review. All 180 whole-criterion implementation assessments remain unassessed.",
   :input-fingerprint
-  "c6a6b6e57c6dc40d51e0531ff806ac49e1f9298ae860717dcdba52c1ee48a510"},
+  "4c5287ec8d411b0be79b76c8450cff06ae3fa93b6c5ef74d14b981fa322e7314"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -14223,7 +14238,7 @@
   "cli"
   [{:path "specs/cli-workflow/tasks.md",
     :file-sha256
-    "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+    "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/cli-workflow/tasks.md",
@@ -14237,38 +14252,38 @@
      "- [ ] `cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families` Reconcile supported command/options with normative families\n\nStatus: Open\n\nEvidence baseline: [Dispatcher](../../bootstrap/clojure/src/gravity/cli/dispatch.clj)\n\nClosing evidence: Command matrix that distinguishes implemented, rejected and unavailable operations T1 acceptance: enumerate all sixteen normative command families, relevant project/profile/target/package/format options and shell-completion metadata. Reject missing required explicit profile/target and unsupported formats with stable T1001-T1008 diagnostics where applicable; wider families retain their own service dependencies."},
     :owner-source "docs/component-roadmaps/cli.md",
     :component "cli",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
     :checked false}
    {:path "specs/cli-workflow/tasks.md",
     :file-sha256
-    "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+    "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/cli-workflow/tasks.md",
      :start-byte 1282,
-     :end-byte 3138,
+     :end-byte 6539,
      :start-line 22,
      :end-line 28,
      :sha256
-     "c03a76e8e97d2b36b460f1279c0b6704ae66fbf0a7d8c87fa9de0edae99ff4af",
+     "499fc969037de6858d2d036e8045c3387541a89df69cb46d14533fa58e3deb71",
      :raw
-     "- [ ] `cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services` Connect check/run/compile/build/test/package/verify to real services\n\nStatus: Open\n\nEvidence baseline: [Compile dispatcher](../../bootstrap/clojure/src/gravity/cli/compile_command.clj)\n\nClosing evidence: Executed success/failure fixtures and artifact paths at public command boundary T1 acceptance: actual command execution records and artifact paths/manifest hashes retain declared grants/denials. Reject ungranted effects, silent unsafe/AI/network/shell/secrets/publish operations, hidden network, output-directory escape without grant and missing release artifact verification. Foundation requirement gravity/hosted-hello-execution: Compile the D2 hosted hello source through actual Reader, Syntax, macro expansion and hosted execution, preserving stage/source identities and recording the declared stdout effect and granted authority with the produced output. Refusals: Reject malformed source and the same program without stdout authority; a static hello manifest, host-language print or supplied output string cannot establish execution. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence."},
+     "- [ ] `cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services` Connect check/run/compile/build/test/package/verify to real services\n\nStatus: Open\n\nEvidence baseline: [Compile dispatcher](../../bootstrap/clojure/src/gravity/cli/compile_command.clj)\n\nClosing evidence: Executed success/failure fixtures and artifact paths at public command boundary T1 acceptance: actual command execution records and artifact paths/manifest hashes retain declared grants/denials. Reject ungranted effects, silent unsafe/AI/network/shell/secrets/publish operations, hidden network, output-directory escape without grant and missing release artifact verification. Foundation requirement gravity/hosted-hello-execution: Compile the D2 hosted hello source through actual Reader, Syntax, macro expansion and hosted execution, preserving stage/source identities and recording the declared stdout effect and granted authority with the produced output. Refusals: Reject malformed source and the same program without stdout authority; a static hello manifest, host-language print or supplied output string cannot establish execution. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence. Release extension release/public-check-command: Through the public gravity executable, check declared hello, core and nontrivial applications for both .qst and .gravity. Retain expected check results/artifacts, exact source path/extension, executable/compiler identity and normalized command stdout/stderr. Internal calls or relabelled extensions are not public command evidence. Reject missing parity with P18T04001 and invalid inputs with owning diagnostics. Release extension release/public-run-command: Run each declared hello/core/nontrivial application through public gravity under its declared runtime/grants for both canonical extensions; compare actual output/exit with fixture expectations. Preserve supplied source path/kind and normalized transcripts. Reject missing public execution, incorrect output or hidden delegated runtime failure; manifest presence and internal evaluator results do not establish public run. Release extension release/public-compile-output-command: Execute gravity compile for declared hello/core/nontrivial applications in both canonical extensions, including requested -o locations. Retain actual executable outputs/hashes, sidecars/provenance, compiler identity and original source paths/extensions. Reject missing/substituted executable, ignored output location, invalid target, provenance mismatch and command parity failure; supplied candidate records alone are not compilation. Release extension release/generated-application-execution: Invoke the exact artifacts emitted by public compile, including the declared core-app executable, and compare hello/core/nontrivial outputs/exits under declared runtime or no-runtime boundaries. Bind execution to emitted hashes and original provenance for both extensions. Reject missing, substituted, non-executable or behaviorally wrong outputs; successful compilation cannot replace generated-application execution. Release extension release/public-rejection-diagnostics: Exercise parser, semantic/arity, capability, package and release invalid applications through the same public executable. Preserve owning stable code, applicable span/manifest/profile/source context, non-success exit and normalized stdout/stderr; prove paired extension/path rejection parity. Include applicable L1-DELIMITER, L2-FUNCTION-ARITY, P4-HOST-CAPABILITY, PKG10001 and B13-RELEASE cases. Reject swallowed failure, generic substituted categories and invalid success. Release extension release/public-subset-test-bridge: Exercise gravity test's bootstrap-hosted current-public-subset bridge through accepted check/run/compile/generated-execution and rejected stable-diagnostic cases, retaining source paths and both canonical extensions. Proof names actual subset and hosting. Reject test --full and full-language/self-hosted-runner overclaims with P18T04006. Retain this bounded surface separately from final self-hosted full-language conformance. Release extension release/public-incomplete-selfhost-verifier: While final seed retirement or release is incomplete, public gravity self-host verify writes an honest incomplete proof with active compiler source path/extension and seed facts, then fails closed with P18T04007. Invalid self-host invocation rejects with P18T04008. Exercise both through the public boundary. Incomplete proof production or hosted command availability cannot establish final successful self-host verification."},
     :owner-source "docs/component-roadmaps/cli.md",
     :component "cli",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
     :checked false}
    {:path "specs/cli-workflow/tasks.md",
     :file-sha256
-    "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+    "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/cli-workflow/tasks.md",
-     :start-byte 3140,
-     :end-byte 3780,
+     :start-byte 6541,
+     :end-byte 7181,
      :start-line 30,
      :end-line 36,
      :sha256
@@ -14277,18 +14292,18 @@
      "- [ ] `cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services` Connect REPL/format/lint/doc/inspect/profile/audit/AI/registry/explain services\n\nStatus: Open\n\nEvidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer-experience/README.md)\n\nClosing evidence: Each declared command has a genuine service result and negative fixture; no metadata-only success T1 acceptance: gravity explain resolves known diagnostic codes and artifact ids to actionable source/policy context. Each invoked T2-T13 service keeps its own semantic owner and positive/negative service evidence."},
     :owner-source "docs/component-roadmaps/cli.md",
     :component "cli",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
     :checked false}
    {:path "specs/cli-workflow/tasks.md",
     :file-sha256
-    "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+    "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/cli-workflow/tasks.md",
-     :start-byte 3782,
-     :end-byte 4574,
+     :start-byte 7183,
+     :end-byte 7975,
      :start-line 38,
      :end-line 44,
      :sha256
@@ -14297,27 +14312,27 @@
      "- [ ] `cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction` Normalize JSON, text, exit codes and redaction\n\nStatus: Open\n\nEvidence baseline: [Diagnostic presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj)\n\nClosing evidence: Golden success/error outputs including source, target, grants and redacted secrets T1 acceptance: golden JSON success/failure per family; exits 0 success, 1 policy/check, 2 usage, 3 dependency/registry, 4 build/artifact, 5 runtime, 6 missing authority/review. Reports include code/severity/source-span-or-manifest/profile/target/remediation when available, artifact paths/hashes and redacted text/JSON; CI check/test/build/audit/verify consume JSON. Reject unavailable requested JSON and unstable plugin output."},
     :owner-source "docs/component-roadmaps/cli.md",
     :component "cli",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
     :checked false}
    {:path "specs/cli-workflow/tasks.md",
     :file-sha256
-    "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+    "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/cli-workflow/tasks.md",
-     :start-byte 4576,
-     :end-byte 4915,
+     :start-byte 7977,
+     :end-byte 9316,
      :start-line 46,
      :end-line 52,
      :sha256
-     "81b68508adefa16c8ea7f5c43e48e6d304f5ad0273039c29d799931194db9166",
+     "c2c634841ed4ba4d006706f38b0eaa87539492ec9780cd3af2c262de24f864a7",
      :raw
-     "- [ ] `cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints` Package and verify user entrypoints\n\nStatus: Open\n\nEvidence baseline: [Release contract](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)\n\nClosing evidence: Installed invocation, source-extension provenance and unsupported-option rejection"},
+     "- [ ] `cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints` Package and verify user entrypoints\n\nStatus: Open\n\nEvidence baseline: [Release contract](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)\n\nClosing evidence: Installed invocation, source-extension provenance and unsupported-option rejection Release extension release/bootstrap-boundary-disclosure: While a public command is bootstrap-hosted, gravity --version, gravity help and emitted evidence truthfully disclose hosting and seedless=false; gravity-bootstrap remains the explicit audit/recovery entrypoint. Exercise hosted and eligible seedless states. Reject hosted wrapper seedless assertions with P18T01001 and packaged JVM final-release assertions with P18T02001. Early packaging cannot establish final release. Release extension release/public-launcher-dispatch: Exercise installed bin/gravity dispatch through each declared executable/packaged boundary, preserving delegated exit status, stdout/stderr, stable diagnostics, source path/extension and artifact identity. Select the final binary only under exact proven eligibility; otherwise retain the labelled packaged bootstrap fallback and explicit recovery path. Reject command parity, package/provenance and unsupported-target mismatches without selecting an ineligible artifact."},
     :owner-source "docs/component-roadmaps/cli.md",
     :component "cli",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
     :checked false}],
@@ -15639,7 +15654,7 @@
   "release"
   [{:path "specs/release-workflow/tasks.md",
     :file-sha256
-    "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+    "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/release-workflow/tasks.md",
@@ -15653,13 +15668,13 @@
      "- [ ] `release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance` Bind each claimed component to exact implementation and conformance\n\nStatus: Open\n\nEvidence baseline: [Overall roadmap](../../docs/implementation-roadmap.md)\n\nClosing evidence: Component outcome receipts, positive/negative programs and explicit unsupported surface. Maintain the source-bound task/disposition matrix for all 240 original contracts and the separately declared release and Platform Product extensions. Keep every missing producer/checker/consumer interface, alias or split question, and architecture choice as finite named remaining work with criteria, dependencies and accountable role; an accountability link does not establish an implementation interface. Resolve those decisions and bind actual component evidence before claiming the corresponding release scope. This release-claim obligation does not block ordinary semantic development. Foundation requirement gravity/coverage-claim-slice: Publish each domain coverage claim as an exact behavior slice with source forms, profile, target/backend, provider/runtime assumptions, emitted artifacts and explicit unsupported boundaries, linked to the actual demonstrating product. Refusals: Reject a whole-domain claim supported only by a smaller slice, a missing profile/target, or a provider adapter presented as a complete replacement. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products. Foundation requirement gravity/coverage-claim-status-distinction: Classify every declared coverage entry as implemented, designed, delegated, experimental, unsupported or out of scope with its concrete source/evidence basis; expose the classification to consumers of the claim. Refusals: Reject promoting a designed/delegated/example-only entry to implemented, silently dropping unsupported entries or treating absent evidence as out of scope. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Foundation requirement gravity/coverage-positive-negative-fixtures: For each claimed domain slice retain real accepted and rejected input fixtures with expected artifacts and structured owning diagnostics, executed through the claimed implementation/provider boundary. Refusals: Reject coverage evidence missing either accepted execution or the relevant invalid-input refusal; synthetic model agreement and a catalogue name alone cannot close the slice. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift - Actual runtime/compiler/tool structured diagnostics with stable owning codes and provenance. Foundation requirement gravity/documentation-lock-scope: Assess the explicit D2 M0 forty-document documentation lock against each of its five named exit gates, retaining the exact document set, source hashes, reviewed results and unresolved gate failures; label the decision documentation-only. Refusals: Reject a lock missing any named document or gate, stale source evidence, or an attempt to turn that documentation decision into executable compiler, milestone or release acceptance. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Foundation requirement gravity/foundation-semantic-change-control: For a changed foundation guarantee publish the affected D0-D9 and downstream contract set, compatibility decision, changed conformance fixtures and evidence invalidations before claiming the changed support. Refusals: Reject a semantic change without affected-contract review, stale acceptance reuse or omitted compatibility/fixture updates; the policy record is not actual approval of the change. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/migration-provenance-safety: For a generated/migrated replacement slice preserve incumbent/source/generator provenance, recheck generated code and unsafe audit boundaries, and record the scoped conformance and performance evidence needed before retiring its interop path. Refusals: Reject interop retirement on translation success alone, missing provenance/audits or unexplained behavioral/performance differences; preserve policy-qualified narrowed and unsupported cases. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries - Dangerous-operation outcomes, actual checks, proof references and audited wrapper boundaries; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/milestone-contract-sequencing: Bind each milestone claim to its governing upstream contracts and actual declared interface products in D2 order; record early downstream work as a supported interface experiment with explicit non-release scope. Refusals: Reject downstream support claims without required upstream contracts or evidence; do not block ordinary isolated development merely because a different component is incomplete. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products. Foundation requirement gravity/milestone-evidence-bundle: Assemble the D2 milestone bundle for the exact claimed surface: governing document versions, real accepted/rejected programs, diagnostics, emitted artifacts, profile/target matrices, safety/trust boundaries, reproducibility and open risks. Refusals: Reject a bundle with an omitted required member, stale input identity, unsupported matrix cell or concealed open risk; a document inventory is not an executable bundle. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/milestone-executable-evidence: Before marking a milestone complete execute its required positive and negative programs through the claimed compiler/runtime path and bind real emitted products and owning diagnostics to the milestone decision. Refusals: Reject milestone completion supported only by plans, schemas, mocked execution, a passing unrelated helper or missing rejection evidence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services - Actual source-to-public-command execution, declared stdout authority and outputs; lower/current-evidence-and-remaining-work/lower5-integrate-target-emission - Actual target emission artifacts and unsupported-feature diagnostics. Foundation requirement gravity/real-domain-coverage-evidence: Demonstrate the declared domain's actual constraints, integration boundary and produced artifact on a representative real workload, with required rejection cases and an explicit supported subset. Refusals: Reject replacing the required domain behavior with a toy simulation, mock provider, catalogue entry or unrelated subset; simulator evidence is allowed only where the owning contract permits that specific substitute. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/release-matrix-evidence: Bind each milestone/release claim to a versioned profile-by-target/backend/runtime matrix whose claimed cells each link exact accepted/rejected executable evidence and unsupported cells remain explicit. Refusals: Reject a cell supported by another profile/target's receipt, stale compiler/provider inputs or a missing required negative fixture; one cell cannot imply whole-matrix support. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products. Foundation requirement gravity/replacement-parity-evidence: Before upgrading a named interop slice to replacement status compare actual incumbent and Gravity behavior, diagnostics, effects/capabilities, artifacts and applicable performance on the declared workload, with reviewed deltas and limits. Refusals: Reject replacement promotion from a shim, translation result or toy fixture alone, unexplained divergence or performance evidence from another scope. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/replacement-slice-record: Publish a versioned replacement-slice record identifying incumbent behavior, actual Gravity source and explicitly preserved, narrowed, delegated and unsupported operations with profile/target/provider and migration provenance. Refusals: Reject a replacement claim omitting a known narrowed/unsupported behavior, silently treating a delegated operation as native replacement or losing the incumbent comparison basis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products."},
     :owner-source "docs/component-roadmaps/release.md",
     :component "release",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
     :checked false}
    {:path "specs/release-workflow/tasks.md",
     :file-sha256
-    "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+    "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/release-workflow/tasks.md",
@@ -15673,67 +15688,67 @@
      "- [ ] `release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler` Complete stage compatibility/equivalence across the claimed compiler\n\nStatus: Open\n\nEvidence baseline: [Equivalence contract](../../docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md)\n\nClosing evidence: Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BOOT1/BOOT3/BOOT5/BOOT7: Publish a versioned row for every claimed stage and authoritative module revision, naming source/compiler/artifact identities, supported and unsupported documents/features/profiles/backends/runtime/package/library/test closure, owned or deferred gaps, conformance links and release eligibility. Record exact compiler-module ownership and residual TCB with measurable migration delta. Compare both named compilers and canonical artifacts under declared applicable hash/manifest/diagnostic/conformance/runtime/IR/performance/accepted-delta modes; preserve stable codes/spans and provenance. Reject missing outputs, implicit inherited support, omitted stage rows, unsupported claims, stale matrix versions and unexplained drift; accept deltas only with policy-linked review. Performance bounds apply only when performance is part of acceptance; no compiler work quota is introduced. Execute the intermediate authoritative stage/module admission decision against this exact candidate and declared subset, consuming the fresh conformance, equivalence/accepted-delta, matrix, provenance, TCB and applicable audit records. Record admit or deny with candidate/source/compiler/artifact identities and failed predicates. Deny failing applicable suites, stale or missing required evidence, unexplained drift, unsupported claimed support and missing ownership/matrix updates. Exercise both a valid intermediate admission and each refusal. Retain explicitly owned/deferred gaps outside the claimed subset; final release policy separately rejects unreviewed gaps for claimed release support. This decision does not produce the evidence it consumes, replace final release acceptance, or gate ordinary semantic development. Foundation requirement gravity/bootstrap-equivalence-before-retirement: Before retiring a named seed component, compare the declared predecessor and Gravity successor stages on accepted and rejected programs, canonical outputs and diagnostics; record residual TCB and an explicit retirement decision for that component only. Refusals: Deny retirement for missing stage products, unreviewed drift, stale compiler/source identities or required conformance failures; an intermediate stage admission cannot retire unrelated seed components. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Foundation requirement gravity/bootstrap-staged-trust-reduction: Record each actual compiler/platform component migration into Gravity with source and predecessor/successor compiler identities, reproducible stage products, exact supported subset and the measured residual seed/TCB inventory. Refusals: Reject a claimed seed reduction without an actual migrated product or with missing lineage; plans, supplied success labels and one migrated helper cannot establish complete seed absence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison."},
     :owner-source "docs/component-roadmaps/release.md",
     :component "release",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
     :checked false}
    {:path "specs/release-workflow/tasks.md",
     :file-sha256
-    "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+    "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/release-workflow/tasks.md",
      :start-byte 17512,
-     :end-byte 18356,
+     :end-byte 20382,
      :start-line 30,
      :end-line 36,
      :sha256
-     "ae4d6a913a262ccf365ad6e93b5f810f689a3f6f82703013235318f9a4ccb1b3",
+     "b769d9832505ad5eefbbd0d9461ce58638092b2cc1c9af58d78c34f7345da810",
      :raw
-     "- [ ] `release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution` Produce actual self-hosted compiler/runtime execution\n\nStatus: Open\n\nEvidence baseline: [Binary release status](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)\n\nClosing evidence: Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution."},
+     "- [ ] `release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution` Produce actual self-hosted compiler/runtime execution\n\nStatus: Open\n\nEvidence baseline: [Binary release status](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)\n\nClosing evidence: Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution. Release extension release/selfhosted-artifact-production: Produce the final public gravity executable through the actual stage3/self-hosted compiler and emitter, retaining compiler/backend/runtime/release-compiler paths, source/debug maps, executable hashes and provenance for the required compiler/runtime/library/build closure. Reject Clojure packaging with P18T03001 and retain P18T03002-P18T03004 blockers while retirement or path evidence is incomplete. A candidate manifest does not prove executable production. Release extension release/seed-boundary-exclusion: Prove Clojure is outside every required final boundary: public binary, compiler path, runtime path and release-compiler path, including required library/package/build closure. Bind proof, TCB delta, eligibility and provenance to actual artifacts; keep gravity-bootstrap explicit and excluded as recovery. Reject missing seed facts, regression, bootstrap confusion and compiler ambiguity. Clojure in any required boundary fails P18T05001; incomplete retirement retains P18T05003 as applicable. Release extension release/selfhosted-full-language-conformance: Pass final gravity test or an explicitly accepted equivalent full-language runner through the actual self-hosted public binary for the declared final surface. Retain binary/compiler hashes, command transcripts, applicable suites, positive/rejected cases and results. Reject hosted subset substitution, missing/failed suites and internal runner substitution. Inherited stage receipts and counters alone cannot prove this final boundary. Release extension release/successful-selfhost-verification: Succeed at final gravity self-host verify or its explicitly accepted equivalent through the exact self-hosted public binary. Final proof records :clojure-seed-boundary? false with actual source/compiler/runtime/release lineage. Exercise final success and refuse missing, stale, mismatched or active-seed proof inputs. The hosted incomplete P18T04007 surface remains refusal history, never final success."},
     :owner-source "docs/component-roadmaps/release.md",
     :component "release",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution",
     :checked false}
    {:path "specs/release-workflow/tasks.md",
     :file-sha256
-    "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+    "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/release-workflow/tasks.md",
-     :start-byte 18358,
-     :end-byte 19626,
+     :start-byte 20384,
+     :end-byte 22733,
      :start-line 38,
      :end-line 44,
      :sha256
-     "0568f8a145be160b60d5e78a073860c1a36454dbf2cbbedc5579ec3035d6afd8",
+     "ddf369f0d62e4048c1b95bf20914ab53fd3c5b122bc9beffa5f92d960e4a045f",
      :raw
-     "- [ ] `release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom` Build reproducible signed distributions with provenance/SBOM\n\nStatus: Open\n\nEvidence baseline: [Artifact provenance](../../docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md)\n\nClosing evidence: Rebuild identity and signature/provenance verification plus tamper rejection BOOT1/BOOT6/BOOT8: Retain locked dependencies, recipe and environment controls for time/locale/filesystem order/toolchain/network, compiler lineage and manifest/content-hash comparisons. Declare unsupported rebuild strategies; diverse rebuilds require independent toolchain identity. Reproducibility exceptions and accepted deltas require recorded review. Produce canonical signed provenance binding stage/artifact/source graph/compiler/lockfile/recipe/environment/dependencies/builder and conformance/equivalence/safety/SBOM/signature links. Auditor queries must traverse release compiler to seed inputs; permit only explicitly declared stage cycles. Reject lineage gaps, undeclared cycles, uncontrolled network inputs, noncanonical signing, missing required evidence, unexplained drift and revoked compiler/builder/dependency/signature inputs."},
+     "- [ ] `release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom` Build reproducible signed distributions with provenance/SBOM\n\nStatus: Open\n\nEvidence baseline: [Artifact provenance](../../docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md)\n\nClosing evidence: Rebuild identity and signature/provenance verification plus tamper rejection BOOT1/BOOT6/BOOT8: Retain locked dependencies, recipe and environment controls for time/locale/filesystem order/toolchain/network, compiler lineage and manifest/content-hash comparisons. Declare unsupported rebuild strategies; diverse rebuilds require independent toolchain identity. Reproducibility exceptions and accepted deltas require recorded review. Produce canonical signed provenance binding stage/artifact/source graph/compiler/lockfile/recipe/environment/dependencies/builder and conformance/equivalence/safety/SBOM/signature links. Auditor queries must traverse release compiler to seed inputs; permit only explicitly declared stage cycles. Reject lineage gaps, undeclared cycles, uncontrolled network inputs, noncanonical signing, missing required evidence, unexplained drift and revoked compiler/builder/dependency/signature inputs. Release extension release/final-rebuild-reproducibility: Rebuild the actual final gravity artifact at least twice from the recorded recipe, locked inputs and environment. Compare binary, provenance, SBOM, signing-record and command-contract evidence identities; retain both actual rebuild outputs and comparison report. Reject missing rebuilds/comparisons, unexplained drift and supplied-record substitution. Earlier hosted packaging reproducibility cannot close final release rebuilds. Release extension release/final-supply-chain-governance-bundle: Produce and validate the selected actual final release's provenance, SBOM, canonical signing records, release notes, target-support policy, compatibility, security-review and governance approval evidence. Bind records to actual binary, recipe/environment, source/compiler/dependency/target identities and accepted command evidence. Reject missing, stale, tampered, revoked or mismatched records, unsupported targets and governance gaps with applicable P18T06001-P18T06008 blockers. A hosted bundle is not final seedless evidence."},
     :owner-source "docs/component-roadmaps/release.md",
     :component "release",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
     :checked false}
    {:path "specs/release-workflow/tasks.md",
     :file-sha256
-    "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+    "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/release-workflow/tasks.md",
-     :start-byte 19628,
-     :end-byte 20880,
+     :start-byte 22735,
+     :end-byte 24618,
      :start-line 46,
      :end-line 52,
      :sha256
-     "f2eacc7de802add20858278e5c10edd2f9331b636ba3022af0c15923fe1b0637",
+     "ae62e84bdff9602626ab15cbc1103cc987b5956d13cc40d91ddb730cd8dfaa32",
      :raw
-     "- [ ] `release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate` Obtain independent acceptance for the exact release candidate\n\nStatus: Open\n\nEvidence baseline: [Binary release gates](../../docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md)\n\nClosing evidence: Coordinator-reviewed candidate receipts and explicit release disposition BOOT1/BOOT3/BOOT5/BOOT6/BOOT8: For this exact release candidate, consume fresh source-bound claimed-stage/module conformance, equivalence, compatibility, provenance, TCB and applicable unsafe-audit evidence. Reject failing declared conformance, missing or stale evidence, unreviewed claimed-support gaps and revoked inputs. Preserve policy-qualified reproducibility exceptions. Intermediate stage/module authoritative admission is the separate consumer proposed under release task2 (complete-stage-compatibilityequivalence-across-the-claimed-compiler); ordinary development and final release acceptance remain separate from that migration decision. The task2 interface and executable evidence remain Open until canonically composed and independently accepted. This release gate does not implement compiler passes, native seed ABIs or their tests."},
+     "- [ ] `release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate` Obtain independent acceptance for the exact release candidate\n\nStatus: Open\n\nEvidence baseline: [Binary release gates](../../docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md)\n\nClosing evidence: Coordinator-reviewed candidate receipts and explicit release disposition BOOT1/BOOT3/BOOT5/BOOT6/BOOT8: For this exact release candidate, consume fresh source-bound claimed-stage/module conformance, equivalence, compatibility, provenance, TCB and applicable unsafe-audit evidence. Reject failing declared conformance, missing or stale evidence, unreviewed claimed-support gaps and revoked inputs. Preserve policy-qualified reproducibility exceptions. Intermediate stage/module authoritative admission is the separate consumer proposed under release task2 (complete-stage-compatibilityequivalence-across-the-claimed-compiler); ordinary development and final release acceptance remain separate from that migration decision. The task2 interface and executable evidence remain Open until canonically composed and independently accepted. This release gate does not implement compiler passes, native seed ABIs or their tests. Release extension release/candidate-eligibility-failclosed: Assess the exact final candidate against P15 retirement and applicable P18 public commands, four-boundary seed exclusion, full self-hosted conformance, rebuild and provenance/SBOM/signing/target/compatibility/security/governance evidence. Exercise eligible success and every missing/false/stale/corrupt evidence refusal with stable owning P18 blockers. Under-evidenced candidates remain incomplete and bin/gravity retains labelled packaged fallback. Preserve intermediate admission and ordinary development separately; supplied manifests cannot confer final eligibility."},
     :owner-source "docs/component-roadmaps/release.md",
     :component "release",
-    :source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+    :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
     :id
     "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
     :checked false}],
@@ -16591,7 +16606,7 @@
   "docs/component-roadmaps/build.md"
   "666f85ed3401b17690df8243de8b4b29423df93dda11b0aa6d86df3f369cb9ce",
   "docs/component-roadmaps/cli.md"
-  "9bf9e12559db8ea28fc5f1d18d339d4128101730d7c60074ab43a94681ad7f03",
+  "c6b429fbb84dcd319b818ff27b6d33722f9c6f93d36857e39aa7b1e3d1373caf",
   "docs/component-roadmaps/compiler-api.md"
   "4f4febde0e1e61dd7d6fbf507e577b23bae18dd6fc60c2c9f69ed6dab4f1ca77",
   "docs/component-roadmaps/core.md"
@@ -16619,7 +16634,7 @@
   "docs/component-roadmaps/reader.md"
   "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4",
   "docs/component-roadmaps/release.md"
-  "0972ca1192c8e09c4728f4532488f8de3d3ce8c4fe8fdf9b2bc4688bf8e88404",
+  "abfed988d307d2c37bf46230ae1b0aa46b5ca0dd36c34a90305adb6483f3307e",
   "docs/component-roadmaps/resolve.md"
   "4de11c0fb822721ede279d4bab636ae6c51cdb9435f99b8a0376e716544d8b8f",
   "docs/component-roadmaps/runtime.md"
@@ -16667,7 +16682,7 @@
   "specs/build-workflow/tasks.md"
   "ae8d3a67a5dff377dc84a652ed4f9bc7167610236a4e92adbe2056ebfa358b5f",
   "specs/cli-workflow/tasks.md"
-  "75eb9d826dde03ec595434c2b2f27dcd2daa84daf441a755ab71155e64e90866",
+  "48ea1f04fa129e3947b8f187a40305d6a0f9f50cd7f22be175cb60d7458f3bea",
   "specs/compiler-api-workflow/tasks.md"
   "f5e34929c4ebd21c064709f2c471f8712430fcd741098bc183d0550ab6a1d342",
   "specs/core-workflow/tasks.md"
@@ -16695,7 +16710,7 @@
   "specs/reader-workflow/tasks.md"
   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
   "specs/release-workflow/tasks.md"
-  "0a3d6a133515d799dcf193f4c00bed6816210127b2decfc91128e9adb0709b42",
+  "2e68bb19aab5315badab19bae24c0ffb5b54c27100a6f53bc9796b743fc3e00b",
   "specs/resolve-workflow/tasks.md"
   "fb4ee45ca1625ff2a305e46e31bde7b4b77d79a7a38c117fe772bdf955699943",
   "specs/runtime-workflow/tasks.md"
@@ -16714,7 +16729,7 @@
   "docs/component-roadmaps/runtime.md"
   "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
   "specs/release-workflow/tasks.md"
-  "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+  "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
   "specs/stdlib-workflow/tasks.md"
   "625a74467e33ed9f203673dd8edd0b48e530e575",
   "docs/component-roadmaps/build.md"
@@ -16746,7 +16761,7 @@
   "specs/runtime-workflow/tasks.md"
   "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
   "docs/component-roadmaps/cli.md"
-  "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+  "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/component-roadmaps/platform.md"
@@ -16778,7 +16793,7 @@
   "specs/platform-workflow/tasks.md"
   "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
   "docs/component-roadmaps/release.md"
-  "f1cb35013c9a132cda4557f7806616b19af0f3ed",
+  "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
   "specs/lower-workflow/tasks.md"
   "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
   "docs/component-roadmaps/resolve.md"
@@ -16786,7 +16801,7 @@
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c",
   "specs/cli-workflow/tasks.md"
-  "f1cb35013c9a132cda4557f7806616b19af0f3ed"},
+  "d3d8f8356f6a5472c37ac66f87340b1dd93f630a"},
  :scope-boundaries
  {:deployment
   "SH29 first declared seedless release; wider platform, targets, deployment services and physical product retain their existing task authorities.",

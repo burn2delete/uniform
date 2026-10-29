@@ -336,3 +336,30 @@ Both structural documentation validators and the task-projection check passed.
 The language-boundary gate passed 6 tests / 11 assertions, with no failures or
 errors. Whitespace validation passed. These checks cover the prepared input
 artifacts; they do not establish semantic task coverage or independent review.
+
+## Release16 current composition
+
+The guarded Release16 join is applied at source commit
+`d3d8f8356f6a5472c37ac66f87340b1dd93f630a`, tree
+`16933fcd39d0e30b86cde5f27156f72bf6bae59f`. The join's independent affected
+review receipt has SHA256
+`1d9173a7670998d3ccb0a93cc586be94e3e74d7b2fd3086cbd3f67a687fdbd61`.
+Five existing acceptance fields changed: two CLI and three Release. All five
+complete current prefixes, task identities, statuses, evidence, and dependencies
+are retained. The five existing Release tasks remain counted once; task delta
+is zero. The public composition record contains only selected task fields and
+source binding data, not the private input packet or review logs.
+
+`current-criterion-bindings-216.edn` rebinds the previously accepted 200
+criteria and all 16 added Release-extension criteria to that actual committed
+source. The original 200 acceptance artifact and its original witness snapshot
+remain byte-identical history. The added 16 bindings await independent actual
+composition review; accepted mappings remain 200 and unadopted mappings remain
+361. All 833 current decision records and Open states are unchanged. This
+finite source composition does not establish whole-facet entailment, task
+granularity, a whole-project ratio, implementation or integration acceptance.
+
+Focused source controls passed: CLI 5 tests / 88 assertions, Release 6 / 105,
+SH crosswalk 11 / 326, task census 3 / 8, boundary 6 / 11, both document
+validators, and whitespace. The prior fixture repair at `92d0ff73` passed CI
+run `40820815160`; the earlier failed run remains historical evidence.
