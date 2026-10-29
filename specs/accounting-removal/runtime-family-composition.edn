@@ -11,13 +11,15 @@
                :retain-current-task-status-and-stable-ids
                :correct-stale-initializer-limit-comment
                :add-custom-seqable-zero-callback-control
-               :assert-list-capture-extent]
+               :assert-list-capture-extent
+               :remove-unused-native-test-refer]
  :source-reuse
  {:runtime-forms {:source "0cd2f29427ca67ae6127c7983eb51896b564f977"
                   :equal true :function-count 56
                   :current-blob "08ecc5e14d40c3ec91f168b357604ba35968dea0"}
   :native-components-and-test {:source "0d3061965f34322bf4e9ec03084b8e4614133689"
-                               :exact-blobs 5
+                               :exact-blobs 4
+                               :test-namespace-change :unused-testing-refer-only
                                :load-order :current-main-plus-one-original-entry}
   :one-argument-interfaces [runtime-validate-initializer runtime-construct-scalar-set
                            runtime-construct-character-set runtime-convert-vector-set
@@ -27,11 +29,18 @@
   :current-semantic-result-reuse :not-claimed}
  :checks {:compiler-free-form-and-interface-audit :passed
           :test-form-counts {:module-census 18 :runtime-iteration 602}
-          :language-boundary {:tests 6 :assertions 11 :fail 0 :error 0}
+          :language-boundary {:tests 6 :assertions 11 :fail 0 :error 0
+                              :source-state :before-unused-refer-correction}
+          :native-test-changed-file-lint {:errors 0 :warnings 0}
           :diff-check :passed
           :compiler-loaded-by-audit false
           :runtime-tests :unrun
           :new-controls :parsed-not-executed}
+ :first-ci {:head "9e40bc1406154eff15adb6bc1e6a90c1e762ecfa"
+            :run 40800178456
+            :static :one-unused-testing-refer-warning
+            :unchanged-baseline-warnings 3688
+            :portable-leaf :cancelled-during-setup-before-selectors}
  :historical-receipts
  [{:scope :initializer :tests 18 :assertions 1019
    :sha256 "f37e8fe62804813bab26cad5ce58760753e2b211ccb0fedbef24d9053589f103"}

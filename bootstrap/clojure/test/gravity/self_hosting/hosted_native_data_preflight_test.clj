@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.hosted-native-data-preflight-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]))
 
 (def ^:private path "hosted-native-preflight-test.gravity")

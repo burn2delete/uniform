@@ -2323,7 +2323,8 @@ It does not incorporate any dependency into main or resolve Native446's unknown
 registration operation. The separate PR513 review remains unknown and untouched.
 
 Compiler-free reading found all 56 runtime function forms equal to the preserved
-PR462 source. Five Native component/test blobs remain exact; the load order
+PR462 source. Four Native component blobs remain exact; the Native test differs
+only by removal of an unused `testing` refer found by CI, and load order
 preserves current main plus the original Native entry. All six retired runtime
 API names are absent from executable bootstrap source/tests. This establishes
 source/interface conservation, not a complete dynamic consumed closure or fresh
@@ -2343,3 +2344,13 @@ Completion still requires verified dependency incorporation in order, an exact
 current composition/consumed-input assessment and permitted affected runtime
 validation, independent acceptance, routine CI and fresh integration identities.
 The known historical results do not close ACC09, public runtime or release.
+
+At `9e40bc14`, CI run `40800178456` found one new unused-`testing` refer warning
+in the preserved Native test namespace; 3688 unchanged baseline warnings remain
+separate. The correction removes only that unused refer. The portable leaf job
+was cancelled during setup before selectors; it is not runtime-test evidence.
+Neither result changes Native446's unknown registration or permits a runtime
+launch. The original failed check is retained with its original candidate.
+Changed-file lint passes with zero errors/warnings after the refer correction;
+no new test or rerun was launched for this CI diagnosis. The earlier boundary
+result retains its pre-correction source attribution.
