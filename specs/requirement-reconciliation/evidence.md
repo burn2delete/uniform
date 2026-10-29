@@ -19,12 +19,19 @@ hashes, dependencies and four successful stale/corrupt/reapplication rejection
 controls. The helper reported an extra delimiter after completing writes;
 readback verified the written state without replaying mutations. Projection
 controls passed 5 tests / 79 assertions and both document validators passed.
+The subsequent pin-refresh helper also reported a trailing delimiter after
+its write; SH generation and checking then verified the exact applying Git
+pins and source fingerprint. Both nonzero helper attempts remain preparation
+history, rather than successful validation runs.
+The rebound SH controls passed 11 tests / 299 assertions; census regeneration
+and checking passed at the exact Stdlib source commit, and the language
+boundary passed 6 tests / 11 assertions. The scoped population remains 149.
 Independent composed acceptance and actual API/provider execution remain Open.
 
 ## Composed task census candidate
 
 The derived `task-baseline.edn` binds source commit
-`af0229de9216448d49a68eedf1491ac82d28dec3`. It records 138 existing
+`625a74467e33ed9f203673dd8edd0b48e530e575`. It records 138 existing
 component tasks, including the five Release tasks, plus 11 separate Open
 Platform Product tasks. Three tasks retain scoped Accepted status, 144 are
 Open, one Partial and one status-unassessed: 3/149 accepted in declared task

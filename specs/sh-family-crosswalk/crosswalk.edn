@@ -13157,10 +13157,21 @@
    :qualification
    "Normal Reader dispatch fixture ownership added at 4d96671d; prior Reader/task/roadmap and all predecessor reviews retained. Changed ownership source awaits independent source-version review. No implementation acceptance or task credit.",
    :source-commit "afe5d20b3d013beabec45fa23768949ea05f2611"},
+  :stdlib-interface-source-composition
+  {:source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
+   :predecessor-input-fingerprint
+   "679c84dc9a76594755ae87139a4e1baeb1f040e08c51985968bbf56988623e6a",
+   :record
+   "specs/requirement-reconciliation/stdlib-interface-composition.edn",
+   :adjudication-sha256
+   "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc",
+   :scope :five-distinct-stdlib-obligations-and-qualified-dependencies,
+   :task-population-change 0,
+   :status :pending-independent-composed-review},
   :qualification
   "Family task criteria and current-main Reader source histories composed. Changed task/evidence source mapping awaits independent composed review. All 180 whole-criterion implementation assessments remain unassessed.",
   :input-fingerprint
-  "679c84dc9a76594755ae87139a4e1baeb1f040e08c51985968bbf56988623e6a"},
+  "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -15906,7 +15917,7 @@
   "stdlib"
   [{:path "specs/stdlib-workflow/tasks.md",
     :file-sha256
-    "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+    "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/stdlib-workflow/tasks.md",
@@ -15920,13 +15931,13 @@
      "- [ ] `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` Reconcile export inventory with actual callable implementations\n\nStatus: Open\n\nEvidence baseline: [Library source artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00499-standard-library-source-artifact.clj)\n\nClosing evidence: Per-export source/implementation/fixture map, with absent exports explicitly open; compiled module manifests agree with package metadata, documentation and conformance discovery on namespace/artifact identity, callable exports, profiles, effects, capabilities, allocation, errors, safety and stability. Reject missing or inconsistent metadata, undeclared effects, missing grants, host-dependent core exports and unaudited unsafe internals with STD1001-STD1008 as applicable. Apply the source-specific acceptance and dependency matrix in plan.md."},
     :owner-source "docs/component-roadmaps/stdlib.md",
     :component "stdlib",
-    :source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+    :source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
     :id
     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
     :checked false}
    {:path "specs/stdlib-workflow/tasks.md",
     :file-sha256
-    "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+    "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/stdlib-workflow/tasks.md",
@@ -15940,13 +15951,13 @@
      "- [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs\n\nStatus: Open\n\nEvidence baseline: [Library architecture](../../docs/phase-16-standard-library/211-std1-standard-library-architecture.md)\n\nClosing evidence: Compiled examples and type/arity/value rejection through real APIs; STD2-STD5 and STD14 fixtures preserve evaluation order, transfers, inert stored values, original persistent values, Unicode boundaries, explicit numeric modes and structured test evidence. Retain each operation's proven-presence/nonempty/in-range premise without invented fallback, coercion, static facts or provider guarantees. Reject invalid UTF-8, implicit locale/lossy conversion, unchecked partial operations, unproved math transformations, free-text-only diagnostic matching and ungranted live-service tests. Compile documentation under every claimed profile; require the exact outputs and negative cases in plan.md."},
     :owner-source "docs/component-roadmaps/stdlib.md",
     :component "stdlib",
-    :source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+    :source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
     :id
     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
     :checked false}
    {:path "specs/stdlib-workflow/tasks.md",
     :file-sha256
-    "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+    "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/stdlib-workflow/tasks.md",
@@ -15960,47 +15971,47 @@
      "- [ ] `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` Complete resource/concurrency/IO/network APIs\n\nStatus: Open\n\nEvidence baseline: [Module inventory](../../docs/phase-16-standard-library/README.md)\n\nClosing evidence: Provider-mediated executions, missing-grant rejection and safe resource teardown; STD6-STD9 fixtures exercise borrow/region escape, exactly-once close/transfer, child cancellation and lifetime, atomic memory order, forbidden blocking, root/symlink traversal, explicit text encoding, atomic-write durability failures, network timeout/retry/redirect/body/cancellation policy, TLS validation and secret redaction. Replay must record or isolate actual external effects and reject unrecorded nondeterminism; host delegation must preserve Gravity diagnostics and provider provenance. Runtime, Legality and Auth dependencies remain explicit in plan.md."},
     :owner-source "docs/component-roadmaps/stdlib.md",
     :component "stdlib",
-    :source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+    :source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
     :id
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
     :checked false}
    {:path "specs/stdlib-workflow/tasks.md",
     :file-sha256
-    "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+    "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/stdlib-workflow/tasks.md",
      :start-byte 3500,
-     :end-byte 4537,
+     :end-byte 6851,
      :start-line 39,
      :end-line 45,
      :sha256
-     "6742c9a779dbfee053d0f6f8090a92d594052d0269fa3b031b0c9c987eede64e",
+     "9cd8cc0ffbb2c4ffce8003bfd680103de50624039e24910bdb56d1079f187bbe",
      :raw
-     "- [ ] `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` Complete schema/query/workflow/AI/meta/crypto/UI adapters\n\nStatus: Open\n\nEvidence baseline: [Module inventory](../../docs/phase-16-standard-library/README.md)\n\nClosing evidence: APIs consuming corresponding domain/runtime outcomes, with boundary failures exercised; STD10-STD13, STD15, STD18 and STD19 fixtures validate schemas before trusted decoding, canonical bytes, migration compatibility, parameterized queries, transaction commit/rollback/retry/isolation, durable workflow replay and in-flight migration, AI schema/taint/tool/review gates, generated-code rechecking, syntax context and pass invalidations, crypto lifecycle/hybrid binding/redaction, and typed UI events/render trust/accessibility/routes. Require actual provider execution and artifact consumers, not catalogue names or manifest presence. Reject each source-specific boundary failure in plan.md; unresolved provider, binding and equivalence decisions remain unassessed."},
+     "- [ ] `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` Complete schema/query/workflow/AI/meta/crypto/UI adapters\n\nStatus: Open\n\nEvidence baseline: [Module inventory](../../docs/phase-16-standard-library/README.md)\n\nClosing evidence: APIs consuming corresponding domain/runtime outcomes, with boundary failures exercised; STD10-STD13, STD15, STD18 and STD19 fixtures validate schemas before trusted decoding, canonical bytes, migration compatibility, parameterized queries, transaction commit/rollback/retry/isolation, durable workflow replay and in-flight migration, AI schema/taint/tool/review gates, generated-code rechecking, syntax context and pass invalidations, crypto lifecycle/hybrid binding/redaction, and typed UI events/render trust/accessibility/routes. Require actual provider execution and artifact consumers, not catalogue names or manifest presence. Reject each source-specific boundary failure in plan.md; unresolved provider, binding and equivalence decisions remain unassessed. STD15 requires actual syntax construction/inspection/transform APIs to preserve spans, hygiene, namespace, metadata and phase; C3 defines the underlying syntax representation and internal transform rules. Retain the library-call outcome separately from internal compiler transformations and public API publication. Explicit metadata updates may change the requested metadata while recording the change; they do not erase origin/hygiene/context or make stale facts current. Reject the following false substitutes: An internal compiler transform fixture does not prove the published syntax API actually calls it. Publishing an export or returning raw form data does not preserve syntax context. with-syntax-meta is an explicit update, not a promise that all metadata bytes are unchanged. The broad query outcome lowers/executes a typed query and validates rows/failures under declared transaction/provider semantics. STD11 additionally requires the standard transaction API to execute commit, rollback, retry and isolation/idempotency behavior. Retain that concrete lifecycle outcome under the existing adapters task; a provider transaction implementation may be shared but its invocation and observable transitions through the standard API require their own acceptance. Reject the following false substitutes: A parameterized SELECT returning typed rows proves no commit/rollback path. Transaction metadata or a named commit export does not execute the transaction. Retry must follow declared isolation, idempotency and provider failure policy; it is not an invented retry allowance. Retain the standard rendering boundary that distinguishes escaped text, trusted markup, binary media and native views, and enforces the selected sink's trust policy. Actual web DOM/render-event execution is one qualified consumer; native/terminal/media adapters have their declared target rules. Reuse actual adapter checks without treating a web-only unsafe-DOM fixture or public rendering API inventory as universal rendering conformance. Reject the following false substitutes: A typed render export alone does not reject unsafe markup at an actual sink. HTML escaping is not a universal native-view, media or terminal trust rule. An event/schema fixture does not establish the rendering kind distinction or adapter invocation."},
     :owner-source "docs/component-roadmaps/stdlib.md",
     :component "stdlib",
-    :source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+    :source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
     :id
     "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
     :checked false}
    {:path "specs/stdlib-workflow/tasks.md",
     :file-sha256
-    "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+    "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/stdlib-workflow/tasks.md",
-     :start-byte 4539,
-     :end-byte 5595,
+     :start-byte 6853,
+     :end-byte 9439,
      :start-line 47,
      :end-line 53,
      :sha256
-     "def6ec2b208234b28e279c4491c215a4d987a6e9aa44568aa1f6b3872be94949",
+     "1096c60f507ced4dc001db6582022d5ba1f2a3e1f0e13a837de9821a86f20b92",
      :raw
-     "- [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests\n\nStatus: Open\n\nEvidence baseline: [Platform outcome](../../docs/component-roadmaps/platform.md#release-outcome)\n\nClosing evidence: Actual supported platform API fixtures, unsafe audits and compatibility/stability report; STD16-STD17 fixtures distinguish target/build/runtime-host facts, all clock/random kinds, process command/args/environment/stdio/timeout/working-directory policy, MMIO widths/alignment/volatile ordering, interrupt effects/reentrancy, DMA ownership/coherence/completion and clock-domain synchronization. STD20 release evidence compares source, behavior, effects, capabilities, diagnostics, artifact schemas, profiles and fixtures; exercises experimental opt-in/internal-import denial, deprecation/replacement/removal schedules and governed breaking changes; and binds signed provenance to the actual release. Platform target and product-release outcomes retain their separate scope."},
+     "- [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests\n\nStatus: Open\n\nEvidence baseline: [Platform outcome](../../docs/component-roadmaps/platform.md#release-outcome)\n\nClosing evidence: Actual supported platform API fixtures, unsafe audits and compatibility/stability report; STD16-STD17 fixtures distinguish target/build/runtime-host facts, all clock/random kinds, process command/args/environment/stdio/timeout/working-directory policy, MMIO widths/alignment/volatile ordering, interrupt effects/reentrancy, DMA ownership/coherence/completion and clock-domain synchronization. STD20 release evidence compares source, behavior, effects, capabilities, diagnostics, artifact schemas, profiles and fixtures; exercises experimental opt-in/internal-import denial, deprecation/replacement/removal schedules and governed breaking changes; and binds signed provenance to the actual release. Platform target and product-release outcomes retain their separate scope. Retain the STD20 per-release report/evidence assembly and exact release binding outcome. Reuse governance baseline/dimension comparison and PKG10/PKG12 provenance/signing producers as dependencies rather than reimplementing them. Every release still requires the appropriate compatibility and signed provenance reports; a compatibility classification or signature alone does not assemble those release-bound artifacts or confer governance approval. Reject the following false substitutes: A report can identify an incompatible change; its existence is not approval to release it. A valid signature over another artifact/release does not satisfy STD20008. A signed provenance record cannot replace old/new conformance comparison or the complete compatibility dimensions. STD17 library/device communication requires synchronization proof or checked adapters. For actual physical HDL crossings, the adapter must satisfy B9's source/destination clock/reset/latency/metastability and declared synchronizer/FIFO/handshake/proof or hardware-policy waiver rules. Software/device adapters and simulator APIs are not automatically physical HDL crossings; keep their checked-adapter outcome and capabilities distinct. Reject the following false substitutes: A clock-domain spelling or register declaration is not a synchronization check. A passing HDL CDC gate does not prove a standard device API invokes the checked adapter. A generic unsafe island is not a B9 hardware audit waiver, and a simulator does not confer live-device authority."},
     :owner-source "docs/component-roadmaps/stdlib.md",
     :component "stdlib",
-    :source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+    :source-commit "625a74467e33ed9f203673dd8edd0b48e530e575",
     :id
     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
     :checked false}],
@@ -16589,7 +16600,7 @@
   "docs/component-roadmaps/runtime.md"
   "cfac79cf11a6aebc3a0e9800b655db9dc47cb8dd3ddb747db976b092f41d821d",
   "docs/component-roadmaps/stdlib.md"
-  "7ad52ae233ba44d0c068e406fc1c5db56f35ea5b9b66be0264d035bbaef86012",
+  "85469422b128a16336a859841aa9fb5fa7f256989d5094d1ebd676f84198b3aa",
   "docs/component-roadmaps/syntax.md"
   "988a0c661b223bc815ecde577a378d53d758be80af7b680a90e257ce32da6bcb",
   "docs/component-roadmaps/tools.md"
@@ -16665,7 +16676,7 @@
   "specs/runtime-workflow/tasks.md"
   "51b68ffda3eea2e859934d831db59385cd151baaac00a3c946b8d0087aae4de6",
   "specs/stdlib-workflow/tasks.md"
-  "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+  "dc4b07a5dcf8a06d58cf5612d3a275c21a41af5e851a81b771263cc0c610708e",
   "specs/syntax-workflow/tasks.md"
   "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
   "specs/tools-workflow/tasks.md"
@@ -16680,13 +16691,13 @@
   "specs/release-workflow/tasks.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
   "specs/stdlib-workflow/tasks.md"
-  "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+  "625a74467e33ed9f203673dd8edd0b48e530e575",
   "docs/component-roadmaps/build.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
   "docs/component-roadmaps/lower.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
   "docs/component-roadmaps/stdlib.md"
-  "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
+  "625a74467e33ed9f203673dd8edd0b48e530e575",
   "specs/reader-workflow/tasks.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "docs/component-roadmaps/reader.md"
