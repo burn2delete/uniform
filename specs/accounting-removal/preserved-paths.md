@@ -452,6 +452,19 @@ helper mappings remain explicit rather than being treated as missing features.
   and caller migrations preserve newer native/exact guards and all semantic
   negatives. Genuine owner kernels, current-main composition and integration
   remain open; no full accounting or PR502 credit follows.
+- Exact main-based PR628 `46e8f15a`, tree `98369ced`, base `e047157d`,
+  now has independent affected-main SOURCE PASS, receipt SHA256
+  `a939654e46b3d1b1b16b4294c5b4d67d65606827cf748568899c8a29e790ba3d`.
+  [Consumption](cold-quote-main-review-consumption.edn) verifies receipt/tree
+  and eight file pins: three source/non-authoritative DATA controls pass 121
+  assertions, eight metadata negatives and eight altered-source controls reject.
+  The reviewed transaction retains main's metered quote-products and absent
+  valid-data helper; exact copied controls call existing cold-evidence only.
+  Genuine private/Effects/lowering/runtime controls remain UNRUN. Current-head
+  CI has seven successes/two skips; changed-main applicability, lifecycle and
+  clean integration preflight remain separate pending gates. Corrected PR626
+  `70eba308` also has seven CI successes/two skips; predecessor static NONPASS
+  and original query five failures remain preserved.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind

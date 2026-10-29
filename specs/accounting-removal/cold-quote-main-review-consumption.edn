@@ -1,0 +1,100 @@
+{:verified-file-pins
+ {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "f334b4d2e292456c5cd7586286e875d34bdc354729fcd030303d22dcf4bfda52",
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "7c13569f22fe04f66ad3080b1ad57c738a2d56b41f869fe3a9ff6627dc764d6f",
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  "7b0797fcb989c3bdbe73433a4e1339336e5f6663f7f0849e44fce29ca85a2b94",
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "86a759cc5733e029bd7ee1938bb8c248ccf612e9e4bc88aeac0c7ff515cb63f8",
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+  "specs/accounting-removal/cold-quote-main-census.edn"
+  "2ee1f50f45d9eb460ee816bd473c0541a4b4f381847f0b0c92ff00b1af7ccafc",
+  "specs/accounting-removal/cold-quote-main.md"
+  "05b876c20589e794f925e3832ab1901239f828193614ed688e866c8cf30bf766"},
+ :findings [],
+ :nonclaims
+ [:parent-stack-acceptance
+  :quote-product-unmetered-on-main
+  :whole-accounting-removal
+  :authenticated-Core-or-producer
+  :private-inference-acceptance
+  :Effects-lowering-runtime-acceptance
+  :current-main-preflight
+  :current-head-CI
+  :integration-or-merge
+  :ACC-or-PR502-closure
+  :release
+  :self-hosting],
+ :candidate "46e8f15a2295b0fba52e9c94fb8aa9ea825259fe",
+ :genuine-controls :UNRUN,
+ :current-main-assessment
+ {:all-main-prior-test-bytes :exact-prefix,
+  :whitespace :pass,
+  :closed-schema :obsolete-key-0-1-nil-rejected,
+  :host-effects-helper
+  "Actual main leaf takes [function & args], and sh08-helper resolves the new fixtures from the existing C7 test namespace. Source references are coherent; runtime behavior is not established.",
+  :three-production-definitions :exact-reviewed-before-and-after,
+  :absent-stack-helper
+  "sh08-qd-products-valid-data remains absent; no copied control calls it. No unsupported helper dependency is introduced.",
+  :production-retired-field-references 0,
+  :mode-cut-and-source-argument-guards :retained,
+  :other-main-production-bytes-and-top-level-forms :conserved,
+  :native-type-and-source-guard-code
+  :conserved-with-all-other-production,
+  :copied-raw-fixture-and-control-forms 5,
+  :semantic-boundary
+  "Cold metadata retirement is coherent independently of whether quote products themselves remain metered: producer and both consumers drop only the accounting metadata key/operand/bound/charge. Actual quote/type/source validation and legacy inference fields remain unchanged. This does not complete quote-product accounting removal.",
+  :host-C7-helper
+  "Actual main invoke-c7 exists with [function arguments]; copied forms invoke only existing sh08-is-cold-evidence, never absent sh08-qd-products-valid-data.",
+  :six-direct-consumer-dependencies
+  :unchanged-and-identical-to-reviewed-parent,
+  :source-callers-and-arities :unchanged-full-form-identity,
+  :main-quote-product
+  "sh08-qd-products still delegates to sh08-qd-products-with-budget, which still emits work-count. Its exact metered form is unchanged by this extraction and differs from the reviewed stack."},
+ :scope
+ "PASS for this exact main-based source transaction and independent inert-form/DATA controls. Future changed source/base, actual producer/context composition, genuine tests, applicable CI and fresh preflight/integration remain separate. No production edits or denied relay/review retries occurred.",
+ :main-integration :pending-coordinator,
+ :CI
+ {:candidate "46e8f15a2295b0fba52e9c94fb8aa9ea825259fe",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernel-evidence false},
+ :consumption
+ {:receipt-tree-eight-file-pins :verified,
+  :source-and-non-authoritative-DATA-controls :3-tests-121-assertions,
+  :genuine-kernel-execution false,
+  :new-execution false,
+  :no-reviewer-or-owner-message-sent true},
+ :executed-controls
+ {:tests {:test 3, :pass 121, :fail 0, :error 0, :type :summary},
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :model :independent-normalized-helper-DATA-only,
+  :eight-metadata-negatives :all-rejected,
+  :altered-source-controls
+  {:removed-cut-mode-and-source-argument-guards 6,
+   :reintroduced-retired-schema-key 2,
+   :result :all-refused},
+  :source-gate
+  "Altered complete forms are compared against the independently reviewed exact operation semantics, not accepted through recomputed supplied census hashes."},
+ :kind :verified-cold-quote-main-review-consumption,
+ :receipt-sha256
+ "a939654e46b3d1b1b16b4294c5b4d67d65606827cf748568899c8a29e790ba3d",
+ :verdict :pass-exact-main-source-composition,
+ :generator
+ {:language :clojure,
+  :sha256
+  "cc3069b493e94637ba0ffd2ab99dcec9f2b19170eaa17d27548cf52d7114b7ab",
+  :preserved-locally true},
+ :integration-preflight :UNRUN,
+ :reviewer "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+ :base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :pr 628,
+ :owner :ACC-01,
+ :changed-base-current-main-applicability :separate-pending-gate,
+ :candidate-tree "98369cedb783be6430e22690e52f6af79351165f"}

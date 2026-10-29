@@ -509,3 +509,21 @@ verified in `list-construction-review-consumption.edn`: tree/seven input hashes,
 header/derive/step/caller changes and retained newer native/exact guards. Genuine
 owner kernels, fresh main composition and integration remain pending. Original
 inventory counts and source-only authority limits remain unchanged.
+
+## Exact main-based cold metadata source PASS
+
+PR628 exact `46e8f15a`, tree `98369ced`, base `e047157d`, received independent
+affected-main SOURCE PASS, receipt SHA256
+`a939654e46b3d1b1b16b4294c5b4d67d65606827cf748568899c8a29e790ba3d`.
+`cold-quote-main-review-consumption.edn` verifies receipt/tree/eight file pins.
+Three inert source/non-authoritative DATA controls pass 121 assertions; eight
+metadata negatives and eight altered-source guard/schema cases reject. Exact
+three definition intervals/five raw added forms, all other main bytes/callers
+and six consumer dependencies survive. Main's quote-products remain metered and
+the stack valid-data helper remains absent, never called by copied controls.
+This is metadata retirement only; genuine private/Effects/lowering/runtime
+controls remain UNRUN. Exact-head CI has seven successes/two skips, but changed-
+main applicability, lifecycle and fresh clean integration preflight remain open.
+Corrected PR626 `70eba308` also completed seven CI successes/two skips; its old
+static failure and unchanged original query NONPASS remain history. Original
+inventory counts and global ACC/PR502 authority remain unchanged.
