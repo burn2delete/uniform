@@ -3,7 +3,7 @@
  {:run 40800243836,
   :static-job 123206336962,
   :projection-job 123206336833,
-  :static-successor :pending-ci,
+  :static-successor :passed-locally-fresh-ci-pending,
   :aggregate-projection :blocked-source-version-composition,
   :local-sh-crosswalk :rejected-fingerprint-drift},
  :composition-hold-occurrence-ids
@@ -34,6 +34,13 @@
   :boundary-assertions 11,
   :proposal-negative-controls 15,
   :whitespace :pass,
+  :changed-clojure-lint
+  {:version "2025.10.23",
+   :files 4,
+   :errors 0,
+   :warnings 0,
+   :config "tools/ci/kondo",
+   :config-changed? false},
   :boundary-tests 6,
   :documents 240,
   :aggregate-projection :blocked-source-version-composition,
@@ -41,10 +48,19 @@
   :domains-tests 6,
   :domains-projection :pass,
   :phase-indexes 19},
+ :affected-checker-review :pending-existing-reviewer,
  :guarded-task-interface-fields 56,
  :source-facets 538,
  :scope-key
  "requirement-reconciliation/phase-10-schema-data-and-interop",
+ :namespace-successor-predecessor
+ {:head "1ca1efc0d4e1851fd6165a1200a6025a9dabf468",
+  :tree "7509eaa6ef5fe6c4d0d64f9b1b11c92556eb35f1",
+  :receipt-sha256
+  "fe47bc37583d9353a8c0a419f50e26b99023539f1403d7abc2b87d736a8221d7",
+  :ci-run 40801973213,
+  :static-job 123211942159,
+  :finding :namespace-name-mismatch},
  :predecessor
  {:head "e9c85cca018bedf30cc6c6f090058180de8b9738",
   :tree "38a834c1c71834b7a8950397ff4b527ad7eeeee8",
@@ -133,13 +149,12 @@
   {:path "specs/requirement-reconciliation/schema-family/lineage.edn",
    :sha256
    "90d6fa1690ffbfffabc6bb916763398b2c9a761564ee94c23bbf899961f3a70f"}
-  {:path
-   "specs/requirement-reconciliation/schema-family/build-proposal.clj",
+  {:path "tools/schema_requirement_family.clj",
    :sha256
-   "f3bbb75729db8927621673a93c85de48d913524aa3c33312b89030014777e256"}
+   "08a0f0f15cbde09db4a8571a78da3f5f79a0c354b7d3551813c056c338cf9b11"}
   {:path "specs/requirement-reconciliation/schema-family/evidence.md",
    :sha256
-   "7bf8435b59499df3ee23e55b15c0d685e29c10d0cdca077b75872a747600c143"}
+   "a37f5cf06e5b06ad7fdfcc31bbb78297e6881287b0bd87e38a920c6d90b3554c"}
   {:path "specs/domains-workflow/tasks.md",
    :sha256
    "28c21ce9b7d89cf1089a2f53df2d9213c14e2086494a6d41c6d798aad2c8a055"}

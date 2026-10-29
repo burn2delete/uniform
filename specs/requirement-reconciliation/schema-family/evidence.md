@@ -74,7 +74,7 @@ remain central review questions, not reasons to erase source facets.
 Run from the repository root with the immutable Git inputs available:
 
 ```bash
-clojure -J-Xmx768m -M specs/requirement-reconciliation/schema-family/build-proposal.clj --check
+clojure -J-Xmx768m -M tools/schema_requirement_family.clj --check
 clojure -J-Xmx256m -M tools/domains_task_projection_test.clj
 clojure -J-Xmx256m -M tools/domains_task_projection.clj --check
 clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
@@ -137,3 +137,21 @@ The generated Domains roadmap digest is
 The existing SH review is not applicable to those new task bytes. Exact
 source-version metadata, predecessor history and review must be composed by
 the canonical owner before this draft's aggregate projection gate can pass.
+
+CI run `40801973213`, static job `123211942159`, retained one namespace/file
+finding on `1ca1efc0d4e1851fd6165a1200a6025a9dabf468`. The prior rename was
+insufficient: Clojure source filenames use underscores for namespace hyphens.
+The checker is now `tools/schema_requirement_family.clj`, namespace
+`schema-requirement-family`, following the existing tooling source layout.
+The command above and receipt locator use that path; task, source, proposal
+and delivered-lineage bytes remain unchanged. No lint config is changed.
+
+Local clj-kondo `2025.10.23`, the version pinned in the CI Clojure action, was
+located after the earlier unavailable observation. The exact CI lint options
+`--repro --cache false --config-dir tools/ci/kondo --config
+'{:output {:format :edn}}'` report zero errors and zero warnings over the changed
+checker and all three candidate EDN files. The same pinned command first
+reproduced the old namespace failure. The 15 bounded controls and language
+boundary 6 tests / 11 assertions pass after the move. The existing reviewer's
+affected-checker re-review and central source-version composition remain
+required; no new reviewer is assigned.
