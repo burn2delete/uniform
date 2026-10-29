@@ -401203,8 +401203,18 @@
      :scope :frozen-metadata-field-allocation-proposal-only},
     :full-attached-facet-entailment :not-conferred,
     :scope :source-qualified-conditional-architecture-allocation,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+     :sha256
+     "e8353689c5241fc8256b3b34ddf215b952d1b937ab3d962bcde9fc9a4cd53d51",
+     :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+     :scope :exact-two-current-source-composition-joins,
+     :independent-receipt-sha256
+     "b394fb0eeadd8f9d65f4676ee2a5523c07d5b8c25d2b508589fb737137728223"},
     :source-adjudication
     {:kind :explicit-governing-extension-source-disposition,
      :source-contracts ["platform-product"],
@@ -401515,8 +401525,18 @@
      "Runtime/Auth scoped grants and service hooks"
      "actual provider identity, spending/account policy and permitted audit records"],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+     :sha256
+     "e8353689c5241fc8256b3b34ddf215b952d1b937ab3d962bcde9fc9a4cd53d51",
+     :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+     :scope :exact-two-current-source-composition-joins,
+     :independent-receipt-sha256
+     "37053e4150fcc88ea27e84feb8e256d4571571c650b2c3e42a498d74a178da32"},
     :task-links
     [{:path "specs/domains-workflow/tasks.md",
       :task-id "ai",
