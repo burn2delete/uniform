@@ -10,7 +10,7 @@
  :dispositions
  {:path "specs/requirement-reconciliation/source-dispositions.edn",
   :sha256
-  "a2dc7b94675b53a091f2a0920fb3f79df62a74fad4e89d26949f0a2546385061"},
+  "27de8b2d9f5ec4f3d6d77d6d00c7cf0fd9b993469fab9d26462cecb161eb6bfe"},
  :scope
  {:release-task-ids
   ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
@@ -43,30 +43,30 @@
   :component-task-count 171,
   :platform-product-task-count 11,
   :original-source-families 18},
- :source-commit "87405ca46d9949504380a64a37b85d6f5e52e8cd",
+ :source-commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae",
  :tasks
  [{:id "ai",
    :component "domains",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 150250,
-    :end-byte 294490,
-    :start-line 823,
-    :end-line 2384,
+    :start-byte 157451,
+    :end-byte 301691,
+    :start-line 865,
+    :end-line 2426,
     :sha256
     "f5346183ca2cd79514ae1fea380d2c8acff4ad38392e3900375b69723a70803c"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/ai/profile-tool-contract"
     "interface/ai/prompt-memory-boundary"
@@ -135,12 +135,12 @@
     :marker "auth-implementation-tasks",
     :sha256
     "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/auth-workflow/plan.md",
     :sha256
     "7431d3388aace9435977bd8a25582938d18959dd7ff4cab171bd4a8a15326207",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/security-review"]}
   {:id
    "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
@@ -159,12 +159,12 @@
     :marker "auth-implementation-tasks",
     :sha256
     "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/auth-workflow/plan.md",
     :sha256
     "7431d3388aace9435977bd8a25582938d18959dd7ff4cab171bd4a8a15326207",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/runtime-schema-safe10-strengthening"
     "interface/behavior/pkg6/request-grant-separation"
@@ -186,12 +186,12 @@
     :marker "auth-implementation-tasks",
     :sha256
     "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/auth-workflow/plan.md",
     :sha256
     "7431d3388aace9435977bd8a25582938d18959dd7ff4cab171bd4a8a15326207",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
@@ -210,12 +210,12 @@
     :marker "auth-implementation-tasks",
     :sha256
     "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/auth-workflow/plan.md",
     :sha256
     "7431d3388aace9435977bd8a25582938d18959dd7ff4cab171bd4a8a15326207",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/profile/narrow-authority"
     "interface/safety/safe10/ambient-policy"
@@ -241,35 +241,35 @@
     :marker "auth-implementation-tasks",
     :sha256
     "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/auth-workflow/plan.md",
     :sha256
     "7431d3388aace9435977bd8a25582938d18959dd7ff4cab171bd4a8a15326207",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "automation",
    :component "domains",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 312886,
-    :end-byte 318664,
-    :start-line 2453,
-    :end-line 2470,
+    :start-byte 320087,
+    :end-byte 325865,
+    :start-line 2495,
+    :end-line 2512,
     :sha256
     "64901a68f4f83e980cdeb1966e4aa0ab9a110218467df0cb50c0cd95915ee4af"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/emit-automation-dry-run"
     "interface/domain/execute-rooted-file-action"
@@ -281,69 +281,69 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 11170,
-    :end-byte 12152,
-    :start-line 178,
-    :end-line 193,
+    :start-byte 27418,
+    :end-byte 28400,
+    :start-line 276,
+    :end-line 291,
     :sha256
     "6cde5f44b42a3a601dc3ed2ea1bb1ab3b09c3bccb6ef8940e659afcc8d56b543"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-c",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 1599,
-    :end-byte 2521,
-    :start-line 31,
-    :end-line 45,
+    :start-byte 2851,
+    :end-byte 3773,
+    :start-line 38,
+    :end-line 52,
     :sha256
     "5b5d508c4a8d74e69ea17a99f18248d49af568efeab150dcf7de60fc96c6a180"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-conformance",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 15024,
-    :end-byte 21686,
-    :start-line 245,
-    :end-line 273,
+    :start-byte 31272,
+    :end-byte 37934,
+    :start-line 343,
+    :end-line 371,
     :sha256
     "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test6/abi-layout"
     "interface/testing/test6/differential"
@@ -356,46 +356,46 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 14122,
-    :end-byte 15022,
-    :start-line 229,
-    :end-line 243,
+    :start-byte 30370,
+    :end-byte 31270,
+    :start-line 327,
+    :end-line 341,
     :sha256
     "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-gpu",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 7246,
-    :end-byte 8132,
-    :start-line 129,
-    :end-line 143,
+    :start-byte 15546,
+    :end-byte 19833,
+    :start-line 178,
+    :end-line 212,
     :sha256
-    "7e27932eba82dd96eaed9c9ac11cf760462ef62c45547d9122d014583a774971"},
+    "f3e1bc7c3b2f8ce095d56cd993f8bd205c84125bc1a1c564474fae274d87d6b4"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/backend/gpu/argument-memory-abi"
     "interface/backend/gpu/kernel-emission"
@@ -405,23 +405,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 8134,
-    :end-byte 10310,
-    :start-line 145,
-    :end-line 161,
+    :start-byte 19836,
+    :end-byte 26557,
+    :start-line 215,
+    :end-line 258,
     :sha256
-    "8d3bbf20e011836e42b7384d5844aec0529fdca4c1f46f6f4989243a0666d434"},
+    "13e8107a332b0989f49bca274134910dfa7bc7a28dca6ad2a1d4c0390b1b932f"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/backend/hdl/cdc-gate"
     "interface/backend/hdl/clock-reset-timing"
@@ -434,22 +434,22 @@
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
     :start-byte 704,
-    :end-byte 1597,
+    :end-byte 2848,
     :start-line 16,
-    :end-line 29,
+    :end-line 35,
     :sha256
-    "65f56a1a3a0aa4c7e0db6f912c0ddbab1933840f4cd8a472deb14f4165f41cfa"},
+    "15dc61ce263af446294eea7ea029211c02c081aec369d54674a80e4513a14fbd"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/backend/input-eligibility"
     "interface/governance/target-support-admission"]}
@@ -458,23 +458,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 5474,
-    :end-byte 6376,
-    :start-line 97,
-    :end-line 111,
+    :start-byte 11425,
+    :end-byte 14675,
+    :start-line 132,
+    :end-line 159,
     :sha256
-    "0f00f1910fd0a0a8aea8a1d5225590e63bee331ea04384e48ffe02abf2ba1a5a"},
+    "d478b8faea9270afa51b8c47c97ce109068ebfff4d7011008040538578c8fd1c"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/backend/js/module-emission"
     "interface/backend/js/type-declaration-emission"]}
@@ -483,138 +483,138 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 4555,
-    :end-byte 5472,
-    :start-line 81,
-    :end-line 95,
+    :start-byte 10506,
+    :end-byte 11423,
+    :start-line 116,
+    :end-line 130,
     :sha256
     "8dab12bc027e436503df0eb287c2d79c324e1819e61f9a4cde519eca8ae93184"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-llvm",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 2523,
-    :end-byte 3531,
-    :start-line 47,
-    :end-line 62,
+    :start-byte 3775,
+    :end-byte 4783,
+    :start-line 54,
+    :end-line 69,
     :sha256
     "90e31ba376154ceb3f69d0874d004fe70063ac619c3a969d098921606ef1f278"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-mlir",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 6378,
-    :end-byte 7244,
-    :start-line 113,
-    :end-line 127,
+    :start-byte 14678,
+    :end-byte 15544,
+    :start-line 162,
+    :end-line 176,
     :sha256
     "5b107f0e835582a0d8bcb7a753b6877eb32e60694a7835381a918a3601324861"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-mobile",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 13067,
-    :end-byte 14120,
-    :start-line 211,
-    :end-line 227,
+    :start-byte 29315,
+    :end-byte 30368,
+    :start-line 309,
+    :end-line 325,
     :sha256
     "6bc0b395b6e7a9ff489a31b486678d6c3e6bcb33ed48841983a378b6adbd6d7b"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-query",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 12154,
-    :end-byte 13065,
-    :start-line 195,
-    :end-line 209,
+    :start-byte 28402,
+    :end-byte 29313,
+    :start-line 293,
+    :end-line 307,
     :sha256
     "fd43b4f51cc9becd190f608958df14c0b1c5f63958eb3c074c480c42540c9079"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "backend-wasm",
    :component "backends",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 3533,
-    :end-byte 4553,
-    :start-line 64,
-    :end-line 79,
+    :start-byte 4785,
+    :end-byte 10503,
+    :start-line 71,
+    :end-line 113,
     :sha256
-    "83387d2824cd381c8ce5391e5d6dc5dbcf75a338ec9e10ba7dda1d408ebedae0"},
+    "964c42206a99a2d4588ffceca981af56b86cec3d3e8941dd8af7914892963918"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/backend/wasm/async-function-lowering"
     "interface/backend/wasm/atomic-volatile-lowering"
@@ -625,46 +625,46 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/backends-workflow/tasks.md",
-    :start-byte 10312,
-    :end-byte 11168,
-    :start-line 163,
-    :end-line 176,
+    :start-byte 26560,
+    :end-byte 27416,
+    :start-line 261,
+    :end-line 274,
     :sha256
     "c2308b168b23577336eb936fda7d74097112d75c5420202de9f4eb53ae6bf4ed"},
    :task-source
    {:path "specs/backends-workflow/tasks.md",
     :marker "backends-implementation-tasks",
     :sha256
-    "1a4a1d83a011347c6586d620faf09db7139b8f19a9e3449c7390a3601ca129b2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/backends-workflow/plan.md",
     :sha256
     "23940619b94914b66993d99e08c46065d767e68dd98528dcd3e80a8ffa9bae6f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "blockchain",
    :component "domains",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 318666,
-    :end-byte 330778,
-    :start-line 2472,
-    :end-line 2501,
+    :start-byte 325867,
+    :end-byte 337979,
+    :start-line 2514,
+    :end-line 2543,
     :sha256
     "8c24247f211e86b93bdeaef002741e2f9b3e6216cfcd4ba7e0d9f735e5bf02ec"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/account-session-delegation"
     "interface/domain/blockchain-token-transfer-integration"
@@ -693,12 +693,12 @@
     :marker "build-implementation-tasks",
     :sha256
     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/build-workflow/plan.md",
     :sha256
     "ebb715ac46ae1e5159142aee2bd578c19f78710005ce9bce9cef403112f0ec6e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/pkg7/deterministic-build-environment"
     "interface/behavior/pkg7/recorded-build-recipe"
@@ -721,12 +721,12 @@
     :marker "build-implementation-tasks",
     :sha256
     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/build-workflow/plan.md",
     :sha256
     "ebb715ac46ae1e5159142aee2bd578c19f78710005ce9bce9cef403112f0ec6e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/integration/build-input-capture"
     "interface/language/compiletime/preserve-phase-artifacts"
@@ -748,12 +748,12 @@
     :marker "build-implementation-tasks",
     :sha256
     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/build-workflow/plan.md",
     :sha256
     "ebb715ac46ae1e5159142aee2bd578c19f78710005ce9bce9cef403112f0ec6e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c16/cache-revalidation"
     "interface/compiler/c16/dependency-invalidation"
@@ -778,12 +778,12 @@
     :marker "build-implementation-tasks",
     :sha256
     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/build-workflow/plan.md",
     :sha256
     "ebb715ac46ae1e5159142aee2bd578c19f78710005ce9bce9cef403112f0ec6e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/package-bootstrap-admission"
     "interface/governance/experimental-use-admission"
@@ -812,12 +812,12 @@
     :marker "build-implementation-tasks",
     :sha256
     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/build-workflow/plan.md",
     :sha256
     "ebb715ac46ae1e5159142aee2bd578c19f78710005ce9bce9cef403112f0ec6e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/package-bootstrap-admission"
     "interface/behavior/pkg10/release-provenance-artifact"
@@ -850,12 +850,12 @@
     :marker "cli-implementation-tasks",
     :sha256
     "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/cli-workflow/plan.md",
     :sha256
     "d7ebec7be47d264a89d57f89fba2e1e0e40debff45501a969e277a7676ac629f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t1/explicit-command-context"
     "interface/gravity/hosted-hello-execution"]}
@@ -876,12 +876,12 @@
     :marker "cli-implementation-tasks",
     :sha256
     "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/cli-workflow/plan.md",
     :sha256
     "d7ebec7be47d264a89d57f89fba2e1e0e40debff45501a969e277a7676ac629f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t1/explain-command-decision"]}
   {:id
@@ -901,12 +901,12 @@
     :marker "cli-implementation-tasks",
     :sha256
     "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/cli-workflow/plan.md",
     :sha256
     "d7ebec7be47d264a89d57f89fba2e1e0e40debff45501a969e277a7676ac629f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t1/cli-redaction"
     "interface/behavior/t1/stable-command-results"]}
@@ -927,12 +927,12 @@
     :marker "cli-implementation-tasks",
     :sha256
     "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/cli-workflow/plan.md",
     :sha256
     "d7ebec7be47d264a89d57f89fba2e1e0e40debff45501a969e277a7676ac629f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
@@ -951,12 +951,12 @@
     :marker "cli-implementation-tasks",
     :sha256
     "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/cli-workflow/plan.md",
     :sha256
     "d7ebec7be47d264a89d57f89fba2e1e0e40debff45501a969e277a7676ac629f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
@@ -977,12 +977,12 @@
     :marker "core-implementation-tasks",
     :sha256
     "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/core-workflow/plan.md",
     :sha256
     "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
@@ -1003,12 +1003,12 @@
     :marker "core-implementation-tasks",
     :sha256
     "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/core-workflow/plan.md",
     :sha256
     "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
@@ -1029,12 +1029,12 @@
     :marker "core-implementation-tasks",
     :sha256
     "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/core-workflow/plan.md",
     :sha256
     "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
@@ -1055,12 +1055,12 @@
     :marker "core-implementation-tasks",
     :sha256
     "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/core-workflow/plan.md",
     :sha256
     "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
@@ -1081,12 +1081,12 @@
     :marker "core-implementation-tasks",
     :sha256
     "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/core-workflow/plan.md",
     :sha256
     "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/core/enforce-profile-semantics"]}
   {:id "crypto",
@@ -1094,23 +1094,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 330780,
-    :end-byte 343229,
-    :start-line 2503,
-    :end-line 2530,
+    :start-byte 337981,
+    :end-byte 350430,
+    :start-line 2545,
+    :end-line 2572,
     :sha256
     "93f5e01b280b6a444ad7006a985a73122959daeb0c81884688ae139a62930112"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/check-protected-operation-state"
     "interface/domain/credential-lifecycle"
@@ -1137,12 +1137,12 @@
     :marker "compiler-api-implementation-tasks",
     :sha256
     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/compiler-api-workflow/plan.md",
     :sha256
     "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "devices",
    :component "platform",
@@ -1160,12 +1160,12 @@
     :marker "platform-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/platform-workflow/plan.md",
     :sha256
     "a7c40fef600c37078f786532524136beed840984678c6f551dca9f4465850b5e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/device-adaptation"
     "interface/domain/device-dma"
@@ -1188,12 +1188,12 @@
     :marker "diag-implementation-tasks",
     :sha256
     "13b27da1d8a192a7f74e0b9c03746f42eeff46aa5721af3eedc064f0c42857b9",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/diag-workflow/plan.md",
     :sha256
     "bbc15b975ea3f8d19aad6bd625538b642db3c228a71d095d2afe8a79134621f2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
@@ -1212,12 +1212,12 @@
     :marker "diag-implementation-tasks",
     :sha256
     "13b27da1d8a192a7f74e0b9c03746f42eeff46aa5721af3eedc064f0c42857b9",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/diag-workflow/plan.md",
     :sha256
     "bbc15b975ea3f8d19aad6bd625538b642db3c228a71d095d2afe8a79134621f2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/runtime-check-diagnostic-stability"]}
   {:id
@@ -1237,12 +1237,12 @@
     :marker "diag-implementation-tasks",
     :sha256
     "13b27da1d8a192a7f74e0b9c03746f42eeff46aa5721af3eedc064f0c42857b9",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/diag-workflow/plan.md",
     :sha256
     "bbc15b975ea3f8d19aad6bd625538b642db3c228a71d095d2afe8a79134621f2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c15/diagnostic-identity"
     "interface/compiler/c15/structured-diagnostic"]}
@@ -1263,12 +1263,12 @@
     :marker "diag-implementation-tasks",
     :sha256
     "13b27da1d8a192a7f74e0b9c03746f42eeff46aa5721af3eedc064f0c42857b9",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/diag-workflow/plan.md",
     :sha256
     "bbc15b975ea3f8d19aad6bd625538b642db3c228a71d095d2afe8a79134621f2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c15/structured-diagnostic"]}
   {:id "domain-ir-boundaries",
@@ -1287,12 +1287,12 @@
     :marker "compiler-api-implementation-tasks",
     :sha256
     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/compiler-api-workflow/plan.md",
     :sha256
     "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c12/domain-entry"
     "interface/compiler/c12/domain-fallback"
@@ -1319,12 +1319,12 @@
     :marker "effects-implementation-tasks",
     :sha256
     "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/effects-workflow/plan.md",
     :sha256
     "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
@@ -1345,12 +1345,12 @@
     :marker "effects-implementation-tasks",
     :sha256
     "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/effects-workflow/plan.md",
     :sha256
     "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
@@ -1371,12 +1371,12 @@
     :marker "effects-implementation-tasks",
     :sha256
     "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/effects-workflow/plan.md",
     :sha256
     "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
@@ -1397,12 +1397,12 @@
     :marker "effects-implementation-tasks",
     :sha256
     "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/effects-workflow/plan.md",
     :sha256
     "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/effects/record-or-replay-nondeterminism"]}
   {:id
@@ -1424,12 +1424,12 @@
     :marker "effects-implementation-tasks",
     :sha256
     "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/effects-workflow/plan.md",
     :sha256
     "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/pkg6/derived-capability-manifest"]}
   {:id
@@ -1451,12 +1451,12 @@
     :marker "emit-implementation-tasks",
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/emit-workflow/plan.md",
     :sha256
     "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs",
@@ -1477,12 +1477,12 @@
     :marker "emit-implementation-tasks",
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/emit-workflow/plan.md",
     :sha256
     "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes",
@@ -1503,12 +1503,12 @@
     :marker "emit-implementation-tasks",
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/emit-workflow/plan.md",
     :sha256
     "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
@@ -1529,12 +1529,12 @@
     :marker "emit-implementation-tasks",
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/emit-workflow/plan.md",
     :sha256
     "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers",
@@ -1555,12 +1555,12 @@
     :marker "emit-implementation-tasks",
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/emit-workflow/plan.md",
     :sha256
     "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "evolution/change-review",
    :component "evolution",
@@ -1578,12 +1578,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/governance/change-review"
     "interface/language/concurrency/review-semantic-change"
@@ -1613,12 +1613,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/governance/experiment-lifecycle"]}
   {:id "evolution/library-admission",
@@ -1637,12 +1637,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/library-admission"]}
   {:id "evolution/namespace-decision",
    :component "evolution",
@@ -1660,12 +1660,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/namespace-decision"]}
   {:id "evolution/registry-yank",
    :component "evolution",
@@ -1683,12 +1683,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/registry-yank"]}
   {:id "evolution/rfc-review",
    :component "evolution",
@@ -1706,12 +1706,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/rfc-review"]}
   {:id "evolution/security-response",
    :component "evolution",
@@ -1729,12 +1729,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/security-response"]}
   {:id "evolution/security-review",
    :component "evolution",
@@ -1752,12 +1752,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids ["interface/governance/security-review"]}
   {:id "evolution/stabilization-decision",
    :component "evolution",
@@ -1775,12 +1775,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/governance/stabilization-decision"]}
   {:id "evolution/target-support-admission",
@@ -1799,12 +1799,12 @@
     :marker "evolution-implementation-tasks",
     :sha256
     "926c737ae4643cfd3deb025a19fcdc48628b9ae025a62554cdb0f6434c5135e2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/evolution-workflow/plan.md",
     :sha256
     "da2c4c02f3c03ed16f926abe7b9b86184a8631ba42a7223a6dbd3e65b856b44e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/governance/target-support-admission"]}
   {:id
@@ -1826,12 +1826,12 @@
     :marker "expand-implementation-tasks",
     :sha256
     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/expand-workflow/plan.md",
     :sha256
     "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/core/pure-generation"
     "interface/language/compiletime/evaluate-authorized-expression"
@@ -1855,12 +1855,12 @@
     :marker "expand-implementation-tasks",
     :sha256
     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/expand-workflow/plan.md",
     :sha256
     "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/meta/phase-isolation"
     "interface/safety/safe12/declaration-enforcement"
@@ -1887,12 +1887,12 @@
     :marker "expand-implementation-tasks",
     :sha256
     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/expand-workflow/plan.md",
     :sha256
     "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/effects/authorize-and-record-build-effect"
     "interface/safety/safe12/phase-authority"]}
@@ -1915,12 +1915,12 @@
     :marker "expand-implementation-tasks",
     :sha256
     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/expand-workflow/plan.md",
     :sha256
     "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
@@ -1941,12 +1941,12 @@
     :marker "expand-implementation-tasks",
     :sha256
     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/expand-workflow/plan.md",
     :sha256
     "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/compiletime/check-generated-program"
     "interface/language/facet/migrate-stable-contract"
@@ -1972,12 +1972,12 @@
     :marker "platform-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/platform-workflow/plan.md",
     :sha256
     "a7c40fef600c37078f786532524136beed840984678c6f551dca9f4465850b5e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/firmware-image-production"
     "interface/domain/firmware-sensor-integration"
@@ -1992,23 +1992,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 343231,
-    :end-byte 354483,
-    :start-line 2532,
-    :end-line 2559,
+    :start-byte 350432,
+    :end-byte 361684,
+    :start-line 2574,
+    :end-line 2601,
     :sha256
     "efe8f01e7e1587fae2f92f87c9356c8c64bc57a02c1661e6e566fedfd8a1c52c"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/check-zk-proof"
     "interface/domain/emit-zk-relation-contract"
@@ -2023,23 +2023,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 294492,
-    :end-byte 304149,
-    :start-line 2386,
-    :end-line 2411,
+    :start-byte 301693,
+    :end-byte 311350,
+    :start-line 2428,
+    :end-line 2453,
     :sha256
     "a0507ac304f7ac7556eaf34cd32226b4ec1737c212c062e556734a66f6a008e9"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/gpu-dispatch"
     "interface/domain/gpu-kernel-validation"
@@ -2064,12 +2064,12 @@
     :marker "platform-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/platform-workflow/plan.md",
     :sha256
     "a7c40fef600c37078f786532524136beed840984678c6f551dca9f4465850b5e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/hardware-cdc"
     "interface/domain/hardware-fifo-integration"
@@ -2097,12 +2097,12 @@
     :marker "platform-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/platform-workflow/plan.md",
     :sha256
     "a7c40fef600c37078f786532524136beed840984678c6f551dca9f4465850b5e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/kernel-artifact-production"
     "interface/domain/kernel-syscall-integration"
@@ -2127,12 +2127,12 @@
     :marker "legality-implementation-tasks",
     :sha256
     "ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/legality-workflow/plan.md",
     :sha256
     "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/safety/safe16/artifact-inspection"
     "interface/safety/safe16/fixture-contract"
@@ -2156,12 +2156,12 @@
     :marker "legality-implementation-tasks",
     :sha256
     "ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/legality-workflow/plan.md",
     :sha256
     "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/concurrency/check-gpu-parallel-access"
     "interface/language/memory/check-linear-resource-flow"
@@ -2217,12 +2217,12 @@
     :marker "legality-implementation-tasks",
     :sha256
     "ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/legality-workflow/plan.md",
     :sha256
     "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/core/runtime-free-values"
     "interface/gravity/profile-contract-declaration"
@@ -2251,12 +2251,12 @@
     :marker "legality-implementation-tasks",
     :sha256
     "ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/legality-workflow/plan.md",
     :sha256
     "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/bootstrap/compiler-unsafe-boundary"
     "interface/governance/unsafe-audit-decision"
@@ -2317,12 +2317,12 @@
     :marker "legality-implementation-tasks",
     :sha256
     "ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/legality-workflow/plan.md",
     :sha256
     "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/domain-safe15-revoked-trust"
     "interface/runtime/check-proof-preservation"
@@ -2350,15 +2350,14 @@
     :marker "lower-implementation-tasks",
     :sha256
     "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/lower-workflow/plan.md",
     :sha256
     "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
-   ["interface/backend/input-eligibility"
-    "interface/gravity/multiversion-guard-manifest"
+   ["interface/gravity/multiversion-guard-manifest"
     "interface/gravity/target-lowering-operation-contract"
     "interface/native/feature-guard"]}
   {:id
@@ -2380,12 +2379,12 @@
     :marker "lower-implementation-tasks",
     :sha256
     "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/lower-workflow/plan.md",
     :sha256
     "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
@@ -2406,12 +2405,12 @@
     :marker "lower-implementation-tasks",
     :sha256
     "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/lower-workflow/plan.md",
     :sha256
     "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
@@ -2432,12 +2431,12 @@
     :marker "lower-implementation-tasks",
     :sha256
     "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/lower-workflow/plan.md",
     :sha256
     "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/native/concurrency-order"
     "interface/performance/target-intrinsic-map"]}
@@ -2460,12 +2459,12 @@
     :marker "lower-implementation-tasks",
     :sha256
     "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/lower-workflow/plan.md",
     :sha256
     "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/native-target-artifact-emission"]}
   {:id "math",
@@ -2474,22 +2473,22 @@
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
     :start-byte 581,
-    :end-byte 105306,
+    :end-byte 112506,
     :start-line 14,
-    :end-line 545,
+    :end-line 586,
     :sha256
-    "45b369a597130d8bcc7b3810b02b41c3663824f0aa8ebbf2a942171a9f375ba3"},
+    "3e04c20a7752389817b9f0c447139ac31a81c8b676a251cf897dee602b34ac58"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/numeric-provider-binding"
     "interface/domain/scientific-sine-integration"
@@ -2579,12 +2578,12 @@
     :marker "mir-implementation-tasks",
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/mir-workflow/plan.md",
     :sha256
     "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
@@ -2605,12 +2604,12 @@
     :marker "mir-implementation-tasks",
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/mir-workflow/plan.md",
     :sha256
     "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
@@ -2631,12 +2630,12 @@
     :marker "mir-implementation-tasks",
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/mir-workflow/plan.md",
     :sha256
     "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
@@ -2657,12 +2656,12 @@
     :marker "mir-implementation-tasks",
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/mir-workflow/plan.md",
     :sha256
     "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
@@ -2683,35 +2682,35 @@
     :marker "mir-implementation-tasks",
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/mir-workflow/plan.md",
     :sha256
     "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "native",
    :component "domains",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 354485,
-    :end-byte 356329,
-    :start-line 2561,
-    :end-line 2570,
+    :start-byte 361686,
+    :end-byte 363530,
+    :start-line 2603,
+    :end-line 2612,
     :sha256
     "c2d6f1b9cec129145c957ae33ef4a0d51ec3161a7c7d6aafca2f2b185f0adb7b"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/native-saxpy-integration"]}
   {:id
@@ -2733,12 +2732,12 @@
     :marker "opt-implementation-tasks",
     :sha256
     "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/opt-workflow/plan.md",
     :sha256
     "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/performance-claim-environment"]}
   {:id
@@ -2760,12 +2759,12 @@
     :marker "opt-implementation-tasks",
     :sha256
     "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/opt-workflow/plan.md",
     :sha256
     "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
@@ -2786,12 +2785,12 @@
     :marker "opt-implementation-tasks",
     :sha256
     "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/opt-workflow/plan.md",
     :sha256
     "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/safety/safe9/lowering-preservation"]}
   {:id
@@ -2813,12 +2812,12 @@
     :marker "opt-implementation-tasks",
     :sha256
     "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/opt-workflow/plan.md",
     :sha256
     "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
@@ -2839,12 +2838,12 @@
     :marker "opt-implementation-tasks",
     :sha256
     "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/opt-workflow/plan.md",
     :sha256
     "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "pass-evidence",
    :component "compiler-api",
@@ -2862,12 +2861,12 @@
     :marker "compiler-api-implementation-tasks",
     :sha256
     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/compiler-api-workflow/plan.md",
     :sha256
     "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c15/structured-diagnostic"
     "interface/compiler/c18/counterexample-regression"
@@ -2897,15 +2896,14 @@
     :marker "compiler-api-implementation-tasks",
     :sha256
     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/compiler-api-workflow/plan.md",
     :sha256
     "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
-   ["interface/backend/input-eligibility"
-    "interface/compiler/c1/compiler-program-legality"
+   ["interface/compiler/c1/compiler-program-legality"
     "interface/compiler/c1/pipeline-manifest"
     "interface/compiler/c1/pipeline-order"
     "interface/compiler/c1/preserve-evidence"
@@ -2930,7 +2928,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/adopt-hardware-contract",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -2944,7 +2942,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/adopt-kernel-contract",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -2958,7 +2956,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/adopt-physical-boundary",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -2972,7 +2970,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/distribute-product",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -2986,7 +2984,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/implement-applications",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3000,7 +2998,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/implement-drivers",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3014,7 +3012,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/implement-firmware",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3028,7 +3026,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/implement-hardware",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3042,7 +3040,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/implement-os",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3056,7 +3054,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "platform-product/integrate-execution",
    :component "platform-product",
    :status {:state :open, :declared "Open"},
@@ -3070,7 +3068,7 @@
     :marker "platform-product-implementation-tasks",
     :sha256
     "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"}}
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"}}
   {:id "plugins",
    :component "compiler-api",
    :status {:state :open, :declared "Open"},
@@ -3087,12 +3085,12 @@
     :marker "compiler-api-implementation-tasks",
     :sha256
     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/compiler-api-workflow/plan.md",
     :sha256
     "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c17/plugin-domain-registration"
     "interface/compiler/c17/plugin-load-compatibility"
@@ -3110,23 +3108,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 134209,
-    :end-byte 139191,
-    :start-line 761,
-    :end-line 782,
+    :start-byte 141410,
+    :end-byte 146392,
+    :start-line 803,
+    :end-line 824,
     :sha256
     "282417b122173dd99a88f1c936d99d22d0f3f8d675d5c649f21ff8552ecde039"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/analytic-plan-lowering"
     "interface/domain/database-query-integration"
@@ -3155,12 +3153,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "reader/finite-remaining-work/component-release-evidence",
    :component "reader",
@@ -3181,12 +3179,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "reader/finite-remaining-work/contract-coverage-reconciliation",
    :component "reader",
@@ -3207,12 +3205,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "reader/finite-remaining-work/decode-and-source-identity-closure",
@@ -3234,12 +3232,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "reader/finite-remaining-work/extension-policy-closure",
    :component "reader",
@@ -3260,12 +3258,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "reader/finite-remaining-work/fresh-syntax-handoff",
    :component "reader",
@@ -3286,12 +3284,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -3313,12 +3311,12 @@
     :marker "reader-implementation-tasks",
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/reader-workflow/plan.md",
     :sha256
     "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
@@ -3337,12 +3335,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/accounting-mixed-source-contexts"
     "decision/canonical-concept-reference"
@@ -3351,20 +3349,6 @@
     "decision/foundation-change-review-policy"
     "decision/foundation-milestone-gate-interface"
     "decision/terminology-conformance-checking"
-    "interface/backend/gpu/argument-memory-abi"
-    "interface/backend/gpu/kernel-emission"
-    "interface/backend/gpu/transfer-launch-stubs"
-    "interface/backend/hdl/cdc-gate"
-    "interface/backend/hdl/clock-reset-timing"
-    "interface/backend/hdl/cycle-aware-emission"
-    "interface/backend/hdl/testbench-trace"
-    "interface/backend/input-eligibility"
-    "interface/backend/js/module-emission"
-    "interface/backend/js/type-declaration-emission"
-    "interface/backend/wasm/async-function-lowering"
-    "interface/backend/wasm/atomic-volatile-lowering"
-    "interface/backend/wasm/future-lowering"
-    "interface/backend/wasm/simd-lowering"
     "interface/behavior/a1/generated-source-reentry"
     "interface/behavior/a1/human-review-gate"
     "interface/behavior/a1/profile-admission"
@@ -3423,12 +3407,6 @@
     "interface/gravity/release-matrix-evidence"
     "interface/gravity/replacement-parity-evidence"
     "interface/gravity/replacement-slice-record"
-    "interface/math/approximation-certificate-check"
-    "interface/math/efir-construction"
-    "interface/math/elementary-execution-semantics"
-    "interface/math/elementary-provider-selection"
-    "interface/math/floating-mode-contract"
-    "interface/math/numeric-conversion"
     "interface/performance/target-intrinsic-map"
     "interface/safety/safe1/preservation"
     "interface/safety/safe1/unsafe-boundaries"
@@ -3452,12 +3430,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/bootstrap/compiler-lineage-query"]}
   {:id
@@ -3477,12 +3455,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/package-bootstrap-admission"
     "interface/bootstrap/stage-equivalence"
@@ -3509,12 +3487,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test8/human-review"
     "interface/testing/test8/metric-release"
@@ -3536,12 +3514,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test2/cache-invalidation"
     "interface/testing/test2/development-feedback"
@@ -3568,12 +3546,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test10/backend-artifact"
     "interface/testing/test10/context-divergence"
@@ -3598,12 +3576,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test11/formal-obligations"
     "interface/testing/test11/pass-linkage"
@@ -3626,12 +3604,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test9/live-effect-policy"
     "interface/testing/test9/minimize-regressions"
@@ -3658,12 +3636,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test1/fixture-contract"
     "interface/testing/test1/offline-authority"
@@ -3688,12 +3666,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test7/availability"
     "interface/testing/test7/capability-denial"
@@ -3719,12 +3697,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test12/ai-costs"
     "interface/testing/test12/device-counters"
@@ -3747,12 +3725,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test4/allocation-runtime"
     "interface/testing/test4/capability-legality"
@@ -3777,12 +3755,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test3/ai-ledger"
     "interface/testing/test3/capability-denial"
@@ -3810,12 +3788,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/testing/test5/capability-bypass"
     "interface/testing/test5/check-elision"
@@ -3841,12 +3819,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/bootstrap/release-supply-chain"
     "interface/bootstrap/trust-reduction"
@@ -3872,12 +3850,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
@@ -3896,12 +3874,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/package-bootstrap-admission"
     "interface/bootstrap/authoritative-admission"]}
@@ -3922,12 +3900,12 @@
     :marker "release-implementation-tasks",
     :sha256
     "574b9d0adc33b06c4f4a3dd297e4bf18f091788d100cd0dd9d7f0868fd43f6a0",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/release-workflow/plan.md",
     :sha256
     "8a0370379a2d452a2b18729b86868b157e607af0eee6cc16e2ce206808e16eae",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
@@ -3948,12 +3926,12 @@
     :marker "resolve-implementation-tasks",
     :sha256
     "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/resolve-workflow/plan.md",
     :sha256
     "bca7286fb81bf0c9d9468288a9fc798965814de22f30adb34db513b66a98b4a2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
@@ -3974,12 +3952,12 @@
     :marker "resolve-implementation-tasks",
     :sha256
     "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/resolve-workflow/plan.md",
     :sha256
     "bca7286fb81bf0c9d9468288a9fc798965814de22f30adb34db513b66a98b4a2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/pkg1/project-entrypoint-resolution"]}
   {:id
@@ -4001,12 +3979,12 @@
     :marker "resolve-implementation-tasks",
     :sha256
     "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/resolve-workflow/plan.md",
     :sha256
     "bca7286fb81bf0c9d9468288a9fc798965814de22f30adb34db513b66a98b4a2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
@@ -4027,12 +4005,12 @@
     :marker "resolve-implementation-tasks",
     :sha256
     "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/resolve-workflow/plan.md",
     :sha256
     "bca7286fb81bf0c9d9468288a9fc798965814de22f30adb34db513b66a98b4a2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
@@ -4053,12 +4031,12 @@
     :marker "resolve-implementation-tasks",
     :sha256
     "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/resolve-workflow/plan.md",
     :sha256
     "bca7286fb81bf0c9d9468288a9fc798965814de22f30adb34db513b66a98b4a2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
@@ -4077,12 +4055,12 @@
     :marker "runtime-implementation-tasks",
     :sha256
     "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/runtime-workflow/plan.md",
     :sha256
     "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/pkg6/runtime-permission-audit"
     "interface/hosted/failure-source-mapping"
@@ -4107,12 +4085,12 @@
     :marker "runtime-implementation-tasks",
     :sha256
     "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/runtime-workflow/plan.md",
     :sha256
     "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/effects/consume-recorded-action-result"
     "interface/language/effects/interpret-tool-call"
@@ -4146,12 +4124,12 @@
     :marker "runtime-implementation-tasks",
     :sha256
     "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/runtime-workflow/plan.md",
     :sha256
     "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/hosted/deterministic-resource-cleanup"
     "interface/language/effects/interpret-resumable-error"
@@ -4179,12 +4157,12 @@
     :marker "runtime-implementation-tasks",
     :sha256
     "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/runtime-workflow/plan.md",
     :sha256
     "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/explicit-runtime-service-dependencies"
     "interface/gravity/runtime-manifest-closure"
@@ -4208,12 +4186,12 @@
     :marker "runtime-implementation-tasks",
     :sha256
     "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/runtime-workflow/plan.md",
     :sha256
     "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/interop-boundary-manifest"
     "interface/gravity/interop-is-not-host-semantics"
@@ -4237,23 +4215,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 105308,
-    :end-byte 134207,
-    :start-line 547,
-    :end-line 759,
+    :start-byte 112509,
+    :end-byte 141408,
+    :start-line 589,
+    :end-line 801,
     :sha256
     "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/gravity/source-schema-projection"
     "interface/schema/artifact-validation"
@@ -4293,23 +4271,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 356331,
-    :end-byte 357985,
-    :start-line 2572,
-    :end-line 2581,
+    :start-byte 363532,
+    :end-byte 365186,
+    :start-line 2614,
+    :end-line 2623,
     :sha256
     "53058825e34d0ccf7a50e7f83ead0457435adc05d6d1eff66c89cdf82f54f4a9"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/service-crud-integration"]}
   {:id "simulation",
@@ -4317,23 +4295,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 357987,
-    :end-byte 359875,
-    :start-line 2583,
-    :end-line 2592,
+    :start-byte 365188,
+    :end-byte 367076,
+    :start-line 2625,
+    :end-line 2634,
     :sha256
     "1bb6c93e3b2837419e6c530fc02a72e614164ebef256deeb539221a5949cdc67"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/fixed-step-simulation-integration"]}
   {:id
@@ -4353,12 +4331,12 @@
     :marker "stdlib-implementation-tasks",
     :sha256
     "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/stdlib-workflow/plan.md",
     :sha256
     "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/effects/interpret-test-fixture"
     "interface/language/library/access-ordered-vector"
@@ -4368,12 +4346,6 @@
     "interface/language/library/maintain-set-uniqueness"
     "interface/language/library/traverse-map-associations"
     "interface/language/library/validate-and-slice-string"
-    "interface/math/approximation-certificate-check"
-    "interface/math/efir-construction"
-    "interface/math/elementary-execution-semantics"
-    "interface/math/elementary-provider-selection"
-    "interface/math/floating-mode-contract"
-    "interface/math/numeric-conversion"
     "interface/stdlib/binary-value-inequality"
     "interface/stdlib/boolean-family-classification"
     "interface/stdlib/collection-cardinality"
@@ -4433,12 +4405,12 @@
     :marker "stdlib-implementation-tasks",
     :sha256
     "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/stdlib-workflow/plan.md",
     :sha256
     "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/typed-service-handling"
     "interface/language/concurrency/enforce-structured-task-lifetime"
@@ -4467,12 +4439,12 @@
     :marker "stdlib-implementation-tasks",
     :sha256
     "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/stdlib-workflow/plan.md",
     :sha256
     "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/stdlib-five-overlaps"
     "interface/behavior/a9/eval-subject-binding"
@@ -4509,12 +4481,12 @@
     :marker "stdlib-implementation-tasks",
     :sha256
     "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/stdlib-workflow/plan.md",
     :sha256
     "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["decision/stdlib-five-overlaps"
     "interface/domain/typed-command-execution"
@@ -4548,12 +4520,12 @@
     :marker "stdlib-implementation-tasks",
     :sha256
     "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/stdlib-workflow/plan.md",
     :sha256
     "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/pkg12/canonical-signing"
     "interface/governance/unsafe-audit-decision"
@@ -4565,23 +4537,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 359877,
-    :end-byte 364399,
-    :start-line 2594,
-    :end-line 2609,
+    :start-byte 367078,
+    :end-byte 371600,
+    :start-line 2636,
+    :end-line 2651,
     :sha256
     "7573e94c1391779763611a765d56a4dbd0ed4ad4688c876929341d6cf4e3b748"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/persist-storage-engine-state"
     "interface/domain/recover-storage-engine-state"
@@ -4605,12 +4577,12 @@
     :marker "syntax-implementation-tasks",
     :sha256
     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/syntax-workflow/plan.md",
     :sha256
     "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
@@ -4631,12 +4603,12 @@
     :marker "syntax-implementation-tasks",
     :sha256
     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/syntax-workflow/plan.md",
     :sha256
     "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/compiler/c3/origin-preservation"]}
   {:id
@@ -4658,12 +4630,12 @@
     :marker "syntax-implementation-tasks",
     :sha256
     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/syntax-workflow/plan.md",
     :sha256
     "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify",
@@ -4684,12 +4656,12 @@
     :marker "syntax-implementation-tasks",
     :sha256
     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/syntax-workflow/plan.md",
     :sha256
     "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers",
@@ -4710,12 +4682,12 @@
     :marker "syntax-implementation-tasks",
     :sha256
     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/syntax-workflow/plan.md",
     :sha256
     "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
@@ -4734,12 +4706,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t13/ai-development-context"
     "interface/behavior/t13/applied-change-lineage"
@@ -4765,12 +4737,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t6/artifact-bound-debugging"
     "interface/behavior/t6/authorized-debug-inspection"
@@ -4794,12 +4766,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t8/deterministic-dev-update"
     "interface/behavior/t8/dev-artifact-events"
@@ -4823,12 +4795,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t7/documentation-products"
     "interface/behavior/t7/documentation-redaction"
@@ -4851,12 +4823,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t3/formatter-check-mode"
     "interface/behavior/t3/formatter-config"
@@ -4880,12 +4852,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t10/failing-stage-location"
     "interface/behavior/t10/pass-evidence-view"
@@ -4910,12 +4882,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t5/checked-editor-edit"
     "interface/behavior/t5/editor-fact-parity"
@@ -4940,12 +4912,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t4/fact-based-lint"
     "interface/behavior/t4/lint-baseline-policy"
@@ -4972,12 +4944,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t11/compatible-benchmark-comparison"
     "interface/behavior/t11/distributed-ai-cost-classes"
@@ -5004,12 +4976,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t9/registry-fact-view"
     "interface/behavior/t9/registry-latent-view"
@@ -5033,12 +5005,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t2/explicit-repl-state"
     "interface/behavior/t2/repl-normal-compilation"
@@ -5062,12 +5034,12 @@
     :marker "tools-implementation-tasks",
     :sha256
     "d1708207b27f1674a18e05add8e121fce3dd60b6db44838848feed4cf5ed83cd",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/tools-workflow/plan.md",
     :sha256
     "14ba6da159aba8396d16e2d3f66667f02ad541da829189c389d45fc672293bc5",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/t12/ai-safety-view"
     "interface/behavior/t12/proof-checker-view"
@@ -5093,12 +5065,12 @@
     :marker "types-implementation-tasks",
     :sha256
     "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/types-workflow/plan.md",
     :sha256
     "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/types/derive-private-keyword-map-domain"]}
   {:id
@@ -5120,12 +5092,12 @@
     :marker "types-implementation-tasks",
     :sha256
     "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/types-workflow/plan.md",
     :sha256
     "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/errors/represent-typed-outcome"
     "interface/language/protocol/select-checked-dispatch"
@@ -5149,12 +5121,12 @@
     :marker "types-implementation-tasks",
     :sha256
     "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/types-workflow/plan.md",
     :sha256
     "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/language/interop/convert-declared-foreign-value"]}
   {:id
@@ -5176,12 +5148,12 @@
     :marker "types-implementation-tasks",
     :sha256
     "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/types-workflow/plan.md",
     :sha256
     "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id
    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
@@ -5202,35 +5174,35 @@
     :marker "types-implementation-tasks",
     :sha256
     "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/types-workflow/plan.md",
     :sha256
     "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids []}
   {:id "ui",
    :component "domains",
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 304151,
-    :end-byte 312884,
-    :start-line 2413,
-    :end-line 2451,
+    :start-byte 311352,
+    :end-byte 320085,
+    :start-line 2455,
+    :end-line 2493,
     :sha256
     "0dd88b09c94e3d82da600ebbd2dc5ff22335e200009276b051a4ddd06c1dc7d7"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/execute-ui-render-event"
     "interface/domain/lower-typed-ui-program"
@@ -5245,23 +5217,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 364401,
-    :end-byte 368631,
-    :start-line 2611,
-    :end-line 2626,
+    :start-byte 371602,
+    :end-byte 375832,
+    :start-line 2653,
+    :end-line 2668,
     :sha256
     "13ae8fa17b4ff2c9240db9ea0cccfa62aafe034c4e51dc1cd6cdd267613603c2"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/domain/check-visual-graph"
     "interface/domain/emit-visual-workflow-source"
@@ -5272,23 +5244,23 @@
    :status {:state :open, :declared "Open"},
    :criteria-and-evidence-source
    {:path "specs/domains-workflow/tasks.md",
-    :start-byte 139193,
-    :end-byte 150248,
-    :start-line 784,
-    :end-line 821,
+    :start-byte 146394,
+    :end-byte 157449,
+    :start-line 826,
+    :end-line 863,
     :sha256
     "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b"},
    :task-source
    {:path "specs/domains-workflow/tasks.md",
     :marker "domains-implementation-tasks",
     :sha256
-    "5acc74227449f42bdefbc6da779d7b8c0dc0bd88a97682a3cd8590f7a13efd8e",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    "8434e354b88c4bf0f55f26c2282af07a946678072dd3fbb4f76d31d1d9b68747",
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :dependencies-source
    {:path "specs/domains-workflow/plan.md",
     :sha256
     "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
-    :commit "87405ca46d9949504380a64a37b85d6f5e52e8cd"},
+    :commit "5cbcceaefa3f0ef6d9ddbf3ef9c0494bdc4f5aae"},
    :remaining-decision-ids
    ["interface/behavior/a6/typed-compensation"
     "interface/behavior/a6/workflow-graph-artifact"
@@ -5310,13 +5282,13 @@
   :full-attached-facet-entailment
   :pending-complete-source-disposition-audit,
   :source "specs/requirement-reconciliation/source-dispositions.edn",
-  :criterion-witness-bound 748,
+  :criterion-witness-bound 768,
   :counting
   :necessary-work-addressed-through-task-criteria-not-additional-task-units,
   :count 833,
-  :criterion-allocation-review-pending 249,
+  :criterion-allocation-review-pending 269,
   :allocation-to-counted-tasks :partially-criterion-witness-bound,
-  :remaining-criterion-allocation-work 85},
+  :remaining-criterion-allocation-work 65},
  :kind :provisional-derived-task-census,
  :independent-composed-review :required-separately,
  :progress
