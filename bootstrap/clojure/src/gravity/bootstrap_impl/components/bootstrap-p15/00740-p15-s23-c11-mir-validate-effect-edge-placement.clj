@@ -238,7 +238,6 @@
        exception)))))
 
 
-(require '[gravity.checked-core.bool-branch-join :as bool-branch-join])
 
 (defn p15-s23-c11-mir-v2-source-family!
   "A semantic family gate on already authenticated Core, never MIR authority."

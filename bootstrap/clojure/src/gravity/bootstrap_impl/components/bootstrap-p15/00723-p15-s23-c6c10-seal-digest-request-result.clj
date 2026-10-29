@@ -407,9 +407,6 @@
                    :checks-content-id (owner-id :template-checks (:checks replay))
                    :diagnostics-content-id (owner-id :template-diagnostics (:diagnostics replay))))}))
 
-;; Mechanism controls resolve this private dependency by symbol. Its production
-;; caller is the pending versioned fresh-construction path.
-#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- p15-s23-c6c10-project-expression-owner-metadata
   [source-path binding]
   (p15-s23-c6c10-require-reader-owner-metadata! source-path binding)
