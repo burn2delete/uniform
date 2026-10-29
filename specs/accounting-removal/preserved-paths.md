@@ -562,6 +562,25 @@ helper mappings remain explicit rather than being treated as missing features.
 - Exact PR632 `70e95305` and PR633 `be2e6ec7` routine CI completed with seven
   successes/two configured skips each. Their genuine kernels remain UNRUN and
   independent source acceptance remains pending; green CI does not close them.
+- After establishing the exact destructive-command denial, one supported app
+  `create_worktree` operation `433804a9-4853-468e-a69a-ca45de766e4e` completed
+  at reviewed PR619 `c5fc3c57`. [Readback](loop-clean-worktree-reconciliation.edn)
+  verifies a distinct clean managed checkout/named branch, with the original
+  evidence checkout/ref and all three cache files preserved. No cache deletion,
+  move/exclusion, shell fallback, alternate executor or denied cleanup retry
+  occurred. The earlier one-attachment/dirty-checkout observations remain history;
+  the new checkout is separately attached and assessed.
+  Normal reconciliation with fetched main `0fb44a5b` produces published PR619
+  `a3047f50f771db71d71b5a57a589e0eb5dd7bb67`, tree
+  `0a63ce095b20d85a77ca6484cb0bd3eac0b42084`, parents `c5fc3c57`/`0fb44a5b`.
+  Its entire 10,071-entry tree equals that main plus exactly the three reviewed
+  entries; their bytes and every other main entry are conserved. Precomputed
+  merge-tree identity matches. Actual read-only inspect with exact identities
+  now passes all preconditions: clean, named branch, main ancestry and identity
+  agreement. Boundary 6/11, docs/roadmap, governance 185 records and whitespace
+  pass. New-head CI and independent affected-composition acceptance remain
+  pending; old exact PASS is not extended to this future composition.
+  Integration-mode preflight and main merge remain UNRUN.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
