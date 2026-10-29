@@ -1674,6 +1674,34 @@ The561 historical bindings and1262 current spans are unchanged. Source-only
 reviews confer no implementation, task-count, policy-selection or whole-facet
 credit; granularity,ACC,full entailment,final counting andintegration remain open.
 
+### Current-source partition for the13 sibling tasks
+
+`granularity13-current-partition.edn` brings the existing eight-family
+disposition to source `094521aa31d03ee1f7c9ccdc3c9c64a3c5571089`.
+The frozen proposal SHA256 remains
+`5b226fc53ea80241c4d74cb7335e849617ef1a07b19d5653f2dcf47ee5691880`;
+its old task hashes are retained as history, with separate current task/file
+hashes and current affected decision IDs. The exact13 proposed sibling IDs
+are conserved. Five coherent families stay grouped; Math, Schema and the
+seven callable library adapters repartition into distinct product families.
+
+All70 current Math paragraphs,26 current Schema paragraphs and13 adapter
+segments reconstruct their original fields exactly. Later Math20, Schema25,
+Stdlib83 and other source refinements are included. Source-specific predicate
+bodies retain exact bytes; coarse envelopes and shared adapter/policy context
+have explicit handling requirements. Numeric/EFIR, EML, synthesis, interval,
+symbolic and independent-checker roles remain distinct. Migration artifacts
+are distinct from their generated consumers, and STD10 retains the old adapter
+ID as its primary leaf without an extra counted parent.
+
+The owner controls pass2 tests/16 assertions, including missing/changed/forged
+predicate, duplicate sibling, producer/checker and migration/projection role
+conflation, and premature count-credit refusals. The check receipt records
+artifact and checker hashes. This is the source partition for the pending
+canonical task repartition, not its application or independent acceptance.
+Current task-count delta iszero; all833 allocations,491 qualified reviews,
+561 historical acceptances and provisional3/182 task states remain unchanged.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,

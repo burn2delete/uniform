@@ -1,0 +1,32 @@
+{:errors 0,
+ :positive-controls
+ [:exact-all70-math-paragraphs
+  :exact-all26-schema-paragraphs
+  :exact-all13-adapter-segments
+  :all8-current-task-source-pins],
+ :negative-controls
+ [:duplicate-sibling-identity
+  :premature-task-count-credit
+  :missing-math-predicate
+  :changed-codec-predicate
+  :forged-adapter-bytes
+  :producer-checker-role-conflation
+  :migration-projection-role-conflation],
+ :tests 2,
+ :review-scope :owner-source-partition-controls-only,
+ :implementation-credit :none,
+ :preparer-sha256
+ "1fb7349e775e40b19b704c78c4e57aff58b80a42f67fbe3feeaef1157c2bee81",
+ :independent-acceptance :not-conferred,
+ :partition
+ {:path
+  "specs/requirement-reconciliation/granularity13-current-partition.edn",
+  :sha256
+  "a63b8c315a95ad7a1d48a997cd12b6c096c33c050f8db16371f8c25b18299f4a"},
+ :source-commit "094521aa31d03ee1f7c9ccdc3c9c64a3c5571089",
+ :kind :granularity13-current-partition-controls,
+ :canonical-task-count-delta 0,
+ :checker-sha256
+ "ea6fac39631d46c925b758ccb9110824b3f266775bf5c671cb94cf5d64a353f3",
+ :failures 0,
+ :assertions 16}
