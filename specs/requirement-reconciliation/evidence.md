@@ -792,3 +792,38 @@ Compiler API passed 5/77, Legality 4/59, Backends 5/211, Expand 4/41, Syntax
 4/28, Build 5/86, Release 6/131, census 4/13, SH 12/476 and boundary 6/11.
 Both documentation validators passed. CI-pinned clj-kondo 2025.10.23 with
 `--repro --cache false` reports zero findings for the changed census tool.
+
+## Seven package decision allocations
+
+Task source `dc983dcd35ef1bfde47dd14c27a03e7aad601c04` reuses five actual
+Build68 criteria across four unchanged fields and adds one PKG7/STD1 recipe
+refinement. Package selection, acquisition/verification, intermediate admission
+and final release retain distinct explicit roles. Existing alias and retirement
+dispositions are unchanged. The selected `package7-current-composition.edn`
+has SHA256 `34f3cb659403eca17e745906d9ca07555417dd36b1727ff90130da0bd535feb2`.
+All 173 available facet memberships match current source bytes. Missing direct
+decision facet metadata remains qualified rather than invented.
+
+The recipe proposal's whole-field witness predates later amendments. Its
+reviewed whole-field hash is retained as history; the exact recipe fragment,
+including every positive, rejection and output predicate, is bound separately
+inside the actual current field. Guards refused the stale whole-field match
+before writes. No earlier task criterion is replaced or duplicated.
+
+Allocation source `1fe616719bc9f27236d44a2c003d1b3b19756247` adds only seven
+allocation fields; removing them recovers all 337 predecessor links and every
+other decision predicate exactly. Direct decision IDs without a stored semantic
+ID retain that absence. All 833 identities and Open states remain unchanged.
+The public transaction `current-decision-allocation-package7.edn` has SHA256
+`952394005ecc063e04633403947a2f0e0a3ffabb86db6a3b30d28aab8fe7be17`.
+There are now 344 concrete links, 41 explicitly pending independent composition
+review and 489 remaining allocation cases. No task or implementation credit is
+added; the provisional census remains 3/182.
+
+`current-criterion-bindings-561-package7.edn`, SHA256
+`26b027957ba73e02e1d2f09545afb56d4850c54c95ae41f12447a00609f6b8eb`,
+retains all 561 historical witnesses with all 1,262 current span hashes passing.
+Historical acceptance remains 430 with 131 pending and none unbound. Build
+passed 5/86, census 4/13, SH 12/483 and boundary 6/11; both documentation
+validators passed. Independent allocation/facet/granularity/count review and
+normal integration remain open.

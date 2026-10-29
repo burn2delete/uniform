@@ -191,7 +191,9 @@
           governance-successor (get-in view [:mapping-review :governance-core43-current-composition])
           build-successor (get-in view [:mapping-review :build68-current-composition])
           decision-successor (get-in view [:mapping-review :compiler-testing34-current-composition])
-          successor (or (:source-commit decision-successor)
+          package-successor (get-in view [:mapping-review :package7-current-composition])
+          successor (or (:source-commit package-successor)
+                        (:source-commit decision-successor)
                         (:source-commit build-successor)
                         (:source-commit governance-successor)
                         (:source-commit compiler-successor)
@@ -209,7 +211,7 @@
             (is (= path (:path old)))
             (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
                    (:sha256 old) (sh-inventory/sha256 (:text old)))))))
-      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor decision-successor])]
+      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor decision-successor package-successor])]
         (let [record (edn/read-string (slurp (:record declared-successor)))
               path "specs/build-workflow/tasks.md"
               before (sh-crosswalk/git-source (:applying-source record) path)
@@ -223,7 +225,8 @@
                        :guarded-compiler-testing85-current-task-composition "d7ff9de2d916918acb5aeabfa3f2409784a33f2a"
                        :guarded-governance12-core31-current-task-composition "53ebb7f4f0bc712b253436b8f53182b07e3399df"
                        :guarded-build68-current-task-composition "122c13e4591a1503e7f030e291b3cde673d36973"
-                       :guarded-compiler-testing34-current-task-composition "c2f6e48f49066e3edda0e0f194c925de01e2af22"}
+                       :guarded-compiler-testing34-current-task-composition "c2f6e48f49066e3edda0e0f194c925de01e2af22"
+                       :guarded-package7-current-task-composition "dc983dcd35ef1bfde47dd14c27a03e7aad601c04"}
                       (:kind record))
                  (:source-commit declared-successor)))
           (doseq [op operations]
