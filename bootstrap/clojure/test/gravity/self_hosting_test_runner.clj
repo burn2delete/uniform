@@ -274,7 +274,11 @@
   This validates data only and supplies no execution or cache authority."
   [options]
   (and (map? options)
-       (= #{:cache-directory :timeout-ms :repository-identity} (set (keys options)))
+       (contains? #{#{:cache-directory :timeout-ms :repository-identity}
+                    #{:cache-directory :timeout-ms :repository-identity :observe-producer?}}
+                  (set (keys options)))
+       (or (not (contains? options :observe-producer?))
+           (true? (:observe-producer? options)))
        (string? (:cache-directory options))
        (string? (:repository-identity options))
        (re-matches #"sha256:[0-9a-f]{64}" (:repository-identity options))
