@@ -35,6 +35,13 @@ SH, Platform and dependency controls pass 30 tests / 633 assertions; the
 boundary gate passes 6 / 11. Independent acceptance of these eleven
 source-derived interfaces and their all-project count remains pending.
 
+PR554 static CI run `40800139944`, job `123206010819`, rejected a duplicate
+mapping-review definition introduced by the source successor. The correction
+names the original value platform-source-review-predecessor and defines the
+successor once; both values and the complete prior history are retained. SH
+11 tests / 145 assertions and exact projection check pass after the change.
+Local clj-kondo is unavailable; changed-head automatic lint remains pending.
+
 ## Source and scope
 
 Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.

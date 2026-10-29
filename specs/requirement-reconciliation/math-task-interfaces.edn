@@ -1,0 +1,347 @@
+{:field-edits
+ [{:collection :requirements,
+   :id "math/approximation-certificate-check",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Compiled examples and type/arity/value rejection through real APIs",
+     :detailed-acceptance :unassessed}],
+   :after
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Compiled examples and type/arity/value rejection through real APIs",
+     :detailed-acceptance :unassessed}
+    {:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "connect EML/certificate checking to justified rewrites",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/approximation-certificate-check",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/conformance-execution-report",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "run the\ncontract conformance matrix with rejected unproved transformations",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/conformance-execution-report",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/conformance-suite-composition",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "run the\ncontract conformance matrix with rejected unproved transformations",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/conformance-suite-composition",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/efir-construction",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Compiled examples and type/arity/value rejection through real APIs",
+     :detailed-acceptance :unassessed}],
+   :after
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Compiled examples and type/arity/value rejection through real APIs",
+     :detailed-acceptance :unassessed}
+    {:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance "implement EFIR\nlowering and evaluation",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/efir-construction",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math implementation authority remains docs/component-roadmaps/domains.md#math; its finite tasks lack literal stable implementation task IDs/marker. Migration checkboxes do not grant implementation acceptance.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/efir-domain-inference",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance "implement numeric-mode/domain checking",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/efir-domain-inference",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math implementation authority remains docs/component-roadmaps/domains.md#math; its finite tasks lack literal stable implementation task IDs/marker. Migration checkboxes do not grant implementation acceptance.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/efir-guarded-normalization",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "connect EML/certificate checking to justified rewrites",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/efir-guarded-normalization",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math implementation authority remains docs/component-roadmaps/domains.md#math; its finite tasks lack literal stable implementation task IDs/marker. Migration checkboxes do not grant implementation acceptance.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/interval-enclosure",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "implement certified approximation/interval and symbolic operations",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/interval-enclosure",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/numeric-mode-resolution",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance "implement numeric-mode/domain checking",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/numeric-mode-resolution",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/semantic-equality-proof-gate",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "Do proof-dependent\nrewrites require checked evidence?",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/semantic-equality-proof-gate",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math implementation authority remains docs/component-roadmaps/domains.md#math; its finite tasks lack literal stable implementation task IDs/marker. Migration checkboxes do not grant implementation acceptance.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}
+  {:collection :requirements,
+   :id "math/symbolic-guarded-rewrite",
+   :field-path [:additional-task-interfaces],
+   :before-present? true,
+   :before [],
+   :after
+   [{:path "specs/domains-workflow/tasks.md",
+     :detailed-acceptance :unassessed,
+     :marker "domains-implementation-tasks",
+     :observed-status "Open",
+     :scope :partial-accountable-interface,
+     :acceptance
+     "implement certified approximation/interval and symbolic operations",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :id "math",
+     :sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :qualification
+     "Grouped Math task supplies this explicit work/acceptance facet only. Full source-facet acceptance and dependencies remain unassessed."}]}
+  {:collection :requirements,
+   :id "math/symbolic-guarded-rewrite",
+   :field-path [:task-gap],
+   :before-present? true,
+   :before
+   "Math roadmap remains canonical implementation authority without literal stable implementation task IDs/marker; no migration acceptance substituted.",
+   :after
+   "Current grouped Math implementation record exists at specs/domains-workflow/tasks.md#domains-implementation-tasks with literal ID math. The attached partial interface does not establish complete per-requirement criteria, dependency entailment or implementation acceptance. Historical missing-marker assertion is retained in the original delivered artifact, not current authority."}],
+ :application :applied-to-exact-latest-field-projection,
+ :added-task-count 0,
+ :latest-reviewed-source-view
+ "6056b2efa7188e7756cda6100b831d9bc489d4d52dbff5e924b0aa859c303418",
+ :schema-version 1,
+ :canonical-whole-manifest-adoption :pending,
+ :controls
+ {:latest-field-predecessors :pass,
+  :reapplication :rejected,
+  :forged-predecessor :rejected,
+  :other-record-fields :unchanged,
+  :literal-task-ids-and-hashes :pass},
+ :task-source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+ :input-patch-sha256
+ "8bce90fbd4bdf14b327149253b84eb8a78e64d774e1105c11ea6d4969c6b7e83",
+ :kind :reviewed-math-task-interface-amendment,
+ :qualification
+ "The existing grouped Math task supplies only the quoted partial interfaces for ten known requirements. Remaining task/dependency entailment, atomicity/nonoverlap qualifications and all implementation assessments are preserved. No source obligation or missing-interface inventory is removed.",
+ :requirement-ids
+ ["math/approximation-certificate-check"
+  "math/conformance-execution-report"
+  "math/conformance-suite-composition"
+  "math/efir-construction"
+  "math/efir-domain-inference"
+  "math/efir-guarded-normalization"
+  "math/interval-enclosure"
+  "math/numeric-mode-resolution"
+  "math/semantic-equality-proof-gate"
+  "math/symbolic-guarded-rewrite"],
+ :historical-application-sha256
+ "0d75941c8c3e41322c6e7ba429ce02ed13ff8d8b020e877006bbcb0d8f0f82a3",
+ :independent-review-sha256
+ "ac0c1ae8d741153c07faf25b24883b22b3a463aa86c6ce3d7f1431d9293dd90a",
+ :task-source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+ :implementation-acceptance :unassessed}

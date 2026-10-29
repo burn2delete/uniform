@@ -503,7 +503,7 @@
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
-(def mapping-review
+(def platform-source-review-predecessor
 {:status :pending-source-version-review,
  :input-fingerprint
  "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
@@ -578,9 +578,8 @@
  :qualification
  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
-(def platform-source-review-predecessor mapping-review)
 (def mapping-review
-  (assoc mapping-review
+  (assoc platform-source-review-predecessor
     :input-fingerprint "7d9e373daaaa4110dbde94757c141e002678d11988f14f157c401d67a312d45a"
     :platform-task-source-composition
     {:source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"
