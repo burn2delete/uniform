@@ -59,7 +59,8 @@
      source-content-id
      scalar-boundaries
      raw-forms
-     semantic-index)
+     semantic-index
+     source-unit)
     (catch
      InterruptedException
      interrupted
@@ -89,4 +90,6 @@
    :form-id-map
    form-id-map
    :host-values
-   host-values)))
+   (:values host-values)
+   :extension-dispatch-observations
+   (:extension-dispatch-observations host-values))))

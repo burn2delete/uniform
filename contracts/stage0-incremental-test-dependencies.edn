@@ -182,7 +182,19 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "private-collection-chain"
+ [{:test-id "reader-dispatch"
+   :path "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+   :namespace gravity.reader.dispatch-test
+   :jvm-group "reader-dispatch"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "reader-normal-dispatch"
+   :path "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+   :namespace gravity.reader.normal-dispatch-test
+   :jvm-group "reader-normal-dispatch"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "private-collection-chain"
    :path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
    :namespace gravity.self-hosting.private-collection-chain-test
    :jvm-group "private-collection-chain"
