@@ -479,3 +479,53 @@ The accepted delta is 75 mappings, zero implementation tasks. The provisional
 current task census remains 3 / 158. Source-policy decisions, complete inherited
 facet entailment, task granularity, all-833 actionability, whole-project scope,
 whole-PR/SH source-version acceptance and integration remain separate work.
+
+## Independent adoption of Domains70 and CompilerTesting85 freeze
+
+Domains70 passed independent composition and nine-Open-task scope review at
+`64303ba2ccc254b6eb04c775c93c2f62c87ba1b8`, tree
+`86b4f16eac360212f98ec453e7656d362f4991a1`, against criterion source
+`19e1120301643581e6a8b55b933ec12643d0ba2f`. Receipt SHA256:
+`7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612`.
+Its exact new-ID vector has SHA256
+`29a539783b382cd59e530e54cd4d0609fee99fde41d46069225f293b2dc42fbf`.
+The frozen review metadata predates the 75-mapping adoption; both reviews and
+their chronology remain intact. Sequential adoption gives 200 + 75 + 70 = 345
+accepted mappings, with 216 unadopted. The aggregate
+`accepted-historical-mappings-345.edn` has SHA256
+`09f697de6f6501891ca786b81289a1d40f03b692942300e770c20ed98a881f65`;
+the normalized accepted-ID vector has SHA256
+`b3fbc2e2e5cb552a675b53115389731e5752a01283ac0af876f3a62780956369`.
+Both predecessor acceptance artifacts remain unchanged.
+
+Compiler/Testing source commit
+`d7ff9de2d916918acb5aeabfa3f2409784a33f2a`, tree
+`298b7a3c8d866a7d662ac30a6a045f5aaa168152`, preserves that complete
+accepted source while adding seven criteria to three existing fields and
+78 criteria in thirteen Open producer tasks. The current-join input has SHA256
+`c3fc23828213797f3c85a704af38b5f7afa96adf9fe58a2472dce69c55f7cee5`;
+the corrected source-review receipt is
+`bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec`.
+The C12 task requires actual EFIR, schema, workflow and target-oriented
+registration and verifier evidence. All original Compiler API and Release
+routing positions remain fixed, including Compiler API development-boundaries
+at position four. The new domain task is appended to routing even though its
+display record precedes development-boundaries.
+
+`current-criterion-bindings-430.edn`, SHA256
+`eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87`,
+rebinds all 345 predecessors and 85 added criteria to that committed source.
+Before adopting Domains70, every accepted criterion and nested context was
+verified against those current named-task spans and raw/file hashes. Snapshot
+adoption counters remain historical; the aggregate acceptance manifests alone
+record canonical adoption. The 85 Compiler/Testing mappings and thirteen new
+Open tasks await separate composition/scope review. They confer no acceptance
+through this freeze. All 833 decision records and Open states remain unchanged.
+
+The thirteen new Open tasks bring the provisional census to 3 / 171, with
+168 remaining; all prior 158 identities and states are preserved. Complete
+833-decision allocation, full source-facet dispositions and global granularity
+remain final-baseline work. Focused Compiler API 5 / 77, Release 6 / 129 and
+Build 5 / 86 passed, along with their generated projections, boundary 6 / 11,
+both document validators and whitespace. No compiler/runtime execution or
+implementation completion is claimed.

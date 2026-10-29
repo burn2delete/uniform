@@ -187,7 +187,9 @@
     (is (every? #(= "Open" (get-in % [:after :status])) rows))
     (is (:historical-suffix-unchanged lineage))
     (let [domain-successor (get-in view [:mapping-review :domains70-current-composition])
-          successor (or (:source-commit domain-successor)
+          compiler-successor (get-in view [:mapping-review :compiler-testing85-current-composition])
+          successor (or (:source-commit compiler-successor)
+                        (:source-commit domain-successor)
                         (get-in view [:mapping-review :historical-criterion-source-composition :source-commit])
                         (get-in view [:mapping-review :family-task-source-composition :source-commit]))
           historical (edn/read-string (slurp "specs/build-workflow/fixtures/yank-task-source.edn"))]
@@ -201,19 +203,22 @@
             (is (= path (:path old)))
             (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
                    (:sha256 old) (sh-inventory/sha256 (:text old)))))))
-      (when domain-successor
-        (let [record (edn/read-string (slurp (:record domain-successor)))
+      (doseq [declared-successor (remove nil? [domain-successor compiler-successor])]
+        (let [record (edn/read-string (slurp (:record declared-successor)))
               path "specs/build-workflow/tasks.md"
               before (sh-crosswalk/git-source (:applying-source record) path)
               operations (filter #(= path (:path %)) (:operations record))]
           (is (= 1 (count operations)))
-          (is (= "19e1120301643581e6a8b55b933ec12643d0ba2f" successor))
+          (is (= (get {:guarded-domains70-current-task-composition "19e1120301643581e6a8b55b933ec12643d0ba2f"
+                       :guarded-compiler-testing85-current-task-composition "d7ff9de2d916918acb5aeabfa3f2409784a33f2a"}
+                      (:kind record))
+                 (:source-commit declared-successor)))
           (doseq [op operations]
             (is (= (:applying-before-sha256 op) (sh-inventory/sha256 (:before op))))
             (is (= (:applying-after-sha256 op) (sh-inventory/sha256 (:after op))))
             (is (str/starts-with? (:after op) (str/trimr (:before op))))
             (is (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote (:before op))) before)))))
-          (is (= (slurp path)
+          (is (= (sh-crosswalk/git-source (:source-commit declared-successor) path)
                  (reduce (fn [text op] (str/replace text (:before op) (:after op))) before operations))))))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
