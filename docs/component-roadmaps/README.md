@@ -69,6 +69,10 @@ one project per file, numbered contract, test, or historical task.
 | Platform / `platform` | Separate full hardware/firmware/OS/device extension | [Platform outcome](platform.md#release-outcome) |
 | Release / `release` | Whole compiler rebuild, equivalence and seedless distribution | [Release outcome](release.md#release-outcome) |
 
+| Governance and Evolution / `evolution` | Subject-bound governance artifact producers and policy decisions | [Governance outcome](evolution.md#release-outcome) |
+
+Governance is tooling for declared governed claims, not another compiler pipeline pass.
+
 Domains is a portfolio, not a new monolithic compiler pass; its named project
 outcomes must retain independent completion evidence. Platform product choices
 are not silently folded into the compiler's currently selected release target.

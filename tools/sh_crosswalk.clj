@@ -186,7 +186,8 @@
   "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
   "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
   "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
-  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]}
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]
+ "evolution" ["evolution/change-review" "evolution/experiment-lifecycle" "evolution/library-admission" "evolution/namespace-decision" "evolution/registry-yank" "evolution/rfc-review" "evolution/security-response" "evolution/security-review" "evolution/stabilization-decision" "evolution/target-support-admission"]}
 )
 
 (def routes
