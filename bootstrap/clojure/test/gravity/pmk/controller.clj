@@ -1,0 +1,180 @@
+(ns gravity.pmk.controller
+  "One-shot PMK lifecycle. Normal ports are explicit and never run at load."
+  (:refer-clojure :exclude [run!])
+  (:require [clojure.string :as str]
+            [gravity.pmk.acceptance :as pmk]
+            [gravity.pmk.first-request :as first]))
+
+(def port-keys #{:clock! :bookend! :acquire! :validate! :release! :start!
+                 :supervise! :capture! :terminate! :publish! :interrupt!})
+
+(defn- require! [p reason]
+  (when-not p (throw (ex-info "PMK controller refused" {:reason reason}))))
+
+(defn- error-record [error]
+  (when error {:class (.getName (class error)) :message (.getMessage ^Throwable error)
+               :reason (:reason (ex-data error))}))
+
+(defn child-command
+  "Direct Java bypasses launcher config discovery. The only target call is
+  the normal runner with the exact request's CLI selection and machine sink."
+  [request binding]
+  (let [result-path (get-in request [:outputs :result])
+        args (subvec (:argv request) 3)
+        limit (get-in binding [:limits :capture-bytes])
+        expression
+        (str "(require 'gravity.development-test-runner) "
+             "(assert (= 2147483648 (.maxMemory (Runtime/getRuntime)))) "
+             "(binding [gravity.development-test-runner/*machine-result-sink* "
+             "(fn [r] (let [b (.getBytes (str (pr-str r) \"\\n\") \"UTF-8\")] "
+             "(assert (<= (alength b) " (pr-str limit) ")) "
+             "(java.nio.file.Files/write (.toPath (java.io.File. " (pr-str result-path) ")) b "
+             "(into-array java.nio.file.OpenOption [java.nio.file.StandardOpenOption/CREATE_NEW "
+             "java.nio.file.StandardOpenOption/WRITE]))))] "
+             "(let [exit (gravity.development-test-runner/run-cli! " (pr-str args) ")] "
+             "(shutdown-agents) (System/exit exit)))")]
+    [(get-in binding [:runtime :java :path]) "-Xmx2g" "-XX:-OmitStackTraceInFastThrow"
+     "-cp" (str/join java.io.File/pathSeparator (map :path (get-in binding [:runtime :ordered-classpath])))
+     "clojure.main" "-e" expression]))
+
+(defn run!
+  "Call only through the owner's action-specific admitted route. bind-inputs
+  and its independently reviewed normal verifier must succeed first. This
+  function cannot confer platform authority. No retry, recovery or root default.
+  Port calls account elapsed time; an external supervisor must bound native
+  start/FS/JVM/cleanup calls, which are not preemptible here."
+  [request expected observed verify! ports]
+  (let [bound (first/bind-inputs request expected observed verify!)
+        _ (require! (and (= port-keys (set (keys ports))) (every? fn? (vals ports))) :ports)
+        command (child-command request expected)
+        _ (require! (= {:argv command :cwd (:cwd request)}
+                       (get-in expected [:controller :launcher])) :launcher)
+        _ (require! (every? #(or (and (= :broker (:kind %))
+                                      (#{:normal :memory-heavy :exclusive} (:resource-class %)))
+                                 (and (= :canonical (:kind %)) (= :exclusive (:resource-class %))))
+                            (:guards expected)) :guard-kind)
+        clock (:clock! ports) deadline (+ (clock) (get-in expected [:limits :whole-timeout-ms]))
+        leases (atom []) child (atom nil) handled (atom false)
+        failure (atom nil) cleanup (atom nil) releases (atom []) result (atom nil)
+        fail! (fn [error]
+                (when (instance? InterruptedException error) ((:interrupt! ports)))
+                (when-not @failure (reset! failure error)))
+        remaining (fn [] (let [left (- deadline (clock))]
+                           (require! (pos? left) :whole-deadline) left))]
+    (try
+      (let [before ((:bookend! ports) bound)]
+        (remaining)
+        (doseq [guard (:guards expected)]
+          (let [lease ((:acquire! ports) guard (remaining))]
+            (require! (some? lease) :lease-absent)
+            (swap! leases conj [guard lease])
+            ((:validate! ports) guard lease)
+            (remaining)))
+        (reset! child ((:start! ports) command (:cwd request)))
+        (require! (some? @child) :child-absent)
+        (let [process ((:supervise! ports) @child
+                       {:timeout-ms (remaining)
+                        :max-capture-bytes (get-in expected [:limits :capture-bytes])
+                        :max-capture-chars (get-in expected [:limits :capture-bytes])})]
+          ;; A supervisor that already attempted termination owns that result;
+          ;; never terminate it again to guess at unknown cleanup.
+          (reset! handled (or (true? (:terminal? process)) (true? (:cleanup-attempted? process))))
+          (reset! result process)
+          (remaining)
+          (require! (and (= :passed (:status process)) (= 0 (:exit-code process))
+                         (true? (:terminal? process)) (false? (:root-alive? process))
+                         (true? (:cleanup-complete? process))
+                         (false? (:cleanup-failed? process))
+                         (false? (:timeout-containment-unproven? process))
+                         (false? (:capture-failed? process))
+                         (false? (:output-truncated? process))) :process-nonpass)
+          (let [capture ((:capture! ports) bound process)
+                after ((:bookend! ports) bound)
+                plan (assoc (:parent-plan request) :selection (:selection request)
+                            :closure [(first (:closure (:parent-plan request)))] :argv (:argv request))]
+            (require! (= before after) :source-drift)
+            (pmk/attribute plan plan capture)
+            (require! (and (= :passed (:outcome capture)) (= 1 (get-in capture [:summary :test]))
+                           (pos? (get-in capture [:summary :pass]))) :capture-nonpass)
+            (reset! result (assoc process :reported-result capture :before before :after after)))))
+      (catch Throwable error (fail! error))
+      (finally
+        (when (and @child (not @handled))
+          (reset! handled true)
+          (try (reset! cleanup ((:terminate! ports) @child))
+               (catch Throwable error (reset! cleanup {:status :unknown}) (fail! error))))
+        (doseq [[guard lease] (reverse @leases)]
+          (try
+            (let [release ((:release! ports) guard lease)]
+              (swap! releases conj {:guard (:id guard) :receipt release})
+              (when-not (= :released (:outcome release))
+                (fail! (ex-info "PMK guard release incomplete" {:reason :release-incomplete}))))
+            (catch Throwable error
+              (swap! releases conj {:guard (:id guard) :error (error-record error)})
+              (fail! error))))))
+    (try (remaining) (catch Throwable error (fail! error)))
+    (let [receipt {:schema :pmk-first-controller-result-v1 :execution :attempted
+                   :operation-id (:operation-id request) :request-sha256 (first/digest request)
+                   :status (if @failure :failed :passed) :error (error-record @failure)
+                   :process (when @result
+                              (into {} (map (fn [[k v]] [k (if (instance? Throwable v) (error-record v) v)]) @result)))
+                   :cleanup @cleanup :releases @releases
+                   :authority :non-authoritative :authenticated? false}]
+      ;; Exactly one publication, after all releases. Publication failure escapes;
+      ;; it is never retried and cannot be returned as a passing result.
+      (try ((:publish! ports) receipt)
+           (catch Throwable error
+             (throw (ex-info "PMK terminal publication failed; no retry"
+                             {:original-error (error-record @failure)
+                              :publication-error (error-record error)} (or @failure error)))))
+      receipt)))
+
+(defn normal-process-ports
+  "Bind existing broker/process implementations, never a new broker root.
+  Supply the owner's reviewed bookend, capture and create-new publication
+  hooks separately. Constructing ports performs no acquisition or launch."
+  [hooks]
+  (require! (and (= #{:bookend! :capture! :publish!} (set (keys hooks)))
+                 (every? fn? (vals hooks))) :normal-hooks)
+  (merge
+   {:clock! #(quot (System/nanoTime) 1000000)
+    :interrupt! #(.interrupt (Thread/currentThread))
+    :acquire! (fn [guard timeout]
+                (if (= :canonical (:kind guard))
+                  (let [path (.toPath (java.io.File. ^String (:root guard)))
+                        _ (require! (java.nio.file.Files/isRegularFile path
+                                      (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+                                    :canonical-existing-file)
+                        channel (java.nio.channels.FileChannel/open path
+                                  (into-array java.nio.file.OpenOption
+                                    [java.nio.file.StandardOpenOption/WRITE java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+                    (try (let [lock (.tryLock channel)]
+                           (require! lock :canonical-busy) {:channel channel :lock lock})
+                         (catch Throwable error (.close channel) (throw error))))
+                  ((requiring-resolve 'gravity.self-hosting.sh01-host-resource-broker/acquire!)
+                   {:coordination-root (:root guard) :timeout-ms timeout} (:resource-class guard))))
+    :validate! (fn [guard lease]
+                 (if (= :canonical (:kind guard))
+                   (require! (.isValid ^java.nio.channels.FileLock (:lock lease)) :canonical-invalid)
+                   (do
+                     ((requiring-resolve 'gravity.self-hosting.sh01-host-resource-broker/validate-live-lease!)
+                      lease (:root guard) (:resource-class guard))
+                     (require! (= 0 (get-in lease [:telemetry :recovered-stale-tickets])) :stale-recovery))))
+    :release! (fn [guard lease]
+                (if (= :canonical (:kind guard))
+                  (try (.release ^java.nio.channels.FileLock (:lock lease))
+                       {:outcome :released}
+                       (finally (.close ^java.nio.channels.FileChannel (:channel lease))))
+                  ((requiring-resolve 'gravity.self-hosting.sh01-host-resource-broker/release!) lease)))
+    :start! (fn [command cwd]
+              ((requiring-resolve 'gravity.self-hosting.sh01-parallel-test-runner/start-process) command cwd))
+    :supervise! (fn [process options]
+                  (require 'gravity.self-hosting.sh01-parallel-test-runner)
+                  (let [r ((ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-result) process options)
+                        alive (.isAlive ^Process process)]
+                    (assoc r :root-alive? alive :terminal? (not alive)
+                           :cleanup-attempted? (some? (:cleanup r)))))
+    :terminate! (fn [process]
+                  (require 'gravity.self-hosting.sh01-parallel-test-runner)
+                  ((ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'terminate-process-tree!) process))}
+   hooks))
