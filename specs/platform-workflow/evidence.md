@@ -18,9 +18,22 @@ run. Both document validators and the boundary gate (6 tests / 11 assertions)
 passed. No target execution or external action occurred.
 
 The first SH projection check rejected the changed source fingerprint. Its
-prior review must remain historical while an explicit pending source-version
-successor binds the new task/roadmap bytes. Independent acceptance of these
-eleven source-derived interfaces and their all-project count remains pending.
+prior review is retained in an explicit pending source-version successor,
+binding task and roadmap bytes to source commit
+`99de41da4e1f9d22a9112238b52877b825cbfd4f`. The SH check now passes with
+fingerprint `7d9e373daaaa4110dbde94757c141e002678d11988f14f157c401d67a312d45a`.
+All 180 SH predicates and 18 sequence rows, other component task authorities,
+and the original four Platform records remain identical in scope and content.
+Only the Platform file/source pins change. No SH implementation state is promoted.
+
+The [source binding receipt](../requirement-reconciliation/platform-task-interfaces.edn)
+has SHA256 `661cb323190acc6d7d92ee26e169643b5a9716af34bc184abe119c7e6beb5767`.
+It binds each of the eleven task IDs to an exact original source span and
+proves that removing the interface insertion recovers the complete original
+task file byte-for-byte, including its scope and historical suffix.
+SH, Platform and dependency controls pass 30 tests / 633 assertions; the
+boundary gate passes 6 / 11. Independent acceptance of these eleven
+source-derived interfaces and their all-project count remains pending.
 
 ## Source and scope
 

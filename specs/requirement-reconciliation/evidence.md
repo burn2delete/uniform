@@ -61,6 +61,12 @@ its existing authority: four declared architecture decisions and seven
 conditional product outputs. These are separate from the 138 frozen component
 inputs, which include only four Platform target-conformance records. Their
 independent scope/count review remains pending; no final denominator is claimed.
+The [Platform source binding receipt](platform-task-interfaces.edn) binds all
+eleven IDs to exact preexisting clauses and proves complete original task-file
+recovery after removing the new interfaces. SH source-version composition
+retains all 180 predicates, 18 sequence rows, other component task authorities
+and prior review history. Platform/SH/dependency controls pass 30 tests / 633
+assertions; the boundary gate passes 6 tests / 11 assertions.
 
 ## Validation boundary
 
