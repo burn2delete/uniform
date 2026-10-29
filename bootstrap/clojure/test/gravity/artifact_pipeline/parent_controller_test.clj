@@ -104,6 +104,15 @@
     (is (= [[:release :broker] [:release :exclusive] [:release :canonical]]
            (filter #(and (vector? %) (= :release (first %))) @(:events f))))))
 
+(deftest unordered-guard-collections-refuse-before-every-port
+  (let [f (fixture) guards (get-in f [:request :guards])]
+    (doseq [[actual declared] [[(set guards) (set guards)] [(set guards) guards] [guards (set guards)]]]
+      (let [request (-> (:request f) (assoc :guards actual) (assoc-in [:coverage :ordered-guards] declared))
+            r (execute f {} request (select-keys request controller/identity-fields))]
+        (is (= :refused (:status r)))
+        (is (some #{:source-bound-ordered-guards} (:missing r)))
+        (is (empty? @(:events f)))))))
+
 (deftest denied-admission-and-output-reservation-never-start-or-publish
   (doseq [port [:admit :reserve]]
     (let [f (fixture) r (execute f {port (fn [& _] (swap! (:events f) conj [:denied port]) false)})]

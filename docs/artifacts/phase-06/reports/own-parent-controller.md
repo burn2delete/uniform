@@ -27,7 +27,8 @@ matching saved labels alone cannot do that.
 The order is admission, atomic one-shot output reservation, then the exact
 guard order in the authoritative coverage decision. The required classes are
 common broker, host-exclusive and canonical; no acquisition order is supplied
-as a default by this controller. Every returned
+as a default by this controller. Both order fields must be vectors; sets cannot
+supply an iteration-dependent order. Every returned
 opaque handle is validated and retained for release. The original normal
 broker acquire/validate/release functions and runner `start-process` and
 private `process-result` are exposed only by a lazy resolution helper. It is
@@ -83,7 +84,7 @@ handle and any original failure. A metadata receipt alone is never execution acc
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Sixteen tests and 328 assertions passed, with no real port resolution and
+Seventeen tests and 341 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture
