@@ -102,6 +102,42 @@
     :equations [[:x [:map [:keyword :k] [:ref :y]]] [:y [:ref :z]] [:z [:ref :y]]]
     :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false}])
 
+(def prefix-vector-cases
+  ;; A false expectation means no witness in this family, not input acceptance.
+  [{:name :prefix-vector-self-growth :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :prefix-vector-set-growth :equations [[:x [:set [:vector [:keyword :k] [:ref :x]]]]]
+    :bindings {:x :gravity.type/integer} :expected true}
+   {:name :prefix-vector-map-mutual-growth
+    :equations [[:x [:vector [:keyword :k] [:ref :y]]] [:y [:map [:keyword :j] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer} :expected true}
+   {:name :prefix-vector-acyclic :equations [[:x [:vector [:keyword :k] [:ref :outside]]]]
+    :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+   {:name :prefix-vector-unresolved :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {} :expected false}
+   {:name :prefix-vector-never :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/never} :expected false}
+   {:name :prefix-vector-dynamic-prefix :equations [[:x [:vector [:ref :prefix] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer :prefix :gravity.type/keyword} :expected false}
+   {:name :prefix-vector-string-prefix :equations [[:x [:vector [:string "k"] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :prefix-vector-reversed-members :equations [[:x [:vector [:ref :x] [:keyword :k]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :prefix-vector-extra-member
+    :equations [[:x [:vector [:keyword :k] [:ref :x] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :expected false}
+   {:name :prefix-vector-definition-overlap :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :definitions [{:binding-id :x}] :expected false}
+   {:name :prefix-vector-parameter-overlap :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :functions {:f {:parameter-binding-ids [:x]}} :expected false}
+   {:name :prefix-vector-intrinsic :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :intrinsic-reference? true :expected false}
+   {:name :prefix-vector-loop-transfer :equations [[:x [:vector [:keyword :k] [:ref :x]]]]
+    :bindings {:x :gravity.type/integer} :context {:loop-core {}} :expected false}
+   {:name :prefix-vector-leading-to-alias-cycle
+    :equations [[:x [:vector [:keyword :k] [:ref :y]]] [:y [:ref :z]] [:z [:ref :y]]]
+    :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false}])
+
 (defn input
   "Materialize fixture syntax in postorder for the actual C7 test harness."
   [{:keys [equations context intrinsic-reference?] :as case}]
@@ -135,8 +171,13 @@
 (defn- term-edge [term]
   (case (first term)
     :ref {:dependency (second term) :constructor? false}
-    (:vector :set) (when (= 2 (count term))
+    :set (when (= 2 (count term))
               (when-let [edge (term-edge (second term))]
+                (assoc edge :constructor? true)))
+    :vector (when-let [dependency (cond
+                                   (= 2 (count term)) (second term)
+                                   (and (= 3 (count term)) (= :keyword (first (second term)))) (nth term 2))]
+              (when-let [edge (term-edge dependency)]
                 (assoc edge :constructor? true)))
     :map (when (and (= 3 (count term)) (= :keyword (first (second term))))
            (when-let [edge (term-edge (nth term 2))]
@@ -245,4 +286,19 @@
   (let [case (first map-cases)]
     (is (= {:kind :gravity.type/map
             :member-types [:gravity.type/keyword :gravity.type/integer] :shape :literal}
+           (get (step case (:bindings case)) :x)))))
+
+(deftest keyword-prefix-vector-model-and-substitution-controls
+  (doseq [case prefix-vector-cases]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (let [states (take 9 (iterate #(step case %) (:bindings case)))]
+          (is (= 9 (count (set states))))))))
+  (doseq [case (filter #(#{:prefix-vector-acyclic :prefix-vector-unresolved :prefix-vector-never} (:name %)) prefix-vector-cases)]
+    (let [once (step case (:bindings case))]
+      (is (= once (step case once)))))
+  (let [case (first prefix-vector-cases)]
+    (is (= {:kind :gravity.type/vector
+            :element-types [:gravity.type/keyword :gravity.type/integer] :shape :literal}
            (get (step case (:bindings case)) :x)))))

@@ -23394,17 +23394,18 @@
 
 ; L5/C7: a closed normal equation T = Collection<...T...> has no solution in
 ; this finite literal Vector/Set/Map representation. Trace only single-dependency
-; constructors: unary Vector/Set or one-entry Map with a constant Keyword key.
+; constructors: unary Vector/Set, one-entry Map with a constant Keyword key,
+; or a two-element Vector with a constant Keyword prefix.
 ; other constructor, call, match and transfer families remain separate work.
 ; The visited sets are graph identities, not work or round allowances.
 (defn sh08-ft-literal-constructor-child [node nodes types]
   (let [kind (get (get node :attributes) :literal-kind) children (get node :children)]
     (if (= :collection-literal (get node :core-form))
-      (if (contains? #{:vector :set} kind)
-        (if (= 1 (count children)) (first children) nil)
-        (if (if (= :map kind) (= 2 (count children)) false)
+      (if (if (contains? #{:vector :set} kind) (= 1 (count children)) false)
+        (first children)
+        (if (if (contains? #{:map :vector} kind) (= 2 (count children)) false)
           (let [key-node (get nodes (first children))]
-            ; The key is a fixed normal type, not a second evolving dependency.
+            ; The key/prefix is fixed, not a second evolving dependency.
             (if (if (= :literal (get key-node :core-form))
                   (if (= :keyword (get (get key-node :attributes) :literal-kind))
                     (if (vector? (get key-node :children))
