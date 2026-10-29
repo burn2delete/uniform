@@ -1546,8 +1546,10 @@ leaf tests and remains recorded independently from source-test outcomes.
 The already existing run40953758973 at
 `5da47ef00521216dd7109932fb630c57dbd72c9e` completed its portable job
 123728395208 successfully. No manual retry,duplicate recovery,dependency/security
-change,alternate executor or network bypass was used. The bounded portable
-recovery receipt is `/tmp/pr554-portable-fetch-recovery-5da47ef0.edn` with SHA256
-`f19c431789dd4eb7763196ee26fba7e4b6801a283ede5aa1115ca7cb5adb764c`.
-That receipt records its observation time scope,with projections still pending
-then; later overall CI results must retain their own actual source identity.
+change,alternate executor or network bypass was used. The retained recovery receipt is
+`ci-fetch-recovery-5da47ef0.edn`,SHA256
+`15c1a3bf695f1dbd94264e7b3bbf209a6991b1a97d5b13993e8db5196366aeb1`. Its predecessor observation recorded portable
+success while projections were pending. The subsequent supported run readback
+confirms completed/success for run40953758973 at that exact head,with seven
+successful andtwo skipped jobs. Later-head CI is not inherited; the original
+HTTP429 failure and its source identity remain preserved.
