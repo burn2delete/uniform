@@ -663,3 +663,134 @@
       (check (assoc base :equations equations) :unsupported-component))
     (check (assoc base :cached-proof {:status :accepted :type :gravity.type/string})
            :compatible-scalar-declarations)))
+
+(defn alias-import-source-fixture []
+  (let [id #(apply str (repeat 64 %))
+        record {:definition-binding-id (id \5) :function-syntax-id (id \1)
+                :function-core-node-id (id \2) :body-core-node-id (id \3)
+                :definition-name 'imported :fixed-arity 0 :parameter-binding-ids []}
+        function {:artifact :gravity/c7-function-type :function-id (id \1)
+                  :function-core-node-id (id \2) :body-core-node-id (id \3)
+                  :definition-name 'imported :fixed-arity 0 :parameter-binding-ids [] :parameters []
+                  :return :gravity.type/i8 :status :inferred}
+        imported {:status :accepted :binding-id (id \0) :definition-binding-id (id \5)
+                  :producer-sh06-artifact-id (id \6) :producer-sh07-artifact-id (id \7)
+                  :origin {:ordinary-module-artifact-id (id \6)} :function-type function
+                  :producer-identity {:sh07-shaped-artifact-id (id \7) :function-records [record]
+                                      :function-type-table [function]}}]
+    {:binding-id (id \0) :type function :producer :imported-function
+     :required-relation :imported-function-type :source-records {(id \0) imported}}))
+
+(defn alias-handler-source-fixture []
+  (let [id #(apply str (repeat 64 %))
+        record {:core-node-id (id \1) :catch-binding-id (id \0) :handler-core-node-id (id \2)
+                :catch-clause-syntax-id (id \3) :error-type-binding-id (id \4)}
+        clause {:record record :handler-core-node-id (id \2) :error-type :gravity.type/i8}]
+    {:binding-id (id \0) :type :gravity.type/i8 :producer :handler-binding
+     :required-relation :source-handler-binding-type :source-records {(id \1) [clause]}}))
+
+(defn alias-seed-source-join-model
+  "Relational source-witness oracle; matching is not authentication or an
+  admitted alias grounding fact. Fixture identifiers are not canonical IDs."
+  [{:keys [binding-id type producer required-relation source-records] :as constraint}]
+  (let [digest? #(boolean (and (string? %) (re-matches #"[0-9a-f]{64}" %)))
+        scalar? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal
+                  :gravity.type/ratio :gravity.type/character :gravity.type/string :gravity.type/keyword
+                  :gravity.type/symbol :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64}
+        imported? (= :imported-function producer)
+        relation (get {:imported-function :imported-function-type :handler-binding :source-handler-binding-type} producer)
+        exported [:artifact :function-id :function-core-node-id :body-core-node-id :definition-name
+                  :parameter-binding-ids :parameters :return :fixed-arity :signature :latent-effects :capabilities
+                  :ownership-constraints :profile-constraints :thrown-error-effects :status]
+        witnesses
+        (when (and relation (= relation required-relation) (map? source-records))
+          (if imported?
+            (for [[key imported] source-records
+                  record (get-in imported [:producer-identity :function-records])
+                  function (get-in imported [:producer-identity :function-type-table])
+                  :when (and (= key binding-id (:binding-id imported)) (= :accepted (:status imported))
+                             (= (:definition-binding-id imported) (:definition-binding-id record))
+                             (= 1 (count (filter #(= (:definition-binding-id imported) (:definition-binding-id %))
+                                                (get-in imported [:producer-identity :function-records]))))
+                             (= 1 (count (filter #(= (:function-syntax-id record) (:function-id %))
+                                                (get-in imported [:producer-identity :function-type-table]))))
+                             (= (:producer-sh06-artifact-id imported) (get-in imported [:origin :ordinary-module-artifact-id]))
+                             (= (:producer-sh07-artifact-id imported) (get-in imported [:producer-identity :sh07-shaped-artifact-id]))
+                             (every? digest? [key (:definition-binding-id imported) (:producer-sh06-artifact-id imported)
+                                              (:producer-sh07-artifact-id imported)])
+                             (= type (:function-type imported) (select-keys function exported))
+                             (= :gravity/c7-function-type (:artifact function)) (= :inferred (:status function))
+                             (every? digest? [(:function-syntax-id record) (:function-core-node-id record) (:body-core-node-id record)])
+                             (= 3 (count (set [(:function-syntax-id record) (:function-core-node-id record) (:body-core-node-id record)])))
+                             (every? digest? (:parameter-binding-ids record))
+                             (= (count (:parameter-binding-ids record)) (count (set (:parameter-binding-ids record))))
+                             (= (:parameter-binding-ids record) (mapv :binding-id (:parameters function)))
+                             (scalar? (:return function)) (every? #(scalar? (:type %)) (:parameters function))
+                             (= (:function-syntax-id record) (:function-id function))
+                             (= (:function-core-node-id record) (:function-core-node-id function))
+                             (= (:body-core-node-id record) (:body-core-node-id function))
+                             (= (:definition-name record) (:definition-name function))
+                             (= (:parameter-binding-ids record) (:parameter-binding-ids function))
+                             (= (:fixed-arity record) (:fixed-arity function)
+                                (count (:parameter-binding-ids record)) (count (:parameters function)))
+                             (if (contains? record :signature)
+                               (let [signature (:signature record) ds (:parameters signature) ps (:parameters function)]
+                                 (and (map? signature) (vector? ds) (= signature (:signature function))
+                                      (= (count ds) (count ps))
+                                      (every? true? (map #(or (nil? %1) (= (:type-id %1) (:type %2))) ds ps))
+                                      (or (nil? (:return signature)) (= (get-in signature [:return :type-id]) (:return function)))))
+                               (not (contains? function :signature))))]
+              [key record function])
+            (when (every? vector? (vals source-records))
+              (for [[owner clauses] source-records clause clauses
+                    :let [record (:record clause)]
+                    :when (= binding-id (:catch-binding-id record))]
+                [owner clause]))))
+        valid? (and (= 1 (count witnesses))
+                    (or imported?
+                        (let [[owner clause] (first witnesses) record (:record clause)]
+                          (and (= type (:error-type clause)) (= owner (:core-node-id record))
+                               (= (:handler-core-node-id clause) (:handler-core-node-id record))
+                               (every? digest? [binding-id owner (:handler-core-node-id clause)
+                                                (:catch-clause-syntax-id record) (:error-type-binding-id record)])))))]
+    {:status (if valid? :unsupported :invalid-source-premise) :constraint constraint
+     :normalization :unresolved :grounding :not-established}))
+
+(deftest import-and-handler-seed-source-joins-do-not-confer-alias-grounding
+  (doseq [fixture [(alias-import-source-fixture) (alias-handler-source-fixture)]]
+    (let [r (alias-seed-source-join-model fixture)]
+      (is (= :unsupported (:status r))) (is (= fixture (:constraint r)))
+      (is (= :unresolved (:normalization r))) (is (= :not-established (:grounding r))))
+    (doseq [changed [(assoc fixture :binding-id "missing") (assoc fixture :type :gravity.type/string)
+                     (assoc fixture :source-records {}) (assoc fixture :source-records [])
+                     (assoc fixture :producer :caller-authority) (assoc fixture :required-relation :trusted-seed)]]
+      (is (= :invalid-source-premise (:status (alias-seed-source-join-model changed)))))
+    (is (= :unsupported (:status (alias-seed-source-join-model (assoc fixture :authority :accepted))))))
+  (let [fixture (alias-import-source-fixture) id (:binding-id fixture)
+        unknown (-> fixture (assoc-in [:type :return] :gravity.type/unknown)
+                    (assoc-in [:source-records id :function-type :return] :gravity.type/unknown)
+                    (assoc-in [:source-records id :producer-identity :function-type-table 0 :return] :gravity.type/unknown))]
+    (is (= :unsupported (:status (alias-seed-source-join-model
+                                  (assoc-in fixture [:source-records id :producer-identity :function-type-table 0 :non-exported-note] :retained)))))
+    (doseq [changed [unknown (assoc-in fixture [:source-records id :status] :pending)
+                     (assoc-in fixture [:source-records id :producer-sh07-artifact-id] (apply str (repeat 64 \8)))
+                     (assoc-in fixture [:source-records id :producer-sh06-artifact-id] (apply str (repeat 64 \9)))
+                     (update-in fixture [:source-records id :producer-identity :function-records] #(conj % (first %)))
+                     (update-in fixture [:source-records id :producer-identity :function-type-table] #(conj % (first %)))
+                     (update-in fixture [:source-records id :producer-identity :function-records]
+                                #(conj % (assoc (first %) :function-syntax-id (apply str (repeat 64 \8)))))
+                     (update-in fixture [:source-records id :producer-identity :function-type-table]
+                                #(conj % (assoc (first %) :body-core-node-id (apply str (repeat 64 \8)))))
+                     (assoc-in fixture [:source-records id :producer-identity :function-type-table 0 :body-core-node-id] "wrong")]]
+      (is (= :invalid-source-premise (:status (alias-seed-source-join-model changed))))))
+  (let [fixture (alias-handler-source-fixture) owner (first (keys (:source-records fixture)))]
+    (doseq [changed [(update-in fixture [:source-records owner] #(conj % (first %)))
+                     (assoc-in fixture [:source-records (apply str (repeat 64 \8))]
+                               [(assoc-in (first (get-in fixture [:source-records owner])) [:record :core-node-id]
+                                          (apply str (repeat 64 \8)))])
+                     (assoc-in fixture [:source-records owner 0 :error-type] :gravity.type/string)
+                     (assoc-in fixture [:source-records owner 0 :record :core-node-id] "wrong")
+                     (assoc-in fixture [:source-records owner 0 :handler-core-node-id] "wrong")
+                     (assoc-in fixture [:source-records owner 0 :record :catch-clause-syntax-id] "wrong")]]
+      (is (= :invalid-source-premise (:status (alias-seed-source-join-model changed)))))))

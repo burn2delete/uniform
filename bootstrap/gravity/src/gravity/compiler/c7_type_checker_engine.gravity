@@ -24170,6 +24170,59 @@
           {:status :rejected :reason :alias-declaration-type-source-mismatch :constraint constraint}))
       {:status :rejected :reason :alias-declaration-source-not-unique :constraint constraint})))
 
+(defn alias-import-source-check [constraint]
+  (let [id (get constraint :binding-id) imports (get constraint :source-records)
+        imported (get imports id) identity (get imported :producer-identity)
+        records (sh08-bm-select (get identity :function-records) :definition-binding-id (get imported :definition-binding-id))
+        record (first records)
+        functions (sh08-bm-select (get identity :function-type-table) :function-id (get record :function-syntax-id))
+        function (first functions)
+        projected (sh08-bm-project function
+                    [:artifact :function-id :function-core-node-id :body-core-node-id :definition-name
+                     :parameter-binding-ids :parameters :return :fixed-arity :signature :latent-effects
+                     :capabilities :ownership-constraints :profile-constraints :thrown-error-effects :status])]
+    (if (sh08-ft-all-true?
+          [(map? imports) (map? imported) (= :accepted (get imported :status))
+           (= id (get imported :binding-id))
+           (sh08-sha256-id-vector? [id (get imported :producer-sh06-artifact-id) (get imported :producer-sh07-artifact-id)
+                                    (get imported :definition-binding-id)])
+           (= (get imported :producer-sh06-artifact-id) (get (get imported :origin) :ordinary-module-artifact-id))
+           (= (get imported :producer-sh07-artifact-id) (get identity :sh07-shaped-artifact-id))
+           (= 1 (count records) (count functions))])
+      (if (if (sh08-im-complete-signature? record function)
+            (= projected (get imported :function-type) (get constraint :type)) false)
+        {:status :unsupported :reason :alias-grounding-producer-compatibility-required
+         :constraint constraint :source-witness {:import imported :function-record record :function-type function}}
+        {:status :rejected :reason :alias-import-function-source-mismatch :constraint constraint})
+      {:status :rejected :reason :alias-import-producer-source-mismatch :constraint constraint})))
+
+(defn alias-handler-source-check [constraint]
+  (let [id (get constraint :binding-id) groups (get constraint :source-records)
+        matches (if (map? groups)
+                  (loop [owners (keys groups) out []]
+                    (if (= 0 (count owners)) out
+                      (let [owner (first owners) clauses (get groups owner)]
+                        (if (vector? clauses)
+                          (recur (rest owners)
+                            (loop [remaining clauses values out]
+                              (if (= 0 (count remaining)) values
+                                (let [clause (first remaining)]
+                                  (recur (rest remaining)
+                                    (if (= id (get (get clause :record) :catch-binding-id))
+                                      (conj values {:owner owner :clause clause}) values)))))) nil)))) nil)]
+    (if (= 1 (count matches))
+      (let [witness (first matches) clause (get witness :clause) record (get clause :record)]
+        (if (sh08-ft-all-true?
+              [(= (get constraint :type) (get clause :error-type))
+               (= (get witness :owner) (get record :core-node-id))
+               (= (get clause :handler-core-node-id) (get record :handler-core-node-id))
+               (sh08-sha256-id-vector? [id (get witness :owner) (get clause :handler-core-node-id)
+                                        (get record :catch-clause-syntax-id) (get record :error-type-binding-id)])])
+          {:status :unsupported :reason :alias-grounding-producer-compatibility-required
+           :constraint constraint :source-witness witness}
+          {:status :rejected :reason :alias-handler-type-or-owner-source-mismatch :constraint constraint}))
+      {:status :rejected :reason :alias-handler-source-not-unique :constraint constraint})))
+
 (defn alias-seed-constraint-check [constraint]
   (let [producer (get constraint :producer) relation (get constraint :required-relation)]
     (if (= producer :parameter-declaration)
@@ -24180,7 +24233,9 @@
         (if (= relation (get {:recursive-or-higher-order-premise :producer-premise-specific
                              :imported-function :imported-function-type
                              :handler-binding :source-handler-binding-type} producer))
-          {:status :unsupported :reason :alias-grounding-producer-compatibility-required :constraint constraint}
+          (if (= producer :imported-function) (alias-import-source-check constraint)
+            (if (= producer :handler-binding) (alias-handler-source-check constraint)
+              {:status :unsupported :reason :alias-grounding-producer-compatibility-required :constraint constraint}))
           {:status :rejected :reason :alias-seed-relation-source-mismatch :constraint constraint})
         {:status :rejected :reason :unknown-alias-seed-producer :constraint constraint}))))
 

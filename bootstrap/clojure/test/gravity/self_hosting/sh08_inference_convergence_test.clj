@@ -587,3 +587,43 @@
     (is (= observations (:binding-types expected)))
     (is (= (:convergence expected) (get-in expected [:identity-input :convergence])
            (get-in expected [:artifact-id-request :convergence])))))
+
+(deftest imported-and-handler-alias-seeds-require-their-actual-source-records
+  (doseq [fixture [(occurs-model/alias-import-source-fixture) (occurs-model/alias-handler-source-fixture)]]
+    (let [checked (invoke 'alias-seed-constraint-check [fixture])]
+      (is (= :unsupported (:status checked)))
+      (is (= fixture (:constraint checked)))
+      (is (map? (:source-witness checked))))
+    (doseq [changed [(assoc fixture :binding-id "missing") (assoc fixture :type :gravity.type/string)
+                     (assoc fixture :source-records {}) (assoc fixture :source-records [])
+                     (assoc fixture :producer :caller-authority) (assoc fixture :required-relation :trusted-seed)]]
+      (is (= :rejected (:status (invoke 'alias-seed-constraint-check [changed]))))))
+  (let [fixture (occurs-model/alias-import-source-fixture) id (:binding-id fixture)]
+    (doseq [changed [(assoc-in fixture [:source-records id :producer-sh07-artifact-id] (apply str (repeat 64 \8)))
+                     (update-in fixture [:source-records id :producer-identity :function-records] #(conj % (first %)))
+                     (update-in fixture [:source-records id :producer-identity :function-type-table] #(conj % (first %)))]]
+      (is (= :rejected (:status (invoke 'alias-seed-constraint-check [changed]))))))
+  (let [fixture (occurs-model/alias-handler-source-fixture) owner (first (keys (:source-records fixture)))]
+    (doseq [changed [(update-in fixture [:source-records owner] #(conj % (first %)))
+                     (assoc-in fixture [:source-records owner 0 :record :core-node-id] "wrong")
+                     (assoc-in fixture [:source-records owner 0 :handler-core-node-id] "wrong")
+                     (assoc-in fixture [:source-records owner 0 :record :catch-clause-syntax-id] "wrong")]]
+      (is (= :rejected (:status (invoke 'alias-seed-constraint-check [changed])))))))
+
+(deftest invalid-seed-source-outranks-a-retained-scalar-conflict-without-erasing-it
+  (let [scalar [(scalar-alias-declaration :x 'I8 :gravity.type/i8)
+                (scalar-alias-declaration :y 'String :gravity.type/string)]
+        invalid (assoc (occurs-model/alias-handler-source-fixture) :type :gravity.type/string)
+        premise (invoke 'check-alias-conjunction
+                        [{:members [:x :y] :edges [{:reference-node {:node-id :rx}}]
+                          :source-seed-conjunction (conj scalar invalid)}])
+        base {:convergence-status :converged :diagnostics [] :binding-types {:x :gravity.type/string}}
+        checked (invoke 'apply-alias-conjunction-diagnostic [base [premise]])]
+    (is (= :invalid-source-premise (get-in premise [:compatibility-decision :status])))
+    (is (map? (get-in premise [:compatibility-decision :scalar-conflict])))
+    (is (= 3 (count (get-in premise [:compatibility-decision :checks]))))
+    (is (= "C7-VERIFY" (get-in checked [:diagnostics 0 :rule])))
+    (is (= (:binding-types base) (:binding-types checked)))
+    (doseq [existing [(assoc base :convergence-status :resource-limit)
+                     (assoc base :diagnostics [{:reason :function-result-type-mismatch}])]]
+      (is (= existing (invoke 'apply-alias-conjunction-diagnostic [existing [premise]]))))))
