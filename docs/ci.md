@@ -83,6 +83,15 @@ diagnostic spans fail closed. LF and CRLF preserve row/column mapping; lone CR
 input is rejected rather than mapped approximately. This view models static
 namespace context; it does not execute Bootstrap or establish compiler acceptance.
 
+The authenticated artifact pipeline facade has a second explicit context: its
+namespace header followed by its five ordered `load` resources. The entrypoint
+namespace and exact load list are checked, every fragment parses separately,
+and namespace/load changes inside fragments fail closed. Both base and current
+closures use this non-evaluating view and the same diagnostic source mapping.
+Unknown fragments are rejected rather than linted without their owning context.
+Real-linter controls exercise the actual facade, introduced unknown symbols,
+changed dependencies, missing resources and malformed or unsupported recipes.
+
 Every diagnostic in the changed resources is mapped back to its original file,
 rows and columns before the same warning comparison. Every selected error
 still blocks. Complete context diagnostics remain visible in artifacts;
