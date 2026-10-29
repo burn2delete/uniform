@@ -371,6 +371,17 @@ helper mappings remain explicit rather than being treated as missing features.
   Boundary 6/11, lint zero errors/same one warning/zero info, docs/roadmap and
   whitespace pass. Independent source/adaptation disposition and all genuine
   compiler/Effects/lowering/runtime/authentication acceptance remain pending.
+- Exact PR618 `3a1a553d`, tree `c8600e2c`, parent PR616 `2f2f8f70`,
+  now has independent source PASS, receipt SHA256
+  `9892645f1804e7d9d9012dc5f69d90b693ca0aa0e5e8fea6759187b2acd16ec7`.
+  The [consumption record](cold-quote-review-consumption.edn) verifies the
+  receipt, candidate/tree and all eight source/test/census/document hashes.
+  Three source/non-authoritative DATA-model controls pass 88 assertions; 2646
+  other production forms, schema/source/mode/cut and obsolete-field negatives
+  remain intact. Genuine owner kernels are UNRUN. No parent615/616, PR569,
+  whole-accounting/authentication/runtime or main-integration acceptance follows.
+  A future main extraction needs its own exact identity, changed composition
+  review, CI and preflight. This does not retry the stopped PR569 review.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind

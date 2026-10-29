@@ -416,3 +416,17 @@ PR624 at `9f9dce89` and PR625 at `50c7e58c` each completed routine CI with
 seven successes/two configured skips. Those catalogs do not run their new
 genuine Effects/predicate controls or supply independent source/result
 acceptance.
+
+## Consumed exact cold quote-metadata source review
+
+PR618 exact `3a1a553d`, tree `c8600e2c`, parent PR616 `2f2f8f70`, received
+independent source PASS, receipt SHA256
+`9892645f1804e7d9d9012dc5f69d90b693ca0aa0e5e8fea6759187b2acd16ec7`.
+`cold-quote-review-consumption.edn` verifies the receipt, candidate/tree and all
+eight source/test/census/document hashes. Three source/non-authoritative DATA
+controls pass 88 assertions; genuine owner-helper kernels remain UNRUN. The
+review preserves 2646 other production forms, closed metadata/source/mode/cut
+checks and obsolete-field negatives. It confers no parent615/616, PR569, whole
+accounting, authenticated source, runtime or current-main acceptance. Any future
+main extraction requires its own identity, affected composition review, CI and
+preflight. Original inventory counts and prior source assessments are unchanged.
