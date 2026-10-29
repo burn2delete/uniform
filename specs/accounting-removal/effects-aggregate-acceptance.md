@@ -110,12 +110,17 @@ must prepare against that exact snapshot, bind the existing runner's
 prepared command arguments, capture a second snapshot, then use `bind-result`.
 No map reconstructed from stdout, expected status, synthetic control or CI can
 replace that actual sink. An absent result or changed snapshot fails binding.
-The adapter contains no compiler launch or broker acquisition.
+The adapter supplies no default compiler launcher or real broker ports.
+`prepare-pmk` narrows the same source checks to the single existing
+`body-private-map-keys-authenticated-builder-composition` selector. Only that
+singleton or the original five-selector batch is accepted; arbitrary subsets
+and extra selectors are refused. Result counters and qualified test vars must
+match the selected tuple exactly.
 
 ## Exact request process-port binding
 
 `validation-request` binds the frozen argv, CWD, source/runtime/classpath and
-five-selector tuple to the complete source hash and named ports of the existing
+selected tuple to the complete source hash and named ports of the existing
 `sh01-parallel-test-runner`. The names include public `start-process` and its
 internal `process-result`, `terminate-process-tree!` and `restore-interrupt!`
 boundaries. Internal ports are source-pinned bindings, not new public runner
@@ -168,6 +173,29 @@ external supervisor's containment remains a real launch prerequisite when the
 execution policy requires that stronger guarantee. No broker/root configuration
 or live capacity observation is added.
 
+`lease-validation-request` additionally pins the normal broker source and its
+existing acquire, live-token validation and release ports. `observe-under-lease!`
+uses caller-installed ports to acquire the frozen memory-heavy lease in the
+parent. It checks that validation returns the identical token after acquisition,
+immediately before start, after explicit cleanup, before publication and after
+the operation. When the result port performed cleanup itself, the final check
+still occurs after that cleanup. The same token is released once; failed or
+uncertain release prevents a successful outer receipt. No retry is supplied.
+This is one lease's plumbing, not evidence that all participating callers share
+its root. Actual installation must still establish source pins, root coverage,
+other required guards, acquisition order and outer containment before launch.
+
+The current root-coverage assessment is incomplete. The development-loop wiring
+derives the Git-common broker root; the direct host-broker example in
+`docs/development-verification.md` uses a separate host-local root. That same
+section states, "Callers must not nest acquisition; nested behavior is
+unspecified." Holding one root does not establish exclusion at the other, and
+a different operation's nested method cannot supply this operation's coverage.
+The missing fact is the actual participating-caller configuration that covers
+this singleton through one permitted, nonnested broker acquisition and any
+independent required lock. No new root, adoption, live acquisition, process
+inspection or recovery is authorized by this source assessment itself.
+
 `tools/effects_process_binding_test.clj` exercises only fake process/clock ports.
 It does not rerun the unchanged 6/44 source-control file, whose Git-fixture test
 would spawn Git. Neither Bootstrap nor the normal runner namespace is loaded.
@@ -178,7 +206,7 @@ as separate local artifacts; the old tuple is not silently relabeled current.
 
 | Item | Classification | Present disposition |
 | --- | --- | --- |
-| Separate permission for genuine Gravity/Native/compiler execution | Present instruction safeguard | Still held by the parent activation boundary |
+| Exact PMK execution authority | Standing permitted-validation instruction | One new singleton may be submitted only after actual prerequisites and independent method review; runtime category alone is not a hold |
 | Existing host resource admission, runtime/classpath provenance and source authentication for an actual launch | Present execution safeguards | Not inspected, acquired, assumed or proven here; launcher must establish them |
 | Exact selector/source/consumer binding and honest failure attribution | Concrete driver gap | Nonlaunching adapter and synthetic positive/negative controls supplied |
 | PMK authenticated builder selector | Concrete coverage gap | Implemented, unrun; needs genuine owner execution |
@@ -187,10 +215,11 @@ as separate local artifacts; the old tuple is not silently relabeled current.
 | Stopped metadata writes or rejected actions elsewhere | Historical stopped operations | Remain stopped; this package performs no retry or alternate route |
 | Current-main composed validation and independent acceptance | Integration prerequisite | Source reconciliation and independently reviewed real composition required before merge |
 
-The exact next permitted action is compiler-free preparation and review of this
-package. The first genuine acceptance action, once separately authorized with
-real launch prerequisites established, is the five exact selectors emitted by
-`prepare`, using the existing development runner and its machine sink, including
-the public C8 PMK composition in the same selector. Independent composed
+The next action is a fresh source/runtime/ordered-classpath/request binding and
+independent review of the actual parent method. The first genuine acceptance
+action is only the PMK singleton emitted by `prepare-pmk`, subject to real launch
+prerequisites. It uses the existing development runner and its machine sink,
+including public C8 composition and binding refusal in that same selector.
+The other four selectors remain separate unrun work. Independent composed
 review remains required. No full ACC-08, integration, release, self-hosting or seed-retirement
 credit follows from the synthetic harness or routine CI.

@@ -26,7 +26,7 @@
    :runtime {:files (mapv pin ["/synthetic/bin/java" "/synthetic/release" "/synthetic/modules" "/synthetic/libjvm"])}
    :classpath classpath :operation (pin "/synthetic/operation.clj")
    :identity-file (assoc (pin "/synthetic/identity.edn") :sha256 (a/request-hash source-identity))
-   :broker {:class :memory-heavy :coordination-root "/synthetic/broker"}
+   :broker {:class :memory-heavy :coordination-root "/synthetic/broker" :acquisition-timeout-ms 3600000}
    :command ["/synthetic/bin/java" "-Xmx2g" "-cp"
              (str/join java.io.File/pathSeparator (map :path classpath))
              "clojure.main" "/synthetic/operation.clj" "/synthetic/identity.edn" "/synthetic/broker"]})
@@ -58,6 +58,86 @@
     (with-redefs [a/read-validation-result (fn [r] (swap! (:calls h) conj [:consume]) (reader r))]
       (a/observe-validation! request (a/request-hash request) (merge (:ports h) changes)))))
 (defn consumed? [h] (some #{[:consume]} @(:calls h)))
+
+(deftest only-the-original-batch-or-single-pmk-selector-is-admitted
+  (let [plan (assoc selection :selectors a/pmk-selectors :command (a/command a/pmk-selectors))
+        r (-> runner-result
+              (assoc-in [:selection :test-vars] (mapv #(str a/test-namespace "/" %) a/pmk-selectors))
+              (assoc-in [:summary :test] 1))]
+    (is (= :passed (:outcome (a/bind-result plan source-identity source-identity r))))
+    (is (= :selector (try (a/command [(first a/selectors)])
+                         (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (= :selector (try (a/bind-result plan source-identity source-identity runner-result)
+                         (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))))
+
+(def lease-source (slurp a/lease-port-path))
+(defn leased-harness []
+  (let [h (harness) token (Object.)
+        r (a/lease-validation-request request lease-source)
+        p (assoc payload :request-hash (a/request-hash r))]
+    (assoc h :request r :token token
+      :ports (assoc (:ports h) :result (fn [& _] (assoc output :stdout (str a/result-prefix (pr-str p)))))
+      :broker-ports {:read-lease-source (fn [_] lease-source)
+                     :acquire (fn [opts kind] (swap! (:calls h) conj [:acquire opts kind]) token)
+                     :validate (fn [lease root kind]
+                                 (swap! (:calls h) conj [:validate lease root kind]) lease)
+                     :release (fn [lease] (swap! (:calls h) conj [:release lease]) {:outcome :released})})))
+(defn run-leased! [h changes]
+  (a/observe-under-lease! (:request h) (a/request-hash (:request h)) (:ports h)
+                          (merge (:broker-ports h) changes)))
+
+(deftest actual-parent-token-is-held-through-cleanup-and-publication
+  (let [h (leased-harness) r (run-leased! h {}) calls @(:calls h)]
+    (is (= :observed (:status r)))
+    (is (= [:acquired :before-start :after-cleanup :before-publication :after-operation] (:lease-checks r)))
+    (is (= :acquire (ffirst calls)))
+    (is (= {:coordination-root "/synthetic/broker" :timeout-ms 3600000} (second (first calls))))
+    (is (= [:release (:token h)] (last calls)))
+    (is (every? #(identical? (:token h) (second %)) (filter #(#{:validate :release} (first %)) calls)))
+    (is (= [:cleanup :validate :validate :publish :validate :release]
+           (mapv first (take-last 6 calls))))
+    (is (false? (:semantic-acceptance r)))
+    (is (nil? (find-ns 'gravity.self-hosting.sh01-host-resource-broker)))))
+
+(deftest admission-and-token-failures-do-not-launch-or-retry
+  (doseq [changes [{:acquire (fn [& _] (throw (ex-info "admission refused" {:id "refused"})))}
+                   {:validate (fn [& _] (Object.))}]]
+    (let [h (leased-harness) r (run-leased! h changes)]
+      (is (= :refused (:status r)))
+      (is (not-any? #(= :start (first %)) @(:calls h)))
+      (is (<= (count (filter #(= :release (first %)) @(:calls h))) 1))))
+  (let [h (leased-harness) n (atom 0)
+        r (run-leased! h {:release (fn [_] (swap! n inc) (throw (Exception. "uncertain release")))})]
+    (is (= :refused (:status r)))
+    (is (= :unknown (get-in r [:release :status])))
+    (is (= 1 @n))))
+
+(deftest lease-source-drift-is-rejected-before-acquisition
+  (let [h (leased-harness)]
+    (is (= :lease-port-source
+           (try (run-leased! h {:read-lease-source (fn [_] (str lease-source "\n; drift"))})
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (empty? @(:calls h))))
+  (let [h (leased-harness) bad (assoc-in (:request h) [:lease-source :timeout-ms] 60000)]
+    (is (= :missing-lease-port
+           (try (a/observe-under-lease! bad (a/request-hash bad) (:ports h) (:broker-ports h))
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (empty? @(:calls h)))))
+
+(deftest parent-release-follows-negative-and-result-owned-cleanup
+  (doseq [changes [{:result (fn [& _] (assoc output :status :failed :exit-code 1))}
+                   {:cleanup (fn [_] (throw (Exception. "cleanup failed")))}
+                   {:result (fn [& _] (throw (InterruptedException.)))}]]
+    (let [h (update (leased-harness) :ports merge changes) r (run-leased! h {})]
+      (is (= :refused (:status r)))
+      (is (= :released (get-in r [:release :status])))
+      (is (= [:release (:token h)] (last @(:calls h))))))
+  (let [h (leased-harness)
+        h (update h :ports assoc :result (fn [& args] (assoc (apply (get-in h [:ports :result]) args) :cleanup clean)))
+        r (run-leased! h {})]
+    (is (= :observed (:status r)))
+    (is (= [:acquired :before-start :before-publication :after-operation] (:lease-checks r)))
+    (is (not-any? #(= :cleanup (first %)) @(:calls h)))))
 
 (deftest exact-request-and-normal-port-specification
   (let [h (harness) r (run! h {})]

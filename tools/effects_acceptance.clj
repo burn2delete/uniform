@@ -1,6 +1,6 @@
 (ns effects-acceptance
-  "Nonlaunching source/selector binding for the finite Effects aggregate change.
-  Reads Git and source data only. Never loads a compiler or accepts semantics."
+  "Exact source/selector/process binding for the finite Effects aggregate change.
+  Supplies no real process/broker ports and grants no semantic acceptance."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
@@ -20,9 +20,14 @@
   {'build-body-effect-result 3 'verify-body-effect-result 4
    'sh09-build-authenticated-body-effect-result 3
    'sh09-verify-authenticated-body-effect-result 4})
-(defn command []
-  (into ["clojure" "-M:dev-test" "--namespace" test-namespace]
-        (mapcat #(vector "--exact" %) selectors)))
+(def pmk-selectors ["body-private-map-keys-authenticated-builder-composition"])
+(defn command
+  ([] (command selectors))
+  ([selected]
+   (when-not (or (= selectors selected) (= pmk-selectors selected))
+     (throw (ex-info "Unsupported Effects selection" {:reason :selector})))
+   (into ["clojure" "-M:dev-test" "--namespace" test-namespace]
+         (mapcat #(vector "--exact" %) selected))))
 (def resource-paths
   [effects-path test-path consumer-path
    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
@@ -131,9 +136,8 @@
   no sink (namespace load/fixture/driver failure) is a driver error, not a test refusal."
   [plan before after result]
   (require! (= :effects/aggregate-selection-v1 (:schema plan)) :plan)
-  (require! (= [:none :unrun-held (command)] ((juxt :authority :execution :command) plan)) :plan)
+  (require! (= [:none :unrun-held (command (:selectors plan))] ((juxt :authority :execution :command) plan)) :plan)
   (require! (= test-namespace (:namespace plan)) :namespace)
-  (require! (= selectors (:selectors plan)) :selector)
   (require! (= consumers (:consumers plan)) :consumer)
   (validate-identity! (:identity plan))
   (require! (= (:identity plan) before after) :source-identity)
@@ -141,11 +145,11 @@
   (require! (= :gravity/development-test-result-v1 (:schema result)) :runner-result)
   (require! (= [:non-authoritative false] ((juxt :authority :authoritative?) result)) :runner-result)
   (require! (= {:namespaces [test-namespace]
-                :test-vars (mapv #(str test-namespace "/" %) selectors) :fail-fast? false}
+                :test-vars (mapv #(str test-namespace "/" %) (:selectors plan)) :fail-fast? false}
                (:selection result)) :selector)
   (let [{:keys [test pass fail error]} (:summary result)]
     (require! (every? #(and (integer? %) (<= 0 %)) [test pass fail error]) :runner-counts)
-    (require! (= test (count selectors)) :incomplete-execution)
+    (require! (= test (count (:selectors plan))) :incomplete-execution)
     (require! (pos? (+ pass fail error)) :incomplete-execution)
     (let [passed? (zero? (+ fail error))]
       (require! (= [(if passed? :passed :failed) (if passed? 0 1)]
@@ -153,6 +157,12 @@
       {:schema :effects/aggregate-observation-v1 :authority :non-authoritative
        :identity before :runner result :outcome (if passed? :passed :failed)
        :semantic-acceptance false})))
+
+(defn prepare-pmk
+  "Prepare only the existing authenticated PMK/public C8 test."
+  [expected observed read-text]
+  (assoc (prepare expected observed read-text)
+         :selectors pmk-selectors :command (command pmk-selectors)))
 
 (def process-port-path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj")
 (def process-port-symbols
@@ -191,10 +201,10 @@
                  (= :memory-heavy (get-in frozen [:broker :class]))) :frozen-command)
   (let [plan (:selection frozen) cp (:classpath frozen) files (get-in frozen [:runtime :files])
         identity-file (:identity-file frozen)]
-    (require! (= [:effects/aggregate-selection-v1 :none :unrun-held (command)]
+    (require! (= [:effects/aggregate-selection-v1 :none :unrun-held (command (:selectors plan))]
                  ((juxt :schema :authority :execution :command) plan)) :plan)
     (require! (= (:source frozen) (:identity plan)) :source-identity)
-    (require! (= [test-namespace selectors consumers] ((juxt :namespace :selectors :consumers) plan)) :selector)
+    (require! (= [test-namespace consumers] ((juxt :namespace :consumers) plan)) :selector)
     (require! (and (vector? cp) (= 6 (count cp)) (every? file-pin? (drop 3 cp))) :frozen-classpath)
     (doseq [[entry relative] (map vector (take 3 cp) ["tools" "bootstrap/clojure/test" "bootstrap/clojure/src"])]
       (require! (= [(str cwd "/" relative) (get-in frozen [:source :dependency-trees relative])]
@@ -347,6 +357,84 @@
         (clean!) (fail (if (restore-if-interrupted! restore-interrupt e) :interrupted (:reason (ex-data e)))))
       (catch Exception e
         (clean!) (fail (if (restore-if-interrupted! restore-interrupt e) :interrupted :process-port-failure))))))
+
+(def lease-port-path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj")
+(def lease-port-symbols
+  {:acquire 'gravity.self-hosting.sh01-host-resource-broker/acquire!
+   :validate 'gravity.self-hosting.sh01-host-resource-broker/validate-live-lease!
+   :release 'gravity.self-hosting.sh01-host-resource-broker/release!})
+
+(defn lease-validation-request
+  "Bind the normal broker source; this does not establish root coverage or admission."
+  [request source]
+  (require! (let [timeout (get-in request [:frozen :broker :acquisition-timeout-ms])]
+              (and (integer? timeout) (pos? timeout))) :lease-timeout)
+  (let [declared (definitions source 'defn)]
+    (doseq [sym (vals lease-port-symbols)]
+      (require! (contains? declared (symbol (name sym))) :missing-lease-port)))
+  (assoc request :lease-source {:path lease-port-path :sha256 (sha256 source)
+                               :symbols lease-port-symbols
+                               :timeout-ms (get-in request [:frozen :broker :acquisition-timeout-ms])}))
+
+(defn observe-under-lease!
+  "Hold one actual parent lease through process cleanup and publication.
+  Explicit broker ports must be installed from the pinned normal broker source.
+  Additional participating guards and root coverage remain caller prerequisites."
+  [request expected-hash process-ports {:keys [acquire validate release read-lease-source]}]
+  (require! (= expected-hash (request-hash request)) :request-hash)
+  (let [spec (:lease-source request)
+        root (get-in request [:frozen :broker :coordination-root])
+        kind (get-in request [:frozen :broker :class])]
+    (require! (and (integer? (:timeout-ms spec)) (pos? (:timeout-ms spec))) :lease-timeout)
+    (require! (= [lease-port-path lease-port-symbols
+                  (get-in request [:frozen :broker :acquisition-timeout-ms])]
+                 ((juxt :path :symbols :timeout-ms) spec)) :missing-lease-port)
+    (require! (every? fn? [acquire validate release read-lease-source]) :lease-ports)
+    (require! (every? #(fn? (get process-ports %))
+                     [:now :start :result :cleanup :publish :restore-interrupt :read-port-source]) :process-ports)
+    (require! (= (:sha256 spec) (sha256 (read-lease-source lease-port-path))) :lease-port-source)
+    (validate-frozen! (:frozen request) (:cwd request))
+    (let [lease (atom nil) checks (atom []) operation (atom nil) released (atom :not-attempted)
+          check! (fn [stage]
+                   (require! (identical? @lease (validate @lease root kind)) :lease-token)
+                   (swap! checks conj stage))]
+      (try
+        (reset! lease (acquire {:coordination-root root :timeout-ms (:timeout-ms spec)} kind))
+        (require! (some? @lease) :lease-token)
+        (check! :acquired)
+        (reset! operation
+          (observe-validation! request expected-hash
+            (assoc process-ports
+              :start (fn [argv cwd]
+                       (check! :before-start)
+                       ((:start process-ports) argv cwd))
+              :cleanup (fn [process]
+                         (let [result ((:cleanup process-ports) process)]
+                           (check! :after-cleanup)
+                           result))
+              :publish (fn [receipt]
+                         (check! :before-publication)
+                         ((:publish process-ports) receipt)))))
+        (check! :after-operation)
+        (catch Exception error
+          (restore-if-interrupted! (:restore-interrupt process-ports) error)
+          (reset! operation {:status :refused :reason (or (:reason (ex-data error)) :lease-failure)
+                             :diagnostic (:id (ex-data error)) :semantic-acceptance false}))
+        (finally
+          (when @lease
+            (reset! released :unknown)
+            (try
+              (let [receipt (release @lease)]
+                (reset! released (if (= :released (:outcome receipt))
+                                  {:status :released :receipt receipt}
+                                  {:status :failed :receipt receipt})))
+              (catch Exception error
+                (restore-if-interrupted! (:restore-interrupt process-ports) error)
+                (reset! released {:status :unknown :diagnostic (:id (ex-data error))}))))))
+      {:status (if (and (= :observed (:status @operation))
+                        (= :released (:status @released))) :observed :refused)
+       :operation @operation :lease-checks @checks :release @released
+       :request-hash expected-hash :semantic-acceptance false})))
 
 (defn -main [& args]
   (try
