@@ -426,6 +426,12 @@
                    (fn [] (observer (System/getProperty "user.dir") [] {:repository-identity h})))
         id #(try (observe %) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))]
     (is (= (mapv :path (:inputs closure)) (mapv :path (get-in (observe {}) [:binding :inputs]))))
+    (let [git-binding {:schema :gravity/rv2-git-binding-v1 :synthetic true}
+          observed (with-redefs-fn common
+                     (fn [] (observer (System/getProperty "user.dir") []
+                                      {:repository-identity h :producer-git-binding git-binding})))]
+      (is (= {:id :selected-observer-git-binding :sha256 (hash-value git-binding)}
+             (last (get-in observed [:binding :runtime-tool-inputs])))))
     ;; Equal child bookends do not justify attributing already loaded code to
     ;; a source snapshot different from the parent's prelaunch identity.
     (doseq [identity [nil (hash-value :changed-before-child-startup)]]
