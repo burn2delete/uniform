@@ -158,4 +158,3 @@
           (prn (prepare expected (snapshot root (get-in expected [:main :commit]))
                         #(slurp (io/file root %)))))))
     (finally (shutdown-agents))))
-
