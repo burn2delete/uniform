@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "1dc2471f87f2d0915e9dd003bf420254759ee031", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -505,8 +505,10 @@
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
 (def mapping-review
 {:status :pending-source-version-review,
+ :pre-source-api-input-fingerprint "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
+ :source-api-qualification "Pure Native selector ownership adoption; all predecessor Reader/Build source and review history retained, no admission or implementation acceptance.",
  :input-fingerprint
- "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
+ "f46081f1dfe8ee424b8b1d97faf37df26c7750e5488c4843f06dfbbd5fdfd264",
  :predecessor-review
  {:status :pending-source-version-review,
   :input-fingerprint
