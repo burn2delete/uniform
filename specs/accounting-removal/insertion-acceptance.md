@@ -71,13 +71,24 @@ consumer under the outer lane. No new initializer/PMK/domain work is imported.
 
 ## Bound source and reusable evidence
 
-Inspection bound candidate `51931bc8c974505fb054d4be349f1d4fdb34779e`, tree
+The original inspection bound candidate `51931bc8c974505fb054d4be349f1d4fdb34779e`, tree
 `c019b136627dc40438b0fdc1eb39c1fedffaeae0`, and remote-readback main
 `6276c94b0b753c888ef8fecc794bcc81245ea3b3`, tree
 `9f464ed0f03866bd4978e4213a488f3b1ae48683`.
-Main's Reader dispatch change is absent from this candidate. A later composed
-candidate must renew affected dependency preparation and acceptance; this
-inspection is not a merge or an assertion that current main was tested.
+Those identities retain the original static inspection only.
+
+Current-main reconciliation produced source prefix
+`dc458189bb5738ca145c4c265994c119dab479f7`, tree
+`730d3fd29a93ecc27e4a305fe058fee242738fad`, by normally merging main
+`dfa4c5b653d8049ac78dd30962172e0d91c768e2`, tree
+`000c3e4cce476c196b61814a4732a48b9be95540`. It includes main's Reader
+dispatch, normalization, authentication-adapter and development-routing changes.
+C7, both selector-owner files and `deps.edn` are byte-identical to the earlier
+candidate. Independent source-only review confirms all 16 selectors and their
+five consumer/resource routes remain present. This is not execution evidence.
+This documentation-only correction does not alter that source closure; renew
+preparation at the exact future execution revision and retain its actual
+runtime/classpath identities and result separately.
 
 C7 SHA256 remains
 `1c0242ed45983fc974f1aa66b95049b2d47b4ddb7303198bbd631615022ce106`;
@@ -87,7 +98,8 @@ The independently reviewed source/control receipt
 `b44bd7977d4c6c698c15560170e9bc6601ffc7b9200a299e76b56dc1283ccc94`
 and draft publication receipt
 `0d98ccfc9ba448437f4363f31f91f9ecd9ee636de42143320923afe45b584276`
-retain their exact static/CI scope. Original cheap control results are reused;
+retain their exact historical static/CI scope, not acceptance of the merged
+composition. Original cheap control results are reused;
 no original unknown operation or stopped metadata write is replayed.
 
 ## Controls and present execution prerequisites
@@ -113,6 +125,6 @@ not language semantics tests or compiler authentication evidence.
 | Runtime/emitter source selection and effective classpath | Real presently applicable safeguard. The owner chooses its genuine emitter source rule; effective JVM/dependencies/resources and actual host restrictions must be reviewed for that invocation. This adapter does not invent a termination or capacity result. |
 | Module initialization and broader consumer composition | Existing APIs/tests identified above; their actual results remain unrun here. Require only the affected route for the claim being made; no blanket initializer closure is inferred. |
 | Historical UNKNOWN deliveries/session22232 and denied operations | Preserved non-executable history. No present interference is established by this source inspection; they are not a blanket gate and are not probed, replayed or cleared. |
-| Current-main composition | Real affected integration requirement before merge; main drift is explicit. CI on the earlier exact branch does not validate a newly composed source. |
+| Current-main composition | Normal reconciliation and independent source-only selector/resource/consumer review are complete at the prefix above. Genuine acceptance of the exact future execution revision remains unrun; earlier branch CI does not validate this composed execution. |
 
 No semantic, Native or initializer acceptance result is supplied by this package.
