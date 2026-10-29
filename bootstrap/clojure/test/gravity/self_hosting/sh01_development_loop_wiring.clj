@@ -69,6 +69,14 @@
               (map #(format "%02x" (bit-and % 0xff))
                    (.digest message-digest)))))
 
+(def ^:private ^:dynamic *producer-git-lifecycle* nil)
+
+(defn- start-git-process [command directory]
+  (-> (ProcessBuilder. ^java.util.List command)
+      (.directory directory)
+      (.redirectErrorStream true)
+      .start))
+
 (defn- run-git-bytes!
   ([working-directory arguments]
    (run-git-bytes! working-directory arguments nil))
@@ -77,41 +85,47 @@
                      (.toFile ^Path working-directory)
                      (io/file working-directory))
          command (into ["git"] arguments)
-         process (-> (ProcessBuilder. ^java.util.List command)
-                     (.directory directory)
-                     (.redirectErrorStream true)
-                     .start)
-         writer-error (atom nil)
-         writer
-         (doto
-          (Thread.
-           ^Runnable
-           (fn []
-             (try
-               (with-open [input (.getOutputStream process)]
-                 (when input-bytes
-                   (.write input ^bytes input-bytes)))
-               (catch Throwable exception
-                 (reset! writer-error exception)))))
-          (.setDaemon true)
-          (.start))
-         output (ByteArrayOutputStream.)]
-     (with-open [input (.getInputStream process)]
-       (.transferTo input output))
-     (.join ^Thread writer)
-     (let [exit-code (.waitFor process)
-           bytes (.toByteArray output)]
-       (when-not (zero? exit-code)
-         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                "Development-loop repository identity command failed"
-                {:command command
-                 :exit-code exit-code
-                 :output (String. bytes StandardCharsets/UTF_8)}))
-       (when @writer-error
-         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                "Development-loop repository identity input failed"
-                {:command command :exit-code exit-code}))
-       bytes))))
+         lifecycle *producer-git-lifecycle*
+         _ (when lifecycle ((:before! lifecycle) command directory))
+         process (start-git-process command directory)
+         owned (when lifecycle ((:retain! lifecycle) process command directory))
+         primary (atom nil)]
+     (try
+       (let [writer-error (atom nil)
+             writer
+             (doto
+              (Thread.
+               ^Runnable
+               (fn []
+                 (try
+                   (with-open [input (.getOutputStream process)]
+                     (when input-bytes
+                       (.write input ^bytes input-bytes)))
+                   (catch Throwable exception
+                     (reset! writer-error exception)))))
+              (.setDaemon true)
+              (.start))
+             output (ByteArrayOutputStream.)]
+         (with-open [input (.getInputStream process)]
+           (.transferTo input output))
+         (.join ^Thread writer)
+         (let [exit-code (.waitFor process)
+               _ (when lifecycle ((:waited! lifecycle) owned exit-code @writer-error))
+               bytes (.toByteArray output)]
+           (when-not (zero? exit-code)
+             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                    "Development-loop repository identity command failed"
+                    {:command command
+                     :exit-code exit-code
+                     :output (String. bytes StandardCharsets/UTF_8)}))
+           (when @writer-error
+             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                    "Development-loop repository identity input failed"
+                    {:command command :exit-code exit-code}))
+           bytes))
+       (catch Throwable error (reset! primary error) (throw error))
+       (finally
+         (when lifecycle ((:finalize! lifecycle) owned @primary)))))))
 
 (defn- git-common-directory
   [working-directory]
@@ -1644,9 +1658,11 @@
     (fail! "SH01-PRODUCER-OBSERVATION"
            "Producer observation requires exactly the declared Reader identity selection" {}))
   (let [directory (System/getProperty "user.dir")
-        before (observe-fresh-producer-binding! directory arguments options)
+        observe #(binding [*producer-git-lifecycle* (:producer-git-lifecycle options)]
+                   (observe-fresh-producer-binding! directory arguments options))
+        before (observe)
         result (operation)
-        after (observe-fresh-producer-binding! directory arguments options)]
+        after (observe)]
     (when-not (= before after)
       (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
              "Fresh producer observations changed during execution" {:input-kind :producer-observation}))
