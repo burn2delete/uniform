@@ -91,6 +91,19 @@ child with `Operation not permitted (sysctl failed)`. That failed attempt is
 retained, not retried through another executor; remote successor CI remains
 pending. No lint suppression or check weakening was added.
 
+ACC12's independent review of `dfc21989` subsequently found that four corrupted
+provenance declarations still passed validation. The namespace/loading fix
+`f9c2fec3` did not address that finding. The separate
+[provenance guard successor](provenance-guard-receipt.edn) now checks the declared
+source commit/tree against resolved immutable Git objects and the independently
+hash-checked frozen input, and checks frozen-input and manifest declarations
+against their consumed input pins. Four zero-value corruption regressions each
+require their specific rejection diagnostic; the positive and prior ten negative
+controls still pass. Proposal/task bytes and statuses are unchanged. The original
+receipt remains historical; the new receipt pins the current checker. Exact
+successor review remains queued for the same ACC12 after its existing Reader549
+and current work. No duplicate review or owner notification is initiated here.
+
 Next adoption step: the canonical reconciliation owner routes independent
 review of the immutable candidate and resolves exact later predecessor
 conflicts before adopting this family patch. Review, canonical adoption,

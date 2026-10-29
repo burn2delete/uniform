@@ -18,6 +18,10 @@
 (defn git-source [ref path]
   (let [{:keys [exit out]} (shell/sh "git" "show" (str ref ":" path))]
     (require! (zero? exit) (str "Missing immutable Git source: " ref ":" path)) out))
+(defn git-object-id [revision]
+  (let [{:keys [exit out]} (shell/sh "git" "rev-parse" "--verify" revision)]
+    (require! (zero? exit) (str "Missing immutable Git object: " revision))
+    (str/trim out)))
 
 ;; Evaluate only the three pure definitions from the required immutable API.
 ;; Its namespace and compiler/evidence loaders are deliberately not executed.
@@ -165,7 +169,18 @@
   (let [input-text (git-source "53ae6a403b20d15155bb5b04911fe7ac0092b921"
                                "specs/requirement-reconciliation/source-task-inputs.edn")
         _ (require! (= inputs-sha (sha256 input-text)) "Wrong frozen input bytes")
-        expected (build-proposal m (edn/read-string input-text))]
+        inputs (edn/read-string input-text)
+        source-commit (git-object-id (str (:source-commit inputs) "^{commit}"))
+        source-tree (git-object-id (str source-commit "^{tree}"))
+        expected (build-proposal m inputs)]
+    (require! (= (:source-commit inputs) source-commit (:source-baseline p)) "Wrong declared source commit")
+    (require! (= (:source-tree inputs) source-tree (:source-tree p)) "Wrong declared source tree")
+    (require! (= {:ref "53ae6a403b20d15155bb5b04911fe7ac0092b921" :sha256 (sha256 input-text)}
+                 (:frozen-inputs p)) "Wrong declared frozen inputs")
+    ;; m was read from independently hash-checked raw manifest bytes at entry.
+    ;; Compare its declaration to that pinned input, never to a proposal value.
+    (require! (= {:sha256 baseline-sha :kind :preserved-uncommitted-pr445-history}
+                 (:manifest-input p)) "Wrong declared manifest input")
     (require! (= (:source-documents expected) (:source-documents p)) "Changed assigned source population")
     (require! (= (:units expected) (:units p)) "Changed source-qualified unit assessment")
     (require! (= (:field-edits expected) (:field-edits p)) "Changed field edits or supplementary contexts")
@@ -214,8 +229,18 @@
   true)
 
 (defn rejected? [f] (try (f) false (catch Exception _ true)))
+(defn rejected-with? [message f]
+  (try (f) false (catch clojure.lang.ExceptionInfo e (= message (ex-message e)))))
 (defn controls [m p]
   {:positive (validate! m p)
+   :source-commit-tamper (rejected-with? "Wrong declared source commit"
+                           #(validate! m (assoc p :source-baseline (apply str (repeat 40 "0")))))
+   :source-tree-tamper (rejected-with? "Wrong declared source tree"
+                         #(validate! m (assoc p :source-tree (apply str (repeat 40 "0")))))
+   :frozen-input-hash-tamper (rejected-with? "Wrong declared frozen inputs"
+                               #(validate! m (assoc-in p [:frozen-inputs :sha256] (apply str (repeat 64 "0")))))
+   :manifest-input-hash-tamper (rejected-with? "Wrong declared manifest input"
+                                 #(validate! m (assoc-in p [:manifest-input :sha256] (apply str (repeat 64 "0")))))
    :missing-task (rejected? #(validate! m (assoc-in p [:units 0 :task-references 0 :id] "missing-task")))
    :wrong-marker (rejected? #(validate! m (assoc-in p [:units 0 :task-references 0 :marker] "missing-marker")))
    :wrong-task-hash (rejected? #(validate! m (assoc-in p [:units 0 :task-references 0 :sha256] "wrong")))
