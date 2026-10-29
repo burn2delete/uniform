@@ -84,7 +84,7 @@
    {:name :map-dynamic-key :equations [[:x [:map [:ref :key] [:ref :x]]]]
     :bindings {:x :gravity.type/integer :key :gravity.type/keyword} :expected false}
    {:name :map-string-key :equations [[:x [:map [:string "k"] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :map-odd-arity :equations [[:x [:map [:keyword :k]]]]
     :bindings {:x :gravity.type/integer} :expected false}
    {:name :map-multiple-members
@@ -120,9 +120,9 @@
    {:name :prefix-vector-dynamic-prefix :equations [[:x [:vector [:ref :prefix] [:ref :x]]]]
     :bindings {:x :gravity.type/integer :prefix :gravity.type/keyword} :expected false}
    {:name :prefix-vector-string-prefix :equations [[:x [:vector [:string "k"] [:ref :x]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :prefix-vector-reversed-members :equations [[:x [:vector [:ref :x] [:keyword :k]]]]
-    :bindings {:x :gravity.type/integer} :expected false}
+    :bindings {:x :gravity.type/integer} :expected true}
    {:name :prefix-vector-extra-member
     :equations [[:x [:vector [:keyword :k] [:ref :x] [:ref :x]]]]
     :bindings {:x :gravity.type/integer} :expected false}
@@ -138,6 +138,62 @@
     :equations [[:x [:vector [:keyword :k] [:ref :y]]] [:y [:ref :z]] [:z [:ref :y]]]
     :bindings {:x :gravity.type/integer :y :gravity.type/integer :z :gravity.type/integer} :expected false}])
 
+; The three former unsupported constant-position cases above now have positive
+; witnesses. Their fixtures remain; malformed and evolving-sibling cases stay
+; negative. These fixture samples do not model every character carrier.
+(def literal-types
+  {:nil :gravity.type/nil :boolean :gravity.type/bool :integer :gravity.type/integer
+   :decimal :gravity.type/decimal :ratio :gravity.type/ratio :character :gravity.type/character
+   :string :gravity.type/string :keyword :gravity.type/keyword :symbol :gravity.type/symbol})
+
+(defn- fixed-term? [[kind value :as term]]
+  (and (= 2 (count term)) (contains? literal-types kind)
+       (or (not= :character kind) (char? value))))
+
+(def constants
+  [[:nil nil] [:boolean true] [:integer 1] [:decimal 1.5M] [:ratio 1/2]
+   [:character \a] [:string "s"] [:keyword :k] [:symbol 's]])
+
+(def fixed-member-cases
+  (let [positions (for [kind [:vector :set :map] position (range (inc (count constants)))]
+                    {:name (keyword (str (name kind) "-position-" position))
+                     :equations [[:x (into [kind] (concat (take position constants)
+                                                         [[:ref :x]] (drop position constants)))]]
+                     :bindings {:x :gravity.type/integer} :expected true})]
+    (vec (concat positions
+      (for [[label additions]
+            [[:fixed-members-definition-overlap {:definitions [{:binding-id :x}]}]
+             [:fixed-members-parameter-overlap {:functions {:f {:parameter-binding-ids [:x]}}}]
+             [:fixed-members-intrinsic {:intrinsic-reference? true}]
+             [:fixed-members-loop-transfer {:context {:loop-core {}}}]
+             [:fixed-members-match-seeding {:context {:boolean-matches [{}]}}]]]
+        (merge (first positions) additions {:name label :expected false}))
+      (for [case positions]
+        (-> case
+            (assoc :name (keyword (str (name (:name case)) "-acyclic")) :expected false :stable? true
+                   :bindings {:x :gravity.type/integer :outside :gravity.type/integer})
+            (update-in [:equations 0 1] #(mapv (fn [term] (if (= [:ref :x] term) [:ref :outside] term)) %))))
+      [{:name :mixed-fixed-members-growth
+        :equations [[:x [:map [:keyword :k] [:set [:integer 3] [:vector [:string "s"] [:ref :x] [:nil nil]]]
+                         [:boolean true] [:symbol 's]]]]
+        :bindings {:x :gravity.type/integer} :expected true}
+       {:name :two-dynamic-members :equations [[:x [:vector [:ref :x] [:ref :outside]]]]
+        :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+       {:name :opaque-sibling :equations [[:x [:vector [:ref :x] [:call [:ref :outside]]]]]
+        :bindings {:x :gravity.type/integer :outside :gravity.type/integer} :expected false}
+       {:name :opaque-selected-child :equations [[:x [:vector [:keyword :k] [:call [:ref :x]]]]]
+        :bindings {:x :gravity.type/integer} :expected false}
+       {:name :unknown-literal-sibling :equations [[:x [:vector [:ref :x] [:unsupported-literal :bad]]]]
+        :bindings {:x :gravity.type/integer} :expected false}
+       {:name :invalid-character-sibling :equations [[:x [:vector [:ref :x] [:character 65]]]]
+        :bindings {:x :gravity.type/integer} :expected false}
+       {:name :all-fixed-members :equations [[:x (into [:vector] constants)]]
+        :bindings {:x :gravity.type/integer} :expected false :stable? true}
+       {:name :fixed-members-unresolved :equations [[:x [:vector [:integer 1] [:ref :x] [:boolean true]]]]
+        :bindings {} :expected false :stable? true}
+       {:name :fixed-members-never :equations [[:x [:vector [:integer 1] [:ref :x] [:boolean true]]]]
+        :bindings {:x :gravity.type/never} :expected false :stable? true}]))))
+
 (defn input
   "Materialize fixture syntax in postorder for the actual C7 test harness."
   [{:keys [equations context intrinsic-reference?] :as case}]
@@ -145,13 +201,14 @@
         emit (fn emit [term path]
                (let [id (keyword (str "occurs-" path))
                      [kind & operands] term
-                     children (if (#{:ref :keyword :string} kind) []
+                     literal? (or (contains? literal-types kind) (= :unsupported-literal kind))
+                     children (if (or (= :ref kind) literal?) []
                                 (mapv (fn [i operand] (emit operand (str path "-" i)))
                                       (range) operands))
                      node (if (= :ref kind)
                             {:node-id id :core-form :reference :children []
                              :attributes {:binding-id (first operands)}}
-                            (if (#{:keyword :string} kind)
+                            (if literal?
                               {:node-id id :core-form :literal :children []
                                :attributes {:literal-kind kind :value (first operands)}}
                             {:node-id id
@@ -171,17 +228,12 @@
 (defn- term-edge [term]
   (case (first term)
     :ref {:dependency (second term) :constructor? false}
-    :set (when (= 2 (count term))
-              (when-let [edge (term-edge (second term))]
-                (assoc edge :constructor? true)))
-    :vector (when-let [dependency (cond
-                                   (= 2 (count term)) (second term)
-                                   (and (= 3 (count term)) (= :keyword (first (second term)))) (nth term 2))]
-              (when-let [edge (term-edge dependency)]
-                (assoc edge :constructor? true)))
-    :map (when (and (= 3 (count term)) (= :keyword (first (second term))))
-           (when-let [edge (term-edge (nth term 2))]
-             (assoc edge :constructor? true)))
+    (:vector :set :map)
+    (when (or (not= :map (first term)) (even? (count (rest term))))
+      (let [dependencies (remove fixed-term? (rest term))]
+        (when (= 1 (count dependencies))
+          (when-let [edge (term-edge (first dependencies))]
+            (assoc edge :constructor? true)))))
     nil))
 
 (defn model-occurs?
@@ -208,10 +260,10 @@
             (recur trimmed)))))))
 
 (defn- substitute [term bindings]
+  (if (contains? literal-types (first term))
+    (if (fixed-term? term) (get literal-types (first term)) :gravity.type/unknown)
   (case (first term)
     :ref (get bindings (second term) :gravity.type/unknown)
-    :keyword :gravity.type/keyword
-    :string :gravity.type/string
     (:vector :set) (let [values (mapv #(substitute % bindings) (rest term))]
               (cond
                 (some #{:gravity.type/never} values) :gravity.type/never
@@ -224,7 +276,7 @@
              (some #{:gravity.type/never} values) :gravity.type/never
              (some #{:gravity.type/unknown} values) :gravity.type/unknown
              :else {:kind :gravity.type/map :member-types values :shape :literal}))
-    :gravity.type/unknown))
+    :gravity.type/unknown)))
 
 (defn- step [case bindings]
   (into bindings (map (fn [[id term]] [id (substitute term bindings)]) (:equations case))))
@@ -302,3 +354,21 @@
     (is (= {:kind :gravity.type/vector
             :element-types [:gravity.type/keyword :gravity.type/integer] :shape :literal}
            (get (step case (:bindings case)) :x)))))
+
+(deftest fixed-member-extraction-and-substitution-controls
+  ;; This changed-boundary selection covers conserved dispositions as well as
+  ;; newly supported member positions. It does not rerun the old test vars.
+  (doseq [case (concat cases set-cases map-cases prefix-vector-cases fixed-member-cases)]
+    (testing (name (:name case))
+      (is (= (:expected case) (model-occurs? case)))
+      (when (:expected case)
+        (let [states (take 9 (iterate #(step case %) (:bindings case)))]
+          (is (= 9 (count (set states))))))
+      (when (:stable? case)
+        (let [once (step case (:bindings case))]
+          (is (= once (step case once)))))))
+  (doseq [width [0 1 2 17 96] position (distinct [0 width])]
+    (let [members (mapv #(vector :keyword (keyword (str "k" %))) (range width))
+          term (into [:vector] (concat (take position members) [[:ref :x]] (drop position members)))
+          case {:equations [[:x term]] :bindings {:x :gravity.type/integer}}]
+      (is (true? (model-occurs? case))))))

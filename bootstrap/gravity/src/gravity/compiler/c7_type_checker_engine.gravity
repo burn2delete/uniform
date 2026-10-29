@@ -23393,25 +23393,33 @@
        (+ total (count (get (first remaining) :parameter-binding-ids)))))))
 
 ; L5/C7: a closed normal equation T = Collection<...T...> has no solution in
-; this finite literal Vector/Set/Map representation. Trace only single-dependency
-; constructors: unary Vector/Set, one-entry Map with a constant Keyword key,
-; or a two-element Vector with a constant Keyword prefix.
-; other constructor, call, match and transfer families remain separate work.
+; this finite literal Vector/Set/Map representation. Trace single-dependency
+; constructors at any member position; all other members must be independently
+; fixed primitive literals. Multiple evolving members and opaque transfers
+; remain separate work. These are evidence boundaries, not admission quotas.
 ; The visited sets are graph identities, not work or round allowances.
+(defn sh08-ft-fixed-literal-member? [id nodes types]
+  (let [node (get nodes id) children (get node :children) type (get types id)]
+    (if (= :literal (get node :core-form))
+      (if (vector? children)
+        (if (= 0 (count children))
+          (if (sh08-ft-known? type)
+            (if (= :gravity.type/never type) false
+              (= type (sh08-ft-infer-node node {} {} {} []))) false) false) false) false)))
+
 (defn sh08-ft-literal-constructor-child [node nodes types]
   (let [kind (get (get node :attributes) :literal-kind) children (get node :children)]
-    (if (= :collection-literal (get node :core-form))
-      (if (if (contains? #{:vector :set} kind) (= 1 (count children)) false)
-        (first children)
-        (if (if (contains? #{:map :vector} kind) (= 2 (count children)) false)
-          (let [key-node (get nodes (first children))]
-            ; The key/prefix is fixed, not a second evolving dependency.
-            (if (if (= :literal (get key-node :core-form))
-                  (if (= :keyword (get (get key-node :attributes) :literal-kind))
-                    (if (vector? (get key-node :children))
-                      (if (= 0 (count (get key-node :children)))
-                        (= :gravity.type/keyword (get types (first children))) false) false) false) false)
-              (get children 1) nil)) nil)) nil)))
+    (if (if (= :collection-literal (get node :core-form))
+          (if (vector? children)
+            (if (contains? #{:vector :set :map} kind)
+              (if (= :map kind) (sh08-even-count? children) true) false) false) false)
+      (loop [remaining children selected nil found? false]
+        (if (= 0 (count remaining)) (if found? selected nil)
+          (let [id (first remaining)]
+            (if (contains? nodes id)
+              (if (sh08-ft-fixed-literal-member? id nodes types)
+                (recur (rest remaining) selected found?)
+                (if found? nil (recur (rest remaining) id true))) nil)))) nil)))
 
 (defn sh08-ft-unary-literal-collection-link [initializer nodes bindings types context]
   (loop [id initializer seen #{} path [] constructed? false]

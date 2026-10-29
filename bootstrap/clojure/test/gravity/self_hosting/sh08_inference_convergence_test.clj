@@ -145,7 +145,8 @@
   ;; No witness is not acceptance: public source/products retain their owning
   ;; resolution/verification checks. These direct helpers bypass that ingress.
   (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)
-               (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)]]
+               (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)
+               (first occurs-model/fixed-member-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         check (fn [nodes lexical]
                 (invoke 'sh08-ft-first-constructor-cycle
@@ -163,7 +164,8 @@
 
 (deftest declared-return-conflict-precedes-constructor-feedback
   (doseq [case [(first occurs-model/cases) (first occurs-model/set-cases)
-               (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)]]
+               (first occurs-model/map-cases) (first occurs-model/prefix-vector-cases)
+               (first occurs-model/fixed-member-cases)]]
   (let [{:keys [nodes lexical bindings]} (occurs-model/input case)
         body {:node-id :body :core-form :literal :children []
               :attributes {:literal-kind :string}}
@@ -270,3 +272,42 @@
                                              :element-types [:gravity.type/keyword :gravity.type/string]
                                              :shape :literal})]]
       (is (nil? (check changed))))))
+
+(deftest fixed-member-position-occurs-check-controls
+  (doseq [case occurs-model/fixed-member-cases]
+    (let [{:keys [nodes lexical definitions functions bindings context expected stable?]} (occurs-model/input case)
+          result (invoke 'sh08-ft-first-constructor-cycle
+                         [nodes lexical (or definitions []) (or functions {}) bindings
+                          (:type-table (pass nodes lexical bindings)) context])]
+      (testing (name (:name case))
+        (is (= expected (map? result)))
+        (when expected
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :type-conflict (:convergence-status inferred)))
+            (is (= :infinite-structural-type (get-in inferred [:diagnostics 0 :reason])))))
+        (when stable?
+          (let [inferred (infer nodes lexical bindings)]
+            (is (= :converged (:convergence-status inferred)))
+            (is (empty? (:diagnostics inferred)))))))))
+
+(deftest fixed-literal-member-premises-require-current-complete-data
+  (let [{:keys [nodes lexical bindings]} (occurs-model/input (first occurs-model/fixed-member-cases))
+        types (:type-table (pass nodes lexical bindings))
+        fixed (filter #(= :literal (:core-form %)) nodes)
+        index (into {} (map (juxt :node-id identity)) nodes)]
+    (doseq [node fixed]
+      (let [id (:node-id node)]
+        (is (true? (invoke 'sh08-ft-fixed-literal-member? [id index types])))
+        (doseq [changed [(dissoc types id) (assoc types id :gravity.type/never)
+                         (assoc types id :gravity.type/unknown)
+                         (assoc types id (if (= :gravity.type/string (get types id))
+                                           :gravity.type/integer :gravity.type/string))]]
+          (is (false? (invoke 'sh08-ft-fixed-literal-member? [id index changed])))
+          (is (nil? (invoke 'sh08-ft-first-constructor-cycle
+                            [nodes lexical [] {} bindings changed {}]))))
+        ;; A forged observed parent type cannot compensate for a missing node.
+        (is (nil? (invoke 'sh08-ft-first-constructor-cycle
+                          [(vec (remove #(= id (:node-id %)) nodes)) lexical [] {} bindings types {}])))))
+    (let [character (first (filter #(= :character (get-in % [:attributes :literal-kind])) fixed))
+          id (:node-id character) invalid (assoc-in character [:attributes :value] 65)]
+      (is (false? (invoke 'sh08-ft-fixed-literal-member? [id (assoc index id invalid) types]))))))
