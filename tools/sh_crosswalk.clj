@@ -1246,6 +1246,25 @@
  :total-concrete-links 777,
  :applicability
  "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"}
+    :foundation7-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/foundation7-qualified-review-adoption.edn",
+ :refined-fields 3,
+ :remaining-allocation-work 56,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 472,
+ :pending-allocation-review 2,
+ :declared-dependency-contexts 15,
+ :source-commit "bac911632784079dbbeb93e244a3489c4208d234",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :reviewed-predicates 7,
+ :current-criteria 13,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777,
+ :applicability
+ "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

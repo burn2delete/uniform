@@ -1504,3 +1504,50 @@ SH12/522,census4/13,boundary6/11,generated SH check and pinned changed-file lint
 pass. No new review, whole-facet, later-predicate, implementation, task/count,
 release or integration acceptance is inferred. Full-facet disposition,
 granularity, legacy ACC and independent final counting remain open.
+
+## Qualified Foundation7 independent review adoption
+
+The independent receipt SHA256 is
+`e81456eed738f5c1fb076cb8963562b550995c08f63dd82102d5414f265496dd`,
+frozen at `5a018077684a36c921e65a037f4af85314771788`. The reproduction,
+controls and checks hashes are verified; the original receipt remains intact.
+Public proof omits only the local path names while retaining their verified
+hashes. An initial private-path projection guard refused before writes.
+
+The current join at `5da47ef00521216dd7109932fb630c57dbd72c9e` verifies
+all7 unchanged records,13 criteria,15 declared dependency contexts,all50 actual
+registry task/plan files and240 original documents. No task bytes changed since
+the independent frozen source. All three actual acceptance refinements retain
+D3 migration-period/replacement diagnostics,D5 safety/packaging/tooling parity
+and migration feasibility,and SAFE1/SAFE9 classification/origin/invalidation/
+numeric/rounding/NaN/saturation/exception/check-proof preservation.
+
+D1/C1/C6 ordering remains an actual Open governing decision. Producing a policy
+record does not approve a semantic change. Milestone claims still need actual
+positive/negative execution,while isolated non-release work remains permitted.
+The15 declared vectors are not an exhaustive dependency graph; additional
+supporting prerequisites in the exact criterion text remain required. A whole
+Legality context grants no blanket acceptance of unrelated Safety clauses.
+
+Adoption source `bac91163` changes only7 qualified review states/references.
+All833 stay Open:777 allocations,56 unallocated,472 qualified current reviews
+andtwo pending (Accounting-policy1 andProduct1). Historical493 accepted/68
+pending and provisional3/182 tasks are unchanged. The new561-binding snapshot
+preserves the exact prior vector and its1262 verified spans. SH12/522,census4/13,
+boundary6/11,generated SH check and pinned changed-file lint pass. Full facets,
+granularity,legacy ACC,independent final counting and integration remain open.
+
+## Portable CI fetch failure and superseding recovery
+
+Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,
+job123720358655,failed on2026-10-29 at20:43:51UTC while resolving the
+Clojure1.12.5 POM from Maven Central with HTTP429. The failure occurred before
+leaf tests and remains recorded independently from source-test outcomes.
+The already existing run40953758973 at
+`5da47ef00521216dd7109932fb630c57dbd72c9e` completed its portable job
+123728395208 successfully. No manual retry,duplicate recovery,dependency/security
+change,alternate executor or network bypass was used. The bounded portable
+recovery receipt is `/tmp/pr554-portable-fetch-recovery-5da47ef0.edn` with SHA256
+`f19c431789dd4eb7763196ee26fba7e4b6801a283ede5aa1115ca7cb5adb764c`.
+That receipt records its observation time scope,with projections still pending
+then; later overall CI results must retain their own actual source identity.

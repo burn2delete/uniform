@@ -12961,6 +12961,25 @@
     :qualification
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
+  :foundation7-qualified-current-review-adoption
+  {:receipt
+   "specs/requirement-reconciliation/foundation7-qualified-review-adoption.edn",
+   :refined-fields 3,
+   :remaining-allocation-work 56,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :qualified-source-review-adoptions 472,
+   :pending-allocation-review 2,
+   :declared-dependency-contexts 15,
+   :source-commit "bac911632784079dbbeb93e244a3489c4208d234",
+   :status
+   :independent-finite-source-review-accepted-current-join-verified,
+   :reviewed-predicates 7,
+   :current-criteria 13,
+   :historical-adoptions-preserved 493,
+   :total-concrete-links 777,
+   :applicability
+   "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn"},
   :reviewed-criterion-source-composition
   {:canonical-mapping-adoptions 200,
    :source-reviewed-and-rebound-criteria 200,
