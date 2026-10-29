@@ -6126,7 +6126,7 @@
         functions (into (sorted-map-by #(compare %2 %1))
                         (map #(vector (get-in % [:function :function-id]) (:function %)) inputs))
         context {:ordering-core core :lookup-forms forms :lookup-bindings bindings}
-        checked (invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context 65536])
+        checked (invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context])
         updated (:function-types checked)
         function-facts (invoke-c7 'sh08-ft-function-facts [updated nodes (:module core)])
         types (reduce (fn [table function] (assoc table (:function-core-node-id function) function)) types (vals updated))
@@ -6157,7 +6157,7 @@
         core (assoc core :nodes [(get nodes body-id) (get nodes fn-id) def-node] :function-records [record] :definitions [definition])
         function (invoke-c7 'sh08-ft-function-type-skeleton [record (:module core)])
         checked (invoke-c7 'sh08-ft-update-function-returns-with-context
-                          [{(:function-id function) function} nodes types {:ordering-core core :lookup-forms forms :lookup-bindings bindings} 65536])
+                          [{(:function-id function) function} nodes types {:ordering-core core :lookup-forms forms :lookup-bindings bindings}])
         updated (get-in checked [:function-types (:function-id function)])
         typed-function (first (invoke-c7 'sh08-ft-function-facts [{(:function-id function) updated} nodes (:module core)]))
         types (assoc types fn-id updated (:node-id def-node) updated)
@@ -6175,8 +6175,8 @@
     (doseq [element atomics members [[] [element] (vec (repeat 1025 element))]]
       (let [{:keys [core record function nodes types bindings forms signature declared-type] :as input}
             (homogeneous-list-return-input (positional members) element 0)
-            derive #(invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms %])
-            result (derive 65536) premise (:premise result) row (invoke-c7 'sh08-lr-row [premise])]
+            result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms])
+            premise (:premise result) row (invoke-c7 'sh08-lr-row [premise])]
         (is (= :accepted (:status result)) (pr-str result))
         (is (= :sh08-homogeneous-list-return-v2 (:version premise)))
         (is (= :all-positional-elements-match (:relation premise)))
@@ -6185,14 +6185,13 @@
         (is (= :return-compatibility (:kind row)))
         (is (= :return (get-in row [:lhs :role])))
         (is (= premise (:dependencies row)))
-        (is (= result (derive (:work-count result))))
-        (is (= :list-return-work-limit (:reason (derive (dec (:work-count result))))))
+        (is (not (contains? result :work-count)))
         (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 0 bindings])))
         (is (false? (invoke-c7 'sh08-hl-declaration? [(:declaration input) bindings])))))
     (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
       (doseq [[actual relation] [[type :homogeneous-list-identity] [:gravity.type/never :non-returning-bottom]]]
         (let [{:keys [core record function nodes types bindings forms]} (homogeneous-list-return-input actual s 0)
-              result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536])]
+              result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms])]
           (is (= :accepted (:status result)))
           (is (= relation (get-in result [:premise :relation])))))
       (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/string :gravity.type/unknown
@@ -6209,19 +6208,18 @@
                         #(assoc-in % [:function :return] :gravity.type/list)
                         #(assoc-in % [:nodes (:body-core-node-id record) :source :form-id] :sibling)]]
           (let [{:keys [core record function nodes types bindings forms]} (mutate input)]
-            (is (= :rejected (:status (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536]))))))
+            (is (= :rejected (:status (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms]))))))
         (is (= [] (invoke-c7 'sh08-ft-signature-constraints [[record] (:module core)])))
         (let [functions {(:function-id function) function}
-              update #(invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types (:context input) %])
-              result (update 65536) returned (get-in result [:function-types (:function-id function)])]
+              result (invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types (:context input)])
+              returned (get-in result [:function-types (:function-id function)])]
           (is (= :accepted (:status result)))
           (is (= type (:return returned)))
           (is (= (positional [s]) (:return-actual-type returned)))
           (is (nil? (:return-conflict returned)))
           (is (= :sh08-homogeneous-list-return-v2 (get-in returned [:return-compatibility :version])))
           (is (= 1 (count (:constraints result))))
-          (is (= result (update (:work-count result))))
-          (is (= :list-return-work-limit (get-in (update (dec (:work-count result))) [:diagnostics 0 :reason])))))
+          (is (not (contains? result :work-count)))))
       (let [inputs [(homogeneous-list-return-input (positional (vec (repeat 1024 s))) s 0)
                     (homogeneous-list-return-input (positional []) s 1)]
             core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
@@ -6231,20 +6229,42 @@
             functions (into {} (map #(vector (get-in % [:function :function-id]) (:function %)) inputs))
             seeds (into {} (map #(vector (:body-binding-id %) (get-in % [:types (get-in % [:ids :body])])) inputs))
             context {:ordering-core core :lookup-forms forms :lookup-bindings bindings :loop-work-left 65536}
-            update #(invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context %])
-            updated (update 65536) work (:work-count updated)
+            updated (invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context])
             infer #(invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes [] [] [] [] functions seeds 10 (assoc context :loop-work-left %)])
             inferred (infer 65536) cumulative (- 65536 (:type-join-work-left inferred))]
         (is (= :accepted (:status updated)))
         (is (= 2 (count (:constraints updated))))
-        (is (= updated (update work)))
-        (is (= :list-return-work-limit (get-in (update (dec work)) [:diagnostics 0 :reason])))
+        (is (not (contains? updated :work-count)))
         (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
         (is (= [] (:diagnostics inferred)))
-        (is (> cumulative work))
+        (is (pos? cumulative))
         (is (> (:round-count inferred) 1))
         (is (= :converged (:convergence-status (infer cumulative))))
-        (is (= :list-return-work-limit (get-in (infer (dec cumulative)) [:diagnostics 0 :reason])))))))
+        (is (= :resource-limit (:convergence-status (infer 0))))))))
+
+(deftest list-return-updater-is-semantic-for-inactive-deferred-and-rejected-inputs
+  (let [input (homogeneous-list-return-input :gravity.type/unknown :gravity.type/string 0)
+        {:keys [record function nodes types forms]} input
+        functions {(:function-id function) function}
+        run #(invoke-c7 'sh08-ft-update-function-returns-with-context [%1 nodes types %2])
+        inactive (run {} (:context input))
+        deferred (run functions (:context input))
+        declared (get-in record [:signature :return])
+        malformed-context (assoc (:context input) :lookup-forms
+                                 (assoc-in forms [(:type-form-id declared) :parent-form-id] :forged))
+        rejected (invoke-c7 'sh08-ft-update-function-returns-with-context
+                           [functions nodes (assoc types (:body-core-node-id record) :gravity.type/never)
+                            malformed-context])]
+    (is (= {:status :accepted :function-types {} :constraints [] :diagnostics []} inactive))
+    (is (= :accepted (:status deferred)))
+    (is (= [] (:constraints deferred) (:diagnostics deferred)))
+    (is (nil? (get-in deferred [:function-types (:function-id function) :return-compatibility])))
+    (is (= :gravity.type/unknown
+           (get-in deferred [:function-types (:function-id function) :return-actual-type])))
+    (is (= :rejected (:status rejected)))
+    (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+    (is (= :list-return-source-mismatch (get-in rejected [:diagnostics 0 :reason])))
+    (is (every? #(not (contains? % :work-count)) [inactive deferred rejected]))))
 
 (deftest sh08-homogeneous-list-parameter-development-kernel
   (let [s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
@@ -21286,11 +21306,11 @@
   {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string})
 (defn- return-premise-derives [input]
   (let [{:keys [core record function nodes types bindings forms]} input
-        args [core record function nodes types bindings forms 65536]]
+        args [core record function nodes types bindings forms]]
     [(apply return-premise-c7 'sh08-lr-derive args)
      (apply return-premise-effects 'body-lr-derive args) (apply return-premise-emit 'p15-s23-lr-derive args)]))
 (defn- return-premise-contexts [products facts]
-  (let [args [(:core products) facts (:bindings products) (:forms products) 65536]]
+  (let [args [(:core products) facts (:bindings products) (:forms products)]]
     [(apply return-premise-effects 'body-lr-context args) (apply return-premise-emit 'p15-s23-lr-context args)]))
 (defn- return-premise? [value]
   (and (map? value) (= :sh08-homogeneous-list-return-v2 (:version value))))
@@ -22523,25 +22543,23 @@
       (is (empty? @callbacks)))
     (is (identical? metadata (meta declared)))))
 
-(deftest list-return-validation-derive-prefix-and-source-parity
+(deftest list-return-validation-derive-and-source-parity
   (doseq [actual [(recursive-validation-positional (vec (repeat 1030 :gravity.type/string)))
                   return-premise-homogeneous :gravity.type/never]]
     (let [{:keys [core record function nodes types bindings forms declaration]}
           (homogeneous-list-return-input actual :gravity.type/string 0)
-          prefix (+ 64 (count (get-in record [:signature :parameters])))
           owners [[return-premise-c7 'sh08-lr-derive]
                   [return-premise-effects 'body-lr-derive]
                   [return-premise-emit 'p15-s23-lr-derive]]
-          results (mapv (fn [[invoke helper]] (invoke helper core record function nodes types bindings forms prefix)) owners)]
+          results (mapv (fn [[invoke helper]] (invoke helper core record function nodes types bindings forms)) owners)]
       (is (every? #(= :accepted (:status %)) results))
       (is (apply = results))
-      (is (= prefix (:work-count (first results))))
+      (is (every? #(not (contains? % :work-count)) results))
       (doseq [[invoke helper] owners]
-        (is (= {:status :rejected :reason :list-return-work-limit :work-count prefix}
-               (invoke helper core record function nodes types bindings forms (dec prefix))))
-        (is (= :list-return-source-mismatch
-               (:reason (invoke helper core record function nodes types bindings
-                          (assoc-in forms [(:type-form-id declaration) :parent-form-id] :forged) prefix))))))))
+        (let [rejected (invoke helper core record function nodes types bindings
+                              (assoc-in forms [(:type-form-id declaration) :parent-form-id] :forged))]
+          (is (= :list-return-source-mismatch (:reason rejected)))
+          (is (not (contains? rejected :work-count))))))))
 
 (defn list-return-validation-large-owner-acceptance [phase]
   ;; Invoked only by the separately guarded manual owner check, never by a

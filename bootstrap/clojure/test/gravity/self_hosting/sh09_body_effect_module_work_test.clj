@@ -25,7 +25,7 @@
   (effect 'body-effect-module-ledger-work [])
   (let [seam (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original (var-get seam) calls (atom []) ledger-calls (atom 0)
-        weights (zipmap module-ledger-stage-order (range 1 37))]
+        weights (dissoc (zipmap module-ledger-stage-order (range 1 37)) 'body-lr-context)]
     (with-redefs-fn
       {seam (fn [runtime plan callee args scope]
               (when (= 'body-effect-reported-stage-work callee) (swap! ledger-calls inc))
@@ -36,6 +36,14 @@
                 (= 'body-build-graph callee) {:functions {}}
                 (contains? '#{body-function-joins-valid? body-call-joins-with-foreign-valid?
                               body-local-joins-valid?} callee) (not= failure :join)
+                (= 'body-lr-context callee)
+                (let [failed? (= failure callee)]
+                  (is (= 4 (count args)))
+                  (is (nil? (nth args 3))) ; This scripted request has no source forms.
+                  (swap! calls conj {:callee callee :argument-count (count args)})
+                  {:status (if failed? :rejected :accepted)
+                   :reason (when failed? :selected-child-failure)
+                   :context {:owner callee}})
                 (or (= 'body-is-context callee) (contains? weights callee))
                 (let [left (last args) failed? (= failure callee)
                       work (if (and resource? failed?) (inc left)
@@ -57,20 +65,25 @@
   (let [allowance 100000 ledger (effect 'body-effect-module-ledger-work [])
         prefix (+ 7 11 ledger)
         expected (vec (cons 'body-is-context module-ledger-stage-order))
+        weights (dissoc (zipmap module-ledger-stage-order (range 1 37)) 'body-lr-context)
         complete (scripted-module-ledger nil false allowance)]
     (is (= 209 ledger))
     (is (= :accepted (get-in complete [:result :status])))
     (is (= expected (mapv :callee (:calls complete))))
     (is (= 1 (:ledger-calls complete)))
-    (is (= (+ prefix (reduce + (range 1 37))) (get-in complete [:result :work-count])))
+    (is (= (+ prefix (reduce + (vals weights))) (get-in complete [:result :work-count])))
     (is (= (- allowance 7) (get-in complete [:calls 0 :allowance])))
     (doseq [[index call] (map-indexed vector (rest (:calls complete)))]
-      (is (= (- allowance prefix (reduce + (range 1 (inc index)))) (:allowance call))))
-    (doseq [failure expected resource? [false true]]
+      (if (= 'body-lr-context (:callee call))
+        (is (= {:callee 'body-lr-context :argument-count 4} call))
+        (is (= (- allowance prefix (reduce + (keep :work-count (take index (rest (:calls complete))))))
+               (:allowance call)))))
+    (doseq [failure expected resource? [false true]
+            :when (not (and resource? (= failure 'body-lr-context)))]
       (let [{:keys [result calls ledger-calls]} (scripted-module-ledger failure resource? allowance)
             invoked (inc (.indexOf expected failure))
             paid (+ 7 (if (= failure 'body-is-context) 0 ledger)
-                    (reduce + (map :work-count calls)))]
+                    (reduce + (keep :work-count calls)))]
         (is (= :rejected (:status result)))
         (is (= (if resource? :body-deferred-work-limit :selected-child-failure) (:reason result)))
         (is (= (subvec expected 0 invoked) (mapv :callee calls)))
@@ -101,7 +114,8 @@
       (is (= :incoherent-function-or-call-body-type-origin-join (get-in join [:result :reason])))
       (is (= (vec (cons 'body-is-context (take 30 module-ledger-stage-order)))
              (mapv :callee (:calls join))))
-      (is (= (+ prefix (reduce + (range 1 31))) (get-in join [:result :work-count]))))))
+      (is (= (+ prefix (reduce + (keep weights (take 30 module-ledger-stage-order))))
+             (get-in join [:result :work-count]))))))
 
 (defn- producer-ledger-fixtures []
   (mapv (fn [index]
