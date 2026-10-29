@@ -827,3 +827,35 @@ Historical acceptance remains 430 with 131 pending and none unbound. Build
 passed 5/86, census 4/13, SH 12/483 and boundary 6/11; both documentation
 validators passed. Independent allocation/facet/granularity/count review and
 normal integration remain open.
+
+## Twenty-five schema decision allocations
+
+Task source `0569306b52fe0972540c76e21d7707e1ee6eb55e` composes nine criterion
+groups across Domains/Schema, Runtime and Types. Eight exact criteria are reused
+and seventeen decisions receive supplements, with no new task identities or
+status changes. All 463 source-facet memberships match current document bytes.
+The selected `schema25-current-composition.edn` has SHA256
+`2f8b439e4c6742121a5049247fd854c2e7cbd22e22ae6aa4128c8097462a3323`.
+Declared schema/format/type constraints and target representability remain
+meaningful validation; the S2 supplement explicitly does not reinstate removed
+work or input quotas. Generation, checked consumer use and actual runtime
+authority remain distinct interfaces.
+
+Source `1ce47440d9c8bf1f2a1b684bb8a10def96fd7946` adds only the 25 allocation
+fields after exact complete-record/semantic-ID/absence guards. Removing those
+fields recovers all 344 predecessor links and every other record predicate.
+All 833 IDs and Open states survive. The transaction
+`current-decision-allocation-schema25.edn` has SHA256
+`a60faab27ad4b45dad980f0209bb3c265890cb266cf6887aab481e59916b6c15`.
+Concrete links are 369, including 66 explicitly pending independent current
+composition review; 464 cases remain to allocate. No task or implementation
+credit is added, and the provisional census remains 3/182.
+
+`current-criterion-bindings-561-schema25.edn`, SHA256
+`ec9699f564a7a32ece6f27673075292a71a04b167639509de2acbdf691112f74`,
+retains all 561 historical identities and all 1,262 current span hashes.
+Historical acceptance remains 430, with 131 pending review and none unbound.
+Domains passed 7/213, Runtime 4/67, Types 4/41, census 4/13, SH 12/495 and
+boundary 6/11; both documentation validators passed. Complete-facet,
+granularity, legacy ACC scope, final counting and independent acceptance remain
+separate work.
