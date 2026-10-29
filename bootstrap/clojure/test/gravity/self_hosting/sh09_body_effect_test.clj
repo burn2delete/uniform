@@ -2413,7 +2413,7 @@
         data [(input n k 0) (input s n 1) (input nk k 2)
               (input {:kind :gravity.type/list :shape :literal :element-types [s]} {:kind :gravity.type/list :shape :literal :element-types []} 3)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
-                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
                                              :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
                                              :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))
@@ -2463,7 +2463,7 @@
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
         data [(input (finite [s]) (finite []) 0) (input homogeneous (finite [s s]) 1)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
-                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
                                              :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
                                              :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))

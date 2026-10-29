@@ -1,0 +1,104 @@
+{:dependent-base "c8f16877f822959b7a024aed6efefad511bfb868",
+ :nonclaims
+ [:Effects-emitter-accounting-removal
+  :runtime-implementation-change
+  :general-inference-accounting-removal
+  :independent-acceptance
+  :PR502-closure],
+ :parameter-choice
+ {:historical-helper sh08-ft-ordinary-parameter-choice,
+  :existing-inline-owner sh08-ft-call-constraints-with-context,
+  :inline-expression-identical-to-complete-helper-body true,
+  :inline-expression-sha256
+  "1da071b4bb36dd83b7db40219497e703450c29c1962ff193d0f222664c197dc0",
+  :existing-caller-form-sha256
+  "0e3b7281b4b642070c0f693e80a4370d811e6a9fac2fc259d612e6f9146cd795",
+  :caller-unchanged true,
+  :decision
+  :source-incorporation-proposal-awaiting-independent-disposition},
+ :removed-accounting-APIs #{sh08-ni-type-work sh08-ij-type-work},
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303",
+   :candidate-sha256
+   "71841553644b80a43d4425081539637eacc1dd931adf1029974b1576f466f433"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5",
+   :candidate-sha256
+   "4c08d13c0cd0f51f6ff5e60b2ade506d924ebf7da6d2f127b4f06c289c53a40f"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-sha256
+   "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+   :candidate-sha256
+   "b45a8bd0cd30be40e9fb5dae0775784fecf8682c5c8367670fcb8ce8be0ffda4"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-sha256
+   "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+   :candidate-sha256
+   "a9e56bf7143d12b7ca33eded85572d6b8aa3bd6ff36ac27316e17d47b3657002"}],
+ :preserved-tests
+ [sh08-nil-if-join-type-development-kernel
+  sh08-nil-if-join-inference-development-kernel
+  sh08-list-if-join-source-development-kernel
+  sh08-list-if-join-inference-development-kernel
+  sh08-list-if-join-type-development-kernel],
+ :inference-caller sh08-ft-infer-pass-products-prepared,
+ :source-call-arities
+ {sh08-ij-type-join 2,
+  sh08-ij-step 1,
+  sh08-ni-type-join 1,
+  sh08-ij-element 2,
+  sh08-ij-derive 1},
+ :dependent-test-caller-migrations
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :only-change :remove-C7-derive-allowance-argument,
+   :call-count 2}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :only-change :remove-C7-derive-allowance-argument,
+   :call-count 4}],
+ :assessed-main "e3d990e9c6594f140a85397fd8e16a80078a4f10",
+ :kind :C7-branch-join-source-port,
+ :generator
+ {:language :clojure,
+  :sha256
+  "94e711d98c3bdba46a31e522d4861cc66e4a85bb662063957063faf411108c46",
+  :preserved-locally true},
+ :historical-definitions
+ [{:name sh08-ni-type-join,
+   :historical-and-candidate-form-sha256
+   "23fb9167ec2efe67cdef255ba7733a89e134b1b7f900cf36cda2ca44d4ddf5ed"}
+  {:name sh08-ij-atomic?,
+   :historical-and-candidate-form-sha256
+   "583544a1cffe9658b4870cee912e25d351d2530c363eaed811a31472cdc4a013"}
+  {:name sh08-ij-element,
+   :historical-and-candidate-form-sha256
+   "150abc8c9f29a08cfed41652aae88b0c9247b53e7527217ac1bca55a57a9eddf"}
+  {:name sh08-ij-type-join,
+   :historical-and-candidate-form-sha256
+   "eafe01643ed5c5a4dd240a286095002c2e9a22116610df693b2e5f969b157014"}
+  {:name sh08-ij-normal-type,
+   :historical-and-candidate-form-sha256
+   "98a9e69ceda8d6c29518389df1bf3be65ffe245f99feb359b38adc062a782b45"}
+  {:name sh08-ij-derive,
+   :historical-and-candidate-form-sha256
+   "64376f7175eb15cb2224a36d788214a554269f5faf69171b5eb9d092acee9d84"}
+  {:name sh08-ij-step,
+   :historical-and-candidate-form-sha256
+   "93a36ecae07022dd83ece01285ca8283945c0c40c4c6117a0934a230d1dd71e6"}],
+ :validation
+ {:reader-eval false,
+  :duplicate-definitions-rejected true,
+  :preserved-full-form-comparison :pass,
+  :direct-call-arities :pass,
+  :semantic-execution :UNRUN,
+  :Bootstrap-loaded false},
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}
