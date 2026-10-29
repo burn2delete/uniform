@@ -74,8 +74,8 @@ for source occurrences. Raw UTF-8 spans/hashes and API identities are checked;
 Run with the exact composed manifest supplied by the canonical owner:
 
 ```bash
-clojure -J-Xmx1g -M tools/domain_requirement_patch.clj EXACT-COMPOSED-MANIFEST.edn
-clojure -J-Xmx1g -M tools/domain_requirement_patch_test.clj EXACT-COMPOSED-MANIFEST.edn
+clojure -J-Xmx1g -Sdeps '{:paths ["bootstrap/clojure/src" "tools"]}' -M -m domain-requirement-patch EXACT-COMPOSED-MANIFEST.edn
+clojure -J-Xmx1g -Sdeps '{:paths ["bootstrap/clojure/src" "tools"]}' -M tools/domain_requirement_patch_test.clj EXACT-COMPOSED-MANIFEST.edn
 ```
 
 The focused controls passed: 3 tests, 22 assertions. They refuse stale/repeated
@@ -101,3 +101,21 @@ and patch mechanics, not semantic independent acceptance or implementation
 conformance. Review routing and aggregate adoption remain with the canonical
 owner; this candidate confers no release, platform-product, self-hosting or
 seed-retirement credit.
+
+## CI successor qualification
+
+Original candidate `0199e14d0c60f46a7c8cf8f43a988eefeeb178e3`, tree
+`64e77bccd76d7e952f8d6507097d8a22af5cbe43`, remains preserved. CI run
+`40800225903` found an unresolved namespace in the new test loader and rejected
+changed task-source spans. The successor uses a declared test namespace with an
+ordinary required tool namespace and an explicit `-main` entrypoint; the focused
+3 tests/22 assertions pass using the commands above. Local clj-kondo is absent,
+so the corrected static check remains for CI.
+
+The proposal, task and generated-roadmap bytes are unchanged by this repair.
+The canonical owner confirmed the shared source-version successor is already
+active in PR554 and must compose distinct family task amendments before
+rebinding their spans. This family draft does not update shared SH mapping,
+copy prior acceptance forward or weaken stale-input controls. Its source-span
+CI rejection remains an explicit central-composition dependency; independently
+reviewed semantic entailment and adoption remain pending.

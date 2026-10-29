@@ -1,12 +1,13 @@
-(binding [*command-line-args* nil] (load-file "tools/domain_requirement_patch.clj"))
-(require '[clojure.test :refer [deftest is run-tests]] '[clojure.edn :as edn])
-(def p (edn/read-string (slurp domain-requirement-patch/proposal-path)))
+(ns domain-requirement-patch-test
+  (:require [domain-requirement-patch :as patch]
+            [clojure.test :refer [deftest is run-tests]] [clojure.edn :as edn]))
+(def p (edn/read-string (slurp patch/proposal-path)))
 (def m (edn/read-string (slurp (first *command-line-args*))))
 (defn refuses? [f] (try (f) false (catch Exception _ true)))
-(def git-source (memoize domain-requirement-patch/git-text))
+(def git-source (memoize patch/git-text))
 (defn validate [proposal model]
-  (with-redefs [domain-requirement-patch/git-text git-source]
-    (domain-requirement-patch/validate! proposal model)))
+  (with-redefs [patch/git-text git-source]
+    (patch/validate! proposal model)))
 
 (deftest exact-family-and-guarded-application
   (let [result (validate p m)

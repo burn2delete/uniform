@@ -103,5 +103,5 @@
   (let [p (edn/read-string (slurp proposal-path)) s (slurp (first args))]
     (require! (= (get-in p [:manifest :sha256]) (sha s)) "Wrong composed input manifest")
     (prn (validate! p (edn/read-string s)))))
-(when (and (seq *command-line-args*) (str/ends-with? *file* "domain_requirement_patch.clj"))
-  (try (run *command-line-args*) (finally (shutdown-agents))))
+(defn -main [& args]
+  (try (run args) (finally (shutdown-agents))))
