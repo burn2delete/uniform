@@ -1,0 +1,228 @@
+{:dependent-base "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :nonclaims
+ [:lowering-accounting-removal
+  :Effects-C8-acceptance
+  :DSE-port
+  :runtime-execution
+  :source-authentication
+  :PR502-closure],
+ :tests
+ [{:added-tag-stripped-candidate-cases 8,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj",
+   :positive-test-complete-body-preserved true,
+   :original-candidate-cases 15,
+   :historical-sha256
+   "be7a85c9625c3e102e601e6e7813748f950942fa4dd15951d09bb5a1fbe84f5d",
+   :all-original-negative-assertions-preserved true,
+   :added-native-record-cases 4,
+   :accounting-test-disposition
+   :retired-payment-assertions-preserved-complete-status,
+   :semantic-execution :UNRUN,
+   :candidate-sha256
+   "74cf9a9074af7eef3aee982eb0d02d04242c2e35d5ef7de5d8441658471b4dc1"}
+  {:added-tag-stripped-candidate-cases 8,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj",
+   :positive-test-complete-body-preserved true,
+   :original-candidate-cases 15,
+   :historical-sha256
+   "282c319520ef910b965f74856307252d912419eaf76e6fd10d7a756df2f8c589",
+   :all-original-negative-assertions-preserved true,
+   :added-native-record-cases 4,
+   :accounting-test-disposition
+   :retired-payment-assertions-preserved-complete-status,
+   :semantic-execution :UNRUN,
+   :candidate-sha256
+   "aedba1a86d390596981b2a62d3cb929706a82da8a2a887b6035f3cac7b8d72f2"}],
+ :static-validation
+ {:reader-eval false,
+  :duplicate-definitions-rejected true,
+  :changes-confined-to-five-definitions true,
+  :all-old-reconstruction-and-accounting-forms-preserved true,
+  :Bootstrap-loaded false},
+ :genuine-acceptance :UNRUN,
+ :emitter-input
+ {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+  :base-sha256
+  "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+  :candidate-sha256
+  "42192348681811452b4f5ede36eb342c74a05bdb21d5b76dd61bf415d2534efc"},
+ :kind :mixed-ledger-source-successor,
+ :independent-review :pending-coordinator-routing,
+ :generator
+ {:language :clojure,
+  :sha256
+  "9cb520e9f4f9b6f513b1005f415a5378e1c897d4b3b851a317522f16055f7ac9",
+  :preserved-locally true},
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :censuses
+ [{:name p15-s23-lset-row-census,
+   :historical-sha256
+   "d29a16e6838740f7ec179a4891e4ed9f1a2117147e0e2b4136486915d37ff35b",
+   :base-sha256
+   "86d75038f6f089419321eb03e8d4bebc24c4015a35cf4d1a5d58973447f4fbb7",
+   :candidate-sha256
+   "fdbfc5f8f3fdcb16fb7991d83820cc90cb3dcd322151990caedc49a7b44dcefa",
+   :accounting-and-reconstruction-body-unchanged true,
+   :classification-condition-without-native-guard-normalization
+   (if
+    (= :sh08-list-set-conversion-v1 producer)
+    true
+    (let
+     [lhs
+      (get row :lhs)
+      dependencies
+      (get row :dependencies)
+      request
+      (get row :constraint-id-request)
+      projection
+      (if (map? lhs) (get lhs :projection) nil)
+      kind
+      (if (map? dependencies) (get dependencies :kind) nil)
+      domain
+      (if (map? request) (get request :domain) nil)]
+     (if
+      (if
+       (keyword? projection)
+       (= :list-set-conversion projection)
+       false)
+      true
+      (if
+       (if
+        (keyword? kind)
+        (= :gravity.type/applied-list-set-conversion kind)
+        false)
+       true
+       (if
+        (keyword? domain)
+        (= :gravity/sh08-list-set-conversion-constraint-v1 domain)
+        false)))))}
+  {:name p15-s23-lset-fact-census,
+   :historical-sha256
+   "b77edaae23bc9cf268600dfb2a9278f04a8c8d43a7c70d7f7d5286bd99535daf",
+   :base-sha256
+   "6fad3fa527d4fd7576ead58acb7da1e5cb166cca4b107a00aa307f492ef11acb",
+   :candidate-sha256
+   "c9e8a32d02d78408aaad4bfbd153d8789a41b33bb0dde4f721020cac5491926a",
+   :accounting-and-reconstruction-body-unchanged true,
+   :classification-condition-without-native-guard-normalization
+   (if
+    (= :direct-list-set-conversion dispatch)
+    true
+    (if
+     (contains? fact :applied-list-set-conversion)
+     true
+     (if
+      (contains? descriptors id)
+      true
+      (let
+       [request
+        (get fact :fact-id-request)
+        domain
+        (if (map? request) (get request :domain) nil)]
+       (if
+        (keyword? domain)
+        (= :gravity/sh08-list-set-conversion-call-type-fact-v1 domain)
+        false)))))}
+  {:name p15-s23-mkeys-row-census,
+   :historical-sha256
+   "be7543ab9cd503fa29402af40f3190b3c28a10962053bcc73c3f94e69c36b59e",
+   :base-sha256
+   "a703f3dcdc8e26e368e125573d9d4161dee6352bd9c35de0a813c284b4986161",
+   :candidate-sha256
+   "aa923c0cb16ba76e6791e2fd38acf68efe027142d0f13db248352763e3331ada",
+   :accounting-and-reconstruction-body-unchanged true,
+   :classification-condition-without-native-guard-normalization
+   (if
+    (= :sh08-map-keys-v1 producer)
+    true
+    (let
+     [lhs
+      (get row :lhs)
+      dependencies
+      (get row :dependencies)
+      request
+      (get row :constraint-id-request)
+      projection
+      (if (map? lhs) (get lhs :projection) nil)
+      kind
+      (if (map? dependencies) (get dependencies :kind) nil)
+      domain
+      (if (map? request) (get request :domain) nil)]
+     (if
+      (if (keyword? projection) (= :map-keys projection) false)
+      true
+      (if
+       (if
+        (keyword? kind)
+        (= :gravity.type/applied-map-keys kind)
+        false)
+       true
+       (if
+        (keyword? domain)
+        (= :gravity/sh08-map-keys-constraint-v1 domain)
+        false)))))}
+  {:name p15-s23-mkeys-fact-census,
+   :historical-sha256
+   "b15f00dd647a94cf2478c516ad0396fd8ea47cf49074364879a9b91dab9a6374",
+   :base-sha256
+   "2a3d370bc89a301fc9dda951f7548b72831277cf5f7d1e62ddc962a2b9b67f7a",
+   :candidate-sha256
+   "f530bf00c67211e0906610735e55cf040614981b8ae44c40951442101822e3f3",
+   :accounting-and-reconstruction-body-unchanged true,
+   :classification-condition-without-native-guard-normalization
+   (if
+    (= :direct-map-keys dispatch)
+    true
+    (if
+     (contains? fact :applied-map-keys)
+     true
+     (if
+      (contains? descriptors id)
+      true
+      (let
+       [request
+        (get fact :fact-id-request)
+        domain
+        (if (map? request) (get request :domain) nil)]
+       (if
+        (keyword? domain)
+        (= :gravity/sh08-map-keys-call-type-fact-v1 domain)
+        false)))))}],
+ :native-record-guard
+ {:name typed-ledger-record?,
+  :sha256
+  "4f3481426e78e249cb853f8ecbff08627cf4a89ca4dde9fc06c879eb153703dc",
+  :limits-added false,
+  :complete-form
+  (defn
+   typed-ledger-record?
+   [value]
+   (let
+    [header
+     (bootstrap-native-carrier-header value)
+     kind
+     (get header 0)]
+    (if
+     (get header 1)
+     false
+     (if
+      (if
+       (= :map kind)
+       true
+       (if
+        (= :tree-map kind)
+        (= :default-comparator (get header 4))
+        false))
+      (if
+       (if (integer? (get header 2)) (>= (get header 2) 0) false)
+       (loop
+        [fields (keys value)]
+        (if
+         (= 0 (count fields))
+         true
+         (if (keyword? (first fields)) (recur (rest fields)) false)))
+       false)
+      false))))},
+ :owner :ACC-01}

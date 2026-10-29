@@ -6318,15 +6318,32 @@
               (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
             {:status :rejected})))) {:status :rejected}))
 
+(defn typed-ledger-record? [value]
+  (let [header (bootstrap-native-carrier-header value) kind (get header 0)]
+    (if (get header 1) false
+      (if (if (= :map kind) true
+            (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
+        (if (if (integer? (get header 2)) (>= (get header 2) 0) false)
+          (loop [fields (keys value)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false))) false) false))))
+
 (defn p15-s23-lset-row-census [core ledger nodes bindings types calls edges target descriptor budget]
   (let [base (* 4 (count ledger))]
     (if (> base budget) {:status :rejected :reason :list-set-conversion-work-limit :work-count base}
       (loop [index 0 items [] seen #{} descriptors {} used base]
         (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
-          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+          (let [row (get ledger index) producer (if (typed-ledger-record? row) (get row :producer-rule :ordinary-local-function-call) nil)]
             (if (keyword? producer)
-              (if (= :sh08-list-set-conversion-v1 producer)
-                (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
+              (if (if (= :sh08-list-set-conversion-v1 producer) true
+                    (let [lhs (get row :lhs) dependencies (get row :dependencies) request (get row :constraint-id-request)
+                          projection (if (typed-ledger-record? lhs) (get lhs :projection) nil)
+                          kind (if (typed-ledger-record? dependencies) (get dependencies :kind) nil)
+                          domain (if (typed-ledger-record? request) (get request :domain) nil)]
+                      (if (if (keyword? projection) (= :list-set-conversion projection) false) true
+                        (if (if (keyword? kind) (= :gravity.type/applied-list-set-conversion kind) false) true
+                          (if (keyword? domain) (= :gravity/sh08-list-set-conversion-constraint-v1 domain) false)))))
+                (let [lhs (get row :lhs) id (if (typed-ledger-record? lhs) (get lhs :core-node-id) nil)]
                   (if (p15-s23-sse-ids? [id] 1)
                     (if (contains? seen id) {:status :rejected :reason :list-set-conversion-source-mismatch :work-count used}
                       (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
@@ -6352,11 +6369,16 @@
           (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
             {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
-                id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil)]
+                id (if (typed-ledger-record? fact) (get fact :call-core-node-id) nil)
+                dispatch (if (typed-ledger-record? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
             (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
-                (if (= :direct-list-set-conversion dispatch)
+                (if (if (= :direct-list-set-conversion dispatch) true
+                      (if (contains? fact :applied-list-set-conversion) true
+                        (if (contains? descriptors id) true
+                          (let [request (get fact :fact-id-request)
+                                domain (if (typed-ledger-record? request) (get request :domain) nil)]
+                            (if (keyword? domain) (= :gravity/sh08-list-set-conversion-call-type-fact-v1 domain) false)))))
                   (if (contains? seen id) {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}
                     (let [canonical (get descriptors id)]
                       (if (if (map? canonical) (= (p15-s23-lset-call-fact canonical module) fact) false)
@@ -6650,10 +6672,17 @@
     (if (> base budget) {:status :rejected :reason :map-keys-work-limit :work-count base}
       (loop [index 0 items [] seen #{} descriptors {} used base]
         (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
-          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+          (let [row (get ledger index) producer (if (typed-ledger-record? row) (get row :producer-rule :ordinary-local-function-call) nil)]
             (if (keyword? producer)
-              (if (= :sh08-map-keys-v1 producer)
-                (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
+              (if (if (= :sh08-map-keys-v1 producer) true
+                    (let [lhs (get row :lhs) dependencies (get row :dependencies) request (get row :constraint-id-request)
+                          projection (if (typed-ledger-record? lhs) (get lhs :projection) nil)
+                          kind (if (typed-ledger-record? dependencies) (get dependencies :kind) nil)
+                          domain (if (typed-ledger-record? request) (get request :domain) nil)]
+                      (if (if (keyword? projection) (= :map-keys projection) false) true
+                        (if (if (keyword? kind) (= :gravity.type/applied-map-keys kind) false) true
+                          (if (keyword? domain) (= :gravity/sh08-map-keys-constraint-v1 domain) false)))))
+                (let [lhs (get row :lhs) id (if (typed-ledger-record? lhs) (get lhs :core-node-id) nil)]
                   (if (p15-s23-sse-ids? [id] 1)
                     (if (contains? seen id) {:status :rejected :reason :map-keys-source-mismatch :work-count used}
                       (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
@@ -6679,11 +6708,16 @@
           (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
             {:status :rejected :reason :map-keys-source-mismatch :work-count work})
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
-                id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil)]
+                id (if (typed-ledger-record? fact) (get fact :call-core-node-id) nil)
+                dispatch (if (typed-ledger-record? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
             (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
-                (if (= :direct-map-keys dispatch)
+                (if (if (= :direct-map-keys dispatch) true
+                      (if (contains? fact :applied-map-keys) true
+                        (if (contains? descriptors id) true
+                          (let [request (get fact :fact-id-request)
+                                domain (if (typed-ledger-record? request) (get request :domain) nil)]
+                            (if (keyword? domain) (= :gravity/sh08-map-keys-call-type-fact-v1 domain) false)))))
                   (if (contains? seen id) {:status :rejected :reason :map-keys-source-mismatch :work-count work}
                     (let [canonical (get descriptors id)]
                       (if (if (map? canonical) (= (p15-s23-mkeys-call-fact canonical module) fact) false)
