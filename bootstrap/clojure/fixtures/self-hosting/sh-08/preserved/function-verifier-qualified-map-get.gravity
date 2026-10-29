@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.function-verifier-qualified-map-get
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn shade [] :- Keyword (gravity.core/get {:shade :copper} :shade))
