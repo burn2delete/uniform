@@ -216,6 +216,65 @@
       (is (nil? (find-ns 'gravity.self-hosting.sh01-parallel-test-runner)))
       (finally (doseq [f (reverse (file-seq directory))] (.delete ^java.io.File f))))))
 
+(deftest explicit-absolute-executable-binding-avoids-path-selection
+  (let [directory (.getCanonicalFile (.toFile (java.nio.file.Files/createTempDirectory
+                     "selected-Git-direct-" (make-array java.nio.file.attribute.FileAttribute 0))))
+        path #(str (io/file directory %)) root (.getCanonicalPath (io/file "."))
+        executable (io/file directory "git")
+        _ (spit executable "inert binary fixture") _ (.setExecutable executable true)
+        _ (spit (path "config") "[core]\n")
+        identity {:invocation :absolute-executable :executable (path "git")
+                  :dispatch-files [] :selection-links [] :configuration-files [(path "config")]}
+        env {:fixture :inherited}]
+    (try
+      (with-redefs-fn {#'request/git-path (fn [] (throw (ex-info "PATH must not be selected" {})))
+                      #'request/environment (constantly env)}
+        (fn []
+          (let [binding (request/git-binding! root identity)]
+            (is (= (path "git") (:argv-executable binding)))
+            (is (nil? (:path-selected-entry binding)))
+            (is (= :inherit-unchanged (:environment-policy binding)))
+            (is (nil? (request/verify-git-binding! binding)))
+            (let [launches (atom 0)
+                  ports {:verify-git! request/verify-git-binding!
+                         :launch (fn [& _] (swap! launches inc))}]
+              (is (= :selected-Git-identity-drift
+                     (try (git/git! ports (assoc binding :argv-executable "git")
+                                    (atom []) root "rev-parse" "HEAD") nil
+                          (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+              (is (zero? @launches)))
+            (doseq [command git/commands]
+              (let [events (atom []) records (atom [])
+                    process (fake-process (.getBytes " direct-result\n" "UTF-8") (byte-array 0) 0 events nil)
+                    ports (controls process events (Object.) nil)]
+                (is (= "direct-result" (apply git/git! ports binding records root command)))
+                (is (some #{[:launch (into [(path "git") "-C" root] command) root]} @events))))
+            (spit (path "config") "[core]\nchanged=true\n")
+            (is (= :selected-Git-identity-drift
+                   (try (request/verify-git-binding! binding) nil
+                        (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+            (spit (path "config") "[core]\n")
+            (with-redefs [request/environment (constantly {:fixture :changed})]
+              (is (= :selected-Git-identity-drift
+                     (try (request/verify-git-binding! binding) nil
+                          (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
+            (doseq [bad [(assoc identity :invocation :unknown)
+                         (assoc identity :executable "git")
+                         (assoc identity :executable (path "missing"))
+                         (assoc identity :executable (path "./git"))]]
+              (is (= :selected-Git-executable
+                     (try (request/git-binding! root bad) nil
+                          (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
+            (spit executable "changed inert binary")
+            (is (= :selected-Git-identity-drift
+                   (try (request/verify-git-binding! binding) nil
+                        (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+            (.setExecutable executable false)
+            (is (= :selected-Git-executable
+                   (try (request/git-binding! root identity) nil
+                        (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))))
+      (finally (doseq [f (reverse (file-seq directory))] (.delete ^java.io.File f))))))
+
 (deftest executable-configuration-and-absence-drift-refuse-without-target-execution
   (let [directory (.getCanonicalFile (.toFile (java.nio.file.Files/createTempDirectory "selected-Git-identity-"
                            (make-array java.nio.file.attribute.FileAttribute 0))))

@@ -359,3 +359,39 @@ four new candidate tests / 37 assertions; lint reports zero errors/warnings.
 There was no target Git adapter invocation, owner/C3 execution, acquisition,
 process probe, global freeze, configuration write or copied secret. The
 candidate supplies no acceptance, release, containment or runtime guarantee.
+
+### Explicit absolute Git invocation
+
+The inactive comparison at `b8604b56` received independent source PASS only,
+receipt SHA256
+`31da229b54bff2086050c68fbb81540bf6f237580d028cc0afce9c730810e103`:
+four candidate tests / 37 assertions and 817 independent controls. That review
+did not establish effective configuration or native semantic equivalence.
+
+A selected identity can now explicitly declare `:invocation
+:absolute-executable`. In that mode, the executable must be an existing,
+executable, canonical absolute regular file without a symlink alias. Its exact
+path becomes argv[0] through the already-pinned public runner's ProcessBuilder
+argument vector. No PATH discovery or Apple dispatcher is used to select the
+main executable. The existing default `:path` mode retains `git` and its
+original selection checks. Unsupported modes refuse before launch.
+
+The selected adapter now consumes the bound argv[0]; the four command suffixes,
+`-C root`, CWD, inherited environment, stream semantics and retained lifecycle
+are unchanged. Changing a binding back to `git` fails its prelaunch identity
+check. No current request selects this new mode, no new request is frozen, and
+the configuration comparison remains strict. This closes only the source-owned
+choice of the main executable; it does not establish its correspondence to
+vendor source, native libraries, helper selection or configuration search.
+
+In particular, Apple's [executable-path source](https://raw.githubusercontent.com/apple-oss-distributions/Git/Git-155/src/git/exec-cmd.c)
+derives system paths using compile-time settings and, in runtime-prefix builds,
+the executable location. Choosing an absolute main executable does not prove
+those build settings or the effective search closure. Includes, valid-config
+and current-branch applicability, fsmonitor/submodule/helper paths and a reviewed
+new request remain required before any later projection or admission.
+
+The compiler-free affected panel passes 25 tests / 343 assertions; the new
+absolute-invocation test contributes 38 assertions. The boundary gate passes
+6 tests / 11 assertions. These controls use inert fixture files and fake Process
+ports; no actual runner, selected target, owner, broker or C3 execution occurs.

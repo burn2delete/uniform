@@ -116,10 +116,20 @@
         (str/split (or (System/getenv "PATH") "") (re-pattern java.io.File/pathSeparator))))
 
 (defn git-binding! [root identity]
-  (h/ensure! (and (seq (:configuration-files identity)) (:executable identity)
-                  (= (.getCanonicalPath (io/file (:executable identity)))
-                     (some-> (git-path) io/file .getCanonicalPath))) :selected-Git-executable)
-  {:root root :cwd root :argv-executable "git" :path-selected-entry (git-path)
+  (let [invocation (get identity :invocation :path)
+        executable (some-> (:executable identity) io/file)
+        direct? (= :absolute-executable invocation)]
+    (h/ensure! (and (seq (:configuration-files identity)) executable
+                    (case invocation
+                      :path (= (.getCanonicalPath executable)
+                               (some-> (git-path) io/file .getCanonicalPath))
+                      :absolute-executable
+                      (and (.isAbsolute executable) (.isFile executable) (.canExecute executable)
+                           (= (.getPath executable) (.getCanonicalPath executable))
+                           (not (Files/isSymbolicLink (.toPath executable))))
+                      false)) :selected-Git-executable)
+  {:root root :cwd root :argv-executable (if direct? (.getPath executable) "git")
+   :path-selected-entry (when-not direct? (git-path))
    :identity-inputs identity :environment (environment)
    :executable-inputs (mapv path-state (into [(:executable identity)] (:dispatch-files identity)))
    :selection-inputs (mapv path-state (:selection-links identity))
@@ -128,7 +138,7 @@
    :native-dispatch-and-config-search-coverage :requires-independent-source-assessment
    :stdin :immediate-close :stdout-encoding "UTF-8"
    :stderr-encoding (.name (java.nio.charset.Charset/defaultCharset))
-   :stream-retention :complete-as-shell-sh :environment-policy :inherit-unchanged})
+   :stream-retention :complete-as-shell-sh :environment-policy :inherit-unchanged}))
 
 (defn verify-git-binding! [binding]
   (h/ensure! (and (nil? shell/*sh-dir*) (nil? shell/*sh-env*)

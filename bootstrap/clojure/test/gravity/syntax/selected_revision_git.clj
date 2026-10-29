@@ -93,7 +93,8 @@
 (defn git! [ports binding records root & args]
   (h/ensure! (and (= root (:root binding)) (contains? commands (vec args)))
              :selected-C3-Git-command)
-  (let [result (shell-result! ports binding records (into ["git" "-C" root] args))]
+  (let [result (shell-result! ports binding records
+                             (into [(get binding :argv-executable "git") "-C" root] args))]
     (h/ensure! (zero? (:exit result)) :git-identity-read)
     (str/trim (:out result))))
 
