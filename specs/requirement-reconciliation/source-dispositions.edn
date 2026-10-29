@@ -82355,8 +82355,18 @@
        :end-byte 36476,
        :start-byte 24477}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c1/pipeline-manifest",
     :task-links
     [{:task-id "pipeline",
@@ -82842,8 +82852,18 @@
        :end-byte 36476,
        :start-byte 24477}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c1/pipeline-order",
     :task-links
     [{:task-id "pipeline",
@@ -83498,8 +83518,18 @@
        :end-byte 5552,
        :start-byte 5208}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c1/preserve-evidence",
     :task-links
     [{:task-id "pipeline",
@@ -85318,8 +85348,18 @@
        :end-byte 36476,
        :start-byte 24477}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c1/verification-gates",
     :task-links
     [{:task-id "pipeline",
@@ -86391,8 +86431,18 @@
        :end-byte 1571,
        :start-byte 1200}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c12/domain-semantic-anchor",
     :task-links
     [{:task-id "domain-ir-boundaries",
@@ -88049,8 +88099,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c16/dependency-invalidation",
     :task-links
     [{:task-id
@@ -89841,8 +89901,18 @@
        :end-byte 2001,
        :start-byte 892}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c17/plugin-domain-registration",
     :task-links
     [{:task-id "plugins",
@@ -90400,8 +90470,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c17/plugin-load-compatibility",
     :task-links
     [{:task-id "plugins",
@@ -90932,8 +91012,18 @@
        :end-byte 36476,
        :start-byte 24477}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c17/plugin-output-verification",
     :task-links
     [{:task-id "plugins",
@@ -91466,8 +91556,18 @@
        :end-byte 18801,
        :start-byte 13770}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c17/plugin-reuse-trace",
     :task-links
     [{:task-id "plugins",
@@ -91991,8 +92091,18 @@
        :end-byte 2001,
        :start-byte 892}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c17/plugin-scoped-authority",
     :task-links
     [{:task-id "plugins",
@@ -92834,8 +92944,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/counterexample-regression",
     :task-links
     [{:task-id "pass-evidence",
@@ -93408,8 +93528,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/pass-risk-evidence",
     :task-links
     [{:task-id "pass-evidence",
@@ -94005,8 +94135,18 @@
        :end-byte 21686,
        :start-byte 15024}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/release-evidence-gate",
     :task-links
     [{:task-id "pass-evidence",
@@ -94564,8 +94704,18 @@
        :end-byte 5552,
        :start-byte 5208}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/transformation-validation",
     :task-links
     [{:task-id "pass-evidence",
@@ -95094,8 +95244,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/trust-report",
     :task-links
     [{:task-id "pass-evidence",
@@ -95576,8 +95736,18 @@
        :end-byte 2853,
        :start-byte 1387}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c18/verification-provenance",
     :task-links
     [{:task-id "pass-evidence",
@@ -96060,8 +96230,18 @@
        :end-byte 2868,
        :start-byte 1381}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "compiler/c3/origin-preservation",
     :task-links
     [{:task-id
@@ -265228,8 +265408,18 @@
        :end-byte 36476,
        :start-byte 24477}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe1/outcomes",
     :task-links
     [{:task-id
@@ -268101,8 +268291,18 @@
        :end-byte 21314,
        :start-byte 17548}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe1/runtime-checks",
     :task-links
     [{:task-id
@@ -269374,8 +269574,18 @@
        :end-byte 22329,
        :start-byte 21316}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe1/safety-artifact",
     :task-links
     [{:task-id
@@ -281860,8 +282070,18 @@
        :end-byte 2001,
        :start-byte 892}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe12/hygiene",
     :task-links
     [{:task-id
@@ -290918,8 +291138,18 @@
        :end-byte 5778,
        :start-byte 5394}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe15/check-erasure",
     :task-links
     [{:task-id
@@ -303433,8 +303663,18 @@
        :end-byte 31883,
        :start-byte 17174}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe3/borrow-exclusivity",
     :task-links
     [{:task-id
@@ -306423,8 +306663,18 @@
        :end-byte 31883,
        :start-byte 17174}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe3/ownership-move",
     :task-links
     [{:task-id
@@ -314774,8 +315024,18 @@
        :end-byte 31883,
        :start-byte 17174}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "safety/safe5/terminal-flow",
     :task-links
     [{:task-id
@@ -361962,8 +362222,18 @@
        :end-byte 16076,
        :start-byte 743}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test1/fixture-contract",
     :task-links
     [{:task-id
@@ -362236,8 +362506,18 @@
        :end-byte 2001,
        :start-byte 892}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test1/offline-authority",
     :task-links
     [{:task-id
@@ -366725,8 +367005,18 @@
        :end-byte 1597,
        :start-byte 704}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/abi-layout",
     :task-links
     [{:task-id "backend-conformance",
@@ -366890,8 +367180,18 @@
        :end-byte 41664,
        :start-byte 37341}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/differential",
     :task-links
     [{:task-id "backend-conformance",
@@ -367035,8 +367335,18 @@
        :end-byte 15022,
        :start-byte 14122}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/manifest",
     :task-links
     [{:task-id "backend-conformance",
@@ -367232,8 +367542,18 @@
        :end-byte 13481,
        :start-byte 758}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/report",
     :task-links
     [{:task-id "backend-conformance",
@@ -367397,8 +367717,18 @@
        :end-byte 15022,
        :start-byte 14122}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/source-maps",
     :task-links
     [{:task-id "backend-conformance",
@@ -367564,8 +367894,18 @@
        :end-byte 4679,
        :start-byte 495}}],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn",
+     :sha256
+     "ffc24b78f34978b99b5e9b3b1bd3fb821f5f50e79fecc3a016b1df37d7380d8a",
+     :independent-receipt-sha256
+     "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :scope :exact34-current-source-criterion-guard-joins},
     :semantic-source-id "testing/test6/unsupported-rejection",
     :task-links
     [{:task-id "backend-conformance",

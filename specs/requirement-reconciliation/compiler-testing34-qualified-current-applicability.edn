@@ -1,0 +1,1876 @@
+{:current-links
+ [{:decision-id "interface/compiler/c1/pipeline-manifest",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pipeline",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 13005,
+     :end-byte 13870,
+     :raw-sha256
+     "9dff8e486e03f246d3f80bb0c6de10b22e0847b7a85959ad2eb9da777199040d"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 16612,
+    :start-byte 743},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}]}
+  {:decision-id "interface/compiler/c1/pipeline-order",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pipeline",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 13872,
+     :end-byte 14917,
+     :raw-sha256
+     "3af551111237dc13a4369e83480bbae7e1cdf18044a50a146933bd8f93772ad7"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 16612,
+    :start-byte 743},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}]}
+  {:decision-id "interface/compiler/c1/preserve-evidence",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pipeline",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 14919,
+     :end-byte 16076,
+     :raw-sha256
+     "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 16612,
+    :start-byte 743},
+   :dependency-interfaces
+   [{:task-id
+     "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts",
+     :path "specs/syntax-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/syntax-workflow/tasks.md",
+      :task-id
+      "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts",
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "7171e5828524f6e427e1fbaa6dded8c092598bedcb3bf38f5a6a74370e41c569",
+      :marker "syntax-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 3175,
+      :start-byte 2855}}
+    {:task-id
+     "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+     :path "specs/opt-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/opt-workflow/tasks.md",
+      :task-id
+      "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :marker "opt-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 5552,
+      :start-byte 5208}}]}
+  {:decision-id "interface/compiler/c1/verification-gates",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pipeline",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 1596,
+     :end-byte 1862,
+     :raw-sha256
+     "2ff06c4fa6eec7106703fcfbd1cd8b512237279ca4c19728ca83686d6a119155"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 2171,
+     :end-byte 2411,
+     :raw-sha256
+     "6cce60263446279e5095012d2025454332187df20f397be13840d2b65f591032"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 16612,
+    :start-byte 743},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}]}
+  {:decision-id "interface/compiler/c12/domain-semantic-anchor",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "domain-ir-boundaries",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 42045,
+     :end-byte 43101,
+     :raw-sha256
+     "82e2eff580ca3d88d30b5fa8936e0128d260a4abc56807aeff37e31596d8462c"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "domain-ir-boundaries",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "6db132256a078406e47bfa7a9487164f6b1cb89d5c13d6d6c70396a9ad302c9b",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 43101,
+    :start-byte 37491},
+   :dependency-interfaces
+   [{:task-id
+     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+     :path "specs/mir-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/mir-workflow/tasks.md",
+      :task-id
+      "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+      :file-sha256
+      "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+      :raw-sha256
+      "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+      :marker "mir-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 1571,
+      :start-byte 1200}}]}
+  {:decision-id "interface/compiler/c16/dependency-invalidation",
+   :path "specs/build-workflow/tasks.md",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+     :start-byte 26000,
+     :end-byte 27237,
+     :raw-sha256
+     "f2d5542fdd3bda853a0ffb4e2f3e72e72848b6ef0eb86b996fb967e0a39dfef1"}],
+   :current-task-context
+   {:path "specs/build-workflow/tasks.md",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :file-sha256
+    "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+    :raw-sha256
+    "82b33eaa89dcc7f9dccea0c93e36accead86f5e27f68a619d6ca814113d7151e",
+    :marker "build-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 27237,
+    :start-byte 22206},
+   :dependency-interfaces
+   [{:task-id
+     "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+     :path "specs/resolve-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/resolve-workflow/tasks.md",
+      :task-id
+      "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+      :file-sha256
+      "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+      :raw-sha256
+      "61bfa7a043bccb0a8de89a9d52f9189bf7d1dc10c6790b41f705a40180800f2b",
+      :marker "resolve-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 3815,
+      :start-byte 3473}}
+    {:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/compiler/c17/plugin-domain-registration",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "plugins",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 22829,
+     :end-byte 23945,
+     :raw-sha256
+     "2e4110420519bd525f433c2fcbe688b6120b7669047d4961a5e7ec18ab48be41"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 25488,
+    :start-byte 16614},
+   :dependency-interfaces
+   [{:task-id "domain-ir-boundaries",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "domain-ir-boundaries",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "6db132256a078406e47bfa7a9487164f6b1cb89d5c13d6d6c70396a9ad302c9b",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 43101,
+      :start-byte 37491}}
+    {:task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :path "specs/auth-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:decision-id "interface/compiler/c17/plugin-load-compatibility",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "plugins",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 16819,
+     :end-byte 17082,
+     :raw-sha256
+     "5c74c96e3f84eadce131fc68de99c7d4cfca82cce10bcbf16328356a7c5aa08e"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 25488,
+    :start-byte 16614},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/compiler/c17/plugin-output-verification",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "plugins",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 17942,
+     :end-byte 18212,
+     :raw-sha256
+     "425c3846e49eb824dbe31026c42650a7595a6a0914ee42f41f6751101bc6887b"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 25488,
+    :start-byte 16614},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}]}
+  {:decision-id "interface/compiler/c17/plugin-reuse-trace",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "plugins",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 23947,
+     :end-byte 25011,
+     :raw-sha256
+     "1bb26dfca69ced9601453c6d31ae9270c735d49a3e2064b1992c23cc39cff2d7"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 25488,
+    :start-byte 16614},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :path "specs/build-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+      :file-sha256
+      "78425d852e4144efe9391d9b4994b15597d0b579d35742c3b501aab432fcaa77",
+      :raw-sha256
+      "82b33eaa89dcc7f9dccea0c93e36accead86f5e27f68a619d6ca814113d7151e",
+      :marker "build-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 27237,
+      :start-byte 22206}}]}
+  {:decision-id "interface/compiler/c17/plugin-scoped-authority",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "plugins",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 17083,
+     :end-byte 17330,
+     :raw-sha256
+     "e3723f02efa7658dd901774d2ab04e42e790aae0238909f674e1111acc8e52ee"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 17331,
+     :end-byte 17627,
+     :raw-sha256
+     "c52bcad3db3bb2e5f4d07405b020e0bf311bfbf8555d1f371bce6f27f69b82ed"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 25488,
+    :start-byte 16614},
+   :dependency-interfaces
+   [{:task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :path "specs/auth-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:decision-id "interface/compiler/c18/counterexample-regression",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 32446,
+     :end-byte 33459,
+     :raw-sha256
+     "6a132dfa27de445d553f5105ab6d5e5865f2ef50cad22bc1eb079deba78a73c1"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/compiler/c18/pass-risk-evidence",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 33461,
+     :end-byte 34504,
+     :raw-sha256
+     "517a0e8e8113edb0adfa5c2dc31e112a435dff9bd22e34ae8efe68b07decf777"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/compiler/c18/release-evidence-gate",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 34506,
+     :end-byte 35569,
+     :raw-sha256
+     "127922b4c22712ea566dba5698d04e25506f26441e3f76241676d84cb2239931"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:task-id "backend-conformance",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-conformance",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37934,
+      :start-byte 31272}}]}
+  {:decision-id "interface/compiler/c18/transformation-validation",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 26173,
+     :end-byte 26442,
+     :raw-sha256
+     "22fcf67c92def931c65ae900c109f46f7747571de7ef990849785f5c4d3d490c"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 26443,
+     :end-byte 26693,
+     :raw-sha256
+     "d18b319d2d73f17c37b6acde8507dbaff21b933f2667621b68f30cfb2ef134d5"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id
+     "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+     :path "specs/opt-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/opt-workflow/tasks.md",
+      :task-id
+      "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :marker "opt-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 5552,
+      :start-byte 5208}}]}
+  {:decision-id "interface/compiler/c18/trust-report",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 35571,
+     :end-byte 36558,
+     :raw-sha256
+     "03f5a10cd43c809f20e6993bcfb3ed90d4cd2640f21428648b756d4043135792"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id "plugins",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "plugins",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "17bb7b93e5f50c4f34d468783acc6dcb6652f54dfb69e3a0fac4388a1b484b13",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 25488,
+      :start-byte 16614}}
+    {:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/compiler/c18/verification-provenance",
+   :path "specs/compiler-api-workflow/tasks.md",
+   :task-id "pass-evidence",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+     :start-byte 36560,
+     :end-byte 37489,
+     :raw-sha256
+     "2899d505dc4509c7f7e878a43c3c66677ae5f20610fd4a5d74ae461db9a8f7aa"}],
+   :current-task-context
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pass-evidence",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :raw-sha256
+    "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37489,
+    :start-byte 25490},
+   :dependency-interfaces
+   [{:task-id
+     "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+     :path "specs/syntax-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/syntax-workflow/tasks.md",
+      :task-id
+      "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "4a34ffa4ebbc7262f9cd5bfe164a3c4f08751570b1b8530f783d3dcbd11b76ef",
+      :marker "syntax-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 2853,
+      :start-byte 1387}}]}
+  {:decision-id "interface/compiler/c3/origin-preservation",
+   :path "specs/syntax-workflow/tasks.md",
+   :task-id
+   "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/syntax-workflow/tasks.md",
+     :marker "syntax-implementation-tasks",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+     :start-byte 1739,
+     :end-byte 2853,
+     :raw-sha256
+     "0eb9f75a02eb574192949cc6668458999d27b802cc69c4e355a2a185801f7295"}],
+   :current-task-context
+   {:path "specs/syntax-workflow/tasks.md",
+    :task-id
+    "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations",
+    :file-sha256
+    "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+    :raw-sha256
+    "4a34ffa4ebbc7262f9cd5bfe164a3c4f08751570b1b8530f783d3dcbd11b76ef",
+    :marker "syntax-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open; partial source evidence above is not closure",
+    :end-byte 2853,
+    :start-byte 1387},
+   :dependency-interfaces
+   [{:task-id
+     "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+     :path "specs/expand-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/expand-workflow/tasks.md",
+      :task-id
+      "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+      :file-sha256
+      "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+      :raw-sha256
+      "7fbade922b0927728fe55fc748478e2b2277c8e2b3aac7389c656c0cc0ad59ca",
+      :marker "expand-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 11837,
+      :start-byte 2924}}]}
+  {:decision-id "interface/safety/safe1/outcomes",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 71158,
+     :end-byte 72208,
+     :raw-sha256
+     "d32d1584c90f5615d915186cbdd676289de98db747d963bee5042b439430d0ac"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "10f3bc6735cb1ade75f99d9a0e91a08a4a62791a236135eff39afbc8410788b0",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 127405,
+    :start-byte 69681},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}]}
+  {:decision-id "interface/safety/safe1/runtime-checks",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 73328,
+     :end-byte 74346,
+     :raw-sha256
+     "ae2ed2b44871b16fe74cadd5643cfc40d4ceba83fa51d1f695db6f7060f48eee"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "10f3bc6735cb1ade75f99d9a0e91a08a4a62791a236135eff39afbc8410788b0",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 127405,
+    :start-byte 69681},
+   :dependency-interfaces
+   [{:task-id
+     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+     :path "specs/legality-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+      :file-sha256
+      "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+      :raw-sha256
+      "8d9236ea5149d86d6e6da87dc5005b55a0897259bb50adc7d6da64b5b5aeeebf",
+      :marker "legality-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 137195,
+      :start-byte 127407}}]}
+  {:decision-id "interface/safety/safe1/safety-artifact",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 74347,
+     :end-byte 75419,
+     :raw-sha256
+     "0b086e3b7d4a8c5eb47f619e8e482d4fb90ef212bce85138363239301366f055"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "10f3bc6735cb1ade75f99d9a0e91a08a4a62791a236135eff39afbc8410788b0",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 127405,
+    :start-byte 69681},
+   :dependency-interfaces
+   [{:task-id "pass-evidence",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:task-id
+     "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+     :path "specs/legality-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+      :file-sha256
+      "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+      :raw-sha256
+      "48a9b9a6f73c72b16c7f7aab1185466fc9ee2dc05d4e2c2cce3587c2676c8ff8",
+      :marker "legality-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 144880,
+      :start-byte 137197}}]}
+  {:decision-id "interface/safety/safe12/hygiene",
+   :path "specs/expand-workflow/tasks.md",
+   :task-id
+   "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/expand-workflow/tasks.md",
+     :marker "expand-implementation-tasks",
+     :task-id
+     "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+     :start-byte 3280,
+     :end-byte 4411,
+     :raw-sha256
+     "b2816575640f87c71efc31d8f612feb64350ee77435e6c490f2dadcf5389264a"}],
+   :current-task-context
+   {:path "specs/expand-workflow/tasks.md",
+    :task-id
+    "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety",
+    :file-sha256
+    "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+    :raw-sha256
+    "7fbade922b0927728fe55fc748478e2b2277c8e2b3aac7389c656c0cc0ad59ca",
+    :marker "expand-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open; partial source evidence above is not closure",
+    :end-byte 11837,
+    :start-byte 2924},
+   :dependency-interfaces
+   [{:task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :path "specs/auth-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:decision-id "interface/safety/safe15/check-erasure",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 129583,
+     :end-byte 131173,
+     :raw-sha256
+     "e462a1c7104da689821fa6ce203d9188b7818dd0d8485f8abf8af7a23c1237fe"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "8d9236ea5149d86d6e6da87dc5005b55a0897259bb50adc7d6da64b5b5aeeebf",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 137195,
+    :start-byte 127407},
+   :dependency-interfaces
+   [{:task-id
+     "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+     :path "specs/opt-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/opt-workflow/tasks.md",
+      :task-id
+      "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f",
+      :marker "opt-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 5206,
+      :start-byte 4828}}
+    {:task-id
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+     :path "specs/lower-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/lower-workflow/tasks.md",
+      :task-id
+      "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+      :file-sha256
+      "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
+      :raw-sha256
+      "8075a58f325b9e6dced7e60a2ae53f2aaea65d9537e005decd3df17063092dfc",
+      :marker "lower-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 6291,
+      :start-byte 5394}}]}
+  {:decision-id "interface/safety/safe3/borrow-exclusivity",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 12563,
+     :end-byte 13725,
+     :raw-sha256
+     "619b326b588f51414dd2e47a9f28d6cbac70562ed40a76a004e007545eb0ffca"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "ac0abd2a0abd9617b42a77a1a0073e6e94e9f8b2d319a1877e71688c5ca3b8bc",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 69679,
+    :start-byte 11547},
+   :dependency-interfaces
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :marker "runtime-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 36338,
+      :start-byte 17995}}]}
+  {:decision-id "interface/safety/safe3/ownership-move",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 13726,
+     :end-byte 14796,
+     :raw-sha256
+     "bd43521fb104ea3d7c6b64822b112cc69d5a4aced688d2b69fbd037a2703a703"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "ac0abd2a0abd9617b42a77a1a0073e6e94e9f8b2d319a1877e71688c5ca3b8bc",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 69679,
+    :start-byte 11547},
+   :dependency-interfaces
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :marker "runtime-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 36338,
+      :start-byte 17995}}]}
+  {:decision-id "interface/safety/safe5/terminal-flow",
+   :path "specs/legality-workflow/tasks.md",
+   :task-id
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/legality-workflow/tasks.md",
+     :marker "legality-implementation-tasks",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+     :start-byte 14797,
+     :end-byte 16082,
+     :raw-sha256
+     "6ebd2a006cbf11f85447f16efa35bcc621f3ff0826659789913a788afbb55b6c"}],
+   :current-task-context
+   {:path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+    :file-sha256
+    "543120a5dde9b55ca9e13516c598b99e5c4742db02a02ade3b341f9fced3d5bc",
+    :raw-sha256
+    "ac0abd2a0abd9617b42a77a1a0073e6e94e9f8b2d319a1877e71688c5ca3b8bc",
+    :marker "legality-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 69679,
+    :start-byte 11547},
+   :dependency-interfaces
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :marker "runtime-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 36338,
+      :start-byte 17995}}]}
+  {:decision-id "interface/testing/test1/fixture-contract",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/release-workflow/tasks.md",
+     :marker "release-implementation-tasks",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+     :start-byte 54028,
+     :end-byte 54970,
+     :raw-sha256
+     "226ba2a334d29f042956b711d82cdd24590d589c9887cf231cb7cf7df24373fa"}],
+   :current-task-context
+   {:path "specs/release-workflow/tasks.md",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :raw-sha256
+    "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69",
+    :marker "release-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 56001,
+    :start-byte 50748},
+   :dependency-interfaces
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}]}
+  {:decision-id "interface/testing/test1/offline-authority",
+   :path "specs/release-workflow/tasks.md",
+   :task-id
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/release-workflow/tasks.md",
+     :marker "release-implementation-tasks",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+     :start-byte 54971,
+     :end-byte 56001,
+     :raw-sha256
+     "74d8d3b01c756ec74993e8dd5c9d0fc83fab276b24c59163b9302d2e386d395e"}],
+   :current-task-context
+   {:path "specs/release-workflow/tasks.md",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :raw-sha256
+    "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69",
+    :marker "release-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 56001,
+    :start-byte 50748},
+   :dependency-interfaces
+   [{:task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :path "specs/auth-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:decision-id "interface/testing/test6/abi-layout",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 32355,
+     :end-byte 33163,
+     :raw-sha256
+     "9a9b6a6a1e6c6c0e236292528cd29de53b9cc2542039cbe9ab6de7a08fd1d97f"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id "backend-interface",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-interface",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "15dc61ce263af446294eea7ea029211c02c081aec369d54674a80e4513a14fbd",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 2848,
+      :start-byte 704}}]}
+  {:decision-id "interface/testing/test6/differential",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 33165,
+     :end-byte 34219,
+     :raw-sha256
+     "099c868a801d419f61b7c1d16b8fb6da67e156cb4d3a81d1c0e806ce9f342f53"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :path "specs/release-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c",
+      :marker "release-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 42140,
+      :start-byte 37817}}]}
+  {:decision-id "interface/testing/test6/manifest",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 34221,
+     :end-byte 34996,
+     :raw-sha256
+     "3367f2e7f679fea50ff07ea1c6245af55eebab9d29d592db9f971113fa9ce367"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id "backend-emission",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-emission",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 31270,
+      :start-byte 30370}}]}
+  {:decision-id "interface/testing/test6/report",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 34998,
+     :end-byte 36226,
+     :raw-sha256
+     "32d5697bee9705500413988e259b09b1da7f557441497f619cf426f20a18e432"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id "backend-interface",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-interface",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "15dc61ce263af446294eea7ea029211c02c081aec369d54674a80e4513a14fbd",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 2848,
+      :start-byte 704}}
+    {:task-id "backend-emission",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-emission",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 31270,
+      :start-byte 30370}}
+    {:task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :path "specs/release-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:decision-id "interface/testing/test6/source-maps",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 36228,
+     :end-byte 37022,
+     :raw-sha256
+     "3b8a96b2e65c76766ab1da1172804b54d1e6736da343c0519db7df432794dc4f"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id "backend-emission",
+     :path "specs/backends-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/backends-workflow/tasks.md",
+      :task-id "backend-emission",
+      :file-sha256
+      "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+      :raw-sha256
+      "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7",
+      :marker "backends-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open",
+      :end-byte 31270,
+      :start-byte 30370}}]}
+  {:decision-id "interface/testing/test6/unsupported-rejection",
+   :path "specs/backends-workflow/tasks.md",
+   :task-id "backend-conformance",
+   :role :specified-by-exact-closing-criteria,
+   :criterion-witnesses
+   [{:path "specs/backends-workflow/tasks.md",
+     :marker "backends-implementation-tasks",
+     :task-id "backend-conformance",
+     :source-commit "5a018077684a36c921e65a037f4af85314771788",
+     :file-sha256
+     "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+     :start-byte 37024,
+     :end-byte 37934,
+     :raw-sha256
+     "8809d345c6fb8d56faaa50a3a0109c6bff4e244d373b56d430b5ac56481ffffd"}],
+   :current-task-context
+   {:path "specs/backends-workflow/tasks.md",
+    :task-id "backend-conformance",
+    :file-sha256
+    "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+    :raw-sha256
+    "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
+    :marker "backends-implementation-tasks",
+    :source-commit "5a018077684a36c921e65a037f4af85314771788",
+    :status "Open",
+    :end-byte 37934,
+    :start-byte 31272},
+   :dependency-interfaces
+   [{:task-id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :path "specs/lower-workflow/tasks.md",
+     :role :consumed-interface-not-completion-gate,
+     :current-source
+     {:path "specs/lower-workflow/tasks.md",
+      :task-id
+      "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+      :file-sha256
+      "491b0ff2a8933dc5ccf56a308fc0da74c7adea9a8b38d2a50543f10a315d06da",
+      :raw-sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :marker "lower-implementation-tasks",
+      :source-commit "5a018077684a36c921e65a037f4af85314771788",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4679,
+      :start-byte 495}}]}],
+ :old303-and-stopped-Syntax-request :untouched-conservation-only,
+ :reconstructed-complete-task-files
+ ["specs/auth-workflow/tasks.md"
+  "specs/backends-workflow/tasks.md"
+  "specs/build-workflow/tasks.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/expand-workflow/tasks.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/release-workflow/tasks.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/tools-workflow/tasks.md"],
+ :unresolved-source-metadata
+ ["finite18/facet/53fa03966f682496d4916c615f612b98"
+  "finite18/facet/61fb5d9f99580a1ec5662b7f95dfa2c7"
+  "finite18/facet/85401f7e49d5ab57f0d14660e6b807a6"],
+ :current-records :all34-match-independent-reviewed-after-payloads,
+ :independent-receipt-sha256
+ "454b9f9c03c232b8e1e8902532f74130e4c14731645382b262e35960d4fea84b",
+ :source-documents-unchanged 35,
+ :recorded-later-field-operations 30,
+ :new-tasks 0,
+ :independent-receipt
+ {:tree "15c4122fff613232bb573d849be268ffab824a3f",
+  :nonclaims
+  [:old303-review
+   :Core-Gov-review
+   :whole-facet
+   :implementation
+   :task-denominator
+   :later-composition
+   :release
+   :self-hosting
+   :seed-retirement],
+  :broker-process-probes 0,
+  :canonical-mutations 0,
+  :candidate "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+  :allocation-source "c2f6e48f49066e3edda0e0f194c925de01e2af22",
+  :conservation
+  {:Open-decisions 833,
+   :accepted-historical-mappings 430,
+   :prior303-conservation-only true,
+   :task-states :unchanged,
+   :implementation-acceptance :unassessed},
+  :scope
+  {:IDs
+   ["interface/compiler/c1/pipeline-manifest"
+    "interface/compiler/c1/pipeline-order"
+    "interface/compiler/c1/preserve-evidence"
+    "interface/compiler/c1/verification-gates"
+    "interface/compiler/c12/domain-semantic-anchor"
+    "interface/compiler/c16/dependency-invalidation"
+    "interface/compiler/c17/plugin-domain-registration"
+    "interface/compiler/c17/plugin-load-compatibility"
+    "interface/compiler/c17/plugin-output-verification"
+    "interface/compiler/c17/plugin-reuse-trace"
+    "interface/compiler/c17/plugin-scoped-authority"
+    "interface/compiler/c18/counterexample-regression"
+    "interface/compiler/c18/pass-risk-evidence"
+    "interface/compiler/c18/release-evidence-gate"
+    "interface/compiler/c18/transformation-validation"
+    "interface/compiler/c18/trust-report"
+    "interface/compiler/c18/verification-provenance"
+    "interface/compiler/c3/origin-preservation"
+    "interface/safety/safe1/outcomes"
+    "interface/safety/safe1/runtime-checks"
+    "interface/safety/safe1/safety-artifact"
+    "interface/safety/safe12/hygiene"
+    "interface/safety/safe15/check-erasure"
+    "interface/safety/safe3/borrow-exclusivity"
+    "interface/safety/safe3/ownership-move"
+    "interface/safety/safe5/terminal-flow"
+    "interface/testing/test1/fixture-contract"
+    "interface/testing/test1/offline-authority"
+    "interface/testing/test6/abi-layout"
+    "interface/testing/test6/differential"
+    "interface/testing/test6/manifest"
+    "interface/testing/test6/report"
+    "interface/testing/test6/source-maps"
+    "interface/testing/test6/unsupported-rejection"],
+   :new-allocations 34,
+   :refined-clauses 28,
+   :reused-clauses 6,
+   :task-field-operations 12,
+   :new-tasks 0},
+  :disposition :pass,
+  :source-memberships
+  {:verified 1070,
+   :unique 1073,
+   :documents 35,
+   :unresolved
+   ["finite18/facet/53fa03966f682496d4916c615f612b98"
+    "finite18/facet/61fb5d9f99580a1ec5662b7f95dfa2c7"
+    "finite18/facet/85401f7e49d5ab57f0d14660e6b807a6"],
+   :whole-attached-facet-entailment :not-conferred},
+  :allocation-input
+  {:path
+   "specs/requirement-reconciliation/current-decision-allocation-compiler-testing34.edn",
+   :sha256
+   "9bf585b0768e41b213612ab1b74e8cb91c20d26d5d7cc15f8741d6f3e3839bda"},
+  :outbound-message false,
+  :kind
+  :independent-frozen-compiler-testing34-current-allocation-review,
+  :later-fields-acceptance :not-conferred,
+  :genuine-executions 0,
+  :applying-source "0f0fc578a7a537a56f4d80bd4bc39b255b75e81d",
+  :composition-input
+  {:path
+   "specs/requirement-reconciliation/compiler-testing34-current-composition.edn",
+   :sha256
+   "31a2a9150863a75519e3bcf8735e3f549df5d63d2062e46f5336ec68123460e0"},
+  :validation
+  {:independent-controls 3125,
+   :failed 0,
+   :Bootstrap-loaded false,
+   :canonical-adoption-run false},
+  :artifacts
+  [{:path "review.md",
+    :sha256
+    "b474504faebf7d2696bf13fec265c572662655dc4dc09fc39e1a71cc66ab4283"}
+   {:path "allocation.edn",
+    :sha256
+    "9bf585b0768e41b213612ab1b74e8cb91c20d26d5d7cc15f8741d6f3e3839bda"}
+   {:path "composition.edn",
+    :sha256
+    "31a2a9150863a75519e3bcf8735e3f549df5d63d2062e46f5336ec68123460e0"}
+   {:path "scope-identity.edn",
+    :sha256
+    "b58aa17c09398dfd8f0d5a3eaa06af729aa1764576fce191e806f11c127d055d"}
+   {:path "independent-controls.edn",
+    :sha256
+    "ea1e5a8f9584529d5859ce00d53feca4a8750694a0e844e31da467d7f67bed57"}
+   {:path "review-summary.edn",
+    :sha256
+    "5263d89c050eefe9232b5ca63940da6c15ec83debdb82d3a63c4b88cfffcef6b"}],
+  :GitHub-approval false,
+  :canonical-adoption :pending-owner},
+ :duplicate-review-performed false,
+ :source-qualifications
+ "Preserve unresolved D1/C1 order, C18 mandatory minimums versus optional evidence, actual/unavailable counterexample reporting, TEST6 available-comparator conditioning, SAFE5 source terminal-flow qualification, and C12 EFIR/schema/workflow/identified-HDL registration AND verification population. Later predicates retain separate scope.",
+ :implementation-credit :none,
+ :recorded-later-compositions
+ ["specs/requirement-reconciliation/safety107-current-composition.edn"
+  "specs/requirement-reconciliation/stdlib83-current-composition.edn"
+  "specs/requirement-reconciliation/math20-current-composition.edn"
+  "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn"
+  "specs/requirement-reconciliation/foundation7-current-composition.edn"],
+ :source-commit "5a018077684a36c921e65a037f4af85314771788",
+ :kind :exact-current-existing-compiler-testing34-review-applicability,
+ :frozen-review-source "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+ :historical-adoptions-preserved 493,
+ :receipt-resolution-handoff-sha256
+ "573d7248bd5347593a4b629fd9fdac3539ebcba8adb1fef06f2c8b4120e75a52"}
