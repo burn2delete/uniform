@@ -1599,6 +1599,58 @@ separately authorized execution. This source correction does not establish
 descendant coverage, set capture readiness, enable cache admission or satisfy
 real miss/hit, unrelated reuse or per-lexical-input acceptance.
 
+#### Selected observer Git ownership without protocol replacement
+
+`gravity.build.producer-git-observation/run-selected!` is a direct source seam
+for the exact fresh C2 selection. It supplies lifecycle hooks only while each
+`observe-fresh-producer-binding!` bookend executes. The selected test operation
+runs outside that thread binding, and normal callers bind no hooks. The new
+module is an explicit runner input in the C2 declaration, with a path allowance
+restricted to that selection; freshness-required remains true.
+
+The Git port here is the existing ProcessBuilder implementation, not
+`clojure.java.shell/sh`. Its command vector/order, inherited environment,
+working directory, merged stderr, daemon stdin writer/close, complete byte
+drain, writer join, root wait and existing nonzero/input-error diagnostics are
+preserved. The ordinary runner's bounded text capture is not substituted:
+that would change complete byte output, merged-stream behavior and decoding.
+Only Git refusal output is decoded as before, using Java's UTF-8 replacement
+behavior. A source-form oracle retained from `40ecbb97` replaces only process
+construction with a fake and compares malformed UTF-8, NUL, output beyond
+1 MiB, stdin and nonzero-exit behavior. No subprocess is launched by it.
+
+Each launched Process is recorded before canonical retention is attempted.
+The same raw token is retained through root wait and one canonical finalizer
+call, including drain/writer/wait/error paths. Retention failure leaves the
+actual Process recorded with an unproven terminal; it does not invent a token
+or infer cleanup. Original errors survive ordinary cleanup failures as primary
+objects with suppressed details. Interruption is restored, and VM, linkage or
+ThreadDeath failures from cleanup are not demoted to ordinary Git refusals.
+Root-wait exit, raw handles and the finalizer's tracked/global-unknown facts
+remain separate local records. No PID lookup, global process registry, inferred
+release permission or descendant-complete claim is added.
+
+`freeze-binding!` and `verify-binding!` read an explicit method-supplied Git
+executable, dispatch files, selection links and configuration/absence witnesses
+before and after each command. PATH selection is rechecked; inherited
+environment values are represented by a hash. File reads compare metadata
+around hashing. Symbolic-link targets are retained, while linked directory
+contents are explicitly unbound. These are filesystem observations only; no
+Git discovery command is introduced. The explicit file set does not prove
+complete Git configuration search/includes, native dispatch/helper creation,
+or protection against change-and-restore between observations.
+
+Injected controls cover launch, retain, stream, wait, cleanup, interruption,
+identity drift and bookend scope restoration. The ACC13 implementation was a
+source reference only; its request, admission, roots, profile and review are
+not RV2 authority. The direct seam is not yet connected to a frozen supported
+CLI launch. Git's inherited root wait/full-stream protocol still needs the
+exact outer watchdog binding; this patch does not claim a bounded producer
+method or termination of unobserved helpers. Exact executable configuration,
+native/helper reachability, loader, watchdog and report/capture publication
+remain method gates. Capture readiness, cache admission and the original real
+producer/reuse/invalidation acceptance criteria remain unchanged and open.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
