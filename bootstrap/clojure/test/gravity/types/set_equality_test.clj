@@ -3,7 +3,7 @@
   C7/C8/STD2/STD3 acceptance still requires the genuine compiler composition."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is]]
             [gravity.bootstrap]))
 
 (def owners
@@ -182,6 +182,23 @@
                                      (-> base (assoc-in [:types :operator] forged)
                                          (assoc :ledger [(invoke model "constraint" forged)]
                                                 :facts [(invoke model "call-fact" forged (:module base))])))))))))))
+
+(deftest simultaneous-tag-removal-duplicate-and-orphan-model
+  ;; Exact eight false accepts from the existing independent source review.
+  ;; Genuine ordinary local-call records still pass the mixed-ledger controls.
+  (doseq [model (rest @models)
+          mutation [:duplicate-row :orphan-row :duplicate-fact :orphan-fact]]
+    (let [base (product model)
+          row (dissoc (first (:ledger base)) :producer-rule :constraint-id-request)
+          fact (dissoc (first (:facts base)) :dispatch :fact-id-request)
+          changed (case mutation
+                    :duplicate-row (update base :ledger conj row)
+                    :orphan-row (update base :ledger conj (assoc-in row [:lhs :core-node-id] :orphan))
+                    :duplicate-fact (update base :facts conj fact)
+                    :orphan-fact (update base :facts conj (assoc fact :call-core-node-id :orphan)))
+          result (evidence model changed)]
+      (is (= :rejected (:status result)))
+      (is (= :invalid-checked-bare-set-equality-source (:reason result))))))
 
 (deftest native-foreign-values-reject-with-zero-callbacks-model
   (let [callbacks (atom 0)

@@ -13163,8 +13163,10 @@
               id (get (get row :lhs) :core-node-id)]
           (if (keyword? producer)
             (if (if (= :sh08-checked-bare-set-equality-v1 producer) true
-                  (= :gravity/sh08-checked-bare-set-equality-constraint-v1
-                     (get (get row :constraint-id-request) :domain)))
+                  (if (= :gravity/sh08-checked-bare-set-equality-constraint-v1
+                         (get (get row :constraint-id-request) :domain)) true
+                    (if (= :checked-bare-set-equality (get (get row :lhs) :projection)) true
+                      (= :gravity.type/applied-checked-bare-set-equality (get (get row :dependencies) :kind)))))
               (if (if (body-sse-ids? [id] 1) (= false (contains? descriptors id)) false)
                 (let [call (get calls id) node (get nodes id)
                       derived (effects-set-equality-header core node call (get edges id) nodes bindings types (get core :module))
@@ -13193,8 +13195,10 @@
           (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
             (if (keyword? dispatch)
               (if (if (= :direct-checked-bare-set-equality dispatch) true
-                    (= :gravity/sh08-checked-bare-set-equality-call-type-fact-v1
-                       (get (get fact :fact-id-request) :domain)))
+                    (if (= :gravity/sh08-checked-bare-set-equality-call-type-fact-v1
+                           (get (get fact :fact-id-request) :domain)) true
+                      (if (contains? fact :applied-checked-bare-set-equality) true
+                        (= :audited-checked-bare-set-value-equality (get fact :effect-facts-source)))))
                 (if (contains? seen id) {:status :rejected :reason :invalid-checked-bare-set-equality-source}
                   (let [canonical (get descriptors id)]
                     (if (if (map? canonical) (= (effects-set-equality-call-fact canonical module) fact) false)

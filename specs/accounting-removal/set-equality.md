@@ -123,6 +123,45 @@ Development checks executed against these source bytes:
 Private paths and raw logs stay local. Structural gates do not establish the
 compiler/runtime semantics described above.
 
+### Affected source correction after independent review
+
+ACC04's existing review of `b165ca5ab0d540754ec04f5320314e64a5b9d070`, tree
+`39cde5040fe9eca1336d6ea5a9ad51d4e98a5e5e`, returned CHANGES REQUIRED.
+Original receipt SHA-256:
+`d318a5cef3dcb13dd90a619d4446c5dbac6750b952b20a9d047ab6476a218045`.
+The reviewer verified source pins, callgraphs, hunks and all 15 conserved
+fallback bodies. Its adapted Bootstrap-free 6/233 model pass did not reject
+eight additional duplicate/orphan DSE row/fact mutations with both routing tags
+removed. The original author 6/233 result and this review remain historical;
+neither confers source acceptance or semantic completion.
+
+The correction makes the two actual consumer censuses classify reserved DSE
+row projections and dependency descriptors, and fact descriptor/effect-source
+payloads, independently of their routing tags. A classified record must still
+match the complete freshly reconstructed row or fact. The eight simultaneous
+tag-removal duplicate/orphan cases now have explicit status and stable-reason
+regressions for Effects and emitter. Existing ordinary local-call positives,
+source identity checks, native guards and dispatcher fallbacks are preserved.
+No quota, allowance or replacement accounting is added.
+
+CI run `40801728991`, static job `123211577759`, failed on one new warning:
+the unused `clojure.test/testing` refer in the model test namespace. That refer
+is removed without changing lint configuration or suppressing a check. The
+failed run remains failed historical evidence.
+
+The affected controls evaluated the current model test definitions with the
+Bootstrap require removed in memory and the exact existing reviewer's
+synthetic native-header seam substituted. They passed **7 tests / 249
+assertions**, zero failures/errors, with Bootstrap unloaded before and after.
+Local control-receipt SHA-256:
+`8458af2d02f279e0de6cd8c077311621c3478b2988e438600c6d67be28fc6509`.
+The adaptation is source-model evidence only; the actual Native header,
+Gravity, compiler, provider, runtime and paired fixtures were not executed.
+Changed-file clj-kondo `2025.10.23`, using the existing CI configuration, passed
+with zero findings. The direct language-boundary namespace passed 6 tests / 11
+assertions with Bootstrap unloaded before and after. Same-reviewer affected
+source review remains pending.
+
 The finite genuine acceptance gate remains:
 
 1. Independent source review of this exact candidate and its dependency census,

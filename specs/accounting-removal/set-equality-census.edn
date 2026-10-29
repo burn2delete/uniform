@@ -218,18 +218,18 @@
     effects-set-equality-row-census
     effects-set-equality-type?],
    :patch-hunks
-   ["@@ -12957,0 +12958,320 @@"
-    "@@ -13271,0 +13592,2 @@"
-    "@@ -13285 +13607 @@"
-    "@@ -13354,0 +13677,2 @@"
-    "@@ -13381 +13705 @@"
-    "@@ -13397,0 +13722,2 @@"
-    "@@ -13404 +13730 @@"
-    "@@ -13406,0 +13733,2 @@"
-    "@@ -13431 +13759 @@"
-    "@@ -13433,0 +13762,2 @@"
-    "@@ -13463 +13793 @@"
-    "@@ -19644 +19974 @@ true"],
+   ["@@ -12957,0 +12958,324 @@"
+    "@@ -13271,0 +13596,2 @@"
+    "@@ -13285 +13611 @@"
+    "@@ -13354,0 +13681,2 @@"
+    "@@ -13381 +13709 @@"
+    "@@ -13397,0 +13726,2 @@"
+    "@@ -13404 +13734 @@"
+    "@@ -13406,0 +13737,2 @@"
+    "@@ -13431 +13763 @@"
+    "@@ -13433,0 +13766,2 @@"
+    "@@ -13463 +13797 @@"
+    "@@ -19644 +19978 @@ true"],
    :direct-source-callgraph
    {effects-set-equality-call-fact [],
     effects-set-equality-call-valid?
@@ -281,7 +281,7 @@
     body-kse-call-fact true,
     body-kse-constraint true},
    :sha256
-   "110c224469eae6228a7d40330f77c065a0c57f2484f84be16372f35006d0ad22",
+   "55a290c199a24546fc983d133cd1f7a0f20800f658c6ab97f79dbcb2770ea5b5",
    :historical-dse-definitions
    [body-dse-bare?
     body-dse-binding?
@@ -399,17 +399,17 @@
     emit-set-equality-row-census
     emit-set-equality-type?],
    :patch-hunks
-   ["@@ -14080,0 +14081,335 @@"
-    "@@ -14394,0 +14730,2 @@"
-    "@@ -14408 +14745 @@"
-    "@@ -14477,0 +14815,2 @@"
-    "@@ -14504 +14843 @@"
-    "@@ -14520,0 +14860,2 @@"
-    "@@ -14587 +14928 @@"
-    "@@ -14816,0 +15158,2 @@"
-    "@@ -14839 +15182 @@"
-    "@@ -14841,0 +15185,2 @@"
-    "@@ -14869 +15214 @@"],
+   ["@@ -14080,0 +14081,339 @@"
+    "@@ -14394,0 +14734,2 @@"
+    "@@ -14408 +14749 @@"
+    "@@ -14477,0 +14819,2 @@"
+    "@@ -14504 +14847 @@"
+    "@@ -14520,0 +14864,2 @@"
+    "@@ -14587 +14932 @@"
+    "@@ -14816,0 +15162,2 @@"
+    "@@ -14839 +15186 @@"
+    "@@ -14841,0 +15189,2 @@"
+    "@@ -14869 +15218 @@"],
    :direct-source-callgraph
    {emit-set-equality-call-fact [],
     emit-set-equality-compile
@@ -468,7 +468,7 @@
     p15-s23-kse-constraint true,
     p15-s23-typed-compile-bare-keyword-anchor-set-equality true},
    :sha256
-   "8f1bfe67238655d2213d46f8677434d03babc93d7bfe5c183bec173065aad03f",
+   "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5",
    :historical-dse-definitions
    [p15-s23-dse-bare?
     p15-s23-dse-binding?
@@ -547,7 +547,7 @@
  :model-control
  {:path "bootstrap/clojure/test/gravity/types/set_equality_test.clj",
   :sha256
-  "fc325c50ab6ee222d2744451105fede65c9dffaf560cc451207527716df182ed",
+  "0c58cbf3403124b2c8d1f11401a1c772103fc512cd42d5b8d91f4f18810927e6",
   :authority :source-bound-clojure-model-only},
  :preserved
  {:commit "6a4f87f013d0076b81aba9e0667650e70d28e635",
