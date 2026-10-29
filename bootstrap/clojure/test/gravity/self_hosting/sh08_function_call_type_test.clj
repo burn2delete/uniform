@@ -6572,7 +6572,7 @@
                  :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
 
 (defn- list-construction-derived [{:keys [core node call edge nodes bindings types forms]}]
-  (invoke-c7 'sh08-lc-derive [core node call edge nodes bindings types forms 65536]))
+  (invoke-c7 'sh08-lc-derive [core node call edge nodes bindings types forms]))
 
 (deftest sh08-list-construction-development-kernel
   (let [s :gravity.type/string nv :gravity.type/never
@@ -6609,11 +6609,7 @@
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
                          (assoc-in descriptor [:construction-policy :allocation] :none)
                          (assoc descriptor :return :gravity.type/bool :result-type :gravity.type/bool)]]
-          (is (false? (invoke-c7 'sh08-lc-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator changed)]))))
-        (let [work (:work-count result)
-              derive #(invoke-c7 'sh08-lc-derive [core node call edge nodes bindings types forms %])]
-          (is (= result (derive work)))
-          (is (= :list-construction-work-limit (:reason (derive (dec work))))))))
+          (is (false? (invoke-c7 'sh08-lc-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator changed)]))))))
     (doseq [bad [nil :gravity.type/unknown :gravity.type/function :host/object
                   {:kind :gravity.type/vector :element-types [:gravity.type/never] :shape :literal}
                   {:kind :gravity.type/map :member-types [s] :shape :literal}
@@ -6622,8 +6618,7 @@
                   {:kind :gravity.type/set :element-types (list s) :shape :literal}]
             arguments [[bad] [nv bad] [bad nv]]]
       (let [result (list-construction-derived (list-construction-input arguments))]
-        (is (= :rejected (:status result)) (pr-str arguments))
-        (is (pos? (:work-count result)))))
+        (is (= :rejected (:status result)) (pr-str arguments))))
     (let [input (list-construction-input [s s])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
                       #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
@@ -6637,7 +6632,7 @@
                   :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64 :gravity.type/decimal :gravity.type/ratio]]
       (is (= :accepted (:status (list-construction-derived (list-construction-input [type]))))))
     (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1023 s)))))))
-    (is (= :list-construction-arity-mismatch (:reason (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
+    (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
     (let [check #(invoke-c7 'sh08-lc-validate-types [%1])
           width {:kind :gravity.type/list :element-types (vec (repeat 1024 s)) :shape :literal}
           chain #(nth (iterate (fn [t] {:kind :gravity.type/list :element-types [t] :shape :literal}) s) %)]
@@ -7089,7 +7084,7 @@
       (is (= :gravity.type/integer (:type counted))))
     (let [literal-type (:type (invoke-c7 'sh08-lc-derive
                                (let [built ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-construction-input) [:gravity.type/string])]
-                                 [(:core built) (:node built) (:call built) (:edge built) (:nodes built) (:bindings built) (:types built) (:forms built) 65536])))
+                                 [(:core built) (:node built) (:call built) (:edge built) (:nodes built) (:bindings built) (:types built) (:forms built)])))
           rejected (set-conversion-derived (list-set-input literal-type) 65536)]
       (is (= {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]} literal-type))
       (is (= ["C7-TYPE-MISMATCH" :list-set-conversion-homogeneous-keyword-list-type-required]
@@ -22980,3 +22975,29 @@
           (is (= :rejected (:status rejected)))
           (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
                  ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
+
+(deftest list-construction-admission-development-kernel
+  ;; Normalized source/Core DATA does not establish authenticated source.
+  (doseq [width [0 1023 1024 1025 2049]]
+    (let [arguments (vec (repeat width :gravity.type/string))
+          {:keys [core node call edge nodes bindings types forms] :as input}
+          (list-construction-input arguments)
+          result (list-construction-derived input)
+          context {:ordering-core core :ordering-operators {(:operator-node-id call) call}
+                   :ordering-edges {(:node-id node) edge} :lookup-nodes nodes
+                   :ordering-bindings bindings :association-forms forms}
+          stepped (invoke-c7 'sh08-lc-step [node types {} {} context])]
+      (is (= :accepted (:status result)))
+      (is (= {:kind :gravity.type/list :element-types arguments :shape :literal} (:type result)))
+      (is (= result stepped))
+      (is (not-any? #(contains? result %) [:work-count :operand-work :result-work :construction-work]))
+      (is (= (count arguments) (count (get-in result [:descriptor :value-origin :operand-node-ids]))))
+      (when (pos? width)
+        (let [late-id (peek (:argument-node-ids call))
+              invalid (list-construction-derived (assoc-in input [:types late-id] :gravity.type/unknown))
+              source-id (get-in nodes [late-id :source :form-id])
+              stale (list-construction-derived (assoc-in input [:forms source-id :parent-form-id] :sibling))]
+          (is (= :list-construction-operand-type-required (:reason invalid)))
+          (is (= :list-construction-source-mismatch (:reason stale)))
+          (is (not (contains? invalid :work-count)))
+          (is (not (contains? stale :work-count))))))))
