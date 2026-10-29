@@ -13,6 +13,16 @@ remain unchanged. A path can contain both incorporated and unique changes.
 Neither absence of quota text nor matching selected forms establishes complete
 semantic incorporation of the other changes.
 
+The [complete source inventory](preserved-source-inventory.md) and its
+[machine record](preserved-source-inventory.edn) now cover every original path,
+including 530 changed source/test reader units and all ten fixture byte-copy
+routes. The three production files account for 316 changed units. Main is pinned
+to `95ef8459` and the finite ACC-01 stack to PR599's `b786b464`; existing owner
+drafts and correspondence records retain their own exact inputs. These are
+literal observations, not independent dispositions, completion counts or proof
+that a touched function covers all original changes. Renamed DSE and retired
+helper mappings remain explicit rather than being treated as missing features.
+
 ## Verified finite routes and limits
 
 - Selected ANE/BKA/PMK/PL exported fields and private Map aliases integrated in
