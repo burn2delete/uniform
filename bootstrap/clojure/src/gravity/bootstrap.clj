@@ -5,7 +5,6 @@
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
   (:require [clojure.edn :as edn]
-            [clojure.instant :as instant]
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
@@ -16,6 +15,7 @@
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
+            [gravity.reader.dispatch :as reader-dispatch]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
             [gravity.c3-reader-expansions :as c3-reader-expansions]
