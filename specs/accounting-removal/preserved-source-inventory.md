@@ -430,3 +430,22 @@ checks and obsolete-field negatives. It confers no parent615/616, PR569, whole
 accounting, authenticated source, runtime or current-main acceptance. Any future
 main extraction requires its own identity, affected composition review, CI and
 preflight. Original inventory counts and prior source assessments are unchanged.
+
+## Consumed exact Record and Union source review
+
+PR620 exact `585c2dab`, tree `09f8eff9`, base main `e047157d`, received
+independent scoped-source PASS, receipt SHA256
+`4abe17689fec09ca290dba77a1bea2d111c6428275d7808d8e536bf215913c40`.
+`record-union-review-consumption.edn` verifies receipt/tree, four immutable file
+pins, both raw original spans and their exact appended-file equation, plus all
+31 deterministic current/historical C7 definition pins. The independent scope
+preserves all old test bytes and 10068 other blobs/modes, leaves production
+unchanged and retains six explicit helper differences; six negative source
+controls refuse mutations. Two auxiliary reader-serialized complete-test-form
+hashes are NOT independently endorsed because generated anonymous symbols are
+process-dependent. Neither the review nor this consumption uses those fields
+as independent identity evidence; raw spans and deterministic C7 pins carry
+the source result. Genuine owner kernels, authenticated/executable Record/Union
+behavior, current-main composition and integration remain pending. No transitive
+helper equivalence or full ACC/PR502 acceptance is inferred. Immutable inventory
+counts and snapshots remain unchanged.

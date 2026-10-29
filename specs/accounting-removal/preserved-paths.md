@@ -382,6 +382,17 @@ helper mappings remain explicit rather than being treated as missing features.
   whole-accounting/authentication/runtime or main-integration acceptance follows.
   A future main extraction needs its own exact identity, changed composition
   review, CI and preflight. This does not retry the stopped PR569 review.
+- Exact PR620 `585c2dab`, tree `09f8eff9`, base main `e047157d`,
+  received independent scoped-source PASS, receipt SHA256
+  `4abe17689fec09ca290dba77a1bea2d111c6428275d7808d8e536bf215913c40`.
+  The [consumption record](record-union-review-consumption.edn) verifies the
+  receipt/tree, four file pins, two exact original spans/appended-file equation
+  and 31 deterministic C7 pins. Six negative source controls refuse mutations.
+  Two auxiliary reader-serialized complete-test-form hashes are explicitly NOT
+  independently endorsed; the verdict uses raw spans and deterministic source
+  pins. All prior test bytes/production survive; six historical helper
+  differences remain explicit. Genuine kernels, authenticated/executable
+  Record/Union behavior and current-main composition/integration remain open.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
