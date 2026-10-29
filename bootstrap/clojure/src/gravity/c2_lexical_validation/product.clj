@@ -11,6 +11,24 @@
                  (every? keyword? children))
         (set children)))))
 
+(defn- shortest-root-length [roots]
+  (when (and (seq roots) (every? string? roots))
+    (reduce min (map #(.length ^String %) roots))))
+
+(defn- token-contains-root? [token roots shortest]
+  (let [too-short?
+        (and (some? shortest)
+             (identical? clojure.string$includes_QMARK_ (class str/includes?))
+             (nil? (.getThreadBinding ^clojure.lang.Var #'str/includes?))
+             (or (identical? clojure.lang.PersistentArrayMap (class token))
+                 (identical? clojure.lang.PersistentHashMap (class token)))
+             (every? keyword? (keys token))
+             (let [raw (:raw token)]
+               (and (string? raw) (< (.length ^String raw) shortest))))]
+    ;; A String cannot contain a longer String. All other cases retain the
+    ;; original search, including opaque lookups and interposed callbacks.
+    (and (not too-short?) (some #(str/includes? (:raw token) %) roots))))
+
 (defn lexical-product-validation
   [{:keys [utf8-slice span-encloses? spans-source-ordered? form-graph-metrics]}
    source-text token-stream form-tree root-form-ids]
@@ -137,6 +155,7 @@
                                 (when (and form (or (:collection-kind form)
                                                    (seq (:children form))))
                                   (:raw form)))) root-form-ids))
+        shortest-root (shortest-root-length root-raw)
         token-raw-slices-exact?
         (every? (fn [token]
                   (let [span (:span token)]
@@ -176,7 +195,7 @@
                    (get-in % [:span :start :line]) (get-in % [:span :start :column])
                    (get-in % [:span :end :line]) (get-in % [:span :end :column])) token-stream)
      :no-token-contains-top-level-form?
-     (not-any? (fn [token] (some #(str/includes? (:raw token) %) root-raw)) token-stream)
+     (not-any? #(token-contains-root? % root-raw shortest-root) token-stream)
      :root-form-ids-resolve? root-form-ids-resolve?
      :token-links-resolve-exactly-once? token-links-resolve-exactly-once?
      :child-links-resolve-exactly-once? child-links-resolve-exactly-once?
