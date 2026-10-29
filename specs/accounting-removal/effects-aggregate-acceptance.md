@@ -121,10 +121,10 @@ match the selected tuple exactly.
 
 `validation-request` binds the frozen argv, CWD, source/runtime/classpath and
 selected tuple to the complete source hash and named ports of the existing
-`sh01-parallel-test-runner`. The names include public `start-process` and its
-internal `process-result`, `terminate-process-tree!` and `restore-interrupt!`
-boundaries. Internal ports are source-pinned bindings, not new public runner
-APIs. The adapter neither resolves nor loads them and supplies no default real
+`sh01-parallel-test-runner`. The successor binds PR600's public `start-process`,
+`retain-owned-process!`, `retained-process-handles`, three-argument
+`process-result`, and `finalize-owned-process!`, plus the source-pinned internal
+`restore-interrupt!`. The adapter neither resolves nor loads them and supplies no default real
 ports. Actual installation must match this exact reviewed source at admission.
 The actual caller must hold the lease class required by its selected tuple before
 invoking the start port and retain it through cleanup. The new child wrapper does not
@@ -153,9 +153,9 @@ The frozen execution budget is 3,600,000 ms. Each stream retains at most
 wait. The existing cleanup timeout is 1,500 ms with a 100 ms post-cleanup wait.
 The accounted reclamation base is therefore 11,800 ms: 1,500 + 100 +
 2 * (5,000 + 100). The 100 ms graceful-termination phase is inside the
-1,500 ms cleanup deadline, not added again. Normal cleanup also allows a
-100 ms `onExit` wait per observed handle; the full accounting is the base plus
-100 ms times the observed handle count, without inventing a handle-count cap.
+1,500 ms cleanup deadline, not added again. PR600 bounds each `onExit` wait by
+the lesser of 100 ms and the remaining shared cleanup deadline. Those waits
+are inside the cleanup deadline; the old per-handle additive budget is historical.
 The adapter binds both the source grace constant and the actual reap-call form.
 These are host process/capture bounds, not compiler accounting.
 The adapter refuses results returned after the execution deadline, even where
@@ -164,7 +164,7 @@ normal cleanup/capture overhead contributed to that elapsed time.
 These are cooperative bounds on returning ports. Uninterruptible native start,
 wait, close, filesystem IO and JVM initialization have no invented hard bound.
 ProcessHandle enumeration, native handle operations and scheduler delays also
-have no hard bound; enumeration precedes the runner's cleanup deadline.
+have no hard bound; native enumeration cannot be given a hard bound by that deadline.
 Result consumption and publication IO are outside the runner's process deadline.
 ProcessHandle cleanup covers observed owned handles only: discovery failure,
 survivors, failed cleanup or unproven timeout containment refuse consumption.
@@ -172,6 +172,24 @@ An unobserved cross-session escape cannot be disproved by this mechanism; an
 external supervisor's containment remains a real launch prerequisite when the
 execution policy requires that stronger guarantee. No broker/root configuration
 or live capacity observation is added.
+
+The retained API reports `:tracked-complete?` independently of `:complete?` and
+`:descendant-coverage`. The latter remain unknown on tracked success. The
+adapter requires tracked finalization, root exit, no survivors or discovery
+error, successful capture and a clean child outcome before consuming its sink;
+it preserves the global unknown and separately carries the exact method's
+source-bound creation declaration. That declaration requires independent review
+and is not inferred from the tracked cleanup field. The new ownership-model tag
+prevents earlier request tuples from being applied silently to the new API.
+
+The one-off PMK parent profile retains the actual Process, immediately creates
+its ownership token, and passes that identical Process/token to the normal
+three-argument result call. Its final path reuses that token's terminal result;
+only a pre-wait failure needs a direct finalizer call. Finalization precedes
+canonical L release and exclusive C release. The supervisor follows the same
+normal API for its directly owned parent. No PID lookup or replacement generic
+controller is supplied. Profile preparation and review do not approve C/L
+participation, the source creation envelope, platform admission or execution.
 
 `lease-validation-request` additionally pins the existing SH-01 broker source and its
 existing acquire, live-token validation and release ports. `observe-under-lease!`

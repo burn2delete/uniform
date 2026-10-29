@@ -32,7 +32,8 @@
              "clojure.main" "/synthetic/operation.clj" "/synthetic/identity.edn" "/synthetic/broker"]})
 (def port-source (slurp a/process-port-path))
 (def request (a/validation-request frozen "/synthetic/checkout" port-source))
-(def clean {:complete? true :root-alive? false :descendants-alive 0})
+(def clean {:complete? nil :tracked-complete? true :descendant-coverage :unknown
+            :root-alive? false :descendants-alive 0})
 (def runner-result
   {:schema :gravity/development-test-result-v1 :authority :non-authoritative :authoritative? false
    :selection {:namespaces [a/test-namespace] :fail-fast? false
@@ -58,6 +59,23 @@
     (with-redefs [a/read-validation-result (fn [r] (swap! (:calls h) conj [:consume]) (reader r))]
       (a/observe-validation! request (a/request-hash request) (merge (:ports h) changes)))))
 (defn consumed? [h] (some #{[:consume]} @(:calls h)))
+
+(deftest tracked-finalization-does-not-promote-global-coverage
+  (let [h (harness) r (run! h {})]
+    (is (= :observed (:status r)))
+    (is (nil? (get-in r [:cleanup :complete?])))
+    (is (= :unknown (:descendant-coverage r)))
+    (is (nil? (:creation-coverage r))))
+  (let [h (harness) r (run! h {:cleanup (fn [_] (assoc clean :tracked-complete? false :complete? true))})]
+    (is (= :incomplete-cleanup (:reason r)))
+    (is (not (consumed? h)))))
+
+(deftest old-ownership-request-is-not-silently-rebound
+  (let [h (harness) old (dissoc request :ownership-model)]
+    (is (= :process-request
+           (try (a/observe-validation! old (a/request-hash old) (:ports h))
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (empty? @(:calls h)))))
 
 (deftest only-the-original-batch-or-single-pmk-selector-is-admitted
   (let [plan (assoc selection :selectors a/pmk-selectors :command (a/command a/pmk-selectors))
@@ -241,7 +259,7 @@
               (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
   (is (= :process-port-bounds
          (try (a/validation-request frozen "/synthetic/checkout"
-                (str/replace port-source "(.onExit handle) 100" "(.onExit handle) 101"))
+                (str/replace port-source "(min 100 (quot" "(min 101 (quot"))
               (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
 
 (deftest empty-cleanup-and-wrapped-interruptions-are-not-retried-or-erased

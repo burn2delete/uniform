@@ -167,15 +167,18 @@
 (def process-port-path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj")
 (def process-port-symbols
   {:start 'gravity.self-hosting.sh01-parallel-test-runner/start-process
+   :retain 'gravity.self-hosting.sh01-parallel-test-runner/retain-owned-process!
+   :handles 'gravity.self-hosting.sh01-parallel-test-runner/retained-process-handles
    :result 'gravity.self-hosting.sh01-parallel-test-runner/process-result
-   :cleanup 'gravity.self-hosting.sh01-parallel-test-runner/terminate-process-tree!
+   :cleanup 'gravity.self-hosting.sh01-parallel-test-runner/finalize-owned-process!
    :restore-interrupt 'gravity.self-hosting.sh01-parallel-test-runner/restore-interrupt!})
 (def process-bounds
   {:execution-ms 3600000 :capture-wait-ms 5000
    :output-limit-bytes 1048576 :output-limit-chars 1048576
    :cleanup-ms 1500 :post-cleanup-wait-ms 100 :post-close-wait-ms 100
    :cleanup-grace-ms 100
-   :observed-handle-reap-wait-ms 100 :accounted-reclamation-base-ms 11800})
+   :observed-handle-reap-max-wait-ms 100 :reap-within-cleanup-deadline? true
+   :accounted-reclamation-base-ms 11800})
 (defn- canonical [value]
   (cond
     (map? value) (into (sorted-map-by #(compare (pr-str %1) (pr-str %2)))
@@ -239,7 +242,9 @@
                           'process-post-cleanup-wait-ms 100
                           'capture-post-close-wait-ms 100}]
       (require! (= expected (last (get declared sym))) :process-port-bounds)))
-  (require! (some #{'(.get (.onExit handle) 100 TimeUnit/MILLISECONDS)}
+  (require! (some #{'(.get (.onExit handle)
+                      (long (max 1 (min 100 (quot (- deadline (System/nanoTime)) 1000000))))
+                      TimeUnit/MILLISECONDS)}
                   (tree-seq coll? seq (get (definitions port-source 'defn-) 'reap-process-handle!)))
             :process-port-bounds)
   (require! (= (:accounted-reclamation-base-ms process-bounds)
@@ -247,6 +252,7 @@
                   (* 2 (+ (:capture-wait-ms process-bounds) (:post-close-wait-ms process-bounds)))))
             :process-port-bounds)
   {:schema :effects/selected-process-request-v1 :frozen frozen :cwd cwd
+   :ownership-model :normal-retained-process-v1
    :request-hash-argument :append
    :bounds process-bounds
    :port-source {:path process-port-path :sha256 (sha256 port-source) :symbols process-port-symbols}
@@ -282,6 +288,7 @@
   [request expected-hash {:keys [now start result cleanup publish restore-interrupt read-port-source]}]
   (require! (= expected-hash (request-hash request)) :request-hash)
   (require! (= :effects/selected-process-request-v1 (:schema request)) :process-request)
+  (require! (= :normal-retained-process-v1 (:ownership-model request)) :process-request)
   (require! (= [:none :unrun-held] ((juxt :authority :execution) request)) :process-request)
   (require! (= :append (:request-hash-argument request)) :process-request)
   (validate-frozen! (:frozen request) (:cwd request))
@@ -325,7 +332,7 @@
               capture-ok? (every? #(= :complete %) [(:stdout-capture-status r) (:stderr-capture-status r)])
               why (cond
                     (or (not (pos? remaining)) (>= (now) deadline) (= :timeout (:status r))) :timeout
-                    (or (not= true (:complete? c)) (:root-alive? c)
+                    (or (not= true (:tracked-complete? c)) (= false (:complete? c)) (:root-alive? c)
                         (not= 0 (:descendants-alive c)) (:discovery-error c)
                         (:timeout-containment-unproven? r) (:cleanup-failed? r)
                         (= false (:cleanup-complete? r))
@@ -342,7 +349,9 @@
                                 (:before payload) (:after payload) (:runner payload))
                   receipt {:status :observed :request-hash expected-hash
                            :observation observation :cleanup c
-                           :containment :observed-process-handles-only
+                           :containment :tracked-owned-handles-only
+                           :descendant-coverage (:descendant-coverage c :unknown)
+                           :creation-coverage (:creation-coverage request)
                            :semantic-acceptance false}]
               (reset! publication :unknown)
               (let [published? (try (publish receipt)
