@@ -92,6 +92,19 @@ here. The next implementation increment must trace actual descriptor consumers
 and preserve positive reconstruction and obsolete/forged-field rejection across
 all three owners; it cannot infer acceptance from this textual correspondence.
 
+The two List element width checks below now have standalone follow-up draft
+PR611 at `edef2c00c103df4b5222cf44124c6e1d707820e4`, tree
+`7f12fa541cf26179ac59b6bdb95c666674ecdfb2`, assessed base
+`e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80`. Its complete two historical
+definitions match after only the width predicate deletions; all other production
+forms and direct callers remain unchanged. Actual-owner positive/late-invalid
+and schema/extent test definitions are added, with all existing test bytes
+preserved. Source checks, boundary, lint comparison and document checks pass;
+actual execution and independent acceptance remain pending. Their work
+parameters/charges/refusals remain explicit open obligations. This follow-up
+does not rewrite the original machine snapshot or grant whole-function credit
+to a later caller or composition.
+
 Other authored-base identities include the shared C7 carrier preflight and its
 aggregate helpers, coordinator/receipt/source validation, conditional List-element
 checks in Effects/emitter and selected schema/caller cells. Each requires its
