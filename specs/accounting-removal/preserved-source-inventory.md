@@ -225,3 +225,24 @@ No Gravity/compiler, authenticated pipeline, Effects/emitter, runtime, broker,
 C12 or held selector ran. This inventory does not classify every cost guard,
 prove a call graph, renew an old review, confer independent acceptance or close
 PR502. Independent source dispositions and genuine finite acceptance remain open.
+
+## Original Record and Union control follow-up
+
+Test-only PR620 at `585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53`, tree
+`09f8eff9ff27422df1a321001b76d7f8f90fa287`, restores two complete original
+Record/Union descriptor-row and union-branch-definition kernels on main base
+`e047157d711652a5624012f0da7d6911ce086718`. Raw bodies and comments match
+PR502 byte for byte. Existing test bytes and all production remain unchanged.
+Its census pins 31 syntactic C7 dependencies, six of which differ from history;
+those differences remain explicit rather than receiving equivalence credit.
+Source checks, boundary 6/11, unchanged lint 71 warnings/zero errors, docs,
+roadmap and whitespace pass. Genuine helper execution and independent acceptance
+remain pending; CI was running at readback. These normalized descriptor/Core
+controls do not establish authenticated source admission or executable
+Record/Union support. The immutable inventory snapshot and its counts remain
+unchanged.
+
+PR619 at `ab33cc5f` and this evidence draft's prior head `9df7b2d3` subsequently
+completed routine CI: seven successes and two configured skips each. This does
+not extend the exact-child PR616 source review to main or supply genuine kernel
+execution.
