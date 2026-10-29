@@ -1460,3 +1460,33 @@ terminal records, and mismatched source/runtime/classpath provenance still
 refuse. Independent review of the actual observer/serializer method, separately
 admitted execution, real producer/reuse/invalidation evidence and result review
 remain the original RV2/RV4 gates. No schema-shaped fixture discharges them.
+
+#### Pure adapter for fresh returns and supplied observations
+
+`serialize-fresh-capture` prepares the existing capture-v1 bytes from a fresh
+return plus an explicit supplied map containing `:binding-before`,
+`:binding-after`, `:producer-provenance`, `:applying-source` and `:terminal`.
+It validates the declared dependency contract and the same binding, report,
+output, snapshot, provenance and terminal rules as `verify-capture!`. It calls
+no observation function or operation and returns no method, trusted review pin,
+authentication result or admission. New serialized bytes need their own pinned
+method and independent review; existing pinned artifacts are never rewritten.
+
+The source-backed fresh-only return can omit runtime/provenance metadata.
+This adapter requires those inputs explicitly instead of deriving observations
+from a report or silently replacing original producer metadata with applying
+metadata. If a return already has `:test-producer-provenance`,
+`:test-applying-revision` or `:test-applying-repository-snapshot`, each must
+match the supplied fresh capture. Both preparation and offline verification
+reject contradictions with `:report-provenance`. This closes an injected
+counterexample where a valid-looking outer envelope concealed a conflicting
+producer inside `:report-edn`. Missing supplied fields, bad types or identities,
+changed bookends, incomplete output/terminals and miss/hit claims still refuse.
+
+All new tests supply their snapshot, runtime and terminal values. They do not
+measure or authenticate them. Complete snapshot metadata and ordered identities
+survive the round-trip and raw byte pins remain explicit. The normal wiring is
+unchanged: its fresh-only branch still does not acquire the missing observation
+bundle. Connecting a real observer/serializer requires exact method review and
+separate runtime admission. Real producer, miss/hit/reuse/per-input invalidation
+and result/admission evidence remain OPEN; fresh-only policy is unchanged.
