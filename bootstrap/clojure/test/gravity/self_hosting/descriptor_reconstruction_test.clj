@@ -75,4 +75,3 @@
                       #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
                       #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
         (is (= :rejected (:status (compile (change context)))))))))
-

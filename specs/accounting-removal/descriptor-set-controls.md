@@ -58,6 +58,14 @@ not transitive helper equivalence or semantic acceptance.
   and cache disabled: zero errors, warnings or infos on the two Clojure/EDN inputs.
 - Canonical document, roadmap and whitespace checks: passed.
 
+Initial candidate `508e9360` static CI failed on a new blank line at EOF,
+line 78 (run `40966217048`, job `123771287698`). Changed-file lint had zero
+findings. The successor removes exactly one final newline, leaving every reader
+form and assertion identical, and refreshes its census hash. Staged and complete
+parent-relative whitespace checks now pass. The initial local whitespace command
+ran before staging the new file and therefore missed it; that earlier claim is
+superseded. No CI policy or lint configuration was changed.
+
 Both restored genuine tests are **UNRUN**. They are definitions for review,
 not replacement model evidence or a selector launch. PR568's denied genuine
 operation remains stopped. Independent source review, genuine acceptance where

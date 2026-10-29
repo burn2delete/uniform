@@ -93,6 +93,21 @@
    :all-other-body-bytes :identical}},
  :reader-eval false,
  :missing-case [:dse [:gravity.type/set :gravity.type/set]],
+ :CI-correction
+ {:run 40966217048,
+  :prior-file-sha256
+  "a90d1a594ffda0be3843e4427fc2ea740551a80d5b1541c74d874f527022276a",
+  :generator-sha256
+  "1463acbc4c60602a62c735f34a2b3aadada21e23050991af75c446e68d218b89",
+  :all-reader-forms-unchanged true,
+  :correction :remove-one-final-newline,
+  :line 78,
+  :predecessor "508e9360b4068f938e3126f7cc15fab09a031800",
+  :verdict :NONPASS,
+  :finding :new-blank-line-at-EOF,
+  :policy-or-configuration-changes false,
+  :changed-file-lint {:errors 0, :warnings 0, :infos 0},
+  :job 123771287698},
  :Bootstrap-loaded false,
  :other-five-cases
  :existing-relocated-pr359-descriptor-cases-unchanged,
@@ -115,7 +130,7 @@
   :unknown-operand-type],
  :denied-selector-retried false,
  :candidate-file-sha256
- "a90d1a594ffda0be3843e4427fc2ea740551a80d5b1541c74d874f527022276a",
+ "efcfd04821060637c2681b6ad1449fd596b7ddc03e6c743c43109a9a1e4f934e",
  :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
  :kind :preserved-bare-set-descriptor-controls,
  :genuine-tests :UNRUN,
