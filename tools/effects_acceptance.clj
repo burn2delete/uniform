@@ -198,7 +198,9 @@
   (require! (and (absolute-path? cwd) (= cwd (:cwd frozen))) :working-directory)
   (require! (and (vector? (:command frozen))
                  (absolute-path? (get-in frozen [:broker :coordination-root]))
-                 (= :memory-heavy (get-in frozen [:broker :class]))) :frozen-command)
+                 (= (if (= pmk-selectors (get-in frozen [:selection :selectors]))
+                      :exclusive :memory-heavy)
+                    (get-in frozen [:broker :class]))) :frozen-command)
   (let [plan (:selection frozen) cp (:classpath frozen) files (get-in frozen [:runtime :files])
         identity-file (:identity-file frozen)]
     (require! (= [:effects/aggregate-selection-v1 :none :unrun-held (command (:selectors plan))]
@@ -365,7 +367,7 @@
    :release 'gravity.self-hosting.sh01-host-resource-broker/release!})
 
 (defn lease-validation-request
-  "Bind the normal broker source; this does not establish root coverage or admission."
+  "Bind the existing SH-01 broker source; this does not establish coverage or admission."
   [request source]
   (require! (let [timeout (get-in request [:frozen :broker :acquisition-timeout-ms])]
               (and (integer? timeout) (pos? timeout))) :lease-timeout)
@@ -378,8 +380,10 @@
 
 (defn observe-under-lease!
   "Hold one actual parent lease through process cleanup and publication.
-  Explicit broker ports must be installed from the pinned normal broker source.
-  Additional participating guards and root coverage remain caller prerequisites."
+  Explicit broker ports must be installed from the pinned SH-01 broker source.
+  For the PMK singleton, the caller must confirm shared-root coverage and take
+  the separate canonical immediate tryLock after this exclusive lease, releasing
+  that lock before this lease. These remain actual method prerequisites."
   [request expected-hash process-ports {:keys [acquire validate release read-lease-source]}]
   (require! (= expected-hash (request-hash request)) :request-hash)
   (let [spec (:lease-source request)

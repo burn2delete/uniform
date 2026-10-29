@@ -126,8 +126,8 @@ internal `process-result`, `terminate-process-tree!` and `restore-interrupt!`
 boundaries. Internal ports are source-pinned bindings, not new public runner
 APIs. The adapter neither resolves nor loads them and supplies no default real
 ports. Actual installation must match this exact reviewed source at admission.
-The actual caller must hold its existing memory-heavy admission before invoking
-the start port and retain it through cleanup. The new child wrapper does not
+The actual caller must hold the lease class required by its selected tuple before
+invoking the start port and retain it through cleanup. The new child wrapper does not
 acquire a second lease; its prepared root argument is identity data only.
 
 `observe-validation!` accepts explicit ports for source reread, the monotonic
@@ -173,10 +173,11 @@ external supervisor's containment remains a real launch prerequisite when the
 execution policy requires that stronger guarantee. No broker/root configuration
 or live capacity observation is added.
 
-`lease-validation-request` additionally pins the normal broker source and its
+`lease-validation-request` additionally pins the existing SH-01 broker source and its
 existing acquire, live-token validation and release ports. `observe-under-lease!`
-uses caller-installed ports to acquire the frozen memory-heavy lease in the
-parent. It checks that validation returns the identical token after acquisition,
+uses caller-installed ports to acquire the frozen lease in the parent. New PMK
+singleton requests require `:exclusive`; the original five-selector batch keeps
+its historical `:memory-heavy` class. It checks that validation returns the identical token after acquisition,
 immediately before start, after explicit cleanup, before publication and after
 the operation. When the result port performed cleanup itself, the final check
 still occurs after that cleanup. The same token is released once; failed or
@@ -191,10 +192,16 @@ derives the Git-common broker root; the direct host-broker example in
 section states, "Callers must not nest acquisition; nested behavior is
 unspecified." Holding one root does not establish exclusion at the other, and
 a different operation's nested method cannot supply this operation's coverage.
-The missing fact is the actual participating-caller configuration that covers
-this singleton through one permitted, nonnested broker acquisition and any
-independent required lock. No new root, adoption, live acquisition, process
-inspection or recovery is authorized by this source assessment itself.
+No distinct-root exception is pending or inferred. The contract-compatible
+candidate is one confirmed shared-root exclusive lease C, then the separate
+canonical immediate tryLock L, with reverse release L then C. The missing fact
+is the existing configuration mapping actual participating callers to that
+confirmed shared root and required canonical lock. The adapter's lease class
+check records only this source requirement; it does not prove participant
+coverage, install the lock, or confer admission. Earlier memory-heavy PMK
+requests remain historical and cannot be submitted as this new candidate.
+No new root, adoption, live acquisition, process inspection or recovery is
+authorized by this source assessment itself.
 
 `tools/effects_process_binding_test.clj` exercises only fake process/clock ports.
 It does not rerun the unchanged 6/44 source-control file, whose Git-fixture test

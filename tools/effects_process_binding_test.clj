@@ -70,6 +70,19 @@
     (is (= :selector (try (a/bind-result plan source-identity source-identity runner-result)
                          (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))))
 
+(deftest new-pmk-requests-require-the-single-exclusive-lease-class
+  (let [plan (assoc selection :selectors a/pmk-selectors :command (a/command a/pmk-selectors))
+        pmk (assoc frozen :selection plan)
+        exclusive (assoc-in pmk [:broker :class] :exclusive)]
+    (is (= :exclusive (get-in (a/validation-request exclusive (:cwd frozen) port-source)
+                              [:frozen :broker :class])))
+    (is (= :frozen-command
+           (try (a/validation-request pmk (:cwd frozen) port-source)
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (= :frozen-command
+           (try (a/validation-request (assoc-in frozen [:broker :class] :exclusive) (:cwd frozen) port-source)
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))))
+
 (def lease-source (slurp a/lease-port-path))
 (defn leased-harness []
   (let [h (harness) token (Object.)
