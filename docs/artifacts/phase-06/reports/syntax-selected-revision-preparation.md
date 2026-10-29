@@ -44,13 +44,19 @@ a Reader revision substitution. No supplied result flag establishes acceptance.
 ## Cheap controls
 
 Fake owner/input ports and extracted selected-binding input predicates pass
-16 tests / 262 assertions, including the unchanged 7/177 harness and 3/58 Reader
+18 tests / 267 assertions, including the unchanged 7/177 harness and 3/58 Reader
 revision controls. Actual twelve-export DATA, retained eleven-export DATA,
 missing/unknown exports, effect/function mismatch, duplicate/malformed/opaque
 DATA, incomplete prepared inputs, drift and an unbound executable/classpath
 refuse before owner lookup. Opaque callbacks remain zero; Bootstrap is unloaded.
 These checks do not execute an actual Reader, compiler, Guest, envelope or C3
 construction/verification.
+
+The initial source census omitted the consumed compiler and emitter under
+`bootstrap/gravity/p15_s23`. Independent review detected that concrete gap.
+The corrected census includes the entire tracked Gravity tree, and omitted or
+changed consumed-file controls reject before owner construction. The initial
+review remains historical; the corrected exact tuple needs affected re-review.
 
 ## Host prerequisites still require actual evidence
 

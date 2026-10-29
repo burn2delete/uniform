@@ -41,3 +41,28 @@
              (try (acceptance/exercise! #(swap! calls conj %) prepared) nil
                   (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
     (is (empty? @calls))))
+
+(deftest closure-includes-actual-compiler-and-emitter-source
+  (let [root (.getCanonicalPath (java.io.File. ".")) paths (set (acceptance/source-closure-paths root))]
+    (doseq [relative ["bootstrap/gravity/p15_s23/compiler.gravity" "bootstrap/gravity/p15_s23/emitter.gravity"]]
+      (is (contains? paths (str (java.io.File. root relative))) relative))))
+
+(deftest changed-consumed-file-is-not-an-accepted-bookend
+  (let [directory (java.nio.file.Files/createTempDirectory "syntax-closure-model-" (make-array java.nio.file.attribute.FileAttribute 0))
+        path (.resolve directory "input") bytes (.getBytes "old" "UTF-8")
+        _ (java.nio.file.Files/write path bytes (make-array java.nio.file.OpenOption 0))
+        name (str path) input {:path name :bytes 3 :sha256 (h/sha bytes)}
+        prepared {:root (str directory) :closure {:source-files [input] :runtime-files [input]
+                                                :cwd (str directory) :classpath [name]
+                                                :argv [name "-cp" name]}}]
+    (try
+      (with-redefs [h/recheck-inputs! (fn [_] nil) acceptance/source-closure-paths (fn [_] [name])]
+        (is (nil? (acceptance/recheck-closure! prepared)))
+        (java.nio.file.Files/write path (.getBytes "new" "UTF-8") (make-array java.nio.file.OpenOption 0))
+        (is (= :consumed-input-drift
+               (try (acceptance/recheck-closure! prepared) nil
+                    (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+        (is (= :complete-consumed-closure
+               (try (acceptance/recheck-closure! (assoc-in prepared [:closure :source-files] [])) nil
+                    (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
+      (finally (java.nio.file.Files/deleteIfExists path) (java.nio.file.Files/deleteIfExists directory)))))

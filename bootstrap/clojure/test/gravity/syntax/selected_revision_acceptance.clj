@@ -12,7 +12,7 @@
 (defn source-closure-paths [root]
   (mapv #(str (io/file root %))
         (str/split-lines (h/git! root "ls-files" "bootstrap/clojure/src"
-                                "bootstrap/gravity/src" "bootstrap/clojure/test" "deps.edn"))))
+                                "bootstrap/gravity" "bootstrap/clojure/test" "deps.edn"))))
 
 (defn recheck-closure! [{:keys [root closure] :as prepared}]
   (h/recheck-inputs! prepared)
