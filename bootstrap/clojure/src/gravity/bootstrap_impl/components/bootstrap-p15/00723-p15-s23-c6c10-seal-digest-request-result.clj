@@ -240,7 +240,6 @@
 
 
 ;; Selected-source Reader policy helpers; DATA projection is not admission.
-(require '[gravity.source-interface-header :as source-interface-header])
 
 (declare sh03-reader-resolve-source-path sh03-reader-current-binding!)
 

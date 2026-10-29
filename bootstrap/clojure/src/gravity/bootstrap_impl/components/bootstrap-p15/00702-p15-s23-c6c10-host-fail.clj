@@ -206,7 +206,6 @@
                  nil)}))
 
 ;; Fixed contract DATA selection only; no source execution or admission.
-(require '[gravity.c6-c10.source-contract :as c6-source-contract])
 
 (defn p15-s23-c6c10-source-program-contract [version]
   (when-not (identical? Long (class version))

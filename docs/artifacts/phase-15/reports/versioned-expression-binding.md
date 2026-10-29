@@ -15,6 +15,11 @@ from preserved Native f66d9ff4554815b89ee7d51ee73b7961f0c33a44: components
 No component registration or source pin changes. Existing typed-lowering
 functions and the legacy governed-source route are retained.
 
+The earlier expression component now establishes the shared contract/header
+aliases. Remove the two redundant later requires in 00702 and 00723; their
+function bodies stay unchanged. Initial CI found those duplicate requires;
+the original failure remains historical evidence.
+
 The historical B51 parent draft lists the shared files; its recorded current
 disposition has no production writer on this expression path. Its existing
 source delegation targets separate checker-identity files. This proposal
