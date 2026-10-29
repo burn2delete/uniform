@@ -29,7 +29,8 @@ guard order in the authoritative coverage decision. Exactly one guard must
 declare `:acquisition :broker` and a supported `:resource-class`. A canonical
 guard must declare `:acquisition :non-broker`; all non-broker guards must bind
 `:acquire-function` to the captured `:acquire-guard` port's source identity.
-The separate `:acquire` port handles only the single broker guard. Two broker
+The separate `:acquire` port handles only the single broker guard. Binding
+rejects the same callable supplied to both acquisition ports. Two broker
 descriptors, including different roots, refuse before clock, admission,
 reservation, acquisition or start. No acquisition order is supplied
 as a default by this controller. Both order fields must be vectors; sets cannot
@@ -90,7 +91,7 @@ handle and any original failure. A metadata receipt alone is never execution acc
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
 The original seventeen controls retain their semantics with explicit fake
-non-broker guards. Nineteen tests and 398 assertions passed, with no real port resolution and
+non-broker guards. Nineteen tests and 400 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture

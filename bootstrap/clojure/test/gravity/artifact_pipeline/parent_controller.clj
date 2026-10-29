@@ -25,6 +25,7 @@
   (require! (and (string? (:id request)) (seq (:id request))) :missing-request-id)
   (require! (and (= source (:source request)) (= selector (:selector request)) (= argv (:argv request))) :wrong-operation)
   (require! (and (= port-names (set (keys ports))) (every? fn? (vals ports))
+                 (not (identical? (:acquire ports) (:acquire-guard ports)))
                  (= port-names (set (keys (:port-identities request))))
                  (every? some? (vals (:port-identities request)))) :unbound-ports)
   {:request request :ports ports :bound-ports ports})

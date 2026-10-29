@@ -253,12 +253,16 @@
                      (assoc-in guards [2 :acquire-function] "foreign-function")]]
       (let [calls (atom [])
             request (-> (:request f) (assoc :guards invalid) (assoc-in [:coverage :ordered-guards] invalid))
-            ports (zipmap controller/port-names (repeat (fn [& _] (swap! calls conj :called))))
+            ports (into {} (map (fn [port] [port (fn [& _] (swap! calls conj port))]) controller/port-names))
             result (controller/run! (controller/bind-controller request ports)
                                     (select-keys request controller/identity-fields))]
         (is (= :refused (:status result)))
         (is (some #{:source-bound-ordered-guards} (:missing result)))
-        (is (empty? @calls))))))
+        (is (empty? @calls)))))
+  (let [f (fixture) shared (fn [& _] (swap! (:events f) conj :shared-acquire))]
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (execute f {:acquire shared :acquire-guard shared})))
+    (is (empty? @(:events f)))))
 
 (deftest single-exclusive-broker-and-explicit-canonical-function-preserve-declared-order
   (doseq [reverse? [false true]]
