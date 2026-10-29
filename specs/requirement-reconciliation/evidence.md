@@ -395,3 +395,47 @@ remaining, and is not a whole-project completion ratio.
 Focused task-source tests passed: Domains 6 / 103, Opt 6 / 68, Legality 4 / 59,
 and Developer Tools 4 / 80. All four generated task projections and whitespace
 checks passed.
+
+## Domains70 current composition
+
+Source commit `19e1120301643581e6a8b55b933ec12643d0ba2f`, tree
+`de90004affc21264c37a187ddcdfbc3ca8b9982d`, composes 70 Domains criteria
+through 15 existing fields and nine concrete Open integration task records.
+Their current-join input has SHA256
+`30b0be7a37634bb416ae858e35eedc2d000fec9592d765175d5ee1ace1029778`;
+the unchanged source proposal is retained at its canonical referenced path
+with SHA256
+`cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42`.
+The source-review receipt remains
+`78d7a2759be0ead125417d15aed3b8cad37e29ad918fae61166b3b9e38b9b437`.
+Actual composed-source and task-scope review is pending.
+
+Five task-file inputs had advanced through the preceding Release/Math/
+Performance compositions. The composition record preserves their exact old
+and current hashes and every complete applying field prefix. The nine task
+records cover automation, blockchain, crypto, formal, native, services,
+simulation, storage and visual integration. They remain within Domains and
+add no new compiler component. Original seven routing positions are unchanged;
+the nine literal task identities are appended in the parser, generated views
+and SH identity routing. No SH requirement receives new completion credit.
+
+`current-criterion-bindings-345.edn`, SHA256
+`3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f`,
+rebinds all 275 predecessor witnesses and the 70 new criteria to the committed
+source. All original 149 task identities and states remain unchanged; nine
+Open tasks increase the provisional scoped census to 3 accepted / 158 total,
+155 remaining (153 Open, one Partial and one status-unassessed). This remains
+an incomplete project scope, not a whole-project ratio. All 833 current Open
+decision records remain byte-identical, pending their complete allocation and
+granularity review. Historical mapping counts remain 200 accepted / 361
+unadopted; 345 are now source-bound and 216 remain unbound.
+
+Preparation refused an incorrect keyword/string status assertion and a missing
+record separator before criterion writes. The corrected transaction retains
+the reviewed criterion bytes and strict Markdown validation. Domains tests
+passed 7 / 213, including original routing, all nine concrete positive/negative
+interfaces and unknown-ID rejection. Other affected tests passed: Compiler API
+5 / 74, Build 5 / 86, Platform 5 / 86, Runtime 4 / 67 and Legality 4 / 59.
+All six generated projections, boundary 6 / 11, both document validators and
+whitespace checks passed. The frozen 75-mapping review at `1f38064e` remains
+independent of this later candidate; neither batch has been promoted here.
