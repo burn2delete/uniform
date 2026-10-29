@@ -3563,16 +3563,74 @@
           malformed [7 nil {} [7] [nil] (vec (repeat 257 {}))]]
     (is (false? (leaf 'body-import-tables-valid?
                      (assoc {:module-type-producers [] :imported-function-types []} field malformed)))))
-  (let [entry {:request {:canonical-core-artifact {:nodes []}} :facts {:function-type-table []}}]
-    (is (true? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table (vec (repeat 256 {}))} [])))
-    (is (false? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table []}
-                      [(assoc-in entry [:request :canonical-core-artifact :nodes] [{}])])) )
-    (is (false? (leaf 'body-aggregate-valid? {:nodes []} {:function-type-table (vec (repeat 256 {}))}
-                      [(assoc-in entry [:facts :function-type-table] [{}])]))))
   (let [core {:nodes [(node 2 :def [1]) (node 1 :literal [])] :call-edges []}
         facts {:function-type-table [] :type-table {}}]
     (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 2))))
     (is (= 3 (:work-count (leaf 'body-derive-nodes-with-foreign core facts {} 3))))) )
+
+(deftest body-private-map-keys-authenticated-builder-composition
+  ;; Genuine source -> C7 -> authenticated C8 builder, PMK family only.
+  ;; Held until this exact selector is separately authorized to execute.
+  (let [products (fresh-products "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-private-map-keys.gravity")
+        {:keys [typed verification binding request]} products
+        result (build-leaf products)
+        facts (:identity-input typed)
+        calls (filter #(= :direct-private-map-keys (:dispatch %)) (:call-type-facts facts))]
+    (is (= :accepted (:status typed) (:status result)) (pr-str (:diagnostics result)))
+    (is (= :passed (:status verification)))
+    (is (= 1 (count calls)))
+    (is (= request (get-in binding [:digest-resolution :preimage :request])))
+    (is (= :passed (:status (leaf 'verify-body-effect-result typed verification binding result))))
+    (let [call (first calls)
+          record (get-in result [:effect-graph :nodes (:call-core-node-id call)])]
+      (is (= #{:memory/allocate} (:direct record)))
+      (is (= :sh09-private-map-keys-allocation-v1 (get-in record [:allocation :rule-version]))))
+    ;; An unbound source triplet must not be credited as a PMK/shape refusal.
+    (let [wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+          rejected (leaf 'build-body-effect-result typed verification wrong-binding)]
+      (is (= :rejected (:status rejected)))
+      (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+      (is (= :untrusted-sh08-body-effect-input (get-in rejected [:diagnostics 0 :reason]))))
+    ;; Reuse this PMK triplet at the compiled public C8 boundary, rather than
+    ;; crediting a broader fixture's composition to this selector.
+    (when-not (and (= :accepted (:status typed) (:status result))
+                   (= :passed (:status verification)) (= 1 (count calls)))
+      (throw (ex-info "PMK products failed before public C8 composition" {})))
+    (let [bundle (compile-c8-module-bundle (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+          invoke (fn [function args]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function
+                     {:engine :body-effect-pmk-public-composition} bundle function args))
+          actual (invoke 'sh09-build-authenticated-body-effect-result [typed verification binding])
+          checked (invoke 'sh09-verify-authenticated-body-effect-result [typed verification binding actual])
+          wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+          rejected (invoke 'sh09-build-authenticated-body-effect-result [typed verification wrong-binding])]
+      (is (= result actual))
+      (is (= :accepted (:status actual)))
+      (is (= :passed (:status checked)))
+      (is (= :rejected (:status rejected)))
+      (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+      (is (= :untrusted-sh08-body-effect-input (get-in rejected [:diagnostics 0 :reason]))))))
+
+(deftest body-module-vectors-have-no-cumulative-quota
+  (let [entry {:request {:canonical-core-artifact {:nodes [{}]}}
+               :facts {:function-type-table [{}]}}]
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes (vec (repeat 65537 {}))}
+                     {:function-type-table []} [])))
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes []}
+                     {:function-type-table (vec (repeat 257 {}))} [])))
+    (is (true? (leaf 'body-module-vectors-valid? {:nodes (vec (repeat 65536 {}))}
+                     {:function-type-table (vec (repeat 256 {}))} [entry])))))
+
+(deftest body-module-vectors-check-caller-and-every-producer
+  (let [core {:nodes []} facts {:function-type-table []}
+        prefix (vec (repeat 300 {:request {:canonical-core-artifact core} :facts facts}))]
+    (is (true? (leaf 'body-module-vectors-valid? core facts prefix)))
+    (doseq [bad [nil 7 {} '() '(1)] field [:nodes :functions]]
+      (let [bad-core (if (= field :nodes) {:nodes bad} core)
+            bad-facts (if (= field :functions) {:function-type-table bad} facts)
+            entry {:request {:canonical-core-artifact bad-core} :facts bad-facts}]
+        (is (false? (leaf 'body-module-vectors-valid? bad-core bad-facts prefix)))
+        (is (false? (leaf 'body-module-vectors-valid? core facts (conj prefix entry))))))))
 
 (deftest body-effect-foreign-summary-development-kernel
   (let [coordinate {:binding-id (sha 50) :producer-sh06-artifact-id (sha 60)

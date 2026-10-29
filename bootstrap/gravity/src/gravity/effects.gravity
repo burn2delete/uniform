@@ -1759,14 +1759,13 @@
                                :module-key [c5-id (get core :artifact-id)] :request producer :facts producer-facts}))
               (body-failure :untrusted-or-transitive-body-producer)))))))))
 
-(defn body-aggregate-valid? [core facts entries]
-  (loop [remaining (conj entries {:request {:canonical-core-artifact core} :facts facts}) nodes 0 functions 0]
+(defn body-module-vectors-valid? [core facts entries]
+  (loop [remaining (conj entries {:request {:canonical-core-artifact core} :facts facts})]
     (if (= 0 (count remaining)) true
       (let [entry (first remaining) ns (body-path entry [:request :canonical-core-artifact :nodes])
             fs (body-path entry [:facts :function-type-table])]
         (if (if (vector? ns) (vector? fs) false)
-          (if (body-all? [(<= (+ nodes (count ns)) 65536) (<= (+ functions (count fs)) 256)])
-            (recur (rest remaining) (+ nodes (count ns)) (+ functions (count fs))) false) false)))))
+          (recur (rest remaining)) false)))))
 
 (defn body-import-coordinate [proof]
   {:binding-id (get proof :binding-id) :producer-sh06-artifact-id (get proof :producer-sh06-artifact-id)
@@ -20107,7 +20106,7 @@ true
           core (get request :canonical-core-artifact) facts (get typed :identity-input)
           producers (body-producer-entries request facts)]
       (if (= :accepted (get producers :status))
-        (if (body-aggregate-valid? core facts (get producers :entries))
+        (if (body-module-vectors-valid? core facts (get producers :entries))
           (let [derived (body-analyze-producers (get producers :entries))]
             (if (= :accepted (get derived :status))
               (let [imports (body-foreign-bindings request facts (get derived :bank))]
@@ -20119,7 +20118,7 @@ true
                   (body-error typed (get imports :reason) {})))
               (assoc (body-error-result (get derived :producer-facts typed) derived)
                      :producer-module (get derived :producer-module))))
-          (body-error typed :aggregate-body-node-or-function-limit {}))
+          (body-error typed :malformed-body-module-vectors {}))
         (body-error typed (get producers :reason) {})))
     (body-error typed (if (body-imported? typed) :imported-body-effects-pending :untrusted-sh08-body-effect-input) {})))
 

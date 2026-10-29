@@ -1,0 +1,300 @@
+# ACC-08 Effects aggregate acceptance preparation
+
+This package covers only PR533's aggregate helper and its sole builder call.
+ACC-08 remains partial. The source helper, original two semantic selectors,
+3/47 compiler-free controls and original independent static review are retained.
+No other accounting task ID or status changes here.
+
+Preparation observed remote main `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,
+tree `9f464ed0f03866bd4978e4213a488f3b1ae48683`, and original candidate
+`eb9258a238d620a05d8cda0354fa418f3270ffcb`, tree
+`a5860fa3d9574f46c7163994501a4c575a168d6d`. At those exact identities C7,
+public C8, upstream C7 tests and the development runner match. Effects and the
+owning test differ only by the original PR533 change. This observation is not
+current-main composed execution or a merge authorization.
+
+The successor normally reconciled main
+`dfa4c5b653d8049ac78dd30962172e0d91c768e2` (tree
+`000c3e4cce476c196b61814a4732a48b9be95540`). Effects, C7, public C8 and the
+five selector names were unchanged; Reader/bootstrap dependencies changed, so
+their old composition evidence is not credited to this new dependency tuple.
+
+## Concrete gaps and corrections
+
+The existing development runner sorts qualified test names, selects exact vars
+after loading their namespaces, and reports counters through
+`gravity.development-test-runner/*machine-result-sink*`. Its machine result does
+not bind source revisions, dependency trees or affected consumer APIs. A successful
+result for a different selector, stale resource or failed namespace load could
+therefore be misattributed by a caller which only checked exit status.
+
+`tools/effects_acceptance.clj` prepares a source-bound exact selection without
+requiring any compiler namespace. It checks committed resource bytes, complete
+tracked production/test/fixture/Gravity/contract/tool tree identities and clean
+dependency paths. Resource hashes bind the owning tests, C7, Effects, public C8
+forwarders, development runner, bootstrap load order, PMK fixture pair and deps.
+The tree pins conservatively include tracked transitive source and resources;
+they do not claim a minimal semantic dependency set or external runtime closure.
+
+The adapter verifies the sole helper call and public build/verify forwarding
+forms. `prepare` returns the exact existing runner command, in its actual sorted
+selector order. `bind-result` requires matching before/after snapshots, exact
+selector and consumer identities, all selected test counters and coherent runner
+outcome/exit status. A missing sink is a driver/load/fixture failure, never a
+Gravity refusal. This is same-user provenance checking, not receipt authentication.
+
+The existing PMK kernel calls internal effect joins and checks descriptor,
+entry, key-domain, source/fact and native callback rejection. It does not call
+the authenticated builder. The added
+`body-private-map-keys-authenticated-builder-composition` uses the existing
+`fresh-products` source/C7/seal path on the PMK fixture, calls the real builder
+and verifier, checks PMK allocation and rejects a changed request binding with
+`C8-VERIFY` / `:untrusted-sh08-body-effect-input`. It has not run. No ANE domain
+or descriptor migration is introduced.
+
+That same selector now passes the exact PMK triplet through the existing
+`compile-c8-module-bundle` public C8 build/verify entrypoints, compares the
+public result to the leaf result and preserves the same wrong-binding refusal.
+It stops before public compilation if upstream PMK products failed. The
+nonlaunching adapter checks these exact selector-to-consumer call forms;
+synthetic controls reject a missing public compiler call or lost negative input.
+
+## Actual owner selectors and affected consumers
+
+All selectors below belong to `gravity.self-hosting.sh09-body-effect-test`.
+
+| Selector | Actual covered route and negative case | Execution |
+| --- | --- | --- |
+| `body-module-vectors-have-no-cumulative-quota` | Gravity leaf helper; caller and combined producer vectors beyond removed ceilings | Held; Clojure body control previously passed |
+| `body-module-vectors-check-caller-and-every-producer` | Gravity leaf helper; malformed nodes/function vectors in caller and late producer | Held; Clojure body control previously passed |
+| `body-private-map-keys-development-kernel` | C7 PMK typed input -> Effects LP/LQ context, call joins, node allocation; forged family, type/fact/source, missing/duplicated entries and native callback negatives | Held |
+| `body-private-map-keys-authenticated-builder-composition` | Actual PMK source -> C5/C6/C7 -> Effects builder/verifier -> compiled public C8 builder/verifier; mismatched request binding refusal at both boundaries | Held; public composition added |
+| `body-effect-public-forwarding-source-boundary` | Reader checks exact public C8 build/verify forwarding forms and exports | Source-only; not public compiled module composition |
+
+`verify-body-effect-result` reconstructs via `build-body-effect-result`, which
+calls `body-module-vectors-valid?`. The public C8 consumer exports
+`sh09-build-authenticated-body-effect-result` (arity 3) and
+`sh09-verify-authenticated-body-effect-result` (arity 4), forwarding to those
+two Effects exports. Their source wiring is covered by the selected boundary
+test. Compiling/executing the public C8 bundle is now covered by the same held
+PMK selector; the general existing authenticated paired test uses a broader
+fixture and is not silently included in this PMK-only selection.
+
+The changed helper's malformed-vector diagnostic is behind authenticated-input
+validation. Direct helper negatives test vector shape; the builder PMK negative
+tests authentication. Neither is credited as execution of the other refusal.
+The preserved source controls check the exact diagnostic migration. Genuine
+execution of the new diagnostic branch is not claimed by this package.
+
+## Portable inspection and future result binding
+
+From a checkout containing the pinned source and tool revisions:
+
+```bash
+clojure -Sdeps '{:paths ["tools"]}' -M -m effects-acceptance . --snapshot MAIN_COMMIT
+clojure -Sdeps '{:paths ["tools"]}' -M -m effects-acceptance . IDENTITY_RECEIPT
+clojure -Sdeps '{:paths ["tools"]}' -M tools/effects_acceptance_test.clj
+```
+
+These commands are compiler-free. Capture the snapshot output in a private
+portable EDN identity receipt after committing the source/tool package. Its
+location is local evidence, not public PR metadata. The identity file records an observed current
+main, candidate commit/tree, dependency trees and resource hashes. Moving main
+requires a fresh observation and source reconciliation; the historical main pin
+must not be called current afterward. Later package-only commits can preserve
+the semantic resource hashes, but require a newly reviewed snapshot before use.
+
+After separate authorization and applicable host admission, a genuine caller
+must prepare against that exact snapshot, bind the existing runner's
+`*machine-result-sink*` to capture its actual map, call `run-cli!` with the
+prepared command arguments, capture a second snapshot, then use `bind-result`.
+No map reconstructed from stdout, expected status, synthetic control or CI can
+replace that actual sink. An absent result or changed snapshot fails binding.
+The adapter supplies no default compiler launcher or real broker ports.
+`prepare-pmk` narrows the same source checks to the single existing
+`body-private-map-keys-authenticated-builder-composition` selector. Only that
+singleton or the original five-selector batch is accepted; arbitrary subsets
+and extra selectors are refused. Result counters and qualified test vars must
+match the selected tuple exactly.
+
+## Exact request process-port binding
+
+`validation-request` binds the frozen argv, CWD, source/runtime/classpath and
+selected tuple to the complete source hash and named ports of the existing
+`sh01-parallel-test-runner`. The successor binds PR600's public `start-process`,
+`retain-owned-process!`, `retained-process-handles`, three-argument
+`process-result`, and `finalize-owned-process!`, plus the source-pinned internal
+`restore-interrupt!`. The adapter neither resolves nor loads them and supplies no default real
+ports. Actual installation must match this exact reviewed source at admission.
+The actual caller must hold the lease class required by its selected tuple before
+invoking the start port and retain it through cleanup. The new child wrapper does not
+acquire a second lease; its prepared root argument is identity data only.
+
+`observe-validation!` accepts explicit ports for source reread, the monotonic
+clock, start, result/capture, cleanup, publication and interrupt restoration.
+It rehashes the actual port source through that reread port before start.
+Sink parsing is owned by the adapter, not replaceable by a caller consumer.
+The frozen schema, selection, canonical CWD, ordered classpath pins and exact
+Java/heap/operation/identity-file argv are validated before the start port.
+The request hash is appended as the final child argument, avoiding a hash
+self-reference in the frozen argv template. The new child wrapper echoes it
+beside the actual machine-sink map in one `EFFECTS_VALIDATION_RESULT` envelope;
+`read-validation-result` refuses missing or duplicate envelopes. This format is
+distinct from the preserved older frozen operation's untagged output.
+The deadline starts before start. Elapsed startup time is subtracted from the
+normal result port's timeout; a late returned zero result is refused. Timeout,
+nonzero/error exit, failed/forced/truncated capture and incomplete cleanup cannot
+reach result consumption. A missing payload or wrong request hash cannot publish.
+Cleanup is attempted once when needed, and its failure/uncertainty is preserved.
+Publication is attempted once; an exception remains `:unknown`, never retried.
+
+The frozen execution budget is 3,600,000 ms. Each stream retains at most
+1,048,576 bytes and characters, with a 5,000 ms capture wait and 100 ms post-close
+wait. The existing cleanup timeout is 1,500 ms with a 100 ms post-cleanup wait.
+The accounted reclamation base is therefore 11,800 ms: 1,500 + 100 +
+2 * (5,000 + 100). The 100 ms graceful-termination phase is inside the
+1,500 ms cleanup deadline, not added again. PR600 bounds each `onExit` wait by
+the lesser of 100 ms and the remaining shared cleanup deadline. Those waits
+are inside the cleanup deadline; the old per-handle additive budget is historical.
+The adapter binds both the source grace constant and the actual reap-call form.
+These are host process/capture bounds, not compiler accounting.
+The adapter refuses results returned after the execution deadline, even where
+normal cleanup/capture overhead contributed to that elapsed time.
+
+These are cooperative bounds on returning ports. Uninterruptible native start,
+wait, close, filesystem IO and JVM initialization have no invented hard bound.
+ProcessHandle enumeration, native handle operations and scheduler delays also
+have no hard bound; native enumeration cannot be given a hard bound by that deadline.
+Result consumption and publication IO are outside the runner's process deadline.
+ProcessHandle cleanup covers observed owned handles only: discovery failure,
+survivors, failed cleanup or unproven timeout containment refuse consumption.
+An unobserved cross-session escape cannot be disproved by this mechanism; an
+external supervisor's containment remains a real launch prerequisite when the
+execution policy requires that stronger guarantee. No broker/root configuration
+or live capacity observation is added.
+
+The retained API reports `:tracked-complete?` independently of `:complete?` and
+`:descendant-coverage`. The latter remain unknown on tracked success. The
+adapter requires tracked finalization, root exit, no survivors or discovery
+error, successful capture and a clean child outcome before consuming its sink;
+it preserves the global unknown and separately carries the exact method's
+source-bound creation declaration. That declaration requires independent review
+and is not inferred from the tracked cleanup field. The new ownership-model tag
+prevents earlier request tuples from being applied silently to the new API.
+
+The one-off PMK parent profile retains the actual Process, immediately creates
+its ownership token, and passes that identical Process/token to the normal
+three-argument result call. Its final path reuses that token's terminal result;
+only a pre-wait failure needs a direct finalizer call. Finalization precedes
+canonical L release and exclusive C release. The supervisor follows the same
+normal API for its directly owned parent. No PID lookup or replacement generic
+controller is supplied. Profile preparation and review do not approve C/L
+participation, the source creation envelope, platform admission or execution.
+
+The selected PMK successor installs `effects-retained-git/read-output` through
+the thread-local `effects-acceptance/*git-reader*` at all three roles' source
+bookends. The default preparation route remains unchanged. The Git-specific
+binding delegates to the canonical retained Process/token API, closes unused
+stdin, preserves `git -C root args` order and inherited configuration/environment,
+and consumes only complete valid UTF-8 capture with a zero exit and tracked
+terminal state. It reuses finalization and preserves original interruption/errors;
+it does not create another process controller or normalize global coverage.
+Pinned actual `clojure.java.shell/sh` forms under a fake exec provide comparison
+controls for argv, environment/cwd inheritance, stream decoding, stdin and exit.
+Git stdout limits are derived from the exact authenticated source sizes; the
+one-MiB child report limit would truncate several legitimate Git source blobs.
+
+The former 3,600-second limits are conservative explicit maxima, not measured
+PMK-duration claims or measurement prerequisites. A proposed successor schedule
+accounts for startup/initial verification, parent execution, Git wait/capture/
+cleanup, post-verification and terminal reserves. Its external whole-operation
+facility is explicitly unbound: an in-JVM clock cannot supervise its own startup,
+and a response-yield interval is not an external process timeout. No supported
+external deadline is fabricated and no generic wrapper is added. The preserved
+proposal's C/L order is acceptable in principle only; that decision supplies
+neither complete method acceptance nor platform authorization.
+
+A later source-only successor replaces the additive Git schedule with one
+7,500-second monotonic supervisor deadline. Each host wait uses the smaller
+of its per-call maximum and the remaining time minus a 15-second cleanup
+reserve; startup and returning waits do not renew that deadline. The parent
+receives only a remaining duration and uses a subordinate local clock for
+admission, Git and child execution. Absolute `System.nanoTime` readings are
+never compared across JVMs. The containing parent-process wait remains the
+outer authority over child-internal waits. This method may refuse or time out
+before all work fits; measured runtime fit is not required.
+
+The installed JDK's `ScheduledThreadPoolExecutor` supplies a concrete
+cooperative trigger in the existing supervisor. It interrupts the retaining
+owner thread; canonical finalization stays on that thread. Source/hash/decision
+work and process startup are charged to the same outer clock, with late
+returns rejected after cleanup and publication. Immutable supervisor output is
+provisional and cannot claim terminal success before its write returns.
+Scheduler commencement has no real-time guarantee, native or filesystem
+blocking may resist interruption, and the supervisor's own JVM bootstrap and
+pre-trigger helper loading are not externally contained. This is source-bound
+cooperative supervision of the exact parent, not a hard whole-operation kill
+guarantee. The earlier packets remain immutable, and acceptance of this changed
+method and its residual boundaries requires independent affected review.
+If raw-process retention fails, the method does not retry retention. It requests
+direct-root termination and closes its streams, with a returning-port reap wait
+clipped to at most 100 ms and remaining time. That path remains failed evidence
+with no retained-token or global-completion claim.
+
+`lease-validation-request` additionally pins the existing SH-01 broker source and its
+existing acquire, live-token validation and release ports. `observe-under-lease!`
+uses caller-installed ports to acquire the frozen lease in the parent. New PMK
+singleton requests require `:exclusive`; the original five-selector batch keeps
+its historical `:memory-heavy` class. It checks that validation returns the identical token after acquisition,
+immediately before start, after explicit cleanup, before publication and after
+the operation. When the result port performed cleanup itself, the final check
+still occurs after that cleanup. The same token is released once; failed or
+uncertain release prevents a successful outer receipt. No retry is supplied.
+This is one lease's plumbing, not evidence that all participating callers share
+its root. Actual installation must still establish source pins, root coverage,
+other required guards, acquisition order and outer containment before launch.
+
+The current root-coverage assessment is incomplete. The development-loop wiring
+derives the Git-common broker root; the direct host-broker example in
+`docs/development-verification.md` uses a separate host-local root. That same
+section states, "Callers must not nest acquisition; nested behavior is
+unspecified." Holding one root does not establish exclusion at the other, and
+a different operation's nested method cannot supply this operation's coverage.
+No distinct-root exception is pending or inferred. The contract-compatible
+candidate is one confirmed shared-root exclusive lease C, then the separate
+canonical immediate tryLock L, with reverse release L then C. The missing fact
+is the existing configuration mapping actual participating callers to that
+confirmed shared root and required canonical lock. The adapter's lease class
+check records only this source requirement; it does not prove participant
+coverage, install the lock, or confer admission. Earlier memory-heavy PMK
+requests remain historical and cannot be submitted as this new candidate.
+No new root, adoption, live acquisition, process inspection or recovery is
+authorized by this source assessment itself.
+
+`tools/effects_process_binding_test.clj` exercises only fake process/clock ports.
+It does not rerun the unchanged 6/44 source-control file, whose Git-fixture test
+would spawn Git. Neither Bootstrap nor the normal runner namespace is loaded.
+The old frozen operation and the new immutable request/port hashes are retained
+as separate local artifacts; the old tuple is not silently relabeled current.
+
+## Remaining prerequisites and evidence classification
+
+| Item | Classification | Present disposition |
+| --- | --- | --- |
+| Exact PMK execution authority | Standing permitted-validation instruction | One new singleton may be submitted only after actual prerequisites and independent method review; runtime category alone is not a hold |
+| Existing host resource admission, runtime/classpath provenance and source authentication for an actual launch | Present execution safeguards | Not inspected, acquired, assumed or proven here; launcher must establish them |
+| Exact selector/source/consumer binding and honest failure attribution | Concrete driver gap | Nonlaunching adapter and synthetic positive/negative controls supplied |
+| PMK authenticated builder selector | Concrete coverage gap | Implemented, unrun; needs genuine owner execution |
+| Public compiled C8 PMK composition | Concrete coverage gap corrected | Same PMK selector now exercises public builder/verifier and wrong binding; execution unrun/held |
+| Historical unknown message/operation and failed process inspection | Historical unresolved evidence | Preserved and unrepeatable; no demonstrated current interference, so no blanket capacity gate inferred |
+| Stopped metadata writes or rejected actions elsewhere | Historical stopped operations | Remain stopped; this package performs no retry or alternate route |
+| Current-main composed validation and independent acceptance | Integration prerequisite | Source reconciliation and independently reviewed real composition required before merge |
+
+The next action is a fresh source/runtime/ordered-classpath/request binding and
+independent review of the actual parent method. The first genuine acceptance
+action is only the PMK singleton emitted by `prepare-pmk`, subject to real launch
+prerequisites. It uses the existing development runner and its machine sink,
+including public C8 composition and binding refusal in that same selector.
+The other four selectors remain separate unrun work. Independent composed
+review remains required. No full ACC-08, integration, release, self-hosting or seed-retirement
+credit follows from the synthetic harness or routine CI.
