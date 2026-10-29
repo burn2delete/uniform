@@ -370,6 +370,21 @@ helper mappings remain explicit rather than being treated as missing features.
   recursive/loop Boolean aggregation and equality-order differences remain
   semantically unproven. Genuine controls remain UNRUN. Current-main
   composition, applicable CI and integration remain separate obligations.
+- PR626 current-main composition is frozen at
+  `b78b221a17684e02415a9317f2b605e78e59ef24`, tree
+  `c21fbaf86832bd9fa4e3f2ad1f94c50021457c71`, base
+  `2654d155322f7863dd087065f19000b43c877cbe`. Parents are reviewed
+  `70eba308` and that main. All 10,075 base entries survive; only the five
+  reviewed additions appear, byte for byte. Production is unchanged from main;
+  all 18 reviewed direct contract/consumer/native-guard forms still match.
+  Historical whole-file production hashes retain their original-base scope.
+  Fresh reader tests pass 14/666; the unchanged original query remains
+  NONPASS with 257 passes/five failures. Boundary 6/11, docs, roadmap,
+  governance (185 records), whitespace and four-file zero-finding lint pass.
+  Exact-identity inspect preflight passes all conditions on the clean named
+  branch. See `reader-contract-clean-composition.edn`. Current composition
+  independent acceptance and CI remain pending; integration-mode preflight,
+  main integration and genuine owner controls remain UNRUN.
 - ACC-01 owns main-based reader-contract draft PR626 at
   `bcf0bb4ba093a2634bf51b4541aa153040e333aa`, tree
   `ef10f7d8d95dfe750955556afd2a85638f5f6a68`, base main `e047157d`. It
