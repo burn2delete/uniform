@@ -189,7 +189,9 @@
     (let [domain-successor (get-in view [:mapping-review :domains70-current-composition])
           compiler-successor (get-in view [:mapping-review :compiler-testing85-current-composition])
           governance-successor (get-in view [:mapping-review :governance-core43-current-composition])
-          successor (or (:source-commit governance-successor)
+          build-successor (get-in view [:mapping-review :build68-current-composition])
+          successor (or (:source-commit build-successor)
+                        (:source-commit governance-successor)
                         (:source-commit compiler-successor)
                         (:source-commit domain-successor)
                         (get-in view [:mapping-review :historical-criterion-source-composition :source-commit])
@@ -205,16 +207,20 @@
             (is (= path (:path old)))
             (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
                    (:sha256 old) (sh-inventory/sha256 (:text old)))))))
-      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor])]
+      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor])]
         (let [record (edn/read-string (slurp (:record declared-successor)))
               path "specs/build-workflow/tasks.md"
               before (sh-crosswalk/git-source (:applying-source record) path)
               operations (filter #(= path (:path %)) (:operations record))]
-          (is (= (if (= :guarded-governance12-core31-current-task-composition (:kind record)) 4 1)
+          (is (= (case (:kind record)
+                   :guarded-governance12-core31-current-task-composition 4
+                   :guarded-build68-current-task-composition 5
+                   1)
                  (count operations)))
           (is (= (get {:guarded-domains70-current-task-composition "19e1120301643581e6a8b55b933ec12643d0ba2f"
                        :guarded-compiler-testing85-current-task-composition "d7ff9de2d916918acb5aeabfa3f2409784a33f2a"
-                       :guarded-governance12-core31-current-task-composition "53ebb7f4f0bc712b253436b8f53182b07e3399df"}
+                       :guarded-governance12-core31-current-task-composition "53ebb7f4f0bc712b253436b8f53182b07e3399df"
+                       :guarded-build68-current-task-composition "122c13e4591a1503e7f030e291b3cde673d36973"}
                       (:kind record))
                  (:source-commit declared-successor)))
           (doseq [op operations]

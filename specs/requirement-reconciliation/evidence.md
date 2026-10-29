@@ -678,3 +678,38 @@ in `tools/task_projection_links.clj`; it is not suppressed or represented as a
 clean whole-repository lint result. Evolution controls passed 2 tests / 13
 assertions and the language-boundary gate passed 6/11 after the repair. Existing
 task bytes and the 833 decision identities/states are unchanged by this repair.
+
+## Build68 current source composition
+
+Task source `122c13e4591a1503e7f030e291b3cde673d36973` adds nine guarded
+field suffixes across Auth, Build, Effects, Resolve and Runtime, with no new
+tasks. The frozen 68-criterion source input has SHA256
+`d615aafdb000abcf4f930745ca3f2497a5e36ad13ebbd9352f0ce7aeed1aeba9`;
+its independent source-review receipt has SHA256
+`6cb7a459d817f6cb0631add218636e49e1f3413006c3925c5eefa7facc73ee35`.
+The selected public composition `build68-current-composition.edn` has SHA256
+`4f34aaa2659f134043dca4627de3ee499f21a197ee0e4446323a536666da89b0`.
+It retains the existing PKG5 witness and 67 added criteria, their source-facet
+identities and exact positive/rejection/output/dependency predicates.
+
+The historical proposal's eleven existing and 57 proposed decision records
+remain a separate source projection. No whole-record overlay or 57-ID
+restoration is applied to the fixed 833 current decisions. Actual source-specific
+decision allocations remain required; no criterion or negative predicate is
+removed by that conservation boundary. All later task-field prefixes, all 833
+Open states, all 303 prior allocations and accepted430 are unchanged.
+
+`current-criterion-bindings-553.edn`, SHA256
+`9902446a95d7a64307e8535ebdfe63c4e494927a0a9a85253d046bc0f083193b`,
+rebinds the 485 predecessors plus Build68 to actual named-task bytes and
+contexts. Accounting8 is the remaining unbound cohort. Acceptance remains
+430 with 131 unadopted, including 123 composed criteria awaiting independent
+current-composition review. The provisional task census remains 3/182, with
+179 remaining; source composition adds zero implementation credit.
+
+Affected projection controls passed Auth 4/61, Build 5/86, Effects 4/41,
+Resolve 4/41 and Runtime 4/67. Each task parser and generated view passed.
+All 67 added positive/rejection/output clauses and exact reconstruction of all
+five task files passed, with the complete 833 decision records and 240 original
+source dispositions unchanged. SH controls passed 12 tests / 451 assertions;
+the boundary gate passed 6/11 and both documentation validators passed.
