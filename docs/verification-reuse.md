@@ -1491,6 +1491,38 @@ bundle. Connecting a real observer/serializer requires exact method review and
 separate runtime admission. Real producer, miss/hit/reuse/per-input invalidation
 and result/admission evidence remain OPEN; fresh-only policy is unchanged.
 
+#### Opt-in child observation connected to fresh serialization
+
+The existing child development-cache request can explicitly include
+`:observe-producer? true` for exactly `gravity.c2-artifact-identity-test`.
+`run-child-unit!` then observes the actual supported child runtime, declared
+input bytes, inventories, shadows, ordered classpath, runtime tools, source
+revision and complete repository snapshot before and after its existing fresh
+execution. It attaches those observations as `:test-producer-observation`.
+Unknown runtime, missing declaration, a non-fresh policy, unsupported selection,
+dirty source or changed bookends rejects the requested capture. The observation
+does not mark the closure cache-authorized or alter the fresh-only decision.
+Without the explicit option, existing child behavior is unchanged.
+
+`serialize-observed-fresh-capture` consumes that attached child bundle and
+requires separate terminal observations. It preserves the report and producer
+snapshot and applies the existing fresh-capture validation; missing child
+observations or incomplete terminal facts refuse serialization. The child
+cannot observe its own eventual natural exit, output completion or descendant
+containment. Neither this serializer nor a schema-shaped report proves that
+those facts were observed by a parent. The actual parent observer/finalizer,
+exact method review and separately admitted operational evidence are still
+required. A root-exit flag alone does not establish owned-descendant cleanup.
+
+Focused controls inject observations into the real child-to-serializer path
+and check operation ordering, unchanged fresh policy, drift and unsupported
+runtime/selection refusal, complete metadata preservation and terminal refusal.
+These are source/injected controls, not a real producer or cache-reuse result.
+Real miss/hit, unrelated reuse, each lexical input's invalidation, failed/tamper
+controls, independent retained-result acceptance and RV2/RV4 adoption remain
+OPEN. No genuine comparison, runtime retry or cache-policy admission is part
+of this source increment.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
