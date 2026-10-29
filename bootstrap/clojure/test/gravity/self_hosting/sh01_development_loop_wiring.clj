@@ -1585,6 +1585,67 @@
   '#{gravity.bootstrap-compatibility.c11-test
      gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test})
 
+(defn- observe-fresh-producer-binding!
+  [working-directory arguments options]
+  (let [namespace 'gravity.c2-artifact-identity-test
+        index (component-dependencies/dependency-index)
+        entry (some #(when (= namespace (:namespace %)) %)
+                    (vals (:by-test-path index)))
+        closure (component-dependencies/reviewed-cache-closure index namespace)
+        runtime (effective-child-runtime working-directory arguments)]
+    (when-not (and closure (true? (get-in entry [:test-policy :freshness-required?]))
+                   runtime)
+      (fail! "SH01-PRODUCER-OBSERVATION"
+             "Fresh producer observation requires the declared fresh selection and actual child runtime"
+             {}))
+    (let [context (prepare-context working-directory options)
+          root (.toPath (io/file working-directory))
+          inputs (mapv #(repository-input-identity root %) (:inputs closure))
+          inventories (mapv #(closure-inventory root %) (:inventories closure))
+          shadows (mapv #(repository-input-identity root {:path % :role :shadow})
+                        (declared-shadow-paths inputs inventories))
+          consumed (sha256-id
+                    (pr-str (array-map
+                             :schema (:schema closure)
+                             :dependency-contract-schema component-dependencies/contract-schema
+                             :inputs inputs :shadow-inputs shadows :inventories inventories)))
+          classpath (explicit-classpath-identities root consumed)
+          clean? (str/blank? (strict-utf8 (run-git-bytes! root ["status" "--porcelain"])))
+          binding {:source (assoc (:revision context)
+                                  :repository-identity (get-in context [:snapshot :repository-identity])
+                                  :clean? clean?)
+                   :consumed-input-identity consumed :inputs inputs :inventories inventories
+                   :shadow-inputs shadows :classpath-identities classpath
+                   :child-runtime-identity runtime :runtime-tool-inputs (:runtime-tool-inputs context)}]
+      (when-not (and clean? classpath)
+        (fail! "SH01-PRODUCER-OBSERVATION"
+               "Fresh producer source or classpath cannot be observed completely" {}))
+      {:binding binding :repository-snapshot (:snapshot context)})))
+
+(defn- observe-fresh-producer!
+  [namespaces {:keys [arguments] :as options} operation]
+  (when-not (= ['gravity.c2-artifact-identity-test] namespaces)
+    (fail! "SH01-PRODUCER-OBSERVATION"
+           "Producer observation requires exactly the declared Reader identity selection" {}))
+  (let [directory (System/getProperty "user.dir")
+        before (observe-fresh-producer-binding! directory arguments options)
+        result (operation)
+        after (observe-fresh-producer-binding! directory arguments options)]
+    (when-not (= before after)
+      (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             "Fresh producer observations changed during execution" {:input-kind :producer-observation}))
+    (let [binding (:binding before)]
+      (assoc result :test-producer-observation
+             {:schema :gravity/sh01-fresh-producer-observation-v1
+              :binding-before binding :binding-after (:binding after)
+              :producer-provenance
+              {:revision (select-keys (:source binding) [:commit :tree])
+               :repository-snapshot (:repository-snapshot before)
+               :consumed-input-identity (:consumed-input-identity binding)
+               :classpath-identities (:classpath-identities binding)
+               :child-runtime-identity (:child-runtime-identity binding)}
+              :applying-source (:source binding)}))))
+
 (defn run-child-unit!
   "Optionally reuse a complete selection inside the actual existing test JVM.
 
@@ -1592,7 +1653,11 @@
   not inspect processes or acquire a nested lease. Unknown launches and test
   policies execute fresh; no parent assertion can supply a child identity."
   [namespaces {:keys [arguments fail-fast?] :as options} operation]
-  (let [effects-reviewed? (not-any? unreviewed-bootstrap-effect-selections namespaces)
+  (if (:observe-producer? options)
+    (observe-fresh-producer!
+     namespaces options
+     #(run-child-unit! namespaces (dissoc options :observe-producer?) operation))
+    (let [effects-reviewed? (not-any? unreviewed-bootstrap-effect-selections namespaces)
         resource-loaders-supported? (supported-resource-loaders?)
         index (component-dependencies/dependency-index)
         by-namespace (into {} (map (juxt :namespace identity)
@@ -1683,7 +1748,7 @@
                :child-jvm-launched? true
                :tests-executed? (:producer-executed? receipt)
                :child-cache-hit? (= :hit (:decision receipt))
-               :child-cache-receipt receipt)))))
+               :child-cache-receipt receipt))))))
 
 (defn report-facts
   "Return deterministic cache receipts plus the exact launch count."
