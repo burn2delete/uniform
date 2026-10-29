@@ -1,6 +1,16 @@
 (ns gravity.c2-lexical-validation.product
   (:require [clojure.string :as str]))
 
+(defn- native-child-ids [form]
+  ;; Opaque records and IDs retain the original lookup/hash callbacks below.
+  (when (and (or (identical? clojure.lang.PersistentArrayMap (class form))
+                 (identical? clojure.lang.PersistentHashMap (class form)))
+             (every? keyword? (keys form)))
+    (let [children (:children form)]
+      (when (and (identical? clojure.lang.PersistentVector (class children))
+                 (every? keyword? children))
+        (set children)))))
+
 (defn lexical-product-validation
   [{:keys [utf8-slice span-encloses? spans-source-ordered? form-graph-metrics]}
    source-text token-stream form-tree root-form-ids]
@@ -17,6 +27,12 @@
         root-id-set (set root-form-ids)
         child-ids (mapcat :children form-tree)
         child-frequency (frequencies child-ids)
+        ;; Index the same last-wins parent records used by forms-by-id. The
+        ;; global frequency check below still rejects duplicate child edges.
+        parent-child-ids (into {} (keep (fn [[id form]]
+                                         (when (keyword? id)
+                                           (when-let [ids (native-child-ids form)] [id ids])))
+                                       forms-by-id))
         parentless-id-set (set (keep #(when (nil? (:parent-form-id %))
                                         (:form-id %)) form-tree))
         root-form-ids-resolve? (every? #(contains? forms-by-id %) root-form-ids)
@@ -48,7 +64,10 @@
                       (let [parent (forms-by-id parent-id)]
                         (and parent
                              (= 1 (get child-frequency form-id 0))
-                             (= 1 (count (filter #{form-id} (:children parent)))))))))
+                             (if-let [ids (and (keyword? parent-id) (keyword? form-id)
+                                               (get parent-child-ids parent-id))]
+                               (contains? ids form-id)
+                               (= 1 (count (filter #{form-id} (:children parent))))))))))
                 form-tree)
         parent-child-bidirectional?
         (and non-root-single-parent?
