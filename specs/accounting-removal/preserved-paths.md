@@ -76,8 +76,23 @@ semantic incorporation of the other changes.
   source/result acceptance remain unrun or pending. The consumer explicitly
   retains `:numeric-proof-established false`; this does not accept public C7,
   B47, the public function-type verifier or runtime execution.
+- ACC-01 owns stacked C7 branch-join draft PR595 at
+  `99893151b3d0b7c3c435d5c2e6e90c03255b5951`, tree
+  `67c0a515f30c26b61fc6f0bc06d37f2ed28bd107`, based on PR593's exact
+  `c8f16877`. Its `branch-joins.md` and `branch-joins-census.edn` bind seven
+  complete preserved source forms, five complete tests, conditional scheduling
+  charge removal and six mechanical C7 derive-argument migrations in the SH09
+  and runtime test files. Actual source/test arities and boundary 6/11 pass;
+  genuine C7 and affected consumer/runtime acceptance remain unrun. Effects,
+  emitter and runtime implementations are unchanged; their accounting is open.
+  The same census checks the preserved ordinary parameter-choice helper's
+  complete body against its existing inline occurrence in the unchanged
+  `sh08-ft-call-constraints-with-context` at observed main `e3d990e9`. This is
+  an incorporation proposal pending independent disposition, not a code rewrite
+  or whole-caller equivalence claim.
 - Routine CI completed with seven successes and two skips for PR591 at
-  `1c0d699f` and this evidence draft's prior head `a6406f7f`. Those catalogs do
+  `1c0d699f`, PR593 at `c8f16877` and this evidence draft's prior head
+  `a6406f7f`. Those catalogs do
   not run the new quoted-data/source-product genuine acceptance described above.
 
 ## Every original authored path
@@ -181,10 +196,10 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 
 | Original authored path | Supported disposition and exact remaining obligation |
 | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593 supply finite iterative quoted-data, private GIS3 entry/product reconstruction, native DATA/comparison arenas and the parameter-choice dependency, with acceptance pending. Ordinary-inference parameter-choice callers, general verifier integration, nil/List joins and remaining descriptor/derive/step deltas still lack complete successor disposition. |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Selected integrations above; DSE and PMK have existing owners. ACC-01 drafts PR591/593/595 supply finite quoted-data, private GIS3 products, native DATA/comparison arenas and C7 nil/List joins with acceptance pending. The ordinary parameter-choice rule is already exactly inlined on assessed main; its source-incorporation proposal awaits independent disposition. General verifier integration and remaining descriptor/derive/step deltas still lack complete successor disposition. |
 | `bootstrap/gravity/src/gravity/effects.gravity` | Selected descriptors/premises/helpers and PR533 are finite. DSE joins, remaining predicate/query/construction headers, nil/List element contracts and ordinary-local-call composition remain. |
 | `bootstrap/gravity/p15_s23/emitter.gravity` | Selected descriptors/premises/helpers are integrated; DSE port and runtime drafts are separate. Typed-direct-call compatibility/argument validation, typed LSET/Map-key census and remaining descriptor consumers need explicit disposition. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests. PR593 restores six GIS3 and three native DATA/comparison tests with explicit fixture-path and unused-binding adaptations. Genuine execution remains unrun. Public fresh-verifier, ordinary-function, structural-vector, opaque-ordering and other old-only cases still need test-level mapping, not a whole-file incorporation claim. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Selected ANE/BKA/PMK/PL and later helper controls exist on main. PR591 restores three quote tests; PR593 restores six GIS3 and three native DATA/comparison tests; PR595 restores five complete nil/List join tests. Listed adaptations and genuine UNRUN status remain explicit. Public fresh-verifier, ordinary-function, structural-vector, opaque-ordering and other old-only cases still need test-level mapping, not a whole-file incorporation claim. |
 | `bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj` | All four relocated test bodies are mapped. Shared helper data drops the original DSE case; it remains a PR568 obligation. BKA helper API changes and deferred dependency load are explicit. Proposed selected-case incorporation needs independent disposition. |
 | `bootstrap/clojure/test/gravity/self_hosting/prepend_premise_test.clj` | All three tests and ten helpers are mapped. Two complete relocated bodies and the original case template match; the late-invalid control and case-data helper use the PR509 semantic validator API. No semantic rerun or independent incorporation decision is claimed. |
 | `bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj` | The unchanged original reader-only controls pass 2/223 on pinned current source, including precedence and full private constraint/fact source bodies. Together with PR359's finite evidence this supports a proposed incorporation decision, still awaiting independent acceptance. |
@@ -196,8 +211,8 @@ incorporation/rejection decisions. No old-only semantic test is discarded.
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj` | DSE owner must preserve both-order ordinary-row composition and malformed/forged joins. Exact-payment assertions are accounting-only candidates, not authority to drop semantic controls. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj` | PR462 is runtime conversion only. Typed LSET both-order row/fact composition and forged joins still require disposition separately from payment assertions. |
 | `bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj` | Private alias repair does not establish all public Map-key mixed-ledger controls. Retain semantic composition/forgeries while classifying payment-only assertions. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | DSE lowering, authenticated composition and runtime kernels belong to the full DSE successor. Runtime drafts do not accept DSE or all old-only assertions. |
-| `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj` | DSE and ordinary-local-call LSET/Map-key effect joins remain separate from PR533's PMK-only aggregate preparation. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | PR595 migrates four direct C7 join calls only; it claims no runtime implementation or genuine execution. DSE lowering, authenticated composition and runtime kernels belong to the full DSE successor. Runtime drafts do not accept DSE or all old-only assertions. |
+| `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj` | PR595 migrates two C7 join derive calls only, leaving Effects implementation and genuine composition open. DSE and ordinary-local-call LSET/Map-key effect joins remain separate from PR533's PMK-only aggregate preparation. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.gravity` | ACC-01 draft PR593 restores exact original bytes under `sh-08/preserved` with the complete private source-product implementation and positive/coherent-negative tests. Actual source/Core/product acceptance remains unrun; numeric proof is explicitly not established. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.qst` | PR593 preserves the original companion bytes and pair equality. The finite acceptance retains actual source identity and required companion checks; byte pairing is not semantic acceptance. |
 | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-minimum.gravity` | ACC-01 draft PR593 restores the original zero/minimum source bytes and its complete private product/reconstruction tests under `sh-08/preserved`. Genuine acceptance remains unrun; no numeric correctness or public compiler authority is claimed. |
