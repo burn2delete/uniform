@@ -508,3 +508,50 @@
     (is (= 2 (count (:definitions built))))
     (is (false? (model-occurs? lexical-only)))
     (is (true? (model-occurs? case)))))
+
+(deftest alias-seed-authority-is-not-determined-by-a-type-map
+  ;; A finite countermodel, not a proposed Gravity SCC join rule. Both values
+  ;; remain in the observations; no representative or recovery type is chosen.
+  (let [equations [[:x [:ref :y]] [:y [:ref :x]]]
+        observed {:x :gravity.type/integer :y :gravity.type/string}
+        case {:equations equations :bindings observed}
+        candidates [:gravity.type/integer :gravity.type/string]
+        solutions (fn [required]
+                    (set (for [type candidates
+                               :let [assignment {:x type :y type}]
+                               :when (every? (fn [[id expected]] (= expected (get assignment id))) required)]
+                           assignment)))]
+    (is (not= observed (step case observed)))
+    (is (= observed (step case (step case observed))))
+    (is (false? (model-occurs? case)))
+    (is (= #{{:x :gravity.type/integer :y :gravity.type/integer}
+             {:x :gravity.type/string :y :gravity.type/string}}
+           (solutions {})))
+    (is (empty? (solutions observed)))
+    (is (= #{{:x :gravity.type/integer :y :gravity.type/integer}}
+           (solutions {:x :gravity.type/integer :y :gravity.type/integer})))
+    (is (= #{{:x :gravity.type/integer :y :gravity.type/integer}}
+           (solutions {:x :gravity.type/integer})))
+    (is (= observed (:bindings case))))
+  (let [stable {:equations [[:x [:ref :y]] [:y [:ref :x]]]
+                :bindings {:x :gravity.type/integer :y :gravity.type/integer}}
+        unresolved (assoc stable :bindings {})]
+    (is (= (:bindings stable) (step stable (:bindings stable))))
+    (is (= {:x :gravity.type/unknown :y :gravity.type/unknown} (step unresolved {})))
+    (is (false? (model-occurs? unresolved))))
+  (let [partial {:equations [[:x [:ref :y]] [:y [:ref :x]]]
+                 :bindings {:x :gravity.type/integer :y :gravity.type/unknown}}
+        seed (:bindings partial)]
+    (is (not= seed (step partial seed)))
+    (is (= seed (step partial (step partial seed))))
+    (is (false? (model-occurs? partial))))
+  (doseq [case [(first (filter #(= :mutual-growth (:name %)) cases))
+               (first (filter #(= :duplicate-binding (:name %)) cases))
+               (first (filter #(= :opaque-call (:name %)) cases))]]
+    (is (= (:expected case) (model-occurs? case))))
+  (let [callback {:equations [[:x [:call [:ref :callback] [:ref :y]]] [:y [:ref :x]]]
+                  :bindings {:x :gravity.type/integer :y :gravity.type/string
+                             :callback {:function-id :external :parameters [] :return :gravity.type/integer}}}]
+    ;; A callback/call result is not an alias equation merely because the call
+    ;; syntax mentions a member of the component. No call semantics are run.
+    (is (false? (model-occurs? callback)))))

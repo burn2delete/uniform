@@ -428,3 +428,19 @@
                           lexical definitions [] [] {:fn function} bindings 64 {}])]
     (is (= :type-conflict (:convergence-status inferred)))
     (is (= :function-result-type-mismatch (get-in inferred [:diagnostics 0 :reason])))))
+
+(deftest declared-return-conflict-precedes-differing-alias-seed-oscillation
+  (let [nodes [(reference :rx :x) (reference :ry :y)
+               {:node-id :body :core-form :literal :children [] :attributes {:literal-kind :string}}]
+        lexical [{:binding-id :x :initializer-node-id :ry}
+                 {:binding-id :y :initializer-node-id :rx}]
+        function {:function-id :fn :body-core-node-id :body :parameter-binding-ids []
+                  :parameters [] :return :gravity.type/integer}
+        inferred (invoke 'sh08-ft-infer-acyclic-with-context
+                         [nodes (into {} (map (juxt :node-id identity)) nodes)
+                          lexical [] [] [] {:fn function}
+                          {:x :gravity.type/integer :y :gravity.type/string} 64 {}])]
+    (is (= :type-conflict (:convergence-status inferred)))
+    (is (= :function-result-type-mismatch (get-in inferred [:diagnostics 0 :reason])))
+    (is (= [:gravity.type/integer :gravity.type/string]
+           ((juxt :expected :actual) (first (:diagnostics inferred)))))))
