@@ -1702,6 +1702,36 @@ canonical task repartition, not its application or independent acceptance.
 Current task-count delta iszero; all833 allocations,491 qualified reviews,
 561 historical acceptances and provisional3/182 task states remain unchanged.
 
+### Bootstrap25 independent current-source review adoption
+
+The coordinator delivered the completed scoped PASS for frozen candidate
+`cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d`, tree
+`4b6970abb8d7c91d335e83573ed6dc33a09740d9`. Receipt SHA256 is
+`df871924b21a5b6be51534132de1d7482c9684688987e3f9ba2943a07ab837ed`.
+Its source/data checker completed8545 assertions, authenticating25 routes,
+973 source memberships/888 distinct facets,17 reused and8 new criteria,
+eight guarded appends across six fields,21 historical context inversions and
+561 preserved historical predicate/review envelopes. Stale/forged/missing
+source/criterion/append controls and a coherently rehashed lineage query
+weakened into graph-file presence are refused. Schema25 authorship overlap
+was checked; enclosing Schema contexts receive conservation-only treatment.
+
+At `60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b`, the current applicability
+join authenticates receipt, checker, row review and frozen composition hashes.
+All25 selected decision records,50 registry task/plan files and240 original
+contracts are unchanged from the frozen review. Current criterion/context
+and dependency spans bind to their actual tasks. The source partition alone
+has moved no task identity, so this join grants no sibling repartition review.
+
+Adoption `4686e37b` adds exactly25 qualified source reviews:516 qualified,
+14 pending Governance decisions,all833 allocated and Open,zero unallocated.
+Native ABI, source-language, signing/provenance/revocation/historical-rebuild,
+C15 availability/identity/publication, unsafe production/wrapper/specialist
+review, and intermediate admission/final release distinctions remain intact.
+The561 historical bindings and1262 current spans survive unchanged. No
+implementation or count credit follows; granularity,ACC,full facet entailment,
+independent final counting andcoordinator integration remain required.
+
 ## Portable CI fetch failure and superseding recovery
 
 Run40951456643 at `893bb4b85926a9d7f8953798544b2126baf6ef58`,
