@@ -148,6 +148,18 @@ actual source/contract/caller disposition. The machine table names every unit;
 this prose does not replace that work or assign broad completion credit to a
 family label.
 
+Cold quote metadata now has coherent source successor PR618 at
+`3a1a553dbb1b3eb0ae472f5bf806171c02a71109`, tree
+`c8600e2c52f4ba47f1366fae4035248d23365623`, parent PR616 `2f2f8f70`.
+The complete C7 builder matches historical source. Its Effects/emitter consumer
+repairs are explicit current-contract edits because their historical forms
+still required the retired field; they are not labeled historical equality.
+Caller/argument lists, other production definitions, source/cut/mode identities
+and all existing test bytes remain unchanged. Three actual-owner helper controls
+cover fresh metadata and eight invalid cases. Source checks/boundary/lint/docs
+pass; genuine execution and independent acceptance remain pending. Other
+inference accounting stays open, and original machine counts remain unchanged.
+
 The unused `sh08-lsi-row-index`/`sh08-lsi-target-rows` pair now has retirement
 draft PR616 at `2f2f8f701f19660dad89e98f351693669a97980b`, tree
 `e21649ac124613802ad024edce7df203176f32e8`, parent PR615 `bb3a9acf`.
