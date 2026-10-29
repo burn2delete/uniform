@@ -56,6 +56,8 @@ contradictory constraints; unavailable versions carry the one unsatisfied
 constraint. Selections are all-or-nothing, ordered by package. Profile/target
 misses emit `PKG5003`, authority expansion `PKG5002`, safety-policy mismatch
 `PKG1007`. Malformed or unsupported inputs emit `PKG5007`.
+`PKG5002` identifies the denied capability/effect and includes sorted complete
+denied-capability and denied-effect lists, distinct from runtime grants.
 
 `:select` uses candidates. `:locked` uses locked records without consulting
 candidates for replacement; missing locked selection emits `PKG5004`.
@@ -84,7 +86,7 @@ real PR556 yank/revocation policy join. No fixture admits an artifact.
 Observed commands on 2026-10-28:
 
 - `clojure -J-Xmx256m -M:dev-test --namespace gravity.build.package-selection-test --namespace gravity.build.package-policy-test`:
-  15 tests, 235 assertions, zero failures/errors, exit 0.
+  16 tests, 243 assertions, zero failures/errors, exit 0.
 - `clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test`:
   6 tests, 11 assertions, exit 0.
 - `clojure -J-Xmx256m -M tools/build_task_projection.clj --check`: exit 0.
@@ -92,6 +94,15 @@ Observed commands on 2026-10-28:
 
 The frozen commit/tree, patch identity and independent source-review disposition
 belong to the draft PR receipt. Source author checks do not confer acceptance.
+OWN returned changes required on predecessor
+`e39b5bfcfd0c2ed6d539bfeeb5a9ee717987627a`, tree
+`380b6e20ae9f4b1b56c8f783d9159d7950131410`: authority refusals omitted the
+denied capability/effect. Receipt SHA256
+`a59223ae5ce230c882a6799c972f971f43dc4208c8f2f598e1bc2a0c0aa902ea`.
+The predecessor's 15 tests/235 assertions and 28 reviewer controls passed, but
+did not close that diagnostic gap. This successor adds deterministic authority
+attribution and separate capability-only/effect-only regression controls;
+independent successor disposition remains required.
 
 ## Remaining criteria
 

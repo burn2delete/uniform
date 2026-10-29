@@ -124,6 +124,18 @@
     (is (= :unverified (get-in result [:selections 0 :selected :provenance-status])))
     (is (= "prov:http" (get-in result [:selections 0 :selected :provenance])))))
 
+(deftest authority-refusal-identifies-the-missing-policy-authority
+  (let [cap (first (:diagnostics (selection/select-exact (assoc request :allowed-capabilities #{}))))
+        effect (first (:diagnostics (selection/select-exact (assoc request :allowed-effects #{}))))]
+    (is (= "PKG5002" (:diagnostic cap) (:diagnostic effect)))
+    (is (= :http/client (:capability cap)))
+    (is (= [:http/client] (:denied-capabilities cap)))
+    (is (= [] (:denied-effects cap)))
+    (is (= :network/http (:effect effect)))
+    (is (= [:network/http] (:denied-effects effect)))
+    (is (= [] (:denied-capabilities effect)))
+    (is (not= cap effect))))
+
 (deftest registry-denial-precedes-input-reporting
   (doseq [bad [(assoc-in request [:context :visibility] :private)
                (assoc-in request [:context :visibility] :latent)

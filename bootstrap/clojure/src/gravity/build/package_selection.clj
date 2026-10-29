@@ -134,6 +134,9 @@
                                                     (= (:version c) (:version %))) source))
                      variant (first (filter #(and (= profile (:profile %))
                                                    (= target (:target %))) (:variants selected)))
+                     denied-capabilities (vec (sort (set/difference (set (:capabilities selected))
+                                                                    allowed-capabilities)))
+                     denied-effects (vec (sort (set/difference (set (:effects selected)) allowed-effects)))
                      diagnostic (fn [code rule]
                                   (assoc (diagnose c code rule)
                                          :selected-version (:version selected)))
@@ -156,9 +159,12 @@
                                          :constraints [c])]}
                    (nil? variant)
                    {:diagnostics [(diagnostic "PKG5003" :profile-target-variant-missing)]}
-                   (or (not (set/subset? (set (:capabilities selected)) allowed-capabilities))
-                       (not (set/subset? (set (:effects selected)) allowed-effects)))
-                   {:diagnostics [(diagnostic "PKG5002" :dependency-authority-expansion)]}
+                   (or (seq denied-capabilities) (seq denied-effects))
+                   {:diagnostics [(assoc (diagnostic "PKG5002" :dependency-authority-expansion)
+                                         :capability (first denied-capabilities)
+                                         :effect (first denied-effects)
+                                         :denied-capabilities denied-capabilities
+                                         :denied-effects denied-effects)]}
                    (or (seq (:unsafe-islands selected)) (not= :reviewed (:safety selected)))
                    {:diagnostics [(diagnostic "PKG1007" :unsafe-or-unreviewed-dependency)]}
                    (= :reject (:policy-decision decision))
