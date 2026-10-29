@@ -66,6 +66,8 @@ rewrites require checked evidence? Do strict-mode results match the selected
 semantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib
 numeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as
 adjacent proof/search representation, never ordinary runtime equality authority.
+
+SAFE9 acceptance: execute checked/panic/wrapping/saturating/arbitrary-precision/proof-required integer modes, exceptional divisor/shift/minimum-negation cases and explicit float conversion behavior; reject implicit narrowing, hidden target defaults and unapproved relaxed math. Inspect strict/relaxed floating contracts including NaN, infinity, signed zero, rounding and fusion; elementary providers expose domain/range/accuracy/target evidence. Invalidated numeric proofs restore checks or reprove; target instructions preserve mode or are guarded/rejected. Explicit wrapping/saturating narrowing retains the source conflict with checked/proven narrowing until adjudicated.
 <!-- domains-task-projection/math:end -->
 
 ## Schema
@@ -153,6 +155,8 @@ remain data? Are actions denied without grants/review? Are evaluations bound to
 exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
 Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
 artifacts and explicit model identity, never a vendor SDK side path.
+
+SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions.
 <!-- domains-task-projection/ai:end -->
 
 ## GPU
