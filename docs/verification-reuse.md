@@ -1490,3 +1490,173 @@ unchanged: its fresh-only branch still does not acquire the missing observation
 bundle. Connecting a real observer/serializer requires exact method review and
 separate runtime admission. Real producer, miss/hit/reuse/per-input invalidation
 and result/admission evidence remain OPEN; fresh-only policy is unchanged.
+
+### RV1: retained checks at the live Resolve/Reader/AE boundary
+
+Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
+This is a necessity disposition for the current interfaces, not new runtime
+acceptance. No verification call is removed. A check's semantic input can be
+necessary while its repeated calculation remains an unresolved elision
+candidate. The short construction root catalog establishes neither purity nor
+complete transitive dispatch identity.
+
+#### Actual producer and consumer closure
+
+Paths below are relative to `bootstrap/clojure/src/gravity/`.
+`components/` means `bootstrap_impl/components/`; `late/` means
+`bootstrap_impl/semantic_late/`. Unqualified numbered `008xx` filenames below
+are inside `components/self-hosting-sh03-sh07/`.
+
+1. `components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`
+   checks the native carrier, captures thread, transaction, Reader invocation
+   and Resolve operation binding, observes dependencies, then executes
+   `sh06-authenticated-sh05-parent!`. Its successful short-seam route supplies
+   the base request without a second immediate parent gate. Unavailable
+   optional observation takes the existing full base-request route; it is not
+   a successful stability observation. The observations perform file reads
+   and can initialize plan caches. Their exceptions are contained as
+   `::unavailable`, except interruption, which propagates with its flag set.
+   The two post-gate checks bracket base-request construction, which parses
+   forms and constructs imports, definitions and analysis inputs. The latter
+   check detects drift during that intervening work; deleting it loses that
+   observation. Neither endpoint comparison proves absence of an intervening
+   change-and-restore or state change below the catalog.
+2. `00874-sh06-resolution-build-binding.clj` routes
+   `sh06-resolution-verify-sh05` to the actual Macro public verifier, passing
+   the current invocation when present. `00880-...-verification-02.clj`
+   additionally checks Macro identity/proof/provenance and the C3 owner.
+   The later `00879-sh06-resolution-artifact-verification-bounded-02.clj`
+   executes that Macro verifier again before Resolve replay. It requires
+   `:fresh-upstream-sh05-verification?`; a failed parent prevents that replay.
+   `00880-sh06-resolution-artifact-verification.clj` uses this body for
+   construction proof and caller-requested public verification, with different
+   missing-proof modes. `00881-sh06-resolution-finalize-candidate.clj` already
+   omits the immediate replay after installing the freshly generated proof.
+   `00876-sh06-resolution-require-carrier.clj` also distinguishes Resolve
+   template verification from resolved verification: digest/analysis
+   resolution occurs between them and their arguments differ. Reader's
+   entrypoint/verifier, Macro's template/resolved verifier and AE's
+   builder/verifier are likewise distinct operations, not duplicate calls
+   merely because they share an owner or plan.
+3. The Macro public wrapper is `00866-sh05-macro-artifact-verification.clj`.
+   Its implementation is installed by
+   `late/150856-sh05-verification-install.clj`, which captures the **values**
+   of four helpers: carrier, expansion-replay, provenance and proof. The
+   matching four `150856-sh05-verification-*.clj` files are consumed code,
+   even after their temporary Vars are removed by the cleanup file. Checking
+   just the public wrapper's Var cannot enumerate those captured functions'
+   transitive dependencies or mutable state.
+4. The carrier helper checks explicit Reader options first, executes
+   `sh05-macro-gravity-verifier-report`, reconstructs/verifies the Macro AE,
+   obtains the current Macro binding and descriptor, then checks Reader
+   lineage and C3 proof. `00861-sh05-macro-trace-identity-input.clj` executes
+   both `sh05-verify-macro-template` and `sh05-verify-macro-resolved` for every
+   stored run. `00858-sh05-macro-execute.clj` dispatches through
+   `p15-s23-stage2-runtime-execute-function`, strips host metadata and owns
+   diagnostic containment. The latter runtime entry is in
+   `components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj`;
+   it selects module-bundle or scoped execution and reaches further runtime
+   instruction, lookup and primitive dispatch. None of that closure is
+   certified pure by equality of Macro plan IDs.
+5. Reader lineage reaches
+   `components/compiler/00842-c3-syntax-stream-reader-products-authentic.clj`
+   and `00847-c3-reader-artifact-view.clj`. The latter joins the retained
+   Reader revision and actual AE descriptor to
+   `sh03-reader-verification-invocation!`'s current binding. That function in
+   `00813-sh03-reader-canonical-identity.clj` validates the closed invocation
+   map and selected path. `00808-sh03-reader-expected-source-byte-count.clj`
+   rereads the selected Reader bytes. The explicit-source arity of
+   `00811-sh03-reader-plan-validate.clj` builds a current plan, measures its
+   structure and rereads source; it is not just a lookup of an advertised
+   hash. The ordinary lineage route also replays C3 stream verification,
+   serialization/deserialization and Reader/C3 AEs. Registered literal
+   projection and nil-boundary branches have their own conditions; a result
+   for one branch does not authorize elision in another.
+6. AE verification is the descriptor API in
+   `components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-018-p15-s23-stage2-sh02-authenticated-envelope-verification-report-through-p15-s23-c-backend-diagnostic-stage.clj`.
+   `p15-s23-stage2-sh02-descriptor-envelope-verify!` reconstructs an expected
+   envelope and requires strict structure and equality. The `-003-` sibling's
+   `p15-s23-sh02-source-binding!` requires its lexically captured private
+   authority and reopens/authenticates source and emitter inputs on every
+   authority-bearing call. Only successful compilation may already be shared
+   in the current `*p15-s23-stage2-plan-emission-context*`, keyed by exact
+   authenticated inputs, policy and additional targets. The `-009-` sibling
+   invokes actual `authenticated-envelope-build-template` and
+   `authenticated-envelope-verify-template`; `-004-` dispatches them through
+   the generic runtime. Compiled binding reuse is distinct from skipping
+   fresh envelope verification or acquiring authority from saved DATA.
+
+#### Necessary facts versus unresolved repeats
+
+| Retained fact/check | Necessity supported by current source/evidence | Disposition of repeated work |
+| --- | --- | --- |
+| Live Macro/Reader/Resolve/AE source and executable plan agree at use | A retained digest or function object does not establish current source bytes, plan contents, emitter policy or target binding. Macro's cached delay and pinned-plan identity atom, Resolve's binding atom and source key, and Reader's explicit-source plan builder consume different state. | Keep current owner source authentication. No whole-seam proof says every repeated read/plan calculation is required; narrower plan/identity calculation reuse remains unresolved. |
+| Reader invocation and branch selection agree | The selected canonical Reader path, exact `{:source :development-current}` options, current source/plan identities and retained C2/C3 revision must join. Nil invocation chooses the pinned route; the explicit route must not inherit its result. `00881` also joins the Reader argument to the invocation path. | Validation at public entry remains necessary. Repeating identical validation inside one invocation may be elidable only with a stable complete source/plan/dispatch closure and preserved error order. Map equality alone is insufficient. |
+| Stored Macro run and parent still satisfy the owner | PR493's real after-Resolve mutation changes `:resolved-verification` in aliased array-map storage while preserving the same parent, invocation and expansion/digest operands. The subsequent actual owner rejects `:macro-run-storage-exact?`, and Resolve rejects before publishing a complete proof. | A whole earlier Macro PASS cannot replace the post-Resolve check. Run-storage shape is a proved necessary observation for that fixture; the result does not prove that unchanged replay operands require a second execution. |
+| Run count, shortcuts, plan/version, grants, trace/output, graph, generated origins, run/path/Reader provenance, identity and exact artifact shape | These are the remaining Macro base checks in the expansion-replay, provenance and proof helpers. They compare current supplied fields, reconstructed products and lineage, rather than trusting the parent's logical ID. PR493 does not mutate every one of these fields. | Retain all checks. Their semantic obligations are explicit, but necessity of each repeated calculation is conservative/unresolved until its own inputs and mutation seam are established. No blanket necessity credit is inferred. |
+| Current descriptor and freshly reconstructed AE agree | AE dispatch consumes actual stage/kind/descriptor/options, private owner authority, source/emitter inputs, binding and builder/verifier execution. An unchanged outer descriptor-verifier Var neither freezes its callees nor substitutes for fresh public verification. | Keep actual fresh public AE verification and source authentication. Possible compilation-only reuse is already scoped by the owner; removing nested reconstruction requires separate equivalence evidence and cannot turn a saved report into authority. |
+| Public embedded capability proof matches current checks | PR477's exact Resolve predicate permits a missing construction proof but rejects missing/stale/changed public proof. `00879` still has those exact bytes. | Proved necessary public comparison. Whole construction/public reports are not interchangeable. The already removed immediate post-install replay is not new work. |
+| Callback/dispatch events and exceptions remain observable | The C2 operation API accepts functions without a purity or immutable-closure certificate. Equal children still dispatch independently. Runtime calls, canonical/printer callbacks, dynamic bindings and closed-over atoms can change or throw while an outer function identity is unchanged. | PR469 proves its recursive event schedule, not the necessity of every whole Macro call. No new callback suppression is justified. The transitive runtime/AE/closed-over-state seam remains conservative, not proven stable. |
+| Invocation/transaction isolation | `00863-sh07-proof-transaction-thread-id.clj` rejects closed/cross-thread contexts. `00864-sh07-proof-transaction-report.clj` separates stage, mode, phase, verifier epoch, invocation, catalog and immutable artifact root; its no-context branch actually verifies. Construction reuse requires no inherited transaction. | Keep those boundaries. A construction observation is not a transaction receipt, and a report from another invocation/thread/mode cannot be imported. |
+
+Evaluation order is observable, not just final report equality. In the Macro
+carrier, invalid invocation precedes Macro replay; replay and AE failures are
+contained into failed facts, while interruption is rethrown; obtaining the
+current Macro binding can still throw before lineage. At the initial Resolve
+parent gate, interruption is rethrown; the later `00879` parent-report catch
+contains `Throwable` as failure. The later replay runs only after parent PASS.
+A proposal must preserve these **actual distinct** exception policies and
+first failing operation, rather than imposing a new uniform error policy.
+Optional observation failure must keep its full fallback. Do not move a cache
+lookup ahead of invocation/carrier/source legality or suppress its diagnostic.
+
+#### Exact remaining elision candidates and next mutation controls
+
+These are candidate computations, not approved removals. Use the existing
+`gravity.self-hosting.resolution-parent-mutation-test` positive fixture and
+`observe-construction` seam for any genuine next comparison. Its current
+`actual-current-parent-mutation-is-rejected-after-resolve` control must remain
+intact and fresh-only. Add a distinct exact test var per candidate rather than
+weakening that control or running the whole expensive namespace by discovery.
+No such producer/observer test is launched by this source assessment.
+
+| Candidate | Exact proposed reuse seam | Required executable comparison before removing a call |
+| --- | --- | --- |
+| Macro replay fragment only | The two actual Macro template/resolved verifier executions in `00861`, from the initial authenticated-parent gate to the later construction check; do not reuse run-storage/proof/lineage facts wholesale. | Delegate every observation to the original implementation. After the real Resolve return, mutate each actual template, resolved-expansion, request and digest operand in turn, including aliased backing storage; also change a live callee/plan with unchanged advertised hash. Baseline must pass real public C5 verification. Every changed case must reject or invalidate reuse before consumption, with the same failure/exception order as the retained path. Preserve PR493's stored-key-only negative, where operands are unchanged. |
+| Resolve run fragment only | The completed `sh06-resolution-run-request!` result produced during candidate construction versus the run replay in `00879` construction-proof verification; keep current parent/source/public verification and every stored-product comparison. | Change the authenticated request, module inputs, selected binding/actual plan and every stored raw template, raw/resolved analysis, request/digest and template/resolved report field after construction. Compare against the original fresh run, including rejected-template precedence and template verification before digest/analysis resolution. Invalidated inputs must execute fresh or reject; an earlier C5 PASS and matching advertised plan hash are insufficient. Public verification still executes its genuine current path. |
+| Reader plan/identity calculation only | Repeated `sh03-reader-verification-invocation!`/explicit `sh03-reader-current-binding!` within the same public call. Keep invocation legality and source authentication at the owning boundary. | Mutate selected Reader bytes, selected-path identity, actual plan function/instruction storage and source/emitter dispatch after the first observation; independently change invocation options/path and nil/explicit route. Require rejection or fresh fallback, original diagnostics, and before/after source joins. Equal source hashes with changed plan/dispatch must not hit. |
+| AE compilation or strictly internal reconstruction fragment | The owner-scoped exact-input compilation seam, or one named repeated descriptor reconstruction within a single verifier; never the caller's final public AE check. | Exercise stage, kind, descriptor and options mutations, source/emitter replacement, additional-target/dynamic context changes, and same-function closed-over-state changes across that exact seam. Observe actual builder/verifier calls and original throws. Failed or unavailable observations must publish no reusable success; changed inputs must reconstruct/reject. Preserve strict public comparison and the private owner boundary. |
+| Pure Macro projection/identity calculation only | A named repeated projection among stream/trace/graph/provenance/identity checks, with fresh stored-field comparison retained. | Freeze its complete raw operands and actual callback/printer operation bindings, then mutate every consumed field and aliased child between uses. A same-object callback with a counter/sentinel on the second event must still observe its event and exact Throwable order. Show a closed eligible route or keep dispatch fresh; PR469 forbids simply memoizing equal values. |
+
+For all five comparisons, keep original and applying source identities separate;
+record each actual argument/result and event order without supplying replacement
+reports. A same-function callback with mutable captured state and a callee swap
+below an unchanged outer Var are distinct required cases. Test invocation B
+must not consume invocation A's fragment; changed thread/closed transaction
+must retain the existing refusal. Restore aliases, dynamic roots and filesystem
+fixtures in `finally`, and verify restoration. Real positives, fresh public
+verification, each negative and nonpublication must be separately attributable.
+Source-form checks can establish call order or predicate shape; they cannot
+stand in for these producer observations. Existing host/execution restrictions
+remain prerequisites for actually running these tests.
+
+#### Conserved evidence and acceptance limits
+
+PR477's `00879` source file and PR493's mutation test,
+`macro_run_storage.clj` and `resolution-construction-inputs.clj` are byte-identical
+from their recorded tested commits to this assessment. Their original predicate
+and mutation results are reused only at that scope, without replay. They do
+not authenticate the entire current transitive closure. PR469's canonical
+implementation is unchanged, but the facade, operations declaration and test
+file changed during accounting removal and lexical extraction. Its original
+4/28 receipt therefore remains historical; the unchanged recursive contract
+is source-grounded here, with no claim that all eleven old input bytes remain
+current. The current Macro verifier installation and all downstream Reader/AE
+code above are explicitly part of any next dependency proof.
+
+This disposition establishes no further safe call removal. RV1 stays partial:
+proved stored-parent/public-proof/callback necessities are separated from the
+five finite unresolved fragment candidates above. RV2's fresh-only cache
+boundary and remaining real miss/hit/invalidation, and whole RV4 acceptance,
+are unchanged. Source review does not grant runtime, source-authentication,
+integration, release, self-hosting or performance acceptance.
