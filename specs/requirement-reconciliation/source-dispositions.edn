@@ -64620,7 +64620,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -64684,6 +64685,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "core/pure-generation",
     :task-links
     [{:task-id
@@ -65006,7 +65024,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -65070,6 +65089,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "core/runtime-free-values",
     :task-links
     [{:task-id
@@ -99420,7 +99456,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -99514,6 +99551,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "hosted/granted-services",
     :task-links
     [{:task-id
@@ -100897,7 +100951,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -101051,6 +101106,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/compiletime/check-generated-program",
     :task-links
     [{:task-id
@@ -101805,7 +101877,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -101899,6 +101972,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/compiletime/evaluate-authorized-expression",
     :task-links
@@ -102913,7 +103003,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -102980,6 +103071,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/compiletime/preserve-phase-artifacts",
     :task-links
@@ -103195,7 +103303,8 @@
      "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -103262,6 +103371,23 @@
       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/compiletime/reproduce-hermetic-core",
     :task-links
     [{:task-id
@@ -103555,7 +103681,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -103619,6 +103746,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/concurrency/check-gpu-parallel-access",
     :task-links
@@ -104218,7 +104362,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -104285,6 +104430,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/concurrency/emit-hardware-parallel-state",
     :task-links
@@ -104573,7 +104735,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -104637,6 +104800,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/concurrency/enforce-structured-task-lifetime",
     :task-links
@@ -104965,7 +105145,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -105029,6 +105210,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/concurrency/execute-ordered-atomic",
     :task-links
     [{:task-id
@@ -105265,7 +105463,8 @@
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -105332,6 +105531,23 @@
       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/concurrency/execute-owned-actor-message",
     :task-links
@@ -105555,7 +105771,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -105622,6 +105839,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/concurrency/review-semantic-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -105785,7 +106019,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -105879,6 +106114,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/concurrency/send-typed-channel-message",
     :task-links
@@ -106203,7 +106455,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -106327,6 +106580,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/core/enforce-profile-semantics",
     :task-links
     [{:task-id
@@ -108471,7 +108741,8 @@
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -108559,6 +108830,23 @@
       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/core/version-semantic-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -108902,7 +109190,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -108996,6 +109285,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/effects/authorize-and-record-build-effect",
     :task-links
@@ -112835,7 +113141,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -112881,6 +113188,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-async-suspension",
     :task-links
     [{:task-id
@@ -113068,7 +113392,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -113114,6 +113439,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-generator",
     :task-links
     [{:task-id
@@ -113303,7 +113645,8 @@
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -113370,6 +113713,23 @@
       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-resumable-error",
     :task-links
     [{:task-id
@@ -113561,7 +113921,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -113655,6 +114016,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-test-fixture",
     :task-links
     [{:task-id
@@ -113989,7 +114367,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -114035,6 +114414,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-tool-call",
     :task-links
     [{:task-id
@@ -114263,7 +114659,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -114309,6 +114706,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/effects/interpret-workflow-replay",
     :task-links
     [{:task-id
@@ -115209,7 +115623,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -115273,6 +115688,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/effects/record-or-replay-nondeterminism",
     :task-links
@@ -115985,7 +116417,8 @@
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -116052,6 +116485,23 @@
       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/effects/register-stable-semantic-extension",
     :task-links
@@ -116243,7 +116693,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -116289,6 +116740,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/errors/emit-ai-policy-failure",
     :task-links
     [{:task-id
@@ -116586,7 +117054,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -116632,6 +117101,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/errors/emit-durable-workflow-failure",
     :task-links
@@ -116910,7 +117396,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -116956,6 +117443,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/errors/execute-defined-check-failure",
     :task-links
@@ -117185,7 +117689,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -117231,6 +117736,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/errors/lower-panic",
     :task-links
     [{:task-id
@@ -117559,7 +118081,8 @@
      "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -117626,6 +118149,23 @@
       "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/errors/normalize-foreign-failure",
     :task-links
     [{:task-id
@@ -118294,7 +118834,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -118358,6 +118899,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/errors/represent-typed-outcome",
     :task-links
     [{:task-id
@@ -118941,7 +119499,8 @@
      "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -119008,6 +119567,23 @@
       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/errors/review-representation-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -119190,7 +119766,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id "plugins",
@@ -119281,6 +119858,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/facet/activate-declared-extension",
     :task-links
     [{:task-id
@@ -119898,7 +120492,8 @@
      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -119965,6 +120560,23 @@
       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/facet/emit-agent-plan",
     :task-links
     [{:task-id "ai",
@@ -120187,7 +120799,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -120254,6 +120867,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/facet/migrate-stable-contract",
     :task-links
     [{:task-id
@@ -120465,7 +121095,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -120532,6 +121163,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/facet/preserve-disclosure-boundary",
     :task-links
     [{:task-id
@@ -120780,7 +121428,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -120844,6 +121493,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/interop/convert-declared-foreign-value",
     :task-links
@@ -121095,7 +121761,8 @@
      "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -121183,6 +121850,23 @@
       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/interop/emit-scoped-migration-shim",
     :task-links
     [{:task-id
@@ -121586,7 +122270,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -121680,6 +122365,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/interop/generate-schema-binding",
     :task-links
     [{:task-id
@@ -121995,7 +122697,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -122059,6 +122762,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/access-ordered-vector",
     :task-links
     [{:task-id
@@ -122203,7 +122923,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -122267,6 +122988,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/access-persistent-list",
     :task-links
     [{:task-id
@@ -122434,7 +123172,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -122528,6 +123267,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/compile-contract-examples",
     :task-links
     [{:task-id
@@ -122905,7 +123661,8 @@
      "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -122951,6 +123708,23 @@
       "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/enforce-portability-layers",
     :task-links
     [{:task-id
@@ -123338,7 +124112,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -123432,6 +124207,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/library/execute-declared-numeric-mode",
     :task-links
@@ -123712,7 +124504,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -123776,6 +124569,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/maintain-set-uniqueness",
     :task-links
     [{:task-id
@@ -125380,7 +126190,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -125504,6 +126315,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/publish-public-contract",
     :task-links
     [{:task-id
@@ -150884,7 +151712,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -150948,6 +151777,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/record-compatibility-event",
     :task-links
     [{:task-id
@@ -151253,7 +152099,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -151317,6 +152164,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/traverse-map-associations",
     :task-links
     [{:task-id
@@ -151470,7 +152334,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -151534,6 +152399,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/library/validate-and-slice-string",
     :task-links
     [{:task-id
@@ -151838,7 +152720,8 @@
      "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -151905,6 +152788,23 @@
       "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/macro/version-semantics-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -152113,7 +153013,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -152207,6 +153108,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/memory/allocate-provider-storage",
     :task-links
     [{:task-id
@@ -153238,7 +154156,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -153332,6 +154251,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/memory/check-linear-resource-flow",
     :task-links
     [{:task-id
@@ -153819,7 +154755,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -153913,6 +154850,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/memory/check-owner-and-borrow-lifetimes",
     :task-links
@@ -154732,7 +155686,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -154826,6 +155781,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/memory/check-raw-and-mmio-boundary",
     :task-links
     [{:task-id
@@ -155311,7 +156283,8 @@
      "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -155357,6 +156330,23 @@
       "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/memory/release-provider-storage",
     :task-links
     [{:task-id
@@ -155737,7 +156727,8 @@
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -155804,6 +156795,23 @@
       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/memory/review-safety-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -156133,7 +157141,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -156257,6 +157266,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/module/check-import-boundary",
     :task-links
     [{:task-id
@@ -159218,7 +160244,8 @@
      "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -159285,6 +160312,23 @@
       "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/module/review-compatibility-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -159470,7 +160514,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -159564,6 +160609,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/module/validate-namespace-contract",
     :task-links
     [{:task-id
@@ -160197,7 +161259,8 @@
      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -160264,6 +161327,23 @@
       "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/pattern/version-pattern-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -160445,7 +161525,8 @@
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -160512,6 +161593,23 @@
       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/protocol/review-stable-change",
     :task-links
     [{:task-id "evolution/change-review",
@@ -160704,7 +161802,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -160798,6 +161897,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/protocol/select-checked-dispatch",
     :task-links
     [{:task-id
@@ -161580,7 +162696,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -161644,6 +162761,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/provider/initialize-runtime-contract",
     :task-links
@@ -161894,7 +163028,8 @@
      "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -161961,6 +163096,23 @@
       "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/syntax/change-adoption-fixtures",
     :task-links
     [{:task-id "evolution/change-review",
@@ -162115,7 +163267,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -162179,6 +163332,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id
     "language/types/derive-private-keyword-map-domain",
     :task-links
@@ -162822,7 +163992,8 @@
      "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -162889,6 +164060,23 @@
       "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "language/types/version-type-form",
     :task-links
     [{:task-id "evolution/change-review",
@@ -170720,7 +171908,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -170844,6 +172033,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "meta/generated-semantics-provenance",
     :task-links
     [{:task-id
@@ -171623,7 +172829,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id "plugins",
@@ -171744,6 +172951,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "meta/pass-contract-execution",
     :task-links
     [{:task-id "pipeline",
@@ -174516,7 +175740,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -174610,6 +175835,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "meta/phase-isolation",
     :task-links
     [{:task-id
@@ -175098,7 +176340,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -175189,6 +176432,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "meta/scoped-compiler-access",
     :task-links
     [{:task-id "plugins",
@@ -175782,7 +177042,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -175876,6 +177137,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "native/concurrency-order",
     :task-links
     [{:task-id
@@ -176905,7 +178183,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -177029,6 +178308,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "profile/declaration-manifest",
     :task-links
     [{:task-id
@@ -177290,7 +178586,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -177384,6 +178681,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "profile/narrow-authority",
     :task-links
     [{:task-id
@@ -181353,7 +182667,8 @@
       :qualification :interface-facts-not-whole-task-completion}],
     :dependency-interfaces [],
     :full-attached-facet-entailment :not-conferred,
-    :allocation-review :pending-independent-current-composition-review,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
     :declared-dependency-interfaces nil,
     :current-declared-dependency-interfaces
     [{:task-id
@@ -181447,6 +182762,23 @@
        :qualification :interface-facts-not-whole-task-completion},
       :producer-union nil}],
     :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/profile74-current-applicability.edn",
+     :independent-review-receipt-sha256
+     "4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d",
+     :independent-reviewed-source
+     "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+     :scope
+     :unchanged-source-predicates-role-identities-and-declared-dependencies,
+     :sha256
+     "54c776c90bbee47a1b3f8e99b6bb5c5f8df0bbf9de9b563192af79ff02f27cca",
+     :qualification
+     "Independent review covers all74 source predicates and their actual declared role/dependency/witness entailment at the frozen candidate, including43 direct guards,31 exact Governance/Core lineage reconstructions and17 recovered GPU metadata IDs over22 incidences. Eleven adoption predicates retain the single evolution/change-review producer. Later Safety107/Stdlib83 predicates remain separately pending; no full-facet or implementation credit.",
+     :cohort "profile74",
+     :current-applicability-source
+     "5326078fe20595851606e724320717ea4caff9bc",
+     :later-added-predicates :pending-separate-review},
     :semantic-source-id "runtime/device-memory-transfer",
     :task-links
     [{:task-id
