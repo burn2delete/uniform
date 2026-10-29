@@ -5175,21 +5175,18 @@
           {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
         {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}))))
 
-(defn body-pmk-acyclic [core root budget]
-  (let [edges (get core :call-edges) maximum (+ 1 (count (get core :function-records)))
-        work (+ 8 (* 4 maximum (count edges)))]
-    (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-      (loop [pass 0 reached #{root}]
-        (if (> pass maximum) {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}
-          (let [next (loop [remaining edges out reached]
-                       (if (= 0 (count remaining)) out
-                         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)]
-                           (if (if (= nil callee) false (contains? reached caller))
-                             (if (= root callee) nil (recur (rest remaining) (conj out callee)))
-                             (recur (rest remaining) out)))))]
-            (if (= nil next) {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}
-              (if (= next reached) {:status :accepted :work-count work}
-                (recur (+ pass 1) next)))))))))
+(defn body-pmk-acyclic [core root]
+  (let [edges (get core :call-edges)]
+    (loop [reached #{root}]
+      (let [next (loop [remaining edges out reached]
+                   (if (= 0 (count remaining)) out
+                     (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)]
+                       (if (if (= nil callee) false (contains? reached caller))
+                         (if (= root callee) nil (recur (rest remaining) (conj out callee)))
+                         (recur (rest remaining) out)))))]
+        (if (= nil next) {:status :rejected :reason :private-map-keys-entry-domain-required}
+          (if (= next reached) {:status :accepted}
+            (recur next)))))))
 
 (defn body-pmk-metadata-work [proof budget]
   ; Budget and first-order checks. Owning reconstruction checks closed field domains.
@@ -5238,9 +5235,9 @@
               (let [parameter (body-pmk-parameter census core node nodes bindings forms (- budget work))
                     used (+ work (get parameter :work-count))
                     graph (if (= :accepted (get parameter :status))
-                            (body-pmk-acyclic core (get (get census :function-record) :function-syntax-id) (- budget used))
+                            (body-pmk-acyclic core (get (get census :function-record) :function-syntax-id))
                             parameter)
-                    work (+ used (if (= :accepted (get parameter :status)) (get graph :work-count) 0))]
+                    work used]
                 (if (if (= :accepted (get parameter :status)) (= :accepted (get graph :status)) false)
                   (loop [remaining (get census :calls) entries [] normal-count 0 used work domain-work 0]
                     (if (= 0 (count remaining))
