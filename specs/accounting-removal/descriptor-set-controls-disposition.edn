@@ -71,7 +71,13 @@
   "A\tspecs/accounting-removal/descriptor-set-controls-census.edn"
   "A\tspecs/accounting-removal/descriptor-set-controls.md"],
  :pr 631,
- :current-head-CI :pending,
+ :current-head-CI
+ {:head "df1688b26123247e2c20eaf218ebcf7592481b15",
+  :run 40966567915,
+  :successes 7,
+  :configured-skips 2,
+  :readback :completed,
+  :genuine-kernel-evidence false},
  :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
  :owner :ACC-01,
  :candidate-tree "f97d45e232e67cb3097b7c7fc54cd7e447202de5"}

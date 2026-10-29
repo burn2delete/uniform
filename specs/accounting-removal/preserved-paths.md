@@ -498,6 +498,23 @@ helper mappings remain explicit rather than being treated as missing features.
   three added paths and complete tracked parent-relative whitespace. Boundary
   6/11 and zero-finding lint pass; current-head CI and independent review remain
   separate. Initial failure and the genuine UNRUN boundary are retained.
+- Corrected PR631 `df1688b2` CI subsequently completed: seven successes and two
+  configured skips, run `40966567915`. This supersedes only the pending CI
+  observation; initial static failure and unrun genuine tests remain explicit.
+- Main-based [PR632](https://github.com/burn2delete/uniform/pull/632), head
+  `70e953057b840c0b6ace94d099d644ef9c7c139d`, tree
+  `29c69a05babcc3434473f876362a8e3b6c567e18`, base
+  `0f508ea87b75ce0718000d11d588c191c2123838`, restores additional unique
+  semantic controls in the original C7 test file. Vector-rest regains its full
+  List-constructor validation assertion and original depth-192 case; existing
+  depth-128/129, width-1025, late-invalid and result-shape checks stay intact.
+  List-prepend regains its complete original nested block at depths 127/128/129,
+  including descriptor return equality and equally deep unknown-leaf rejection.
+  Only two test definitions and two evidence files change; production/shared
+  helpers and all other tests remain unchanged. Inert source checks, boundary
+  6/11, docs/roadmap, staged/full whitespace and zero-new-finding lint pass.
+  Both genuine tests are UNRUN. Independent review, CI and integration remain
+  pending; preserved surrounding accounting is still separate open work.
 - The [dispatch/direct-call source map](dispatch-source-correspondence.md) and
   its EDN record bind twelve exact historical dispatch units to existing PR568
   source: five complete forms under explicit helper aliases, two explicit kind
