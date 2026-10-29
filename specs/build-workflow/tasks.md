@@ -17,7 +17,7 @@ Status: Open
 
 Evidence baseline: [Package report](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj)
 
-Closing evidence: Real dependency resolution with conflict, profile and capability rejection. Apply declared yank/revocation policy to selection and installation; retain signature/revocation status in locked records and explain each policy decision without silently replacing or erasing locked history. Reject revoked packages unless policy explicitly permits historical rebuild, and report revoked/yanked rejection with PKG5006.
+Closing evidence: Real dependency resolution with conflict, profile and capability rejection. Apply declared yank/revocation policy to selection and installation; retain signature/revocation status in locked records and explain each policy decision without silently replacing or erasing locked history. Reject revoked packages unless policy explicitly permits historical rebuild, and report revoked/yanked rejection with PKG5006. For [SAFE14](../../docs/phase-02-safety/043-safe14-supply-chain-safety.md), reject conflicting package safety manifests before compiling dependents; require safe/release locks and validate native source/digest/ABI/target/link/license/wrapper/capability metadata. Compute and present transitive authority diffs including build/runtime, unsafe, plugins, model/tool/secret and generated artifacts; dependency updates cannot silently expand grants. Caller policy checks unsafe summaries, expired reviews and safe exported wrappers/certificates.
 
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
@@ -25,7 +25,7 @@ Status: Open
 
 Evidence baseline: [Build architecture](../../docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md)
 
-Closing evidence: Clean build node receipts and undeclared environment/network/shell rejection
+Closing evidence: Clean build node receipts and undeclared environment/network/shell rejection. SAFE14 also denies undeclared postinstall, model/tool, compiler IR and unproven native generation/registry authority; permitted effects carry provider, scope, grant and trace, and hermetic release effects are replayable or have pinned outputs. Negative fixtures prove denial occurs before the external effect.
 
 - [ ] `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` Implement dependency-aware caching and invalidation
 
@@ -41,7 +41,7 @@ Status: Open
 
 Evidence baseline: [Artifact contract](../../docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md)
 
-Closing evidence: Actual published package retrieval/verification fixtures; tamper and missing-record rejection
+Closing evidence: Actual published package retrieval/verification fixtures; tamper and missing-record rejection. SAFE14 verifies registry digest/signature/manifest/attestation before use; generated outputs retain generator/version, source/output digests, effects/grants, reproducibility and performed safety checks. Safe package claims require reproducibility or accepted provenance attestations, not registry identity alone. SAFE15 certificate imports verify matching package, compiler/schema, profile/target, provider trust and noninvalidated assumptions before use.
 
 - [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix
 

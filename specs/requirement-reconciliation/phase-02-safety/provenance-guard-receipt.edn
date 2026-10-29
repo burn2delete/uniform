@@ -1,0 +1,49 @@
+{:kind :safety-provenance-declaration-guard-successor
+ :date "2026-10-28"
+ :scope-key "requirement-reconciliation/phase-02-safety"
+ :parent {:commit "f9c2fec3b4cb61e3c15ed85d84ac3e59bebfed1b"
+          :tree "ace7130bd9a1061126689b583ea36e15de11d096"
+          :qualification :namespace-and-loading-fix-only}
+ :independent-finding {:reviewer :ACC12
+                       :reviewed-commit "dfc21989138234fd3f1540b921c454b4708d589c"
+                       :receipt-sha256 "dc44750432aaa0fa3744b4ebceb4f43db0cfd3d9a75b27caff8eb3228e630668"
+                       :finding :four-corrupted-provenance-declarations-accepted}
+ :checker {:path "tools/safety_task_interfaces.clj"
+           :sha256 "54068ca9dccfcb9c27a52a7fb5346ff86e84d7363df8dddea7a5bdfd3ce070d1"}
+ :independently-consumed-inputs
+ {:manifest {:raw-sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
+             :consumption :raw-file-sha256-checked-before-edn-read}
+  :frozen-inputs {:ref "53ae6a403b20d15155bb5b04911fe7ac0092b921"
+                  :path "specs/requirement-reconciliation/source-task-inputs.edn"
+                  :raw-sha256 "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"
+                  :consumption :immutable-git-object-and-raw-sha256-check}
+  :source {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+           :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+           :consumption :git-commit-and-tree-object-resolution-agrees-with-frozen-inputs}}
+ :tamper-regressions
+ [{:field-path [:source-baseline] :replacement :forty-zeroes
+   :result :rejected :expected-diagnostic "Wrong declared source commit"}
+  {:field-path [:source-tree] :replacement :forty-zeroes
+   :result :rejected :expected-diagnostic "Wrong declared source tree"}
+  {:field-path [:frozen-inputs :sha256] :replacement :sixty-four-zeroes
+   :result :rejected :expected-diagnostic "Wrong declared frozen inputs"}
+  {:field-path [:manifest-input :sha256] :replacement :sixty-four-zeroes
+   :result :rejected :expected-diagnostic "Wrong declared manifest input"}]
+ :controls {:positive :pass :prior-ten-negative-controls :pass
+            :four-new-diagnostic-specific-tamper-controls :pass
+            :standalone-checker-lint {:errors 0 :warnings 0}
+            :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+            :whitespace :pass}
+ :conservation {:proposal-sha256 "9f4ba7b4d40891638684ed14e151400651e325ec7e5c8ae5c7a720a6a6a6c525"
+                :proposal-bytes :unchanged :task-bytes :unchanged
+                :unit-records 119 :source-facets 1055 :field-edits 329
+                :implementation-statuses :unchanged-unassessed}
+ :historical-receipt {:path "specs/requirement-reconciliation/phase-02-safety/receipt.edn"
+                      :sha256 "e27858f420956473dc65c2a54982ed5f032ec4cf9dfad48f1841b15179df5bec"
+                      :current-checker-applicability :superseded-by-this-receipt}
+ :review {:reviewer :ACC12 :state :pending-existing-reader549-and-current-work-queue
+          :duplicate-review-or-worker :not-created}
+ :original-denied-final-owner-notification :preserved
+ :later-specific-human-approved-checker-only-message-reassessment :completed-once-same-actor-operation-recipient
+ :canonical-source-pins-and-safe10-locator :separate-pr554-owner-scope
+ :implementation-acceptance :not-conferred :integration :pending}

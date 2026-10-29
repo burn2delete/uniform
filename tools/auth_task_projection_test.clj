@@ -83,7 +83,8 @@
       (doseq [path (concat ["tools/task_projection.clj" "tools/task_projection_links.clj" "tools/auth_task_projection.clj"
                            auth-task-projection/task-path roadmap-path]
                     (for [row (auth-task-projection/records tasks)
-                          [_ _ target] (re-seq auth-task-projection/link-pattern (:evidence row))]
+                          field [:evidence :acceptance]
+                          [_ _ target] (re-seq auth-task-projection/link-pattern (field row))]
                       (str (auth-task-projection/relative-target auth-task-projection/task-path target))))]
         (io/make-parents (io/file root path)) (spit (io/file root path) (slurp path)))
       (spit sentinel "Outside write boundary")
