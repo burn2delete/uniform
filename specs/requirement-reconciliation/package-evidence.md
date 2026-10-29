@@ -109,3 +109,26 @@ No implementation, whole-family semantic acceptance, global nonoverlap,
 aggregate denominator/rate, release, platform choice or seed-retirement claim
 is made. The separate PKG5 semantic implementation worker keeps its own source
 and evidence authority.
+
+## Test namespace correction after CI
+
+The coordinator reported static failure on original candidate
+`bf412f594224a9e9784b554ee0c0eaff8a12c447`: run `40800241567`, job
+`123206330204`, one unresolved-namespace warning at test line 4 for
+`package-requirement-patch/immutable-inputs`. The reported projection check
+passed. That failed candidate and its CI receipt remain historical evidence;
+they are not reclassified as passing.
+
+The successor adds the test's proper namespace, loads the tool at top level,
+and explicitly requires its namespace through alias `patch`. It retains every
+positive and negative assertion. No linter configuration, source/task span,
+family artifact, acceptance status or proposed interface changes.
+
+Local successor checks passed: the same CI-pinned clj-kondo version
+`2025.10.23`, with `--repro --cache false --config-dir tools/ci/kondo --lint
+tools/package_requirement_patch.clj tools/package_requirement_patch_test.clj`,
+reported zero errors and zero warnings. Family tests passed 4 tests / 26
+assertions; language boundary passed 6 tests / 11 assertions. Whitespace passed.
+Fresh successor-head CI and coordinator-routed independent review remain
+separate gates. Any review of the original candidate needs qualification for
+the changed test namespace/loading and this evidence addendum.

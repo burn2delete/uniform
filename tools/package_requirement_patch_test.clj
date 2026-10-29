@@ -1,12 +1,16 @@
-(binding [*command-line-args* []] (load-file "tools/package_requirement_patch.clj"))
-(require '[clojure.edn :as edn] '[clojure.test :refer [deftest is run-tests]])
+(ns package-requirement-patch-test
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is run-tests]]))
 
-(def inputs (package-requirement-patch/immutable-inputs))
+(load-file "tools/package_requirement_patch.clj")
+(require '[package-requirement-patch :as patch])
+
+(def inputs (patch/immutable-inputs))
 (def manifest (first inputs))
 (def snapshot (second inputs))
-(def proposal (edn/read-string (slurp package-requirement-patch/artifact-path)))
+(def proposal (edn/read-string (slurp patch/artifact-path)))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
-(defn check [p] (package-requirement-patch/validate! p manifest snapshot))
+(defn check [p] (patch/validate! p manifest snapshot))
 
 (deftest exact-family-conservation
   (is (check proposal))
@@ -17,19 +21,19 @@
   (is (= 128 (count (:edits proposal))))
   (is (= 5 (count (:unresolved-ids proposal))))
   (is (every? #(= :unassessed (:current-acceptance %)) (:units proposal)))
-  (is (not-any? #(= package-requirement-patch/yank-id (:id %)) (:edits proposal)))
+  (is (not-any? #(= patch/yank-id (:id %)) (:edits proposal)))
   (is (= 4 (count (get-in (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
                           [:source-facets])))))
 
 (deftest guarded-application-refuses-stale-and-duplicate
   (let [edits (:edits proposal)
-        applied (package-requirement-patch/apply-edits manifest edits)]
-    (is (rejects? #(package-requirement-patch/apply-edits applied edits)))
-    (is (rejects? #(package-requirement-patch/apply-edits manifest
+        applied (patch/apply-edits manifest edits)]
+    (is (rejects? #(patch/apply-edits applied edits)))
+    (is (rejects? #(patch/apply-edits manifest
                     [(assoc (first edits) :id "behavior/pkg1/unknown")]))))
-  (is (rejects? #(package-requirement-patch/apply-edits manifest
+  (is (rejects? #(patch/apply-edits manifest
                   [(assoc (first (:edits proposal)) :before-present? true)])))
-  (is (rejects? #(package-requirement-patch/apply-edits manifest
+  (is (rejects? #(patch/apply-edits manifest
                   [(assoc (first (:edits proposal)) :before :wrong)]))))
 
 (deftest source-and-negative-condition-loss-refuses
