@@ -4,6 +4,7 @@
 
 (load-file "tools/task_projection.clj")
 (load-file "tools/task_projection_links.clj")
+(require '[task-projection] '[task-projection-links])
 
 (def task-path "specs/evolution-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/evolution.md")

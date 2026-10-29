@@ -1,6 +1,9 @@
+(ns evolution-task-projection-test
+  (:require [clojure.test :refer [deftest is run-tests]]
+            [clojure.string :as str]))
+
 (load-file "tools/evolution_task_projection.clj")
-(require '[clojure.test :refer [deftest is run-tests]]
-         '[clojure.string :as str])
+(require '[evolution-task-projection] '[task-projection])
 
 (def tasks (slurp evolution-task-projection/task-path))
 (def roadmap (slurp evolution-task-projection/roadmap-path))

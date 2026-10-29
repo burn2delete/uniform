@@ -662,3 +662,19 @@ acceptance follows from adding this task authority.
 Release controls passed 6 tests / 131 assertions, Compiler API 5/77 and the
 language-boundary gate 6/11. Exact task parsers and generated projections passed.
 The task source adds no runtime, compiler, broker or native-observation probe.
+
+## Evolution namespace composition repair
+
+PR554 source `0cb7897f` failed static CI job `123535853959` with four unresolved
+namespace findings in the new Evolution projector/test files. That failure is
+retained. Explicit requires after the existing source loads and the matching
+test namespace correct the composition without changing task parsing,
+projection semantics, task criteria, source dispositions or acceptance counts.
+CI-pinned clj-kondo `2025.10.23`, with `--repro --cache false`, the unchanged
+`tools/ci/kondo` configuration and both actual changed files, reports zero
+errors and zero warnings. An additional contextual scan including unchanged
+shared projection files retains one preexisting unresolved-namespace warning
+in `tools/task_projection_links.clj`; it is not suppressed or represented as a
+clean whole-repository lint result. Evolution controls passed 2 tests / 13
+assertions and the language-boundary gate passed 6/11 after the repair. Existing
+task bytes and the 833 decision identities/states are unchanged by this repair.
