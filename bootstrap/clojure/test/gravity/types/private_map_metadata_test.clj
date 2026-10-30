@@ -14,7 +14,7 @@
               (fn [xs] (swap! validations inc) {:status (if (every? keyword? xs) :accepted :rejected)}))
       (intern space (named "mp-compatibility")
               (fn [& args] (swap! compatibility conj args)
-                {:status :accepted :work-count 5 :premise :model-premise}))
+                {:status :accepted :premise :model-premise}))
       (doseq [suffix (cond-> ["sse-ids?" "pmk-metadata-work" "pmk-unknown?"]
                       (not= prefix "sh08") (conj "pmk-entry-evidence"))]
         (eval (get defs (named suffix)))))
@@ -85,10 +85,12 @@
                   [:row :constraint-id-request :callee-function-syntax-id] [:row :status]]]
       (is (= (assoc rejected :work-count 64) (evidence m (assoc-in f path :forged)))))
     (let [g (fixture :payload false)]
-      (is (= {:status :accepted :work-count 69} (evidence m g)))
+      (is (= {:status :accepted :work-count 64} (evidence m g)))
       (is (= 1 (count @(:compatibility m))))
-      (is (= 9 (count (first @(:compatibility m)))) "ACC06 Map ABI migration stays separate")
-      (is (= 36 (last (first @(:compatibility m)))) "Metadata does not debit the Map allowance"))
+      (is (= [(:core g) {} {}
+              {:function-id :owner :signature {} :parameters [{:binding-id :p :type :gravity.type/map}]}
+              0 {:kind :gravity.type/map} (:nodes g) {}]
+             (vec (first @(:compatibility m)))) "Complete Map handoff uses the reviewed eight-argument ABI"))
     (let [opaque (Object.) before @(:validations m)]
       (is (= (assoc rejected :work-count 64) (evidence m (assoc-in f [:fact :source-payload] opaque))))
       (is (= before @(:validations m)) "Opaque metadata refuses before type or equality checks"))))

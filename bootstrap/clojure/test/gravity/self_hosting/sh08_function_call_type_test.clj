@@ -169,11 +169,14 @@
   (java.util.IdentityHashMap.))
 
 (defn- function-request
-  [artifact]
+  ([artifact] (function-request artifact nil))
+  ([artifact invocation]
   (locking *function-request-cache*
-    (if (.containsKey *function-request-cache* artifact)
+    (if (and (nil? invocation) (.containsKey *function-request-cache* artifact))
       (.get *function-request-cache* artifact)
-      (let [report (b47-verification artifact)
+      (let [report (if invocation
+                     (bootstrap/sh07-core-artifact-verification artifact invocation)
+                     (b47-verification artifact))
             coordinator (coordinator-verification artifact report)
             context (b47-context artifact report coordinator)
             request
@@ -183,9 +186,9 @@
         ;; Failed receipts are diagnostic inputs, not reusable verification
         ;; evidence.  Rebuild them on every call so mutation-focused tests keep
         ;; exercising the verifier rather than a cached failure carrier.
-        (when (= :passed (:status report))
+        (when (and (nil? invocation) (= :passed (:status report)))
           (.put *function-request-cache* artifact request))
-        request))))
+        request)))))
 
 (deftest sh08-imported-function-types-development-kernel
   ;; Normalized DATA exercises Gravity's joins and inference, not B47 authority.
@@ -3343,12 +3346,16 @@
                                     :elapsed-ms (quot (- (System/nanoTime) started) 1000000)})) value))
         text (slurp source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}}
         context (bootstrap/reader-project-context-for-source source-path)
-        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path))
-        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
-        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
-        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
-        request (stage :c7-request #(function-request core))]
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax invocation))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                                reader-path invocation))
+        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+        request (stage :c7-request #(function-request core invocation))]
     {:request request :core core :syntax syntax :expanded expanded :resolved resolved}))
 
 (deftest sh08-parameter-vector-count-slice-current-source-composition
@@ -21326,10 +21333,12 @@
     (doseq [value [:gravity.type/map :gravity.type/never]]
       (is (= (repeat 3 {:status :not-applicable}) (check value))))
     (doseq [rows [[(assoc-in row [:rhs 0 :compatibility :actual-type] :gravity.type/map)]
-                  [(assoc row :kind :equality)] [row row]]]
+                  [(assoc row :compatibility-rule-version :forged)] [row row]]]
       (let [failed (:context (acc02-facts-and-context body input rows))]
         (is (= :rejected (:status failed)))
         (is (not (contains? failed :work-count)))))
+    (is (= {:status :accepted :context nil}
+           (:context (acc02-facts-and-context body input [(assoc row :kind :equality)]))))
     (is (empty? @callbacks))))
 
 (deftest list-parameter-compatibility-preserves-complete-validation-without-allowance
