@@ -1,92 +1,34 @@
 
 
-(defn sh05-macro-execute!
-  [source-path binding function arguments]
-  (try
-    (sh04-syntax-strip-host-metadata
-     (p15-s23-stage2-runtime-execute-function
-      {:engine :gravity-sh05-pinned-macro-runner
-       :compiler-artifact-plan? true}
-      (:plan binding) function
-      (sh04-syntax-strip-host-metadata arguments)))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch StackOverflowError error
-      (sh05-macro-boundary-fail!
-       "C4-DEPTH" source-path :bounded-macro-host-stack function
-       {:contained-host-error (.getName (class error))}))
-    (catch AssertionError error
-      (sh05-macro-boundary-fail!
-       "C4-RETURN" source-path :contained-macro-assertion function
-       {:contained-host-error (.getName (class error))}))
-    (catch LinkageError error
-      (sh05-macro-boundary-fail!
-       "C4-RETURN" source-path :contained-macro-linkage function
-       {:contained-host-error (.getName (class error))}))
-    (catch clojure.lang.ExceptionInfo error
-      (sh05-macro-boundary-fail!
-       "C4-RETURN" source-path :contained-macro-runtime-diagnostic
-       function {:contained-diagnostic (:id (ex-data error))}))
-    (catch Exception error
-      (sh05-macro-boundary-fail!
-       "C4-RETURN" source-path :contained-macro-host-failure function
-       {:contained-host-error (.getName (class error))
-        :cause-message (.getMessage error)}))))
+(defn
+ sh05-macro-execute!
+ [source-path binding function arguments]
+ (gravity.macro/execute-plan!
+  source-path
+  binding
+  function
+  arguments
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-resolve-request-preimage!
-  [source-path request resolved-digests]
-  (let [ordinal (:ordinal request)
-        purpose (:purpose request)
-        preimage (:preimage request)]
-    (case purpose
-      :sh05-expanded-syntax-id
-      (do
-        (when-not (and (= 0 ordinal) (empty? resolved-digests))
-          (sh05-macro-boundary-fail!
-           "C4-TRACE" source-path :exact-expanded-syntax-request
-           request {:resolved-digest-count (count resolved-digests)}))
-        preimage)
+(defn
+ sh05-resolve-request-preimage!
+ [source-path request resolved-digests]
+ (gravity.macro/resolve-digest-preimage!
+  source-path
+  request
+  resolved-digests
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-      :sh05-expansion-provenance-binding-id
-      (do
-        (when-not (and (= 1 ordinal)
-                       (= 1 (count resolved-digests))
-                       (= {:digest-ref 0}
-                          (:semantic-artifact-id preimage)))
-          (sh05-macro-boundary-fail!
-           "C4-TRACE" source-path :declared-provenance-artifact-reference
-           (:semantic-artifact-id preimage)
-           {:resolved-digest-count (count resolved-digests)}))
-        (assoc preimage :semantic-artifact-id (first resolved-digests)))
-
-      :sh05-macro-diagnostic-id
-      (do
-        (when-not (and (= 0 ordinal) (empty? resolved-digests))
-          (sh05-macro-boundary-fail!
-           "C4-TRACE" source-path :exact-macro-diagnostic-request
-           request {:resolved-digest-count (count resolved-digests)}))
-        preimage)
-
-      (sh05-macro-boundary-fail!
-       "C4-TRACE" source-path :known-macro-digest-request-purpose
-       purpose {:ordinal ordinal}))))
-
-(defn sh05-macro-resolve-digests!
-  [source-path digest-requests]
-  (reduce
-   (fn [resolved request]
-     (let [ordinal (:ordinal request)
-           preimage
-           (sh05-resolve-request-preimage!
-            source-path request resolved)]
-       (when-not (= ordinal (count resolved))
-         (sh05-macro-boundary-fail!
-          "C4-TRACE" source-path :ordered-macro-digest-requests
-          request {:resolved-count (count resolved)}))
-       (conj resolved
-             (p15-s23-c6c10-canonical-digest source-path preimage))))
-   [] digest-requests))
+(defn
+ sh05-macro-resolve-digests!
+ [source-path digest-requests]
+ (gravity.macro/resolve-digests!
+  source-path
+  digest-requests
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
 (defn sh05-deep-merge
   [left right]
@@ -204,34 +146,12 @@
      :reader-semantic-binding-id (:semantic-binding-id reader-binding)
      :source-revision-id (:revision-id reader-source-revision)}))
 
-(defn sh05-macro-raise-rejection!
-  [source-path raw resolved-digests]
-  (let [diagnostic
-        (let [template (first (:diagnostics raw))]
-          (when-not (and (= 1 (count resolved-digests))
-                         (= {:digest-ref 0}
-                            (:diagnostic-id-request template)))
-            (sh05-macro-boundary-fail!
-             "C4-TRACE" source-path :declared-diagnostic-id-reference
-             (:diagnostic-id-request template)
-             {:resolved-digest-count (count resolved-digests)}))
-          (assoc template :diagnostic-id-request
-                 (first resolved-digests)))
-        rule (:rule diagnostic)]
-    (c4-macro-fail!
-     rule source-path
-     {:source-span (source-span source-path 0)
-      :macro (:macro-name diagnostic)
-      :macro-version (:macro-version diagnostic)
-      :profile (:profile diagnostic)
-      :target (:target diagnostic)
-      :build-effects (:build-effects diagnostic)
-      :capabilities (:capabilities diagnostic)
-      :hygiene (:hygiene-context diagnostic)}
-     {:severity (:severity diagnostic)
-      :diagnostic-family :c4-macro-expansion
-      :stage :macro-expansion
-      :facts (:facts diagnostic)
-      :remediation (:remediation diagnostic)
-      :gravity-diagnostic diagnostic
-      :diagnostic-id (get diagnostic :diagnostic-id-request)})))
+(defn
+ sh05-macro-raise-rejection!
+ [source-path raw resolved-digests]
+ (gravity.macro/raise-rejection!
+  source-path
+  raw
+  resolved-digests
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))

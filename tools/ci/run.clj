@@ -172,7 +172,13 @@
                   (command "2g" "-M:dev-test"
                            "--namespace" "gravity.syntax.pipeline-test"
                            "--namespace" "gravity.bootstrap-compatibility.c3-test"
-                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test")]
+                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
+                 ["macro-regression" 600
+                  (command "2g" "-M:dev-test"
+                           "--namespace" "gravity.macro.pipeline-test"
+                           "--namespace" "gravity.bootstrap-compatibility.c4-test")]
                  ["language-boundary" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-language-boundary-test")]
