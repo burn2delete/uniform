@@ -3,6 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-literal-projection :as literal]
             [gravity.syntax :as syntax]))
 
 (defn- private-operation [name & args]
@@ -13,6 +14,8 @@
 (defn- runtime-operations [] (private-operation 'syntax-stage-runtime-operations))
 (defn- view-operations [] (private-operation 'syntax-stage-reader-view-operations))
 (defn- assembly-operations [] (private-operation 'syntax-stage-assembly-operations))
+(defn- descriptor-operations [] (private-operation 'syntax-stage-descriptor-operations))
+(defn- index-operations [] (private-operation 'syntax-stage-index-operations))
 (defn- reader-path [] (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
@@ -160,6 +163,10 @@
            (set (get-in contract [:operation-inputs :reader-views]))))
     (is (= (set (keys (assembly-operations)))
            (set (get-in contract [:operation-inputs :assembly]))))
+    (is (= (set (keys (descriptor-operations)))
+           (set (get-in contract [:operation-inputs :descriptor]))))
+    (is (= (set (keys (index-operations)))
+           (set (get-in contract [:operation-inputs :native-index]))))
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))
@@ -579,3 +586,92 @@
                                         source (assoc-in reader revision-path count) source-id operations)))]
         (is (= "C2-HASH" (:id diagnostic)))
         (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest stage-source-descriptors-preserve-real-reader-facts-and-context-qualification
+  (let [{:keys [source reader report assembly registry]} @assembly-gravity
+        source-id (syntax/semantic-source-id source (:source-unit-record reader) (assembly-operations))
+        seed (first (:syntax-seed-stream reader))
+        form (:form-record (first (bootstrap/c2-top-level-products reader)))
+        operations (descriptor-operations)
+        arguments [seed form reader report source-id (:reader-binding assembly) (:reader-source-revision assembly) registry]
+        transaction-var (ns-resolve 'gravity.bootstrap '*sh04-syntax-form-index-transaction*)
+        canonical-slot (volatile! nil) custom-slot (volatile! nil)
+        canonical (with-bindings {transaction-var {:artifact reader :thread (Thread/currentThread) :slot canonical-slot}}
+                    (apply syntax/source-descriptor (into arguments [operations operations transaction-var])))
+        custom (with-bindings {transaction-var {:artifact reader :thread (Thread/currentThread) :slot custom-slot}}
+                 (apply syntax/source-descriptor
+                        (into arguments [(assoc operations :c3-source-facts
+                                                (fn [& args] (apply (:c3-source-facts operations) args))
+                                                :descriptor-context (fn [_ thunk] (thunk)))
+                                         operations transaction-var])))]
+    (is (= canonical custom (apply bootstrap/sh04-syntax-source-descriptor arguments)))
+    (is (some? @canonical-slot))
+    (is (nil? @custom-slot))
+    (is (= "Registered literal provenance." (get-in canonical [:metadata :doc])))
+    (is (= (:reader-binding assembly) (:reader-binding canonical)))
+    (is (= (:reader-source-revision assembly) (:reader-source-revision canonical)))
+    (is (= :authenticated-reader-products (get-in canonical [:facts 0 :fact-kind])))
+    (is (= source (get-in canonical [:origin 0 :span :source])))
+    (is (= (syntax/empty-hygiene (get-in canonical [:namespace :current])) (:hygiene canonical)))
+    (is (nil? (meta canonical)))))
+
+(deftest stage-index-operations-and-new-consumer-roots-disable-reuse
+  (let [artifact {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 20))}
+        transaction {:artifact artifact :thread (Thread/currentThread) :slot (volatile! nil)}
+        operations (index-operations)
+        first-index (syntax/form-index artifact transaction operations operations)]
+    (is (identical? first-index (syntax/form-index artifact transaction operations operations)))
+    (is (= first-index (private-operation 'sh04-syntax-form-index artifact)))
+    (is (not (identical? first-index
+                        (syntax/form-index artifact transaction
+                                           (assoc operations :runtime-supported? (fn [] true)) operations))))
+    (is (not (identical? first-index
+                        (syntax/form-index artifact transaction
+                                           (assoc operations :qualify-transaction (fn [_ tx] tx)) operations))))
+    (doseq [v [#'syntax/source-descriptor #'syntax/descendant-form-ids]]
+      (let [original @v
+            observed (with-redefs-fn {v (fn [& args] (apply original args))}
+                       #(syntax/form-index artifact transaction operations operations))]
+        (is (= first-index observed))
+        (is (not (identical? first-index observed)))))
+    (is (identical? first-index (syntax/form-index artifact transaction operations operations)))
+    (is (= #{:a :b} (syntax/descendant-form-ids {:a {:children [:b]} :b {:children [:a]}} :a)))))
+
+(deftest recursive-metadata-cleanup-keeps-late-callback-order-and-semantic-data
+  (let [value (with-meta [{:k (with-meta '(x) {:host-only true})}] {:host-only true})
+        original bootstrap/sh04-syntax-strip-host-metadata
+        observations (atom [])
+        result (with-redefs [bootstrap/sh04-syntax-strip-host-metadata
+                            (fn [item]
+                              (swap! observations conj
+                                     (cond (vector? item) :vector (map? item) :map
+                                           (keyword? item) :keyword (seq? item) :list :else :symbol))
+                              (original item))]
+                 (bootstrap/sh04-syntax-strip-host-metadata value))]
+    (is (= '[{:k (x)}] result))
+    (is (= [:vector :map :keyword :list :symbol] @observations))
+    (is (nil? (meta result)))
+    (is (nil? (meta (:k (first result)))))
+    (is (= {:metadata {:doc "preserved"}}
+           (bootstrap/sh04-syntax-strip-host-metadata {:metadata {:doc "preserved"}})))))
+
+(deftest stage-literal-index-custom-operations-keep-the-factory-live
+  (literal/with-operations (private-operation 'c3-literal-projection-ops)
+   (fn []
+    (let [artifact {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 20))}
+        transaction {:artifact artifact :thread (Thread/currentThread) :slot (volatile! nil)}
+        operations (index-operations)
+        calls (atom 0)
+        factory (fn [] (swap! calls inc)
+                  (into {} (map (juxt :form-id identity)) (:form-tree artifact)))
+        first-index (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)
+        hit (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)
+        custom (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction
+                                     (assoc operations :runtime-supported? (fn [] true)
+                                            :qualify-transaction (fn [_ tx] tx)) operations)]
+    (is (identical? first-index hit))
+    (is (= first-index custom))
+    (is (not (identical? first-index custom)))
+    (is (= 2 @calls))
+    (is (identical? first-index
+                    (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)))))))

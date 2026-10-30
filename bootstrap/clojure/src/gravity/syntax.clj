@@ -49,6 +49,14 @@
     :sh04-syntax-plan-identities
     :sh04-syntax-read-pinned-source!],
    :returns :gravity/sh04-pinned-syntax-plan-binding},
+  form-index
+  {:arglists
+   ([c2-artifact transaction operations canonical-operations]),
+   :returns :native-form-index,
+   :operation-inputs
+   [:sh04-syntax-form-index-roots-current?
+    :sh04-syntax-native-keyword-map?
+    :runtime-supported?]},
   require-result-carrier!
   {:arglists ([source-path carrier value operations]),
    :operation-inputs
@@ -59,15 +67,50 @@
    ([rule source-path missing-field observed facts operations]),
    :operation-inputs [:c3-syntax-fail! :source-span],
    :returns :throws-c3-diagnostic},
+  source-descriptor
+  {:arglists
+   ([seed
+     form-record
+     c2-artifact
+     integrity-report
+     semantic-source-id
+     reader-binding
+     reader-source-revision
+     registered-literals
+     operations
+     canonical-operations
+     transaction-var]),
+   :returns :syntax-source-descriptor,
+   :operation-inputs
+   [:c3-lossless-literal-descriptor
+    :c3-source-facts
+    :c3-source-form-kind
+    :c3-tagged-literal-descriptor
+    :sh04-syntax-descendant-form-ids
+    :sh04-syntax-empty-hygiene
+    :sh04-syntax-form-index
+    :sh04-syntax-project-registered-literal-values
+    :sh04-syntax-semantic-span
+    :sh04-syntax-strip-host-metadata]},
   accept-result!
   {:arglists ([source-path result operations]),
    :operation-inputs
    [:c3-syntax-fail! :sh04-syntax-require-carrier! :source-span],
    :returns :accepted-gravity-result},
+  empty-hygiene
+  {:arglists ([namespace]),
+   :returns :hygiene-context,
+   :operation-inputs []},
   descriptor-reader-product-binding
   {:arglists ([descriptor operations]),
    :operation-inputs [:sh04-syntax-sh03-product-binding-keys],
    :returns :reader-product-binding},
+  native-keyword-map?
+  {:arglists ([value]), :returns :boolean, :operation-inputs []},
+  descendant-form-ids
+  {:arglists ([forms-by-id root-form-id]),
+   :returns :descendant-form-ids,
+   :operation-inputs []},
   registered-literal-projection-authentic?
   {:arglists ([c2-view gravity-boundary operations]),
    :operation-inputs
@@ -108,6 +151,10 @@
     :sh04-syntax-public-function-hashes
     :sh04-syntax-public-function-shapes],
    :returns :plan-identity-map},
+  strip-host-metadata
+  {:arglists ([value operations]),
+   :returns :metadata-free-value,
+   :operation-inputs [:sh04-syntax-strip-host-metadata]},
   reader-expansion-history
   {:arglists ([source-path c2 operations]),
    :operation-inputs
@@ -139,6 +186,23 @@
     :sh04-syntax-boundary-fail!
     :sh04-syntax-strip-host-metadata],
    :returns :gravity-runtime-value},
+  literal-index
+  {:arglists
+   ([artifact
+     cache-key
+     field
+     id-key
+     original
+     transaction
+     operations
+     canonical-operations]),
+   :returns :native-literal-index,
+   :operation-inputs
+   [:literal-operation-defaults
+    :literal-operations-current?
+    :runtime-supported?
+    :sh04-syntax-form-index-roots-current?
+    :sh04-syntax-native-keyword-map?]},
   read-pinned-plan-source!
   {:arglists ([request-source operations]),
    :operation-inputs
@@ -232,6 +296,8 @@
   build
   {:arglists ([request operations]),
    :returns :gravity/stage0-c3-syntax-object-artifact},
+  index-roots-current?
+  {:arglists ([roots]), :returns :boolean, :operation-inputs []},
   generated-products!
   {:arglists
    ([source-path
@@ -454,7 +520,24 @@
    :sh04-syntax-source-descriptor
    :sh04-syntax-source-relative-path
    :sh04-syntax-strip-host-metadata
-   :syntax-with-source-index-transaction]},
+   :syntax-with-source-index-transaction],
+  :descriptor
+  [:c3-lossless-literal-descriptor
+   :c3-source-facts
+   :c3-source-form-kind
+   :c3-tagged-literal-descriptor
+   :sh04-syntax-descendant-form-ids
+   :sh04-syntax-empty-hygiene
+   :sh04-syntax-form-index
+   :sh04-syntax-project-registered-literal-values
+   :sh04-syntax-semantic-span
+   :sh04-syntax-strip-host-metadata],
+  :native-index
+  [:literal-operation-defaults
+   :literal-operations-current?
+   :runtime-supported?
+   :sh04-syntax-form-index-roots-current?
+   :sh04-syntax-native-keyword-map?]},
  :bootstrap-hosted? true,
  :dependency-direction
  {:requires
@@ -477,7 +560,9 @@
   :generated-origin
   :hygiene
   :fact-invalidation
-  :serialization],
+  :serialization
+  :opaque-callback-order
+  :native-index-owner-and-thread],
  :artifact-inputs
  [:decoded-source-text
   :source-path
@@ -494,7 +579,12 @@
   :internal-reader-reverification-port
   :fresh-c2-validation-report
   :source-descriptor-port
-  :index-transaction-port],
+  :index-transaction-port
+  :native-index-transaction
+  :root-snapshots
+  :descriptor-operations
+  :canonical-operation-context
+  :seed-transaction-var],
  :namespace gravity.syntax,
  :release-authority? false,
  :diagnostic-ownership
@@ -508,7 +598,8 @@
    :reader-view-revision-join
    :syntax-stream-replay
    :syntax-envelope-assembly
-   :syntax-round-trip],
+   :syntax-round-trip
+   :source-descriptor-projection],
   :propagates
   [:C2-HASH
    :C3-SHAPE
@@ -530,7 +621,9 @@
   :reader-artifact-view
   :resolved-syntax-stream
   :syntax-envelope
-  :serialization-records],
+  :serialization-records
+  :syntax-source-descriptor
+  :private-native-lookup-index],
  :clojure-seed-boundary? true,
  :contract-boundary
  :stage0-syntax-construction-verification-and-pinned-plan-runtime}
@@ -3424,6 +3517,436 @@
    c2-artifact
    integrity-report)))
 
+;; Source adaptation and transaction-local native lookup projections.
+
+(defn
+ empty-hygiene
+ [namespace]
+ {:marks [],
+  :lexical-scopes [],
+  :renames {},
+  :introduced-identifiers [],
+  :captures [],
+  :macro-definition-namespace nil,
+  :macro-call-site-namespace namespace})
+
+(defn
+ strip-host-metadata
+ [value operations]
+ (let
+  [sh04-syntax-strip-host-metadata
+   ^{:line 43, :column 58}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh04-syntax-strip-host-metadata)
+   clean
+   (cond
+    (map? value)
+    (into
+     (empty value)
+     (map
+      (fn
+       [[key item]]
+       [(sh04-syntax-strip-host-metadata key)
+        (sh04-syntax-strip-host-metadata item)]))
+     value)
+    (vector? value)
+    (mapv sh04-syntax-strip-host-metadata value)
+    (set? value)
+    (into #{} (map sh04-syntax-strip-host-metadata) value)
+    (seq? value)
+    (apply list (map sh04-syntax-strip-host-metadata value))
+    :else
+    value)]
+  (if (instance? clojure.lang.IObj clean) (with-meta clean nil) clean)))
+
+(defn
+ descendant-form-ids
+ [forms-by-id root-form-id]
+ (loop
+  [pending [root-form-id] visited #{}]
+  (if-let
+   [form-id (peek pending)]
+   (if
+    (contains? visited form-id)
+    (recur (pop pending) visited)
+    (let
+     [record (get forms-by-id form-id)]
+     (recur
+      (into (pop pending) (:children record))
+      (conj visited form-id))))
+   visited)))
+
+(defn
+ source-descriptor
+ [seed
+  form-record
+  c2-artifact
+  integrity-report
+  semantic-source-id
+  reader-binding
+  reader-source-revision
+  registered-literals
+  operations
+  canonical-operations
+  transaction-var]
+ (letfn
+  [(project
+    []
+    (let
+     [c3-lossless-literal-descriptor
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :c3-lossless-literal-descriptor)
+      c3-source-facts
+      (.valAt ^clojure.lang.ILookup operations :c3-source-facts)
+      c3-source-form-kind
+      (.valAt ^clojure.lang.ILookup operations :c3-source-form-kind)
+      c3-tagged-literal-descriptor
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :c3-tagged-literal-descriptor)
+      sh04-syntax-descendant-form-ids
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-descendant-form-ids)
+      sh04-syntax-empty-hygiene
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-empty-hygiene)
+      sh04-syntax-form-index
+      (.valAt ^clojure.lang.ILookup operations :sh04-syntax-form-index)
+      sh04-syntax-project-registered-literal-values
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-project-registered-literal-values)
+      sh04-syntax-semantic-span
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-semantic-span)
+      sh04-syntax-strip-host-metadata
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-strip-host-metadata)
+      span
+      (sh04-syntax-semantic-span (:span seed) semantic-source-id)
+      source-namespace
+      (or (:namespace seed) 'gravity.user)
+      namespace-context
+      {:current source-namespace, :aliases {}, :imports []}
+      forms-by-id
+      (sh04-syntax-form-index c2-artifact)
+      descendant-form-ids
+      (sh04-syntax-descendant-form-ids
+       forms-by-id
+       (:form-id form-record))
+      registered-literal-bindings
+      (filterv
+       (fn*
+        [p1__162#]
+        (contains? descendant-form-ids (:form-id p1__162#)))
+       (:bindings registered-literals))
+      literal-descriptor
+      (or
+       (c3-lossless-literal-descriptor
+        seed
+        form-record
+        c2-artifact
+        integrity-report)
+       (c3-tagged-literal-descriptor
+        seed
+        form-record
+        c2-artifact
+        integrity-report))
+      kind
+      (c3-source-form-kind
+       seed
+       form-record
+       c2-artifact
+       integrity-report)
+      host-facts
+      (c3-source-facts seed form-record c2-artifact integrity-report)
+      host-facts
+      (cond->
+       host-facts
+       (seq registered-literal-bindings)
+       (assoc
+        :registered-literal-bindings
+        registered-literal-bindings))
+      expansions
+      (c3-reader-expansions/project
+       (:form-tree c2-artifact)
+       descendant-form-ids
+       seed
+       semantic-source-id)
+      host-facts
+      (cond->
+       host-facts
+       (seq expansions)
+       (assoc :reader-expansion-origins expansions))
+      facts
+      (cond->
+       (dissoc
+        host-facts
+        :reader-product-integrity-hash
+        :reader-source-id)
+       (seq host-facts)
+       (assoc
+        :semantic-source-id
+        semantic-source-id
+        :reader-result-id
+        (:reader-result-id reader-binding)
+        :c2-artifact-id
+        (:c2-artifact-id reader-binding)
+        :authenticated-envelope-id
+        (:authenticated-envelope-id reader-binding)))]
+     (sh04-syntax-strip-host-metadata
+      (sh04-syntax-project-registered-literal-values
+       (get-in c2-artifact [:source-unit-record :path])
+       registered-literals
+       {:hygiene (sh04-syntax-empty-hygiene source-namespace),
+        :reader-source-revision reader-source-revision,
+        :phase (:phase seed),
+        :source
+        {:source-id semantic-source-id,
+         :form-id (:form-id form-record),
+         :token-range
+         [(:open-token form-record) (:close-token form-record)]},
+        :reader-binding reader-binding,
+        :origin
+        [{:kind :source,
+          :span span,
+          :producer
+          {:kind :reader,
+           :name 'gravity.bootstrap.reader,
+           :identity (:reader-result-id reader-binding),
+           :source-id semantic-source-id,
+           :generated-form-id nil},
+          :producer-version "SH-03",
+          :input-syntax-ids [],
+          :generation-reason :source-read,
+          :build-effects []}],
+        :form
+        {:kind kind,
+         :value (or literal-descriptor (:form seed)),
+         :raw (or (get-in seed [:reader-origin :raw-excerpt]) "")},
+        :facts
+        [{:producer-stage :reader,
+          :fact-kind :authenticated-reader-products,
+          :value facts,
+          :version 1,
+          :invalidated-by
+          [:macro-expansion :metadata-change :namespace-change]}],
+        :version 1,
+        :namespace namespace-context,
+        :metadata (or (:metadata seed) {}),
+        :profile (or (:profile seed) :meta),
+        :span span}))))]
+  ^{:line 21, :column 16}
+  (if
+   ^{:line 21, :column 20}
+   (identical? operations canonical-operations)
+   ^{:line 22, :column 18}
+   (project)
+   ^{:line 23, :column 18}
+   (with-bindings
+    {transaction-var nil}
+    ^{:line 23, :column 55}
+    (project)))))
+
+(defn
+ native-keyword-map?
+ [value]
+ (and
+  (or
+   (identical? clojure.lang.PersistentArrayMap (class value))
+   (identical? clojure.lang.PersistentHashMap (class value)))
+  (let
+   [entries (.iterator (.entrySet ^java.util.Map value))]
+   (loop
+    []
+    (if
+     (.hasNext entries)
+     (and
+      (identical?
+       clojure.lang.Keyword
+       (class (.getKey ^{:tag java.util.Map$Entry} (.next entries))))
+      (recur))
+     true)))))
+
+(defn
+ index-roots-current?
+ [roots]
+ (let
+  [entries (.iterator (.entrySet roots))]
+  (loop
+   []
+   (if
+    (.hasNext entries)
+    (let
+     [entry ^{:tag java.util.Map$Entry} (.next entries)]
+     (and
+      (nil?
+       (.getThreadBinding ^{:tag clojure.lang.Var} (.getKey entry)))
+      (identical?
+       (.getValue entry)
+       (.deref ^{:tag clojure.lang.Var} (.getKey entry)))
+      (recur)))
+    true))))
+
+(defn
+ form-index
+ [c2-artifact transaction operations canonical-operations]
+ (let
+  [transaction
+   ^{:line 27, :column 48}
+   (when
+    ^{:line 27, :column 54}
+    (identical? operations canonical-operations)
+    transaction)
+   sh04-syntax-form-index-roots-current?
+   ^{:line 59, :column 66}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh04-syntax-form-index-roots-current?)
+   sh04-syntax-native-keyword-map?
+   ^{:line 60, :column 60}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh04-syntax-native-keyword-map?)
+   runtime-supported?
+   ^{:line 61, :column 47}
+   (.valAt ^clojure.lang.ILookup operations :runtime-supported?)]
+  (if
+   (and
+    transaction
+    (identical? (Thread/currentThread) (:thread transaction))
+    (identical? c2-artifact (:artifact transaction))
+    (sh04-syntax-form-index-roots-current?)
+    (sh04-syntax-native-keyword-map? c2-artifact)
+    ^{:line 55, :column 80}
+    (runtime-supported?))
+   (let
+    [tree (:form-tree c2-artifact) previous @(:slot transaction)]
+    (if
+     (and previous (identical? tree (:tree previous)))
+     (:index previous)
+     (let
+      [index (into {} (map (juxt :form-id identity)) tree)]
+      (when
+       (and
+        (identical? clojure.lang.PersistentVector (class tree))
+        (sh04-syntax-native-keyword-map? index)
+        (let
+         [records (.iterator ^java.lang.Iterable tree)]
+         (loop
+          []
+          (if
+           (.hasNext records)
+           (let
+            [record (.next records)]
+            (and
+             (sh04-syntax-native-keyword-map? record)
+             (identical?
+              clojure.lang.Keyword
+              (class (:form-id record)))
+             (recur)))
+           true))))
+       (vreset! (:slot transaction) {:tree tree, :index index}))
+      index)))
+   (into {} (map (juxt :form-id identity)) (:form-tree c2-artifact)))))
+
+(defn
+ literal-index
+ [artifact
+  cache-key
+  field
+  id-key
+  original
+  transaction
+  operations
+  canonical-operations]
+ (let
+  [transaction
+   ^{:line 27, :column 48}
+   (when
+    ^{:line 27, :column 54}
+    (identical? operations canonical-operations)
+    transaction)
+   sh04-syntax-form-index-roots-current?
+   ^{:line 71, :column 66}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh04-syntax-form-index-roots-current?)
+   sh04-syntax-native-keyword-map?
+   ^{:line 72, :column 60}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh04-syntax-native-keyword-map?)
+   runtime-supported?
+   ^{:line 73, :column 47}
+   (.valAt ^clojure.lang.ILookup operations :runtime-supported?)
+   literal-operation-defaults
+   ^{:line 74, :column 55}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :literal-operation-defaults)
+   literal-operations-current?
+   ^{:line 75, :column 56}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :literal-operations-current?)]
+  (if
+   (and
+    transaction
+    (identical? (Thread/currentThread) (:thread transaction))
+    (identical? artifact (:artifact transaction))
+    (sh04-syntax-form-index-roots-current?)
+    (sh04-syntax-native-keyword-map? artifact)
+    ^{:line 65, :column 58}
+    (runtime-supported?)
+    (literal-operations-current?
+     ^{:line 66, :column 65}
+     (literal-operation-defaults)))
+   (let
+    [records
+     (get artifact field)
+     previous
+     (get @(:slot transaction) cache-key)]
+    (if
+     (and previous (identical? records (:records previous)))
+     (:index previous)
+     (let
+      [index (original)]
+      (when
+       (and
+        (sh04-syntax-form-index-roots-current?)
+        (identical? clojure.lang.PersistentVector (class records))
+        (sh04-syntax-native-keyword-map? index)
+        (let
+         [iterator (.iterator ^java.lang.Iterable records)]
+         (loop
+          []
+          (if
+           (.hasNext iterator)
+           (let
+            [record (.next iterator)]
+            (and
+             (sh04-syntax-native-keyword-map? record)
+             (identical?
+              clojure.lang.Keyword
+              (class (.valAt ^clojure.lang.ILookup record id-key)))
+             (recur)))
+           true))))
+       (vreset!
+        (:slot transaction)
+        (assoc
+         @(:slot transaction)
+         cache-key
+         {:records records, :index index})))
+      index)))
+   (original))))
+
 (doseq
  [operation
   [#'accept-result!
@@ -3436,11 +3959,17 @@
    #'current-reader-identity-view
    #'current-reader-product-binding
    #'current-reader-revision-authentic?
+   #'descendant-form-ids
    #'descriptor-reader-product-binding
+   #'empty-hygiene
    #'envelope-descriptor
    #'execute-plan!
+   #'form-index
    #'generated-products!
+   #'index-roots-current?
+   #'literal-index
    #'logical-source-stem
+   #'native-keyword-map?
    #'plan-binding-cache
    #'plan-identities
    #'project-registered-literal-values
@@ -3463,7 +3992,10 @@
    #'rich-object
    #'semantic-source-id
    #'semantic-span
+   #'source-descriptor
+   #'strip-host-metadata
    #'verify]]
+ ^{:line 103, :column 39}
  (alter-meta!
   operation
   assoc
