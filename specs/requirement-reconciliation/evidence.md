@@ -3144,3 +3144,34 @@ writer and failed one serialized-view equality assertion (12 tests/541
 assertions, one failure). The writer subsequently completed successfully. The
 comparison and SH tests are rerun sequentially after terminal writer completion;
 the earlier failure remains history and is not independent acceptance evidence.
+
+Types publication uses metadata/census source
+`8e341d26b80fa1e1353fcafbca0817ec054f3383` and complete inventory source
+`82de73c9c86898269a93b2180f42000a8e985756`. Complete inventory SHA256 is
+`580b984b12fc5d205c703dac1e065c5e5cef1ed5282b33541273c89db98ddbd0`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 original owner
+identities are conserved. Owner states are 979 exact candidates, 206 task-only
+joins and three retained retirement proposals. Facet states are 507 qualified
+semantic conjunctions, 65 qualified contexts, 1,209 pending proposals, 5,432
+formatting/hierarchy contexts, 20,515 pending complete predicate conjunctions,
+700 pending dependency joins and 357 pending owner/metadata adjudications.
+The scoped census remains 195: three Accepted, 190 Open, one Partial, one
+unassessed, 192 remaining and ratio 3/195; final counting is not accepted.
+
+Final focused checks pass: Types source trace 2 tests/17 assertions; Types
+projection 4/41; complete inventory 7/44; SH 12/541 after terminal writer
+completion; census 5/18; boundary 6/11; both document validators; generated
+SH/census comparisons; changed SH lint with zero findings; whitespace.
+Serialized readback separately checks all C7/L5 dispositions remain pending,
+exact old qualified IDs, eight source refinements, current Types snapshot,
+979/206/3 owner states and unchanged extension byte-only authority/five descriptor
+states. The two historical accounting fragments retain empty criterion-key
+sets. No scope or acceptance follows from a new global snapshot for older
+reports that retain captured subjects.
+
+The current inventory identifies a concrete next Core source gap:
+`compiler/c6/desugaring-origins`, `compiler/c6/core-verification` and
+`compiler/c6/domain-boundary` still have task-reference-only joins to existing
+Core tasks 3, 4 and 5. Their actual producer, complete verifier conjunction and
+explicit domain-boundary contracts require source-to-criterion reconciliation;
+this observation changes no Core criterion or restricted operation authority.
