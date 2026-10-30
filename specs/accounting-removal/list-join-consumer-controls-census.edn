@@ -1,0 +1,302 @@
+{:production-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :file-sha256
+   "71841553644b80a43d4425081539637eacc1dd931adf1029974b1576f466f433",
+   :definitions
+   [{:name sh08-ij-derive,
+     :arguments [core node nodes types bindings forms],
+     :form-sha256
+     "64376f7175eb15cb2224a36d788214a554269f5faf69171b5eb9d092acee9d84",
+     :historical-present true,
+     :historical-form-sha256
+     "64376f7175eb15cb2224a36d788214a554269f5faf69171b5eb9d092acee9d84",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}
+    {:name sh08-ij-row,
+     :arguments [premise],
+     :form-sha256
+     "14e624cb58565b207c840beb88c810c1987d8950e5236af5b2a1a5d33677c2fc",
+     :historical-present true,
+     :historical-form-sha256
+     "14e624cb58565b207c840beb88c810c1987d8950e5236af5b2a1a5d33677c2fc",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :definitions
+   [{:name body-ij-context,
+     :arguments [core facts bindings source-forms budget],
+     :form-sha256
+     "2e2c5cbb9f6edc5e4b60f74d510fc6a690d75a873420dc1398d9a9d9254d69c6",
+     :historical-present true,
+     :historical-form-sha256
+     "2e2c5cbb9f6edc5e4b60f74d510fc6a690d75a873420dc1398d9a9d9254d69c6",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}
+    {:name body-ij-derive,
+     :arguments [core node nodes types bindings forms budget],
+     :form-sha256
+     "aea135f2a9ad777ae0e54fb7c0dc1feb1ba543312870468a98ab5fefa3a4cefc",
+     :historical-present true,
+     :historical-form-sha256
+     "aea135f2a9ad777ae0e54fb7c0dc1feb1ba543312870468a98ab5fefa3a4cefc",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :definitions
+   [{:name p15-s23-ij-context,
+     :arguments [core facts bindings source-forms budget],
+     :form-sha256
+     "50fac72d29025a220eee136f7d453413a50a5e01dae5ccd969fb6086d3159d31",
+     :historical-present true,
+     :historical-form-sha256
+     "50fac72d29025a220eee136f7d453413a50a5e01dae5ccd969fb6086d3159d31",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}
+    {:name p15-s23-ij-derive,
+     :arguments [core node nodes types bindings forms budget],
+     :form-sha256
+     "e70d3dc401969ba951fbecf70d42012e4ccfebc2e8216cae7742854e60aa7456",
+     :historical-present true,
+     :historical-form-sha256
+     "e70d3dc401969ba951fbecf70d42012e4ccfebc2e8216cae7742854e60aa7456",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}
+    {:name p15-s23-typed-compile-node,
+     :arguments [context id budget],
+     :form-sha256
+     "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+     :historical-present true,
+     :historical-form-sha256
+     "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}
+    {:name p15-s23-typed-compile-if,
+     :arguments [context node budget],
+     :form-sha256
+     "006c9fe4d9e6bbf3e4ebd0402a208396d240b6c7a589479e2ffa4d8a3a9c5f09",
+     :historical-present true,
+     :historical-form-sha256
+     "006c9fe4d9e6bbf3e4ebd0402a208396d240b6c7a589479e2ffa4d8a3a9c5f09",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}]}
+  {:path "bootstrap/gravity/src/gravity/runtime.gravity",
+   :file-sha256
+   "e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe",
+   :definitions
+   [{:name p15-s23-runtime-evaluate-closed-instruction,
+     :arguments [instruction environment output],
+     :form-sha256
+     "812bba977bddb23ec54c877e55439831a13a454bcf5161632b930af84aa54b17",
+     :historical-present true,
+     :historical-form-sha256
+     "812bba977bddb23ec54c877e55439831a13a454bcf5161632b930af84aa54b17",
+     :historical-identical true,
+     :semantic-equivalence :not-inferred}]}],
+ :all-production :unchanged,
+ :verifier
+ {:language :clojure,
+  :sha256
+  "3a8c1abdb7b8cd0a770e04b7d108cbe209363a962d4c00b6d2bcb589b0926c02",
+  :preserved-locally true},
+ :nonclaims
+ [:whole-parent-acceptance
+  :Effects-or-lowering-accounting-removal
+  :genuine-kernel-acceptance
+  :authenticated-admission
+  :transitive-helper-equivalence
+  :main-integration
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-executed false,
+  :genuine-kernels-and-runtime :UNRUN},
+ :current-main-import :none,
+ :source-control-scope
+ {:literal-branch-width 1025,
+  :late-invalid-index 1024,
+  :checked-member-count 1025,
+  :forged-checked-member-count 1024,
+  :invalid-cases [:late-keyword :extra-type-field :nonvector-members],
+  :source-routing
+  [:C7-not-applicable
+   :Effects-not-applicable
+   :lowering-not-applicable],
+  :semantic-evidence
+  [:complete-branch-premises
+   :tampered-extent-rejection
+   :typed-rejection
+   :truthiness
+   :runtime-value-and-identity]},
+ :integration :UNRUN,
+ :CI :pending,
+ :negative-source-controls
+ [{:test body-list-if-join-development-kernel,
+   :case :reduced-wide-branch,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test body-list-if-join-development-kernel,
+   :case :moved-late-invalid,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test body-list-if-join-development-kernel,
+   :case :disabled-extent-forgery,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test body-list-if-join-development-kernel,
+   :case :weakened-not-applicable,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test body-list-if-join-development-kernel,
+   :case :lost-first-assertion,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test body-list-if-join-development-kernel,
+   :case :substituted-C7-owner,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :reduced-wide-branch,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :moved-late-invalid,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :disabled-extent-forgery,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :weakened-not-applicable,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :lost-first-assertion,
+   :one-source-occurrence-mutated true,
+   :refused true}
+  {:test current-gravity-list-if-join-lowering-development-kernel,
+   :case :substituted-C7-owner,
+   :one-source-occurrence-mutated true,
+   :refused true}],
+ :kind :list-join-original-consumer-controls,
+ :fixture-and-dispatch-pins
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name list-if-join-input,
+   :form-sha256
+   "7a9d300605a215771b022a631064bea56c51b2dbbd9ff9891052e607d577bffa",
+   :invoked false}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name invoke-c7,
+   :form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+   :invoked false}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :name sh08-helper,
+   :form-sha256
+   "7b24775c7ea5bf9b41e11daa8c00570fac513c34b4ea95d8d084f1623647c28d",
+   :invoked false}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :name leaf,
+   :form-sha256
+   "654627c47c74e4cd7d3e1f2b0c785f8cd6745ed7214afcd5876d8c9765fe349e",
+   :invoked false}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :name runtime,
+   :form-sha256
+   "4dec83b559d3d03d01e2eb2878abd1c2d1a519e4a857220e27d72312ba0ea2b0",
+   :invoked false}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :name typed-catch-runtime-projection,
+   :form-sha256
+   "0c2292648487068a702b48a8b2e18353bc3e6120c267429c871b4306f1c0c564",
+   :invoked false}],
+ :independent-review :pending,
+ :generator
+ {:language :clojure,
+  :sha256
+  "49583b7fb13c3420fa540f831ec27112306544f81aad9e922c7b43efd769c4bd",
+  :preserved-locally true},
+ :parent-PR 595,
+ :restorations
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :complete-body-and-comments :byte-identical-to-history,
+   :name body-list-if-join-development-kernel,
+   :genuine-kernel :UNRUN,
+   :parent-only-removed-is {},
+   :base-file-sha256
+   "b45a8bd0cd30be40e9fb5dae0775784fecf8682c5c8367670fcb8ce8be0ffda4",
+   :parent-is-forms 11,
+   :raw-adaptations 0,
+   :historical-raw-span-sha256
+   "bcc8191a447fbdf47526527129f8b57f9bc347cb4ce0a0f60c787f714a02497e",
+   :candidate-file-sha256
+   "f15afdef6c91f20e6e228655537117db34dd1b5e28dc103a7c4c5769b17912d5",
+   :old-is-forms 16,
+   :base-raw-span-sha256
+   "12c3f33aadbb78ff5ec97e9b02b931c5bea8cde37bd5b5ce9ca71ea5a943a5e3",
+   :all-surrounding-bytes :unchanged}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :complete-body-and-comments :byte-identical-to-history,
+   :name current-gravity-list-if-join-lowering-development-kernel,
+   :genuine-kernel :UNRUN,
+   :parent-only-removed-is
+   {"(is (= (+ prepaid index) (:work-count failed)))" 1},
+   :base-file-sha256
+   "a9e56bf7143d12b7ca33eded85572d6b8aa3bd6ff36ac27316e17d47b3657002",
+   :parent-is-forms 22,
+   :raw-adaptations 0,
+   :historical-raw-span-sha256
+   "6661f2ed47a7f91ca6f6399378b8ffe15759fc4ad2dee5e319bdb1788705fabb",
+   :candidate-file-sha256
+   "d18ebccf0382726fa02bdcea0683b93a348ad8cad3c7cd05b427be770971595f",
+   :old-is-forms 27,
+   :base-raw-span-sha256
+   "524902e2b4a8a88b01d5c10f4d3226755f8e25b4856fe72efe62f5d635c7599b",
+   :all-surrounding-bytes :unchanged}],
+ :base-tree "67c0a515f30c26b61fc6f0bc06d37f2ed28bd107",
+ :base "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :source-validation
+ {:genuine-execution :UNRUN,
+  :whitespace :pass,
+  :docs {:documents 240, :phase-indexes 19, :result :pass},
+  :boundary {:test 6, :assertions 11, :fail 0, :error 0},
+  :nine-owner-and-six-host-helper-pins :verified,
+  :complete-file-equations :verified,
+  :all-other-source-forms :conserved,
+  :lint
+  {:candidate-sha256
+   "9118477b0a81b7b48c373b458aedf0162e9b0b3c2d8afbe88a927a7cb0f98c82",
+   :base-sha256
+   "8601bdaa5f1b7f0011d88bb12ba8bca78ffd0e94d05f18e8f4f7c54fefe09695",
+   :errors 0,
+   :warnings 152,
+   :infos 1,
+   :finding-multisets :identical},
+  :roadmap :pass,
+  :raw-historical-kernels :verified},
+ :parent-acceptance :not-conferred,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :retired-parent-only-test
+ {:form (is (= (+ prepaid index) (:work-count failed))),
+  :count 1,
+  :reason :payment-counter-only-assertion,
+  :diagnostic-and-missing-local-role-controls
+  :preserved-in-original-body},
+ :owner :ACC-01}
