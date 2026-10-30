@@ -57,6 +57,11 @@
                    {:call-core-node-id :late :fact-id-request {:domain opaque}}]]
         (is (= :rejected (:status (census m (conj @wide-facts fact bad) descriptors))))
         (is (empty? @callbacks)))
+      (let [late (assoc (into (sorted-map) (map (juxt :call-core-node-id identity) (conj @wide-facts fact)))
+                        :zzzz/late (assoc (ordinary-fact :zzzz/late) :dispatch opaque))]
+        (is (= :zzzz/late (last (keys late))))
+        (is (= :rejected (:status (census m late descriptors))))
+        (is (empty? @callbacks)))
       (is (empty? @callbacks)))))
 
 (defn caller-model [m]

@@ -53,9 +53,11 @@ that a wide table passes the remaining entry-proof accounting.
 
 The initial control run exposed a missing emitter aggregation seam; it had
 zero assertion failures and one harness error. After that seam was corrected,
-the combined existing/new controls passed 6 tests / 4,710 assertions, including
-3 new tests / 72 assertions. Boundary tests passed 6/11; changed test lint and
-whitespace checks passed. Independent affected-source review remains required.
+the combined existing/new controls passed 6 tests / 4,716 assertions, including
+3 new tests / 78 assertions. The wide Map negative explicitly places opaque
+dispatch at the last key and checks zero callbacks. Boundary tests passed 6/11;
+changed test lint and whitespace checks passed. Independent affected-source
+review remains required.
 
 [Source conservation](private-map-facts-conservation.edn) checks exact byte
 identity outside the four selected production functions. Inside each census,
