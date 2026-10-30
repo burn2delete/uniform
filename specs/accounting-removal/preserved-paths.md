@@ -842,6 +842,27 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Collection header reconstruction restoration
+
+Main-based [PR635](https://github.com/burn2delete/uniform/pull/635), head
+`b745ccee35719dd9f53ec60376e01340d3f5cb08`, tree
+`497e476acf7ae9119360e6745e72c5c38cb91416`, base
+`2654d155322f7863dd087065f19000b43c877cbe`, restores the original vector-empty,
+List-set, Map-keys and vector-rest lowering controls for full C7/Effects/emitter
+descriptor equality, accepted header results and absent operand-work metadata.
+All original/current assertion forms and semantic case tables survive. Each
+historical body has exactly two raw adaptations: remove its unused obsolete
+validator binding; replace its work-count-valued forgery with explicit 1/nil,
+preserving the existing zero-valued forgery. All other test bytes, shared
+helpers and production remain unchanged. Twelve three-owner header forms and
+six upstream fixture/derive/invocation definitions are pinned; historical
+differences remain explicit. Boundary 6/11, docs, roadmap, whitespace and
+zero-error lint with identical 76-warning multisets pass. Initial in-memory
+Pattern-identity conservation failure occurred before writes; final serialized
+source checks pass. Independent review and CI remain pending; all four genuine
+kernels remain UNRUN. Existing outer budget APIs remain separate unresolved
+work; this is no runtime/whole-path/ACC01/PR502 acceptance.
+
 ### Exact quoted-data fixture restoration
 
 Main-based [PR634](https://github.com/burn2delete/uniform/pull/634) at
@@ -858,7 +879,10 @@ APIs are pinned; four match history, while `sh08-qd-node` and
 Raw-span/complete-form conservation, boundary 6/11, docs, roadmap, whitespace
 and pinned lint comparison pass (zero errors, identical 71-warning multisets;
 new EDN zero findings). Independent review and CI remain pending; both genuine
-tests remain UNRUN. This is a concrete finite successor for these two original
+tests remain UNRUN. Later exact-head CI run `40976646423` completed with seven
+successes and two configured skips; this supersedes only its pending CI
+observation. Independent review remains pending. This is a concrete finite
+successor for these two original
 test controls, not whole quoted-data or whole-file acceptance.
 
 ### Four retired validator branch proposals
