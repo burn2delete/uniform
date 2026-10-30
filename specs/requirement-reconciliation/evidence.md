@@ -3974,7 +3974,9 @@ Three source-control tests pass 79 assertions, including 32 required-clause
 removals with coherent new hashes, forged witness refusal and omitted facet/owner
 controls. These controls check source text and provenance, not compiler semantics.
 Projection tests pass 5/77; boundary tests pass 6/11; both document validators
-pass. The initial SH guard correctly refused the changed source fingerprint
+pass. Changed SH tooling lint against `f232769e` has zero blocking findings
+and zero baseline warnings; its captured output is `/tmp/C18-ci-lint-output/`.
+The initial SH guard correctly refused the changed source fingerprint
 (12 tests, 382 assertions, six source-version errors). An explicit pending
 successor now pins only the two changed Compiler API source/projection files to
 the new commit and retains the prior fingerprint. SH tests then pass 12/541 and
