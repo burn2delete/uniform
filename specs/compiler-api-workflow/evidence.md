@@ -195,3 +195,13 @@ Documentation commit `16404713` was staged while the base-record writer was
 finishing, so the completed base record is committed separately. No validation
 of that partial documentation-only commit is claimed. Final checks wait for
 writer completion and use the complete record and its actual immutable pin.
+
+Complete-tree checks against the declared `787637b9` base pass: source controls
+7 tests/126 assertions; SH 12/157 and generated comparison; boundary 6/11;
+both document validators; whitespace. Fresh changed-file CI lint against that
+base includes all eight relevant Clojure/EDN paths and reports three unchanged
+baseline warnings with zero blocking findings. Its complete captured logs are
+at `/tmp/finite-domain-ci-current-main`. The 53-command source-only projection
+CI observation above retains its earlier subject; it is not relabelled as
+fresh exact-head GitHub CI. Current exact-head CI remains required after the
+independent affected-composition review and before coordinator integration.

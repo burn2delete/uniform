@@ -645,7 +645,7 @@
          :reader-assembly-source-version
          "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
 
-(def mapping-review (assoc compiler-domain-predecessor-review :compiler-domain-predecessor-review compiler-domain-predecessor-review :input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465" :compiler-domain-current-source {:status :pending-independent-affected-composition-review, :path "specs/compiler-api-workflow/domain-contract-source-composition.edn", :sha256 "0a45d429007c2fa283c72a18a80fe167d18e9a8ba6d3eb78f67e405c4107830b", :source-commit "1664f16b6cba9a0f99da85d9ee8374e99765695b", :implementation-credit :none, :global-count-adoption :none}))
+(def mapping-review (assoc compiler-domain-predecessor-review :compiler-domain-predecessor-review compiler-domain-predecessor-review :input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465" :compiler-domain-current-source {:status :pending-independent-affected-composition-review, :path "specs/compiler-api-workflow/domain-contract-source-composition.edn", :sha256 "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e", :source-commit "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474", :implementation-credit :none, :global-count-adoption :none}))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))

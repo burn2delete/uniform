@@ -13038,8 +13038,8 @@
    :path
    "specs/compiler-api-workflow/domain-contract-source-composition.edn",
    :sha256
-   "0a45d429007c2fa283c72a18a80fe167d18e9a8ba6d3eb78f67e405c4107830b",
-   :source-commit "1664f16b6cba9a0f99da85d9ee8374e99765695b",
+   "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e",
+   :source-commit "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474",
    :implementation-credit :none,
    :global-count-adoption :none},
   :prior-current-main-qualification
