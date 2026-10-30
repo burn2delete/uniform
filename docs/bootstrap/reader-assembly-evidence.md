@@ -59,6 +59,7 @@ Commands ran from the repository root. Focused runs used fresh JVMs.
 | `clojure -J-Xmx512m -M tools/validate_gravity_docs.clj` | 240 documents, 19 phase indexes, ASCII and content checks; passed |
 | `clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj` | Passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 17 tests, 749 assertions; passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
 | `git diff --check` | Passed |
 
 The first harness run had two errors because local `clj-kondo` was absent.
