@@ -1,0 +1,168 @@
+{:source-corruption-controls
+ [{:unit [defn body-lc-source],
+   :case :native-guard-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :validation-cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :weak-status-only-guard,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :lost-historical-body,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :accepted-failure-route,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :wrong-validation-binding,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lc-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :native-guard-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :validation-cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :weak-status-only-guard,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :lost-historical-body,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :accepted-failure-route,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :wrong-validation-binding,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lc-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}],
+ :nonclaims
+ [:no-unconditional-function-equivalence
+  :no-old-validation-input-contract-equivalence
+  :no-native-callback-prelude-effect-exception-termination-or-transitive-proof
+  :no-approval-of-other-native-guard-uses-or-numeric-bounds
+  :no-C7-builder-classification
+  :no-whole-List-construction-support
+  :no-whole-PR569-ACC01-PR502-closure],
+ :execution
+ {:native-guard-Gravity-helper-Bootstrap-compiler-runtime :UNRUN},
+ :method
+ {:read-eval false,
+  :source-comparison :complete-reader-pr-str,
+  :Gravity-terms-normalized false,
+  :raw-comments-and-whitespace :whole-file-pins-only,
+  :Bootstrap-or-source-definition-evaluated false},
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assumptions
+ [:pinned-unrebound-source-and-native-guard-bindings
+  :L2-control-semantics],
+ :rows
+ [{:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :complete-historical-body :reader-identical,
+   :native-guard-pin
+   {:name body-lc-native-map?,
+    :arguments [value],
+    :form-sha256
+    "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+    :same-as-prior-reviewed-guard true,
+    :native-execution :UNRUN},
+   :current-form-sha256
+   "b1721e930ddb6d2ecd64aa756caf6df80a89fe40b66041d9f89ff3d501768d79",
+   :historical-file-sha256
+   "b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :failure-branches [nil nil],
+   :unit [defn body-lc-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "5ed5c712efef3f4c84daf3f1e299e31cbbe0ef461e37e52f1a51d9fc386113c5",
+   :exact-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :historical-form-sha256
+   "1695248dd1e24369946dda9922eb3fe4b72e97cbe8fa6dec74cf213ffbd2649b"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :complete-historical-body :reader-identical,
+   :native-guard-pin
+   {:name p15-s23-lc-native-map?,
+    :arguments [value],
+    :form-sha256
+    "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+    :same-as-prior-reviewed-guard true,
+    :native-execution :UNRUN},
+   :current-form-sha256
+   "65a78fbf0c76c4d6b287ce0b049a35c3d93fa425059857cbfd656ca56c30222c",
+   :historical-file-sha256
+   "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :failure-branches [nil nil],
+   :unit [defn p15-s23-lc-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "31d04a387c7ca2bc8ac518757c00753e4697854cd3c650f367b8c5c94999021b",
+   :exact-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :historical-form-sha256
+   "e81a1d96198497c901b61890001d9edff5a2857ce2a608e9a6f05e23a6be1b56"}],
+ :main-tree "19e6cab1c2cb42d1be1e44c84b988b3ec199c3a8",
+ :original-inventory :unchanged,
+ :independent-classification :pending,
+ :kind :List-construction-guarded-source-incorporation-proposal,
+ :prior-evidence
+ {:receipt-sha256
+  "e47a331ec7c613f6323e1d3dcad208b4adce6f690c9611413f4381800c93f9d2",
+  :packet-path
+  "specs/accounting-removal/predicate-guarded-incorporation.edn",
+  :scope :two-unchanged-native-guard-source-pins-only,
+  :predicate-decisions :not-extended,
+  :prior-counter-discrepancy
+  {:sealed 13050, :handoff 13052, :credited-here :none}},
+ :generator
+ {:path "/tmp/acc01-construction-guard-proposal.clj",
+  :sha256
+  "7ecfa021a72d4501484d4bdc756493e07ed24d7d09cf1bcf85a650594e0544af"},
+ :original-inventory-sha256
+ "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+ :production-change :none,
+ :main "c486a4d78f67937deb42b8bfa978e456d583bc32",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

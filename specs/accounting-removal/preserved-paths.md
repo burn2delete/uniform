@@ -1,5 +1,20 @@
 # PR502 preserved path reconciliation
 
+## Guarded List-construction builder proposal
+
+`construction-guarded-incorporation.edn` and its companion Markdown bind the
+two original Effects/lowering List-construction source builders at current
+main `c486a4d7`. Both complete historical bodies and argument lists remain
+reader-identical inside exact native-map/accepted-cell guards with two nil
+failure routes. Full function/body/file, original-membership and guard pins
+are recorded; fourteen effective source mutations refuse weakened obligations.
+Independent conditional source classification is pending. The earlier
+predicate acceptance supplies only unchanged guard source pins, not these
+new unit decisions. C7's differently changed builder is excluded. Native
+prelude effects, callbacks, exceptions, transitive/runtime behavior and other
+guard bounds/uses remain unproved or unendorsed. No whole support or original
+scope completion is claimed, and no source helper is executed.
+
 ## C7 branch-join frozen review intake
 
 PR595 remains frozen at `99893151b3d0b7c3c435d5c2e6e90c03255b5951`, tree
