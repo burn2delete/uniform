@@ -1000,6 +1000,29 @@ composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Guarded predicate source incorporation proposal
+
+`predicate-guarded-incorporation.edn` and its companion Markdown bind exactly
+33 original changed source-builder units: all eleven original predicate
+families in C7, Effects and lowering. At main
+`b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf`, every current function retains
+the complete historical argument list and body under exactly two additional
+guards: the owner's native-map check and equality with `{:status :accepted}`.
+The historical body occurs reader-identically at `[3 2 2]`; no source term,
+number, schema, name or argument is normalized. All selected units are members
+of the unchanged original inventory. Seven effective source mutations per
+unit, 231 total, reject lost guards, extra work-field admission, changed arity,
+lost body, altered result policy and changed integer representation.
+
+The proposed source disposition retains the current guarded implementation
+and records conditional incorporation of the old inner source. It explicitly
+does not preserve the old permissive extra-field input contract or claim
+unconditional behavior, native callbacks, termination, mutable bindings,
+transitive dependencies or approval of other native-helper uses/bounds.
+Independent classification remains pending; no unit receives completion credit
+yet. Genuine owner controls remain UNRUN, and all prior source/test receipts
+retain their separate scopes.
+
 ### Preserved List-join consumer control draft
 
 ACC-01 draft [PR637](https://github.com/burn2delete/uniform/pull/637), exact
