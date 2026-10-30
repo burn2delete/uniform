@@ -3747,3 +3747,32 @@ does not rule out other finite subsets. No isolated accepted main candidate was
 created, so integration preflight and CI were not run; no CI denial or failure
 is inferred. No canonical reset, new checkout or main integration occurred.
 The concrete C18 source gap remains independently actionable.
+
+C17-review publication uses metadata/census source
+`3593bc756de2e1108a119cb6043cac19eb73760b` and complete inventory source
+`cb12d36ec567b0f6b070c4fa2693406554fa74b0`. Inventory SHA256 is
+`9557195ec5037bbc0fdd999775e27cdec626bde1037c9827a911c253cf4d43d3`.
+Applicability SHA256 is
+`b4947a560e975eb50037da6c36f93b8e7d576917900e513205f114fd7f1b8c0b`;
+adoption SHA256 is
+`2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010`.
+The fresh captured-byte continuity record has 68 authentic predicate joins
+including the three current C17 spans, with two older Compiler API file pin
+changes and no review renewal. Its SHA256 is
+`560c779cfc23af1b25fc27cdaf52f3fa2a5f0166a35d381028f683f9ef2ad082`.
+The finite main-dependency assessment SHA256 is
+`9dcfd3ca5278778134a9b12ec439fc94ac9861c9010310de3716b7cdfe2e99bd`.
+
+Complete inventory checks pass 15 tests/81 assertions and serialized readback.
+The readback verifies all 1,470 qualified facet IDs/roles, six review-group
+references, twelve source refinements, current witness pointers, all 115 C12
+proposals, unchanged owner states and all five extension descriptor states.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 owners conserve.
+Other facet states remain 5,375 format/hierarchy contexts, 20,136 pending
+complete predicates, 700 dependency joins and 357 owner/metadata adjudications.
+Owner states remain 984 candidates, 201 task-reference-only and three retirement
+proposals. Source applicability passes 3/38; SH 12/541; census 5/18; boundary
+6/11; both document validators; generated SH/census checks; changed SH lint
+with zero findings; whitespace. The provisional scoped census remains 3/195,
+with 190 Open, one Partial, one unassessed and 192 remaining. No main candidate,
+integration preflight/CI or integration acceptance is implied by these checks.
