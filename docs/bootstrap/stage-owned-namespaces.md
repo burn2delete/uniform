@@ -137,7 +137,9 @@ C3 construction and reader association verification into `gravity.syntax`.
 The [syntax runtime extraction](syntax-runtime-evidence.md) moves pinned plan
 authentication, execution, result admission and digest resolution into the
 same namespace. SH04 reader/envelope and rich-object host adaptation and the
-other syntax helper boundaries remain open.
+other syntax helper boundaries remain open. The
+[reader view extraction](syntax-reader-views-evidence.md) additionally moves
+registered-literal projection and authenticated reader views into the stage.
 `gravity.diagnostics` and the existing narrow helper namespaces remain partial
 extractions. Other destination interfaces in the table remain proposed;
 existing Gravity modules, hosted facades and tests retain their current status.
