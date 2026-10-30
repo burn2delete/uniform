@@ -13036,6 +13036,124 @@
    :new-task-fields 3,
    :historical-adoptions-preserved 493,
    :total-concrete-links 777},
+  :c11-owner-current-source
+  {:new-MIR-criterion-witnesses
+   {:construction
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 879,
+     :end-byte 2853,
+     :raw-sha256
+     "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+    :facts
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 3174,
+     :end-byte 4585,
+     :raw-sha256
+     "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+    :ordering
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 4586,
+     :end-byte 5319,
+     :raw-sha256
+     "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+    :verifier
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 5693,
+     :end-byte 6801,
+     :raw-sha256
+     "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+    :serialization
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 7121,
+     :end-byte 8121,
+     :raw-sha256
+     "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+    :consumption
+    {:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+     :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+     :file-sha256
+     "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+     :start-byte 8526,
+     :end-byte 9964,
+     :raw-sha256
+     "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+   :foundation-MIR-facets 14,
+   :C11-occurrences 53,
+   :existing-decision-criteria
+   {:path
+    "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+    :sha256
+    "588f40a4c58a0fd0a9876d63f7e603f317eeab7ac2244600e803230c13afae16",
+    :ids 833,
+    :spans 931,
+    :file-and-raw-bytes :unchanged},
+   :foundation-context-residuals 70,
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+    :sha256
+    "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"},
+   :implementation-credit :none,
+   :C11-semantic-cases 36,
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :existing-historical-bindings
+   {:path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+    :sha256
+    "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+    :ids 561,
+    :spans 4819,
+    :file-and-raw-bytes :unchanged},
+   :status :pending-independent-source-facet-review,
+   :qualification
+   "Six original MIR owners have exact current task-criterion candidates. All older current witnesses remain byte-identical; the changed MIR paths were absent from those span sets. Existing source reviews, source/data applicability and these proposals confer no compiler/verifier/domain/runtime execution, implementation, final-count or unrelated ordering acceptance.",
+   :composition
+   "specs/requirement-reconciliation/c11-owner-source-refinement.edn",
+   :C11-source-facets 134,
+   :original-owner-joins
+   ["compiler/c11/mir-effect-order"
+    "compiler/c11/mir-fact-binding"
+    "compiler/c11/mir-verifier-gate"
+    "compiler/c11/semantic-mir-construction"
+    "gravity/mir-verification-after-transform"
+    "gravity/semantic-facts-before-mir"],
+   :new-decision-ids 0,
+   :applicability
+   "specs/requirement-reconciliation/c11-owner-current-witness-applicability.edn"},
   :runtime20-current-composition
   {:allocation-source-commit
    "714c9e057bb89e9af0fc87e921da6106e5fd1f29",
@@ -14438,7 +14556,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "d04f17bfc18c1d3964e2861aff7f5d31e6ce0fc5361b51b9cf72a2eb01aa236b"},
+  "1dd19963ce087a6133593f81b42963687954021a03209d1bc038d22a84f1326d"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16978,101 +17096,101 @@
   "mir"
   [{:path "specs/mir-workflow/tasks.md",
     :file-sha256
-    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/mir-workflow/tasks.md",
      :start-byte 489,
-     :end-byte 878,
+     :end-byte 2853,
      :start-line 14,
      :end-line 18,
      :sha256
-     "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e",
+     "c1fc0706a8e9592fcee93102b356314ded501cebc70ce25a793f87c3236292d6",
      :raw
-     "- [ ] `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir` mir/1: Construct semantic MIR\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions."},
+     "- [ ] `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir` mir/1: Construct semantic MIR\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions. C11 construction criterion compiler/c11/semantic-mir-construction (Open): Construct the canonical target-independent MIR module/function/block/operation records from checked core, exposing control-flow and data-flow graphs and stable artifact identities. Cover the complete C11 families: constants/locals/block arguments; calls/tail calls/closures and direct/dictionary/vtable/dynamic dispatch; records/structs/tuples/enums/unions and field/index/slice/buffer operations; arithmetic/conversions; allocation/initialization/load/store/move/drop; region/arena and linear-resource lifecycle; branches/loops/matches and errors; FFI/host boundaries; atomics/locks/channels/tasks/synchronization; workflow suspension/resume/events; AI model/tool/memory/policy; domain anchors; runtime checks and proof/certificate references. Every operation has opcode, operands, result, type, effects/order, source/generated origin, profile and verifier status with applicable fact references; no-result operations use nil result and Unit or bottom as appropriate. Blocks have ordered operations and exactly one legal C11 terminator, including proof-qualified unreachable, profile-legal suspend/yield and legal tail call. SSA values or block arguments may represent joins, but public data-flow edges remain explicit. The module references actual checked core, profile, target request, functions/globals and metadata/anchor tables; functions retain parameters, return type, latent effects, entry/blocks and origin. A target request may constrain legality but cannot redefine opcode semantics. Required outputs: actual MIR/CFG/DFG, origin and anchor records plus operation-family/schema coverage fixtures under declared profiles. Reject malformed records/joins, missing required operation fields and target-specific instruction semantics in generic MIR with applicable C11-MODULE/BLOCK/TARGET-LEAK diagnostics. Positive construction produces verifiable artifacts, not a fabricated verifier success."},
     :owner-source "docs/component-roadmaps/mir.md",
     :component "mir",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
     :id
     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
     :checked false}
    {:path "specs/mir-workflow/tasks.md",
     :file-sha256
-    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/mir-workflow/tasks.md",
-     :start-byte 880,
-     :end-byte 1198,
+     :start-byte 2855,
+     :end-byte 5319,
      :start-line 20,
      :end-line 24,
      :sha256
-     "b57db7a2502b96d5c8f2f1572f28f34a71edf545dbb604d426aef0d96a8b034e",
+     "cd0755c25386429c0de3f447faf56d683dde7470dded86b1de2c0501cb95a680",
      :raw
-     "- [ ] `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables` mir/2: Attach fact tables\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Bind every operation to current types, effects, capabilities, ownership, safety, runtime checks, proof and origin records."},
+     "- [ ] `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables` mir/2: Attach fact tables\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Bind every operation to current types, effects, capabilities, ownership, safety, runtime checks, proof and origin records. C11 fact-binding criterion compiler/c11/mir-fact-binding (Open): Before constructing admitted MIR, consume actual resolved/checked core and name/type/effect/profile/capability/ownership/safety products; unavailable required semantic facts cannot be deferred to a backend. Bind each module and operation to current source/compiler/module/pass identities and the applicable type, effect, ownership/lifetime, capability, safety-outcome, runtime-check, proof/certificate, source-origin, profile/target and domain-anchor tables. Safety-sensitive operations retain their check/proof/audited-unsafe references. A transformation preserves valid references or emits explicit invalidation/replacement records; stale references cannot be consumed until the required facts are regenerated and verified. Required outputs: actual fact/reference tables, operation-to-fact edges, invalidation/replacement and rejected-staleness fixtures. Accept fully bound checked inputs and correctly regenerated/reverified transformations; reject absent or mismatched core/fact/provenance, lost source/generated origin, stale proof/check/ownership or incompatible profile evidence with applicable C11-TYPE/EFFECT/SAFETY/ORIGIN/DOMAIN/VERIFY. Source obligations gravity/semantic-facts-before-mir and compiler/c11/mir-fact-binding share this input/reference boundary, not a new task. The actual upstream semantic producers retain their checks. C11 effect-order criterion compiler/c11/mir-effect-order (Open): Carry the actual effect set and required ordering constraints on each effectful operation and retain the corresponding semantic dependency edges. Accept transformations only with preserved or explicitly revalidated ordering; identical output values cannot justify silently reordered effects. Required outputs: operation/order graph and actual preserved/revalidated transformation fixtures. Reject a missing effect/order fact or an effectful reorder not permitted by the declared effect semantics with C11-EFFECT and the offending operation/source/fact context. Consume the actual Effect checker and transformation products without requiring whole-component completion."},
     :owner-source "docs/component-roadmaps/mir.md",
     :component "mir",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
     :id
     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
     :checked false}
    {:path "specs/mir-workflow/tasks.md",
     :file-sha256
-    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/mir-workflow/tasks.md",
-     :start-byte 1200,
-     :end-byte 1571,
+     :start-byte 5321,
+     :end-byte 6801,
      :start-line 26,
      :end-line 30,
      :sha256
-     "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+     "db2fbc4e442d199acd5f3bcff2f9ff25314054c20a477b786885383904d09c96",
      :raw
-     "- [ ] `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality` mir/3: Verify graph and legality\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence."},
+     "- [ ] `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality` mir/3: Verify graph and legality\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence. C11 verifier criterion compiler/c11/mir-verifier-gate (Open): Verify every block terminates, definitions dominate uses, operands/types match operation schemas, effect-order constraints are present, safety-sensitive operations have actual outcomes/check references, origins and profile constraints are valid, ownership/resource operations match C9 facts, runtime checks guard the intended operation, domain anchors are valid and target-specific opcodes occur only in target-lowering metadata. Required outputs: subject-bound actual verifier report, MIR diagnostic stream and accepted/rejected fixtures for every listed invariant, retaining module/function/block/operation, source span/origin, profile/target request, missing fact and remediation. Preserve C11-MODULE/BLOCK/DOMINANCE/TYPE/EFFECT/SAFETY/ORIGIN/DOMAIN/TARGET-LEAK/VERIFY code meanings. Positive fixtures verify valid typed/effected/safe MIR; every malformed-flow/fact/origin/profile/guard/anchor/target-leak fixture fails before optimization or target consumption. A metadata flag or syntactically present table is not an actual verifier result."},
     :owner-source "docs/component-roadmaps/mir.md",
     :component "mir",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
     :id
     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
     :checked false}
    {:path "specs/mir-workflow/tasks.md",
     :file-sha256
-    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/mir-workflow/tasks.md",
-     :start-byte 1573,
-     :end-byte 1890,
+     :start-byte 6803,
+     :end-byte 8121,
      :start-line 32,
      :end-line 36,
      :sha256
-     "bd1dc62f7fa16a12f5b6a1cc4928445bd204f01ad15bad6e80d18b1d5a0e24af",
+     "e084b44ab18ecfe4dedce6520af1cc5d1ed396661b86b5cd07ecf9ed3195d834",
      :raw
-     "- [ ] `mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules` mir/4: Serialize stable modules\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Round-trip operations and shared tables with deterministic identity and preserve analysis invalidation hooks."},
+     "- [ ] `mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules` mir/4: Serialize stable modules\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Round-trip operations and shared tables with deterministic identity and preserve analysis invalidation hooks. C11 serialization criterion (Open): Round-trip actual module/function/block/operation records, explicit control/data-flow edges and shared metadata tables with deterministic identity and valid origin/provenance links. Preserve the domain anchor's domain/anchor ID, MIR operation links, external semantic artifact, equivalence-proof reference and fallback MIR subgraph for EFIR/schema/workflow/HDL/query/GPU anchors as applicable; a domain payload cannot replace its semantic anchor. Preserve fact invalidation/replacement hooks rather than silently renewing a stale table or proof. Required outputs: serialized MIR/table/anchor artifacts and actual round-trip identity/edge/invalidation comparisons. Reject lost or substituted table IDs, origins, graph edges, anchor/proof/fallback references or stale-state erasure with applicable C11-MODULE/ORIGIN/DOMAIN/VERIFY. This representation/identity contract does not make EML tree identity mathematical equality or independently validate a proof provider."},
     :owner-source "docs/component-roadmaps/mir.md",
     :component "mir",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
     :id
     "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
     :checked false}
    {:path "specs/mir-workflow/tasks.md",
     :file-sha256
-    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/mir-workflow/tasks.md",
-     :start-byte 1892,
-     :end-byte 2294,
+     :start-byte 8123,
+     :end-byte 9964,
      :start-line 38,
      :end-line 42,
      :sha256
-     "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1",
+     "af0368e0b6b50cee390dba6620f8a0111381e252d70815f47e3cc35de84f644d",
      :raw
-     "- [ ] `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption` mir/5: Gate downstream consumption\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption."},
+     "- [ ] `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption` mir/5: Gate downstream consumption\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption. C11 consumption criterion gravity/mir-verification-after-transform (Open): Run the actual MIR verifier after construction and after each transformation that may invalidate invariants. Bind each result to the exact current module, transformation and fact identities; reject failed, missing or stale verification before public Opt/Lower consumption. Required outputs: before/after MIR, actual verifier reports, preserved/invalidated/recomputed fact records and positive/negative consumer-gate results. Runtime checks remain safety-referenced MIR operations and generic dead-code elimination cannot remove them; check elision consumes the applicable checked PERF10 evidence with subject binding and proof/guard dominance, or retains the check/rejects. Exercise invalidating transforms, malformed flow/missing types/effects/safety/origins, invalid profile facts, invalid anchors, unchecked source/core/MIR delivery and bounds-check erasure without surviving proof. Target-family consumption also uses actual declared profile/target/runtime-provider support; the backend cannot legalize rejected MIR or redefine generic op semantics. The owning optimizer/lowerer and proof checker supply their actual products; MIR gate ownership does not implement them. Ordinary source editing and negative-fixture preparation do not require release or migration admission, and these future execution requirements confer no current implementation acceptance."},
     :owner-source "docs/component-roadmaps/mir.md",
     :component "mir",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
     :id
     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
     :checked false}],
@@ -18749,7 +18867,7 @@
   "docs/component-roadmaps/lower.md"
   "abc98cd14a7cc303d3f6621958d9e6ac066d053ae3507daa245ab525c6fd5ec1",
   "docs/component-roadmaps/mir.md"
-  "fa0bea52eb4c7e81b7d51a8ebf946b9f6170a1e3d3842c48640e09cd9d4d06ac",
+  "baf22f4194df5dd45c23e48b6f2bff89e1840d2942881a88a3f2453980c2dce2",
   "docs/component-roadmaps/opt.md"
   "89f708015b4de159ae52ea22ffd67e7a8135724206a511689d068884306c3b07",
   "docs/component-roadmaps/platform.md"
@@ -18829,7 +18947,7 @@
   "specs/lower-workflow/tasks.md"
   "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
   "specs/mir-workflow/tasks.md"
-  "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+  "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
   "specs/opt-workflow/tasks.md"
   "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
   "specs/platform-workflow/tasks.md"
@@ -18877,8 +18995,12 @@
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "specs/core-workflow/tasks.md"
   "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "specs/mir-workflow/tasks.md"
+  "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
   "docs/component-roadmaps/reader.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
+  "docs/component-roadmaps/mir.md"
+  "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
   "docs/component-roadmaps/compiler-api.md"
   "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
   "docs/component-roadmaps/legality.md"

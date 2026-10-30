@@ -2464,3 +2464,61 @@ proposals, 5,561 retained formatting/hierarchy contexts, 21,341 pending predicat
 conjunctions, 704 pending dependency joins and 360 pending owner/metadata
 adjudications. Population checks pass 2 / 16. All source, task and independent
 acceptance qualifications remain in force; no completion credit is added.
+
+## Complete C11 source and six original MIR owner joins
+
+Task source `bcb98c1c377cbdc79ed1e23a6814727a8f16254e` refines the
+existing five Open MIR tasks with six criteria for construction, fact binding,
+effect order, actual verification, serialization and downstream consumption.
+`c11-owner-source-refinement.edn` records each exact append and the full-file
+inverse. Existing task bodies, IDs and statuses are preserved; no task or stable
+decision ID is added.
+
+Construction exposes canonical module/function/block/operation, CFG/DFG and
+source/anchor records, all operation families, exactly one legal terminator and
+explicit public join edges. Nil results retain appropriate Unit/bottom typing.
+Actual checked-core/type/effect/profile/capability/ownership/safety inputs precede
+admitted construction. Operations retain current tables and explicit
+preservation/invalidation; actual effect-order dependencies cannot silently
+disappear during transformation. Target requests constrain legality without
+defining generic opcode meaning.
+
+The checker validates every C11 invariant and emits the actual subject-bound
+report and contextual C11 diagnostic. The downstream gate requires current
+verification after construction and each potentially invalidating transform,
+before public Opt/Lower consumption. Runtime checks survive generic DCE;
+elision consumes checked PERF10 subject/dominance evidence or retains/rejects.
+Serialization round-trips graphs, shared tables, origins, anchor/proof/fallback
+references and invalidation hooks. Verifier definition, actual rerun/gating,
+upstream semantic checks, optimization, domain production, proof checking and
+target/provider support remain separate producer/consumer roles.
+
+`c11-complete-current-facet-trace.edn` conserves all 134 C11 facets across 53
+source occurrences with 36 manually assessed semantic conjunction cases. Fourteen
+foundation MIR predicates have source-specific joins. Seventy other attached
+foundation architecture/terminology/macro/host/math/supply-chain/bootstrap and
+whole-milestone predicates remain explicit residuals, not MIR implementation
+coverage. Example module/target/operation values are illustrative and do not
+force native/network/call semantics on every MIR record.
+
+Six original MIR owners receive exact current criterion candidates. Their
+historical task references remain history; the actual checker and rerun/gating
+conjunction can span MIR3 and MIR5. Source checks pass 2 tests / 12 assertions,
+including complete source/owner populations, residual separation, partial-set
+refusal and source-hash tamper controls. MIR projection tests pass 5 / 55.
+
+`c11-owner-current-witness-applicability.edn` authenticates all 561 historical
+mappings/4,819 raw spans, all 833 unchanged decision records/931 current spans
+and active supplemental witnesses against current files. No old current span
+names the changed MIR path, so no snapshot copy or pin refresh is needed. Six
+new MIR criterion spans are separate. Applicability checks pass 1 / 7; the
+historical binding pointer remains exactly unchanged. None of this supplies
+fresh independent review or execution acceptance.
+
+The owner-facet proposal index has 966 distinct original IDs and six exact
+metadata overlaps: 819 + 148 - one shared C11 preface. All overlapping raw hashes
+authenticate. Earlier C15/extension/D2/retirement scopes remain intact. No C12,
+compiler/MIR verifier, runtime, broker/controller/probe or diagnostic execution
+occurred. D1/C1/C6 ordering questions outside these input/consumer boundaries
+remain open. Full entailment, independent source/final-count acceptance and
+coordinator integration remain required.

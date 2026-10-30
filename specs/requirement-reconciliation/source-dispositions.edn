@@ -9,6 +9,124 @@
  {:path "specs/requirement-reconciliation/source-task-inputs.edn",
   :sha256
   "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"},
+ :c11-owner-current-source
+ {:new-MIR-criterion-witnesses
+  {:construction
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 879,
+    :end-byte 2853,
+    :raw-sha256
+    "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+   :facts
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 3174,
+    :end-byte 4585,
+    :raw-sha256
+    "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+   :ordering
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 4586,
+    :end-byte 5319,
+    :raw-sha256
+    "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+   :verifier
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 5693,
+    :end-byte 6801,
+    :raw-sha256
+    "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+   :serialization
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 7121,
+    :end-byte 8121,
+    :raw-sha256
+    "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+   :consumption
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 8526,
+    :end-byte 9964,
+    :raw-sha256
+    "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+  :foundation-MIR-facets 14,
+  :C11-occurrences 53,
+  :existing-decision-criteria
+  {:path
+   "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+   :sha256
+   "588f40a4c58a0fd0a9876d63f7e603f317eeab7ac2244600e803230c13afae16",
+   :ids 833,
+   :spans 931,
+   :file-and-raw-bytes :unchanged},
+  :foundation-context-residuals 70,
+  :task-count-delta 0,
+  :source-facet-trace
+  {:path
+   "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+   :sha256
+   "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"},
+  :implementation-credit :none,
+  :C11-semantic-cases 36,
+  :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+  :existing-historical-bindings
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+   :sha256
+   "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+   :ids 561,
+   :spans 4819,
+   :file-and-raw-bytes :unchanged},
+  :status :pending-independent-source-facet-review,
+  :qualification
+  "Six original MIR owners have exact current task-criterion candidates. All older current witnesses remain byte-identical; the changed MIR paths were absent from those span sets. Existing source reviews, source/data applicability and these proposals confer no compiler/verifier/domain/runtime execution, implementation, final-count or unrelated ordering acceptance.",
+  :composition
+  "specs/requirement-reconciliation/c11-owner-source-refinement.edn",
+  :C11-source-facets 134,
+  :original-owner-joins
+  ["compiler/c11/mir-effect-order"
+   "compiler/c11/mir-fact-binding"
+   "compiler/c11/mir-verifier-gate"
+   "compiler/c11/semantic-mir-construction"
+   "gravity/mir-verification-after-transform"
+   "gravity/semantic-facts-before-mir"],
+  :new-decision-ids 0,
+  :applicability
+  "specs/requirement-reconciliation/c11-owner-current-witness-applicability.edn"},
  :granularity13-qualified-source-review
  {:path
   "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -436291,6 +436409,19 @@
      "compiler/c15/diagnostic-views"
      "compiler/c15/generated-diagnostic-origins"
      "gravity/foundation-diagnostic-context"],
+    :authority :owner-proposal-pending-independent-source-review}
+   {:path
+    "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+    :sha256
+    "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :original-owner-ids
+    ["compiler/c11/mir-effect-order"
+     "compiler/c11/mir-fact-binding"
+     "compiler/c11/mir-verifier-gate"
+     "compiler/c11/semantic-mir-construction"
+     "gravity/mir-verification-after-transform"
+     "gravity/semantic-facts-before-mir"],
     :authority :owner-proposal-pending-independent-source-review}]},
  :kind :canonical-task-source-dispositions,
  :task-authority
@@ -436366,13 +436497,21 @@
     "4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034",
     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
     :facets 146,
+    :authority :owner-proposal-pending-independent-facet-review}
+   {:path
+    "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+    :sha256
+    "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243",
+    :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+    :facets 148,
     :authority :owner-proposal-pending-independent-facet-review}],
-  :distinct-original-facet-ids 819,
+  :distinct-original-facet-ids 966,
   :overlapping-facet-ids
   ["B2/partition-facet/0002c00810823e6e36eda359f33ccecef11c4be09818becf62a441cb3284c0dc"
    "B2/partition-facet/147020ee6370b29c41205dd466eef7686a52c4a1c8eb39c9751382d65de30eb0"
    "B2/partition-facet/3f48819d9ccd493a71dcef3e6e1371585819f8f022dc633480c058693ee78ca3"
    "B2/partition-facet/6d73be7f225aa62f5f6033d88b059c60ae66c256d4c7d3588c29a6a1ec9a0b30"
+   "C11/normalized-facet/35-311/5d2a2088ba679b30"
    "C15/normalized-facet/44-320/b485539e48884ed3"],
   :original-source-facets 28785,
   :whole-original-facet-entailment :pending,

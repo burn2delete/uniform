@@ -64,6 +64,11 @@ identity, view, redaction and test criteria. Five original diagnostic owners gai
 exact candidate joins; twenty unrelated foundation attachments remain residuals.
 These source proposals require independent acceptance and confer no execution
 or implementation credit.
+The [complete C11 source trace](c11-complete-current-facet-trace.edn) joins all
+134 C11 facets and fourteen foundation MIR predicates to the existing five MIR
+tasks. Six original MIR owners gain exact criterion candidates, with other
+foundation attachments kept as residuals. Earlier binding snapshots remain
+byte-identical and current; the new criteria require independent acceptance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
