@@ -110,7 +110,7 @@
   ;; target shortcut whose descriptor is supplied by its enclosing consumer.
   (let [rows (invoke m "pmk-row-census" core [row] nodes {} types {} calls edges :other descriptor 65536)]
     (if (= :accepted (:status rows))
-      (invoke m "pmk-fact-census" [fact] (:module core) (:descriptors rows) :call 65536)
+      (invoke m "pmk-fact-census" [fact] (:module core) (:descriptors rows) :call)
       rows)))
 
 (deftest fresh-row-fact-reconstruction-rejects-stale-and-coherent-forgeries

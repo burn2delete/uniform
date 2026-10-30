@@ -5488,33 +5488,31 @@
                 (recur (+ index 1) items seen descriptors used))
               {:status :rejected :reason :private-map-keys-source-mismatch :work-count used})))))))
 
-(defn body-pmk-fact-census [facts module descriptors target budget]
-  (let [work (* 3 (count facts))]
-    (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-      (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
-        (if (= index (count facts))
-          (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
-            {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
-          (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
-                id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil)]
-            (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
-              (if (let [request (get fact :fact-id-request) domain (get request :domain)]
-                    (if (if (map? request) (keyword? domain) false)
-                      (if (keyword? dispatch)
-                        (if (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain) (= :direct-private-map-keys dispatch) true)
-                        (if (= nil dispatch)
-                          (if (= false (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain))
-                            (body-sse-ids? [(get fact :callee-function-syntax-id)] 1) false) false)) false))
-                (if (if (keyword? dispatch) (= :direct-private-map-keys dispatch) false)
-                  (if (contains? seen id) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
-                    (let [canonical (get descriptors id)]
-                      (if (if (map? canonical) (= (body-pmk-call-fact canonical module) fact) false)
-                        (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
-                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
-                  (recur (rest remaining) (+ index 1) items seen))
-                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
-              {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))))))
+(defn body-pmk-fact-census [facts module descriptors target]
+  (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
+    (if (= index (count facts))
+      (if (= (set (keys descriptors)) seen) {:status :accepted :items items}
+        {:status :rejected :reason :private-map-keys-source-mismatch})
+      (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
+            id (if (map? fact) (get fact :call-core-node-id) nil)
+            dispatch (if (map? fact) (get fact :dispatch) nil)]
+        (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
+          (if (let [request (get fact :fact-id-request) domain (get request :domain)]
+                (if (if (map? request) (keyword? domain) false)
+                  (if (keyword? dispatch)
+                    (if (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain) (= :direct-private-map-keys dispatch) true)
+                    (if (= nil dispatch)
+                      (if (= false (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain))
+                        (body-sse-ids? [(get fact :callee-function-syntax-id)] 1) false) false)) false))
+            (if (if (keyword? dispatch) (= :direct-private-map-keys dispatch) false)
+              (if (contains? seen id) {:status :rejected :reason :private-map-keys-source-mismatch}
+                (let [canonical (get descriptors id)]
+                  (if (if (map? canonical) (= (body-pmk-call-fact canonical module) fact) false)
+                    (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
+                    {:status :rejected :reason :private-map-keys-source-mismatch})))
+              (recur (rest remaining) (+ index 1) items seen))
+            {:status :rejected :reason :private-map-keys-source-mismatch})
+          {:status :rejected :reason :private-map-keys-source-mismatch})))))
 
 (defn body-pmk-evidence [core ledger facts node call edge nodes bindings types forms budget]
   (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
@@ -5532,18 +5530,17 @@
               (let [rows (body-pmk-row-census core ledger nodes bindings types forms (get original-calls :index) (get original-edges :index)
                            id descriptor (- limit base)) work (+ base (get rows :work-count))]
                 (if (= :accepted (get rows :status))
-                  (let [calls (body-pmk-fact-census facts (get core :module) (get rows :descriptors) id (- limit work))
-                        total (+ work (get calls :work-count))]
+                  (let [calls (body-pmk-fact-census facts (get core :module) (get rows :descriptors) id)]
                     (if (if (= :accepted (get calls :status))
                           (if (= [(body-pmk-constraint descriptor)] (get rows :items))
                             (= [(body-pmk-call-fact descriptor (get core :module))] (get calls :items)) false) false)
-                      (let [entries (body-pmk-entry-evidence core ledger facts descriptor nodes bindings types (- limit total))
-                            spent (+ total (get entries :work-count))]
+                      (let [entries (body-pmk-entry-evidence core ledger facts descriptor nodes bindings types (- limit work))
+                            spent (+ work (get entries :work-count))]
                         (if (= :accepted (get entries :status))
                           {:status :accepted :descriptor descriptor :work-count spent}
                           {:status :rejected :reason (get entries :reason) :work-count spent}))
-                      {:status :rejected :reason (if (= :private-map-keys-work-limit (get calls :reason)) :private-map-keys-work-limit :private-map-keys-source-mismatch)
-                       :work-count total}))
+                      {:status :rejected :reason :private-map-keys-source-mismatch
+                       :work-count work}))
                   {:status :rejected :reason (get rows :reason) :work-count work}))
               {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})))
         derived))
