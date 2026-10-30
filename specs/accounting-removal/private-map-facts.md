@@ -57,7 +57,25 @@ the combined existing/new controls passed 6 tests / 4,716 assertions, including
 3 new tests / 78 assertions. The wide Map negative explicitly places opaque
 dispatch at the last key and checks zero callbacks. Boundary tests passed 6/11;
 changed test lint and whitespace checks passed. Independent affected-source
-review remains required.
+review completed with source-only PASS for `efc5eed9ab5701329383a110257793f084965c3e`,
+tree `b5cda9818462d04cc1f9ddad8de54757afb2806c`, with no actionable source defect.
+The existing separate reviewer inspected the production delta and final-key Map
+successor; it did not independently rerun the controls. The implementation-owner
+control results above remain separately attributed.
+
+[Review consumption](private-map-facts-review-consumption.edn) identifies the
+completed reviewer turn, source base, six reviewed input digests, scope and
+nonclaims. Completion was read back through both the agent status and reviewer
+chat. Recorded reviewer commands contain no implementation mutation; consumed
+source bytes match the reviewed candidate. An external plugin configuration
+diagnostic has no repository or semantic evidence authority. No duplicate
+review, new assessment or genuine operation was routed to obtain this record.
+
+Routine PR CI for the reviewed source head completed run `41011204868` with
+seven successful checks and the two configured source-Core/prerelease skips.
+This includes the ordinary CI Bootstrap-load job, separate from the local
+compiler-free controls. Check status was observed; CI artifacts were not
+inspected here. No CI result is promoted to held-selector or PMK acceptance.
 
 [Source conservation](private-map-facts-conservation.edn) checks exact byte
 identity outside the four selected production functions. Inside each census,
@@ -68,7 +86,8 @@ contracts are byte-identical to the source parent. These are structural checks,
 not compiler/native conformance evidence.
 
 The original genuine-selector goal remains BLOCKED. Its failed wrapper consumed
-the one admitted execution; no wrapper/selector, Bootstrap, compiler, provider,
-native/runtime, broker/lock or historical unknown-mode operation is retried.
+the one admitted execution; no wrapper/selector, held Bootstrap/compiler,
+provider/native/runtime, broker/lock or historical unknown-mode operation is
+retried. Ordinary public CI is recorded separately above.
 This supplement supplies no genuine PMK, native, composed compiler, current-main
 integration, migration, self-hosting or release acceptance.
