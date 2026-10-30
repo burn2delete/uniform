@@ -1682,6 +1682,12 @@ validator pass. No C compiler, emitted program, backend or runtime was executed.
 The crosswalk, source metadata and provisional census are being refreshed for
 this source; independent repartition receipt adoption remains a separate step.
 
+A preliminary C witness pass refused an unaccounted separator newline and then
+unrefreshed nested file pins before emitting witness artifacts. The completed
+pass includes the exact separator in its inverse and recursively refreshes the
+nested spans. Those earlier refusals are not accepted evidence or compiler/
+runtime failures. Scratch reader/alias corrections likewise conferred no credit.
+
 ## Qualified independent thirteen-sibling source adoption
 
 The sealed independent receipt has SHA256
