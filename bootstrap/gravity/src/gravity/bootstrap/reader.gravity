@@ -1534,7 +1534,7 @@
     true
     (= tag [117 117 105 100])))
 
-(defn reader-pure-tags? [tags]
+(defn sh03-reader-pure-tags? [tags]
   (if (vector? tags)
     (loop [remaining tags]
       (if (= (count remaining) 0)
@@ -1558,7 +1558,7 @@
           (let [tags (get policy :enabled-reader-tags)]
             (if (vector? tags)
               (if (if (= (get policy :extension-policy) :gravity/pure-text-reader)
-                    (reader-pure-tags? tags)
+                    (sh03-reader-pure-tags? tags)
                     (sh03-reader-tags-registered-shape? tags))
                   (sh03-all-unique? tags)
                   false)
