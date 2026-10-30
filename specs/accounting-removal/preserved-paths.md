@@ -106,6 +106,18 @@ helper mappings remain explicit rather than being treated as missing features.
   `sh08-ft-call-constraints-with-context` at observed main `e3d990e9`. This is
   an incorporation proposal pending independent disposition, not a code rewrite
   or whole-caller equivalence claim.
+  `parameter-choice-inline-correspondence.edn` now binds that one original
+  unit to current main `8300c415628d2110cd703824a059e06476f4e1e0`. It pins the
+  complete old helper, old/current caller forms, exact chosen expression and
+  identical `parameter`, `argument` and `prior` initializers. The historical
+  call uses the same two local symbols; the complete `sh08-ft-known?` form is
+  unchanged and its name is not shadowed by the caller's parameters or let/loop
+  binders. Eight inert source mutations detect swapped parameters/call arguments,
+  missing or changed expressions, altered initializers, changed known-helper
+  source and a shadowed helper. No Gravity or Bootstrap code is evaluated.
+  This strengthens the source witness without proving whole-caller, transitive,
+  mutable-var, call-frame resource or exception equivalence. Independent
+  classification remains pending and no unit receives completion credit yet.
 - ACC-01 owns stacked mixed-ledger draft PR598 at
   `d58d61c4a83f09ebd3c742a3cc13b9d000244759`, tree
   `5b895b67131de6d209b50585551840fd3954011f`, based on PR595's exact
