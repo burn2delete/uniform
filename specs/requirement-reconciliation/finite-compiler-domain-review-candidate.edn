@@ -1,5 +1,5 @@
 {:canonical-handoff-status
- :source-review-and-configured-CI-pass-awaiting-coordinator-integration,
+ :finite-source-composition-integrated-by-coordinator,
  :preflight-scope
  :exact-integration-identities-pass-no-admission-grant,
  :candidate
@@ -39,11 +39,21 @@
   :source-facets 10,
   :authority :source-context-not-external-semantic-acceptance},
  :main-integration
- {:performed false,
-  :boundary :coordinator-only,
-  :source "AGENTS.md:126",
-  :ledger-admission :not-self-conferred,
-  :actual-action-denial :none},
+ {:tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
+  :PR "https://github.com/burn2delete/uniform/pull/646",
+  :method :ordinary-merge,
+  :ALL240-completion false,
+  :source-branch :retained,
+  :implementation-credit :none,
+  :performed true,
+  :verification :fresh-GitHub-and-local-Git,
+  :commit "ae0cd80165b2085e7ce362d0c7bfc5eeec79b2de",
+  :parents
+  ["787637b9ae780a7cfef7ca5763611882a8f2b629"
+   "7459bc9405467c56ef07b5dfc37f04ee26014289"],
+  :source-tree-equality :exact,
+  :merged-at "2026-10-30T10:56:18Z",
+  :actor :coordinator},
  :source-reference-closure
  :local-archived-receipts-reviewed-task-bytes-and-one-selected-producer-context,
  :outbound-message :none,
@@ -182,10 +192,11 @@
    "specs/requirement-reconciliation/finite-compiler-domain-PR646-CI.json",
    :sha256
    "f97eda8924a6b49f9efd3d4948ae5ced6a110c62ce546e7161773b3e2b5b2106"},
+  :state :merged,
   :configured-CI-run
   "https://github.com/burn2delete/uniform/actions/runs/41043448936",
   :head "7459bc9405467c56ef07b5dfc37f04ee26014289",
-  :draft true,
+  :draft false,
   :status :configured-CI-success,
   :manual-dispatch :none},
  :worktree

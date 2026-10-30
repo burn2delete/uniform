@@ -3928,14 +3928,22 @@ reviews or unresolved threads. The final [integration preflight](finite-compiler
 passes all identity, cleanliness, ancestry and named-branch conditions with no
 diagnostics; the candidate is not tree-equivalent to main.
 
-The remaining action is coordinator-owned integration. AGENTS.md states that
-"the coordinator alone routes independent acceptance and integrates main".
-The source receipt and read-only preflight do not confer admission or coordinator
-authority on this reconciliation writer. No matching finite candidate admission
-record was found in the lifecycle ledger; no lifecycle record or acceptance was
-self-created. The PR remains draft and unmerged for that decision. This is not
-an ALL-240 completion prerequisite or a source-publication prohibition, and no
-action-specific denial occurred for PR 646. No outbound cross-chat message,
+The coordinator completed ordinary merge of PR 646 at
+`2026-10-30T10:56:18Z`, producing main
+`ae0cd80165b2085e7ce362d0c7bfc5eeec79b2de`. Fresh GitHub and local Git reads
+confirm the merged PR and tree `7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0`,
+exactly the independently reviewed candidate tree. Parents are the reviewed base
+`787637b9ae780a7cfef7ca5763611882a8f2b629` and source candidate
+`7459bc9405467c56ef07b5dfc37f04ee26014289`, preserving immutable source pins.
+The coordinator reports normal mark-ready and expected-head MERGE without
+APPROVE or bypass. The remote source branch is retained for evidence. This
+records finite source integration only; it confers no implementation, milestone,
+release, self-hosting, seed-retirement or global baseline completion. No closed
+review/checker was rerun, and no lifecycle acceptance was self-created.
+
+The newly reported auto-review denial of PR 645 integration remains an exact
+held action: no substitute integration, cherry-pick/import or alternate actor.
+All prior exact holds remain unchanged. No outbound cross-chat message,
 held-action retry or shared checkout reset was performed.
 C18 remains scratch-only under the current source-closure priority. The ALL-240
 baseline remains in progress with 1,585 qualified source dispositions, 632 pending
