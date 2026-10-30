@@ -1005,14 +1005,70 @@
 (def ^:private ^:dynamic *process-custody* nil)
 (def ^:private quarantined-leases (atom {}))
 
+(defn retain-process-start-custody!
+  "Register BEFORE native start. A pending or thrown start has unknown creation.
+  This is cooperative in-JVM custody, not a startup watchdog or OS containment."
+  []
+  (when *process-custody*
+    (let [custody (atom {:launch-state :pending :creation-coverage :unknown
+                         :owner-thread-id (.getId (Thread/currentThread))
+                         :process nil :owned nil :result nil})]
+      (swap! *process-custody* conj custody)
+      custody)))
+
+(defn- require-start-owner! [custody]
+  (when-not (= (:owner-thread-id @custody) (.getId (Thread/currentThread)))
+    (fail! "SH01-PROCESS-OWNERSHIP" "Process startup belongs to its retaining thread" {})))
+
+(defn record-started-process!
+  "Keep the actual returned Process even if token retention subsequently throws."
+  [custody process]
+  (when custody
+    (require-start-owner! custody)
+    (swap! custody assoc :launch-state :returned :process process))
+  process)
+
+(defn record-started-ownership! [custody owned]
+  (when custody
+    (require-start-owner! custody)
+    (when-not (and (= :returned (:launch-state @custody))
+                   (identical? (:process @custody) (:process owned))
+                   (= (:owner-thread-id @custody) (:owner-thread-id owned))
+                   (nil? (:owned @custody)))
+      (fail! "SH01-PROCESS-OWNERSHIP" "Startup token must retain its returned Process once" {}))
+    (swap! custody assoc :owned owned))
+  owned)
+
+(defn record-process-start-error! [custody error]
+  (when custody
+    (require-start-owner! custody)
+    (swap! custody #(assoc % :launch-state (if (:process %) :retention-threw :start-threw)
+                           :start-error error)))
+  error)
+
+(defn retained-start-token
+  "Reuse a token only for this exact returned Process in the current lease scope."
+  [process]
+  (when *process-custody*
+    (when-let [custody (some #(when (identical? process (:process @%)) %) @*process-custody*)]
+      (require-start-owner! custody)
+      (:owned @custody))))
+
 (defn retain-process-custody!
   "Retains the normal runner's ownership token within an active with-lease.
   Outside that scope the normal process API is unchanged."
   [owned]
   (when *process-custody*
-    (let [custody (atom {:owned owned :result nil})]
-      (swap! *process-custody* conj custody)
-      custody)))
+    (if-let [custody (some #(when (identical? (:process owned) (:process @%)) %)
+                           @*process-custody*)]
+      (do
+        (require-start-owner! custody)
+        (when-not (identical? owned (:owned @custody))
+          (fail! "SH01-PROCESS-OWNERSHIP" "Process wait must use its startup token" {}))
+        custody)
+      (let [custody (atom {:owned owned :result nil})]
+        (swap! *process-custody* conj custody)
+        custody))))
 
 (defn record-process-result!
   "Records actual terminal observations without inferring descendant coverage."
@@ -1022,8 +1078,11 @@
 
 (defn- terminal-process-custody?
   [custody]
-  (let [result (:result @custody)]
-    (and (true? (:root-exited? result))
+  (let [{:keys [result launch-state process owned start-error] :as record} @custody]
+    (and (or (not (contains? record :launch-state))
+             (and (= :returned launch-state) (instance? Process process)
+                  (some? owned) (nil? start-error)))
+         (true? (:root-exited? result))
          (false? (:cleanup-root-alive? result))
          (true? (:tracked-owned-processes-terminal? result))
          (false? (:capture-failed? result))

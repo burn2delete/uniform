@@ -1168,16 +1168,32 @@
   ;; It must reach ProcessBuilder but must not enter a reusable result.
   (vec (drop-last 2 command)))
 
+(declare retain-owned-process!)
+
 (defn start-process
   "Starts a process from an argument vector and working directory.
 
   This function is public specifically so tests and embedders can inject a
   launcher without replacing ProcessBuilder or invoking a shell."
   [command working-directory]
-  (-> (ProcessBuilder. ^java.util.List (vec (map str command)))
-      (.directory (io/file working-directory))
-      (.redirectErrorStream false)
-      (.start)))
+  (let [builder (-> (ProcessBuilder. ^java.util.List (vec (map str command)))
+                    (.directory (io/file working-directory))
+                    (.redirectErrorStream false))
+        custody (broker/retain-process-start-custody!)]
+    (try
+      (let [process (.start builder)]
+        (when custody
+          (broker/record-started-process! custody process)
+          (broker/record-started-ownership! custody (retain-owned-process! process)))
+        process)
+      (catch Throwable original
+        (try
+          (broker/record-process-start-error! custody original)
+          (catch Throwable custody-error
+            (when-not (identical? original custody-error)
+              (.addSuppressed original custody-error))))
+        (restore-interrupt! original)
+        (throw original)))))
 
 (defn- report-counter?
   [value]
@@ -1732,13 +1748,14 @@
   (when-not (instance? Process process)
     (throw (ex-info "Retaining ownership requires an actual Process"
                     {:id "SH01-PROCESS-OWNERSHIP"})))
-  (let [owned (->RetainedProcess process (atom []) (atom nil) (atom nil) (atom nil)
-                                (atom nil) (.getId (Thread/currentThread)))]
-    (try
-      (swap! (:handles owned) conj (.toHandle ^Process process))
-      (catch Throwable error
-        (retain-process-error! (:discovery-error owned) error)))
-    owned))
+  (or (broker/retained-start-token process)
+      (let [owned (->RetainedProcess process (atom []) (atom nil) (atom nil) (atom nil)
+                                    (atom nil) (.getId (Thread/currentThread)))]
+        (try
+          (swap! (:handles owned) conj (.toHandle ^Process process))
+          (catch Throwable error
+            (retain-process-error! (:discovery-error owned) error)))
+        owned)))
 
 (defn retained-process-handles
   "Return retained raw handles, not evidence or PID-reconstructed ownership."
