@@ -1000,7 +1000,7 @@ composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
-### Current recursive-type control composition
+### Verified finite recursive-type control integration
 
 PR622 is reconciled normally at
 `a51a03473c068568b71ca78f75cecd6cdbe8aacb`, tree
@@ -1024,11 +1024,23 @@ callback checks are source definitions, not execution results.
 
 See `recursive-type-clean-composition.edn`. Clean named inspect, boundary
 6/11, docs, roadmap, whitespace and lint zero-errors/71-warnings pass. The
-existing reviewer has received the exact changed-base source-composition
-request and its new review turn is confirmed active. Current CI and affected
-independent acceptance remain pending; final integration-mode preflight,
-merge and genuine kernels remain UNRUN. PR623 and the ACC-06 capture path
-remain untouched; no whole-path, ACC01 or PR502 completion follows.
+same reviewer's final exact-composition SOURCE/DATA PASS is consumed in
+`recursive-type-composition-review-consumption.edn`, receipt
+`fc19c57032fd4f6c21c7628d0659ba3a1edd902d237cb1b1ac7ea0bef46b6e2d`:
+10,698 checks and 117 inert corruption refusals, including seven original
+controls reexecuted. The consumer reproduced the receipt byte-identically.
+All 38 assertion forms and 14 host-source forms plus three direct Bootstrap
+adapters remain source evidence only, not resolved/transitive behavior proof.
+
+Exact-head CI run 41001963738 completed seven successes/two configured skips.
+Clean complete-identity integration-mode preflight passed immediately before
+normal expected-head squash merge. PR622 is integrated at
+`b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf`, parent
+`8300c415628d2110cd703824a059e06476f4e1e0`, exactly matching the reviewed tree.
+Fresh GitHub merged/closed/main and Git parent/tree/reachability readback
+passed; see `recursive-type-main-integration.edn`. Genuine kernels remain
+UNRUN. Source refs/cache, PR623 and the ACC-06 capture path remain untouched;
+no whole-path, ACC01 or PR502 completion follows.
 
 ### Verified finite Record and Union control integration
 
