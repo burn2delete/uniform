@@ -98,6 +98,12 @@ The [complete C13 source trace](c13-complete-current-facet-trace.edn) joins all
 owners gain exact candidates for reproducibility, legal variant choice, actual
 post-pass verification and explanatory decisions. Earlier performance source
 reviews retain their scopes; these additions await independent acceptance.
+The [complete Resolve trace](resolve-complete-current-facet-trace.edn) joins
+all 112 C5 and 83 L3 facets to the five existing Resolve tasks. Six original
+owners gain exact candidates for binding order, explicit imports, visibility,
+initialization, definition entries and reproducible interfaces. The separate
+frozen Resolve verification package and all earlier source-review scopes remain
+unchanged; the new C5/L3 conjunctions await independent acceptance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

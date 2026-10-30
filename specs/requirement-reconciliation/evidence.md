@@ -2948,3 +2948,59 @@ owner/metadata adjudications. The 240/9,945/28,785 original populations and
 separately in the inventory and extension trace with an explicit no-operation,
 no-semantic-entailment scope; it adds no original facet acceptance. The immutable
 392-binding artifact and earlier retained link-check subject remain unchanged.
+
+## Complete C5/L3 source and six Resolve owner joins
+
+Task source `11350110bc0c0456699a31151b321a7ddfaa6d7e` applies the saved
+Resolve proposal against the current published baseline
+`9d8238805b659b9eeb18c1b6fdc4fa7b5e7c7566`. Its exact transaction
+preserves the original five task IDs, Open statuses and acceptance bodies as
+literal prefixes, including earlier PKG1/profile criteria. The four files of
+the separate frozen source-to-Core verification package remain byte-identical;
+their historical cohort does not close any Resolve outcome.
+
+The five new criteria cover explicit binding positions/context, imports and
+public/private visibility, namespace/profile/initialization graphs, actual
+definition/module/index artifacts and invalidation, and real semantic/tooling
+consumers. L3 unqualified lexical/recur/namespace/permitted-core order stays
+distinct from qualified lookup; C5 macro/type/foreign/intrinsic cases retain
+their syntactic eligibility and explicit records. No ambient host binding or
+stable wildcard import is admitted. Namespace declarations before expansion
+and final resolution after expansion remain separate; source resolution does
+not claim type/effect/capability legality or create a cyclic prerequisite on
+later analyses.
+
+Module interfaces retain actual source/package/profile/target, visibility,
+definition, effect/authority/safety and dependency identities. Runtime presence
+cannot replace an explicit cross-profile boundary; cycles require a declared
+checked initialization protocol. Binding IDs exclude documentation/formatting
+while retaining accurate separate provenance. Invalidation names affected
+downstream products. Actual package consumers must derive graphs without
+rereading source; diagnostics preserve all ten C5 and eight L3 meanings and
+their full context. All are future execution/evidence requirements, not current
+resolver, compiler, package or profile results.
+
+`resolve-complete-current-facet-trace.edn` retains all 195 source facets across
+107 occurrences: 112 C5 facets/47 occurrences and 83 L3 facets/60 occurrences,
+with 76 manual semantic conjunction cases and 31 retained context occurrences. Six original
+owner joins receive exact current criterion candidates. Source tests pass
+2 / 15; Resolve projection tests pass 4 / 41. These proposals await independent
+acceptance and add no task, decision or implementation credit.
+
+All 833 Open decisions and 931 owning witnesses authenticate. All 561 historical
+IDs and 4,819 predicates authenticate after refreshing two Resolve-file pin maps
+with unchanged raw bodies. Earlier MIR/Lower/Effects/Opt criteria remain current.
+Earlier qualified source/extension-byte reviews retain their captured subjects,
+scope and exclusions; none accepts the new Resolve appends. The active global
+span basis becomes the Resolve snapshot; older whole-span reports are not
+silently renewed. No compiler, resolver, runtime/provider, broker/controller or
+target probe was executed. Full source entailment, independent current-composition
+and final-count acceptance and coordinator integration remain pending.
+
+The finite proposal index now contains 1,521 distinct IDs and fourteen metadata
+overlaps: 1,331 + 195 - five shared source-context facets. Of that index, 958
+remain pending, while all 572 qualified original-source dispositions retain their
+earlier scopes. The new C5/L3 set is disjoint from those accepted review IDs;
+overlap with a held metadata/provenance proposal grants no review or operational
+clearance. Six task-reference-only owner joins become exact criterion candidates;
+implementation and final granularity remain unaccepted.
