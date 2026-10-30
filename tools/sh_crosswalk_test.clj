@@ -176,6 +176,37 @@
   (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
         {:keys [path before after]} (:source-file bridge)
         previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
+        conserved (reduce-kv (fn [record section added-path]
+                               (update record section dissoc added-path))
+                             current (:added-entries bridge))
+        view (sh-crosswalk/build)]
+    (is (= previous conserved))
+    (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:commit after)
+           (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"))
+                   [:source-file :before :commit])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= sh-crosswalk/reader-dispatch-mapping-review
+           (get-in view [:mapping-review :reader-assembly-predecessor-review])))
+    (is (= (get-in view [:reader-assembly-source-version :path])
+           (:source-version-bridge sh-crosswalk/syntax-pipeline-predecessor-review)))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong}
+                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source))))))
+
+(deftest syntax-pipeline-source-version-preserves-predecessor-ownership-and-review
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
         current (edn/read-string (slurp path))
         conserved (reduce-kv (fn [record section added-path]
                                (update record section dissoc added-path))
@@ -186,14 +217,17 @@
     (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
     (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
     (is (= (:commit after) (get-in view [:applying-source-pins path])))
-    (is (= :source-conservation-only (:authority bridge)))
-    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
-    (is (= sh-crosswalk/reader-dispatch-mapping-review
-           (get-in view [:mapping-review :reader-assembly-predecessor-review])))
-    (is (= (get-in view [:reader-assembly-source-version :path])
+    (is (= (:predecessor-input-fingerprint bridge)
+           (:input-fingerprint sh-crosswalk/syntax-pipeline-predecessor-review)))
+    (is (= (select-keys sh-crosswalk/syntax-pipeline-predecessor-review
+                        [:status :input-fingerprint :source-version-bridge])
+           (get-in view [:mapping-review :syntax-pipeline-predecessor-review])))
+    (is (= (get-in view [:syntax-pipeline-source-version :path])
            (get-in view [:mapping-review :source-version-bridge])))
     (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
            (get-in view [:mapping-review :input-fingerprint])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :source-conservation-only (:authority bridge)))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
     (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
       (is (thrown? Exception

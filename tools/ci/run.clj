@@ -168,6 +168,13 @@
                            "--namespace" "gravity.reader.artifact-test"
                            "--namespace" "gravity.reader-primitives-test"
                            "--namespace" "gravity.c3-reader-expansions-test")]
+                 ["syntax-regression" 600
+                  (command "2g" "-M:dev-test"
+                           "--namespace" "gravity.syntax.pipeline-test"
+                           "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
                  ["language-boundary" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-language-boundary-test")]
