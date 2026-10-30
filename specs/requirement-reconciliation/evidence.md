@@ -3776,3 +3776,43 @@ proposals. Source applicability passes 3/38; SH 12/541; census 5/18; boundary
 with zero findings; whitespace. The provisional scoped census remains 3/195,
 with 190 Open, one Partial, one unassessed and 192 remaining. No main candidate,
 integration preflight/CI or integration acceptance is implied by these checks.
+
+## C12 frozen source review adoption
+
+Receipt SHA256
+`efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6`
+binds frozen candidate `bec12ac1d543353325030f40db37490c5407d8d5`, actual
+tree `e08666f8a5c736ec70bb2eed8f286b52dabb4f26`, task source `fb3a0501`
+and trace SHA256 `cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff`.
+It reports a scoped source pass for 115 facets across 50 occurrences, 34
+semantic conjunctions, 16 context occurrences, six owners and three actual
+domain-interface/pass-evidence spans. Its 52 reported refusals, including 36
+semantic mutations, remain attributed to the sealed independent data review;
+no reviewer checker is rerun. Source trust and proof boundaries retain actual
+future invocation obligations, and domain payload semantics remain with their
+owning contracts. Captured byte continuity renews no earlier semantic review.
+
+Local applicability at `8ba98ee7683d7f87a431b7b6d273b06fd5d1a144` authenticates
+all frozen source/input/support hashes, mode/blob pins, matrix membership,
+facet/occurrence roles, owner joins, exact task insertion inverse and current
+criteria. Three tests pass 38 assertions, including coherent first-sentence
+removals with rebuilt full-file/raw hashes and byte ranges, forged pins,
+authentic role distinctions and membership/scope/count/held promotion refusals.
+All 833 decisions and 931 current witnesses, 561 historical IDs and 4,819 raw
+spans conserve. The later C17 adoption remains separately qualified with its
+exact 108 IDs and 93 semantic/15 context partition; this older C12 receipt
+does not renew or accept that later adoption. An external private scaffold is
+not copied, executed or relied on for repository tooling/evidence authority.
+
+Intake commit `60ba445417ae22decbfbf57e35819d7493d9abd8` preserves the raw
+receipt, local applicability and qualified adoption. C12 adds 99 semantic and
+16 context facets, yielding 1,585 qualified source dispositions: 1,363 semantic,
+220 contexts and two superseded history fragments. The finite index retains
+2,208 IDs with 632 pending proposals and nine reviewed retirement facets outside
+it. All overlaps retain one identity without held-scope clearance. Fourteen
+scoped cohorts retain their separate authorities; no whole component, full
+dependency, later-main, current-composition, implementation, release, final
+count or integration acceptance follows. The prior finite-main assessment is
+history at its captured source; C12's pending-review premise is now superseded
+by this qualified adoption. Main's missing reviewed bodies and provenance
+dependencies still require a new affected-composition candidate and review.

@@ -146,10 +146,11 @@ This changes no task units, statuses or implementation credit.
 
 The subsequent C12 source amendment extends only the existing domain-IR block
 with explicit record, transition, verifier, family and diagnostic requirements.
-Its [complete trace](domain-complete-current-facet-trace.edn) proposes all 115
-facets across 50 occurrences and six existing candidate owners. The C17
-candidate remains frozen at its prior review tuple; refreshed identical C17
-criterion pins do not accept C12 additions or change C17 review authority.
+Its [complete trace](domain-complete-current-facet-trace.edn) covers all 115
+facets across 50 occurrences and six existing candidate owners. The later
+[C12 qualified adoption](c12-qualified-source-review-adoption.edn) accepts only
+99 semantic and 16 context facets after exact current applicability. The
+separate C17 adoption retains its own frozen review tuple and authority.
 
 Reject stale predecessors, duplicate application, dropped source spans,
 unsupported aliases and acceptance inferred from document migration. The

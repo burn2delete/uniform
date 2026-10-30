@@ -15051,6 +15051,56 @@
    :source-recovery-review :pending-independent-review,
    :new-task-fields 16,
    :total-concrete-links 665},
+  :c12-qualified-source-review-adoption
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c12-independent-source-review.edn",
+    :sha256
+    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+    :reviewed-source "bec12ac1d543353325030f40db37490c5407d8d5",
+    :reviewed-tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26"},
+   :counts
+   {:new-reviewed-facets 115,
+    :all-reviewed-source-facets 1585,
+    :semantic-conjunction-facets 1363,
+    :retained-context-facets 220,
+    :superseded-history-facets 2,
+    :finite-proposal-ids 2208,
+    :pending-finite-proposal-ids 632,
+    :reviewed-outside-finite-index 9},
+   :held-overlap :one-source-context-identity-no-held-scope-clearance,
+   :prior-thirteen-reviews
+   :retain-captured-subjects-scopes-and-exclusions,
+   :trace
+   {:path
+    "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+    :sha256
+    "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff"},
+   :full-dependency-documents :not-accepted,
+   :implementation-credit :none,
+   :adoption
+   {:path
+    "specs/requirement-reconciliation/c12-qualified-source-review-adoption.edn",
+    :sha256
+    "b9f56a99c2495f94e0435d97078f45fde537982770bec924545602f44fcdb686"},
+   :new-task-units 0,
+   :final-denominator :not-accepted,
+   :new-C12-context-facets 16,
+   :artifact-source-commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
+   :status :qualified-C12-source-review-adopted,
+   :subject-source-commit "8ba98ee7683d7f87a431b7b6d273b06fd5d1a144",
+   :separate-later-C17 :unchanged-not-renewed,
+   :new-C12-semantic-facets 99,
+   :whole-current-head :not-accepted,
+   :qualification
+   "C12's115 exact source facets conjoin three unchanged actual domain-interface/pass-evidence predicates. One provenance overlap remains one context identity with no held-scope acceptance. Thirteen other qualified cohorts including the later C17 adoption retain separate captured authority, not renewal by this older receipt. Full domain payload semantics and dependent implementations remain separate. No entry/verifier/exit callback, compiler/optimizer/proof-checker/runtime/provider/target or held execution, later/main/whole composition, implementation/migration/release/final count or integration authority follows.",
+   :new-C12-facets 115,
+   :new-decision-ids 0,
+   :applicability
+   {:path
+    "specs/requirement-reconciliation/c12-qualified-current-applicability.edn",
+    :sha256
+    "86a71e3204030450eb6f0dcd49d21807356d245eb85a9379534ff0fb956de1cd"}},
   :plugin-owner-current-source
   {:reviewed-original-source-facets 1362,
    :new-Plugin-criterion-witnesses
