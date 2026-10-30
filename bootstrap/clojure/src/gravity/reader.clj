@@ -79,3 +79,5 @@
       :namespace-clause-syntax (:namespace-clause-syntax context)
       :diagnostics []}
      reader-details)))
+
+(alter-meta! #'read-source-artifact assoc :gravity/namespace-contract namespace-contract)

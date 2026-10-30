@@ -144,7 +144,7 @@
         (is (= (operations) (last @seen)))))))
 
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
-  (let [contract (var-get (get (ns-interns 'gravity.reader) 'namespace-contract))]
+  (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
     (is (= #{'read-source-artifact} (set (keys (ns-publics 'gravity.reader)))))
     (is (empty? (ns-aliases 'gravity.reader)))
     (is (= :stage0-reader-artifact-assembly (:contract-boundary contract)))
