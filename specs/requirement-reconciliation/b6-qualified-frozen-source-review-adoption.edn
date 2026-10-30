@@ -1,0 +1,509 @@
+{:receipt
+ {:path
+  "specs/requirement-reconciliation/b6-independent-frozen-source-review.edn",
+  :sha256
+  "249459010fd0b578c3d5817c84513c337cc767e56555625fdc1ab2370cf7aacc"},
+ :canonical-qualified-source-count 1686,
+ :trace
+ {:path
+  "specs/requirement-reconciliation/b6-reviewed-frozen-source-trace.edn",
+  :sha256
+  "05180467b44c6cea70b115573dfbb73a3764f97e99c33da375942ab04fc60691"},
+ :qualified-source-disposition
+ {:owner-state
+  :task-reference-only-exact-criterion-join-pending-unchanged,
+  :governing
+  [:entire-original-B6
+   :B1-eligibility-and-target-preservation
+   :D9-claim-evidence-and-assumption-boundaries],
+  :original-owner-memberships-and-obligations :conserved,
+  :authority
+  :independent-whole-prose-review-plus-private-core-DATA-controls,
+  :unique-original-facet-IDs 398,
+  :atomicity
+  :all-fragments-retain-whole-occurrence-criteria-role-condition-predicate-and-claim-unit,
+  :owner-dispositions
+  {"backend/js/async-error-adapter"
+   {:criterion-keys [:existing :target :value :async :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/dynamic-operation-gate"
+   {:criterion-keys [:existing :host :value :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/host-binding-gate"
+   {:criterion-keys [:existing :target :host :value :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/module-api-emission"
+   {:criterion-keys [:existing :target :value :verification :backend],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/nullish-adapter"
+   {:criterion-keys [:existing :value :async :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/numeric-lowering"
+   {:criterion-keys [:existing :target :value :numeric :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed},
+   "backend/js/ui-artifacts"
+   {:criterion-keys [:existing :target :value :host :ui :verification],
+    :verdict :qualified-complete-proposed-source-conjunction,
+    :canonical-state :unchanged,
+    :implementation :unassessed}},
+  :proposed-original-owner-joins 7,
+  :complete-semantic-conjunctions 35,
+  :selected-condition-verdicts
+  {:async
+   :all-named-event-sources-plus-cancellation-scheduler-replay-and-actual-error-channel-products,
+   :diagnostics
+   :all-eleven-distinct-meanings-and-source-operation-runtime-authority-remediation-context,
+   :numeric
+   :future-B6-mode-dependent-representation-and-actual-boundary-evidence-required-no-held-B2-adoption,
+   :conformance
+   :actual-selected-target-artifacts-execution-or-comparison-plus-independent-metadata-rejections-and-availability,
+   :JSX :transform-record-when-used,
+   :runtime-builtins
+   :provider-declaration-and-profile-acceptance-both-required,
+   :manifest-example
+   :browser-es2022-esm-is-illustrative-no-default-support,
+   :unsafe-dynamics
+   :ordinary-safe-eval-Function-prototype-hidden-global-lossy-layout-refused-with-isolated-unsafe-or-audited-exceptions,
+   :imports
+   :untyped-only-as-opaque-behind-audited-wrapper-dynamic-import-remains-effectful-and-policy-deniable,
+   :declarations
+   :truthful-export-API-evidence-requires-separate-runtime-validation-for-untrusted-ingress,
+   :UI
+   :only-selected-UI-lowering-requires-component-artifacts-with-unselected-branch-preserved},
+  :retained-context-occurrences 16,
+  :original-occurrences 51,
+  :independent-blank-paragraph-census 51,
+  :original-facets 398,
+  :occurrence-dispositions
+  [{:source-occurrence-id
+    "B6/source/f1c77cbaa62ccb95d4bff7fc8034e0982e0dc934275c870b343e3f5729179912",
+    :index 0,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/1f06ee32e3fd2e12481e5e005203ed2702c900a5c62c16323267a4c467648989",
+    :index 1,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/daced1ab0cd76141918f54e83f1fe9aaef0a659a41c64e893f172fb109517c97",
+    :index 2,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/6858cbcefe9734901b153d6c43bd1dfe48c5c0c041057e8e9dd5be912bd82b60",
+    :index 3,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:existing :target :ui],
+    :condition :selected-output-families,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/b282d705f03db512a66087123d214d9dde323ad8ced4e4142f453d03eca8f69d",
+    :index 4,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:target :value :async :host :numeric :verification],
+    :condition :declared-host-boundaries,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/2555aaeefb96a9939f4403ee22fd2b8db8dbe598edae3a5971efeeb86e59dcc1",
+    :index 5,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/7be0b0699f1f0962cae8e38d7472b97cc98337ead2d0189a89570dd5176a9f05",
+    :index 6,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:existing :target :value :async :host :numeric :verification],
+    :condition :ordinary-safe-use-refuses-unisolated-host-operations,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/45aa27900fbf704cf6fc396c53a4202289490a5f01ad35f8d36525e3c5eebc2b",
+    :index 7,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/bf93c888d4ac978acb7d8b21f701d43d044a16e480802882671ed54f338b3593",
+    :index 8,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target :verification],
+    :condition :actual-interface-inputs,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/96ed54947a778b5eea57d7a302dd7301cbdcefef42f10090c7ddd1d3656069e8",
+    :index 9,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/050d5a35366003ac90b72934a3b3248cfaffe1479a160ed2ac8aceff96edba68",
+    :index 10,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:target :value :async :host :numeric :ui :verification],
+    :condition :UI-output-if-selected,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/0a33b4bc9aac511d11a985adcbdeb3ccb80d2aa97a24b976d052e6fea9cfdaa1",
+    :index 11,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/701297251103d7643a2ee7563c30c3df64aa614c4c273b8b2219770b8ccaac53",
+    :index 12,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target :async :host :numeric],
+    :condition :illustrative-values-shape-only,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/b490eb037c50b5657c86729138e3503ef4ab57c80005f49bfbef110dd2dfb6be",
+    :index 13,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target],
+    :condition :claimed-runtime-contract,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/6fe66a4594dd08dc191faf3774474e45bf1765a018f92569ab47e3d57626d98e",
+    :index 14,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/a11dfc494513f0fcc84f62c8e86e608374a40a7f0a1b1a3a971b8b8f38da9ab2",
+    :index 15,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target],
+    :condition :JSX-transform-when-used,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/caca09f260d0cb3b658036c7a5067bb24c52c3ff8a161180b87e2bf0e2734c14",
+    :index 16,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target :ui],
+    :condition :JSX-transform-when-used,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/f849a83de81e430b2e24614b4de42179d9c7fb29e51935e1dbba54c9ef370641",
+    :index 17,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:target :host],
+    :condition :provider-and-profile-both-required,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/fe9eba5a54955c303e4c3012470d47cdf8feda3d0ee7c87135c7b83b7c0f5249",
+    :index 18,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/40b5c51ad53b4008298dbf9dcd834d8ed5a72f6eb9899b14070fc42d049d625b",
+    :index 19,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:value],
+    :condition :claimed-value-or-export-boundary,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/166e23335e12ba7f271ceb15dff0be5afbaba1fdfe1d1ce8c1f94fb2096bc207",
+    :index 20,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:value :numeric :host],
+    :condition :serialization-schema-when-exported,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/ef2318218b59d85c68a29e48126b34353eddaa20d031c6deb7f3f981afe249f2",
+    :index 21,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:value :verification],
+    :condition :declarations-not-runtime-validation,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/bff7675a0706dd9c10af4350ee142a441af58190e5318c3d37bf41e141835937",
+    :index 22,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/94321c401f4592fd77fe475e078b759331170d3f89dc146018bc0e5bd800d605",
+    :index 23,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:async],
+    :condition :claimed-async-boundaries,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/1d0655342a808707863123a7d317a7e176c478f4959a26b16b687e22a555a1cd",
+    :index 24,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:async :host],
+    :condition :claimed-async-boundaries,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/e67a810b5e35c8b2101e3cf45c41d4b0551a4f8de09157615d6f3e6ad34e38ef",
+    :index 25,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:async :value],
+    :condition :actual-error-channel-products,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/447d88c9617e90e94a01874d0523d1c29eec23a8717adaf49a91e9daf1b24641",
+    :index 26,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/080d55f50d8906215e737bb5d278e61084c015b5f12618612db1205d140c8b82",
+    :index 27,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:host],
+    :condition :every-claimed-host-global-and-import,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/537b619c7e49a045eae55daf68272135b3dc8e04ea9595aa3a8460b317e1071c",
+    :index 28,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:host :target :value],
+    :condition :per-global-or-import,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/5cd338e4eeaaca5658282f1c051ec8eeafaee7fccd0fabe8855b90e143753e66",
+    :index 29,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:host :value],
+    :condition :opaque-audited-only-and-dynamic-import-policy,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/3d64d04f197c78e749fd1f3a03ad80aa898a17c3bb9a7d7803b67bd8f3259130",
+    :index 30,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/1f7d760e272689aa0b8f15bd5e8ecae046ef6a8aa2d6866d818d0f3f7deca932",
+    :index 31,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:numeric],
+    :condition :declared-Gravity-numeric-mode,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/a6993acd02a9b39e650cd01e91c8dd18ede44640f3ea21829df366f2d3a2cd22",
+    :index 32,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:numeric :value :target],
+    :condition :representation-preconditions-preserved,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/ba038733668a86bc9ce6a460871bbe5526b063287e253acbf654d5419b39482b",
+    :index 33,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:numeric],
+    :condition :actual-boundary-checks,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/4482ff8571d96a95d08c2841c68b50f355f81bd8f85bd7bb6342e1c43a08ecde",
+    :index 34,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/21c0a66f9d41ff908b8998b8c697c8676b08edd9f50d68cb658ca87309f9c5f7",
+    :index 35,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:ui :target],
+    :condition :UI-selected,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/efd3c24a5e041595cc7b9916a3c56dbabaf26cee81209f59a02be1336d68a80f",
+    :index 36,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:ui :value :host],
+    :condition :UI-selected,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/30fb9709fcca3f34392ffc63dc53fa0e8ee032046f0811ebe72f5bccdca4ce9f",
+    :index 37,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:ui :host],
+    :condition :UI-selected,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/26e04577b87be49d0320d0ab51016bdb3753cef77ea7ac7e7437b77cab2cb90c",
+    :index 38,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/ed4e6b44dbb3fa0311f8ceef74e95882637585935ff02ee932aa63f0f0bfa624",
+    :index 39,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:verification],
+    :condition :distinct-diagnostic-meanings,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/ce116c862ac18275a963684f0ef560ef9cd76914e3ac1b6dd2e499ca08ff7234",
+    :index 40,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:verification :target :value :async :host :numeric :ui],
+    :condition :UI-diagnostic-on-selected-UI-path,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/a658d64e0603f0ca617f14b4e2b149b1124b1ed07c583cb3e858b2150883631b",
+    :index 41,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:verification],
+    :condition :actual-refusal-context,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/27f686c690c7baf1cf490d905d5bd5c2ae90a937a57984871c0f288b41115911",
+    :index 42,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/839da78f690a74169287ffd592a1bb918790fbec728518c71179faac9231f72f",
+    :index 43,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:value :verification],
+    :condition :evidence-kind-not-strengthened,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/e13e8fc1211acd15a28baed4dbd71fbc1a3f4c4c5696ac1168f91f695a9e93ce",
+    :index 44,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:host],
+    :condition :ordinary-safe-hosted-use,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/b7e1d5c2ad869112a7aee021293665c91943eab97012be8ea33ab488c697f763",
+    :index 45,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:value],
+    :condition :checked-or-explicit-opaque-boundary,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/d8da1cbe0df0ec9206113410dece476ef96d2f18e32fddbb5dd9be97425307e7",
+    :index 46,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:host],
+    :condition :ordinary-safe-hosted-use,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/9cef4eb3b7d19d3fe3dc2ecfcabc2f34e9a47fd7af74f71fe3aec220291ea2c7",
+    :index 47,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys [:numeric],
+    :condition :exact-mode-requires-preservation,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/0d230a5a999eea06e4fc7302b49d89795cc5aabd26c85e04c4f188949c09ce61",
+    :index 48,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :condition :source-context-only,
+    :verdict :context-retained-no-semantic-completion-credit}
+   {:source-occurrence-id
+    "B6/source/cad27ba95032cfdea2390e686b1459db1990b3b7bfbd30eac2cb1c766215046b",
+    :index 49,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:existing
+     :target
+     :value
+     :async
+     :host
+     :numeric
+     :ui
+     :verification
+     :backend],
+    :condition :actual-conformance-products,
+    :verdict :complete-conjoined-source-entailment}
+   {:source-occurrence-id
+    "B6/source/c6d73855d925f6b30865a82ec7ca80149685e3efa99a8164a36b54a8677ecea4",
+    :index 50,
+    :role :complete-occurrence-predicate-conjunction,
+    :criterion-keys
+    [:existing
+     :target
+     :value
+     :async
+     :host
+     :numeric
+     :ui
+     :verification
+     :backend],
+    :condition :UI-only-when-enabled-and-availability-honest,
+    :verdict :complete-conjoined-source-entailment}]},
+ :current-canonical-witness-index-count-adoption :none,
+ :implementation-credit :none,
+ :startup36
+ :separate-coordinator-unblock-assessment-not-startup-acceptance,
+ :provisional-task-ratio :unchanged-not-final,
+ :authentication
+ {:path
+  "specs/requirement-reconciliation/b6-frozen-source-review-authentication.edn",
+  :sha256
+  "c537b71412a6b94db6ac56faa974f014dea3ac7b0e5200e1c23c219df6bdb667"},
+ :status :qualified-frozen-source-only,
+ :canonical-pending-proposals 631,
+ :reviewed-source-archive
+ {:path
+  "specs/requirement-reconciliation/b6-reviewed-frozen-backend-tasks.md",
+  :sha256
+  "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0"},
+ :kind :qualified-B6-frozen-source-review-adoption,
+ :C18-finite-subject
+ {:commit "5bdef8da0a3469740a0c12202dcc0c5d526f4977",
+  :tree "ca557dbf0cdc2442abfa049bfb87c53e0df5a2ac",
+  :effect :unchanged-single-affected-review-already-routed},
+ :qualification
+ "Consume once as qualified source authority for exact07d8 only. Preserve all roles, conditional conjunctions and context noncredit. The immutable trace and backend bytes are archives, not current canonical task authority. No B6 backend amendment, canonical witness/index/count/denominator promotion, C18 renewal, implementation or integration acceptance follows. This records no new hold clearance; coordinator's separate startup36 assessment is not adopted as startup acceptance.",
+ :limits
+ [:source-entailment-only-not-implementation-acceptance
+  :no-whole-backend-or-whole-dependency-acceptance
+  :no-runtime-numeric-fixed-width-source-authenticity-provider-or-execution-acceptance
+  :no-C18-renewal-or-other-old-review-renewal
+  :no-canonical-witness-index-count-denominator-adoption
+  :no-implementation-release-self-hosting-integration-or-publication-approval
+  :held-B2-fixedwidth-MetadataPolicy-ACC08-payload-review-import-and-delivery-unassessed
+  :all36-config-OWN-7b-645-643-642-531-and-native-genuine-UNKNOWN-holds-unchanged-STOPPED
+  :no-project-namespace-compiler-Bootstrap-Gravity-producer-provider-backend-modeltarget-runtime-callback-lease-probe-process-CI-launch
+  :no-shared-source-write-new-worker-or-outbound-send
+  :private-negative-controls-not-Git-commits-or-actual-backend-inputs-not-exhaustive-semantic-proof],
+ :reviewer "01a18528-d38b-71b3-a24c-2d440396fb28",
+ :subject
+ {:commit "07d8a5616ce1d046ee22933854a346eeda6156f3",
+  :tree "5351ec2281007e817422b0ea932245e67f222bf9"},
+ :held-actions :no-clearance-or-retry}

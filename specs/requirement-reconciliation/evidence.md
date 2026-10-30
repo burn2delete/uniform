@@ -4074,3 +4074,34 @@ release and whole-head acceptance remain open. B6 containing-file drift is
 excluded. A separate finite current-main composition will preserve actual
 prerequisites and receive its own affected review before eligible publication
 and integration. Existing held actions remain held.
+
+## Qualified frozen B6 source review
+
+The [B6 receipt](b6-independent-frozen-source-review.edn) returned qualified
+source-only PASS with no findings for exact
+`07d8a5616ce1d046ee22933854a346eeda6156f3`, tree
+`5351ec2281007e817422b0ea932245e67f222bf9`. Its SHA256 is
+`249459010fd0b578c3d5817c84513c337cc767e56555625fdc1ab2370cf7aacc`.
+Native completion is archived. [Authentication](b6-frozen-source-review-authentication.edn)
+binds the seven-path tree overlay, all 398 facet identities and source bytes,
+51 occurrence roles/conditions, 35 whole conjunctions, seven proposed owner
+joins and nine criteria. All 174 recorded independent controls refused. No
+reviewer checker was executed and no review was repeated.
+
+The [adoption](b6-qualified-frozen-source-review-adoption.edn) consumes only that
+frozen-source qualification. Archived trace/backend bytes are historical review
+inputs, not current canonical task authority. The 996-byte C18 prerequisite is
+byte-identical across the changed backend file; the full backend block is a
+distinct 6,577-byte envelope. Neither comparison renews C18 or accepts a backend.
+An initial author authentication comparison used the canonical containing file
+for a frozen-relative pin and failed; the corrected comparison selects the
+explicit frozen Git subject. No failed check receives passing credit.
+
+Canonical backend source, 833/561/71 witness artifacts, inventory, dispositions
+and census remain byte-identical to `8e457f46`. Counts remain 1,686 qualified
+source facets and 631 pending proposals; no B6 canonical witness/index/count or
+implementation promotion follows. The finite C18 composition remains frozen at
+`5bdef8da` / tree `ca557dbf` for its single already-routed affected review. No
+source PR is started for it. T002/T003/T004 and the final denominator remain open.
+Coordinator's separate startup36 unblock assessment is not startup acceptance
+or clearance of any other hold; this source adoption records no hold clearance.

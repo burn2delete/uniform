@@ -1,0 +1,80 @@
+{:all-facet-source-bytes-and-occurrence-roles :authenticated,
+ :protected-canonical-paths
+ [{:path
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   :sha256
+   "7b23703e1b5e3d28d6ff4cf7c1211e0a07f9eb66f65cdb6211128b0be8cda3a5"}
+  {:path "specs/requirement-reconciliation/source-dispositions.edn",
+   :sha256
+   "0b5ef8028bb286b04b9437c4824b704dd6087097ea0b04ec4d08011089bb5fd5"}
+  {:path "specs/requirement-reconciliation/task-baseline.edn",
+   :sha256
+   "614d677fb15137c3a6122412cb3b6b137a2ec2cc767120ade4be0dd0cf908528"}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
+   :sha256
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d"}
+  {:path
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn",
+   :sha256
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f"}
+  {:path
+   "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
+   :sha256
+   "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383"}
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+   :sha256
+   "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976"}
+  {:path "specs/backends-workflow/tasks.md",
+   :sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67"}
+  {:path "docs/component-roadmaps/backends.md",
+   :sha256
+   "fea2d14692b608a528b9a942d985f98f265a1e9ca9c69b988ea733b582932aaf"}],
+ :receipt
+ {:path
+  "specs/requirement-reconciliation/b6-independent-frozen-source-review.edn",
+  :sha256
+  "249459010fd0b578c3d5817c84513c337cc767e56555625fdc1ab2370cf7aacc"},
+ :backend-envelope
+ {:full-block-bytes 6577,
+  :C18-referenced-bytes 996,
+  :raw-predicate-equality :exact,
+  :distinct-envelopes-and-file-drift :explicit,
+  :C18-review-renewal :none},
+ :independent-controls
+ {:path
+  "specs/requirement-reconciliation/b6-independent-frozen-source-controls.edn",
+  :sha256
+  "d6d86788f1d96e2e5d91cb7eb58cf77344612e8042c4891aeded384019eeb693",
+  :negative-count 174,
+  :all-refused true},
+ :trace
+ {:path
+  "specs/requirement-reconciliation/b6-reviewed-frozen-source-trace.edn",
+  :sha256
+  "05180467b44c6cea70b115573dfbb73a3764f97e99c33da375942ab04fc60691"},
+ :owner-joins 7,
+ :implementation-credit :none,
+ :facet-count 398,
+ :occurrences 51,
+ :whole-semantic-conjunctions 35,
+ :all-nine-whole-criteria :authenticated,
+ :foreign-checker-execution :none,
+ :final-denominator :not-adopted,
+ :whole-tree-overlay :exact-seven-paths,
+ :review-repeat :none,
+ :canonical-witness-index-count-adoption :none,
+ :kind :B6-frozen-source-review-authentication,
+ :retained-context-occurrences 16,
+ :native-completion
+ {:path
+  "specs/requirement-reconciliation/b6-independent-frozen-source-goal-completion.json",
+  :sha256
+  "0c0e060dcfece86cdd1bdd43a3014cd5d25fe7025126d2354c9e421da676eca1",
+  :status :complete},
+ :canonical-observation "8e457f4606b4dabb2681bc39436afa3d03a27c0d",
+ :subject
+ {:commit "07d8a5616ce1d046ee22933854a346eeda6156f3",
+  :tree "5351ec2281007e817422b0ea932245e67f222bf9"}}

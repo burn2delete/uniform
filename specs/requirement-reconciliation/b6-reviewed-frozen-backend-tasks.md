@@ -1,0 +1,468 @@
+# Tasks: Backends family implementation authority
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+
+## Implementation tasks
+
+The existing fifteen backend family keys identify grouped implementation records.
+This marked region is their sole editable task authority. Every record remains
+Open and unchecked. Projection preserves each original Remaining tasks paragraph,
+including acceptance questions, evidence limits and integration context. These are
+family records, not newly numbered individual clauses or completion percentages.
+Historical migration checkboxes below remain separate from implementation status.
+
+<!-- backends-implementation-tasks:start -->
+
+- [ ] `backend-interface` Backend Interface and ABI
+
+Status: Open
+
+Projected task block:
+Remaining tasks: implement required-input/version validation; define per-target
+ABI/layout mappings and reject unrepresentable values; connect runtime/provider
+selection and proof-to-target assumptions; exercise accepted and missing-proof,
+wrong-profile, unsupported-operation and incompatible-ABI handoffs. Yes/no:
+are unchecked inputs rejected, assumptions justified and ABI decisions explicit?
+All must be yes. Evidence: [existing interface artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00225-b1-document-source-artifact.clj).
+Decision owner: interface maintainer; recommendation: versioned shared envelope
+with target-specific ABI records, not one host-shaped layout. Integration needs
+MIR/Lower facts; envelope fixtures and individual backends proceed in parallel.
+Decision criterion `backend/input-eligibility` (Open; checker).
+Required outputs: Pre-generation backend eligibility report and proof-to-target assumption map.
+Accept: Before generation verify current MIR/domain IR, profile/target/ABI/layout, runtime or no-runtime proof, provider/effects/capability/safety/proof/source/debug/dependency packet and version compatibility; preserve C1/C14 pass and target operation dispositions.
+Refuse: Reject missing/stale/unverified packets, unsupported operations/profiles/features, unrepresentable ABI/layout, missing grants/providers and target assumptions without matching evidence; safe code must not depend on target undefined behavior.
+Dependencies: Verified MIR/domain and Lower request; Profile/target/runtime/provider manifests; Current safety/proof/capability/source records. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+
+- [ ] `backend-c` C
+
+Status: Open
+
+Projected task block:
+Remaining tasks: lock dialect/compiler/ABI matrix; lower values/control/errors/
+resources with explicit overflow/shift/narrowing behavior; generate helpers and
+freestanding/hosted dependency records; compile/run positive fixtures and reject
+missing provenance, hidden libc/allocator and unsafe assumptions. Yes/no: do
+results and diagnostics agree with Gravity, is safe code free of target UB, and
+are helper dependencies explicit? Evidence: [C manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/140134-c-backend-manifest.clj)
+records source, dialect, plan, execution and provenance inputs, not full C
+conformance. Decision owner: C maintainer; recommendation: preserve the contract's
+explicit freestanding C11 versus hosted C17 distinction. Integrates Lower,
+Runtime and Emit; C expansion does not gate the selected LLVM candidate.
+
+
+Existing source obligation `backend/c/source-emission` (Open; B2 producer/consumer contract).
+Required outputs: Declared-dialect C translation units and headers, C backend/build manifests, source/debug/provenance maps and compilation fixtures under the recorded flags.
+Accept: Consume B1-eligible verified MIR or domain IR; declare freestanding C11, hosted C17 or a named extension profile. Emit values, control, calls, closures, regions, linear cleanup, panic/error paths and initialized storage without importing C semantics. Preserve source/generated origins and proof-to-C assumptions; helpers belong to the artifact graph.
+Positive evidence: Compile hosted and freestanding fixtures under the exact declared compiler/flags, including structs, unions, calls, closures, regions, linear resources and error paths; compare Gravity observations and preserve maps.
+Refuse: Missing/unsupported dialect, unverified input, signed-overflow/uninitialized-read/invalid-shift/fallthrough/unchecked-narrowing UB, incomplete manifests or missing source/debug/provenance maps. Report applicable B2-DIALECT/B2-UB/B2-MANIFEST with MIR/domain anchor, source/generated origins, profile, target, dialect, missing fact, selected/rejected helper and remediation.
+Dependencies consume actual artifacts: B1 eligible packet and C14 lowering/proof request; ABI, memory, numeric and helper outputs below; Emit/Build consume actual translation/header/build/map artifacts.
+Evidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.
+
+Existing source obligation `backend/c/abi-layout` (Open; B2 producer/consumer contract).
+Required outputs: Pinned C ABI/layout manifest and checked exported-value/foreign-boundary representations.
+Accept: Record compiler family/version constraint, target/platform, data model, endianness, alignment, field order/padding, enum/tag widths, closure/slice/buffer/region/arena/linear-handle representations and FFI calling convention. Demonstrate layout for structs, tagged unions and exported/foreign values; safe representations preserve Gravity semantics.
+Positive evidence: Produce matching ABI/layout and calling-convention fixtures for the declared compiler/data model and reject mismatched or incomplete foreign boundaries.
+Refuse: Unpinned implementation-defined assumptions, incompatible or unrepresentable ABI/layout, incomplete FFI mapping or changed target/compiler facts without invalidation; report B2-ABI/B2-FFI with the exact missing subject.
+Dependencies consume actual artifacts: B1/C14 target/layout request, Types/ownership representation facts and SAFE7 FFI contract; C source and foreign adapters consume this exact manifest.
+Evidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.
+
+Existing source obligation `backend/c/memory-lowering` (Open; B2 producer/consumer contract).
+Required outputs: Pointer/memory/MMIO lowering with proof-to-assumption, audited unsafe-helper and volatile/atomic ordering records.
+Accept: Require object identity, valid range, alignment, lifetime, aliasing mode, mutability, nullability, allocator/provider identity and provenance across casts. Raw pointer arithmetic needs an explicit unsafe island or bounds/lifetime proof; isolate unsafe pointers in audited helpers. MMIO needs profile-specific width/address-space/ordering facts; volatile and atomics require their declared access and memory-order records.
+Positive evidence: Exercise valid pointer, region, buffer, cleanup and MMIO/atomic mappings with retained proof/check/audit metadata; reject missing/stale provenance, range, lifetime and access-order evidence.
+Refuse: Lost cast provenance, invalid bounds/lifetime/alignment/alias assumptions, unjustified strict-aliasing or check erasure, invalid object lifetime, ambient volatile/MMIO or weakened/missing atomic order. Emit B2-POINTER/B2-MMIO or B2-UB with exact facts and source context.
+Dependencies consume actual artifacts: SAFE2/SAFE7/SAFE15 memory/FFI/proof artifacts, C14 fact map, selected allocator/provider and profile/device access contracts; source lowering consumes only matching current evidence.
+Evidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.
+
+Existing source obligation `backend/c/numeric-lowering` (Open; B2 producer/consumer contract).
+Required outputs: C numeric-mode lowering, check/proof or helper decisions, MATH8 manifests, applicable MATH5 certificate references and matching compiler-flag assumptions.
+Accept: Checked integers keep checks or matching proof-elision records; wrapping uses unsigned or explicitly wrapped operations; saturating uses explicit helpers/inlining. Preserve declared floating modes and elementary-function certificates. Record every flag affecting floating/overflow behavior in the build manifest and match its proof assumptions.
+Positive evidence: Compile/run checked, wrapping, saturating and declared floating fixtures under recorded flags, including required exceptional/boundary cases; reject incompatible flags, proof subjects or unchecked operations.
+Refuse: Unsafe overflow, shift or narrowing, signed-UB shortcuts, changed floating behavior, missing/stale approximation evidence or compiler flags that invalidate the Gravity numeric contract; report B2-NUMERIC/B2-UB.
+Dependencies consume actual artifacts: SAFE9 numeric legality, MATH8 mode and MATH5 certificate/checker outputs where applicable, C14 selected operation and Build compiler flags; no benchmark or backend optimization substitutes for matching evidence.
+Evidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.
+
+Existing source obligation `backend/c/helper-selection` (Open; B2 producer/consumer contract).
+Required outputs: Profile-legal runtime helper manifest and artifact graph for panic/trap, checks, allocation/region/arena, cleanup, atomics, FFI, math and debug/provenance helpers.
+Accept: Select only explicit helpers declaring profile support and exact runtime/provider dependencies. Freestanding helpers must be supplied by the package/target when required. Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims; panic and errors follow the selected profile.
+Positive evidence: Demonstrate hosted and freestanding helper selection, actual graph inclusion and profile-specific panic/check behavior; reject forbidden or missing runtime dependencies.
+Refuse: Hidden/forbidden libc, allocator, runtime or GC dependence, unavailable/profile-incompatible helper, missing provider identity or undeclared helper artifact; emit B2-RUNTIME/B2-MANIFEST with selected/rejected helper and remediation.
+Dependencies consume actual artifacts: P6/P7 and active profile legality, Runtime/provider panic/check/resource interfaces, package/target supplied freestanding helpers; Build/Emit consume the declared dependency graph.
+Evidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.
+
+B2 C-subset refinement (Open; existing backend/c/source-emission).
+Required outputs: Generated C width-sensitive declarations and operations using explicit fixed-width integer types, with their existing ABI/numeric representation facts.
+Accept: Where width matters, use explicit fixed-width C integer types and preserve the mapping from Gravity value width/mode through the pinned C compiler, target and data model. Any dialect, extension, helper or alternate representation used must remain explicit and profile-legal under the existing ABI/numeric contracts.
+Positive evidence: For every claimed width-sensitive representation, the generated declarations and compilation fixtures demonstrate the chosen type widths and Gravity numeric behavior under the recorded compiler/flags.
+Refuse: Width-sensitive generated C relies on ambient int/long width, loses declared Gravity width/mode facts, or uses an unsupported/unrepresentable type without a legal explicit mapping; emit applicable B2-ABI/B2-NUMERIC/B2-UB with the existing owning source context.
+Dependencies consume actual artifacts: backend/c/source-emission consumes backend/c/abi-layout representation facts and backend/c/numeric-lowering mode/check/proof decisions. This adds no target selection or execution claim.
+
+- [ ] `backend-llvm` LLVM
+
+Status: Open
+
+Projected task block:
+Remaining tasks: reconcile the selected Linux candidate with the full target
+contract without changing its selection; implement missing operation/layout/
+atomic/error/FFI mappings; admit attributes only from matching proofs; run LLVM
+verification, real native execution and missing-proof/poison/target-mismatch
+rejection; attach reproducibility and debug/provenance evidence. Yes/no: are
+attributes justified, undefined/poison shortcuts absent, target facts pinned
+and emitted artifacts executable? Evidence: [Linux artifact implementation](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/036-linux-artifact-record.clj).
+Decision owner: LLVM maintainer; recommendation: retain the adopted Linux
+candidate and treat additional triples as explicit family extensions, not
+silent release-target substitution. Integrates Lower/Emit/Runtime. The selected
+candidate is a stage of this broader outcome, not evidence of all LLVM targets.
+
+- [ ] `backend-wasm` Wasm
+
+Status: Open
+
+Projected task block:
+Remaining tasks: record core/component/embedder target matrix; implement memory,
+resource-handle and canonical ABI lowering; implement typed async stream/future
+completion/cancellation/backpressure for claimed async targets; generate/import
+bindings; validate and execute modules with bounds, missing-grant, unsupported-
+feature, resource-lifetime and replay rejection fixtures. Yes/no: are exports
+schema-correct, imports authorized, resource lifetimes enforced and selected
+features actually supported? Evidence: [feature mapping](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00231-b4-document-feature-requirement.clj)
+is document coverage, not a working component runtime. Decision owner: Wasm
+maintainer; recommendation: explicit core versus component acceptance tracks and
+pinned embedder versions; do not treat synchronous core support as async-component
+completion. Parallel to LLVM; integrates Schema/Auth/Runtime and Emit.
+Decision criterion `backend/wasm/async-function-lowering` (Open; producer).
+Required outputs: Typed async-component function ABI and scheduling/cancel/error/effect/replay map.
+Accept: For selected WASI0.3 or equivalent async targets lower async func imports/exports with explicit ownership, completion, scheduling, cancellation, traps/errors, effects/grants and replay events; core synchronous support does not imply this feature.
+Refuse: Reject unsupported async target, opaque host promise substitution, undeclared blocking scheduling, lost cancellation/grants or nondeterministic completion events omitted from required replay.
+Dependencies: B1 eligible input and selected component world; Async canonical ABI and feature record; Runtime scheduling/cancellation and replay schema. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/wasm/atomic-volatile-lowering` (Open; producer-checker).
+Required outputs: Shared-memory atomic mapping and explicit volatile/embedder eligibility record.
+Accept: Map supported atomic operations preserving declared memory order, shared-memory and embedder feature support; admit volatile/MMIO-like behavior only through a declared capability and ordering contract.
+Refuse: Reject absent shared memory/atomic features, weakened memory order, ambient MMIO/volatile access, missing grants and a fallback that fails the original ordering contract.
+Dependencies: Selected memory/feature/embedder contract; Concurrency memory-order facts; Explicit volatile/MMIO provider capability if requested. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/wasm/future-lowering` (Open; producer).
+Required outputs: Single-completion future ABI with owner, await/cancel/drop/result-schema/replay records.
+Accept: For selected async component targets lower future of T as a typed owned single-completion value, exposing outstanding work, close/drop/cancel behavior, continuation effects, completion/error ordering and replay policy.
+Refuse: Reject repeated completion, missing owner/result schema, leaked dropped work, erased cancellation/effects or nondeterministic completion substituted during replay.
+Dependencies: Selected async-component world and feature record; Canonical ABI resource ownership; Runtime completion/cancel/drop and schema interfaces. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/wasm/simd-lowering` (Open; producer-checker).
+Required outputs: SIMD lowering and lane/bounds/alignment/numeric/feature proof map with fallback decision.
+Accept: Lower supported vector operations only with lane/bounds/alignment/feature evidence and the declared strict/relaxed numeric semantics; choose an explicit profile-legal equivalent fallback or reject unsupported targets.
+Refuse: Reject unsupported SIMD features, out-of-bounds lanes, unjustified alignment/check elision, hidden relaxed reassociation or a fallback that changes the math/profile contract.
+Dependencies: Verified vector MIR and lane/bounds evidence; Selected Wasm SIMD/relaxed feature record; Math mode/certificates and legal fallback contract. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+
+- [ ] `backend-jvm` JVM
+
+Status: Open
+
+Projected task block:
+Remaining tasks: fix supported JVM/classloader/package matrix; complete bytecode
+and interop lowering; enforce nullability, exception translation, deterministic
+linear cleanup and dynamic-use grants; execute packaged programs and reject
+ungranted reflection/native access, unchecked null and missing metadata. Yes/no:
+do real class/JAR artifacts execute, do host boundaries preserve semantics, and
+are cleanup/grants enforced? Evidence: [JVM manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/142709-jvm-backend-manifest.clj)
+consumes class/JAR and execution fields; inspection is not execution proof.
+Decision owner: JVM maintainer; recommendation: a pinned baseline classfile/JVM
+pair plus explicit compatibility matrix. Integrates managed Runtime and Build;
+this hosted path does not replace the selected native release.
+
+- [ ] `backend-js` JavaScript and TypeScript
+
+Status: Open
+
+Projected task block:
+Remaining tasks: declare Node/browser/edge adapter matrix; lower numeric and
+control/resource semantics; generate declarations and checked null/undefined/
+promise adapters; preserve source maps/package side-effect policy; execute
+programs and reject unauthorized globals, lossy numeric conversions and unsafe
+imports. Yes/no: do exports match declarations, numeric modes survive, host
+values are validated and denied globals stay inaccessible? Evidence:
+[JS manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/141626-js-ts-backend-manifest.clj)
+explicitly records Node host globals; it does not establish every JS environment.
+Decision owner: JS maintainer; recommendation: separate runtime adapters sharing
+one semantic lowering layer. Parallel to JVM/LLVM; integrates Schema/Runtime/UI.
+Decision criterion `backend/js/module-emission` (Open; producer).
+Required outputs: Actual runtime-specific JS module/bundle and package/source-map/capability manifests.
+Accept: Emit for the declared ECMAScript/runtime/module/bundler/tree-shaking/package/side-effect/source-map contract; retain exported value/numeric/nullish/error/async boundaries and record all host globals/imports/providers.
+Refuse: Reject unavailable globals, denied or untyped imports outside audited wrappers, hidden package effects, eval/prototype mutation, lossy Number/BigInt conversion and unsupported runtime/module assumptions.
+Dependencies: B1 eligible input and typed exports; Selected JS runtime/bundler/package policy; Host grants, checked adapters and numeric representation map. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/js/type-declaration-emission` (Open; producer).
+Required outputs: Generated TypeScript declarations and exported-API correspondence report.
+Accept: Generate declarations faithfully matching Gravity exports with explicit opaque/unsafe/host/async/capability boundaries, numeric representation, nullish and promise/error adapters; retain source origins.
+Refuse: Reject erased boundary requirements, mismatched declarations/exports, unchecked null/undefined or unsafe host values and treating TypeScript annotations as replacement for Gravity or runtime validation.
+Dependencies: Typed Gravity exported API; JS value/schema/async representation map; Host boundary and runtime validation contracts. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+
+B6 target, manifest and output criterion (Open): Consume only verified MIR or verified domain IR through the actual B1 eligibility and C14 lowering contracts; backend selection cannot redefine Gravity types, effects, capabilities, safety or numeric meaning. For each claimed browser, Node.js, edge, serverless, desktop-shell or mobile JS runtime, bind the actual runtime kind, ECMAScript version, ESM/CommonJS/UMD or runtime-specific module format, bundler/minifier and tree-shaking assumptions, package boundary, side-effect declarations, source-map format, JSX/UI transform when used, worker/thread/event-loop model, package manager and dependency lock metadata, and supported built-ins/polyfills. A runtime-specific built-in is unavailable without both declared provider and accepted profile policy. Emit the actual backend/target manifest with selected artifact kinds, required runtime-provider/capability/async/numeric records, explicit rejection policy and assumptions needed by bundlers, package managers, browser tooling, edge deployment, conformance and diagnostics. Sample browser/es2022/esm values illustrate shape, not default support. Required products are the JS/TS backend manifest, runtime/module target record, actual JS module or bundle, TS declarations, source and generated-origin maps, host/import capability and package dependency manifests, async effect and nullish/exception maps, numeric representation map, UI/component bindings when selected, and diagnostics. One selected target or schema-valid record proves no other target and does not substitute for emitted artifacts. Consume authentic C11/C14, hosted/distributed/AI/compatibility profiles P4/P9/P10/P13, SAFE9/SAFE10/SAFE11/SAFE12, Schema, Runtime, Package and Tooling outputs under their own contracts; no whole-component completion prerequisite or dependency acceptance follows. Missing or inconsistent required target/manifest facts reject with B6-TARGET or B6-MANIFEST as applicable.
+
+B6 value, declaration and checked-ingress criterion (Open): Bind each lowered/exported value's Gravity type, JavaScript representation, TypeScript surface type, nullish and numeric policies, object layout/prototype policy, mutability/freezing, equality/hashing semantics, serialization schema when exported, and host-value taint policy. Generated declarations faithfully match actual Gravity exports and expose opaque, unsafe, host, async and capability-bearing boundaries; declarations are API evidence, not a replacement for Gravity type/safety artifacts or runtime validation. Before safe use, untrusted host, package, network, storage, DOM, tool and model inputs pass actual declared runtime validation. Keep null and undefined outside safe Gravity except through Option, Result, checked adapters or opaque host values; no TS annotation or opaque label alone establishes a checked value. Retain actual validation/adapter input/output identities and accepted/refused products, including malformed or unchecked ingress, nullish leakage, declaration/export mismatch and missing boundary metadata. Preserve exact value/schema/origin and relevant runtime/provider/effect/authority facts without replacing Gravity semantics with JavaScript conventions.
+
+B6 async, callback and error criterion (Open): The actual async effect map records promise creation and awaiting, timers, DOM/UI events, network/fetch, filesystem/process APIs, storage APIs, worker messages and model/tool calls together with cancellation behavior, scheduler/event-loop assumptions and replay/nondeterminism policy. Generated callbacks preserve source/generated maps and error translation. JavaScript exceptions, rejected promises and event callback failures reach the declared Gravity error, panic or effect channel; rejected promises cannot disappear into host logging. Actual positive/refused adapter fixtures demonstrate each claimed async/error boundary and its cancellation/scheduler/replay contract, including missing effect-map data and untranslated failures. A supplied effect record, success flag or host log is not actual execution or translation evidence. Emit the async map, nullish/exception translation map and source-bound B6-ASYNC/B6-EXCEPTION diagnostics for missing policy or failed translation as applicable.
+
+B6 host authority, import and dynamic-operation criterion (Open): Record every host global and package import with symbol/package identity, version or integrity constraint, side-effect policy, effects and capabilities, typed wrapper/schema, trust/taint level, browser/Node/edge availability and tree-shaking/bundler assumptions. Access to window, document, globalThis, process, storage, timers, crypto, network, filesystem and environment variables requires the actual effects and capability grants; generated UI or ordinary functions cannot create ambient authority. Untyped imports are allowed only as opaque foreign values behind audited wrappers. Dynamic import is effectful and may be denied by package or deployment policy. Dynamic eval, Function construction, prototype mutation, hidden global state and lossy object-layout conversion are rejected as ordinary safe hosted behavior; any allowed exception must remain explicitly isolated behind the governing unsafe or audited host wrapper with its safe boundary and evidence. Wrapper availability is not a default grant. Preserve the existing refusal criteria and exercise authorized, denied, version-unstable, side-effectful, wrong-runtime and missing-wrapper cases with actual manifests, adapter products and B6-GLOBAL/B6-IMPORT/B6-EVAL/B6-PROTOTYPE diagnostics.
+
+B6 numeric representation and boundary criterion (Open): Select Number only for modes fitting JavaScript double behavior, BigInt for exact integer modes requiring it, typed arrays for packed numeric data, checked helper calls for overflow/narrowing/shifts/bounds, string or structured representations for schema-stable large values, and target intrinsics only with actual feature/provider records. The numeric manifest records NaN, signed zero, integer precision loss, BigInt/Number mixing and JSON-serialization loss, and actual boundary checks enforce the declared Gravity numeric mode. Reject lossy Number conversion when exact semantics are required, invalid mixed arithmetic, unchecked narrowing/overflow and invalid JSON numeric boundaries with B6-NUMERIC. Retain subject-bound numeric manifest, accepted/refused boundary fixtures and source/runtime/provider identities; mode labels or emitted helper names alone prove no checked behavior. These are future B6 source obligations only: no numeric implementation, fixed-width adoption or held B2 acceptance is performed here.
+
+B6 conditional UI/component criterion (Open): Only when UI lowering is selected, emit component name and props schema, state/effect hooks or runtime equivalents, DOM/event capabilities, style/asset dependencies, hydration or server/client boundary, source-map/hot-reload identity and user-input taint policy. UI lowering must not hide DOM, storage, network, timer or browser capability use behind ordinary pure functions. Actual selected-UI fixtures bind schema, source/generated maps and capability records and refuse missing required fields or hidden authority with B6-UI. Preserve the unselected-UI branch: non-UI JS output does not require UI artifacts or a UI runtime, and one UI fixture establishes no general UI support. The runtime target record's JSX/UI transform is required when used, not made universal.
+
+B6 diagnostic and conformance criterion (Open): Preserve all eleven B6 meanings: B6-TARGET unsupported runtime/module/ECMAScript/bundler assumptions; B6-GLOBAL host access without effects/capabilities; B6-IMPORT untyped, side-effectful, denied or version-unstable imports; B6-NULLISH unchecked null/undefined; B6-EXCEPTION untranslated exceptions/rejected promises; B6-NUMERIC precision loss, invalid BigInt/Number mixing, unchecked overflow or JSON numeric boundaries; B6-EVAL dynamic eval/Function/code loading without policy; B6-PROTOTYPE unsafe prototype/layout assumptions; B6-ASYNC absent async/cancellation/event-loop metadata; B6-UI missing selected-UI schema/maps/capability records; B6-MANIFEST incomplete JS/TS artifacts. Diagnostics bind source span, MIR operation or domain anchor, runtime, module format, host symbol/package id, missing effect/capability/schema fact, selected adapter or rejection, and remediation. Actual conformance products demonstrate ESM and each selected runtime target, truthful exported TS APIs, source/generated-origin preservation, host capability manifests, accepted/refused package imports, checked nullish/exception/rejected-promise translation, Number/BigInt/typed-array and boundary cases, async/callback records, UI metadata only when enabled, rejection of eval/prototype mutation/ambient globals/lossy conversions and differential execution against MIR reference fixtures. Consume the authentic backend-conformance producer's real execution/comparison, independent metadata, rejection and replay/availability records; unavailable target or comparator evidence remains an explicit gap, not a pass. Data labels, unexecuted fixture schemas, package identity and TS declarations are not runtime validation, backend conformance or release acceptance. Preserve every prior criterion, literal outcome ID and Open status. This source amendment executes no compiler, backend, runtime/provider, proof checker, numeric/fixed-width mechanism or held operation and confers no implementation, source-review, final-denominator, release, self-hosting or integration acceptance.
+
+- [ ] `backend-mlir` MLIR
+
+Status: Open
+
+Projected task block:
+Remaining tasks: pin MLIR version/dialects and operation coverage; implement
+types/effects/ownership/proof attributes and verifiers; implement conversions and
+metadata-preservation checks; run actual verification/conversion and reject
+illegal targets or fact loss. Yes/no: do modules verify, conversions preserve
+facts and downstream consumers accept the result? Evidence:
+[MLIR manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00244-b7-document-mlir-manifest.clj)
+uses `stage0-recorded` version and a narrow operation map; nested complete flags
+are not tool execution. Decision owner: MLIR maintainer; recommendation: explicit
+versioned dialect registry and legal conversion pipeline. Optional MLIR use
+must not become a prerequisite for backends that do not require it.
+
+- [ ] `backend-gpu` GPU Backend
+
+Status: Open
+
+Projected task block:
+Remaining tasks: adopt API/device/toolchain matrix; implement kernel emission
+and argument ABI; generate explicit transfer/launch/cleanup stubs; execute real
+or declared simulator kernels and reject host-only effects, invalid barriers,
+implicit transfers and uncertified relaxed math. Yes/no: do kernels run, buffer
+lifetimes hold, synchronization matches IR and numeric results meet mode?
+Evidence: [GPU manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00248-b8-document-gpu-manifest.clj)
+records a SPIR-V-shaped fixture, not device execution. Decision owner: GPU
+maintainer; recommendation: one explicit reference API/device pair first with
+named additional target obligations. Integrates GPU domain/Runtime/Emit;
+accelerator availability does not gate the ordinary compiler release.
+Decision criterion `backend/gpu/argument-memory-abi` (Open; producer-checker).
+Required outputs: Device argument ABI and buffer lifetime/alias/transfer-state report.
+Accept: Emit and validate address space, schema/layout, alignment, alias, lifetime, mutability, ownership and transfer-state facts for every kernel argument/buffer; linear ownership remains unless a provider proves safe sharing.
+Refuse: Reject missing layout/lifetime/alignment facts, invalid aliases, use-after-release, double release and a raw host pointer or unsafe sharing crossing the declared device ABI.
+Dependencies: Verified GPU/domain IR and typed argument schemas; SAFE2/SAFE5 ownership and provider sharing proof; Target device ABI. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/gpu/kernel-emission` (Open; producer).
+Required outputs: Kernel/device artifact with target/feature/launch, source/proof and numeric manifests.
+Accept: Lower accepted GPU constructs for the explicitly adopted API/device/toolchain/features, preserving lane/workgroup indices, memory spaces, barriers/atomics, source anchors and math evidence; emit the actual declared artifact.
+Refuse: Reject host IO/allocation/exceptions/reflection/eval/callback captures, unsupported recursion/dynamic dispatch, illegal barriers/launch geometry and uncertified relaxed math.
+Dependencies: B1 eligible input; GPU profile and feature/launch records; Argument ABI and numeric certificates. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/gpu/transfer-launch-stubs` (Open; producer).
+Required outputs: Host stubs and explicit transfer/queue/launch/completion/cleanup graph.
+Accept: Generate orchestration with direction, buffer ownership, provider grants, queue/fence/event dependencies, launch order, completion visibility and cleanup paths; keep host and device profiles separate.
+Refuse: Reject implicit transfers, missing completion dependencies, unsynchronized host reads/device writes, stale buffer handles, double cleanup and weakened synchronization scope/order.
+Dependencies: Device argument ABI and lifetime report; Kernel and launch descriptor; Runtime/provider transfer and completion interfaces. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+
+- [ ] `backend-hdl` HDL
+
+Status: Open
+
+Projected task block:
+Remaining tasks: adopt HDL/toolchain and synthesis target record; implement
+state/port/memory lowering and explicit width behavior; preserve clock/reset
+crossing proofs; generate testbenches and simulate/synthesize; reject hidden
+runtime, illegal crossings and unrepresentable hardware behavior. Yes/no: does
+HDL synthesize, do cycle traces match source, and are width/reset/crossing rules
+enforced? Evidence: [HDL module fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00251-b9-document-hdl-module.clj)
+is a fixed string, not general lowering. Decision owner: hardware emitter
+maintainer; recommendation: explicit SystemVerilog reference flow, subject to
+architecture adoption and tool availability. Hardware IR is prerequisite for
+integration; neither fabrication nor a completed OS is required for emitter work.
+
+Source-qualified acceptance: Source obligation `language/concurrency/emit-hardware-parallel-state`: Represent concurrent hardware behavior as explicit clock/reset/register/memory/timing state or signal-level domain IR rather than host threads. Accept: Lower declared concurrent hardware into explicit signal/state domain IR and HDL artifacts with clocks, resets, registers, memories, timing constraints and source maps. The L14 counter fixture retains enable/reset/state transitions and width-aware overflow-defined addition. Reject: Reject host-thread semantics, missing concurrent domain IR or hidden allocation/GC/reflection/host IO unless represented by permitted hardware constructs. Do not select a product ISA/device here. Required outputs: Circuit/state IR, clock/reset/register/memory/timing records, backend artifact and valid counter plus forbidden-service rejection fixtures. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+Decision criterion `backend/hdl/cdc-gate` (Open; checker).
+Required outputs: Clock-crossing acceptance/refusal record with proof or hardware waiver.
+Accept: Accept a crossing only through a declared synchronizer, async FIFO, handshake, Gray-code proof or hardware-policy-approved waiver with source/destination domains, signal shape, latency, metastability and reset interaction.
+Refuse: Reject unmediated crossings, incompatible domain/reset assumptions, missing proof or a generic unsafe marker substituted for a hardware audit waiver.
+Dependencies: Hardware IR clock/reset domains; Synchronizer/FIFO/protocol proof; Hardware audit policy. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/hdl/clock-reset-timing` (Open; producer).
+Required outputs: Clock/reset-domain reports and target-format timing constraints.
+Accept: Emit frequencies/edges/generated-clock relationships, reset polarity/synchrony/values/release and required clocks/false or multicycle paths/IO delays/groups/frequency constraints, retaining signal/state/source relationships.
+Refuse: Reject missing target-required timing/reset data, unsupported constraint format, inconsistent domain relationships and unspecified power-on state without explicit hardware audit.
+Dependencies: Typed hardware state/ports; Adopted HDL/synthesis target; Clock/reset/timing contract. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/hdl/cycle-aware-emission` (Open; producer).
+Required outputs: Actual HDL, interface/state/memory manifests and source-cycle map.
+Accept: Lower verified fixed-width hardware IR into combinational/sequential/register/FSM/memory/port constructs with explicit signedness, overflow/truncation/wrapping/saturation, reset and pipeline behavior; statically unroll/structure/control finite iteration or reject it.
+Refuse: Reject hidden heap/GC/runtime dispatch/host IO/threads/eval, implicit host-sized arithmetic, width loss, illegal crossings and control that cannot be statically represented.
+Dependencies: B1 hardware-eligible input; Fixed-width layout and clock/reset facts; CDC gate and synthesis target contract. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+Decision criterion `backend/hdl/testbench-trace` (Open; producer).
+Required outputs: Generated testbench and actual source-linked simulation trace with comparison report.
+Accept: Generate the declared conformance testbench and simulation-trace artifacts for the selected HDL flow, then compare cycle-level combinational/state/memory/reset/protocol behavior with source expectations; a declared trace schema alone is insufficient.
+Refuse: Reject missing generated testbench/trace, lost cycle/source/state correspondence, expected-versus-actual mismatch and a fixed fixture string or unexecuted trace contract reported as generation evidence.
+Dependencies: Emitted HDL and source-cycle map; Selected simulator/testbench contract; Expected hardware conformance vectors. Consume exact interface artifacts, not whole-component completion.
+Evidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.
+
+
+- [ ] `backend-workflow` Workflow Backend
+
+Status: Open
+
+Projected task block:
+Remaining tasks: implement graph/provider lowering; emit schemas and replay/
+idempotency policy; encode retry/compensation/review transitions; run emitted
+graphs through a declared runtime including restart/replay; reject unrecorded
+nondeterminism, missing review and repeated external effects. Yes/no: can the
+graph resume/replay correctly, are external effects guarded and origins retained?
+Evidence: [workflow graph fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj)
+is fixed graph/event text, not general executable lowering. Decision owner:
+graph maintainer; recommendation: provider-neutral graph plus a versioned runtime
+adapter. Parallel to native backends; depends on Workflow/Schema/Auth interfaces.
+
+- [ ] `backend-ai` AI Artifacts
+
+Status: Open
+
+Projected task block:
+Remaining tasks: implement AI artifact/provider binding; emit structured-output,
+taint and human-review boundary records; connect workflow/runtime adapters;
+execute accepted model/tool fixtures and reject injection, wrong provider,
+missing review and unvalidated output; bind evaluations to emitted identities.
+Yes/no: do artifacts execute only permitted actions, preserve schema/taint and
+review, and retain exact model/prompt/tool provenance? Baseline evidence:
+[workflow graph fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj)
+contains model/tool/review nodes but proves no live provider completion.
+Decision owner: AI adapter maintainer; recommendation: provider-neutral artifacts
+with explicit adapters, not a vendor SDK as semantics. Integrates AI domain,
+Workflow/Schema/Auth/Runtime; no live model call is required for unrelated builds.
+
+- [ ] `backend-query` Query and Relational
+
+Status: Open
+
+Projected task block:
+Remaining tasks: adopt dialect/provider matrix; implement parameterized lowering
+and null/collation/numeric mappings; generate row/transaction/migration adapters;
+execute queries and reject tainted SQL, unauthorized writes, schema drift and
+unapproved data loss. Yes/no: do rows match types, parameterization survive and
+transactions/migrations respect policy? Evidence:
+[query fixtures](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj)
+contain one parameterized select and no-op migration, not general query support.
+Decision owner: relational maintainer; recommendation: one explicit dialect
+adapter with provider/version records, then separate conformance per extension.
+Integrates Query domain/Schema/Runtime; no database service gates compiler bootstrap.
+
+- [ ] `backend-mobile` Mobile
+
+Status: Open
+
+Projected task block:
+Remaining tasks: adopt platform/version/package matrix; implement typed platform
+bindings and UI/lifecycle/threading adapters; emit resources/permissions and
+package metadata; run simulator/device apps and reject absent permissions,
+wrong-thread UI, invalid lifecycle use and hidden background work; attach source
+maps/store-audit records. Yes/no: does the bundle launch, do lifecycle and denial
+paths execute correctly, and are host values/errors normalized? Evidence:
+[mobile fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj)
+is an iOS-shaped string validated by substring checks, not an actual app bundle.
+Decision owner: mobile maintainer; recommendation: independent iOS and Android
+adapters and explicit simulator/device evidence, not one generic mobile claim.
+Integrates UI/Runtime/Emit/Build; external signing/store publication remains a
+separate authorized action and does not gate unrelated compiler components.
+
+- [ ] `backend-emission` Artifact Emission Contract
+
+Status: Open
+
+Projected task block:
+Remaining tasks: implement common record/schema checks across all artifact
+kinds; bind hashes and provenance to actual bytes and dependencies; enforce
+missing/stale/contradictory evidence rejection; attach per-family conformance
+packs before package/release consumers. Yes/no: do records identify real bytes,
+all required edges exist and tampering/staleness reject? Evidence:
+[emission contract implementation](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/26010-artifact-emission-contract-and-backend-inputs.clj)
+assembles required records; existence is not family execution evidence. Decision
+owner: artifact maintainer; recommendation: one versioned envelope with
+kind-specific validation. Independent family fixtures may develop in parallel;
+Build/Release consume accepted records later.
+
+- [ ] `backend-conformance` Backend Conformance
+
+Status: Open
+
+Projected task block:
+Remaining tasks: reconcile canonical operation/domain fixture matrix; implement
+family adapters and exact rejection assertions; execute or semantically compare
+real outputs; check evidence/provenance preservation and nondeterminism replay;
+record unavailable targets explicitly without converting skips to passes;
+publish exact-source family coverage. Yes/no: does each claim have positive and
+negative execution evidence, are metadata checks independent of result equality,
+and are unavailable targets honestly open? Evidence:
+[existing test-matrix artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj)
+is a starting integration surface, not acceptance. Decision owner: conformance
+maintainer; recommendation: shared fixture semantics plus target-specific runners,
+with explicit availability records. Conformance interface work is parallel;
+family acceptance awaits its actual backend. No automatic release closure follows.
+
+Decision allocation interface/testing/test6/abi-layout (Open). Role: backend conformance maintainer. Record and validate target ABI, layout, calling convention and runtime assumptions. Refusals and conditional cases: Reject target ABI/layout/calling-convention/runtime assumption mismatch or missing declaration; compare produced layout and ABI reports with the selected target contract. Required outputs: Target-bound ABI/layout report, calling convention/runtime assumptions and TEST6006 mismatch diagnostics. Consume actual dependency interface outputs: backend-interface; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+Decision allocation interface/testing/test6/differential (Open). Role: backend conformance maintainer. Where possible compare backend semantic results and artifacts with reference interpreter or another backend to detect divergence (SHOULD, conditional). Refusals and conditional cases: Where a reference interpreter or second backend comparison is possible, compare observable results/artifacts and detect deliberate divergence. Record comparator availability and justified omission when unavailable; unavailable conditional evidence never becomes a pass. Required outputs: Conditional backend/reference comparison report, actual comparator identities and divergence or availability disposition. Consume actual dependency interface outputs: release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+Decision allocation interface/testing/test6/manifest (Open). Role: backend conformance maintainer. Emit backend artifact manifests naming backend/target/profile/runtime/source hash and reject missing manifests. Refusals and conditional cases: Reject a missing backend artifact manifest or absent/mismatched backend, target, profile, runtime or source-hash identity. Required outputs: Lowered artifact manifest with backend/target/profile/runtime/source hash and TEST6004 refusal. Consume actual dependency interface outputs: backend-emission; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+Decision allocation interface/testing/test6/report (Open). Role: backend conformance maintainer. Emit backend conformance, execution, diagnostic, source-map, ABI/layout and differential reports; backend release claims require results for the required target matrix, not only its default target. Refusals and conditional cases: Reject a backend release claim tested only on its default target when the required matrix is larger. Runtime-backed cases require explicit runtime and capability grants; unavailable cases remain open and missing execution/diagnostic/source-map/ABI-layout/differential reports are visible gaps. Required outputs: Backend conformance, execution, diagnostic, source-map, ABI/layout and conditional differential reports for the required profile/target/backend/runtime/artifact matrix. Consume actual dependency interface outputs: backend-interface, backend-emission, release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+Decision allocation interface/testing/test6/source-maps (Open). Role: backend conformance maintainer. Map backend diagnostics and target source maps back to Gravity source spans. Refusals and conditional cases: Reject target diagnostics or source maps that cannot resolve to the original/generated Gravity source spans; exercise a broken source-map edge independently of result equality. Required outputs: Target-to-Gravity diagnostic/source-map validation report and TEST6005 mismatch diagnostics. Consume actual dependency interface outputs: backend-emission; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+Decision allocation interface/testing/test6/unsupported-rejection (Open). Role: backend conformance maintainer. Reject unsupported MIR behavior with stable diagnostics rather than silently mislowering it. Refusals and conditional cases: Feed unsupported MIR behavior and require stable unsupported-operation diagnostics before emission; reject silent lowering to wrong target behavior or metadata-only success without the expected refusal. Required outputs: Unsupported MIR negative fixture result, stable TEST6003 diagnostic and rejected-emission evidence. Consume actual dependency interface outputs: lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
+
+<!-- backends-implementation-tasks:end -->
+
+## Historical migration record (frozen)
+
+# Tasks: Backends workflow migration
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner: backend workflow migration owner. Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+
+## Declared increment
+
+These are migration-delivery tasks only. Implementation progress is exclusively
+in [Backends canonical remaining work](../../docs/component-roadmaps/backends.md#release-outcome); do not copy its checklist here.
+
+- [x] T001 [US1] Prepare the four owned package artifacts, preserving canonical
+  contract, component and phase links. Evidence: the files in this directory.
+- [x] T002 [US1] Validate all local links/anchors, ASCII, exact owned paths and
+  preserved implementation status; retain the result in evidence.md.
+- [ ] T003 [US2] Obtain independent review of the exact package candidate,
+  including dependencies, boundary/nonclaims and semantic names.
+- [ ] T004 [US1] Integrate the reviewed package and record its merge receipt.
+
+## Dependencies and outcomes
+
+T002 checks T001; T003 consumes the checked candidate; T004 consumes independent
+acceptance. Parallel packages do not block this package's local preparation.
+Component completion is not a prerequisite for its workflow migration, and
+migration completion does not close the component's implementation tasks.
+Partial work stays draft. No budget, task quota or repeated authorization gate.
+
+## New-name review
+
+Review `backends-workflow` against the [semantic naming rule](../../.specify/semantic-names.md).
+No legacy source rename or public compatibility migration is included.

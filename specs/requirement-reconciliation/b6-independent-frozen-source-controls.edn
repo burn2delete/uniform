@@ -1,0 +1,1928 @@
+{:all-refused true,
+ :unmodified-coherently-repinned-model :pass,
+ :controls
+ [{:control
+   [:clause :target "Consume only verified MIR or verified domain IR"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "Consume only verified MIR or verified domain IR"],
+   :serialized-sha256
+   "0d18706a34b5571d92aca28749a4511b4debbf56748b31f22953fc03cf9f6368",
+   :file-sha256
+   "f8f55c85481f39a2ad335f6051a528a9487a15a12a23b92302e678e9bff0f3c1",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "actual B1 eligibility and C14 lowering contracts"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "actual B1 eligibility and C14 lowering contracts"],
+   :serialized-sha256
+   "6ad4de96e717edf5dda24aeebaeb96991c37aa04ebeb3b34124c6042c16b60bc",
+   :file-sha256
+   "780811d0e1e44407df656ac08f290e58b11354459b729a4286d41862a7d06dc6",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "cannot redefine Gravity types, effects, capabilities, safety or numeric meaning"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "cannot redefine Gravity types, effects, capabilities, safety or numeric meaning"],
+   :serialized-sha256
+   "154fb96f05ba603ce2d1f83a9f85c6694845e5f402042b3b7186c706393a7e4b",
+   :file-sha256
+   "e5df0065a8bc2925e7c802a49b990ae843ecc331015cbec852b1abeed260ce53",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "runtime kind, ECMAScript version"],
+   :refused true,
+   :reason
+   [:source-obligation :target "runtime kind, ECMAScript version"],
+   :serialized-sha256
+   "cd68344dd7067d86c5d6b2c954c3b988a624073b50e585b0c6278ea4d6ffff3a",
+   :file-sha256
+   "4ca70a15633529521cf1c44b8fba47ed5c65246cade4e51d36d102502b3c654b",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "ESM/CommonJS/UMD or runtime-specific module format"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "ESM/CommonJS/UMD or runtime-specific module format"],
+   :serialized-sha256
+   "ddb396539ba575986812d4059284aa438038ac866ac7842d1b195a4693abb563",
+   :file-sha256
+   "ba64bcd17078f78ce28eedf248c3888f067758fa50026417b7a859ff323ec795",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "bundler/minifier and tree-shaking assumptions, package boundary, side-effect declarations, source-map format"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "bundler/minifier and tree-shaking assumptions, package boundary, side-effect declarations, source-map format"],
+   :serialized-sha256
+   "2aab1561020bdea625d88c511a5a9fd1ba602a40d09723248841f0a92a345166",
+   :file-sha256
+   "00a6bb89ebe865bba0fbf209063d1c2f34698461e85272a36581d6a648173bbe",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "JSX/UI transform when used"],
+   :refused true,
+   :reason [:source-obligation :target "JSX/UI transform when used"],
+   :serialized-sha256
+   "836060e787b4c6db53e6c42d2bb847fcf03e69e8c78aa9450dff959bba4e8fbe",
+   :file-sha256
+   "15cb4343a83099762aaaed0c53f4dd992cc09c2fa863f613a7e4d708715745b4",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "worker/thread/event-loop model"],
+   :refused true,
+   :reason
+   [:source-obligation :target "worker/thread/event-loop model"],
+   :serialized-sha256
+   "b5fa0a50fcc1ff29415bbed8428b867c4a5b0efd65d1d535881b28971e214d0d",
+   :file-sha256
+   "0950bf491baea7a7616d8bf779696d49555a0e700646a9d9d522f04b0f2e8973",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :target "package manager and dependency lock metadata"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "package manager and dependency lock metadata"],
+   :serialized-sha256
+   "dacccc7cb43a1dfb76fe75331e42cfffd9f286633c155f015d95339743a1fdd2",
+   :file-sha256
+   "5281f0ce88c8156b233b68cc7936c7fa1a68c442c4a61f5673a4e45cc59c489e",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "supported built-ins/polyfills"],
+   :refused true,
+   :reason
+   [:source-obligation :target "supported built-ins/polyfills"],
+   :serialized-sha256
+   "79a1627b74ceb2802aaa719d155283eefa9b77f8baa7a616b14a5d367922fa59",
+   :file-sha256
+   "8a9ab03f6a3841183f825a2d5c3e5cd9da2bae267f367cc52eb5c9d782d8d5be",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "both declared provider and accepted profile policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "both declared provider and accepted profile policy"],
+   :serialized-sha256
+   "7539d503c0d329da9323841a9924c5b5714e341875f3b85b7f02535c0e5c187c",
+   :file-sha256
+   "0e53e009952e434fceab7fd086a524bde811c0f2fd1f38d586f74bf6a62b0662",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "actual backend/target manifest"],
+   :refused true,
+   :reason
+   [:source-obligation :target "actual backend/target manifest"],
+   :serialized-sha256
+   "4282e1fdda67cbec280094a50bc492c0ed7f6995c0e324b780ba81bc2a88e1e1",
+   :file-sha256
+   "b263010a74a911761188bf1470aa5e1aae165621b99f9bfd58a4972d6f4b8831",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "Sample browser/es2022/esm values illustrate shape, not default support"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "Sample browser/es2022/esm values illustrate shape, not default support"],
+   :serialized-sha256
+   "6730f2e4d34c813312e5d45267c53cecfda83c41daa56e5ee1b4474e3beb4e3e",
+   :file-sha256
+   "ab78a0ee3b4b46e6530b710110a8db0d4432e4f6de83700b0d61e1a3b94112e2",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "actual JS module or bundle, TS declarations, source and generated-origin maps"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "actual JS module or bundle, TS declarations, source and generated-origin maps"],
+   :serialized-sha256
+   "5356c7411b59571f2b2194bde2435df809d1ab93d197d42341983c8737c77217",
+   :file-sha256
+   "6422208d97dd4dbb7e9297b588dfda10741d67b806ab1525bd74685bf5f70b73",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "host/import capability and package dependency manifests, async effect and nullish/exception maps, numeric representation map"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "host/import capability and package dependency manifests, async effect and nullish/exception maps, numeric representation map"],
+   :serialized-sha256
+   "092f20d9b618ec3608adf3bd1aa20386da95a6fa5790e8a8e5ca2dc434420d36",
+   :file-sha256
+   "f7a2419dd553babbc977a8e44e78c5f84b5581b238874bac4575c6748f77f02b",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "UI/component bindings when selected"],
+   :refused true,
+   :reason
+   [:source-obligation :target "UI/component bindings when selected"],
+   :serialized-sha256
+   "3997012262554ac9bb861f90cc2d0b975acffd30f974f9dc3331d79c89b59b42",
+   :file-sha256
+   "33ab007281f31ab361a9c55082c0927b84944ddc84ca5f769efd3833dadbc6b7",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "One selected target or schema-valid record proves no other target"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "One selected target or schema-valid record proves no other target"],
+   :serialized-sha256
+   "1b548922a60825010fd28ac43e3a505121793f225961c3a3c2d5335fef475516",
+   :file-sha256
+   "d1da22b70adeb480057a95c77b171573baba8a61cbc75a5459f88f9be3dfc37c",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "C11/C14"],
+   :refused true,
+   :reason [:source-obligation :target "C11/C14"],
+   :serialized-sha256
+   "d5d76f677cfa10f6b2ac928ba29d8d412830e18f74d898153b69bdaaa3057a62",
+   :file-sha256
+   "14a47e1c0e6add21efadffd2042703b30f1a02bedc091dd8c2b4f4084bfa58e1",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "P4/P9/P10/P13"],
+   :refused true,
+   :reason [:source-obligation :target "P4/P9/P10/P13"],
+   :serialized-sha256
+   "78430e36934565f8200b2e079ba87b50a09650bd67f66b804459557f5915913c",
+   :file-sha256
+   "fd38611345322c247a5404ff3d99d215474552c80e31bec9c07b88f26b8529c2",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "SAFE9/SAFE10/SAFE11/SAFE12, Schema, Runtime, Package and Tooling outputs"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "SAFE9/SAFE10/SAFE11/SAFE12, Schema, Runtime, Package and Tooling outputs"],
+   :serialized-sha256
+   "d792b685e3628f12fb9586d9e58a085598446d80c6bf1a224f08377a385271d7",
+   :file-sha256
+   "6b551d9ce8773575e17d1ad28a51d1819cdd2263d8176ca4adbb418e2bb5ba06",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :target
+    "no whole-component completion prerequisite or dependency acceptance follows"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :target
+    "no whole-component completion prerequisite or dependency acceptance follows"],
+   :serialized-sha256
+   "3bf2f75e9ad0b0c16a53aa08b18507d8a87d802b1646ee42afa86c764aacc884",
+   :file-sha256
+   "b681edc8d2864b46e6e96b16bc5f63643a77f6061801861b398d21ac4e6aa67a",
+   :scope :private-source-DATA-model}
+  {:control [:clause :target "B6-TARGET or B6-MANIFEST"],
+   :refused true,
+   :reason [:source-obligation :target "B6-TARGET or B6-MANIFEST"],
+   :serialized-sha256
+   "02fdfb730fec17a0ec1d1c6acc6202a12adb2e42914ea9f72afe4123d092521d",
+   :file-sha256
+   "90dbeb52a4898b01da47a06551384b0b5c7f6892db88eeec8cdebe8fb4cacb19",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "Gravity type, JavaScript representation, TypeScript surface type, nullish and numeric policies"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "Gravity type, JavaScript representation, TypeScript surface type, nullish and numeric policies"],
+   :serialized-sha256
+   "81ed6b4529b54b1c78046515eaa2dbff9d1149251c81ec4727a66ff801f9fcb7",
+   :file-sha256
+   "697ca23a2e6140d4ceda28985d38cabefc4f28e8f07751856fb7735578119c66",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "object layout/prototype policy, mutability/freezing, equality/hashing semantics"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "object layout/prototype policy, mutability/freezing, equality/hashing semantics"],
+   :serialized-sha256
+   "c6112501e4c23a6ab250fdce913e7aa049044b1805f602c78c79c887b9b529ea",
+   :file-sha256
+   "b863715136e24cb6d5590332e1ecbfd45eb8e44f4eac7fdec363255c46826a75",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "serialization schema when exported, and host-value taint policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "serialization schema when exported, and host-value taint policy"],
+   :serialized-sha256
+   "ff60718688a3f3b8d218077637ff4b6b72e52b97a1cba7084202bd21109f0577",
+   :file-sha256
+   "e4997dad08cef509173d70162e6d65b5b386d80d92a786551a835e0cd2a7a8e0",
+   :scope :private-source-DATA-model}
+  {:control [:clause :value "faithfully match actual Gravity exports"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "faithfully match actual Gravity exports"],
+   :serialized-sha256
+   "4d789bdc3f83bef13d2f7f3f706fe36e360ea93ad9efc067d2afc9833589017c",
+   :file-sha256
+   "7ac7b2a4feb1a26716e3a479f8c1c3640086f84b60fbb124f166e5123d3bd169",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "opaque, unsafe, host, async and capability-bearing boundaries"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "opaque, unsafe, host, async and capability-bearing boundaries"],
+   :serialized-sha256
+   "d13cf6587d4e35d34e7255532c791675b999c17c275fe10b30090052d87f4b8e",
+   :file-sha256
+   "0f6320379af38b9274c6817a375b437cca3fa64fb6badbe2ae54f5a3e8748b96",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "not a replacement for Gravity type/safety artifacts or runtime validation"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "not a replacement for Gravity type/safety artifacts or runtime validation"],
+   :serialized-sha256
+   "3580178d6bccc92ccde91857c26aaca4f0345d4bca11455aaac9bc1ae0614f99",
+   :file-sha256
+   "bcadaf31437e4d171c7aa7e2c317c337e7908651ca9a89fedaa6f2668b0ec920",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "Before safe use, untrusted host, package, network, storage, DOM, tool and model inputs pass actual declared runtime validation"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "Before safe use, untrusted host, package, network, storage, DOM, tool and model inputs pass actual declared runtime validation"],
+   :serialized-sha256
+   "641d43b3f7b56266ea9ec3137cb4f8c9a3e4eecf01fb8ee6d1e051719d1d3a32",
+   :file-sha256
+   "3c81108bb1b0e2b69a6fa468952e10fc689ebc6372a7ae0cd5f0070572af76fd",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "Option, Result, checked adapters or opaque host values"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "Option, Result, checked adapters or opaque host values"],
+   :serialized-sha256
+   "b89b83419c25efd49a062a8887215f5e7c2c58531ad6f77d8c1bb6bfacad2526",
+   :file-sha256
+   "a064c12aa9ebe74b0e1ac0fc2049f7b5cf25a556b2d1ff06afc9cb44a0968488",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "no TS annotation or opaque label alone establishes a checked value"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "no TS annotation or opaque label alone establishes a checked value"],
+   :serialized-sha256
+   "a0304fa1d481f40064725bf26f5b9e136c687c994b14dd715bc9492c85a63549",
+   :file-sha256
+   "5eadd7606d14ee932020866cbd7d2507c67d084a1a09b2d590bdfb46dd7935da",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "actual validation/adapter input/output identities and accepted/refused products"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "actual validation/adapter input/output identities and accepted/refused products"],
+   :serialized-sha256
+   "48c15cefa13a6996109d400085fc7c6ec8a9c692465dd1a28fcd0d3cfde8f59d",
+   :file-sha256
+   "837a4f1791b3ca929c157a4133783d83db9e1f37937cfbb71a044f17e3742f64",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :value
+    "malformed or unchecked ingress, nullish leakage, declaration/export mismatch and missing boundary metadata"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :value
+    "malformed or unchecked ingress, nullish leakage, declaration/export mismatch and missing boundary metadata"],
+   :serialized-sha256
+   "42cf42de071d53b5f0b961e29c9747c979cf37d0d7893d30201f8185ecc2fc61",
+   :file-sha256
+   "53000bb4902a52b34639fe4149ac1b138b5823d22b10207e652aa066a341ab16",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "promise creation and awaiting, timers, DOM/UI events, network/fetch, filesystem/process APIs, storage APIs, worker messages and model/tool calls"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "promise creation and awaiting, timers, DOM/UI events, network/fetch, filesystem/process APIs, storage APIs, worker messages and model/tool calls"],
+   :serialized-sha256
+   "0ed6880621c640fd75262c857e2845b84194449278b6005df7d8ed7d0c25c233",
+   :file-sha256
+   "32ea73ea3f9997c7a85cd198c8437e03e00f582e21908512448984ead44285bd",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "cancellation behavior, scheduler/event-loop assumptions and replay/nondeterminism policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "cancellation behavior, scheduler/event-loop assumptions and replay/nondeterminism policy"],
+   :serialized-sha256
+   "2a1fa5d64e23dadf6706792a47b30a1f1277b816e2eb7a0c41471dcf377dd437",
+   :file-sha256
+   "7f3de8ff1c122161a98caf0027bc032784eadc48e2ab013782457593f1b55cd7",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "Generated callbacks preserve source/generated maps and error translation"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "Generated callbacks preserve source/generated maps and error translation"],
+   :serialized-sha256
+   "c263195764804a7b3c7794d24266f5d7f85e5287a7e19e626b8d9133c8e81119",
+   :file-sha256
+   "28043e97231c36bd1efd3d93a4733088c3da54e3736086acbbdd3d5fe5dea73a",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "JavaScript exceptions, rejected promises and event callback failures reach the declared Gravity error, panic or effect channel"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "JavaScript exceptions, rejected promises and event callback failures reach the declared Gravity error, panic or effect channel"],
+   :serialized-sha256
+   "117757905234727ecbb6ae01127e0dd3d5c30c65fb3cfdd11c6058030d104f28",
+   :file-sha256
+   "60c7dac158f7a205d4e1af8aab7b2b9522484461c4632878e778aca76e8534af",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "rejected promises cannot disappear into host logging"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "rejected promises cannot disappear into host logging"],
+   :serialized-sha256
+   "bb97a24a281639124f7cf72f979dfe712af2d00a13e6dc6c2d547876290b775c",
+   :file-sha256
+   "3e141c93ae7546c5e29120da2609b837ca9f321e5662994d7e0fee56a3ba2c2e",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :async "Actual positive/refused adapter fixtures"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "Actual positive/refused adapter fixtures"],
+   :serialized-sha256
+   "ee41ef5997967c0f4e6ca666b17c2f1f45ec65568b896035f1c743117c415513",
+   :file-sha256
+   "1c9d0261894172df75179db348c60bcb894671d73584ffff028af9089ea1a7be",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "missing effect-map data and untranslated failures"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "missing effect-map data and untranslated failures"],
+   :serialized-sha256
+   "be01b402eef6501bc7ebae43e4a61517474df0d6f095d23801befe87ee5bb8f6",
+   :file-sha256
+   "983bb8dafbeb0a7e9c7641f2c6c6d94b46c9bf69c9aa596f3243c4113b7185ca",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :async
+    "A supplied effect record, success flag or host log is not actual execution or translation evidence"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :async
+    "A supplied effect record, success flag or host log is not actual execution or translation evidence"],
+   :serialized-sha256
+   "60c5771545e480fe1dca5dcca9bbbcda16736a63ef1001672230c2a6549e0d9c",
+   :file-sha256
+   "09fe602e83039561faf331d72b6e8291f67e474dc086e560bd8fa14769421b63",
+   :scope :private-source-DATA-model}
+  {:control [:clause :async "B6-ASYNC/B6-EXCEPTION"],
+   :refused true,
+   :reason [:source-obligation :async "B6-ASYNC/B6-EXCEPTION"],
+   :serialized-sha256
+   "9db96045e79b906826ae7f82a0c47ede088b3c251860f2429caba006fe79d582",
+   :file-sha256
+   "2e5cbbf96f15977e5181e30dfdc31535c4fd5aa77091ea4df1173a33c7e3b1b4",
+   :scope :private-source-DATA-model}
+  {:control [:clause :host "every host global and package import"],
+   :refused true,
+   :reason
+   [:source-obligation :host "every host global and package import"],
+   :serialized-sha256
+   "d29725b032cc5af86aca12338b43909eca964ffa417e4bbd6bd8a1588cb68dca",
+   :file-sha256
+   "c60cd1d2e931eb363fd349574845a9d433f707ea4aa6a42e20999019885df6c0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "symbol/package identity, version or integrity constraint, side-effect policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "symbol/package identity, version or integrity constraint, side-effect policy"],
+   :serialized-sha256
+   "a6744f60d9fb4117680d7f5401775919714a8348f1b549f3a3195b0e0601397d",
+   :file-sha256
+   "0755596d639da377148096e864a4611594ac304228d0b60fff55c06b2a9b2622",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "effects and capabilities, typed wrapper/schema, trust/taint level, browser/Node/edge availability and tree-shaking/bundler assumptions"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "effects and capabilities, typed wrapper/schema, trust/taint level, browser/Node/edge availability and tree-shaking/bundler assumptions"],
+   :serialized-sha256
+   "67b76da7fc4a0f59ab687a79b86730a37acd036ff17cdb6e98272384e7e69fd7",
+   :file-sha256
+   "f6c69904315e582269a065d5a4161e49eeb3e6d80170e77174644fea28e9266b",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "window, document, globalThis, process, storage, timers, crypto, network, filesystem and environment variables"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "window, document, globalThis, process, storage, timers, crypto, network, filesystem and environment variables"],
+   :serialized-sha256
+   "e35ac68865c2185ebc1c5a3052221e04e06e28c9b316cf74bc5f08d714fcd562",
+   :file-sha256
+   "5539896f26509ce6288637f6cf6dde2981df761717a3e89df9bfc2d384f14c7a",
+   :scope :private-source-DATA-model}
+  {:control [:clause :host "actual effects and capability grants"],
+   :refused true,
+   :reason
+   [:source-obligation :host "actual effects and capability grants"],
+   :serialized-sha256
+   "965b7156eb072d66ff4adaf13f83a771cc18ef038ad59f1293c1b05dabb430bd",
+   :file-sha256
+   "b4867df6cd4f29457f796321ea0a8594ab3eda63e2921a670520c670de9b9dc6",
+   :scope :private-source-DATA-model}
+  {:control [:clause :host "cannot create ambient authority"],
+   :refused true,
+   :reason
+   [:source-obligation :host "cannot create ambient authority"],
+   :serialized-sha256
+   "cb44fd834a6f0478294ab4d21c395283910835d5ed9fd6c198c2b94622dd05fe",
+   :file-sha256
+   "3e6d152b3b925a36bab9eff275302cc457770e3e2dd255a2bda617ee92b3a4a4",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "Untyped imports are allowed only as opaque foreign values behind audited wrappers"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "Untyped imports are allowed only as opaque foreign values behind audited wrappers"],
+   :serialized-sha256
+   "bf8676f7b141892eaf4c702408b6cc8f94496bedf3d9ec618411342800e39718",
+   :file-sha256
+   "28fbeff512f2100d4708dfa0be3dbdc054042c454ed00eb09373f97ade6233d2",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "Dynamic import is effectful and may be denied by package or deployment policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "Dynamic import is effectful and may be denied by package or deployment policy"],
+   :serialized-sha256
+   "647da121ea6823864929ac85d808bc28ded30a214f85d04b6f1e2decb56added",
+   :file-sha256
+   "940cc309fd31ca69f973a18bc585e7e204e85d2f72c3e59654a1338a5cc10368",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "Dynamic eval, Function construction, prototype mutation, hidden global state and lossy object-layout conversion"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "Dynamic eval, Function construction, prototype mutation, hidden global state and lossy object-layout conversion"],
+   :serialized-sha256
+   "1a65b4e657e34cf70ec0e86a83a25f5c381e89ae85e249a4b2c6ddb74526c980",
+   :file-sha256
+   "76fd95a27d41262b833cd0f241e964f18d5d0360897867e973baf001e603a05a",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :host "rejected as ordinary safe hosted behavior"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "rejected as ordinary safe hosted behavior"],
+   :serialized-sha256
+   "1e33c86ac1cb843f9ff0a0ec0de6f26b4a8a3be7a2093862a66dd87403b8a466",
+   :file-sha256
+   "aafb02ca10af294d85a4084c937864a4ef84624810eff098a061980fe5e3157c",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "any allowed exception must remain explicitly isolated"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "any allowed exception must remain explicitly isolated"],
+   :serialized-sha256
+   "ac1eb1991f37abf506ab28346e76dc8b9c076ce9d0a968cced64c0708cf77075",
+   :file-sha256
+   "73195ea1b624f06b6131b25c7af35687e3ea36be498f1048713034cde6f823e9",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "unsafe or audited host wrapper with its safe boundary and evidence"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "unsafe or audited host wrapper with its safe boundary and evidence"],
+   :serialized-sha256
+   "cb37940f35a9ba0120dae68030dc437b406fb5a428954c5e4234d472f201d059",
+   :file-sha256
+   "28a4ec81c965ac59b99cd237e4ad2bebce5f5e6ef3d79da3fd057bda609dbaa5",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :host "Wrapper availability is not a default grant"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "Wrapper availability is not a default grant"],
+   :serialized-sha256
+   "a5d66eafbcfaddb2a43273a663aba8ca8f3305359f899c00651ef4a92e0429ab",
+   :file-sha256
+   "6fb8d9d6bbd0b12f64dd921b190cbc00411d3c930395908980b385a2f93d6d3b",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :host
+    "authorized, denied, version-unstable, side-effectful, wrong-runtime and missing-wrapper cases"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :host
+    "authorized, denied, version-unstable, side-effectful, wrong-runtime and missing-wrapper cases"],
+   :serialized-sha256
+   "69c7b3e263ec95cd51d5192c3169ac797fd1a5e8df8cb96d9b0be225388465dd",
+   :file-sha256
+   "573dbeb317a236f681c82474f2481a827ea22631f5c2d0a4cb4135523b826c7a",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "Number only for modes fitting JavaScript double behavior"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "Number only for modes fitting JavaScript double behavior"],
+   :serialized-sha256
+   "a9a7df0a8a79a9fe929037d7c0d7c504b56040e5ca49533add2e3a1ce8426877",
+   :file-sha256
+   "1e77f2904b83b1eb4c0ed14ea70c9bbd47e2d7d49ee8b63709f855f71b7157a9",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :numeric "BigInt for exact integer modes requiring it"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "BigInt for exact integer modes requiring it"],
+   :serialized-sha256
+   "63a5e0c5311e0822502e021c77bde12a562907e30f51b16f89dfa46bc83bd9aa",
+   :file-sha256
+   "c40e180c772d9316e4621465fef239ddb7ba1aaa3d7f33825fb38d9c048cdad3",
+   :scope :private-source-DATA-model}
+  {:control [:clause :numeric "typed arrays for packed numeric data"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "typed arrays for packed numeric data"],
+   :serialized-sha256
+   "aa10ff4b71003a2f7afa8f3af64b5227b2a68da1a48e117a035706ff9bdb7faf",
+   :file-sha256
+   "b79a736458111b83dd0796c629ce9b4f4eb6291dde75eddda5f4f5b27d6b825f",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "checked helper calls for overflow/narrowing/shifts/bounds"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "checked helper calls for overflow/narrowing/shifts/bounds"],
+   :serialized-sha256
+   "6af3658722081371e6c9dd867b92a972ed1bf2cea530c805de060ecd15e79ae5",
+   :file-sha256
+   "8f2ac902746a9b0bef836c8832651570640f398efe0c9a2fe4f7bc880f520f54",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "string or structured representations for schema-stable large values"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "string or structured representations for schema-stable large values"],
+   :serialized-sha256
+   "45bbb6d9f4c89c1da13ae4c74d6f8a1b348987ed43b15c179071c1ea6b8a9705",
+   :file-sha256
+   "2d870144bfc18d9c38a37c871749589a3a7257f8ab48f641f16d3472d6bcbe42",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "target intrinsics only with actual feature/provider records"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "target intrinsics only with actual feature/provider records"],
+   :serialized-sha256
+   "c9fd64d90d6b7f602752206ff14f896bb9c5d34b7da87114c9187b06dbeaf5c1",
+   :file-sha256
+   "3bfa5252a511e30b83bd8c62e5e7fbd08c62296d75250ed95fdf2ebb6051b55c",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "NaN, signed zero, integer precision loss, BigInt/Number mixing and JSON-serialization loss"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "NaN, signed zero, integer precision loss, BigInt/Number mixing and JSON-serialization loss"],
+   :serialized-sha256
+   "07fccdaf181f3dfe91a6ee5559efe4772e6bf936f04c364b17d81366f16a0b5d",
+   :file-sha256
+   "37b724b197d865a40cb67da585e2807c6ab5e50086fa6fbf776812e629211a35",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "actual boundary checks enforce the declared Gravity numeric mode"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "actual boundary checks enforce the declared Gravity numeric mode"],
+   :serialized-sha256
+   "bb261b88822a059d072a3992e80a64ac596d9f94909c375160fc51808fb98bb6",
+   :file-sha256
+   "d5b3fd04837d542e3e89f0a5a505ffb3f02b74e6338c082ad0484638d7aae8ee",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "Reject lossy Number conversion when exact semantics are required"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "Reject lossy Number conversion when exact semantics are required"],
+   :serialized-sha256
+   "4ae00927c9a0be6a546ee841dcd0a9d4688523654f52a72159df873dd31fde03",
+   :file-sha256
+   "ca1344b1e6a453322831817f6ca5de82dfeb444a30be0c21f7b4a530abc49d70",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "invalid mixed arithmetic, unchecked narrowing/overflow and invalid JSON numeric boundaries"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "invalid mixed arithmetic, unchecked narrowing/overflow and invalid JSON numeric boundaries"],
+   :serialized-sha256
+   "e387fa602ab787a3a8e38fed4f0c5fd45bc0c262d99fb44bebafc2b4572b36cb",
+   :file-sha256
+   "fc21af1f00430def1f96952bbfb67c8a49977f0ee1f7ad57cae3c1d77e575d24",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "accepted/refused boundary fixtures and source/runtime/provider identities"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "accepted/refused boundary fixtures and source/runtime/provider identities"],
+   :serialized-sha256
+   "d68ae4025bfe059ea6f0785f1a62d5c71132544b9477165b869833ab2ac96231",
+   :file-sha256
+   "ede7027bc42db302707627c220ee5a626a6d05fc516834b6906b23803591efda",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "mode labels or emitted helper names alone prove no checked behavior"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "mode labels or emitted helper names alone prove no checked behavior"],
+   :serialized-sha256
+   "d9619da2628c467aff726132714a80085e35ba84743d71a5d2094edbe732c5ac",
+   :file-sha256
+   "6c3bea79ca936bf2bcefa5d353c3429aca9322cf2eeb44c691a91e8f0b19ead4",
+   :scope :private-source-DATA-model}
+  {:control [:clause :numeric "future B6 source obligations only"],
+   :refused true,
+   :reason
+   [:source-obligation :numeric "future B6 source obligations only"],
+   :serialized-sha256
+   "709fe8a43a990b8af82fce3dafbfaeff6db97fdf34194ab330d59db613029d50",
+   :file-sha256
+   "5795377c0948d6cc9523c36a68b66227b09990af31319a5e2f2c8f6e6fa7ef92",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :numeric
+    "no numeric implementation, fixed-width adoption or held B2 acceptance"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :numeric
+    "no numeric implementation, fixed-width adoption or held B2 acceptance"],
+   :serialized-sha256
+   "5067e08740f772f7603388768ce2607f2eee20ae0237a43d12f6c47e6dad99b8",
+   :file-sha256
+   "ad6e09b9495c691ee3133f22bcb74971ce40eba2da46499ea0c581349e60b675",
+   :scope :private-source-DATA-model}
+  {:control [:clause :ui "Only when UI lowering is selected"],
+   :refused true,
+   :reason
+   [:source-obligation :ui "Only when UI lowering is selected"],
+   :serialized-sha256
+   "632c38a3bd770ab7c5ecdce4baaed0161ead3ceb28ddeb7cd565c809b5e23b1d",
+   :file-sha256
+   "4c1f6e2a78679369db53b4254f6c2a329af7d293163b21a3a1e5a77bf15951f0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "component name and props schema, state/effect hooks or runtime equivalents"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "component name and props schema, state/effect hooks or runtime equivalents"],
+   :serialized-sha256
+   "145fc07b88ddf7064efe4c80742f3f600ea4c5f9a5e3ea8ba3b50c78f01b1bf8",
+   :file-sha256
+   "8bab9ee77b19ea5bb1ce5b640902950e5245ef2bb6e27c2d15e5e26bd91dc5e1",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "DOM/event capabilities, style/asset dependencies, hydration or server/client boundary"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "DOM/event capabilities, style/asset dependencies, hydration or server/client boundary"],
+   :serialized-sha256
+   "acfac12ad477d74ea3ce94953faf1e3c0f0693bdfa5481ad1b21a4a5f08424b7",
+   :file-sha256
+   "079f81b4135c6b0e9d0a788db31afdd8b5c0962655ed312d1e255abdf4da9325",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "source-map/hot-reload identity and user-input taint policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "source-map/hot-reload identity and user-input taint policy"],
+   :serialized-sha256
+   "1a014e2e07769c455dd42b9ad3cffe8e34c4872331b217241289539a17a310e6",
+   :file-sha256
+   "3d9f4387c3f18c07e96f50cb7cf105e3a3b982cc5d5c6741a00adaab5cdb6b2d",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "must not hide DOM, storage, network, timer or browser capability use behind ordinary pure functions"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "must not hide DOM, storage, network, timer or browser capability use behind ordinary pure functions"],
+   :serialized-sha256
+   "dd4c0928725242d2adbf423da011233ba775db826b2fee94a29ad751d71f7969",
+   :file-sha256
+   "0140aaea280b4192a01d98ed6503e70512cd0216794bfbdc0a204c28f42b5660",
+   :scope :private-source-DATA-model}
+  {:control [:clause :ui "Actual selected-UI fixtures"],
+   :refused true,
+   :reason [:source-obligation :ui "Actual selected-UI fixtures"],
+   :serialized-sha256
+   "520326251c6ec17def8cc65e1d48f3b428ab692408409b971de24f99a5504169",
+   :file-sha256
+   "5ca93e22eb075b4a34f7520c723d94fba807d055fc10390b179e95d15808d95c",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :ui "refuse missing required fields or hidden authority"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "refuse missing required fields or hidden authority"],
+   :serialized-sha256
+   "ff23ed4719923413af02c658976233742547136a1520a15fd44c479670ef8c73",
+   :file-sha256
+   "04da7b44f239426a79d032af288b7bcc6916fb97ad45f9c761f0b5c6040207c5",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "non-UI JS output does not require UI artifacts or a UI runtime"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "non-UI JS output does not require UI artifacts or a UI runtime"],
+   :serialized-sha256
+   "2a3dab9a3e31bd7a3a4c9680d19e7811adf2060f636657e1ff00a57398726ee1",
+   :file-sha256
+   "c68e8024ad47a87314f955c03607cd6842b4ff47010433a35fa8e827ae1ec08e",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :ui "one UI fixture establishes no general UI support"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "one UI fixture establishes no general UI support"],
+   :serialized-sha256
+   "b8f5d0ebc0a703f742ec89ff0c293e05c8cb3fe82a996826c845925882ecd690",
+   :file-sha256
+   "11acdcafceeb286125bf3001058e054228f04562ee34aa38e9c7f7b536175c20",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :ui
+    "JSX/UI transform is required when used, not made universal"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :ui
+    "JSX/UI transform is required when used, not made universal"],
+   :serialized-sha256
+   "e8a515579c7098e7406583448811347cb1c59bb894bdf591437b43a4c6cbe59d",
+   :file-sha256
+   "9a81f8435ac861107ee61c26aba521885af6cd0bd3bd6b852b2d8abf965f2660",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "Diagnostics bind source span, MIR operation or domain anchor, runtime, module format, host symbol/package id"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "Diagnostics bind source span, MIR operation or domain anchor, runtime, module format, host symbol/package id"],
+   :serialized-sha256
+   "fb2e6458de7353ddea2cf208f8f31a05a3ae358d81b1212d5aa9da78711d6a03",
+   :file-sha256
+   "6a9cfb666c8854ce4d92edd8c4a36161f834d19579cffba5655dee2bff79d268",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "missing effect/capability/schema fact, selected adapter or rejection, and remediation"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "missing effect/capability/schema fact, selected adapter or rejection, and remediation"],
+   :serialized-sha256
+   "cdaf1dd543b0036f33be286ff8fb65369edf3843ad6d87d09bd55c86a433794a",
+   :file-sha256
+   "bbbc221a5df9468b45a75d6116860f79a0efcedf7d27b55e9175946c7a717aaf",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "Actual conformance products demonstrate ESM and each selected runtime target"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "Actual conformance products demonstrate ESM and each selected runtime target"],
+   :serialized-sha256
+   "a6b76844fba04f45c7ca67c71d1f8e2a8329988f7dfd62635e684e96aeb6d10c",
+   :file-sha256
+   "0d9b645fd087a3f762544af999da6462f2747a7c6d1708cee63687f696f96113",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "truthful exported TS APIs, source/generated-origin preservation, host capability manifests, accepted/refused package imports"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "truthful exported TS APIs, source/generated-origin preservation, host capability manifests, accepted/refused package imports"],
+   :serialized-sha256
+   "72c6a9af1ae3b63bf15852060de2fa0efbc5c924b27999f6e90e90b942a5d045",
+   :file-sha256
+   "bed05b1632ba7b90ef0097ed68406ce2a7de50a6d7948a3f59223b380c1fa6f4",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "checked nullish/exception/rejected-promise translation, Number/BigInt/typed-array and boundary cases"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "checked nullish/exception/rejected-promise translation, Number/BigInt/typed-array and boundary cases"],
+   :serialized-sha256
+   "0c20f0a5da594a3a7085d624e1291dec04c5821bf7c43774c171a68b5fed8bba",
+   :file-sha256
+   "11f59339b223a6b12f3659a8d6d21d2e4654725486e40791d0be860501d02ed4",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "async/callback records, UI metadata only when enabled"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "async/callback records, UI metadata only when enabled"],
+   :serialized-sha256
+   "295db9f19845e6a9986252e6311aa3d2ec42960f63c908c6ea224b0feb63ceaf",
+   :file-sha256
+   "21d746a65c84ac66ab56db175343bfbcb50a36d596eded2e312e0068c6669115",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "rejection of eval/prototype mutation/ambient globals/lossy conversions and differential execution against MIR reference fixtures"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "rejection of eval/prototype mutation/ambient globals/lossy conversions and differential execution against MIR reference fixtures"],
+   :serialized-sha256
+   "ea251d757c5d0bbdc6ca4197bac8c746666cf7dd4b97d423434e66fc16ac0b85",
+   :file-sha256
+   "019f4824fbacb546f2d9bf4bf40b05c2fd939b192fa32ebe9b8137330168d95e",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "authentic backend-conformance producer's real execution/comparison, independent metadata, rejection and replay/availability records"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "authentic backend-conformance producer's real execution/comparison, independent metadata, rejection and replay/availability records"],
+   :serialized-sha256
+   "4912203079baa54d10cf186597d6b04fe7a7126e706c62d5468b01702d7ba66b",
+   :file-sha256
+   "98d6185b7ce4cf5269fefda85e5112c63db75e7d310708243dd11d904b67c26e",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "unavailable target or comparator evidence remains an explicit gap, not a pass"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "unavailable target or comparator evidence remains an explicit gap, not a pass"],
+   :serialized-sha256
+   "5a87827236736f1d59ba25246da8e440b8175c45d7e90ca938b053b6fabf4e87",
+   :file-sha256
+   "e3fc87a25225abf58963f23af9738474be7984782b99ec899c3226a8561a82d6",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "Data labels, unexecuted fixture schemas, package identity and TS declarations are not runtime validation, backend conformance or release acceptance"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "Data labels, unexecuted fixture schemas, package identity and TS declarations are not runtime validation, backend conformance or release acceptance"],
+   :serialized-sha256
+   "05d6b497f8c0f9ddad890f0af0258c5a0690c551cad2ac1cf3760947dca52be1",
+   :file-sha256
+   "a68dd195b576cfa183125e68eb78b0a2333304f7840b636d2149348ba7964e39",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "Preserve every prior criterion, literal outcome ID and Open status"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "Preserve every prior criterion, literal outcome ID and Open status"],
+   :serialized-sha256
+   "1cc5437f0d2d04f1f583e9a7bc35ee6a298144e65832e54159adc6f196efcdb2",
+   :file-sha256
+   "a7044d895987813dffa2981c5f710e7dcc39f77288e84e71b1e0f27f2b810f09",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "confers no implementation, source-review, final-denominator, release, self-hosting or integration acceptance"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "confers no implementation, source-review, final-denominator, release, self-hosting or integration acceptance"],
+   :serialized-sha256
+   "224d544c6ee6b5e8d06654d800015159b66d44630c1fdc0328f54041cc1e2700",
+   :file-sha256
+   "bf0796f66a18bd3ef36ecd20e344dc97c30af3f47d04c8ebd669594608f3c13f",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-TARGET unsupported runtime/module/ECMAScript/bundler assumptions"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-TARGET unsupported runtime/module/ECMAScript/bundler assumptions"],
+   :serialized-sha256
+   "c17231e6896f6fe09274ad03f3fa853eed45c7a33043911453c05a57fbaeff43",
+   :file-sha256
+   "2353f9f7b1c4200a663cf1237564e83289adf28a57b566a67ab4e9ea3041fd08",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-GLOBAL host access without effects/capabilities"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-GLOBAL host access without effects/capabilities"],
+   :serialized-sha256
+   "9746e3397aa8698eaa5dcd279dcb39ea034aba9811acc68b7397a3e455349f5c",
+   :file-sha256
+   "6c15083b24392236a7c98aedacdb36ed6ea3bb066318e1187a1a2ee970bccae0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-IMPORT untyped, side-effectful, denied or version-unstable imports"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-IMPORT untyped, side-effectful, denied or version-unstable imports"],
+   :serialized-sha256
+   "ea0b907497765579ab583bce579d9c540fa605101b8b0ce944053cd154f08345",
+   :file-sha256
+   "c1706e90a804eea5f62d7dff284fd059ca2442bcdf7bef8696d66431e654c464",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :verification "B6-NULLISH unchecked null/undefined"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-NULLISH unchecked null/undefined"],
+   :serialized-sha256
+   "ec2b8e0cf5a34d7cb41189266747de86d415c556da70499b637ae6aa8d7b2446",
+   :file-sha256
+   "2158d8d8cc95bf6def4dbc94ba26c77f5df5adc76a06341a1de50b6b9af9e748",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-EXCEPTION untranslated exceptions/rejected promises"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-EXCEPTION untranslated exceptions/rejected promises"],
+   :serialized-sha256
+   "8636008293b9cf2812a378557c36ed1b6766a629ba13c2b71428f843ef4333e6",
+   :file-sha256
+   "e176ad107043c012b61ddd5ff0e4ec2a7fec5093b6520f9b39cdb8a45a086618",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-NUMERIC precision loss, invalid BigInt/Number mixing, unchecked overflow or JSON numeric boundaries"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-NUMERIC precision loss, invalid BigInt/Number mixing, unchecked overflow or JSON numeric boundaries"],
+   :serialized-sha256
+   "675f7ae3da8412b18be2d530c0858f024cee7bb101275c76676bb5774907d8f2",
+   :file-sha256
+   "928bc5e6d2928b6fb2ad0a717685618d15a402e0e906c950390f063b5ca535de",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-EVAL dynamic eval/Function/code loading without policy"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-EVAL dynamic eval/Function/code loading without policy"],
+   :serialized-sha256
+   "42167c47316cffed028d6debd41f0425b5f9c5e5961ccf7c38005c33577d6f08",
+   :file-sha256
+   "10d7cf0bb43c8cade8532ca6c2ea133903e67f5cf8585e285ad3a3506eb0ccac",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-PROTOTYPE unsafe prototype/layout assumptions"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-PROTOTYPE unsafe prototype/layout assumptions"],
+   :serialized-sha256
+   "b2efd7bc9a62727ffa605e3d87d2e57e714623ea061c2a135a6d7a9506af7f08",
+   :file-sha256
+   "eabbd32887bbbd90bab7bcf483e4c660d1ff26f122aec7728fa3738bb5dd75ee",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-ASYNC absent async/cancellation/event-loop metadata"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-ASYNC absent async/cancellation/event-loop metadata"],
+   :serialized-sha256
+   "35e536500f0d8e4f3433ce57ecfb16cbb4a676ed14e6250812ff44966ed0a766",
+   :file-sha256
+   "7aba7e67fc482146b7ec31b612849b349fa050bda1fec8f2eda7e1dce18e0aac",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause
+    :verification
+    "B6-UI missing selected-UI schema/maps/capability records"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-UI missing selected-UI schema/maps/capability records"],
+   :serialized-sha256
+   "081615253826b8f14e38c4fda865eac3434956ca69f437dce1105694dbfca8fa",
+   :file-sha256
+   "8b490b3f259990bcf8b7079dfeb7e8956d8fee07aca45fbc7b4df73dff2608e7",
+   :scope :private-source-DATA-model}
+  {:control
+   [:clause :verification "B6-MANIFEST incomplete JS/TS artifacts"],
+   :refused true,
+   :reason
+   [:source-obligation
+    :verification
+    "B6-MANIFEST incomplete JS/TS artifacts"],
+   :serialized-sha256
+   "d5fcf17bf22baa1f391b77f8ec8021783a7b312df9070080ec6972b11cb7aa7c",
+   :file-sha256
+   "e0832facdff23490d38f91d4960ed48b0cab777fd493bd1e6552792d5ec06081",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 20],
+   :refused true,
+   :reason [:complete-routing 20],
+   :serialized-sha256
+   "f4e80e751c60a84fe69f875a338515bd2a5583b7087e5423041b3db152e247b4",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 27],
+   :refused true,
+   :reason [:complete-routing 27],
+   :serialized-sha256
+   "84a2c0d637dde2542ae0d604248bd3f26ecc026dd6cdfea7b87e15df7d0a4f38",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 24],
+   :refused true,
+   :reason [:complete-routing 24],
+   :serialized-sha256
+   "eda4eaf2ca452ff3ec84e2bd92af2a946417f0dde84ffadfa9010966fe94c8ad",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 39],
+   :refused true,
+   :reason [:complete-routing 39],
+   :serialized-sha256
+   "b811120977efa635525ce62f4149dd76e705a7cc0eba76eb91b5c39e26afce4b",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 46],
+   :refused true,
+   :reason [:complete-routing 46],
+   :serialized-sha256
+   "00469691eb5349183de84616d4d3394cd114b9b74cc65b368bad357b2bb01bff",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 4],
+   :refused true,
+   :reason [:complete-routing 4],
+   :serialized-sha256
+   "beec5edcb6ca8d25f255a67eab83a4148fb38e7c199d4f75ac60c251213d3d5b",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 15],
+   :refused true,
+   :reason [:complete-routing 15],
+   :serialized-sha256
+   "5c55dcf9ff0a8d96db210f7105b2862847a147e936bcc891de8e725ca9f3082c",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 50],
+   :refused true,
+   :reason [:complete-routing 50],
+   :serialized-sha256
+   "0a9a87262386f2d8ba4d0d042b87996721100af76b3275b44f1650bf12db8807",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 21],
+   :refused true,
+   :reason [:complete-routing 21],
+   :serialized-sha256
+   "c61fab493dbb453a3e3dc953e5c9379a1809fa519fa6f314b05307d238e245dd",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 31],
+   :refused true,
+   :reason [:complete-routing 31],
+   :serialized-sha256
+   "28ee13455fd272e318cf16718b92042c1386cac72780c88180998ddbe6afc795",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 32],
+   :refused true,
+   :reason [:complete-routing 32],
+   :serialized-sha256
+   "7de0453e697ce28cb96bf5f2f99f13924e5b9000da0c7131d18b098807b12bb8",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 40],
+   :refused true,
+   :reason [:complete-routing 40],
+   :serialized-sha256
+   "5f10f0033ecfbbeca652ec1940837159c97fe96b1fd0679ca6229284fac7420c",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 33],
+   :refused true,
+   :reason [:complete-routing 33],
+   :serialized-sha256
+   "49cb811547691afb50499063daf0632d384f408f760154494628936000533de8",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 13],
+   :refused true,
+   :reason [:complete-routing 13],
+   :serialized-sha256
+   "8675d69cdb1b4445d696b3b528f75916b3ca69be9de810449e442aa24efc6d19",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 36],
+   :refused true,
+   :reason [:complete-routing 36],
+   :serialized-sha256
+   "176bfe2e3609ba1a4dcf52d959659fd4da97f88f4000ef9b86e757365cd5232c",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 41],
+   :refused true,
+   :reason [:complete-routing 41],
+   :serialized-sha256
+   "14cef2da793516387ae404fca70863b4f934b0c64a923bc0f5d1613b81717f45",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 43],
+   :refused true,
+   :reason [:complete-routing 43],
+   :serialized-sha256
+   "62929b3c4aa5061b43a69611c5064238ed895ede579b70b5d5bd83fcb0fd4f72",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 29],
+   :refused true,
+   :reason [:complete-routing 29],
+   :serialized-sha256
+   "9f9a7afb3394766e8ee2ff811e6e1f87fcddafdb7e6a76562b5b0ccaac8a0739",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 44],
+   :refused true,
+   :reason [:complete-routing 44],
+   :serialized-sha256
+   "8f9bbc99cec20f35ed3a18950394005f8c84a0c15d2c7827697f80c9d6502c4d",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 6],
+   :refused true,
+   :reason [:complete-routing 6],
+   :serialized-sha256
+   "a3419a3a8e9329f4a7fb957b933f22f0c22a8fbb2f98a07cc38527f14c88ae94",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 28],
+   :refused true,
+   :reason [:complete-routing 28],
+   :serialized-sha256
+   "e56c4beafb54b734610ca8ca8bf5f82bc871b4c2c7bb3c9ecfe13f397536f8d6",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 25],
+   :refused true,
+   :reason [:complete-routing 25],
+   :serialized-sha256
+   "cbd72477a65bbf582858919b1f05afb4fe0aa064c73826bb8eaa5d7d0d8f0751",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 17],
+   :refused true,
+   :reason [:complete-routing 17],
+   :serialized-sha256
+   "ad4669e9c17cda89d4efbf0d35b0b5a4e5d3509b6a9cf7ba26482cb3e7b0eb6c",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 3],
+   :refused true,
+   :reason [:complete-routing 3],
+   :serialized-sha256
+   "456350be1306547e0b4ff00a078a89bd8c660a54c3e6aa4ef7588f136e2891d3",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 12],
+   :refused true,
+   :reason [:complete-routing 12],
+   :serialized-sha256
+   "2889eff3bbc8c32e1fc16d5c3257c7774fcc62f3418f43e86ae7c87e9bd265c5",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 23],
+   :refused true,
+   :reason [:complete-routing 23],
+   :serialized-sha256
+   "845b248f67b41eab4e50cf52e66564d99e94331aa31da80919bf567aff29e4be",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 47],
+   :refused true,
+   :reason [:complete-routing 47],
+   :serialized-sha256
+   "69365d5d54494445ccd19d9c7d39cd150e571d94bf89ca13d2e6ecb4ce9c560d",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 35],
+   :refused true,
+   :reason [:complete-routing 35],
+   :serialized-sha256
+   "8c1454d72d194f289ce03938a829bd246f2729805144111d0e239e65c3d29609",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 19],
+   :refused true,
+   :reason [:complete-routing 19],
+   :serialized-sha256
+   "26d4be0f4b95f537395091cc6cfae7c6ffd39f172507e881479a484d6f8b53cb",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 45],
+   :refused true,
+   :reason [:complete-routing 45],
+   :serialized-sha256
+   "87621d80c4510e55f04f4fc5972921756663cf1d9770ea7c3236a9caf7fa1ffa",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 16],
+   :refused true,
+   :reason [:complete-routing 16],
+   :serialized-sha256
+   "206b097590f689bfee96f74164ec5614f4cb1642314d27019584297f926d157a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 10],
+   :refused true,
+   :reason [:complete-routing 10],
+   :serialized-sha256
+   "2109d3c368dc58c1e5041e3037183ee5fc29f19e6e46dd9bb9bfa8aa4d58c30e",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 37],
+   :refused true,
+   :reason [:complete-routing 37],
+   :serialized-sha256
+   "119d864b42b20f9dd9a45ddfea1f04e65a0dd20f9099a6f176040e0e07ba5fec",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 8],
+   :refused true,
+   :reason [:complete-routing 8],
+   :serialized-sha256
+   "354b1e6dd918b9b3e557b9ca3d9d8a23386d33d12dde5e2f5d175a18287b2860",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:atomic-routing-erasure 49],
+   :refused true,
+   :reason [:complete-routing 49],
+   :serialized-sha256
+   "8b9003686c720ff2a14d790afca23b97799fc8003aae55828f5a46440bfeaa30",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 20],
+   :refused true,
+   :reason [:condition 20],
+   :serialized-sha256
+   "cd38166df5ecb182e121c212346914c1ae13c138dd7b160623fa2bdb9ee4f034",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 15],
+   :refused true,
+   :reason [:condition 15],
+   :serialized-sha256
+   "116046cd44554bbef7858c70a1ab4888ff2c2b5079979ae37c02ea233fdc20dd",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 50],
+   :refused true,
+   :reason [:condition 50],
+   :serialized-sha256
+   "ac11ff92c1b2b87c8a5c2c12f71ac7de383a52f14bf4eb0e7ad5f7acca7dfacd",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 21],
+   :refused true,
+   :reason [:condition 21],
+   :serialized-sha256
+   "d77b590aaf7bda544d1fee363fa75c3f520cbf7bd07d9b6a50e5516a41377222",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 40],
+   :refused true,
+   :reason [:condition 40],
+   :serialized-sha256
+   "783f3428ea341bf3a255621f34419440ce9422a224f64aa9d8a6006bff8659b7",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 36],
+   :refused true,
+   :reason [:condition 36],
+   :serialized-sha256
+   "3399dff622ce3526af1eb3b44a8b9f71a0b410a35f7e6d9de54b76c64b1aa1a3",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 29],
+   :refused true,
+   :reason [:condition 29],
+   :serialized-sha256
+   "6720cf2ee0efb381cbd16034634422355d13f165eaaf21bbdf15778db1572cc2",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 17],
+   :refused true,
+   :reason [:condition 17],
+   :serialized-sha256
+   "a6a84a0e357f936daeb0f750acf2983207e22ab690877058664baf27a904214a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 12],
+   :refused true,
+   :reason [:condition 12],
+   :serialized-sha256
+   "e0dab00d9f7ae82d369e67d69da6411f500a48b9f8237d88011bd823faf0626e",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 35],
+   :refused true,
+   :reason [:condition 35],
+   :serialized-sha256
+   "5a254acf9c8501d6691ac5c88feda5a1cfe3931078a20bbf1eb1151298a49698",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 16],
+   :refused true,
+   :reason [:condition 16],
+   :serialized-sha256
+   "2d8e0ef6efcbf2a99b56c52c6bc56658cf9cae61a64dc55310e203328beacd4a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:conditional-role 37],
+   :refused true,
+   :reason [:condition 37],
+   :serialized-sha256
+   "39e79a1dbf57f7b116f70f39fe66f138de121d6877c653b32d1e72fdb2db9f31",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:owner-conjunction-deletion "backend/js/async-error-adapter"],
+   :refused true,
+   :reason
+   [:owner-complete-conjunction "backend/js/async-error-adapter"],
+   :serialized-sha256
+   "c70f838bb1e44f277ed9a40cca80c0d8301a21368b7815240b3fe1fe78b2b4d1",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:owner-conjunction-deletion "backend/js/dynamic-operation-gate"],
+   :refused true,
+   :reason
+   [:owner-complete-conjunction "backend/js/dynamic-operation-gate"],
+   :serialized-sha256
+   "d09466980e412d2333c129dad069dcd578b5357f9b5d5b7d331d121dc1a0542c",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:owner-conjunction-deletion "backend/js/host-binding-gate"],
+   :refused true,
+   :reason
+   [:owner-complete-conjunction "backend/js/host-binding-gate"],
+   :serialized-sha256
+   "f3aa9121e4b0ba4cce443edb8f972f673d54001883e875a4e7f291ddef50d7cf",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:owner-conjunction-deletion "backend/js/module-api-emission"],
+   :refused true,
+   :reason
+   [:owner-complete-conjunction "backend/js/module-api-emission"],
+   :serialized-sha256
+   "0adc3b10a1e8a1569b79b5c23aee7e75bbbebae0c805d94cc8d1a7fd46cefd68",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:owner-conjunction-deletion "backend/js/nullish-adapter"],
+   :refused true,
+   :reason [:owner-complete-conjunction "backend/js/nullish-adapter"],
+   :serialized-sha256
+   "b625a557af05d6492e037505ba92e8f05e44a17d560b724006046a114d97a0f9",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control
+   [:owner-conjunction-deletion "backend/js/numeric-lowering"],
+   :refused true,
+   :reason [:owner-complete-conjunction "backend/js/numeric-lowering"],
+   :serialized-sha256
+   "1b735efe361e41047695329fd0b73f6676dff2914bd3ea3e021e796c171a2e05",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control [:owner-conjunction-deletion "backend/js/ui-artifacts"],
+   :refused true,
+   :reason [:owner-complete-conjunction "backend/js/ui-artifacts"],
+   :serialized-sha256
+   "28af8789631af98b8466ea5da8933b3c32d97fb18eeb29cf749ac1d4908bf5e3",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :semantic-role-erasure,
+   :refused true,
+   :reason [:role 24],
+   :serialized-sha256
+   "bb7c7901c075ab86beec6c6f62f1365d689f4572cad3d2570c944fd6243b81e9",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :scalar-for-whole,
+   :refused true,
+   :reason [:claim-unit 28],
+   :serialized-sha256
+   "41c0a1384f25ab3a6534d2fff80a5b3eb55686680f8f29d5a626415f8efe9314",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :dedup,
+   :refused true,
+   :reason :facet-count,
+   :serialized-sha256
+   "2770f5fa617a91f8d8f8c33b41752a7b4b7a93aca9bcd5fa136272ae3574226d",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :deletion,
+   :refused true,
+   :reason :facet-count,
+   :serialized-sha256
+   "9ec29e3177cafdcef32ec1a3b8aa334298f74330c6a7f47b977f07ac90e3fbde",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :self-acceptance,
+   :refused true,
+   :reason :no-author-acceptance,
+   :serialized-sha256
+   "bc690e3dd9a1d566c634ee6fa66049d1528454dac165ae6e02d626429f3a39f2",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :runtime-claim,
+   :refused true,
+   :reason :no-implementation,
+   :serialized-sha256
+   "c6bb9a61f8513624df3cea932bd85cccf2bf83150c148cd69861d533b38731f0",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :denominator,
+   :refused true,
+   :reason :no-denominator,
+   :serialized-sha256
+   "f9088bbff201b02cc31b82ef0ec5ac15216611eddad671d641e9ad4eea14e10a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :index-adoption,
+   :refused true,
+   :reason :no-adoption,
+   :serialized-sha256
+   "c1aeb2d1d1bd204e89652ad0d15a3b1b2a7b733d14453aee6ef349c44df5ba3d",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :whole-component-authority,
+   :refused true,
+   :reason :actual-dependency-roles,
+   :serialized-sha256
+   "8b56ae24d2bb7e9bab6f0f4523e20188b97e8c916a61443121e03383760ef3b9",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :metadata-as-execution,
+   :refused true,
+   :reason :actual-dependency-roles,
+   :serialized-sha256
+   "2c59228347a8ed0fd82a9f4b954c0290c09226fcd01a13e465c085f7f1addad2",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :full-block-as-996-span,
+   :refused true,
+   :reason :small-span-length,
+   :serialized-sha256
+   "4d237c99491e271c4a2493390d26ac99bb32f04fb27a7248eb614c802c50a0b8",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :C18-renewal,
+   :refused true,
+   :reason :frozen-C18-not-relabelled,
+   :serialized-sha256
+   "99bcdd9623239b8c5f854d448cf80052cf1c903a5ab4a4d382f16aa346afcac9",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :wrong-task-id,
+   :refused true,
+   :reason :current-producer-envelope,
+   :serialized-sha256
+   "d24e3abb46a77288bf51f5a69ef9a55b26c5a00eccdd688678bc76ac44e96e45",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :coherent-wrong-criterion-task,
+   :refused true,
+   :reason :criterion-task-id,
+   :serialized-sha256
+   "0814f666e1b79fdb47f273cb3a9e348013f3630b7fadc6747581d7ba7466cd52",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :forged-pin,
+   :refused true,
+   :reason :witness-file,
+   :serialized-sha256
+   "ad45b3cde0a166bd9928c2ac6fa2f8cc6ad5d2152bc3bbc75b9a576adc7c75ff",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model}
+  {:control :executable-mode,
+   :refused true,
+   :reason [:mode "specs/backends-workflow/tasks.md"],
+   :serialized-sha256
+   "4461f8dd1fea6fa5b3da6f838f5d2c826eac3e22ccae3ab7ee89dff1811c042a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model,
+   :tree-mutation
+   {:path "specs/backends-workflow/tasks.md", :mode "100755"},
+   :tree-serialization-sha256
+   "30a074299e7b54e71125a585991311a7f279a6daaf55e660301c41ecb513d2e3"}
+  {:control :outside-path,
+   :refused true,
+   :reason :whole-tree-exact-seven,
+   :serialized-sha256
+   "4461f8dd1fea6fa5b3da6f838f5d2c826eac3e22ccae3ab7ee89dff1811c042a",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :scope :private-source-DATA-model,
+   :tree-mutation
+   {:path "outside-owned-scope", :mode "100644", :blob "bogus"},
+   :tree-serialization-sha256
+   "f3c89f223daba4f40251ed4078e7b2e00c714a8693d7af7c8e943d2e5dd8621c"}],
+ :kind :independent-B6-core-DATA-controls,
+ :source-stage "1e95777f44d2fc292c3cbd0fa185a53ceb5013ed",
+ :limits
+ [:private-model-not-Git-admission
+  :not-Gravity-or-backend-execution
+  :not-exhaustive-semantic-proof],
+ :unmodified-actual-source :pass,
+ :base "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+ :negative-count 174,
+ :subject "07d8a5616ce1d046ee22933854a346eeda6156f3"}
