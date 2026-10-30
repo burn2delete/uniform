@@ -376,3 +376,184 @@
 
 (deftest actual-macro-same-function-closed-state-change-after-resolve
   (check-fragment-mutation! :closed-over-state nil nil :closed-state))
+
+;; SOURCE PREPARATION ONLY. These exact vars have not run. They use the same
+;; fresh authentic parent/Resolve/public route above, without borrowing its
+;; historical results. Loading/running them requires separate runtime admission.
+;; This is one native step-slot alias control, not nested-child alias coverage
+;; or a callback/printer sentinel control; those definitions remain unimplemented.
+(defn- trace-step-alias [parent field]
+  (let [trace (:macro-expansion-trace parent)
+        step (first trace)
+        backing (object-array (mapcat identity step))
+        position (first (keep #(when (= field (aget backing %)) (inc %))
+                              (range 0 (alength backing) 2)))
+        value (when position (aget backing position))
+        changed (if (= :macro field)
+                  'rv1-changed-macro
+                  (when (and (string? value) (seq value))
+                    (str (subs value 0 (dec (count value)))
+                         (if (= \0 (last value)) \1 \0))))
+        aliased (clojure.lang.PersistentArrayMap. backing)
+        result (assoc parent :macro-expansion-trace (assoc trace 0 aliased))]
+    (when-not (and position (some? changed) (not= value changed) (= parent result))
+      (throw (ex-info "Trace alias must preserve the authentic parent before mutation"
+                      {:field field})))
+    {:parent result :before value :after changed
+     :mutate! #(aset backing position changed)
+     :restore! #(aset backing position value)
+     :restored? #(= step aliased)}))
+
+(defn- observe-trace-construction
+  [source parent invocation mutate! operation]
+  (let [trace (:macro-expansion-trace parent)
+        trace-var (implementation 'sh05-macro-trace-id)
+        verify-var (implementation 'sh06-resolution-verify-sh05)
+        run-var (implementation 'sh06-resolution-run-request!)
+        trace-id @trace-var verify @verify-var owner-run @run-var
+        events (atom []) calls (atom 0) returns (atom 0) mutated? (atom false)
+        roots (atom nil)
+        sample (fn []
+                 {:invocation-current? (= invocation ((implementation 'sh06-resolution-reader-invocation)))
+                  :proof-transaction-absent? (nil? ((implementation 'sh07-proof-transaction-context!)))
+                  :observed-roots-stable?
+                  (every? (fn [[var value]] (identical? value @var)) @roots)})]
+    (with-redefs-fn
+      {trace-var
+       (fn [path operand]
+         (if-not (and (= source path) (identical? trace operand))
+           (trace-id path operand)
+           (let [ordinal (swap! calls inc)
+                 event (merge (sample) {:event :trace-id-enter :ordinal ordinal
+                                        :resolve-returns @returns :operand operand
+                                        :stored-id (:macro-expansion-trace-id parent)})]
+             (swap! events conj event)
+             (when (= 2 ordinal)
+               (when-not (= 1 @returns)
+                 (throw (ex-info "Second trace ID was not reached after the actual Resolve return"
+                                 {:id "RV1-TRACE-REACHABILITY" :resolve-returns @returns})))
+               ;; The replay's full-trace equality has already succeeded to
+               ;; reach this call. Mutate its actual operand, not a copy passed
+               ;; to a replacement model. The delegate and stored ID stay fresh.
+               (when mutate!
+                 (mutate!)
+                 (reset! mutated? true)
+                 (swap! events conj {:event :trace-field-mutated :ordinal ordinal})))
+             (try
+               (let [result (trace-id path operand)]
+                 (swap! events conj {:event :trace-id-return :ordinal ordinal :result result})
+                 result)
+               (catch Throwable error
+                 (swap! events conj {:event :trace-id-throw :ordinal ordinal :error error})
+                 (throw error))))))
+       verify-var
+       (fn [value]
+         (swap! events conj (merge (sample) {:event :macro-enter
+                                            :same-parent? (identical? parent value)}))
+         (try
+           (let [report (verify value)]
+             (swap! events conj {:event :macro-return :report report})
+             report)
+           (catch Throwable error
+             (swap! events conj {:event :macro-throw :error error})
+             (throw error))))
+       run-var
+       (fn [& arguments]
+         (swap! events conj {:event :resolve-enter})
+         (let [result (apply owner-run arguments)]
+           (swap! returns inc)
+           (swap! events conj {:event :resolve-return})
+           result))}
+      (fn []
+        (reset! roots ((implementation 'resolution-construction-roots)))
+        (try
+          (let [value (operation)]
+            {:value value :events @events :mutated? @mutated?})
+          (catch Throwable error
+            {:error error :events @events :mutated? @mutated?}))))))
+
+(defn- check-trace-field-mutation! [field]
+  (reset! observations {:phase :constructing-fresh-trace-parent :field field})
+  (let [{:keys [source reader invocation parent]} (fresh-fragment-parent)
+        alias (trace-step-alias parent field)
+        parent (:parent alias)
+        stored-id (:macro-expansion-trace-id parent)
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
+        vars (mapv implementation ['sh05-macro-trace-id 'sh06-resolution-verify-sh05
+                                   'sh06-resolution-run-request!])
+        before-roots (into {} (map (fn [var] [var @var]) vars))]
+    (try
+      (let [positive (observe-trace-construction source parent invocation nil construct)
+            _ (reset! observations {:phase :positive-trace-reachability :field field
+                                    :events (:events positive)})
+            _ (when-let [error (:error positive)] (throw error))
+            entered (filter #(= :trace-id-enter (:event %)) (:events positive))
+            _ (when-not (and (= :complete (get-in positive [:value :capability-based-proof :status]))
+                             (= [1 2] (mapv :ordinal entered))
+                             (= [0 1] (mapv :resolve-returns entered)))
+                (throw (ex-info "Authentic positive did not reach the selected two trace-ID calls"
+                                {:id "RV1-TRACE-REACHABILITY" :events (:events positive)})))
+            public (b/sh06-resolution-artifact-verification
+                     (:value positive) :gravity.bootstrap/legacy invocation)
+            _ (when-not (= :passed (:status public))
+                (throw (ex-info "Fresh public trace positive failed"
+                                {:phase :independent-positive :failed-checks (:failed-checks public)})))
+            changed (try
+                      (observe-trace-construction source parent invocation (:mutate! alias) construct)
+                      (finally ((:restore! alias))))
+            events (:events changed)
+            entered (filter #(= :trace-id-enter (:event %)) events)
+            returned (filter #(= :trace-id-return (:event %)) events)
+            mutated (first (filter #(= :trace-field-mutated (:event %)) events))
+            failed (some #(when (and (= :macro-return (:event %))
+                                     (= :failed (get-in % [:report :status]))
+                                     (false? (get-in % [:report :checks :trace-replay-current?])))
+                            (:report %)) events)
+            result {:phase :trace-control-complete :field field
+                    :positive-events (:events positive) :public-positive-report public
+                    :changed-events events :changed-error (:error changed)
+                    :reached-second-id? (= [1 2] (mapv :ordinal entered))
+                    :earlier-gate-refusal? (not (:mutated? changed))
+                    :before (:before alias) :after (:after alias)
+                    :alias-restored? ((:restored? alias))
+                    :callback-printer-control-implemented? false
+                    :nested-child-alias-control-implemented? false
+                    :no-verifier-report-substitution? true :whole-rv1-closed? false}]
+        (reset! observations result)
+        (is (:reached-second-id? result))
+        (is (= [0 1] (mapv :resolve-returns entered)))
+        (is (= 1 (count (filter #(= :trace-field-mutated (:event %)) events))))
+        (is (some? mutated))
+        (is (false? (:earlier-gate-refusal? result)))
+        (is (= [1 2] (mapv :ordinal returned)))
+        (is (= stored-id (:result (first returned))))
+        (is (not= stored-id (:result (second returned))))
+        (is (some? failed))
+        (is (some #{:trace-replay-current} (:failed-checks failed)))
+        (is (= "C5-UNRESOLVED" (:id (ex-data (:error changed)))))
+        (is (nil? (:value changed)))
+        (is (= stored-id (:macro-expansion-trace-id parent)))
+        (is (every? :same-parent? (filter #(= :macro-enter (:event %)) events)))
+        (is (every? #(and (:invocation-current? %) (:proof-transaction-absent? %)
+                         (:observed-roots-stable? %)) entered))
+        (is (:alias-restored? result)))
+      (finally
+        ((:restore! alias))
+        (is ((:restored? alias)))
+        (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
+
+(deftest actual-macro-trace-input-syntax-id-mutation-at-second-id
+  (check-trace-field-mutation! :input-syntax-id))
+
+(deftest actual-macro-trace-output-syntax-id-mutation-at-second-id
+  (check-trace-field-mutation! :output-syntax-id))
+
+(deftest actual-macro-trace-macro-mutation-at-second-id
+  (check-trace-field-mutation! :macro))
+
+(deftest actual-macro-trace-macro-version-mutation-at-second-id
+  (check-trace-field-mutation! :macro-version))
+
+(deftest actual-macro-trace-replay-id-mutation-at-second-id
+  (check-trace-field-mutation! :trace-replay-id))
