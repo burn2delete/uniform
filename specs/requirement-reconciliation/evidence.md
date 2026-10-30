@@ -3423,3 +3423,42 @@ Frozen Git tree identities were independently read back as C13
 `310c265fd5e2d97c0a12285d91ef074995756763`, matching the sealed receipts.
 The new current-source qualification is additive; older adoption reports keep
 their captured pending/excluded statements as history rather than being rewritten.
+
+Four-review publication uses metadata/census source
+`48f8241cfe98a046f5d64f78d1a5d09bfde198dc` and complete inventory source
+`4ffc2d90c49c68437238bceab847ec0bb81098f2`. Inventory SHA256 is
+`bc927c076603697b7392e5d9a26ad2e65608bfb629ebeba02455700f105208ea`;
+adoption SHA256 is
+`47934bbd68b15a8759118fcbbc9c3068f9529e29e2fc498425bd2fd2f6f4841b`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 original owners
+remain conserved. The 984/201/3 owner states are unchanged. The inventory has
+1,072 qualified semantic facets, 174 qualified contexts, two qualified retained
+superseded-history fragments, 748 pending proposals, 5,404 other formatting/
+hierarchy contexts, 20,328 pending complete predicates, 700 pending dependency
+joins and 357 pending owner/metadata adjudications. Every original facet remains
+present; source/history qualification supplies no implementation or denominator
+credit. The ten source refinements, original 833 Open records/931 witnesses and
+561 historical authorities/4,819 spans retain their exact earlier qualifications.
+
+Final checks pass: applicability 2 tests/68 assertions; coherent clause controls
+2/45; inventory 10/58 and serialized readback; SH 12/541 after generated writer
+completion; census 5/18; boundary 6/11; both document validators; generated SH
+and census checks; changed SH lint with zero findings; whitespace. Readback
+checks exact semantic/context/history ID partitions, four retained review-group
+references, all ten source refinements, current incremental witness pointer,
+C16 still pending and unchanged extension byte-only authority/five descriptor
+states. The 3/195 scoped ratio and all implementation statuses are unchanged.
+
+The orchestrator delivered a fifth, separately queued receipt while this
+four-review update was in progress: `/tmp/c16-independent-e32ada7e/receipt.edn`,
+reported SHA256
+`4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299`.
+Its reported frozen subject is `e32ada7ee3e588454e2fd323f34c26144e1e70d5`,
+tree `df7be4829dfc2b132b8cd8e10d74ca1acd74bbba`, task source
+`0cbc3d4c00c47831d7e3ab6cdb63e289707167a7` and C16 trace
+`1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1`.
+Reported scope is 114 facets/44 occurrences/29 conjunctions/six owners/three
+criterion spans with 38 refusals (27 coherent semantic cases). Raw receipt and
+current applicability remain unvalidated here. C16 is explicitly excluded from
+the four-review adoption and is the next intake; no later/main/implementation,
+release, held-operation or integration acceptance is inferred from its delivery.
