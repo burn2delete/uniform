@@ -1,0 +1,282 @@
+{:combined-production-definitions 41,
+ :full-source-controls
+ {:test 8, :pass 3389, :fail 0, :error 0, :type :summary},
+ :self-acceptance false,
+ :original-native-goal :blocked-unchanged,
+ :remaining
+ [:qualified-indexing-draft-excluded
+  :raw-parameter-carrier-count-admission-gap
+  :remaining-independent-PMK-and-inference-pools
+  :genuine-compiler-native-runtime-acceptance
+  :current-main-integration],
+ :whole-branch-or-form-overwrite false,
+ :ACC04-selected-tree "6d48a6819c3a840f36cd8c9b91f77fd5ef187293",
+ :ACC04-evidence-handoff "e045f907",
+ :independent-composition-review :pending,
+ :leases-platform-probes-bindings-CI-publication-integration 0,
+ :author-thread "01a183dd-8f35-7dc3-87a6-dd5899d9d22f",
+ :ACC04-selected-source "04ceaf61dc0ac7da6bc4e1909a4a744785276563",
+ :kind :complete-parameter-source-composition-handoff,
+ :model-files :six-exact-04ce-sources-only,
+ :List-source "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+ :Map-R1-source "a93ef34ba81f812d6142d9f8c560d926168c89b3",
+ :ACC04-handoff-sha256
+ "eb471e1232e0ace96882dffcb223a45c7cc713e46e49b8bd88e563241d49cb27",
+ :files
+ {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  {:mode "100644",
+   :blob "87e4040bd82ed44693f40a094bd259bce20ec6ab",
+   :sha256
+   "47cd88926cca6da19443f990abd21247ee11cafa95b99e0d7324df538c2a5e38"},
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  {:mode "100644",
+   :blob "1de4c9f2a42aee1838c336e94b32ce40970fd690",
+   :sha256
+   "8b24cdc3009c81ba2954a3ac6f15d271095a41107068da7bf80ddfa0643fea18"},
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  {:mode "100644",
+   :blob "31a43a9c7ad09c8be9add3d0d428e9bd274aec95",
+   :sha256
+   "4e07a95179e54c0423673d7c6b26364fe1f174b7e31caf7511415a2b2f6432a9"},
+  "bootstrap/clojure/test/gravity/types/private_map_cycle_test.clj"
+  {:mode "100644",
+   :blob "ce567366816093b0a5b240f24f2ebbff3dac75cb",
+   :sha256
+   "b2069e08db9f935f87ea1cc8b8fc54a44a8c84a1054a752f706e8ea36f9d148a"},
+  "bootstrap/clojure/test/gravity/types/private_map_fact_test.clj"
+  {:mode "100644",
+   :blob "8f369250504bda0e41b3b96c40c17259d1d0ecb3",
+   :sha256
+   "eee5b02d0a52a9f9b74d5bffc729728992c18bb9e8ea604dbf95dd03dabca1e2"},
+  "bootstrap/clojure/test/gravity/types/private_map_metadata_test.clj"
+  {:mode "100644",
+   :blob "1dc807a13545f07fdfa3c3e7b3fb6f5aefc686c2",
+   :sha256
+   "bc61c50380048da86cbf74f1bd27440a7b9ed49a547b792c1165e02b0a154f53"},
+  "bootstrap/clojure/test/gravity/types/private_map_parameter_test.clj"
+  {:mode "100644",
+   :blob "67fa62e5d2e691a196e3a65dd9a76403f1278e3a",
+   :sha256
+   "e539a0730ccbaef5cc728cac2826440ba4f0ce33e1e1791a8cc29bab1ebf6b58"},
+  "bootstrap/clojure/test/gravity/types/private_map_physical_test.clj"
+  {:mode "100644",
+   :blob "e022913f630f0ce07cffb20acf3151f19cabef0f",
+   :sha256
+   "6887164dd84e57ce4b99bcd1e029e3990080722ed054e15eee9eed4ce0845155"},
+  "bootstrap/clojure/test/gravity/types/private_map_source_test.clj"
+  {:mode "100644",
+   :blob "524e25371052547f2de30bb4fac6b19291902b7e",
+   :sha256
+   "4b7f9ff10f172339e4765497223e5c00dcb26ef189c6333b22909fd1ae5b9f62"},
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  {:mode "100644",
+   :blob "32e949ff8d0b2b60ad14def58955fbd1ade1c77c",
+   :sha256
+   "fc0505bcc601452fb8e0e096d6587b86d84317c9149ac73a3f615782f5d5fb4c"},
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  {:mode "100644",
+   :blob "b596e3e89c3e61add79c0a73e78a51ca089485cd",
+   :sha256
+   "eba6ab05bb75956e63ebc6f6b16ffdba226c6ce141aa8c00e8bdcbe72185b97d"},
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  {:mode "100644",
+   :blob "b1947ebc33c742122f06bdddb868cd0c8f5feef1",
+   :sha256
+   "171ab15f2e4c65eade11c9b13b3df4b6ff9818e196ff553f1a15795481824e09"},
+  "specs/accounting-removal/parameter-source-composition/README.md"
+  {:mode "100644",
+   :blob "7655e34f4cce5f6205db4206f41d64696700eb29",
+   :sha256
+   "7971d0ea6ef6248fb6e595b5901cda9846d337b8301f86cde9b83f130966b350"},
+  "specs/accounting-removal/parameter-source-composition/applied-selected-deltas.edn"
+  {:mode "100644",
+   :blob "774bd11affe3cf1c08d157e9a4989a82dd7570ea",
+   :sha256
+   "c4596846585c981d179a108f59715cd761365e9f9dbb34cc188ce30e4a11e5a9"},
+  "specs/accounting-removal/parameter-source-composition/check.clj"
+  {:mode "100644",
+   :blob "69bda7991f5bcf1e6bbcc67a9a18bc7ea843d386",
+   :sha256
+   "a4e1f99b5de7144d4878450e8d506f11540ee298d4fe017fcaa2fba59156ea59"},
+  "specs/accounting-removal/parameter-source-composition/history/arity-control-preparation-failure.log"
+  {:mode "100644",
+   :blob "9dbe0a8632991e3f024e8465bf1d3120336fb3fc",
+   :sha256
+   "3a794361f94e04728690b65ba0684d8558d0805b855f0659a7597396aab90495"},
+  "specs/accounting-removal/parameter-source-composition/history/intake-reader-failure.log"
+  {:mode "100644",
+   :blob "85f59007dda8054e033bd677b7a81f9ad83533a9",
+   :sha256
+   "5096eb2c90174d53fa5cfd8d31eec107f29224b9505690688e9b5f466bd004d0"},
+  "specs/accounting-removal/parameter-source-composition/history/patch-preparation-reader-failure.log"
+  {:mode "100644",
+   :blob "e949cc8865dcbc3ffb2a0f2a85cf02835d1c0f2e",
+   :sha256
+   "ceaa9d4b44de97b2ee2e64fceb4a6de35bcbd977572bbb663095f935b67a42e5"},
+  "specs/accounting-removal/parameter-source-composition/inputs/ACC04-handoff.edn"
+  {:mode "100644",
+   :blob "ebbe9125dc60b190cb01307b01c3a945daeef9cc",
+   :sha256
+   "eb471e1232e0ace96882dffcb223a45c7cc713e46e49b8bd88e563241d49cb27"},
+  "specs/accounting-removal/parameter-source-composition/inputs/List-receipt.edn"
+  {:mode "100644",
+   :blob "0c7903c2c4b1e35f08cb0493537eae77b6609480",
+   :sha256
+   "c657429c60e017a13a9c51d1529f33a7962f31aa9beb88e51a1ba940a291a499"},
+  "specs/accounting-removal/parameter-source-composition/inputs/Map-R1-receipt.edn"
+  {:mode "100644",
+   :blob "b4891209e43a0cf652b9c3646dbb096cf166c721",
+   :sha256
+   "bdf111c44fc280bc6538e194f031c6400ae9d494ccb4eaa99dbad1c25aa510e7"},
+  "specs/accounting-removal/parameter-source-composition/inputs/Map-original-CR-receipt.edn"
+  {:mode "100644",
+   :blob "115dae866ae3ab2c69d8bd6f42ac57618b3c6782",
+   :sha256
+   "1f8b566db6c5f1c09fef8b13bd9848ea79a226dcb57675d02e3890f87db81ef3"},
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-assessment.edn"
+  {:mode "100644",
+   :blob "966cd84d073211595dd6acdf287259abf5762f2c",
+   :sha256
+   "49c0a409f2921fdbb6885390a2f4071d24d93a6891efb372eed631be390471ed"},
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-freeze.edn"
+  {:mode "100644",
+   :blob "3c53482ed61607b2a66dd87249e1a70719a64760",
+   :sha256
+   "d64771ca82ba228dc0d8cc29ccd2b7f8316af368711ff144ccdf1ea61fe03ef7"},
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-result.edn"
+  {:mode "100644",
+   :blob "98edde3b9b68f82b6aa98204e2563997e6651d9e",
+   :sha256
+   "a2f82f4e280ebe79d2c216821e3ce818bf5bbe6d98a0c476fa01c296971f95ca"},
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-static-composition.edn"
+  {:mode "100644",
+   :blob "9da1aea3b89f6e1459709cdcdb6b12837d5435b8",
+   :sha256
+   "0373ed6e53000d6612509614dcfcd22cd2062abdb9c315d8f0e170dc6462e5b4"},
+  "specs/accounting-removal/parameter-source-composition/inputs/pmk-source-handoff-04ce.md"
+  {:mode "100644",
+   :blob "8f1b7d113a6fec314511efe679a3c7f5b90dd76c",
+   :sha256
+   "fa964c867f6599cf737adbce27e4cc45cc623223e44ce35474f275ede402c76f"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-conservation.edn"
+  {:mode "100644",
+   :blob "9b3a2c8a06257a13956e7def11eb20f72400ed03",
+   :sha256
+   "3c27820b246e9d2687b4d2910930800de8cecc187b5e71e0e85da511812cb5f0"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-review-consumption.edn"
+  {:mode "100644",
+   :blob "9f29d574ee80b405aa4ea0f44b0281cd94f05bf1",
+   :sha256
+   "160473538a6b3e0a199820dbaa1a10e7da05038f97ac1a64a94b52d076dd4c98"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-conservation.edn"
+  {:mode "100644",
+   :blob "e00042bfd5fcd081fbd9c8f16edc53fbdcd72248",
+   :sha256
+   "ea8f34c48203cb6b795b4e1cac11d7493c4a34409c7e82f27120f5d06789f107"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-review-consumption.edn"
+  {:mode "100644",
+   :blob "74c27c76b7cf2d291ce16ffe9d4b21c66bcc2757",
+   :sha256
+   "9e15ebaa772e3462e430d979ff12e7567c768e36ab6884e34beef1875cfed14f"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-conservation.edn"
+  {:mode "100644",
+   :blob "bbe56e9addd0e6894a804b3bc70d40d5941553c9",
+   :sha256
+   "f5345075324aa8f2c485e006f79fcfa35466f3ceaaa19bb41f01412dbe72fdfc"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-overlap.edn"
+  {:mode "100644",
+   :blob "d30095f4f52cf19d834fdceeb6f8a883068c1c07",
+   :sha256
+   "cffa822d0967a24e888898952524ace21be7a7937585d79715b7771e71c9e21f"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-review-consumption.edn"
+  {:mode "100644",
+   :blob "e54fb5cafe05859788ff2e0ff745b00c7f9ab02e",
+   :sha256
+   "54263527960a5cb8a7552c85af41700238fb5cdb45b3f4da964a1035ddd4576d"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-carrier.md"
+  {:mode "100644",
+   :blob "7d73667a491336a08e9be0d24afe95a72767a014",
+   :sha256
+   "08159c14b646c19c6014f69a98d23fc44c8960bf2be3de23e5b8bb2e480b035e"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-conservation.edn"
+  {:mode "100644",
+   :blob "cb5dca8853a91bc95441302218fb46e51c810c94",
+   :sha256
+   "985d63c5fc669029333ffa306e127780f280529abeb2da605fb72551d22a6b86"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-overlap.edn"
+  {:mode "100644",
+   :blob "587947a19847752665f0a2b2225210fb2b640e59",
+   :sha256
+   "f29f3b6735890aa9dec6de5be7d95088ce9979d9feb2d50ba36f83338c6b5032"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-residual.edn"
+  {:mode "100644",
+   :blob "2f28ba18b2e78dfa2b529dda082b69130e71ae5a",
+   :sha256
+   "a18d4ab3ae0ed3fd080a56e4ce91f903938a7f5e7abb4f7dde2e39b9a5106761"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-review-consumption.edn"
+  {:mode "100644",
+   :blob "c3f82aedc992a04240f491e1996768c1f6d670c0",
+   :sha256
+   "5965f62b8896ac3951b8b2ac8fe2d054ecd9bd33482bfbd46a90e7fdd9262631"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-conservation.edn"
+  {:mode "100644",
+   :blob "ce7238bdf93103eb18e2f114cd456172edbf99de",
+   :sha256
+   "ba40be01d7138d4499d0599a200506e14a480741fb6946a22d2bf92a9cb20ed6"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-review-consumption.edn"
+  {:mode "100644",
+   :blob "74289ced8f0edf90db4b1ba6154e7eb8d7f5b8e3",
+   :sha256
+   "a9211850a46a96a052e4e713b4f2d0f403fd5bf384c701481e72db3af956b589"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-conservation.edn"
+  {:mode "100644",
+   :blob "487cfc891c85be1c12a287d111336d4433ab1320",
+   :sha256
+   "ec10cf997f9f168f5d66446628b5fce52abf3cb06b0994f5474a7fd457399cd7"},
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-review-consumption.edn"
+  {:mode "100644",
+   :blob "7f4f744153047d5bdf396c70cb8956d7cb41922a",
+   :sha256
+   "88e30e823be7cb2c585edee8d90521a2f2de38c0fadef54828dbf5f453f31fc2"},
+  "specs/accounting-removal/parameter-source-composition/language-boundary.log"
+  {:mode "100644",
+   :blob "be1845253c332402f6ba8f5c374602d287ca3824",
+   :sha256
+   "4c94354a3566151730141d285a9fe05227a0cd47499255fd0e7a4b7996d32f38"},
+  "specs/accounting-removal/parameter-source-composition/negative-controls.edn"
+  {:mode "100644",
+   :blob "02fce73f7f56d852a68507cbf6ebece854792e9f",
+   :sha256
+   "577de6630ac6d726f0eed8baf86545df92bbbe1050373e912458bef2597201cb"},
+  "specs/accounting-removal/parameter-source-composition/source-controls-result.edn"
+  {:mode "100644",
+   :blob "39e6cdf3e5d28ade8d2cfd7d129265f69d0fcf4d",
+   :sha256
+   "a559ddf9e02695de8be01f5e1ec6cc33926ef5814e2e09b3d15a749a86de0aa7"},
+  "specs/accounting-removal/parameter-source-composition/source-controls.log"
+  {:mode "100644",
+   :blob "f451eda37cff2ec197cd2bebefb3028cdda07263",
+   :sha256
+   "71e6041e75be68d4f4d8b0246923be1d8001a6031fdd17eebdf248d6f4b83ac3"},
+  "specs/accounting-removal/parameter-source-composition/source-equations.edn"
+  {:mode "100644",
+   :blob "ccdc51a6fe179ee347cfaaaa3cd030021eab1dc5",
+   :sha256
+   "33b815d2f66989e7eae9141e5eb26e2888853930686553fcb32bf18da83b2e9c"},
+  "specs/accounting-removal/parameter-source-composition/source_forms.clj"
+  {:mode "100644",
+   :blob "b31547e797b042fc13a280c18e29c13f0a3ac0ab",
+   :sha256
+   "26c443cac9fec21d3343c91a6cbdafbe090e8c486855941a4d3c4f77a1fff109"}},
+ :all-other-production-bytes :main-identical,
+ :review-route
+ :Accounting-Reconciliation-one-FULL-affected-composition-review,
+ :base-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+ :PMK-definitions 31,
+ :genuine-semantic-model-compiler-Gravity-Bootstrap-kernel-native-runtime-execution
+ :UNRUN,
+ :base "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :branch "codex/parameter-source-composition",
+ :language-boundary {:test 6, :pass 11, :fail 0, :error 0},
+ :coherent-negative-controls 319,
+ :source-equations 46}

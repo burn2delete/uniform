@@ -543,15 +543,15 @@
         row (first (:constraints (constrain input)))
         facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
         request {:canonical-core-artifact core}
-        context (leaf 'body-lp-context request facts bindings 65536)
+        context (leaf 'body-lp-context request facts bindings)
         facts (assoc facts :list-parameter-context (:context context))
         fact {:argument-types [actual]}
         valid #(leaf 'body-local-arguments-valid? core % bindings edge call fact callee)]
     (is (= :accepted (:status context)) (pr-str context))
     (is (= row (get-in context [:context :rows :call])))
     (is (true? (valid facts)))
-    (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
-    (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+    (is (not (contains? context :work-count)))
+    (is (= context (leaf 'body-lp-context request facts bindings)))
     (doseq [changed [(assoc row :kind :equality)
                      (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
                      (assoc-in row [:rhs 0 :compatibility :actual-type] :gravity.type/list)
@@ -560,14 +560,14 @@
                      (assoc-in row [:rhs 0 :compatibility :preserves] [])
                      (assoc row :compatibility-rule-version :forged)]]
       (let [candidate (assoc facts :constraint-ledger [changed])
-            checked (leaf 'body-lp-context request candidate bindings 65536)
+            checked (leaf 'body-lp-context request candidate bindings)
             candidate (assoc candidate :list-parameter-context (:context checked))]
         (is (or (= :rejected (:status checked)) (false? (valid candidate))))))
     (is (false? (valid (dissoc facts :list-parameter-context))))
     (is (false? (valid (assoc facts :constraint-ledger []))))
     (is (false? (leaf 'body-normal-compatible? actual :gravity.type/list)))
-    (is (= :rejected (:status (leaf 'body-lp-context request facts (assoc-in bindings [:parameter :binding-class] :namespace) 65536))))
-    (is (= :rejected (:status (leaf 'body-lp-context request (assoc-in facts [:type-table :argument] :gravity.type/unknown) bindings 65536))))
+    (is (= :rejected (:status (leaf 'body-lp-context request facts (assoc-in bindings [:parameter :binding-class] :namespace)))))
+    (is (= :rejected (:status (leaf 'body-lp-context request (assoc-in facts [:type-table :argument] :gravity.type/unknown) bindings))))
     (is (false? (leaf 'body-arguments-valid? [:argument] [actual] [{:binding-id :parameter :type :gravity.type/list}] types)))))
 
 (deftest body-mixed-map-list-parameter-development-kernel
@@ -582,9 +582,9 @@
             facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
             request {:canonical-core-artifact core}
             arguments (mapv types (:argument-node-ids call))
-            context (leaf 'body-lp-context request facts bindings 65536)
+            context (leaf 'body-lp-context request facts bindings)
             valid (fn [candidate]
-                    (let [derived (leaf 'body-lp-context request candidate bindings 65536)]
+                    (let [derived (leaf 'body-lp-context request candidate bindings)]
                       (and (= :accepted (:status derived))
                            (true? (leaf 'body-local-arguments-valid? core (assoc candidate :list-parameter-context (:context derived))
                                         bindings edge call {:argument-types arguments} callee)))))]
@@ -593,8 +593,7 @@
         (is (true? (valid facts)))
         (is (= (if never-map? :sh08-list-parameter-compatibility-v2 :sh08-map-list-parameter-compatibility-v1)
                (:compatibility-rule-version row)))
-        (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
-        (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+        (is (not (contains? context :work-count)))
         (doseq [changed [(assoc row :kind :equality)
                          (assoc row :compatibility-rule-version :sh08-bare-list-parameter-v1)
                          (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
@@ -625,13 +624,13 @@
             row (first (:constraints (constrain input)))
             facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
             request {:canonical-core-artifact core}
-            context (leaf 'body-lp-context request facts bindings 65536)
+            context (leaf 'body-lp-context request facts bindings)
             checked-facts (assoc facts :list-parameter-context (:context context))]
         (is (= :accepted (:status context)) (pr-str context))
         (is (= row (get-in context [:context :rows :call])))
         (is (true? (leaf 'body-local-arguments-valid? core checked-facts bindings edge call {:argument-types [actual]} callee)))
-        (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
-        (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+        (is (not (contains? context :work-count)))
+        (is (= context (leaf 'body-lp-context request facts bindings)))
         (doseq [changed [(assoc row :kind :equality)
                          (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
                          (assoc-in row [:rhs 0 :compatibility :version] :sh08-bare-list-parameter-v1)
@@ -640,13 +639,17 @@
                          (assoc-in row [:rhs 0 :compatibility :element-binding :kind] :var)
                          (assoc-in row [:rhs 0 :compatibility :forgets] [:positional-element-types :static-length])]]
           (let [modified (assoc facts :constraint-ledger [changed])
-                derived (leaf 'body-lp-context request modified bindings 65536)]
+                derived (leaf 'body-lp-context request modified bindings)]
             (is (or (= :rejected (:status derived))
                     (false? (leaf 'body-local-arguments-valid? core (assoc modified :list-parameter-context (:context derived))
                                   bindings edge call {:argument-types [actual]} callee))))))
         (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
-          (is (= :rejected (:status (leaf 'body-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))
-        (is (= :not-applicable (:status (leaf 'body-lp-compatibility core call edge callee 0 :gravity.type/list nodes bindings 65536))))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (leaf 'body-mp-compatibility core call edge callee 0 (positional bad-members) nodes bindings)
+                                      (leaf 'body-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings))))))
+        (is (= :not-applicable (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                          (leaf 'body-mp-compatibility core call edge callee 0 :gravity.type/list nodes bindings)
+                                          (leaf 'body-lp-compatibility core call edge callee 0 :gravity.type/list nodes bindings)))))))
     (is (= {:status :accepted} (leaf 'body-lc-validate-types [type])))
 
     (is (= :accepted (:status (leaf 'body-lc-validate-types [{:kind :gravity.type/vector :shape :literal :element-types [type]}]))))
@@ -1101,7 +1104,7 @@
         ((ns-resolve upstream 'private-map-keys-typed-input))
         c7 (ns-resolve upstream 'invoke-c7)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-        parameter-context (leaf 'body-lp-context request facts bindings 65536)
+        parameter-context (leaf 'body-lp-context request facts bindings)
         facts (assoc facts :list-parameter-context (:context parameter-context))
         prepare #(leaf 'body-lq-context request % bindings %2)
         context (prepare facts 65536) facts (assoc facts :list-query-context (:context context))
