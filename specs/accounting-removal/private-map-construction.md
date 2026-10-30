@@ -58,8 +58,16 @@ explicit seams; these are not authentic compiler requests. One test reader
 error was corrected before the passing result; no failed result is promoted.
 
 The genuine SH08 controls receive absence assertions and coherent stale-field
-negative definitions only; they remain UNRUN. Independent source review is the
-publication gate. Result/proof/physical/parameter/map-source/entry/runtime pools,
+negative definitions only; they remain UNRUN. Independent affected review
+returned finite source-only PASS for `31183a4814dc991e33d095874edd5d3645838450`,
+tree `daed76363cd9bfc87c063d32bf20461287905a12`, with no actionable defect.
+The reviewer reproduced all 11 tests / 4,907 assertions, verified the conservation
+digest and source/consumer scope, and passed whitespace checks. Boundary/lint
+results remain implementation-owner observations.
+[Review consumption](private-map-construction-review-consumption.edn) records
+the exact input digests and completed independent reviewer turn; no duplicate
+review or new assessment is routed.
+Result/proof/physical/parameter/map-source/entry/runtime pools,
 actual compiler/native/runtime composition and main integration remain open.
 The original genuine-selector goal stays BLOCKED. NEW ACC09 v4 delivery, PR531
 merge and all denied/unknown operations remain held and are not retried or
