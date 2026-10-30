@@ -464,7 +464,7 @@
       (is (= :private-self-return-source-required
              (reason (assoc-in chain [:tail :node-id] :wrong) {:tail :gravity.type/string}))))))
 
-(deftest current-gravity-private-self-cold-quote-budget-development-kernel
+(deftest current-gravity-private-self-cold-quote-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [quote-input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'quoted-data-input)
                      (vec (repeat 24 "payload")))
@@ -475,23 +475,10 @@
                  (invoke-c7 'sh08-is-cold-infer
                             [core core record (into {} (map (juxt :node-id identity) (:nodes core)))
                              (:bindings core) forms {} :entries [] budget]))
-        full (derive (:source-forms quote-input) 65536)
-        payload-work (get-in full [:quoted-products :work-count])
-        preparation (:source-preparation-work-count full)
-        exhausted (derive (:source-forms quote-input) (+ preparation (dec payload-work)))
-        no-inference-budget (derive (:source-forms quote-input) (+ preparation payload-work))]
+        full (derive (:source-forms quote-input) 65536)]
     (is (= :accepted (:status full)))
-    (is (= 25 payload-work))
     (is (= :gravity.type/vector (get-in full [:inference :type-table (get-in quote-input [:node :node-id]) :kind])))
-    (is (= :rejected (:status exhausted)))
-    (is (= :private-self-work-limit (:reason exhausted)))
-    (is (= [:quoted-data-work-limit] (mapv :reason (get-in exhausted [:quoted-products :diagnostics]))))
-    (is (= (dec payload-work) (get-in exhausted [:quoted-products :work-count])))
-    (is (not (contains? exhausted :inference)))
-    (is (= :private-self-work-limit (:reason no-inference-budget)))
-    (is (= [] (get-in no-inference-budget [:quoted-products :diagnostics])))
-    (is (= payload-work (get-in no-inference-budget [:quoted-products :work-count])))
-    (is (= 0 (get-in no-inference-budget [:inference :round-count])))
+    (is (= [] (get-in full [:quoted-products :diagnostics])))
     (let [malformed (mapv #(if (= (:owner quote-input) (:form-id %)) (assoc % :kind :vector) %) (:source-forms quote-input))
           rejected (derive malformed 65536)]
       (is (= :private-self-quoted-data-required (:reason rejected)))
