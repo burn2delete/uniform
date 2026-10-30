@@ -1,5 +1,25 @@
 # PR502 preserved path reconciliation
 
+## Direct-call helper incorporation proposal
+
+`direct-call-inline-correspondence.edn` and its companion Markdown cover the
+two original emitter direct-call helpers at current main `c486a4d7`. Both
+complete historical bodies occur once inline, and both historical calls pass
+their declared parameter symbols exactly. Substitution of both bodies produces
+one complete current enclosing `let` subtree; all five outer `let` binding
+vectors and caller parameters remain identical. Full function/body/file,
+call/subtree/binding and dependency pins are recorded, with six effective
+source corruption refusals. Independent conditional source classification is
+pending. No whole-caller, DSE dispatch, reachability, call-frame, transitive or
+runtime equivalence follows; retained accounting remains unendorsed.
+
+The earlier DSE correspondence contributes only its two inline observations;
+no DSE mapping, old denied review or held operation is adopted or retried.
+The original 29/530/316 inventory remains unchanged. The updated private audit
+is triage only, not a missing-implementation verdict or completion census.
+PR584 advanced main while leaving all three assessed Gravity source files
+unchanged; older receipts retain their exact recorded bases and limits.
+
 ## Private source-product frozen review intake
 
 PR593 remains frozen at `c8f16877f822959b7a024aed6efefad511bfb868`, tree
