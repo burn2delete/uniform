@@ -141,10 +141,15 @@
     (is (not= (:applying-input-fingerprint bridge)
               (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
     (doseq [{:keys [path before after]} (:source-files bridge)]
-      (is (= (:commit after) (get-in view [:applying-source-pins path])))
+      (is (= (:commit after)
+             (if (= path "docs/self-hosting-slice-ownership.edn")
+               (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
+                       [:source-file :before :commit])
+               (get-in view [:applying-source-pins path]))))
       (is (= (:sha256 before)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
-      (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+      (when-not (= path "docs/self-hosting-slice-ownership.edn")
+        (is (= (:sha256 after) (sh-inventory/sha256 (slurp path)))))
       (is (= (:sha256 after)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path)))))
     (let [path "specs/reader-workflow/tasks.md"
@@ -161,10 +166,40 @@
             own (edn/read-string (sh-crosswalk/git-source
                                  "2e0292c61603aad200df397e397e94e3c7d24818" path))
             main (edn/read-string (sh-crosswalk/git-source incoming path))
-            current (edn/read-string (slurp path))]
+            current (edn/read-string (sh-crosswalk/git-source
+                                     "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7" path))]
         (is (= (merge (:standalone-test-owners own) (:standalone-test-owners main)
                       (:new-standalone-owners bridge))
                (:standalone-test-owners current)))))))
+
+(deftest reader-assembly-source-version-conserves-all-predecessor-entries
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        current (edn/read-string (slurp path))
+        conserved (reduce-kv (fn [record section added-path]
+                               (update record section dissoc added-path))
+                             current (:added-entries bridge))
+        view (sh-crosswalk/build)]
+    (is (= previous conserved))
+    (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= sh-crosswalk/reader-dispatch-mapping-review
+           (get-in view [:mapping-review :reader-assembly-predecessor-review])))
+    (is (= (get-in view [:reader-assembly-source-version :path])
+           (get-in view [:mapping-review :source-version-bridge])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong}
+                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source))))))
 
 (deftest pkg5-task-source-successor-preserves-population-and-review-history
   (let [view (sh-crosswalk/build)
