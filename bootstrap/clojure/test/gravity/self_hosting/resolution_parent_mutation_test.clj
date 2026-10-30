@@ -557,3 +557,148 @@
 
 (deftest actual-macro-trace-replay-id-mutation-at-second-id
   (check-trace-field-mutation! :trace-replay-id))
+
+;; Separate SOURCE-ONLY definitions; the five field controls above are unchanged.
+;; No target, callback, printer or provider has been executed by preparation.
+(def ^:dynamic ^:private *trace-second-event-context* nil)
+
+(defn- observe-trace-second-event [source parent invocation kind fail? operation]
+  (let [trace (:macro-expansion-trace parent)
+        trace-var (implementation 'sh05-macro-trace-id)
+        digest-var (or (ns-resolve 'gravity.digest 'sha256-output-hex)
+                       (throw (ex-info "Missing production digest writer port" {})))
+        trace-id @trace-var original-digest @digest-var original-pr @#'clojure.core/pr
+        port-var (case kind :digest-writer digest-var :printer #'clojure.core/pr)
+        original-port @port-var
+        selected-calls (atom 0) port-calls (atom 0) events (atom [])
+        sentinel (ex-info "Selected trace second-event sentinel"
+                          {:id "RV1-TRACE-SECOND-EVENT" :kind kind})]
+    (letfn [(enter! [function]
+              (let [event {:event :port-enter :ordinal (:ordinal *trace-second-event-context*)
+                           :port-call (swap! port-calls inc) :function function
+                           :installed-port @port-var}]
+                (swap! events conj event)
+                event))
+            (delegate! [function operation]
+              (let [event (enter! function)]
+                (try
+                  ;; Both events use the actual production delegate. Throw only
+                  ;; after it returns, never supply a digest/print result model.
+                  (let [result (operation)]
+                    (swap! events conj (assoc event :event :port-delegate-return))
+                    (when (and fail? (= 2 (:ordinal event)) (= 2 (:port-call event)))
+                      (throw sentinel))
+                    result)
+                  (catch Throwable error
+                    (swap! events conj (assoc event :event :port-throw :error error))
+                    (throw error)))))
+            (writer-port [output]
+              ;; This ONE callback object reaches the real scoped digest sink
+              ;; at both selected uses; only the dynamic production writer differs.
+              (delegate! writer-port #((:write-bytes! *trace-second-event-context*) output)))
+            (digest-port [write-bytes!]
+              (if *trace-second-event-context*
+                (binding [*trace-second-event-context*
+                          (assoc *trace-second-event-context* :write-bytes! write-bytes!)]
+                  (original-digest writer-port))
+                (original-digest write-bytes!)))
+            (printer-port [& values]
+              (let [frame (first values)]
+                ;; Sort-key printing remains fresh and is not a selected event.
+                ;; Select only C6's final canonical digest frame, on this trace.
+                (if (and *trace-second-event-context* (= 1 (count values))
+                         (vector? frame) (= 2 (count frame))
+                         (= :gravity/canonical-edn-v1 (first frame)))
+                  (delegate! printer-port #(apply original-pr values))
+                  (apply original-pr values))))
+            (trace-port [path operand]
+              (if (and (= source path) (identical? trace operand))
+                (let [ordinal (swap! selected-calls inc)]
+                  (binding [*trace-second-event-context* {:ordinal ordinal}]
+                    (try
+                      (trace-id path operand)
+                      (catch Throwable error
+                        (swap! events conj {:event :trace-delegate-throw :ordinal ordinal :error error})
+                        (throw error)))))
+                (trace-id path operand)))]
+      (let [port (case kind :digest-writer digest-port :printer printer-port)
+            result (with-redefs-fn {trace-var trace-port port-var port}
+                     #(observe-trace-construction source parent invocation nil operation))]
+        (assoc result :port-events @events :sentinel sentinel
+               :port-restored? (identical? original-port @port-var)
+               :trace-root-restored? (identical? trace-id @trace-var)
+               :context-restored? (nil? *trace-second-event-context*))))))
+
+(defn- check-trace-second-event! [kind]
+  (when (some? *trace-second-event-context*)
+    (throw (ex-info "Second-event control cannot borrow another trace scope" {})))
+  (reset! observations {:phase :constructing-fresh-second-event-parent :kind kind})
+  (let [{:keys [source reader invocation parent]} (fresh-fragment-parent)
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
+        positive (observe-trace-second-event source parent invocation kind false construct)
+        trace-events (filter #(= :trace-id-enter (:event %)) (:events positive))
+        port-events (filter #(= :port-enter (:event %)) (:port-events positive))]
+    (reset! observations {:phase :positive-second-event-reachability :kind kind
+                          :trace-events (:events positive) :port-events (:port-events positive)})
+    (when-let [error (:error positive)] (throw error))
+    (when-not (and (= :complete (get-in positive [:value :capability-based-proof :status]))
+                   (= [1 2] (mapv :ordinal trace-events))
+                   (= [0 1] (mapv :resolve-returns trace-events))
+                   (= [1 2] (mapv :ordinal port-events))
+                   (= [1 2] (mapv :port-call port-events)))
+      (throw (ex-info "Authentic positive did not reach both selected production events"
+                      {:id "RV1-TRACE-REACHABILITY" :kind kind})))
+    (let [public (b/sh06-resolution-artifact-verification
+                   (:value positive) :gravity.bootstrap/legacy invocation)]
+      (when-not (= :passed (:status public))
+        (throw (ex-info "Fresh public second-event positive failed"
+                        {:phase :independent-positive :failed-checks (:failed-checks public)})))
+      (let [changed (observe-trace-second-event source parent invocation kind true construct)
+            events (:events changed) ports (:port-events changed) sentinel (:sentinel changed)
+            entered (filter #(= :trace-id-enter (:event %)) events)
+            port-entered (filter #(= :port-enter (:event %)) ports)
+            port-thrown (filter #(= :port-throw (:event %)) ports)
+            trace-thrown (filter #(= :trace-id-throw (:event %)) events)
+            macro-thrown (filter #(= :macro-throw (:event %)) events)
+            reached? (and (= [1 2] (mapv :ordinal entered))
+                          (= [0 1] (mapv :resolve-returns entered))
+                          (= [1 2] (mapv :ordinal port-entered)))
+            result {:phase :second-event-control-complete :kind kind
+                    :positive-events (:events positive) :positive-port-events (:port-events positive)
+                    :public-positive-report public :changed-events events :changed-port-events ports
+                    :changed-error (:error changed) :sentinel sentinel
+                    :reached-second-event? reached? :earlier-gate-refusal? (not reached?)
+                    :nested-child-alias-control-implemented? false
+                    :no-verifier-report-substitution? true :whole-rv1-closed? false}]
+        (reset! observations result)
+        (is reached?)
+        (is (false? (:earlier-gate-refusal? result)))
+        (is (= [1 2] (mapv :port-call port-entered)))
+        (is (identical? (:function (first port-entered)) (:function (second port-entered))))
+        (is (identical? (:installed-port (first port-entered)) (:installed-port (second port-entered))))
+        (is (= [:port-enter :port-delegate-return :port-enter :port-delegate-return
+                :port-throw :trace-delegate-throw] (mapv :event ports)))
+        (is (= 1 (count port-thrown) (count trace-thrown) (count macro-thrown)))
+        (is (= 2 (:ordinal (first trace-thrown))))
+        (is (every? #(identical? sentinel (:error %))
+                    (concat port-thrown trace-thrown macro-thrown
+                            (filter #(= :trace-delegate-throw (:event %)) ports))))
+        (is (= [:trace-id-throw :macro-throw]
+               (mapv :event (filter #(#{:trace-id-throw :macro-throw} (:event %)) events))))
+        ;; C5's original catch contains the Macro Throwable and emits its own
+        ;; existing boundary diagnostic. Do not demand a substituted outer throw.
+        (is (= "C5-UNRESOLVED" (:id (ex-data (:error changed)))))
+        (is (not (identical? sentinel (:error changed))))
+        (is (nil? (:value changed)))
+        (is (= :passed (get-in (first (filter #(= :macro-return (:event %)) events)) [:report :status])))
+        (is (every? #(and (:invocation-current? %) (:proof-transaction-absent? %)
+                         (:observed-roots-stable? %)) entered))
+        (is (every? #(and (:port-restored? %) (:trace-root-restored? %) (:context-restored? %))
+                    [positive changed]))))))
+
+(deftest actual-macro-trace-same-writer-second-event-throws-after-original-write
+  (check-trace-second-event! :digest-writer))
+
+(deftest actual-macro-trace-same-printer-second-event-throws-after-original-print
+  (check-trace-second-event! :printer))
