@@ -146,6 +146,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/macro_run_storage.clj", "namespace": "gravity.macro-run-storage"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
       "test": {"path": "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj", "namespace": "gravity.self-hosting.macro-run-storage-test", "registration": "standalone"}
+    },
+    {
+      "id": "reader-artifact-assembly",
+      "kind": "production-stage-helper",
+      "owner": "sh-reader",
+      "source": {"path": "bootstrap/clojure/src/gravity/reader.clj", "namespace": "gravity.reader"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj", "namespace": "gravity.bootstrap", "owner": "sh-reader"},
+      "test": {"path": "bootstrap/clojure/test/gravity/reader/artifact_test.clj", "namespace": "gravity.reader.artifact-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
