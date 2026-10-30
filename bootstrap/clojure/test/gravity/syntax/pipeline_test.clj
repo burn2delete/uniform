@@ -12,6 +12,7 @@
 (defn- reader-operations [] (private-operation 'syntax-stage-reader-verification-operations))
 (defn- runtime-operations [] (private-operation 'syntax-stage-runtime-operations))
 (defn- view-operations [] (private-operation 'syntax-stage-reader-view-operations))
+(defn- assembly-operations [] (private-operation 'syntax-stage-assembly-operations))
 (defn- reader-path [] (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
@@ -144,11 +145,11 @@
            (set (keys (ns-publics 'gravity.syntax)))))
     (is (= 'gravity.syntax (:namespace contract)))
     (is (= :stage0-syntax-construction-verification-and-pinned-plan-runtime (:contract-boundary contract)))
-    (is (= ['clojure.core 'gravity.c3-syntax-verification]
+    (is (= ['clojure.core 'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
-    (is (= #{'gravity.c3-syntax-verification}
+    (is (= #{'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification}
            (set (map ns-name (vals (ns-aliases 'gravity.syntax))))))
     (is (= (set (keys (build-operations))) (set (get-in contract [:operation-inputs :build]))))
     (is (= (set (keys (reader-operations)))
@@ -157,6 +158,8 @@
            (set (get-in contract [:operation-inputs :runtime]))))
     (is (= (set (keys (view-operations)))
            (set (get-in contract [:operation-inputs :reader-views]))))
+    (is (= (set (keys (assembly-operations)))
+           (set (get-in contract [:operation-inputs :assembly]))))
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))
@@ -485,3 +488,94 @@
                         (finally (Thread/interrupted)))]
       (is (identical? interruption (first observed)))
       (is (true? (second observed))))))
+
+(defn- assembly-case [case]
+  (let [{:keys [source reader] :as actual} @case
+        report (bootstrap/c3-validate-c2-reader-artifact! source reader)]
+    (assoc actual :report report
+           :assembly (syntax/assemble-fresh-reader! source reader report (invocation) (assembly-operations)))))
+
+(def ^:private assembly-gravity (delay (assembly-case literal-gravity)))
+(def ^:private assembly-qst (delay (assembly-case literal-qst)))
+
+(deftest assembly-products-retain-real-stream-envelope-and-serialization-records
+  (doseq [case [assembly-gravity assembly-qst]]
+    (let [{:keys [source reader report artifact assembly]} @case
+          operations (assembly-operations)]
+      (is (= assembly (private-operation 'sh04-syntax-build-from-fresh-c2! source reader report (invocation))))
+      (is (= (:resolved-result assembly) (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])))
+      (is (= (:rich-syntax assembly) (:syntax-object-stream artifact)))
+      (is (= (:envelope assembly) (get-in artifact [:gravity-syntax-boundary :authenticated-envelope])))
+      (is (= :accepted (get-in assembly [:resolved-result :status])))
+      (is (= :passed (get-in assembly [:stream-verification :status])))
+      (is (= (get-in assembly [:serialization :semantic-payload])
+             (get-in assembly [:deserialization :semantic-payload])))
+      (is (= (:reader-binding assembly)
+             (:reader-binding (syntax/reader-semantic-binding
+                               source reader (syntax/semantic-source-id source (:source-unit-record reader) operations)
+                               operations))))
+      (is (= (:source-id (:source-unit-record reader))
+             (get-in assembly [:reader-authentication-provenance :actual-reader-source-id]))))))
+
+(deftest assembly-replays-real-results-and-rejects-stream-and-round-trip-substitution
+  (let [{:keys [source reader report]} @assembly-gravity
+        operations (assembly-operations) execute (:sh04-syntax-execute! operations)]
+    (doseq [[function change expected missing]
+            [['c3-syntax-stream-build-template #(assoc % :artifact :substituted) "C3-ID" :gravity-syntax-stream-template]
+             ['c3-syntax-stream-verify-resolved #(assoc % :status :failed) "C3-ID" :fresh-resolved-syntax-stream-verification]
+             ['c3-syntax-serialize-template #(assoc % :status :rejected) "C3-SERIALIZE" :gravity-syntax-stream-serialization]
+             ['c3-syntax-deserialize-template #(assoc % :semantic-payload nil) "C3-SERIALIZE" :gravity-syntax-stream-round-trip]]]
+      (let [ports (assoc operations :sh04-syntax-execute!
+                         (fn [path binding called arguments]
+                           (let [actual (execute path binding called arguments)]
+                             (if (= function called) (change actual) actual))))
+            diagnostic (ex-data (caught #(syntax/assemble-fresh-reader! source reader report (invocation) ports)))]
+        (is (= expected (:id diagnostic)))
+        (is (= [missing] (:missing-fields diagnostic)))
+        (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest assembly-custom-descriptors-cannot-retain-canonical-index-reuse
+  (let [{:keys [source reader report assembly]} @assembly-gravity
+        operations (assembly-operations)
+        index (ns-resolve 'gravity.bootstrap 'sh04-syntax-form-index)
+        descriptor (:sh04-syntax-source-descriptor operations)
+        transaction (:syntax-with-source-index-transaction operations)
+        canonical-observations (atom []) custom-observations (atom [])
+        canonical (syntax/assemble-fresh-reader!
+                   source reader report (invocation)
+                   (assoc operations :syntax-with-source-index-transaction
+                          (fn [artifact descriptor-operation thunk]
+                            (transaction artifact descriptor-operation
+                                         (fn []
+                                           (swap! canonical-observations conj
+                                                  (identical? (index artifact) (index artifact)))
+                                           (thunk))))))
+        custom (syntax/assemble-fresh-reader!
+                source reader report (invocation)
+                (assoc operations :sh04-syntax-source-descriptor
+                       (fn [seed form artifact & rest-arguments]
+                         (swap! custom-observations conj (identical? (index artifact) (index artifact)))
+                         (apply descriptor seed form artifact rest-arguments))))]
+    (is (= assembly canonical custom))
+    (is (= [true] @canonical-observations))
+    (is (= [false] @custom-observations))
+    (is (nil? @(ns-resolve 'gravity.bootstrap '*sh04-syntax-form-index-transaction*)))
+    (is (not (identical? (index reader) (index reader))))))
+
+(deftest semantic-reader-revision-retains-count-shape-without-a-source-quota
+  (let [{:keys [source reader artifact]} @assembly-gravity operations (assembly-operations)
+        source-id (syntax/semantic-source-id source (:source-unit-record reader) operations)
+        revision-path [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision :source-byte-count]]
+    (doseq [count [0 1048577N 1099511627776N]]
+      (let [changed (assoc-in reader revision-path count)
+            binding (syntax/reader-semantic-binding source changed source-id operations)]
+        ;; Structural projection is not authority for these deliberately
+        ;; altered revisions. Independent current-source verification refuses.
+        (is (= count (get-in binding [:reader-source-revision :source-byte-count])))
+        (is (false? (syntax/current-reader-revision-authentic?
+                     changed (:gravity-syntax-boundary artifact) (invocation) (view-operations))))))
+    (doseq [count [-1 nil 1.5]]
+      (let [diagnostic (ex-data (caught #(syntax/reader-semantic-binding
+                                        source (assoc-in reader revision-path count) source-id operations)))]
+        (is (= "C2-HASH" (:id diagnostic)))
+        (is (= source (get-in diagnostic [:source-span :source])))))))
