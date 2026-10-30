@@ -2338,6 +2338,29 @@
                   java.nio.file.LinkOption/NOFOLLOW_LINKS]))
     {:file file :bytes (alength bytes) :report report}))
 
+(defn- report-inside-lease!
+  [callback observation]
+  (let [callback-error (try (callback observation) nil (catch Throwable error error))
+        errors (vec (distinct (remove nil? [(:error observation) callback-error])))
+        cause-with (fn [predicate error]
+                     (loop [error error seen #{}]
+                       (when (and error (not (contains? seen error)))
+                         (if (predicate error) error
+                             (recur (.getCause ^Throwable error) (conj seen error))))))
+        primary (or (some #(cause-with fatal-throwable? %) errors) (first errors))]
+    (when (some #(cause-with (fn [error] (instance? InterruptedException error)) %) errors)
+      (.interrupt (Thread/currentThread)))
+    (when primary
+      (doseq [error errors :when (and (not (identical? primary error))
+                                      (not (cause-with #(identical? primary %) error)))]
+        (.addSuppressed ^Throwable primary error))
+      (.addSuppressed ^Throwable primary
+                      (ex-info "Inside-lease report observation"
+                               {:id "SH01-INSIDE-LEASE-REPORT" :observation observation
+                                :callback-error callback-error}))
+      (throw primary))
+    (:result observation)))
+
 (defn run-namespace-process
   "Runs one namespace in a fresh process.
 
@@ -2348,11 +2371,20 @@
   Opt-in :resource-broker supplies existing with-lease options. This direct call
   acquires and waits on the same thread, requires an explicit job resource class
   and an actual Process, and consumes the normal process-result custody API.
-  It does not admit an operation, alter inherited environment, or cover startup."
+  It does not admit an operation, alter inherited environment, or cover startup.
+  Optional :inside-lease-report! observes return/error synchronously after child
+  completion processing, before broker disposition. Its return is ignored; its
+  failure propagates through normal disposition. It supplies no guards/custody."
   ([job]
    (run-namespace-process job {}))
   ([job options]
    (require-supported-namespace! (:namespace job))
+   (when (and (contains? options :inside-lease-report!)
+              (not (and (ifn? (:inside-lease-report! options))
+                         (map? (:resource-broker options))
+                         (map? (:development-result options)))))
+     (throw (ex-info "Inside-lease report requires a callback and owned completion path"
+                     {:id "SH01-INSIDE-LEASE-REPORT-REQUEST"})))
    (when (or (and (contains? options :development-result) (not (map? (:development-result options))))
              (contains? options :development-result-delivery))
      (throw (ex-info "Development result delivery is parent-owned"
@@ -2374,10 +2406,12 @@
                                             (:resource-class job)))))
              (throw (ex-info "Resource-owned child requires broker options and an explicit class"
                              {:id "SH01-PARALLEL-RESOURCE-CALLER"})))
+         report-facts (when (:inside-lease-report! options) (volatile! {}))
          operation
          (fn []
            (let [started (System/nanoTime)
                  delivery (prepare-development-result job options)
+                 _ (when report-facts (vswap! report-facts assoc :delivery-request (:request delivery)))
                  command (namespace-command (:namespace job)
                                             (cond-> options delivery (assoc :development-result-delivery delivery)))
                  working-directory (or (:working-directory options) @root)
@@ -2397,6 +2431,7 @@
                         :exit-code 1
                         :stderr (str "Process launcher returned unsupported value: "
                                      (pr-str (type launched)))})))
+                 _ (when report-facts (vswap! report-facts assoc :process-result result))
                  result (if delivery
                             (assoc result :development-result (read-development-result delivery result)
                                           :development-result-request (:request delivery)
@@ -2406,17 +2441,32 @@
              (normalize-result
               job
               (assoc result :command command :child-jvm-launched? true)
-              (long (/ (- (System/nanoTime) started) 1000000.0)))))]
-     (if resource-owned?
-       (if (:parent-report options)
+              (long (/ (- (System/nanoTime) started) 1000000.0)))))
+         operation (if-let [callback (:inside-lease-report! options)]
+                     (fn []
+                       (let [outcome (try {:tag :returned :result (operation) :error nil}
+                                          (catch Throwable error {:tag :threw :result nil :error error}))]
+                         (try
+                           (report-inside-lease! callback (merge @report-facts {:job job} outcome))
+                           (finally
+                             (when (.isInterrupted (Thread/currentThread))
+                               (vswap! report-facts assoc :interrupted? true))))))
+                     operation)]
+     (try
+      (if resource-owned?
+       (if (or (:parent-report options) (:inside-lease-report! options))
          (let [publication (atom nil)
                request-id (str (java.util.UUID/randomUUID))
                result (broker/with-lease
                         (:resource-broker options) (:resource-class job) operation
-                        #(reset! publication (publish-parent-report! job options request-id %)))]
-           (assoc result :parent-report @publication))
+                        #(when (:parent-report options)
+                           (reset! publication (publish-parent-report! job options request-id %))))]
+           (if (:parent-report options) (assoc result :parent-report @publication) result))
          (broker/with-lease (:resource-broker options) (:resource-class job) operation))
-       (operation)))))
+       (operation))
+      (finally
+        (when (and report-facts (:interrupted? @report-facts))
+          (.interrupt (Thread/currentThread))))))))
 
 (defn- parse-positive-option
   [arguments index option]
