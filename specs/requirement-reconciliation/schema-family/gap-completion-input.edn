@@ -1,0 +1,2521 @@
+{:facet-raw-text
+ {"facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470"
+  "An artifact manifest is a schema-validated contract, not an informal build log.\n",
+  "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7"
+  "- Release artifacts must include all evidence required by policy.\n",
+  "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+  "- Package, testing, governance, tooling, AI, workflow, and release phases consume\n  artifact schemas.\n",
+  "facet/runtime-domains-schema/s4/c4bd93c29987742c2298641f"
+  "- GraphQL SDL.\n",
+  "facet/runtime-domains-schema/s6/29b232debea52c24a250934f"
+  "- Database mapping manifest.\n",
+  "facet/runtime-domains-schema/s6/69e1191511c1b68f3784702c"
+  "- fixture database or plan validation,\n",
+  "facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989"
+  "- Runtime config reload must define compatibility, lifecycle, and observability\n  behavior.\n",
+  "testing/test11/machine-evidence/diagnostics/L92"
+  "- `TEST11003` reports uncheckable proof claim.\n",
+  "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+  "- `B13` defines backend artifact emission.\n",
+  "facet/runtime-domains-schema/s4/f137c665cb77ee5f738b7ff0"
+  "- typed client generation with schema hashes,\n",
+  "facet/runtime-domains-schema/s4/dfa6878f8d7af9a4bf5a3986"
+  "Mapping rules cover objects, interfaces, enums, tagged unions, scalars, lists,\nnullable fields, result/error surfaces, pagination, IDs, custom scalars, and\ndeprecated fields. Unsupported source schema features must be rejected or\nrepresented through explicit custom scalar/adapters with validation.\n",
+  "facet/runtime-domains-schema/s4/4bc27f1387b912456092966d"
+  "- `S4-MAPPING` for unsupported or lossy schema projection.\n",
+  "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+  "- release gate validation,\n",
+  "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398"
+  "- `S8-RELOAD` for unsafe runtime config reload behavior.\n",
+  "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c"
+  "- Artifact graph schema.\n",
+  "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213"
+  "- rejection of incomplete, noncanonical, and evidence-free manifests.\n",
+  "facet/runtime-domains-schema/s6/b945b8bab24cb8fab0fa625b"
+  "- `S1` defines schemas; `B11` defines query/relational backend behavior.\n",
+  "facet/runtime-domains-schema/s6/1176e4691f713f2ac21d87e2"
+  "- Fixture database or plan-validation report.\n",
+  "testing/test11/machine-evidence/requirements/L41"
+  "- Claims used for release gates MUST have machine-checkable evidence.\n",
+  "facet/runtime-domains-schema/s4/6c7423e29ffc2bbaa8a37679"
+  "- `S4-MANIFEST` for incomplete GraphQL artifacts.\n",
+  "facet/runtime-domains-schema/s6/0b174dc8f22b053b99769fb5"
+  "- additive, breaking, and destructive migration fixtures,\n",
+  "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+  "Gravity rejects release artifacts without required provenance and evidence.\n",
+  "facet/runtime-domains-schema/s6/68451db5a21435480f281829"
+  "- `S6-DIALECT` for unsupported database features or type behavior.\n",
+  "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+  "- `S1` and `S3` define source schemas and canonical data.\n",
+  "facet/runtime-domains-schema/s4/c742143c0bfdaa0563d02b0e"
+  "- nullability and error mapping tests,\n",
+  "facet/runtime-domains-schema/s6/972a8b8c742b3c4e696bfddd"
+  "- Mapping must declare source schema versions, target dialect, table/view\n  mapping, column types, constraints, indexes, nullability, enum/variant\n  strategy, primary/foreign keys, and row adapter behavior.\n",
+  "facet/runtime-domains-schema/s4/a86789bd39fe1c9043da06d6"
+  "- Gravity `Option`, `Result`, tagged unions, enums, refinements, lists, IDs, and\n  scalars must map without weakening constraints.\n",
+  "facet/runtime-domains-schema/s6/bbd7836a22c37eb0cfccb6dc"
+  "- rejection of lossy mappings and unauthorized migrations.\n",
+  "facet/runtime-domains-schema/s6/903e6ba7d7024da539bfda19"
+  "- policy-required review records for destructive migrations,\n",
+  "facet/runtime-domains-schema/s4/1628aea314c9be8ff7217fe8"
+  "Gravity rejects GraphQL as the canonical schema source.\n",
+  "facet/runtime-domains-schema/s6/25466b9acf043b743efabd7e"
+  "- schema-to-table and row-adapter generation,\n",
+  "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e"
+  "- Provenance schema.\n",
+  "facet/runtime-domains-schema/s6/21effcf4a894740ce2571225"
+  "- Fixture databases or equivalent plan checks must validate generated changes.\n",
+  "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e"
+  "- canonical encoding for hash/signature contexts,\n",
+  "facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f"
+  "- Package/build/deployment phases define hermeticity and release policy.\n",
+  "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220"
+  "Gravity rejects untyped artifact manifests.\n",
+  "facet/runtime-domains-schema/s6/978247b2a04d02f21988960c"
+  "- Query plan metadata.\n",
+  "facet/runtime-domains-schema/s9/df23694247800a9adf493fff"
+  "- Artifact schemas must include kind, schema version, source graph, compiler\n  version, profile, target, backend, runtime, effects, capabilities,\n  dependencies, content hash, provenance, safety evidence, proof/certificate\n  references, diagnostics, and conformance state.\n",
+  "facet/runtime-domains-schema/s6/75b5f56a05e8f5ebcda8ae38"
+  "- `S6-MAPPING` for unsupported or lossy schema-to-database mapping.\n",
+  "facet/runtime-domains-schema/s4/f15c91e0ee2435296afbc481"
+  "- `S2` and `S3` define serialization and canonical identity.\n",
+  "testing/test11/machine-evidence/rejection-rules/L82"
+  "- Reject release gates relying on prose-only proof claims.\n",
+  "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99"
+  "- Evidence schema.\n",
+  "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0"
+  "- `S9-CYCLE` for artifact graph cycles without bootstrap provenance.\n",
+  "facet/runtime-domains-schema/s6/7c64948e598b7353aae4ff60"
+  "- `SAFE10`, `SAFE11`, `P9`, and `R7` define capabilities, taint, distributed\n  replay, and migration implications.\n",
+  "facet/runtime-domains-schema/s4/c6b48e7bf8336acc83270535"
+  "- Resolver adapter bundle.\n",
+  "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19"
+  "Diagnostics must include artifact id, kind, schema version, missing field,\nsource or graph edge when available, release gate, and remediation.\n",
+  "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847"
+  "- schema version compatibility fixtures,\n",
+  "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526"
+  "- `S9-EVIDENCE` for missing safety, proof, effect, capability, test, or\n  conformance evidence.\n",
+  "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b"
+  "- Runtime reload policy.\n",
+  "facet/runtime-domains-schema/s4/4485f68b41b85b012b1133c4"
+  "- source-map preservation,\n",
+  "facet/runtime-domains-schema/s4/5a39b01e238eb9b21ed2f468"
+  "- Query validation artifact.\n",
+  "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1"
+  "```clojure\n{:artifact :gravity/artifact-schema\n :schema-version 1\n :required #{:kind :profile :target :source-hash :content-hash\n             :schema-version :conformance}\n :evidence #{:types :effects :capabilities :safety :proofs :tests}\n :provenance #{:compiler-version :source-graph :dependency-lock :passes}}\n```\n",
+  "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2"
+  "- runtime reload policy fixtures,\n",
+  "facet/runtime-domains-schema/s6/0b84d1e04297dd1ef4715d00"
+  "- data-loss reports,\n",
+  "facet/runtime-domains-schema/s4/34e9c1b0766048a3aa8a0e2e"
+  "- capability enforcement metadata,\n",
+  "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183"
+  "- `S9-REQUIRED` for missing required artifact fields.\n",
+  "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1"
+  "- Artifact schema manifest.\n",
+  "facet/runtime-domains-schema/s6/819467332607f1357cdbc215"
+  "- `S6-ADAPTER` for row adapters that weaken source schemas.\n",
+  "facet/runtime-domains-schema/s6/faa3a1bf91fba508bb4cd150"
+  "- Typed row adapter.\n",
+  "facet/runtime-domains-schema/s6/c38ccacca7339a22b77ae79c"
+  "Database mapping projects Gravity schemas and relational IR into database tables,\nviews, constraints, indexes, prepared bindings, typed row adapters, migrations,\nschema diffs, and fixture databases.\n",
+  "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd"
+  "- `S9-PROVENANCE` for incomplete source/compiler/dependency/pass provenance.\n",
+  "facet/runtime-domains-schema/s4/3e701fbb9bf5ec63d6f63a4b"
+  "- rejection of lossy mappings and hidden resolver effects.\n",
+  "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04"
+  "- common provenance and evidence fields,\n",
+  "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487"
+  "Gravity rejects artifact graph cycles without bootstrap explanation.\n",
+  "facet/runtime-domains-schema/s6/5ff3d5c9a8451012b8115c95"
+  "- dialect-specific type behavior tests,\n",
+  "facet/runtime-domains-schema/s4/9b8405f3c7355b360e5273fb"
+  "- schema diff and compatibility fixtures,\n",
+  "testing/partition/test11/683-792"
+  "Formal claims are useful only when assumptions, proof artifacts, checkers, and\ncounterexamples are recorded.\n",
+  "facet/runtime-domains-schema/s4/be7794f22a5f9a54e9f9951e"
+  "- GraphQL diagnostics.\n",
+  "facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8"
+  "Artifact schemas define the machine-readable shape of every Gravity output:\nbinaries, libraries, firmware images, kernel modules, Wasm modules, JS bundles,\nJARs, mobile apps, workflow graphs, agent manifests, schemas, migrations, HDL,\nproofs, tests, packages, docs, and release evidence.\n",
+  "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb"
+  "- Artifact manifest validator.\n",
+  "facet/runtime-domains-schema/s6/90497a83951c74a6687b2355"
+  "Mapping rules cover scalar types, decimals, timestamps, enums, tagged unions,\noptional fields, constraints, indexes, generated columns, references, composite\nkeys, JSON columns, arrays, views, and computed fields. Dialect-specific\nbehavior must be recorded and rejected when portability is claimed.\n",
+  "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9"
+  "- graph cycle and bootstrap provenance checks,\n",
+  "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06"
+  "- Artifact manifests must use canonical encoding when used for hashes, signing,\n  replay, or release decisions.\n",
+  "facet/runtime-domains-schema/s6/7a70e1e8c8970fde359d3540"
+  "- API, package, and deployment phases consume schema diffs and migration\n  artifacts.\n",
+  "facet/runtime-domains-schema/s4/29b8175d097f1d362680057f"
+  "- `S4-NULLABILITY` for GraphQL nullability that misrepresents Gravity types.\n",
+  "facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2"
+  "Gravity rejects hiding unsafe, AI/tool, capability, or runtime decisions outside\nthe artifact schema.\n",
+  "facet/runtime-domains-schema/s4/8875c0cfcc8eed45cf479a55"
+  "- GraphQL generation manifest.\n",
+  "facet/runtime-domains-schema/s6/38457ef7a9a27ca72f12a0e4"
+  "Gravity rejects database rows trusted without typed adapters.\n",
+  "facet/runtime-domains-schema/s6/4ade063408d042d54b609ad3"
+  "Diagnostics must include schema id, field/table/column path, dialect, migration\nid, effect, capability, data-loss state, and remediation.\n",
+  "facet/runtime-domains-schema/s4/4dd211e07e6f84a862830731"
+  "- SDL and resolver generation from source schemas,\n",
+  "facet/runtime-domains-schema/s4/d0968e8a2a3c6ac152a38f29"
+  "- GraphQL conformance fixtures.\n",
+  "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52"
+  "- Unsafe islands, model/tool policies, capability grants, secret redaction,\n  runtime services, and generated-code provenance must appear when relevant.\n",
+  "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117"
+  "Gravity rejects config reload without compatibility and lifecycle policy.\n",
+  "facet/runtime-domains-schema/s6/691a87b9abd672ef6ec04a2f"
+  "- runtime capability checks,\n",
+  "facet/runtime-domains-schema/s9/14bd939163b2a3992684767e"
+  "- Release gate schema.\n",
+  "facet/runtime-domains-schema/s4/ffd62348f543564eb6f15467"
+  "- `S4-SOURCEMAP` for generated SDL/resolvers without source provenance.\n",
+  "facet/runtime-domains-schema/s4/3f1176406f052d5443e6c2a4"
+  "- `S1` defines source schemas.\n",
+  "facet/runtime-domains-schema/s4/f45f9f5529c4b331cb64c7b1"
+  "Gravity rejects nullability weakening.\n",
+  "facet/runtime-domains-schema/s4/5c2abbcee01eac9a32946a98"
+  "- `R11`, `SAFE10`, and backend-service docs define capability enforcement.\n",
+  "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f"
+  "Artifact kinds include source-derived schemas, MIR/domain IR, backend outputs,\nruntime manifests, package manifests, conformance packs, proof objects, workflow\ngraphs, agent manifests, generated APIs, migrations, HDL modules, mobile\nbundles, documentation, and governance records. Each kind may add required\nfields but must preserve common provenance and evidence fields.\n",
+  "facet/runtime-domains-schema/s4/52c6c69ac1aae0d1564988f7"
+  "- Tooling and package phases consume generated SDL and typed clients.\n",
+  "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec"
+  "- validators for all Gravity artifact kinds,\n",
+  "facet/runtime-domains-schema/s6/e123ec6e8651d511e50c881a"
+  "```clojure\n{:artifact :gravity/database-migration\n :from TicketClassification/v1\n :to TicketClassification/v2\n :dialect :postgresql\n :policy :additive\n :effects #{:database/write}\n :capabilities #{:db/migrate}\n :artifacts #{:sql-migration :rollback-plan :data-loss-report}}\n```\n",
+  "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2"
+  "- Artifact schema diagnostics.\n",
+  "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040"
+  "- `S1`, `S2`, `SAFE10`, `SAFE11`, `R11`, and `R12` define schemas,\n  serialization, capabilities, taint, runtime enforcement, and redaction.\n",
+  "facet/runtime-domains-schema/s6/08cc610f5a936977120c4b51"
+  "- rollback or forward-only plans,\n",
+  "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96"
+  "- Artifact graph cycles require bootstrap/self-hosting provenance.\n",
+  "testing/partition/test11/356-682"
+  "This plan defines formal semantics and verification work for Gravity. Formal\nartifacts do not replace executable tests, but they provide checked evidence\nfor core semantics, type soundness, effect preservation, safety properties,\nMIR/pass correctness, math approximations, and profile-specific total or\ndeterministic subsets.\n"},
+ :coverage
+ {:name "acc11-composed-coverage-review.edn",
+  :sha256
+  "a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f",
+  :candidate "a5abb8558fd8a0a0a2b1c1b00eac5117398abbe3",
+  :candidate-tree "78da82c2f4c69b864d20bc7d805e7ab3c9110d39"},
+ :source-documents
+ [{:id "S4",
+   :sequence 148N,
+   :path
+   "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+   :sha256
+   "ef34df8afad57d4d364c4bb21d0cefb184c82c366cf8370b1bbd7cef586cfa67"}
+  {:id "S6",
+   :sequence 150N,
+   :path
+   "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+   :sha256
+   "8e5a5f89582eb973356a92dee62dd08d6c77f312f6751fc39a47a4dfbc43c692"}
+  {:id "S8",
+   :sequence 152N,
+   :path
+   "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+   :sha256
+   "b9067190de850a10200277d2ce8d9bd8b3ceabb45acbb244ca8125af175cd4ac"}
+  {:id "S9",
+   :sequence 153N,
+   :path
+   "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+   :sha256
+   "43efc2c36c338899d42d7a6a4e4c07fc62faf7ffe5335a4be9c91161e1b37138"}
+  {:id "TEST11",
+   :sequence 200N,
+   :path
+   "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+   :sha256
+   "f8fd10e7b2cd8a0caff20ee15258cc1ae39c0b25eb97984be4a25763a9969872"}],
+ :scope "phase-10",
+ :retention
+ {:historical-gap-records 577,
+  :criterion-witnesses 13,
+  :retirements 3,
+  :residuals 561,
+  :all-historical-records-sha256
+  "bce24c22b3ab964eacbc1c7cc38875cba6fbaab13a33bbf7fa25217543cb4112",
+  :terminal-history-sha256
+  "2e685a9cb4b0fed8d027fcf26d5055891ef369d72708b50b7c88191c6dd46488",
+  :no-other-history-edits true},
+ :partition
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :path
+  "specs/requirement-reconciliation/historical-gap-partition.edn",
+  :sha256
+  "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+  :candidate-source "43598c5b87feb4d88928549bb20fc4089768718b"},
+ :rows
+ [{:id "schema/artifact-validation",
+   :partition-row
+   {:primary-source-contract "S9",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470"
+     "facet/runtime-domains-schema/s9/df23694247800a9adf493fff"
+     "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52"
+     "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1"
+     "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb"
+     "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c"
+     "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e"
+     "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99"
+     "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2"
+     "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1"
+     "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f"
+     "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183"
+     "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd"
+     "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0"
+     "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487"
+     "facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2"
+     "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec"
+     "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04"
+     "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9"
+     "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847"
+     "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213"],
+    :affected-source-families ["phase-10"],
+    :historical-obligation
+    "Validate every declared artifact kind against its versioned common provenance/evidence envelope, canonical identity and bootstrap-cycle policy.",
+    :primary-dispatch-family "phase-10",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "schema/artifact-validation",
+    :historical-record-sha256
+    "0c443b4eca31cb8ab799840579e11529c3747a7c8f2ea96ae628c0cdcea4d214",
+    :source-facet-records-sha256
+    "92df5794bb336982abd37662042425da47381461406702ff0f7907445ff0314b",
+    :current-open-decision-ids
+    ["interface/schema/artifact-validation"],
+    :source-contracts nil,
+    :current-disposition :explicit-open-source-interface-work,
+    :implementation-acceptance :unassessed},
+   :before-coverage
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470"
+     "facet/runtime-domains-schema/s9/df23694247800a9adf493fff"
+     "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52"
+     "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1"
+     "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb"
+     "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c"
+     "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e"
+     "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99"
+     "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2"
+     "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1"
+     "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f"
+     "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183"
+     "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd"
+     "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0"
+     "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487"
+     "facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2"
+     "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec"
+     "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04"
+     "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9"
+     "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847"
+     "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213"],
+    :historical-obligation
+    "Validate every declared artifact kind against its versioned common provenance/evidence envelope, canonical identity and bootstrap-cycle policy.",
+    :coverage-disposition :explicit-open-source-interface-work,
+    :id "schema/artifact-validation",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids
+    ["interface/schema/artifact-validation"],
+    :implementation-acceptance :not-inferred},
+   :historical-record
+   {:additional-task-interfaces [],
+    :obligation
+    "Validate every declared artifact kind against its versioned common provenance/evidence envelope, canonical identity and bootstrap-cycle policy.",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470"
+     "facet/runtime-domains-schema/s9/df23694247800a9adf493fff"
+     "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52"
+     "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1"
+     "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb"
+     "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c"
+     "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e"
+     "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99"
+     "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2"
+     "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1"
+     "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f"
+     "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183"
+     "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd"
+     "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0"
+     "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487"
+     "facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2"
+     "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec"
+     "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04"
+     "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9"
+     "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847"
+     "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+    :atomicity :reviewed,
+    :nonoverlap :proposed,
+    :id "schema/artifact-validation",
+    :historical-support [],
+    :scope-reviews
+    [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+      :current-expanded-context-review :not-needed,
+      :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+      :scope :bounded-source-predicate-atomicity,
+      :artifact-sha256
+      "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+      :reviewed-source-facet-ids
+      ["facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2"
+       "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220"
+       "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52"
+       "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb"
+       "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2"
+       "facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470"
+       "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1"
+       "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+       "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e"
+       "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+       "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183"
+       "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487"
+       "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+       "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04"
+       "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+       "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e"
+       "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96"
+       "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f"
+       "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213"
+       "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec"
+       "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847"
+       "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1"
+       "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c"
+       "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+       "facet/runtime-domains-schema/s9/df23694247800a9adf493fff"
+       "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd"
+       "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9"
+       "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99"
+       "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0"],
+      :additional-current-context-facet-ids [],
+      :implementation-acceptance :not-conferred,
+      :global-nonoverlap :pending}],
+    :proposal-batch "runtime-domains-schema"}}
+  {:id "schema/configuration-reload",
+   :partition-row
+   {:primary-source-contract "S8",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989"
+     "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040"
+     "facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f"
+     "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b"
+     "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398"
+     "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117"
+     "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2"],
+    :affected-source-families ["phase-10"],
+    :historical-obligation
+    "Apply runtime configuration reload only under declared compatibility, lifecycle and observation behavior.",
+    :primary-dispatch-family "phase-10",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "schema/configuration-reload",
+    :historical-record-sha256
+    "0d1829008ff294650fe38a5df11bf1c90e962974aadd31f796c5233f79b6ebcd",
+    :source-facet-records-sha256
+    "07ea80aea46d9f5eaf870eacdc4a1c827b48c6bdeb8583e981e297bfc01d8794",
+    :current-open-decision-ids
+    ["interface/schema/configuration-reload"],
+    :source-contracts nil,
+    :current-disposition :explicit-open-source-interface-work,
+    :implementation-acceptance :unassessed},
+   :before-coverage
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989"
+     "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040"
+     "facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f"
+     "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b"
+     "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398"
+     "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117"
+     "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2"],
+    :historical-obligation
+    "Apply runtime configuration reload only under declared compatibility, lifecycle and observation behavior.",
+    :coverage-disposition :explicit-open-source-interface-work,
+    :id "schema/configuration-reload",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids
+    ["interface/schema/configuration-reload"],
+    :implementation-acceptance :not-inferred},
+   :historical-record
+   {:additional-task-interfaces [],
+    :obligation
+    "Apply runtime configuration reload only under declared compatibility, lifecycle and observation behavior.",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989"
+     "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040"
+     "facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f"
+     "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b"
+     "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398"
+     "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117"
+     "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+    :atomicity :reviewed,
+    :nonoverlap :proposed,
+    :id "schema/configuration-reload",
+    :historical-support [],
+    :scope-reviews
+    [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+      :current-expanded-context-review :not-needed,
+      :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+      :scope :bounded-source-predicate-atomicity,
+      :artifact-sha256
+      "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+      :reviewed-source-facet-ids
+      ["facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f"
+       "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b"
+       "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2"
+       "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040"
+       "facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989"
+       "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398"
+       "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117"],
+      :additional-current-context-facet-ids [],
+      :implementation-acceptance :not-conferred,
+      :global-nonoverlap :pending}],
+    :proposal-batch "runtime-domains-schema"}}
+  {:id "schema/database-mapping",
+   :partition-row
+   {:primary-source-contract "S6",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s6/c38ccacca7339a22b77ae79c"
+     "facet/runtime-domains-schema/s6/972a8b8c742b3c4e696bfddd"
+     "facet/runtime-domains-schema/s6/21effcf4a894740ce2571225"
+     "facet/runtime-domains-schema/s6/b945b8bab24cb8fab0fa625b"
+     "facet/runtime-domains-schema/s6/7c64948e598b7353aae4ff60"
+     "facet/runtime-domains-schema/s6/7a70e1e8c8970fde359d3540"
+     "facet/runtime-domains-schema/s6/29b232debea52c24a250934f"
+     "facet/runtime-domains-schema/s6/faa3a1bf91fba508bb4cd150"
+     "facet/runtime-domains-schema/s6/978247b2a04d02f21988960c"
+     "facet/runtime-domains-schema/s6/1176e4691f713f2ac21d87e2"
+     "facet/runtime-domains-schema/s6/e123ec6e8651d511e50c881a"
+     "facet/runtime-domains-schema/s6/90497a83951c74a6687b2355"
+     "facet/runtime-domains-schema/s6/75b5f56a05e8f5ebcda8ae38"
+     "facet/runtime-domains-schema/s6/68451db5a21435480f281829"
+     "facet/runtime-domains-schema/s6/819467332607f1357cdbc215"
+     "facet/runtime-domains-schema/s6/4ade063408d042d54b609ad3"
+     "facet/runtime-domains-schema/s6/38457ef7a9a27ca72f12a0e4"
+     "facet/runtime-domains-schema/s6/25466b9acf043b743efabd7e"
+     "facet/runtime-domains-schema/s6/0b174dc8f22b053b99769fb5"
+     "facet/runtime-domains-schema/s6/0b84d1e04297dd1ef4715d00"
+     "facet/runtime-domains-schema/s6/903e6ba7d7024da539bfda19"
+     "facet/runtime-domains-schema/s6/08cc610f5a936977120c4b51"
+     "facet/runtime-domains-schema/s6/5ff3d5c9a8451012b8115c95"
+     "facet/runtime-domains-schema/s6/691a87b9abd672ef6ec04a2f"
+     "facet/runtime-domains-schema/s6/69e1191511c1b68f3784702c"
+     "facet/runtime-domains-schema/s6/bbd7836a22c37eb0cfccb6dc"],
+    :affected-source-families ["phase-10"],
+    :historical-obligation
+    "Generate declared-dialect tables/views/constraints/indexes and typed row adapters without weakening source schemas.",
+    :primary-dispatch-family "phase-10",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "schema/database-mapping",
+    :historical-record-sha256
+    "e19fa7cf1443d9301f20febd0dfd96cd9492ccc31e9e74f2ff22a852912ae078",
+    :source-facet-records-sha256
+    "63025269e611ea9ec08400305ddf4d628422afeb93774389e781aa7cd54c13fa",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :before-coverage
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s6/c38ccacca7339a22b77ae79c"
+     "facet/runtime-domains-schema/s6/972a8b8c742b3c4e696bfddd"
+     "facet/runtime-domains-schema/s6/21effcf4a894740ce2571225"
+     "facet/runtime-domains-schema/s6/b945b8bab24cb8fab0fa625b"
+     "facet/runtime-domains-schema/s6/7c64948e598b7353aae4ff60"
+     "facet/runtime-domains-schema/s6/7a70e1e8c8970fde359d3540"
+     "facet/runtime-domains-schema/s6/29b232debea52c24a250934f"
+     "facet/runtime-domains-schema/s6/faa3a1bf91fba508bb4cd150"
+     "facet/runtime-domains-schema/s6/978247b2a04d02f21988960c"
+     "facet/runtime-domains-schema/s6/1176e4691f713f2ac21d87e2"
+     "facet/runtime-domains-schema/s6/e123ec6e8651d511e50c881a"
+     "facet/runtime-domains-schema/s6/90497a83951c74a6687b2355"
+     "facet/runtime-domains-schema/s6/75b5f56a05e8f5ebcda8ae38"
+     "facet/runtime-domains-schema/s6/68451db5a21435480f281829"
+     "facet/runtime-domains-schema/s6/819467332607f1357cdbc215"
+     "facet/runtime-domains-schema/s6/4ade063408d042d54b609ad3"
+     "facet/runtime-domains-schema/s6/38457ef7a9a27ca72f12a0e4"
+     "facet/runtime-domains-schema/s6/25466b9acf043b743efabd7e"
+     "facet/runtime-domains-schema/s6/0b174dc8f22b053b99769fb5"
+     "facet/runtime-domains-schema/s6/0b84d1e04297dd1ef4715d00"
+     "facet/runtime-domains-schema/s6/903e6ba7d7024da539bfda19"
+     "facet/runtime-domains-schema/s6/08cc610f5a936977120c4b51"
+     "facet/runtime-domains-schema/s6/5ff3d5c9a8451012b8115c95"
+     "facet/runtime-domains-schema/s6/691a87b9abd672ef6ec04a2f"
+     "facet/runtime-domains-schema/s6/69e1191511c1b68f3784702c"
+     "facet/runtime-domains-schema/s6/bbd7836a22c37eb0cfccb6dc"],
+    :historical-obligation
+    "Generate declared-dialect tables/views/constraints/indexes and typed row adapters without weakening source schemas.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "schema/database-mapping",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :historical-record
+   {:additional-task-interfaces [],
+    :obligation
+    "Generate declared-dialect tables/views/constraints/indexes and typed row adapters without weakening source schemas.",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s6/c38ccacca7339a22b77ae79c"
+     "facet/runtime-domains-schema/s6/972a8b8c742b3c4e696bfddd"
+     "facet/runtime-domains-schema/s6/21effcf4a894740ce2571225"
+     "facet/runtime-domains-schema/s6/b945b8bab24cb8fab0fa625b"
+     "facet/runtime-domains-schema/s6/7c64948e598b7353aae4ff60"
+     "facet/runtime-domains-schema/s6/7a70e1e8c8970fde359d3540"
+     "facet/runtime-domains-schema/s6/29b232debea52c24a250934f"
+     "facet/runtime-domains-schema/s6/faa3a1bf91fba508bb4cd150"
+     "facet/runtime-domains-schema/s6/978247b2a04d02f21988960c"
+     "facet/runtime-domains-schema/s6/1176e4691f713f2ac21d87e2"
+     "facet/runtime-domains-schema/s6/e123ec6e8651d511e50c881a"
+     "facet/runtime-domains-schema/s6/90497a83951c74a6687b2355"
+     "facet/runtime-domains-schema/s6/75b5f56a05e8f5ebcda8ae38"
+     "facet/runtime-domains-schema/s6/68451db5a21435480f281829"
+     "facet/runtime-domains-schema/s6/819467332607f1357cdbc215"
+     "facet/runtime-domains-schema/s6/4ade063408d042d54b609ad3"
+     "facet/runtime-domains-schema/s6/38457ef7a9a27ca72f12a0e4"
+     "facet/runtime-domains-schema/s6/25466b9acf043b743efabd7e"
+     "facet/runtime-domains-schema/s6/0b174dc8f22b053b99769fb5"
+     "facet/runtime-domains-schema/s6/0b84d1e04297dd1ef4715d00"
+     "facet/runtime-domains-schema/s6/903e6ba7d7024da539bfda19"
+     "facet/runtime-domains-schema/s6/08cc610f5a936977120c4b51"
+     "facet/runtime-domains-schema/s6/5ff3d5c9a8451012b8115c95"
+     "facet/runtime-domains-schema/s6/691a87b9abd672ef6ec04a2f"
+     "facet/runtime-domains-schema/s6/69e1191511c1b68f3784702c"
+     "facet/runtime-domains-schema/s6/bbd7836a22c37eb0cfccb6dc"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "schema/database-mapping",
+    :historical-support [],
+    :proposal-batch "runtime-domains-schema"}}
+  {:id "schema/graphql-generation",
+   :partition-row
+   {:primary-source-contract "S4",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s4/a86789bd39fe1c9043da06d6"
+     "facet/runtime-domains-schema/s4/3f1176406f052d5443e6c2a4"
+     "facet/runtime-domains-schema/s4/f15c91e0ee2435296afbc481"
+     "facet/runtime-domains-schema/s4/5c2abbcee01eac9a32946a98"
+     "facet/runtime-domains-schema/s4/52c6c69ac1aae0d1564988f7"
+     "facet/runtime-domains-schema/s4/8875c0cfcc8eed45cf479a55"
+     "facet/runtime-domains-schema/s4/c4bd93c29987742c2298641f"
+     "facet/runtime-domains-schema/s4/c6b48e7bf8336acc83270535"
+     "facet/runtime-domains-schema/s4/5a39b01e238eb9b21ed2f468"
+     "facet/runtime-domains-schema/s4/d0968e8a2a3c6ac152a38f29"
+     "facet/runtime-domains-schema/s4/be7794f22a5f9a54e9f9951e"
+     "facet/runtime-domains-schema/s4/dfa6878f8d7af9a4bf5a3986"
+     "facet/runtime-domains-schema/s4/4bc27f1387b912456092966d"
+     "facet/runtime-domains-schema/s4/29b8175d097f1d362680057f"
+     "facet/runtime-domains-schema/s4/ffd62348f543564eb6f15467"
+     "facet/runtime-domains-schema/s4/6c7423e29ffc2bbaa8a37679"
+     "facet/runtime-domains-schema/s4/1628aea314c9be8ff7217fe8"
+     "facet/runtime-domains-schema/s4/f45f9f5529c4b331cb64c7b1"
+     "facet/runtime-domains-schema/s4/4dd211e07e6f84a862830731"
+     "facet/runtime-domains-schema/s4/c742143c0bfdaa0563d02b0e"
+     "facet/runtime-domains-schema/s4/34e9c1b0766048a3aa8a0e2e"
+     "facet/runtime-domains-schema/s4/9b8405f3c7355b360e5273fb"
+     "facet/runtime-domains-schema/s4/f137c665cb77ee5f738b7ff0"
+     "facet/runtime-domains-schema/s4/4485f68b41b85b012b1133c4"
+     "facet/runtime-domains-schema/s4/3e701fbb9bf5ec63d6f63a4b"],
+    :affected-source-families ["phase-10"],
+    :historical-obligation
+    "Generate source-faithful GraphQL SDL, resolver adapters, operation validation and auth/origin metadata without weakening source types.",
+    :primary-dispatch-family "phase-10",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "schema/graphql-generation",
+    :historical-record-sha256
+    "c760a884cb048dcb00b213b76c0977b077a20cf351c2cc4e26881ef91d901089",
+    :source-facet-records-sha256
+    "4283bb0c0b573d1ce27e3e78458d30345eeb141c5ecac2e9e10069148ab41a78",
+    :current-open-decision-ids [],
+    :source-contracts nil,
+    :current-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :implementation-acceptance :unassessed},
+   :before-coverage
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s4/a86789bd39fe1c9043da06d6"
+     "facet/runtime-domains-schema/s4/3f1176406f052d5443e6c2a4"
+     "facet/runtime-domains-schema/s4/f15c91e0ee2435296afbc481"
+     "facet/runtime-domains-schema/s4/5c2abbcee01eac9a32946a98"
+     "facet/runtime-domains-schema/s4/52c6c69ac1aae0d1564988f7"
+     "facet/runtime-domains-schema/s4/8875c0cfcc8eed45cf479a55"
+     "facet/runtime-domains-schema/s4/c4bd93c29987742c2298641f"
+     "facet/runtime-domains-schema/s4/c6b48e7bf8336acc83270535"
+     "facet/runtime-domains-schema/s4/5a39b01e238eb9b21ed2f468"
+     "facet/runtime-domains-schema/s4/d0968e8a2a3c6ac152a38f29"
+     "facet/runtime-domains-schema/s4/be7794f22a5f9a54e9f9951e"
+     "facet/runtime-domains-schema/s4/dfa6878f8d7af9a4bf5a3986"
+     "facet/runtime-domains-schema/s4/4bc27f1387b912456092966d"
+     "facet/runtime-domains-schema/s4/29b8175d097f1d362680057f"
+     "facet/runtime-domains-schema/s4/ffd62348f543564eb6f15467"
+     "facet/runtime-domains-schema/s4/6c7423e29ffc2bbaa8a37679"
+     "facet/runtime-domains-schema/s4/1628aea314c9be8ff7217fe8"
+     "facet/runtime-domains-schema/s4/f45f9f5529c4b331cb64c7b1"
+     "facet/runtime-domains-schema/s4/4dd211e07e6f84a862830731"
+     "facet/runtime-domains-schema/s4/c742143c0bfdaa0563d02b0e"
+     "facet/runtime-domains-schema/s4/34e9c1b0766048a3aa8a0e2e"
+     "facet/runtime-domains-schema/s4/9b8405f3c7355b360e5273fb"
+     "facet/runtime-domains-schema/s4/f137c665cb77ee5f738b7ff0"
+     "facet/runtime-domains-schema/s4/4485f68b41b85b012b1133c4"
+     "facet/runtime-domains-schema/s4/3e701fbb9bf5ec63d6f63a4b"],
+    :historical-obligation
+    "Generate source-faithful GraphQL SDL, resolver adapters, operation validation and auth/origin metadata without weakening source types.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "schema/graphql-generation",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :historical-record
+   {:additional-task-interfaces [],
+    :obligation
+    "Generate source-faithful GraphQL SDL, resolver adapters, operation validation and auth/origin metadata without weakening source types.",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s4/a86789bd39fe1c9043da06d6"
+     "facet/runtime-domains-schema/s4/3f1176406f052d5443e6c2a4"
+     "facet/runtime-domains-schema/s4/f15c91e0ee2435296afbc481"
+     "facet/runtime-domains-schema/s4/5c2abbcee01eac9a32946a98"
+     "facet/runtime-domains-schema/s4/52c6c69ac1aae0d1564988f7"
+     "facet/runtime-domains-schema/s4/8875c0cfcc8eed45cf479a55"
+     "facet/runtime-domains-schema/s4/c4bd93c29987742c2298641f"
+     "facet/runtime-domains-schema/s4/c6b48e7bf8336acc83270535"
+     "facet/runtime-domains-schema/s4/5a39b01e238eb9b21ed2f468"
+     "facet/runtime-domains-schema/s4/d0968e8a2a3c6ac152a38f29"
+     "facet/runtime-domains-schema/s4/be7794f22a5f9a54e9f9951e"
+     "facet/runtime-domains-schema/s4/dfa6878f8d7af9a4bf5a3986"
+     "facet/runtime-domains-schema/s4/4bc27f1387b912456092966d"
+     "facet/runtime-domains-schema/s4/29b8175d097f1d362680057f"
+     "facet/runtime-domains-schema/s4/ffd62348f543564eb6f15467"
+     "facet/runtime-domains-schema/s4/6c7423e29ffc2bbaa8a37679"
+     "facet/runtime-domains-schema/s4/1628aea314c9be8ff7217fe8"
+     "facet/runtime-domains-schema/s4/f45f9f5529c4b331cb64c7b1"
+     "facet/runtime-domains-schema/s4/4dd211e07e6f84a862830731"
+     "facet/runtime-domains-schema/s4/c742143c0bfdaa0563d02b0e"
+     "facet/runtime-domains-schema/s4/34e9c1b0766048a3aa8a0e2e"
+     "facet/runtime-domains-schema/s4/9b8405f3c7355b360e5273fb"
+     "facet/runtime-domains-schema/s4/f137c665cb77ee5f738b7ff0"
+     "facet/runtime-domains-schema/s4/4485f68b41b85b012b1133c4"
+     "facet/runtime-domains-schema/s4/3e701fbb9bf5ec63d6f63a4b"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "schema/graphql-generation",
+    :historical-support [],
+    :proposal-batch "runtime-domains-schema"}}
+  {:id "schema/release-evidence-gating",
+   :partition-row
+   {:primary-source-contract "S9",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8"
+     "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06"
+     "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/14bd939163b2a3992684767e"
+     "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526"
+     "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "testing/partition/test11/356-682"
+     "testing/partition/test11/683-792"
+     "testing/test11/machine-evidence/requirements/L41"
+     "testing/test11/machine-evidence/rejection-rules/L82"
+     "testing/test11/machine-evidence/diagnostics/L92"],
+    :affected-source-families ["phase-10" "phase-14"],
+    :historical-obligation
+    "Require artifact release decisions to contain and validate all evidence demanded by applicable policy.",
+    :primary-dispatch-family "phase-10",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "schema/release-evidence-gating",
+    :historical-record-sha256
+    "cc35f0b1c564a4d4266ba21e96e5f4bc86a40f17798caece6f7f32dcca55c5f0",
+    :source-facet-records-sha256
+    "0b77f50a438d8ee15982eff7d3031cf0d8a3a09b9b3ccfa458424ad2b24c9262",
+    :current-open-decision-ids
+    ["interface/schema/release-evidence-gating"],
+    :source-contracts nil,
+    :current-disposition :explicit-open-source-interface-work,
+    :implementation-acceptance :unassessed},
+   :before-coverage
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8"
+     "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06"
+     "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/14bd939163b2a3992684767e"
+     "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526"
+     "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "testing/partition/test11/356-682"
+     "testing/partition/test11/683-792"
+     "testing/test11/machine-evidence/requirements/L41"
+     "testing/test11/machine-evidence/rejection-rules/L82"
+     "testing/test11/machine-evidence/diagnostics/L92"],
+    :historical-obligation
+    "Require artifact release decisions to contain and validate all evidence demanded by applicable policy.",
+    :coverage-disposition :explicit-open-source-interface-work,
+    :id "schema/release-evidence-gating",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids
+    ["interface/schema/release-evidence-gating"],
+    :implementation-acceptance :not-inferred},
+   :historical-record
+   {:additional-task-interfaces [],
+    :context-refinements
+    [{:original-id "testing/test11/machine-evidence",
+      :obligation
+      "Release gates require machine-checkable formal evidence; formal artifacts complement and do not replace executable tests.",
+      :observable-boundary nil,
+      :source-facet-ids
+      ["testing/partition/test11/356-682"
+       "testing/partition/test11/683-792"
+       "testing/test11/machine-evidence/requirements/L41"
+       "testing/test11/machine-evidence/rejection-rules/L82"
+       "testing/test11/machine-evidence/diagnostics/L92"],
+      :qualification
+      "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance."}],
+    :obligation
+    "Require artifact release decisions to contain and validate all evidence demanded by applicable policy.",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8"
+     "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06"
+     "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7"
+     "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+     "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+     "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+     "facet/runtime-domains-schema/s9/14bd939163b2a3992684767e"
+     "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526"
+     "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19"
+     "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"
+     "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+     "testing/partition/test11/356-682"
+     "testing/partition/test11/683-792"
+     "testing/test11/machine-evidence/requirements/L41"
+     "testing/test11/machine-evidence/rejection-rules/L82"
+     "testing/test11/machine-evidence/diagnostics/L92"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "schema/release-evidence-gating",
+    :historical-support [],
+    :scope-reviews
+    [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+      :current-expanded-context-review :not-needed,
+      :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+      :scope :bounded-source-predicate-atomicity,
+      :artifact-sha256
+      "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+      :reviewed-source-facet-ids
+      ["facet/runtime-domains-schema/s9/14bd939163b2a3992684767e"
+       "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7"
+       "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06"
+       "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163"
+       "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84"
+       "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357"
+       "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5"
+       "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526"
+       "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19"
+       "facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8"
+       "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171"],
+      :additional-current-context-facet-ids [],
+      :implementation-acceptance :not-conferred,
+      :global-nonoverlap :pending}],
+    :proposal-batch "runtime-domains-schema"}}],
+ :source-facets
+ [{:start-line 86,
+   :raw-sha256
+   "03bb1cf318e930d7cc895ca2104bb040eaecd741c90de9ee865cd1fe98751188",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/5be5a306046f2f472939a4b7203df1eb1450659b7d4ddfa45161fc7df40b0b31",
+   :origin-facet-ids
+   ["S4/facet/2bfa9d138e66e77df935439e05f7a8c8413f3fa4772a8503db60d9f7b8d90b3e"],
+   :id "facet/runtime-domains-schema/s4/1628aea314c9be8ff7217fe8",
+   :kind :negative-case,
+   :document-id "S4",
+   :end-byte 3373,
+   :end-line 86,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3317}
+  {:start-line 73,
+   :raw-sha256
+   "4f799b8a92786a51cd88e4cfe914a3f47532157adf96df43b1ce5cc993b76484",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a498d37428bb77fd94e70869a494208c25fbf569b177f4eb5a31bff4f81b5e1f",
+   :origin-facet-ids
+   ["S4/facet/3f34e4c7d215ddddf1811d03833a7696d4d1d2b1e6bb0c3faef130b508b6caee"],
+   :id "facet/runtime-domains-schema/s4/29b8175d097f1d362680057f",
+   :kind :diagnostic,
+   :document-id "S4",
+   :end-byte 2775,
+   :end-line 73,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 2698}
+  {:start-line 102,
+   :raw-sha256
+   "66db102470594a56a525e5e500fc4ea23278e90d4fe0d2f80e27ee95a370d53e",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/7f5aa02598307de6fb15eb09cfecd8c7ee59b152a953c7610034ba9baf492a82"],
+   :id "facet/runtime-domains-schema/s4/34e9c1b0766048a3aa8a0e2e",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3810,
+   :end-line 102,
+   :unit-ids
+   ["runtime/service-policy-enforcement" "schema/graphql-generation"],
+   :start-byte 3775}
+  {:start-line 106,
+   :raw-sha256
+   "e5b28b9b14b513be7572f12063e11b1ccac6cdc4618e41b0aaac079ebe56ef45",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/e1f42a48916b2c0fa5147ac137c9e7176118aa202b3e144f89246058b776e0e8"],
+   :id "facet/runtime-domains-schema/s4/3e701fbb9bf5ec63d6f63a4b",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3984,
+   :end-line 106,
+   :unit-ids
+   ["runtime/service-policy-enforcement" "schema/graphql-generation"],
+   :start-byte 3925}
+  {:start-line 33,
+   :raw-sha256
+   "89c00948ec59d67db6606e599c86268bc11afa88ebf9af8e9e2bb6d5b244c311",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/157d149812430b51c5e8cad68f5d75ffd5352d34e20ba6c68aa268cbef2f4dcb",
+   :origin-facet-ids
+   ["S4/facet/8ce4525fba1eaeeb80f906fa607273c519daf63d855723d218fb58dad6aa2189"],
+   :id "facet/runtime-domains-schema/s4/3f1176406f052d5443e6c2a4",
+   :kind :context,
+   :document-id "S4",
+   :end-byte 1483,
+   :end-line 33,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/api-client-generation"
+    "schema/compatibility-diff"
+    "schema/graphql-generation"],
+   :start-byte 1452}
+  {:start-line 105,
+   :raw-sha256
+   "c1c8e3971e4a732aa8b01fba6f09e997e4366cc0eafb2e65555a8bcdc3df4283",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/f60875feade81f810bf16320dbf75d561a88cab23de3059b9d09b8683ea1cbe7"],
+   :id "facet/runtime-domains-schema/s4/4485f68b41b85b012b1133c4",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3925,
+   :end-line 105,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3898}
+  {:start-line 72,
+   :raw-sha256
+   "b76d646c4dcdcb79fa0374ea20102b2e3d10931ca98f27cea7272bda18930845",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a498d37428bb77fd94e70869a494208c25fbf569b177f4eb5a31bff4f81b5e1f",
+   :origin-facet-ids
+   ["S4/facet/00fd6f90dccff4f8111718f9e340d4d39f43586b032ebc8de1cd7707831c1366"],
+   :id "facet/runtime-domains-schema/s4/4bc27f1387b912456092966d",
+   :kind :diagnostic,
+   :document-id "S4",
+   :end-byte 2698,
+   :end-line 72,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 2639}
+  {:start-line 100,
+   :raw-sha256
+   "b7621e1d0edda32bbad26dec4140d152a0b53cedf750a3efad861082e05004d6",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/51a98d215e5647c2e8b6013554693db914dd1031b234b56478eadec312343646"],
+   :id "facet/runtime-domains-schema/s4/4dd211e07e6f84a862830731",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3736,
+   :end-line 100,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3685}
+  {:start-line 36,
+   :raw-sha256
+   "92eef5285dcd587872343556656fc1a949e06e47f7a00f094044a30f07aa285f",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/157d149812430b51c5e8cad68f5d75ffd5352d34e20ba6c68aa268cbef2f4dcb",
+   :origin-facet-ids
+   ["S4/facet/9f6c287fa508959594f8b70605ef68eb1a6b2aaf956dea595f917bc836e14ef3"],
+   :id "facet/runtime-domains-schema/s4/52c6c69ac1aae0d1564988f7",
+   :kind :context,
+   :document-id "S4",
+   :end-byte 1689,
+   :end-line 36,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/api-client-generation"
+    "schema/compatibility-diff"
+    "schema/graphql-generation"],
+   :start-byte 1619}
+  {:start-line 44,
+   :raw-sha256
+   "cd5bbaad4c0ce2275930c74cfaa5a374889abc276a48c7e353a601973428c9a8",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/d67be831d61d39909abb918c1d1398d1e9f7a8711403bcfc53204981564a9efe"],
+   :id "facet/runtime-domains-schema/s4/5a39b01e238eb9b21ed2f468",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1843,
+   :end-line 44,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1814}
+  {:start-line 35,
+   :raw-sha256
+   "3d06e38b0b5b0cfa07df1fdfdeed5d283977b8bb1532bcf99beefb8cca67c7f4",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/157d149812430b51c5e8cad68f5d75ffd5352d34e20ba6c68aa268cbef2f4dcb",
+   :origin-facet-ids
+   ["S4/facet/ec08b34b8ad53d6a3bd74413b5dd4f6d8a5da3ad0b46b0db4a1ecdf54c594743"],
+   :id "facet/runtime-domains-schema/s4/5c2abbcee01eac9a32946a98",
+   :kind :context,
+   :document-id "S4",
+   :end-byte 1619,
+   :end-line 35,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/api-client-generation"
+    "schema/compatibility-diff"
+    "schema/graphql-generation"],
+   :start-byte 1544}
+  {:start-line 79,
+   :raw-sha256
+   "4551e290aa548068fe57ffdf3a55d92bde1e0d42acc023dc52935874f7b2cd90",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a498d37428bb77fd94e70869a494208c25fbf569b177f4eb5a31bff4f81b5e1f",
+   :origin-facet-ids
+   ["S4/facet/e33a07cb3b7cd357e1f07763d4c803400652e887bc80d8c3faaf2b92d810064f"],
+   :id "facet/runtime-domains-schema/s4/6c7423e29ffc2bbaa8a37679",
+   :kind :diagnostic,
+   :document-id "S4",
+   :end-byte 3149,
+   :end-line 79,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3099}
+  {:start-line 40,
+   :raw-sha256
+   "3159d251da61876aae3c458be29f7a0a422c411ad1789318fbc00cfc29b342e2",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/bf28e78745584f3264e0d322ec7f46bb80ec800adfd74600e38743fa0c6fd1d2"],
+   :id "facet/runtime-domains-schema/s4/8875c0cfcc8eed45cf479a55",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1747,
+   :end-line 40,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1716}
+  {:start-line 103,
+   :raw-sha256
+   "2edab41c16db00569ca053d6fbcf3f30e606a073beaf333bd199d1acd431ed6d",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/c6efca72db306e14f265a4bb81d4bf536fa9a29fa01fbab6b60a2ccaeb6f1465"],
+   :id "facet/runtime-domains-schema/s4/9b8405f3c7355b360e5273fb",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3852,
+   :end-line 103,
+   :unit-ids ["schema/compatibility-diff" "schema/graphql-generation"],
+   :start-byte 3810}
+  {:start-line 22,
+   :raw-sha256
+   "ec5035e525ffb1f1a6cffcb04abff4175a671ea7d99d1c486b43f8e5f53a4446",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/862dbdb4528d678f7211c3cc1cc13fef29a633f201fc07a52ba676158db9cdc5",
+   :origin-facet-ids
+   ["S4/facet/385d633e92d57f5a692802bbaf934a250e9dbfb149b091c3ad460d1f7f1c0013"],
+   :id "facet/runtime-domains-schema/s4/a86789bd39fe1c9043da06d6",
+   :kind :condition,
+   :document-id "S4",
+   :end-byte 1054,
+   :end-line 23,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 923}
+  {:start-line 48,
+   :raw-sha256
+   "1813ab8f9dfa1b9629916b5c46ec68e7e5d726b5f87b77d4890cc43df70cd65f",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/3137a4355e836e8747640aa4df6f8d8ad3c02c19b5dc53a042966c4f951455e3"],
+   :id "facet/runtime-domains-schema/s4/be7794f22a5f9a54e9f9951e",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1948,
+   :end-line 48,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1925}
+  {:start-line 41,
+   :raw-sha256
+   "03b4d47e85f095dc2216d602dffc71de97ad79228173d66b15aabcaf13b24028",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/6b20209640c499f0ebd5eaffbd1c6b51bec42266e4f2ae104f1104138f4e59c4"],
+   :id "facet/runtime-domains-schema/s4/c4bd93c29987742c2298641f",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1762,
+   :end-line 41,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1747}
+  {:start-line 42,
+   :raw-sha256
+   "ec81d16b3d60a346c96849c6fb50c2be834706645484027eac3a774687d93927",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/18da13104d9c9f14386ae636df59c4e64d62dae211854f76742762eff5764ec0"],
+   :id "facet/runtime-domains-schema/s4/c6b48e7bf8336acc83270535",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1789,
+   :end-line 42,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1762}
+  {:start-line 101,
+   :raw-sha256
+   "fdf464f9452f449b2f7cb9b2349f507381a5bf9db3dfb718c0c67edf86e6d74d",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/755c2f1363c48cbecab21136e937d922595cae3da62f1689ee5b820ab7e53a90"],
+   :id "facet/runtime-domains-schema/s4/c742143c0bfdaa0563d02b0e",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3775,
+   :end-line 101,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3736}
+  {:start-line 47,
+   :raw-sha256
+   "c4a8846c42044b1fe83535ddbcbc2d5c8009774eeb749edb6f4e8bb54b1eaa46",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a452b3cb54b54c329d6ab80e6b38d27829dba6ff1a107656e16e4d25ba966813",
+   :origin-facet-ids
+   ["S4/facet/5e0b8812194546d92918e430065fa0831a01dead87c5a6d445dd352c435c287c"],
+   :id "facet/runtime-domains-schema/s4/d0968e8a2a3c6ac152a38f29",
+   :kind :artifact,
+   :document-id "S4",
+   :end-byte 1925,
+   :end-line 47,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 1893}
+  {:start-line 63,
+   :raw-sha256
+   "0846be786918efa644a59d960bbabf526eabfeb9f5f6d1c714f6c95bfa4659cf",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/44e9df433fe9674a1102b4627afcae3f41d6b5dbeec54ab4a15372b5a02833df",
+   :origin-facet-ids
+   ["S4/facet/65fc2f224ca9dd98d6b88044e6c9050f0b22342fd1342a7fa5f39109f55fa8ff"],
+   :id "facet/runtime-domains-schema/s4/dfa6878f8d7af9a4bf5a3986",
+   :kind :condition,
+   :document-id "S4",
+   :end-byte 2579,
+   :end-line 66,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 2280}
+  {:start-line 104,
+   :raw-sha256
+   "cad44a6088a1e274d83f3118a19f7f78c99cd14a07913e9b7b0842322a1d8a86",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/17023ed7acbb251e295c3de83ef0f84337ef71c2d6979555fe2b5c64155ab315",
+   :origin-facet-ids
+   ["S4/facet/d6fb1a742d6ffe2c708c2b9186d51b5dc1e20e3b0f96b79ce6721f2135bbd8b6"],
+   :id "facet/runtime-domains-schema/s4/f137c665cb77ee5f738b7ff0",
+   :kind :acceptance-case,
+   :document-id "S4",
+   :end-byte 3898,
+   :end-line 104,
+   :unit-ids
+   ["schema/api-client-generation" "schema/graphql-generation"],
+   :start-byte 3852}
+  {:start-line 34,
+   :raw-sha256
+   "a028ea3e918306e986dc2a84ab935469d34f027e772333a2d20611a18a24bfbe",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/157d149812430b51c5e8cad68f5d75ffd5352d34e20ba6c68aa268cbef2f4dcb",
+   :origin-facet-ids
+   ["S4/facet/6ac3c0c56eca39e5a717173e6c6be80e9f075f862ab49d04dec70f611b83f58d"],
+   :id "facet/runtime-domains-schema/s4/f15c91e0ee2435296afbc481",
+   :kind :context,
+   :document-id "S4",
+   :end-byte 1544,
+   :end-line 34,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/api-client-generation"
+    "schema/compatibility-diff"
+    "schema/graphql-generation"],
+   :start-byte 1483}
+  {:start-line 88,
+   :raw-sha256
+   "5dba8ec404877c6d544b70126ddfa09f8441099ad43e491316d48b9c03983d2e",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/7301864b8010e1b5580c6a3c2934fd916113d8ff090d347f6fecb409f99a3161",
+   :origin-facet-ids
+   ["S4/facet/8413528c42fbef28a38abd834a4123a60c391f8e56ea416baa6feb3d318fffaa"],
+   :id "facet/runtime-domains-schema/s4/f45f9f5529c4b331cb64c7b1",
+   :kind :negative-case,
+   :document-id "S4",
+   :end-byte 3413,
+   :end-line 88,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3374}
+  {:start-line 78,
+   :raw-sha256
+   "eab0ff27533b9ae09924d7c2657a45cb74aaf47d1286abe1b0c6b6b26a7c5b45",
+   :unresolved false,
+   :source-occurrence-id
+   "S4/source/a498d37428bb77fd94e70869a494208c25fbf569b177f4eb5a31bff4f81b5e1f",
+   :origin-facet-ids
+   ["S4/facet/a765066ba5bc437ef82eab03c5e291c0ce69d1eb6c9188a7a7207356c48a7564"],
+   :id "facet/runtime-domains-schema/s4/ffd62348f543564eb6f15467",
+   :kind :diagnostic,
+   :document-id "S4",
+   :end-byte 3099,
+   :end-line 78,
+   :unit-ids ["schema/graphql-generation"],
+   :start-byte 3027}
+  {:start-line 114,
+   :raw-sha256
+   "71169692ce2125689cd815368316f939d26a4a6846c981f936ed989081a28bea",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/39f911af761ebbc161e434cc78ab6f2af2be4057ccc1dc8c8f2c6e8a42431adc"],
+   :id "facet/runtime-domains-schema/s6/08cc610f5a936977120c4b51",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4271,
+   :end-line 114,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4237}
+  {:start-line 111,
+   :raw-sha256
+   "93cfa94fb820e170bc0731a03cfb633cb7535079ce54bd442c8cd458a7ea36ef",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/a33a28d41fe38a13850614c9fa7f51b8d9ba529f095aaae08118cd1d936d586f"],
+   :id "facet/runtime-domains-schema/s6/0b174dc8f22b053b99769fb5",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4155,
+   :end-line 111,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4097}
+  {:start-line 112,
+   :raw-sha256
+   "a0133d4fde5c795c61eb4309ef25956388f15748337297094422849275fecdbd",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/cf2ad5602141b7b10d933fd7918b250bd80c20f83a310fc21cff944b2aada475"],
+   :id "facet/runtime-domains-schema/s6/0b84d1e04297dd1ef4715d00",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4176,
+   :end-line 112,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4155}
+  {:start-line 50,
+   :raw-sha256
+   "48a6106c1098616a59c8895656d2fea1a0bf4208d03be4e2c6b70fd76cbc0fab",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/9cf73bd6287deb5d097e5a02ea3dfbd12c8006c85ffd32336ba9809959365934",
+   :origin-facet-ids
+   ["S6/facet/92960f0ff78500c4f85e0b6e98d0691c26798aad63a1b97cea140f6ee02cbe6d"],
+   :id "facet/runtime-domains-schema/s6/1176e4691f713f2ac21d87e2",
+   :kind :artifact,
+   :document-id "S6",
+   :end-byte 2093,
+   :end-line 50,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 2047}
+  {:start-line 30,
+   :raw-sha256
+   "e932f3aa5f981e259637ae13ef7f658affe029c0dba3b60dcdb39f4eb27e4667",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/60423199f786ad22fe97885045aab4decd12cac6cfe2015a77a41fe6f200fd88",
+   :origin-facet-ids
+   ["S6/facet/e336d9e0329e6d675751a95ac0469205f22f2be47af9249440d7155338fb6d06"],
+   :id "facet/runtime-domains-schema/s6/21effcf4a894740ce2571225",
+   :kind :condition,
+   :document-id "S6",
+   :end-byte 1516,
+   :end-line 30,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 1437}
+  {:start-line 110,
+   :raw-sha256
+   "4c83f5a5e7ae1a9d2c0c07ec2c4742f30a8660fd6b6018631e478ba7ae2cf5e5",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/97799b051b71bfd3cc54ec49d5cc91e4b9d1f07c6b889bb26d38070c37b44bf2"],
+   :id "facet/runtime-domains-schema/s6/25466b9acf043b743efabd7e",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4097,
+   :end-line 110,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4051}
+  {:start-line 42,
+   :raw-sha256
+   "f96545bcd1680918cbff662d3df482d0d4ad8c8373582b59a9c8cc559bbc4439",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/9cf73bd6287deb5d097e5a02ea3dfbd12c8006c85ffd32336ba9809959365934",
+   :origin-facet-ids
+   ["S6/facet/4223b4d8da38393f80bc098d43b383a8cd807a551f407b8a60ea4116f1dc5831"],
+   :id "facet/runtime-domains-schema/s6/29b232debea52c24a250934f",
+   :kind :artifact,
+   :document-id "S6",
+   :end-byte 1864,
+   :end-line 42,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 1835}
+  {:start-line 99,
+   :raw-sha256
+   "11fd8d4376f499bc2008654023b3c6aa73042a980b924f69514aebe9629362ae",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/2d465afb94721c3d8d7d5772d32828e8d4cadc16f9f83180bd7c435e45db908a",
+   :origin-facet-ids
+   ["S6/facet/bbde53da504dc76470aabb131f64aa021fed0c6b0870e3878340a9d4004dc6d1"],
+   :id "facet/runtime-domains-schema/s6/38457ef7a9a27ca72f12a0e4",
+   :kind :negative-case,
+   :document-id "S6",
+   :end-byte 3827,
+   :end-line 99,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 3765}
+  {:start-line 88,
+   :raw-sha256
+   "a7c68138de74f34f2f3cadc7ddd88af25c9f8e088e84addf19ccf2b7e846a08a",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/3900109706f09b3d08a13062ebc8a86c4fa44c4bb3f780bed051c0e75dee201b",
+   :origin-facet-ids
+   ["S6/facet/8e208f2dc094a1c5eedf9300dd61a4e6b5dfdbd71997cb2f84a185713b2f28db"],
+   :id "facet/runtime-domains-schema/s6/4ade063408d042d54b609ad3",
+   :kind :diagnostic,
+   :document-id "S6",
+   :end-byte 3564,
+   :end-line 89,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 3426}
+  {:start-line 115,
+   :raw-sha256
+   "972ce09abc8c678cbf0b3e9ce06d464dcb5b22b5d2f95ce00917fad338e18da3",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/993c2faf495ea71087dade218971a733cac05bfa5f5eb4dededdf175bdd52d38"],
+   :id "facet/runtime-domains-schema/s6/5ff3d5c9a8451012b8115c95",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4311,
+   :end-line 115,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4271}
+  {:start-line 78,
+   :raw-sha256
+   "adc1e31776b3a9c029e0de836cef1f2206d59b22b8f8c71304a2816867408430",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/dd5042cad5d8b688220a1cff575f8a040131b64385e4f5093f72d38ec71a2717",
+   :origin-facet-ids
+   ["S6/facet/5e2627b5a8c4bc30e451b6290f88e3352318f2e6602cb828b88e5a8318c28681"],
+   :id "facet/runtime-domains-schema/s6/68451db5a21435480f281829",
+   :kind :diagnostic,
+   :document-id "S6",
+   :end-byte 2942,
+   :end-line 78,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 2875}
+  {:start-line 116,
+   :raw-sha256
+   "7989983ad23fd1982841da3200dfc8edcdef8c6e09673a7a013e5bca5ac29b58",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/24032b615a7a3ed8aae7b32126c0c17785a395841d2e428311182df8d583329d"],
+   :id "facet/runtime-domains-schema/s6/691a87b9abd672ef6ec04a2f",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4340,
+   :end-line 116,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 4311}
+  {:start-line 117,
+   :raw-sha256
+   "02bbb1421948843a8d004627b86522d73620bbefe70653ea0db8b542e7453504",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/20d07bf49db76c32491be7b19d7da145378815a7ba01cc3410e6331e753b3bb0"],
+   :id "facet/runtime-domains-schema/s6/69e1191511c1b68f3784702c",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4379,
+   :end-line 117,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4340}
+  {:start-line 77,
+   :raw-sha256
+   "328e634409dde8f34ec2e7efd4d71cdd0bcb1334cdc69300f54c9fcb6ae92da1",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/dd5042cad5d8b688220a1cff575f8a040131b64385e4f5093f72d38ec71a2717",
+   :origin-facet-ids
+   ["S6/facet/81f419ca90f0cf90c00307be7081f06b1243ac9b41f6805e5cbdde3c68efa4f3"],
+   :id "facet/runtime-domains-schema/s6/75b5f56a05e8f5ebcda8ae38",
+   :kind :diagnostic,
+   :document-id "S6",
+   :end-byte 2875,
+   :end-line 77,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 2807}
+  {:start-line 37,
+   :raw-sha256
+   "5baa97b80dd7ae887b81fc33e1221b4ea7f46e60234d81adc30f508f862e7751",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/d525769426fd3e677020b04a7babb9f0904c92b0e041c7bd9fcbf7712bb7c44f",
+   :origin-facet-ids
+   ["S6/facet/33634aac42e436eeca2365fdee9187d9152fe4c579fc5ac6f55fcc710b59d1c5"],
+   :id "facet/runtime-domains-schema/s6/7a70e1e8c8970fde359d3540",
+   :kind :context,
+   :document-id "S6",
+   :end-byte 1808,
+   :end-line 38,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/compatibility-diff"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 1722}
+  {:start-line 35,
+   :raw-sha256
+   "378a9f29680f52bf85ab37326fe6750f309c672de9e6c4add3a1285d89fecea9",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/d525769426fd3e677020b04a7babb9f0904c92b0e041c7bd9fcbf7712bb7c44f",
+   :origin-facet-ids
+   ["S6/facet/f9f9bd90b6add95bce03c8743615cc8d1f618e4018980e8217106287d6d7dc48"],
+   :id "facet/runtime-domains-schema/s6/7c64948e598b7353aae4ff60",
+   :kind :context,
+   :document-id "S6",
+   :end-byte 1722,
+   :end-line 36,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/compatibility-diff"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 1607}
+  {:start-line 84,
+   :raw-sha256
+   "77fc479fcdf363ee31bd275c3c88aff48acb3f29866fe50b14a0283bd10c0f9b",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/dd5042cad5d8b688220a1cff575f8a040131b64385e4f5093f72d38ec71a2717",
+   :origin-facet-ids
+   ["S6/facet/0f75db44b6f02ba7b0a35fea7c3ccec3b82811029d261c3e276867ccc5dcdcc6"],
+   :id "facet/runtime-domains-schema/s6/819467332607f1357cdbc215",
+   :kind :diagnostic,
+   :document-id "S6",
+   :end-byte 3312,
+   :end-line 84,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 3252}
+  {:start-line 113,
+   :raw-sha256
+   "7cf02d520626464978a80b101ffb059e4d48349fc12e0ad425ad29188df32206",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/97a68322c8ffa18f6eacdddf7be2868e60189c4418e3f1fe77d1888a75bb7699"],
+   :id "facet/runtime-domains-schema/s6/903e6ba7d7024da539bfda19",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4237,
+   :end-line 113,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4176}
+  {:start-line 68,
+   :raw-sha256
+   "51b989fa5d6f633addcb9a2e5308be0ff1ae0d59efb7b588e693b2c3316948d4",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/394bbc01e5f64a401056ce7eddc7778be59a1c52c5ff919ae092155bf101ea5d",
+   :origin-facet-ids
+   ["S6/facet/4ff640d107effe32a3155d171bf74a015469b687a125c19b215d82b08e48ffe5"],
+   :id "facet/runtime-domains-schema/s6/90497a83951c74a6687b2355",
+   :kind :condition,
+   :document-id "S6",
+   :end-byte 2738,
+   :end-line 71,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 2439}
+  {:start-line 19,
+   :raw-sha256
+   "46b48a56ae401c7bd4d75d22ebd2c9f2a6550f537add606ed11d2a87bf991661",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/60423199f786ad22fe97885045aab4decd12cac6cfe2015a77a41fe6f200fd88",
+   :origin-facet-ids
+   ["S6/facet/fa204d2606dcf74d45c349994fe654d4633ec8c2afe14d9ebc6b691c60f7c2ca"],
+   :id "facet/runtime-domains-schema/s6/972a8b8c742b3c4e696bfddd",
+   :kind :condition,
+   :document-id "S6",
+   :end-byte 886,
+   :end-line 21,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 679}
+  {:start-line 49,
+   :raw-sha256
+   "d3e229be37138a04ade9b4de54861161fb005eea106ab49160790c17c6d0b93e",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/9cf73bd6287deb5d097e5a02ea3dfbd12c8006c85ffd32336ba9809959365934",
+   :origin-facet-ids
+   ["S6/facet/382b8977d25ba6599cff272a43bc3c9307d1873e07a1dd038a106aed68cd3a7b"],
+   :id "facet/runtime-domains-schema/s6/978247b2a04d02f21988960c",
+   :kind :artifact,
+   :document-id "S6",
+   :end-byte 2047,
+   :end-line 49,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 2024}
+  {:start-line 34,
+   :raw-sha256
+   "32bf28cef5e673091e45beec94430043d37e076d227eb4d85d5fcc994ba0b2fd",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/d525769426fd3e677020b04a7babb9f0904c92b0e041c7bd9fcbf7712bb7c44f",
+   :origin-facet-ids
+   ["S6/facet/0da0b3b5fb34e2daf735b53328e37b5f3229313e512f36d341ccdf49813adec0"],
+   :id "facet/runtime-domains-schema/s6/b945b8bab24cb8fab0fa625b",
+   :kind :context,
+   :document-id "S6",
+   :end-byte 1607,
+   :end-line 34,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/compatibility-diff"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 1534}
+  {:start-line 118,
+   :raw-sha256
+   "828ca2ae15ddce85c48a79d78ecd7a3e8cc313d7de210e2d91ad18dc16d44e40",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/26402fdcc0e5823eeee3ef91eb201a47d1ebac10da9e3df9ea37db0605360ab5",
+   :origin-facet-ids
+   ["S6/facet/1c9e6ade4fdaef1c85e27ae44a545790dd4c5f2bfd8bb6fc06827bb84f306579"],
+   :id "facet/runtime-domains-schema/s6/bbd7836a22c37eb0cfccb6dc",
+   :kind :acceptance-case,
+   :document-id "S6",
+   :end-byte 4438,
+   :end-line 118,
+   :unit-ids ["schema/database-mapping" "schema/database-migration"],
+   :start-byte 4379}
+  {:start-line 10,
+   :raw-sha256
+   "3f300f93f9355926b47810850100675466d4576360f96e8331567621ea2c7995",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/f7539989a1a2ddca17e649939670d1fe91b94b1f929c9bd17c9e8fbafea4b4cb",
+   :origin-facet-ids
+   ["S6/facet/73524d1587c56b3cd68a3f80e4343dae7c720b2a97a3b9f5d169d49a5ad5ac14"],
+   :id "facet/runtime-domains-schema/s6/c38ccacca7339a22b77ae79c",
+   :kind :condition,
+   :document-id "S6",
+   :end-byte 539,
+   :end-line 12,
+   :unit-ids
+   ["schema/compatibility-diff"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 340}
+  {:start-line 55,
+   :raw-sha256
+   "d821f8dd7a9269f01581ba4bca015276470e27e87a1e31078584a6b9627c1127",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/1705f365306fe3785d3c224357c1bb7335461ad00214d43a6c4429e5c6688f84",
+   :origin-facet-ids
+   ["S6/facet/0abc8793ab093a6042bb262adf7f6b68620b7040398c5748229baed2af4e9edf"],
+   :id "facet/runtime-domains-schema/s6/e123ec6e8651d511e50c881a",
+   :kind :example,
+   :document-id "S6",
+   :end-byte 2420,
+   :end-line 64,
+   :unit-ids
+   ["runtime/service-policy-enforcement"
+    "schema/database-mapping"
+    "schema/database-migration"],
+   :start-byte 2142}
+  {:start-line 48,
+   :raw-sha256
+   "09c1eaa1fe8cade534057d71fd5ac4b224a3493e4c4f5ad61687aa0a6242c21c",
+   :unresolved false,
+   :source-occurrence-id
+   "S6/source/9cf73bd6287deb5d097e5a02ea3dfbd12c8006c85ffd32336ba9809959365934",
+   :origin-facet-ids
+   ["S6/facet/3a07a6bb9a05dd2723db97b6e0e604b0b5729afac6de2c07ae5a242ed803ef70"],
+   :id "facet/runtime-domains-schema/s6/faa3a1bf91fba508bb4cd150",
+   :kind :artifact,
+   :document-id "S6",
+   :end-byte 2024,
+   :end-line 48,
+   :unit-ids ["schema/database-mapping"],
+   :start-byte 2003}
+  {:start-line 36,
+   :raw-sha256
+   "4db977b52aaff7ba3e85bd3885e7587ed676f3b03712f70c1ae949d3ee22fa65",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/6caf6f1ac3f3d44596b756575e0924e9645e44f476923c46fd48dd9800481ac3",
+   :origin-facet-ids
+   ["S8/facet/03f7d9665341dfd80d204867f7b7548b867bbc729b30e0efd7aeb5ac866ad7a9"],
+   :id "facet/runtime-domains-schema/s8/124a3e851346dcfd4f74886f",
+   :kind :context,
+   :document-id "S8",
+   :end-byte 1679,
+   :end-line 36,
+   :unit-ids
+   ["integration/build-input-capture"
+    "runtime/policy-safe-observation"
+    "runtime/service-policy-enforcement"
+    "schema/boundary-validation"
+    "schema/configuration-loading"
+    "schema/configuration-reload"],
+   :start-byte 1606}
+  {:start-line 47,
+   :raw-sha256
+   "f306196c14491a15a2a8059f4e974f0277c2f10f26b11fa3980dbfb883dbcd94",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/7ea4d3734c2846a719ab461f75c85b76de86a46412b1b0f1e9ea8eea44fd1593",
+   :origin-facet-ids
+   ["S8/facet/a0d3e332aa63915c834eec855d8779a6e3a85e0ebedf5e642c3d43a920505eb3"],
+   :id "facet/runtime-domains-schema/s8/1f9eb2fb13fac154948a694b",
+   :kind :artifact,
+   :document-id "S8",
+   :end-byte 1903,
+   :end-line 47,
+   :unit-ids ["schema/configuration-reload"],
+   :start-byte 1878}
+  {:start-line 106,
+   :raw-sha256
+   "c88694c76732b7821de6dd22f54a5c04fd0e27419dd0c91cb38aade854a64b17",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/c7a3b2179ce527ac04e89678ea7ca683955ce2507dd3808c3829e24b183c62da",
+   :origin-facet-ids
+   ["S8/facet/79758842ee1e811582b47cb08f1ca25220fe2f828fd735c25b913f0520ebb7d0"],
+   :id "facet/runtime-domains-schema/s8/34e48be36c4db73ca772ddc2",
+   :kind :acceptance-case,
+   :document-id "S8",
+   :end-byte 3886,
+   :end-line 106,
+   :unit-ids
+   ["schema/configuration-loading" "schema/configuration-reload"],
+   :start-byte 3852}
+  {:start-line 34,
+   :raw-sha256
+   "f8383fbb79eba2fbf7bd5d688622d5125cc6b6ae8bd283bc9c32ba28e0f0fa2f",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/6caf6f1ac3f3d44596b756575e0924e9645e44f476923c46fd48dd9800481ac3",
+   :origin-facet-ids
+   ["S8/facet/76d21ac0b00d86d199ab6d776269d5e3eea9e84fa527dfcd0c2edfd7680020b7"],
+   :id "facet/runtime-domains-schema/s8/6936f70fc342cb404b124040",
+   :kind :context,
+   :document-id "S8",
+   :end-byte 1606,
+   :end-line 35,
+   :unit-ids
+   ["integration/build-input-capture"
+    "runtime/policy-safe-observation"
+    "runtime/service-policy-enforcement"
+    "schema/boundary-validation"
+    "schema/configuration-loading"
+    "schema/configuration-reload"],
+   :start-byte 1465}
+  {:start-line 29,
+   :raw-sha256
+   "adac14e8ed08129f60d7b4f5ea5638c90169317ef4838b32f58dee607ce3fdc7",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/86b07460dfb1392c79a317f239d8448c77350c4c1d761df166d80e64b8ae488d",
+   :origin-facet-ids
+   ["S8/facet/8a23f0f1338f9488c071f9b72f27b3564de91ca40583317e5c23152958c87056"],
+   :id "facet/runtime-domains-schema/s8/a76fee9dffce8c53c5963989",
+   :kind :condition,
+   :document-id "S8",
+   :end-byte 1447,
+   :end-line 30,
+   :unit-ids ["schema/configuration-reload"],
+   :start-byte 1355}
+  {:start-line 79,
+   :raw-sha256
+   "3dddbd7066717c16aebc963e8ada860ccb0ec1b31ddb9ee143539d61616290b2",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/0db3b0a6e077068f99e7ae917b3c563943c6359e79fb05eb233049ae7db63e06",
+   :origin-facet-ids
+   ["S8/facet/79fc18ecfa8acc5c9a32bc73b9e229b6eb20360937c8e943ae63c4fa7bd315f5"],
+   :id "facet/runtime-domains-schema/s8/f8352b5ae6feb67a0561c398",
+   :kind :diagnostic,
+   :document-id "S8",
+   :end-byte 3068,
+   :end-line 79,
+   :unit-ids ["schema/configuration-reload"],
+   :start-byte 3011}
+  {:start-line 93,
+   :raw-sha256
+   "a3a2ed5a68cfd43d65b7ca07b20963c26c7bf676b519deb8097f3906c6ff890d",
+   :unresolved false,
+   :source-occurrence-id
+   "S8/source/a232795f1098d7dc946548d8b97d3576a81839a149db9c56c1db5ce1b5146c99",
+   :origin-facet-ids
+   ["S8/facet/68bd25522c4a53ff860ff549287ba2617a506f6896e68135a29f423221eced7a"],
+   :id "facet/runtime-domains-schema/s8/f9c596148b6edd4c3b7d0117",
+   :kind :negative-case,
+   :document-id "S8",
+   :end-byte 3554,
+   :end-line 93,
+   :unit-ids ["schema/configuration-reload"],
+   :start-byte 3480}
+  {:start-line 96,
+   :raw-sha256
+   "cbd6945a707f22c8920db9e5fc0952f7b4698623560b6f7e81b5af0da67dd138",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/5e4d48e8c84e25640c5f4d37d367038a993d836ab83f7455b55c9b522bcaba89",
+   :origin-facet-ids
+   ["S9/facet/1f29aba1da5b0a2ebffc6e43973ccb81281213b4b98b2b78aa8421c749304a85"],
+   :id "facet/runtime-domains-schema/s9/0193b7558d0839df16a8d8f2",
+   :kind :negative-case,
+   :document-id "S9",
+   :end-byte 3824,
+   :end-line 97,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3722}
+  {:start-line 88,
+   :raw-sha256
+   "e25d883a8374ea21b36a2ed4ac50a02afc6ead2f17557bf9f4c69ccac0d1d268",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c554d26f234b93e2d2d8a3f5a701b7f68f618e6d6b7dfa7ee2ad1a2dc766bb6b",
+   :origin-facet-ids
+   ["S9/facet/51e91eef375cf7bbc43f36ebfb6447c3822b201b4a4031cc5c418f1c2de72f1d"],
+   :id "facet/runtime-domains-schema/s9/034dbb0b1909c522176e7220",
+   :kind :negative-case,
+   :document-id "S9",
+   :end-byte 3517,
+   :end-line 88,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3473}
+  {:start-line 26,
+   :raw-sha256
+   "26cb4bea4069dfc98124e150dadb4dd9811ff2d99f1a272743705435b4ce1d64",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/b8a8016434715469e486a4fe858805641ad368ae9e40a8c64a02cdd9beaf06d4",
+   :origin-facet-ids
+   ["S9/facet/4bc98b542c48ed10e5ccf4a0c69f5f208b6f090d44627d901bfee19a283e877f"],
+   :id "facet/runtime-domains-schema/s9/09ed5e3e501754d5d6c66c52",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 1323,
+   :end-line 27,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1170}
+  {:start-line 41,
+   :raw-sha256
+   "7237e40957e50e7dca0742e3a5c2aa18704ae844c5749d892309f9c63a64d03c",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/9b271026cc44e58459e47314b81fe9c604bb135e1c0f1d3fc6bf08990b2b75c6"],
+   :id "facet/runtime-domains-schema/s9/0da437f586da289aa75873eb",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1767,
+   :end-line 41,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1736}
+  {:start-line 48,
+   :raw-sha256
+   "1a056fee5288f10dc61db752b1563e82f0b331d045dfa8a69bbc8d322c404bb4",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/eadd189e694100ff32c87ec7bc92cef73d0836de8e560fbba5bb13d53d065ca5"],
+   :id "facet/runtime-domains-schema/s9/136709c8dd3a240359e94ae2",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1942,
+   :end-line 48,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1911}
+  {:start-line 46,
+   :raw-sha256
+   "4f7f201bb2ecb4908827c2c3477254493be163a53bb53866a4deb272108e2a68",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/d21e597acec8d2c917e32f7a5d780a1efb46f36ba2aa0f559e866a8111431d03"],
+   :id "facet/runtime-domains-schema/s9/14bd939163b2a3992684767e",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1878,
+   :end-line 46,
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 1855}
+  {:start-line 25,
+   :raw-sha256
+   "7ecadb7eb8b8f87c2d7a76831bfe557dc294c764dcded50f2ac5ba951d4d18c7",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/b8a8016434715469e486a4fe858805641ad368ae9e40a8c64a02cdd9beaf06d4",
+   :origin-facet-ids
+   ["S9/facet/fe6292e1cdd0d0c535ceb576cd2fe281d88ee6e2deef12ccafc47e5656242387"],
+   :id "facet/runtime-domains-schema/s9/1f77fb75a74eb9fee77b80e7",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 1170,
+   :end-line 25,
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 1104}
+  {:start-line 23,
+   :raw-sha256
+   "693c60c2253e9804ba1ab643fa634fba0fe394651075d38e073d44306474b247",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/b8a8016434715469e486a4fe858805641ad368ae9e40a8c64a02cdd9beaf06d4",
+   :origin-facet-ids
+   ["S9/facet/0caf04f69c990ac234394c30b52a0b2814842587cc1257f0464585026c0b649e"],
+   :id "facet/runtime-domains-schema/s9/2d6e678b02f89e6c58f40c06",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 1104,
+   :end-line 24,
+   :unit-ids
+   ["schema/canonical-bytes" "schema/release-evidence-gating"],
+   :start-byte 992}
+  {:start-line 15,
+   :raw-sha256
+   "04603444cf6cc468605d519c12751e3fbf4d9bf83630cc5eadbc04f1c406b1d2",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/2606c654313b60a58ad75579be282f71592aa055792530825f5741ff5eaf1493",
+   :origin-facet-ids
+   ["S9/facet/c7cf8b9420f802cca0414d60c16d59442e71d67552dbfbe3af182fb59397b604"],
+   :id "facet/runtime-domains-schema/s9/3117084b5fc0d9b2a0102470",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 701,
+   :end-line 15,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 621}
+  {:start-line 40,
+   :raw-sha256
+   "50368623ad12860abd238adc65a13d320dce3822e24d9cea7844afea6ed677c2",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/26e2f2c4411d50eec8c6e7a4ba6e4e09f0028abd37b9f38edea48de88d1f17c6"],
+   :id "facet/runtime-domains-schema/s9/318685b1d572fd2546c1a6b1",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1736,
+   :end-line 40,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1708}
+  {:start-line 106,
+   :raw-sha256
+   "47982cc2bd4e29c59f47809baa167f58a7e658c2ce53cbcfd9801588a763bb57",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/3bc6c4ec736753f19d736639d6038b3f5b28db34662fa04923106c3f35693064"],
+   :id "facet/runtime-domains-schema/s9/3667c4707831a2c86dbb8163",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 4068,
+   :end-line 106,
+   :unit-ids
+   ["schema/artifact-validation" "schema/release-evidence-gating"],
+   :start-byte 4041}
+  {:start-line 105,
+   :raw-sha256
+   "004ba6090c5b249906d6c53894873b08d6160a75a4f09b9715c360d676ea5892",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/708a408cb01dd2977a60e6ae7ca48113b28f2cf58f1c7f85ee4277b1a68e35ce"],
+   :id "facet/runtime-domains-schema/s9/4214870b723fca1cb680b56e",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 4041,
+   :end-line 105,
+   :unit-ids ["schema/artifact-validation" "schema/canonical-bytes"],
+   :start-byte 3991}
+  {:start-line 35,
+   :raw-sha256
+   "b9dce17c85373d25b15e5ac593df1309262e3b11bcf99a6319eb4cbcbba48503",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/30aab59d804ded0c6071eded0a4312e665f704bf71a3835fdf55a4b551780c90",
+   :origin-facet-ids
+   ["S9/facet/d8723f5328935b615d4a74b035f6aa6d31747524a692297dc8d9fde9d12bc870"],
+   :id "facet/runtime-domains-schema/s9/44a1cc1ff0c435a7b9696c84",
+   :kind :context,
+   :document-id "S9",
+   :end-byte 1681,
+   :end-line 36,
+   :unit-ids
+   ["schema/artifact-validation"
+    "schema/canonical-bytes"
+    "schema/compatibility-diff"
+    "schema/release-evidence-gating"],
+   :start-byte 1579}
+  {:start-line 74,
+   :raw-sha256
+   "3aeb2069f3521fa362a4c813d4dd17cd8c53f312ee1f8e4cae5ec3a60da86594",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/d886d2f650339b4c83c1cbbafa541ba2a2fe72f23e6ec936a3a7ea634330f791",
+   :origin-facet-ids
+   ["S9/facet/123094efc8a7fbda038da131cebe6a1fe0812c78ad2f0f5453ba3dd55865999c"],
+   :id "facet/runtime-domains-schema/s9/4adc83722fec0811d160f183",
+   :kind :diagnostic,
+   :document-id "S9",
+   :end-byte 2860,
+   :end-line 74,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 2806}
+  {:start-line 94,
+   :raw-sha256
+   "a30656241139e3c78f893dd61d6d7d1a5b50b7dc4c5b7b7ad88a19ce54d684f0",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/683d4da3df52a294b5dbdf17db5963784a729d1824db3147b46e34d663e09d5a",
+   :origin-facet-ids
+   ["S9/facet/647d73c4594fbcd97cd5e88ccf79e1cc07e70a077e922f905738e4d856bc4359"],
+   :id "facet/runtime-domains-schema/s9/4d76ec05045292c6a5cd8487",
+   :kind :negative-case,
+   :document-id "S9",
+   :end-byte 3721,
+   :end-line 94,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3652}
+  {:start-line 34,
+   :raw-sha256
+   "f49d33333b54056afbe9ca2db098de66cc5fd21a6b76aea44a9b00f6e83af2cd",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/30aab59d804ded0c6071eded0a4312e665f704bf71a3835fdf55a4b551780c90",
+   :origin-facet-ids
+   ["S9/facet/3ee6c9678b6f3583c71edcaf66a1831881c2b0e8d9a8ef9d4b01232057e554ee"],
+   :id "facet/runtime-domains-schema/s9/6569cf4b363f866df2ff4357",
+   :kind :context,
+   :document-id "S9",
+   :end-byte 1579,
+   :end-line 34,
+   :unit-ids
+   ["schema/artifact-validation"
+    "schema/canonical-bytes"
+    "schema/compatibility-diff"
+    "schema/release-evidence-gating"],
+   :start-byte 1536}
+  {:start-line 104,
+   :raw-sha256
+   "c32e2991149b21c4849057d9c97da40b9beba44975003e913032cf2b7a56ee46",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/9a7c648e1d56bbcf8d157fd533e3b44e49cbd52d71066b0ce18184cec7e229ed"],
+   :id "facet/runtime-domains-schema/s9/6c7fffe6388f64a289e2dc04",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 3991,
+   :end-line 104,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3950}
+  {:start-line 33,
+   :raw-sha256
+   "6c5bbd0cf664aea68094c1862c29b818bd6c87711090c588203bbfb19b7122e3",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/30aab59d804ded0c6071eded0a4312e665f704bf71a3835fdf55a4b551780c90",
+   :origin-facet-ids
+   ["S9/facet/6f6019dab50891c149cf8fb30e8819e14f29d716409e6e3affdea799b7911313"],
+   :id "facet/runtime-domains-schema/s9/7379ff8ad2077cadd45a85e5",
+   :kind :context,
+   :document-id "S9",
+   :end-byte 1536,
+   :end-line 33,
+   :unit-ids
+   ["schema/artifact-validation"
+    "schema/canonical-bytes"
+    "schema/compatibility-diff"
+    "schema/release-evidence-gating"],
+   :start-byte 1478}
+  {:start-line 77,
+   :raw-sha256
+   "e6f037e1ddfbc5b82d931e2bb65c7be6334f4da74b8e09f4c57e98ef20bd5975",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/d886d2f650339b4c83c1cbbafa541ba2a2fe72f23e6ec936a3a7ea634330f791",
+   :origin-facet-ids
+   ["S9/facet/4cff71dba859bf5956c19473ca4f0449890470e8ff7211b8a6fcf8ab4eaa08f5"],
+   :id "facet/runtime-domains-schema/s9/752ca933e9b3a1b53f4af526",
+   :kind :diagnostic,
+   :document-id "S9",
+   :end-byte 3091,
+   :end-line 78,
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 2995}
+  {:start-line 44,
+   :raw-sha256
+   "3842518b49c7ddfaaa5f2a72b84ed17640817eae129094767e6c3aec261fd279",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/7a3e5856cc9dd3b95b66b83ce8428ab57ff22766711491417368353fa38cf056"],
+   :id "facet/runtime-domains-schema/s9/7cbe5c317befa3a7f27d4a2e",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1836,
+   :end-line 44,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1815}
+  {:start-line 28,
+   :raw-sha256
+   "c4b8873cfec077fa50e15bdcfedb1423b0155170dfb2c20489d4d52e197ac9e7",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/b8a8016434715469e486a4fe858805641ad368ae9e40a8c64a02cdd9beaf06d4",
+   :origin-facet-ids
+   ["S9/facet/784539919827e69c96c0d87319816b0e69d356a3636f017c59d1a3d5541476f4"],
+   :id "facet/runtime-domains-schema/s9/847e32fe14f0e08399ce1a96",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 1390,
+   :end-line 28,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1323}
+  {:start-line 63,
+   :raw-sha256
+   "fedcad2c0c096172ded11eed4a448c2778990f09a4f9e72f96e9611753de57f9",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/5b7a17b5eaaac7780323848725da07fd7cd89c3423e06980c5978fef0b0dde6b",
+   :origin-facet-ids
+   ["S9/facet/da31e0537c54da86fa132cf0282672752c122a880fba2a2634c13b434741740e"],
+   :id "facet/runtime-domains-schema/s9/85eefa92bd9be8ad0403736f",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 2672,
+   :end-line 67,
+   :unit-ids
+   ["schema/artifact-validation" "schema/compatibility-diff"],
+   :start-byte 2300}
+  {:start-line 109,
+   :raw-sha256
+   "0311f495386ffd0420edfe15ad6cf23e306091e840e0848974a7d1a54b540907",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/bcbd36b2eac7991ec9b10c7eef485220b72d8455359eced3a599b23e09928ce7"],
+   :id "facet/runtime-domains-schema/s9/86f3d94561fd1b56b5a14213",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 4226,
+   :end-line 109,
+   :unit-ids ["schema/artifact-validation" "schema/canonical-bytes"],
+   :start-byte 4156}
+  {:start-line 83,
+   :raw-sha256
+   "44dd61767db1b13062bec77baaf738ec742e4c99c3cd516ebf7265df7e2e9167",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/ed4200b320defd453e32674279fa92b936b435606029873947532245b9bfdcd6",
+   :origin-facet-ids
+   ["S9/facet/7a4672c45db032f8bbc5aaaa7c5588f504beca259098c3c295914be524a60eb9"],
+   :id "facet/runtime-domains-schema/s9/8af3d3bdcc988c992d05bb19",
+   :kind :diagnostic,
+   :document-id "S9",
+   :end-byte 3451,
+   :end-line 84,
+   :unit-ids
+   ["schema/compatibility-diff" "schema/release-evidence-gating"],
+   :start-byte 3308}
+  {:start-line 103,
+   :raw-sha256
+   "200acf918f61f6edd12f1f1b82315188bc53cce3f360dfac17a556fab333e256",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/577a50769ee37a7a88a55a9e96bd94092c32894727a13032558e064073f1d5ba"],
+   :id "facet/runtime-domains-schema/s9/a16c06beebc3ead39d16deec",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 3950,
+   :end-line 103,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3905}
+  {:start-line 10,
+   :raw-sha256
+   "cf0317031f621a3250549a55e57b3da35fb44450c92d24cfae15ed3260da4aac",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c4d623d6bad7b8bf3ee0b627df087274657e514574e26ac439720091d97fc581",
+   :origin-facet-ids
+   ["S9/facet/2722e83cfae4762b5738151b13b134fb6aa3c55309a6806dcb47c4106b0f289b"],
+   :id "facet/runtime-domains-schema/s9/b4237672ce168cd4dde8d0c8",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 620,
+   :end-line 13,
+   :unit-ids
+   ["schema/compatibility-diff" "schema/release-evidence-gating"],
+   :start-byte 332}
+  {:start-line 108,
+   :raw-sha256
+   "29e92242b6cabb1da192a4dbf420e293e40c93d24be5716daae3ab559718da77",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/a6b27aa8d2de5b9a30c8244c83494ee4ffcb59b37c22b982e21b0e285ef4b9e5"],
+   :id "facet/runtime-domains-schema/s9/bcf68abb9a0836d62b7f1847",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 4156,
+   :end-line 108,
+   :unit-ids
+   ["schema/artifact-validation" "schema/compatibility-diff"],
+   :start-byte 4115}
+  {:start-line 52,
+   :raw-sha256
+   "244bac76fdbb9a3e6da6eaa2f9f98c08de850876a0fac1273f898a88058aeb79",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/f45271e032d31eef2abe136e0923501445e7f2493f45fa2e1283a6a59dffdd9b",
+   :origin-facet-ids
+   ["S9/facet/65c9076fc5835edac6b5675063e8534e08fa11882b162cf187225915576f3e38"],
+   :id "facet/runtime-domains-schema/s9/be03785ca17db8a44abd70c1",
+   :kind :example,
+   :document-id "S9",
+   :end-byte 2280,
+   :end-line 59,
+   :unit-ids
+   ["schema/artifact-validation"
+    "schema/canonical-bytes"
+    "schema/compatibility-diff"],
+   :start-byte 1963}
+  {:start-line 42,
+   :raw-sha256
+   "e8707bb531436f438dec8094a42d5d33775f7f179449b2e9f48007cd6d7a1686",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/188dd807a048c396ddc7d7144a6bcff7b74e6353760cefb165667ec2fb6bc4cf"],
+   :id "facet/runtime-domains-schema/s9/cac1fa8f073e0798677e293c",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1792,
+   :end-line 42,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1767}
+  {:start-line 90,
+   :raw-sha256
+   "5fef1de0bca30debd7c5820392249c969c9a75bf47a782cfdd27f1fdc518a247",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/4fdf9165177186aacc3360d3a55e11c94d8120ca05fe7230a823ec88a2c46123",
+   :origin-facet-ids
+   ["S9/facet/32fa0d1cde0ff2c68ff9465e2493d4df9c6bdc63cd2fbc9219722253aa95249c"],
+   :id "facet/runtime-domains-schema/s9/dd8a2401cb37451fdb476171",
+   :kind :negative-case,
+   :document-id "S9",
+   :end-byte 3594,
+   :end-line 90,
+   :unit-ids
+   ["schema/artifact-validation" "schema/release-evidence-gating"],
+   :start-byte 3518}
+  {:start-line 19,
+   :raw-sha256
+   "9d55afcc48650e92312029e973aec91984a8b30dd278fa9e11d4ac9eceeb8166",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/b8a8016434715469e486a4fe858805641ad368ae9e40a8c64a02cdd9beaf06d4",
+   :origin-facet-ids
+   ["S9/facet/6950c64c309d89ad10f57f856fa2b5ab4aca476aeeddb3a27ba1e8411bf52a51"],
+   :id "facet/runtime-domains-schema/s9/df23694247800a9adf493fff",
+   :kind :condition,
+   :document-id "S9",
+   :end-byte 992,
+   :end-line 22,
+   :unit-ids
+   ["schema/artifact-validation"
+    "schema/canonical-bytes"
+    "schema/compatibility-diff"],
+   :start-byte 719}
+  {:start-line 76,
+   :raw-sha256
+   "380e0f0a35a72f67c9da27e65cc1286c4a11b2de28fad3113495d685c48497a8",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/d886d2f650339b4c83c1cbbafa541ba2a2fe72f23e6ec936a3a7ea634330f791",
+   :origin-facet-ids
+   ["S9/facet/5f4a5c794e86c174648b42b593913932e1018a6f7fefb9b20ef03f63a376ff01"],
+   :id "facet/runtime-domains-schema/s9/e48f24e728e4f0e2858f63bd",
+   :kind :diagnostic,
+   :document-id "S9",
+   :end-byte 2995,
+   :end-line 76,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 2918}
+  {:start-line 107,
+   :raw-sha256
+   "b893b6627f32323af989152b6d72b67120549e50b2fc036a000fe251ffa13435",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/c613e2f9e53fc2f06a7a4421e3e6290db74e332e5fcf7890705c04c6696b4333",
+   :origin-facet-ids
+   ["S9/facet/112d157db138f504ada56f8f6985f85eb80f9c0ec2ea9b5a1ebacc51dc023203"],
+   :id "facet/runtime-domains-schema/s9/ebb472a0fa360139901b26d9",
+   :kind :acceptance-case,
+   :document-id "S9",
+   :end-byte 4115,
+   :end-line 107,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 4068}
+  {:start-line 45,
+   :raw-sha256
+   "291e49afdd5615ef596a9981861a1cff9e3afd6c9541e3bccc80ab0dbe344cdd",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/9d717ec53091cbbc0f65d6fcb2ef03c1e60872b228396dbd112ee96e4280fdd4",
+   :origin-facet-ids
+   ["S9/facet/0e80a77ed4f88a4726adbc9793fb60432b7e64d7ff813b7d974913b0676dd9eb"],
+   :id "facet/runtime-domains-schema/s9/ee463f8180b4d8ed4b079c99",
+   :kind :artifact,
+   :document-id "S9",
+   :end-byte 1855,
+   :end-line 45,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 1836}
+  {:start-line 80,
+   :raw-sha256
+   "64b1e9d6083850380971d76ab7cffb413b8cc1db30ea5d6a6fb267d06bcd9579",
+   :unresolved false,
+   :source-occurrence-id
+   "S9/source/d886d2f650339b4c83c1cbbafa541ba2a2fe72f23e6ec936a3a7ea634330f791",
+   :origin-facet-ids
+   ["S9/facet/da67245ad44421474c1152346282cb90c864ef5ebaac7eede6d03305de8dab98"],
+   :id "facet/runtime-domains-schema/s9/f2ab2ed3e455d84c774b23e0",
+   :kind :diagnostic,
+   :document-id "S9",
+   :end-byte 3233,
+   :end-line 80,
+   :unit-ids ["schema/artifact-validation"],
+   :start-byte 3164}
+  {:start-line 10,
+   :raw-sha256
+   "9ac50e176302cbd71273f5f12659abcfd6b3c4ef79b14e8fa412b62355b80e27",
+   :unresolved nil,
+   :source-occurrence-id
+   "TEST11/source/cd4c66152aff75986921d7b38d52f4c5702cf80586715894df9d7711503c5529",
+   :external-unit-ids [],
+   :origin-facet-ids
+   ["testing/test11/counterexamples/purpose/L10"
+    "testing/test11/formal-obligations/purpose/L10"
+    "testing/test11/machine-evidence/purpose/L10"
+    "testing/test11/math-certificates/purpose/L10"
+    "testing/test11/pass-linkage/purpose/L10"
+    "testing/test11/proof-identity/purpose/L10"
+    "testing/test11/proof-invalidation/purpose/L10"
+    "testing/test11/report/purpose/L10"],
+   :id "testing/partition/test11/356-682",
+   :kind :normative-context,
+   :document-id "TEST11",
+   :end-byte 682,
+   :end-line 14,
+   :qualification
+   "Membership is the exact union of original facet links over this interval. Overlap atomization does not merge semantic requirements or establish atomicity/nonoverlap.",
+   :unit-ids
+   ["compiler/c18/counterexample-regression"
+    "testing/test11/formal-obligations"
+    "schema/release-evidence-gating"
+    "math/semantic-equality-proof-gate"
+    "testing/test11/pass-linkage"
+    "testing/test11/proof-identity"
+    "safety/safe15/invalidation"
+    "testing/test11/report"],
+   :start-byte 356}
+  {:start-line 16,
+   :raw-sha256
+   "43e14269ea488807401862f042aa8390512f49d60b1b01e0ab88ef9791a5f2c9",
+   :unresolved nil,
+   :source-occurrence-id
+   "TEST11/source/2b547692d0a78fb5e33ef49786ff2d15ca8fe60f220360070fa02541d3bd0f21",
+   :external-unit-ids [],
+   :origin-facet-ids
+   ["testing/test11/counterexamples/purpose/L16"
+    "testing/test11/formal-obligations/purpose/L16"
+    "testing/test11/machine-evidence/purpose/L16"
+    "testing/test11/math-certificates/purpose/L16"
+    "testing/test11/pass-linkage/purpose/L16"
+    "testing/test11/proof-identity/purpose/L16"
+    "testing/test11/proof-invalidation/purpose/L16"
+    "testing/test11/report/purpose/L16"],
+   :id "testing/partition/test11/683-792",
+   :kind :normative-context,
+   :document-id "TEST11",
+   :end-byte 792,
+   :end-line 17,
+   :qualification
+   "Membership is the exact union of original facet links over this interval. Overlap atomization does not merge semantic requirements or establish atomicity/nonoverlap.",
+   :unit-ids
+   ["compiler/c18/counterexample-regression"
+    "testing/test11/formal-obligations"
+    "schema/release-evidence-gating"
+    "math/semantic-equality-proof-gate"
+    "testing/test11/pass-linkage"
+    "testing/test11/proof-identity"
+    "safety/safe15/invalidation"
+    "testing/test11/report"],
+   :start-byte 683}
+  {:start-line 92,
+   :raw-sha256
+   "b381da879a7aa3cc684c121f883a5fcb46810553f1dcc103f1466c65a9ff02bd",
+   :unresolved nil,
+   :source-occurrence-id
+   "TEST11/source/70e98bbc4eb446acde475aa818fa4653c20eb60e63000c94a18e9712b34fd433",
+   :external-unit-ids [],
+   :origin-facet-ids
+   ["testing/test11/machine-evidence/diagnostics/L92"],
+   :id "testing/test11/machine-evidence/diagnostics/L92",
+   :kind :diagnostic,
+   :document-id "TEST11",
+   :end-byte 2984,
+   :end-line 92,
+   :qualification
+   "Membership is the exact union of original facet links over this interval. Overlap atomization does not merge semantic requirements or establish atomicity/nonoverlap.",
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 2937}
+  {:start-line 82,
+   :raw-sha256
+   "187b021f689ad1926cca4a452b6425fb2744f4c1ffd1b08b507c3af5471499bb",
+   :unresolved nil,
+   :source-occurrence-id
+   "TEST11/source/5d1993e5103dd8b9804c65d1fc8c744e7a98918c720c53716ba6d27e10b84ecd",
+   :external-unit-ids [],
+   :origin-facet-ids
+   ["testing/test11/machine-evidence/rejection-rules/L82"],
+   :id "testing/test11/machine-evidence/rejection-rules/L82",
+   :kind :rejection-rule,
+   :document-id "TEST11",
+   :end-byte 2586,
+   :end-line 82,
+   :qualification
+   "Membership is the exact union of original facet links over this interval. Overlap atomization does not merge semantic requirements or establish atomicity/nonoverlap.",
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 2527}
+  {:start-line 41,
+   :raw-sha256
+   "9a1947c4222f176afa0bf8857e2da06b788175090c6aeeb84da1e6b0f0eb308a",
+   :unresolved nil,
+   :source-occurrence-id
+   "TEST11/source/73369c21c4b02c44799a53be9e573be1c71ab702d26cbb4ac2a66c7180639de6",
+   :external-unit-ids [],
+   :origin-facet-ids
+   ["testing/test11/machine-evidence/requirements/L41"],
+   :id "testing/test11/machine-evidence/requirements/L41",
+   :kind :requirement,
+   :document-id "TEST11",
+   :end-byte 1501,
+   :end-line 41,
+   :qualification
+   "Membership is the exact union of original facet links over this interval. Overlap atomization does not merge semantic requirements or establish atomicity/nonoverlap.",
+   :unit-ids ["schema/release-evidence-gating"],
+   :start-byte 1431}],
+ :kind :schema-historical-gap-completion-input,
+ :assignment
+ {:family "phase-10",
+  :owner :existing-source-family-owner,
+  :in-thirteen-family-cohort true,
+  :count 5,
+  :ids
+  ["schema/artifact-validation"
+   "schema/configuration-reload"
+   "schema/database-mapping"
+   "schema/graphql-generation"
+   "schema/release-evidence-gating"]},
+ :qualification
+ "Dispatch is exactly the canonical five-ID allocation. TEST11 facets on the assigned release-evidence row are retained contextual evidence, not a second family occurrence population. No original history, prior witness or retirement is reclassified by this input.",
+ :original-manifest
+ {:ref "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :path "contracts/requirement-reconciliation.edn",
+  :sha256
+  "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"}}
