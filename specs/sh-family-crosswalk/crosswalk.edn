@@ -14183,6 +14183,32 @@
    :new-open-tasks 0,
    :authority-correction-review-sha256
    "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89"},
+  :bootstrap-diagnostic-current-source
+  {:all833-decision-records :unchanged,
+   :current-spans 4819,
+   :current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+    :sha256
+    "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12"},
+   :original-source-facets 15,
+   :implementation-credit :none,
+   :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+   :historical-bindings 561,
+   :current-criterion-roles 8,
+   :status :pending-independent-source-facet-review,
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-bootstrap-diagnostic-current-criterion-conservation.edn",
+   :qualification
+   "An exact original-owner criterion conjunction addresses the initial inventory's missing same-ID resolution. It does not add a stable decision ID or confer independent source/implementation acceptance.",
+   :original-owner "bootstrap/compiler-diagnostic-compatibility",
+   :composition
+   "specs/requirement-reconciliation/bootstrap-diagnostic-source-refinement.edn",
+   :applicability
+   "specs/requirement-reconciliation/bootstrap-diagnostic-current-witness-applicability.edn"},
   :profile74-current-composition
   {:allocation-source-commit
    "7063afd8bfdf2d77d95e1b9f591f9d523f4b5393",
@@ -14351,7 +14377,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "914e70a5d9f65f9f19c9bdafca46340bf87c6359cc5cdc4ec40fc46edcca1447"},
+  "3dc4225e6c4707114da0c9943970a23c61273cefdaf0576e03a799ae033bc1a2"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -15676,32 +15702,32 @@
   "diag"
   [{:path "specs/diag-workflow/tasks.md",
     :file-sha256
-    "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/diag-workflow/tasks.md",
      :start-byte 508,
-     :end-byte 2074,
+     :end-byte 3339,
      :start-line 14,
      :end-line 20,
      :sha256
-     "0ea68c141bcacf301b15a2d14ab009b115a73aa411fa348340241bcb6ce8f213",
+     "2490e28d33f51c207c2f951438c4dc31912c40d6dd623bc7bd0fbc68417dcbc6",
      :raw
-     "- [ ] `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` Reconcile stage carriers with canonical record schema\n\nStatus: Open\n\nEvidence baseline: [Base carrier](../../bootstrap/clojure/src/gravity/diagnostics.clj), [records](../../bootstrap/clojure/src/gravity/c15_diagnostics/records.clj)\n\nClosing evidence: Record/schema parity fixtures from each producer, including malformed-record rejection Criterion compiler/c15/structured-diagnostic: Emit authoritative machine-readable diagnostic records with stable rule, severity/lifecycle, primary and related locations, generated-origin chain, stage, profile, target, involved artifacts, typed facts and structured remediation; actionable records include remediation. Preserve phase availability with explicit nil profile/target/primary syntax-id in early reader errors and unavailable input metadata in diagnostic-system errors. Generated diagnostics identify source producer unless package privacy redacts it; record redaction while retaining authorized audit data. Text/IDE/CI/localized renderings derive from this schema, never replace it. Reject malformed records, missing/invalid spans or origins, untyped facts, absent remediation and secret/private raw output leakage with C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION; suppression retains the internal audit record. Emit versioned schema, ordered stream/catalog, related-span/remediation/redaction artifacts and accepted/rejected golden JSON fixtures from actual reader-through-lowering producers and public consumers."},
+     "- [ ] `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` Reconcile stage carriers with canonical record schema\n\nStatus: Open\n\nEvidence baseline: [Base carrier](../../bootstrap/clojure/src/gravity/diagnostics.clj), [records](../../bootstrap/clojure/src/gravity/c15_diagnostics/records.clj)\n\nClosing evidence: Record/schema parity fixtures from each producer, including malformed-record rejection Criterion compiler/c15/structured-diagnostic: Emit authoritative machine-readable diagnostic records with stable rule, severity/lifecycle, primary and related locations, generated-origin chain, stage, profile, target, involved artifacts, typed facts and structured remediation; actionable records include remediation. Preserve phase availability with explicit nil profile/target/primary syntax-id in early reader errors and unavailable input metadata in diagnostic-system errors. Generated diagnostics identify source producer unless package privacy redacts it; record redaction while retaining authorized audit data. Text/IDE/CI/localized renderings derive from this schema, never replace it. Reject malformed records, missing/invalid spans or origins, untyped facts, absent remediation and secret/private raw output leakage with C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION; suppression retains the internal audit record. Emit versioned schema, ordered stream/catalog, related-span/remediation/redaction artifacts and accepted/rejected golden JSON fixtures from actual reader-through-lowering producers and public consumers. Bootstrap diagnostic criterion bootstrap/compiler-diagnostic-compatibility (Open): Every declared self-hosted compiler module emits the C15 structured diagnostic record and a diagnostic manifest naming its actual stable codes and source spans; seed diagnostic codes remain stable enough for conformance fixtures. Reject a missing or unstable seed code with BOOT2004 and a self-hosted diagnostic code gap with BOOT4006. Positive fixtures exercise actual seed and self-hosted diagnostic production against accepted code/span expectations, retaining the module/compiler/source identities, manifest and golden records. Negative fixtures exercise missing/unstable codes and lost or changed source spans. Produce the module diagnostic products consumed by the existing release stage-equivalence and TEST13 diagnostic-schema checks. Diagnostic drift without compatibility review fails BOOT3003; accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report, rather than a producer-supplied success flag. Preserve C15 phase availability, generated origins, privacy/redaction and ordinary-development versus authoritative-migration distinctions; this criterion does not itself compare stage executables or admit migration."},
     :owner-source "docs/component-roadmaps/diag.md",
     :component "diag",
-    :source-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
     :id
     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
     :checked false}
    {:path "specs/diag-workflow/tasks.md",
     :file-sha256
-    "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/diag-workflow/tasks.md",
-     :start-byte 2076,
-     :end-byte 3486,
+     :start-byte 3341,
+     :end-byte 4751,
      :start-line 22,
      :end-line 28,
      :sha256
@@ -15710,18 +15736,18 @@
      "- [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order\n\nStatus: Open\n\nEvidence baseline: [Projection](../../bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj)\n\nClosing evidence: Macro and optimized-source diagnostics with original and generated locations Criterion compiler/c15/diagnostic-identity: Derive the resolved diagnostic identity from rule, primary artifact, producing stage and semantic facts, independently of display wording. For fixed source/profile/target/compiler/dependencies/grants preserve deterministic identity and stream order across text, JSON, IDE and CI consumers. Demonstrate wording-only stability and changed semantic subject separation; reject unstable or duplicate IDs with C15-ID and nondeterministic order with C15-ORDER. Retain actual span variants and generated origins. Early reader profile/target/primary syntax-id keys remain explicitly nil until produced; invent no module, coordinates or meta/JVM program context. A private construction record or unresolved digest request is not a resolved identity or safe publication. Emit resolved identity/catalog, ordering and consumer parity records plus positive and negative golden fixtures. Consume actual stage/source/origin facts and canonical diagnostic schema; do not infer compiler execution from a manifest."},
     :owner-source "docs/component-roadmaps/diag.md",
     :component "diag",
-    :source-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
     :id
     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
     :checked false}
    {:path "specs/diag-workflow/tasks.md",
     :file-sha256
-    "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/diag-workflow/tasks.md",
-     :start-byte 3488,
-     :end-byte 3836,
+     :start-byte 4753,
+     :end-byte 5101,
      :start-line 30,
      :end-line 36,
      :sha256
@@ -15730,18 +15756,18 @@
      "- [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts\n\nStatus: Open\n\nEvidence baseline: [CLI presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj)\n\nClosing evidence: Golden text/JSON equivalence, secret redaction and known-ID explanation"},
     :owner-source "docs/component-roadmaps/diag.md",
     :component "diag",
-    :source-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
     :id
     "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
     :checked false}
    {:path "specs/diag-workflow/tasks.md",
     :file-sha256
-    "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/diag-workflow/tasks.md",
-     :start-byte 3838,
-     :end-byte 5328,
+     :start-byte 5103,
+     :end-byte 6593,
      :start-line 38,
      :end-line 44,
      :sha256
@@ -15750,7 +15776,7 @@
      "- [ ] `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift` Integrate runtime/build/editor consumers without rule drift\n\nStatus: Open\n\nEvidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer-experience/README.md)\n\nClosing evidence: Same underlying diagnostic identity across public consumers and failure paths Foundation requirement gravity/runtime-check-diagnostic-stability: Specify and exercise runtime checks with deterministic owning code, source/manifest span, profile/target, failed predicate and remediation; compare their structured results across optimization and supported runtime providers. Refusals: Reject missing or changed check attribution, raw host failure leakage and a check erased without surviving evidence; fixtures must trigger the actual check, not match only free text. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries - Dangerous-operation outcomes, actual checks, proof references and audited wrapper boundaries."},
     :owner-source "docs/component-roadmaps/diag.md",
     :component "diag",
-    :source-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
     :id
     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
     :checked false}],
@@ -18646,7 +18672,7 @@
   "docs/component-roadmaps/core.md"
   "23c65eed5c3b8e2e384067e5eea9eb21b68015b18bb0f39f8636374802370209",
   "docs/component-roadmaps/diag.md"
-  "68cde53e7862196844a860c366229d9338f59e6fbcc2d626a79e70f98d89e3b5",
+  "8e255ce324ecb7c05544c705d161304f18b72fc1b9e477be6d00a331da28da9b",
   "docs/component-roadmaps/domains.md"
   "7ef5c26ed10bbcb5b90f922aa6f658bbd8d50fe4641c3cc6129da962d7490e78",
   "docs/component-roadmaps/effects.md"
@@ -18726,7 +18752,7 @@
   "specs/core-workflow/tasks.md"
   "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
   "specs/diag-workflow/tasks.md"
-  "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+  "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
   "specs/domains-workflow/tasks.md"
   "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
   "specs/effects-workflow/tasks.md"
@@ -18781,7 +18807,7 @@
   "docs/component-roadmaps/lower.md"
   "e8544466e159c5bd8898aeed0c928353fceeb0aa",
   "specs/diag-workflow/tasks.md"
-  "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+  "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
   "docs/component-roadmaps/stdlib.md"
   "90392ba9eb4b43443941065593950af0188d9354",
   "docs/component-roadmaps/evolution.md"
@@ -18831,7 +18857,7 @@
   "docs/component-roadmaps/auth.md"
   "bc485c7e4b0197873f6a3104021764711215b3b1",
   "docs/component-roadmaps/diag.md"
-  "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+  "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
   "docs/phase-02-safety/README.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
   "docs/self-hosting-slice-ownership.edn"

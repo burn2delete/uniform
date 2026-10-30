@@ -41,6 +41,11 @@ owner proposals remain explicit; inventory conservation is not entailment or
 implementation acceptance. The [extension trace](explicit-extension-source-trace.edn)
 keeps 151 extension occurrences and 392 facets separate, including changed
 source-descriptor hashes that still require explicit rebinding.
+The [bootstrap diagnostic facet join](bootstrap-diagnostic-current-facet-trace.edn)
+binds its original owner to the existing diagnostic producer, module/fact
+preservation, stage-comparison, TEST13 and compatibility-review criteria.
+Its added producer predicate and all fifteen facet joins await independent
+source acceptance; the join adds no task or stable decision ID.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

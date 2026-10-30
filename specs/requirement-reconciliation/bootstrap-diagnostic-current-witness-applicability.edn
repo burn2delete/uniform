@@ -1,0 +1,36 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+ :new-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :marker "diag-implementation-tasks",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+  :file-sha256
+  "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+  :start-byte 2075,
+  :end-byte 3339,
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"},
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+  :sha256
+  "06fc51ee46d659538b862dce3830e3fc4bbf9857eac3b94747e64790a44b3604"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+  :sha256
+  "afdc75a8a18b640768a2ee9ec694afd2daf2bbc9ecf313cd0c5fdc03d7c20aba"},
+ :historical-file-pin-changes 1,
+ :kind :bootstrap-diagnostic-current-witness-applicability,
+ :composition
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic-source-refinement.edn",
+  :sha256
+  "9cf144274766ed8ee4f4721b32f3b2b67e34bebb60a946557b911b6f3b38aa3d"},
+ :full-file-inverse :exact-declared-insertion-removal}
