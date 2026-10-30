@@ -1,5 +1,23 @@
 # PR502 preserved path reconciliation
 
+## Vector-first inferred-call proposal
+
+`vector-first-inferred-call-disposition.edn` and its companion Markdown bind
+the original `sh08-vf-inferred-call` unit at main `b1d590cc`. The complete
+current definition reconstructs by removing only its unused budget argument,
+zero-valued work local, retired LC work-limit branch and work-count fields.
+All ordinary validation, complete descriptor/result equality and semantic
+diagnostics remain reader-identical. Its one direct caller drops only the
+final payment expression; retained argument order and current arity match.
+The whole caller and payment-expression evaluation are not claimed equivalent.
+
+The unchanged two-helper C7 normal-return envelope is rechecked as evidence,
+not automatically extended caller acceptance. Four direct dependencies are
+pinned; eight effective source mutations refuse altered obligations.
+Independent classification is pending. No production changes or genuine
+execution occur. Outer accounting and the full original disposition remain
+incomplete, with PR502 open and stable ACC IDs unchanged.
+
 ## Quoted-data frozen source-review intake
 
 PR591 remains frozen at `1c0d699f06372fe3c52fa003f53aa38ffd40d07c`, tree
