@@ -69,6 +69,14 @@ whitespace checking passed. Initial helper/test reader errors were corrected
 before these passing results; no failed result is promoted.
 The genuine SH08 composition control receives only its necessary source-call
 arity and report/schema assertions; it remains UNRUN. DSE, ANE, BKA and runtime
-source are untouched. Independent affected source review is required before
-source publication. The original genuine-selector goal remains BLOCKED and its
-failed wrapper is not retried.
+source are untouched. Independent affected source review returned source-only
+PASS for `37de82881573d9977229b6eb9f6066ec68b41bc6`, tree
+`b5f8f6e77ed639f3e53660ce526ff2960d42adb9`. The reviewer reproduced the initial
+10/4,850 controls, then identified the missing valid-wide-target positive.
+That P2 evidence finding was corrected with one assertion per owner; the reviewer
+verified the final test/evidence delta without repeating unchanged controls.
+[Review consumption](private-map-source-review-consumption.edn) binds both
+completed reviewer turns, final input digests, reproduced/reported results and
+remaining nonclaims. This consumes the existing independent review and routes
+no duplicate. The original genuine-selector goal remains BLOCKED and its failed
+wrapper is not retried.
