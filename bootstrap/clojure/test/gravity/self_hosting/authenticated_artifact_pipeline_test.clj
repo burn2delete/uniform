@@ -9,6 +9,196 @@
 
 (def ^:private fixture "examples/hello.gravity")
 
+;; Exact selectors below construct real products only when explicitly run.
+;; Bind the companion .qst path for its separate source/provenance phase.
+(def ^:dynamic *owner-population-source*
+  "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity")
+
+(defn- pipeline-function [name]
+  (or (ns-resolve 'gravity.authenticated-artifact-pipeline name)
+      (throw (ex-info "Missing facade implementation" {:name name}))))
+
+(defn- owner-call [name & args]
+  (apply (pipeline-function 'bootstrap-call) name args))
+
+(def ^:private owner-parent-fields
+  {:syntax :c2-reader-artifact :macroexpansion :sh04-syntax-artifact
+   :resolution :sh05-macro-artifact :checked-core :sh06-resolution-artifact})
+
+(defn- owner-child! [stage {:keys [path text context invocation module-inputs]} previous]
+  (let [parent (:payload (peek previous))
+        reader (:reader-source-path invocation)]
+    (case stage
+      :reader (owner-call 'compiler-c2-reader-source-artifact
+                                       path text context nil nil reader invocation)
+      :syntax (owner-call 'compiler-c3-syntax-source-artifact
+                                       path text context parent
+                                       (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-internal-product-authority))
+                                       nil invocation)
+      :macroexpansion (owner-call 'sh05-macro-artifact-from-c3-artifact path parent invocation)
+      :resolution (owner-call 'sh06-resolution-artifact-from-sh05-artifact
+                                           path parent module-inputs reader invocation)
+      :checked-core (owner-call 'sh07-core-from-resolution-artifact parent invocation))))
+
+(defn- owner-prefix! [source-path]
+  (let [source (pipeline/stage-artifact
+                 (pipeline/run-pipeline {:source-path source-path :target-stage :source :mode :fresh}) :source)
+        path (get-in source [:provenance :actual-path])
+        inputs {:path path :text (slurp path :encoding "UTF-8")
+                :context (owner-call 'reader-project-context-for-source path)
+                :invocation {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+                             :authenticated-envelope-options {:source :development-current}}
+                :module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}}
+        request {:source-path path :target-stage :checked-core :mode :fresh}
+        prefix (reduce (fn [previous stage]
+                         (let [parents ((pipeline-function 'parent-ids) stage previous)
+                               payload (owner-child! stage inputs previous)
+                               key ((pipeline-function 'canonical-id!) stage
+                                    ((pipeline-function 'cache-key-preimage) stage :fresh
+                                     (:source-identity source) parents request))]
+                           (conj previous ((pipeline-function 'envelope) stage :fresh
+                                           (:source-identity source) (:provenance source)
+                                           parents payload false key))))
+                       [source] (rest pipeline/stages))]
+    {:inputs inputs :prefix prefix}))
+
+(defn- selected-owner-prefix! []
+  (assert (contains? #{"bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity"
+                       "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"}
+                     *owner-population-source*))
+  (owner-prefix! *owner-population-source*))
+
+(defn- parent-mutation-controls! [mutation]
+  (let [{:keys [prefix]} (selected-owner-prefix!)]
+    (doseq [[index child] (map-indexed vector prefix)
+            :let [stage (:stage child)] :when (contains? owner-parent-fields stage)]
+      (let [parents ((pipeline-function 'parent-ids) stage (subvec prefix 0 index))
+            field (owner-parent-fields stage)
+            payload (:payload child)
+            wrong (case mutation
+                    :missing (dissoc payload field)
+                    :wrong-stage (assoc payload field (:payload (peek prefix)))
+                    :facade-domain (assoc-in payload [field :artifact-id] (:artifact-id (nth prefix (dec index)))))
+            error (try ((pipeline-function 'authenticate-embedded-parent!) stage wrong parents)
+                       nil (catch clojure.lang.ExceptionInfo e e))]
+        (is (= "ARTIFACT-PARENT" (:id (ex-data error))))
+        (is (= stage (:stage (ex-data error))))
+        (is (= (last parents) (:expected-parent-id (ex-data error))))
+        (is (not= (last parents) (:observed-parent-id (ex-data error))))))))
+
+(defn- owner-prefix-replay! []
+  (let [{:keys [inputs prefix]} (selected-owner-prefix!)
+        {:keys [path text invocation module-inputs]} inputs
+        [_ reader syntax macro resolution core] (mapv :payload prefix)]
+    (is (= pipeline/stages (mapv :stage prefix)))
+    (is (= text (owner-call 'c2-reader-artifact-source-text path reader)))
+    (is (= path (get-in reader [:source-unit-record :path])))
+    (let [view (owner-call 'c3-reader-artifact-view reader invocation)
+          revision (get-in reader [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision])
+          binding (:binding (owner-call 'sh03-reader-verification-invocation! path invocation))
+          identity-keys [:source-content-hash :source-byte-count :plan-semantic-hash :functions-semantic-hash]]
+      (is (= view (:c2-reader-artifact syntax)))
+      (is (map? revision))
+      (is (= revision (get-in view [:sh03-reader-authentication :reader-source-revision])))
+      (is (= (select-keys revision identity-keys) (select-keys binding identity-keys))))
+    (is (= syntax (get-in macro [:gravity-macro-boundary :authenticated-sh04-artifact])))
+    (is (= macro (:sh05-macro-artifact resolution)))
+    (is (= resolution (:sh06-resolution-artifact core)))
+    (is (= module-inputs (get-in resolution [:gravity-resolution-boundary :module-inputs])))
+    (is (= path (get-in core [:provenance :source-path])))
+    (let [after (pipeline/stage-artifact
+                  (pipeline/run-pipeline {:source-path path :target-stage :source :mode :fresh}) :source)]
+      (is (= (:source-identity (first prefix)) (:source-identity after)))
+      (is (= (:provenance (first prefix)) (:provenance after))))
+    (doseq [[index child] (map-indexed vector prefix) :when (pos? index)]
+      (let [stage (:stage child) parents ((pipeline-function 'parent-ids) stage (subvec prefix 0 index))]
+        (is (= parents (:input-artifact-ids child)))
+        (is (= (:provenance (first prefix)) (:provenance child)))
+        (is (= (:source-identity (first prefix)) (:source-identity child)))
+        (if (= :reader stage)
+          ((pipeline-function 'authenticate-reader-source!) path (:source-identity child) (:payload child))
+          ((pipeline-function 'authenticate-embedded-parent!) stage (:payload child) parents))))
+    (owner-call 'c2-reader-validate! path reader)
+    (owner-call 'c3-syntax-validate! path syntax invocation)
+    (doseq [report [(owner-call 'sh05-macro-artifact-verification macro invocation)
+                    (owner-call 'sh06-resolution-artifact-verification resolution :gravity.bootstrap/legacy invocation)
+                    (owner-call 'sh07-core-artifact-verification core invocation)]]
+      (is (= :passed (:status report)))
+      (is (empty? (:failed-checks report))))))
+
+(defn- foreign-owner-cache-control! []
+  (let [{:keys [inputs prefix]} (selected-owner-prefix!)
+        foreign (owner-prefix! (if (.endsWith ^String *owner-population-source* ".qst")
+                                 "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-reader-quote.qst"
+                                 "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-reader-quote.gravity"))
+        source (first prefix)
+        cache-var (pipeline-function 'stage-cache)
+        build-var (pipeline-function 'build-payload)
+        replay-var (pipeline-function 'revalidate-payload?)
+        original-replay (var-get replay-var)
+        original-cache (var-get cache-var)
+        original-build (var-get build-var)]
+    (doseq [[index child] (map-indexed vector prefix)
+            :let [stage (:stage child)] :when (contains? owner-parent-fields stage)]
+      (let [previous (subvec prefix 0 index)
+            parents ((pipeline-function 'parent-ids) stage previous)
+            foreign-payload (:payload (nth (:prefix foreign) index))
+            request {:source-path (:path inputs) :target-stage stage :mode :fast}
+            preimage ((pipeline-function 'cache-key-preimage) stage :fast (:source-identity source) parents request)
+            key-id ((pipeline-function 'canonical-id!) stage preimage)
+            key [key-id (:path inputs)]
+            cached ((pipeline-function 'envelope) stage :fast (:source-identity source) (:provenance source)
+                    parents foreign-payload false key-id)
+            cache (atom {key cached})
+            events (atom [])]
+        (is (not= (last parents) ((pipeline-function 'embedded-parent-id) stage foreign-payload)))
+        (is ((pipeline-function 'envelope-valid?) stage :fast key-id preimage cached
+             (:source-identity source) (:provenance source) parents))
+        ;; Only invocation forwarding is adapted here: every rebuild delegates
+        ;; to the real owner constructor. No verifier or report is substituted.
+        ;; This does not establish public facade current-Reader propagation.
+        (try
+          (clojure.core/with-redefs-fn
+          {cache-var cache
+           build-var (fn [s _ _ _ actual-previous]
+                       (swap! events conj :rebuild)
+                       (is (not (contains? @cache key)))
+                       (owner-child! s inputs actual-previous))
+           replay-var (fn [& args] (swap! events conj :owner-replay) (apply original-replay args))}
+          (fn []
+            (let [rebuilt ((pipeline-function 'build-stage!) stage :fast (:source-identity source)
+                           (:provenance source) (:path inputs) (:text inputs) (:context inputs) previous request)]
+              (is (= [:rebuild] @events))
+              (is (false? (:cache-hit? rebuilt)))
+              (is (= (last parents) ((pipeline-function 'embedded-parent-id) stage (:payload rebuilt))))
+              (is (not= cached (get @cache key))))))
+          (finally
+            (is (identical? original-cache (var-get cache-var)))
+            (is (identical? original-build (var-get build-var)))
+            (is (identical? original-replay (var-get replay-var)))))))))
+
+(deftest real-owner-gravity-prefix-passes-fresh-replay (owner-prefix-replay!))
+(deftest real-owner-gravity-missing-parent-is-rejected (parent-mutation-controls! :missing))
+(deftest real-owner-gravity-wrong-stage-parent-is-rejected (parent-mutation-controls! :wrong-stage))
+(deftest real-owner-gravity-facade-domain-parent-is-rejected (parent-mutation-controls! :facade-domain))
+(deftest real-owner-gravity-foreign-parent-cache-is-rebuilt (foreign-owner-cache-control!))
+
+(deftest real-owner-qst-prefix-passes-fresh-replay
+  (binding [*owner-population-source* "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"]
+    (owner-prefix-replay!)))
+(deftest real-owner-qst-missing-parent-is-rejected
+  (binding [*owner-population-source* "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"]
+    (parent-mutation-controls! :missing)))
+(deftest real-owner-qst-wrong-stage-parent-is-rejected
+  (binding [*owner-population-source* "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"]
+    (parent-mutation-controls! :wrong-stage)))
+(deftest real-owner-qst-facade-domain-parent-is-rejected
+  (binding [*owner-population-source* "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"]
+    (parent-mutation-controls! :facade-domain)))
+(deftest real-owner-qst-foreign-parent-cache-is-rebuilt
+  (binding [*owner-population-source* "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.qst"]
+    (foreign-owner-cache-control!)))
+
 (deftest governing-contracts-resolve-to-the-canonical-inventory
   (let [contracts (var-get (ns-resolve 'gravity.authenticated-artifact-pipeline
                                        'contract-binding))
