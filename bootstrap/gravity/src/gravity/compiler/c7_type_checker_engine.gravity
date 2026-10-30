@@ -3174,35 +3174,6 @@
             {:status :rejected :reason :incoherent-loop-member-reference :work-count (+ work 1)}
             (recur (rest remaining) (+ work 1))))))))
 
-(defn sh08-lsi-row-index [rows budget]
-  (loop [remaining rows out {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-      (let [row (first remaining) measured (sh08-pc-evidence-work row (- budget work))
-            total (+ work (* 2 (get measured :work-count)) 3)]
-        (if (if (= :rejected (get measured :status)) true (> total budget))
-          {:status :rejected :reason (if (> total budget) :loop-type-work-limit :incoherent-loop-member-ledger) :work-count total}
-          (let [premise (get (get row :dependencies) :loop-premise) id (get row :lhs)
-                kind (get premise :kind) key [kind id]]
-            (if (if (sh08-lsi-id? id)
-                  (if (if (= :loop-slot-type kind) true (= :loop-recur-type kind))
-                    (= false (contains? out key)) false) false)
-              (recur (rest remaining) (assoc out key row) total)
-              {:status :rejected :reason :incoherent-loop-member-ledger :work-count total})))))))
-
-(defn sh08-lsi-target-rows [core target rows budget]
-  (let [cost (+ (count (get target :binding-ids)) (count (get core :recur-transfers)))]
-    (if (> cost budget) {:status :rejected :reason :loop-type-work-limit :work-count cost}
-      (let [slots (loop [ids (get target :binding-ids) out []]
-                    (if (= 0 (count ids)) out
-                      (recur (rest ids) (conj out (get rows [:loop-slot-type (first ids)])))))
-            all (loop [transfers (get core :recur-transfers) out slots]
-                  (if (= 0 (count transfers)) out
-                    (let [transfer (first transfers)]
-                      (recur (rest transfers) (if (= (get target :target-id) (get transfer :target-id))
-                        (conj out (get rows [:loop-recur-type (get transfer :recur-core-node-id)])) out)))))
-            checked (sh08-lsi-row-index all (- budget cost))]
-        (assoc checked :work-count (+ cost (get checked :work-count)))))))
-
 (defn sh08-lsi-target-bindings [target invariants]
   (loop [remaining (get target :binding-ids) out []]
     (if (= 0 (count remaining)) out
@@ -5261,7 +5232,6 @@
   {:mode (get cold :mode) :cut (get cold :cut)
    :source-argument-call-node-ids (get cold :source-argument-call-node-ids)
    :source-preparation-work-count (get cold :source-preparation-work-count)
-   :quote-work-count (get (get cold :quoted-products) :work-count)
    :round-count (get (get cold :inference) :round-count)
    :round-bound (get (get cold :inference) :round-bound)
    :work-count (get cold :work-count)})
