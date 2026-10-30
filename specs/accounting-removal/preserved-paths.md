@@ -1,5 +1,30 @@
 # PR502 preserved path reconciliation
 
+## List join width and restored consumer composition
+
+PR638, frozen `5d2984976ed6070471fa9ddec3b03bc2479945b6`, tree
+`8f067c7c2c3a65537ff317b79050ce101a5b478b`, is a finite child of PR637
+`c7a4d959d319e0e1bbaef059e41fc5c059497af8`. The original wide-1025 tests
+restored by PR637 still encounter the Effects/lowering width ceilings on its
+PR595 base. PR638 composes only PR611's two exact production predicate edits.
+Both complete definitions match historical PR502; all PR637 tests and evidence
+remain byte-identical. The original draft branches are preserved.
+
+The complete 10,077-entry mode/type/blob tree equals all 10,075 parent entries
+with exactly two production replacements and two evidence additions. Local
+source checks pass 1,538 comparisons and twelve inert refusals; boundary 6/11,
+docs 240/19, roadmap and whitespace pass. Standalone pinned cache-disabled
+Gravity lint retains the exact parent findings (Effects 76 errors/44 warnings;
+lowering 85 errors/34 warnings); new EDN has zero findings. This is an unchanged
+finding comparison, not clean lint or semantic execution.
+
+The existing coordinator acknowledged the frozen source-review intake once;
+review assignment, independent acceptance and CI are pending. See
+`list-join-width-composition-publication.edn`. Parent acceptance and main
+integration remain separate. Genuine compiler/Effects/lowering/runtime is
+UNRUN; outer accounting remains unresolved. PR502 remains open and the
+29-path/530-unit/316-production-unit disposition remains incomplete.
+
 Planning: ACC-01/04/05/06/07/08/09/12/13. This is an evidence input to the
 existing accounting tasks, not a second outcome ledger. Initial assessed main:
 `6276c94b0b753c888ef8fecc794bcc81245ea3b3`.
