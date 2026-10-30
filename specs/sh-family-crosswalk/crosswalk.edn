@@ -14642,6 +14642,54 @@
    :total-concrete-links 833,
    :routing
    "specs/requirement-reconciliation/granularity13-current-decision-routing.edn"},
+  :c16-qualified-source-review-adoption
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c16-independent-source-review.edn",
+    :sha256
+    "4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299",
+    :reviewed-source "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+    :reviewed-tree "df7be4829dfc2b132b8cd8e10d74ca1acd74bbba"},
+   :prior-four-reviews :retain-their-separate-exact-current-adoption,
+   :new-C16-facets 114,
+   :counts
+   {:new-reviewed-facets 114,
+    :all-reviewed-source-facets 1362,
+    :semantic-conjunction-facets 1171,
+    :retained-context-facets 189,
+    :superseded-history-facets 2,
+    :finite-proposal-ids 1987,
+    :pending-finite-proposal-ids 634,
+    :reviewed-outside-finite-index 9},
+   :new-C16-semantic-facets 99,
+   :held-overlap :one-source-context-identity-no-held-scope-clearance,
+   :trace
+   {:path
+    "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+    :sha256
+    "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1"},
+   :full-dependency-documents :not-accepted,
+   :implementation-credit :none,
+   :adoption
+   {:path
+    "specs/requirement-reconciliation/c16-qualified-source-review-adoption.edn",
+    :sha256
+    "098b0371fc757775b0ee6b410566bb4f9072ee8df17537557508b5c1752fdd55"},
+   :new-task-units 0,
+   :final-denominator :not-accepted,
+   :artifact-source-commit "518e84639f1434b329609cebfa4b7d7d908a613c",
+   :new-C16-context-facets 15,
+   :status :qualified-C16-source-review-adopted,
+   :subject-source-commit "e0a01bf7a7774a6b2c99852323cf67a174c359e7",
+   :whole-current-head :not-accepted,
+   :qualification
+   "C16's 114 exact source facets conjoin three unchanged actual cache/rebuild criteria. One older provenance context retains one identity and no held-scope acceptance. The previous four source reviews retain their separate authority; this older C16 review accepts no later/main/implementation or full dependency contracts. No compiler/cache/proof checker/runtime/provider execution, migration/release, final count or integration authority follows.",
+   :new-decision-ids 0,
+   :applicability
+   {:path
+    "specs/requirement-reconciliation/c16-qualified-current-applicability.edn",
+    :sha256
+    "8800642c008378eb401c9fc52bf596aba75952e47c4c582bc67d69d3ddbef268"}},
   :c15-owner-current-source
   {:all833-decision-records :unchanged,
    :current-spans 4819,

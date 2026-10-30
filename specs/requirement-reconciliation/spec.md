@@ -119,12 +119,14 @@ C6 source-only adoption.
 The [complete C16 incremental trace](incremental-complete-current-facet-trace.edn)
 conjoins existing cache and rebuild criteria with explicit graph/key/entry and
 diagnostic records for all 114 C16 facets. Its six owners were already candidates;
-the trace changes no task population, implementation or independent acceptance.
+the trace changes no task population or implementation. The separate
+[C16 source adoption](c16-qualified-source-review-adoption.edn) records qualified
+entailment after exact current applicability, with full dependencies excluded.
 The [four-review adoption](compiler-source-reviews-qualified-adoption.edn)
 records C13, Resolve, Core and Types receipt scopes after exact current
 applicability and coherent clause-removal controls. It separates semantic
 conjunctions, retained contexts and two superseded accounting fragments.
-Complete current-composition review, C16 source acceptance and final counting
+Complete current-composition review and final counting
 remain pending; no earlier or later scope is accepted by inheritance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded

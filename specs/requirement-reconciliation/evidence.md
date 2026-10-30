@@ -3462,3 +3462,51 @@ criterion spans with 38 refusals (27 coherent semantic cases). Raw receipt and
 current applicability remain unvalidated here. C16 is explicitly excluded from
 the four-review adoption and is the next intake; no later/main/implementation,
 release, held-operation or integration acceptance is inferred from its delivery.
+
+## C16 frozen review: qualified current source adoption
+
+The C16 receipt at frozen `e32ada7ee3e588454e2fd323f34c26144e1e70d5`, tree
+`df7be4829dfc2b132b8cd8e10d74ca1acd74bbba`, matches SHA256
+`4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299`.
+All five sealed input artifacts, three exact cache/rebuild criterion spans,
+114 per-facet verdicts, 44 occurrence conjunctions, six owner verdicts, original
+matrix coordinates and 240 normative source hashes remain exact at current
+`e0a01bf7a7774a6b2c99852323cf67a174c359e7`. The frozen tree was separately
+read from Git. All declared control/report/checker artifact hashes authenticate;
+the reviewer code and reproduction command were never evaluated. Its reported
+38 refusals include 27 coherently rehashed semantic source-data fixtures, not
+compiler/cache execution. Authorship, held-scope and later-adoption exclusions
+remain unchanged in the raw committed receipt.
+
+Local applicability passes 2 tests/30 assertions, including complete population,
+coherent first-sentence removal/rehashed-file refusals, missing-facet and scope/
+implementation/count/held-authority promotion refusals. All 833 Open records,
+931 owning witnesses, 561 historical authorities/4,819 spans and earlier four
+qualified reviews remain current. The initial scratch delimiter error was caught
+by read-all-before-eval and corrected before canonical writes. Receipt,
+applicability and qualified adoption are committed at
+`518e84639f1434b329609cebfa4b7d7d908a613c`.
+
+C16 adds 99 semantic and fifteen retained context facets. Its one provenance
+overlap remains one source identity and confers no Metadata372 or other held
+scope clearance. The cumulative qualified source population is 1,362: 1,171
+semantic conjunctions, 189 contexts and two superseded history fragments with
+no live criteria. Nine reviewed retirement facets remain outside the 1,987-ID
+finite proposal index; 634 proposals remain pending. No criterion/status/task
+unit changes or implementation credit occur. The four-review adoption keeps
+its captured C16-excluded statement as history; the separate later C16 adoption
+supplies only C16 source authority, without accepting later/current-main,
+dependency-document, whole-owner, release, final-count or integration scope.
+
+Concrete next source gap: C17 has 108 original facets and six existing owner
+candidates, with 93 complete predicates still pending in the last inventory.
+Direct reading of C17 and the existing Plugin Host task block shows the generic
+manifest/trust/grant and IR-access criteria do not explicitly enumerate C17's
+manifest record fields, sixteen standard compiler capability scopes, five trust
+levels (including audit-required approval) or ten plugin diagnostic meanings
+and complete context. Those record/refusal predicates and their source-to-task
+conjunctions require the next bounded source amendment and full occurrence trace.
+Existing manifest/API-before-code-loading, actual sandbox/output verification,
+registration and trace/reuse criteria must be preserved. This is source/task
+reconciliation; no plugin, verifier callback, sandbox, domain or held operation
+is authorized or executed by identifying it.
