@@ -9736,8 +9736,10 @@
 
 
 (deftest current-gravity-vector-empty-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-query-input)
+  (require 'gravity.self-hosting.sh08-function-call-type-test
+           'gravity.self-hosting.sh09-body-effect-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-query-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -9749,11 +9751,16 @@
                                    ['empty? {:kind :gravity.type/vector :element-types [{:kind :gravity.type/vector :element-types [] :shape :literal}] :shape :literal}]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn operation [input-type])
             result (derive input) descriptor (:descriptor result)
+            emitted-header (invoke 'p15-s23-vemp-header core (:node input) call edge nodes bindings types module 65536)
+            effected-header (body 'body-vemp-header core (:node input) call edge nodes bindings types module 65536)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
                      :call-facts {:call (c7 'sh08-lq-call-fact [descriptor module])} :ledger [(c7 'sh08-lq-constraint [descriptor])]
                      :locals {:arg0 'items} :parameter-types types}
             compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= :accepted (:status emitted-header) (:status effected-header)))
+        (is (= descriptor (:descriptor emitted-header) (:descriptor effected-header)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function operation :args [{:op :local :name 'items}]} (:value lowered)))
         (when (= :complete (:status lowered))
@@ -9797,6 +9804,8 @@
                          (assoc-in descriptor [:storage-policy :copy] :rebuild)
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work 1)
+                      (assoc descriptor :operand-type-work nil)
                          (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
                          (assoc-in descriptor [:source-binding :package :version] "forged")]]
           (let [candidate (-> context (assoc-in [:types :operator] changed)
@@ -9818,8 +9827,10 @@
 
 
 (deftest current-gravity-list-set-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-set-input)
+  (require 'gravity.self-hosting.sh08-function-call-type-test
+           'gravity.self-hosting.sh09-body-effect-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-set-input)
         derive (fn [input] ((ns-resolve upstream 'set-conversion-derived) input 65536)) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -9828,11 +9839,16 @@
     (doseq [[operation input-type] [['set {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn input-type)
             result (derive input) descriptor (:descriptor result)
+            emitted-header (invoke 'p15-s23-lset-header core (:node input) call edge nodes bindings types module 65536)
+            effected-header (body 'body-lset-header core (:node input) call edge nodes bindings types module 65536)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
                      :call-facts {:call (c7 'sh08-st-call-fact [descriptor module])} :ledger [(c7 'sh08-st-constraint [descriptor])]
                      :locals {:arg0 'items} :parameter-types types}
             compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= :accepted (:status emitted-header) (:status effected-header)))
+        (is (= descriptor (:descriptor emitted-header) (:descriptor effected-header)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function operation :args [{:op :local :name 'items}]} (:value lowered)))
         (when (= :complete (:status lowered))
@@ -9876,6 +9892,8 @@
                          (assoc-in descriptor [:storage-policy :copy] :none)
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work 1)
+                      (assoc descriptor :operand-type-work nil)
                          (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
                          (assoc-in descriptor [:source-binding :package :version] "forged")]]
           (let [candidate (-> context (assoc-in [:types :operator] changed)
@@ -10062,8 +10080,10 @@
         (is (empty? @callbacks))))))
 
 (deftest current-gravity-map-keys-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-keys-input)
+  (require 'gravity.self-hosting.sh08-function-call-type-test
+           'gravity.self-hosting.sh09-body-effect-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-keys-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -10075,11 +10095,16 @@
                                    ['keys {:kind :gravity.type/map :member-types [:gravity.type/keyword {:kind :gravity.type/vector :element-types [] :shape :literal}] :shape :literal}]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn input-type)
             result (derive input) descriptor (:descriptor result)
+            emitted-header (invoke 'p15-s23-mkeys-header core (:node input) call edge nodes bindings types module 65536)
+            effected-header (body 'body-mkeys-header core (:node input) call edge nodes bindings types module 65536)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
                      :call-facts {:call (c7 'sh08-lq-call-fact [descriptor module])} :ledger [(c7 'sh08-lq-constraint [descriptor])]
                      :locals {:arg0 'items} :parameter-types types}
             compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= :accepted (:status emitted-header) (:status effected-header)))
+        (is (= descriptor (:descriptor emitted-header) (:descriptor effected-header)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function operation :args [{:op :local :name 'items}]} (:value lowered)))
         (when (= :complete (:status lowered))
@@ -10123,6 +10148,8 @@
                          (assoc-in descriptor [:storage-policy :copy] :none)
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work 1)
+                      (assoc descriptor :operand-type-work nil)
                          (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
                          (assoc-in descriptor [:source-binding :package :version] "forged")]]
           (let [candidate (-> context (assoc-in [:types :operator] changed)
@@ -10196,8 +10223,10 @@
     (is (empty? @callbacks))))
 
 (deftest current-gravity-vector-rest-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'vector-rest-input)
+  (require 'gravity.self-hosting.sh08-function-call-type-test
+           'gravity.self-hosting.sh09-body-effect-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'vector-rest-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -10209,11 +10238,16 @@
                                    ['rest {:kind :gravity.type/vector :element-types [{:kind :gravity.type/vector :element-types [] :shape :literal} :gravity.type/character] :shape :literal}]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn input-type)
             result (derive input) descriptor (:descriptor result)
+            emitted-header (invoke 'p15-s23-vrest-header core (:node input) call edge nodes bindings types module 65536)
+            effected-header (body 'body-vrest-header core (:node input) call edge nodes bindings types module 65536)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
                      :call-facts {:call (c7 'sh08-lq-call-fact [descriptor module])} :ledger [(c7 'sh08-lq-constraint [descriptor])]
                      :locals {:arg0 'items} :parameter-types types}
             compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= :accepted (:status emitted-header) (:status effected-header)))
+        (is (= descriptor (:descriptor emitted-header) (:descriptor effected-header)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function operation :args [{:op :local :name 'items}]} (:value lowered)))
         (when (= :complete (:status lowered))
@@ -10257,6 +10291,8 @@
                          (assoc-in descriptor [:storage-policy :copy] :none)
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work 1)
+                      (assoc descriptor :operand-type-work nil)
                          (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
                          (assoc-in descriptor [:source-binding :package :version] "forged")]]
           (let [candidate (-> context (assoc-in [:types :operator] changed)
@@ -37806,3 +37842,16 @@ else
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest cold-quote-metadata-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [helper #(ns-resolve 'gravity.self-hosting.sh08-function-call-type-test %)
+        {:keys [core facts record bindings forms cold cut]} ((helper 'cold-metadata-input))
+        source-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
+        run #(bootstrap/p15-s23-stage2-runtime-execute-function
+               runtime plan 'p15-s23-is-cold-metadata-valid? [core facts record bindings forms % cut])]
+    (is (true? (run cold)))
+    (doseq [changed ((helper 'cold-metadata-invalid-inputs) cold)]
+      (is (false? (run changed))))))
