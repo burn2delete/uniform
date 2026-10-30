@@ -8,6 +8,15 @@
 (def source-path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def test-ns "gravity.self-hosting.sh08-function-call-type-test")
 (def closure-sha256 "b997383da2d2f5e61390f0bd089958201a039c2768233e774c7eafbfd8da6d38")
+(def owner-closure-sha256 "bca67eb1d190b1f4007d6d2ee5e61ee7a3c0fe8e53d7ee16ec14d3a7ca23fbb7")
+(def owner-paths
+  {:c7 source-path
+   :effects "bootstrap/gravity/src/gravity/effects.gravity"
+   :emitter "bootstrap/gravity/p15_s23/emitter.gravity"})
+(def owner-bridges
+  {'invoke-c7 :c7 'return-premise-c7 :c7 'return-premise-effects :effects 'return-premise-emit :emitter
+   'pr359-descriptor-c7 :c7 'pr359-descriptor-body :effects 'pr359-descriptor-emit :emitter})
+(def helper-lookups #{'return-premise-helper 'pr359-descriptor-helper})
 (def roots ["bootstrap/clojure/src" "bootstrap/gravity"
             "bootstrap/clojure/fixtures/self-hosting/sh-08"])
 (def resource-files
@@ -75,6 +84,8 @@
                          (str/replace (str (.relativize (.toPath root) (.toPath f)))
                                       java.io.File/separator "/"))))}
      :source (String. (read-bytes root source-path) "UTF-8")
+     :owner-sources (into {} (for [[owner path] owner-paths]
+                              [owner (String. (read-bytes root path) "UTF-8")]))
      :tests (String. (read-bytes root test-path) "UTF-8")
      :resources locations}))
 
@@ -116,8 +127,65 @@
 (defn oid? [s]
   (and (string? s) (boolean (re-matches #"[0-9a-f]{40}" s))))
 
+(defn owner-contract-data [x]
+  (let [order #(compare (pr-str %1) (pr-str %2))]
+    (cond
+      (map? x) (into (sorted-map-by order) (map (fn [[k v]] [(owner-contract-data k) (owner-contract-data v)]) x))
+      (set? x) (into (sorted-set-by order) (map owner-contract-data x))
+      (vector? x) (mapv owner-contract-data x)
+      (seq? x) (apply list (map owner-contract-data x))
+      :else x)))
+
 (defn closure-digest [manifest]
-  (sha (.getBytes (pr-str [(:selection manifest) (:consumer-edges manifest)]) "UTF-8")))
+  (sha (.getBytes (pr-str (if (:owner-contract manifest)
+                           (owner-contract-data [(:selection manifest) (:consumer-edges manifest) (:owner-contract manifest)])
+                           [(:selection manifest) (:consumer-edges manifest)])) "UTF-8")))
+
+(defn owner-closure [defs start]
+  (loop [pending [start] seen #{} owners #{}]
+    (if-let [n (peek pending)]
+      (if (contains? seen n) (recur (pop pending) seen owners)
+        (let [sites (calls (get defs n))
+              refs (for [site sites :when (contains? defs (first site))] (first site))
+              lookups (for [site sites :when (helper-lookups (first site))
+                            :let [q (second site)]
+                            :when (and (seq? q) (= 'quote (first q)) (contains? defs (second q)))] (second q))
+              reached (for [site sites
+                            :let [applied? (= 'apply (first site))
+                                  bridge (if applied? (second site) (first site))
+                                  q (if applied? (nth site 2 nil) (second site))]
+                            :when (and (contains? owner-bridges bridge) (seq? q) (= 'quote (first q)))]
+                        [(get owner-bridges bridge) (second q)])]
+          (recur (into (pop pending) (concat refs lookups)) (conj seen n) (into owners reached))))
+      owners)))
+
+(defn check-owner-contract! [manifest observation snapshot tests]
+  (let [contract (:owner-contract manifest)]
+    (check! (= :pmk-owner-preparation-v2 (:version contract)) :owner-contract-version)
+    (check! (= (:predecessor contract) (:predecessor observation)) :request-predecessor)
+    (check! (and (map? (:owner-sources snapshot))
+                 (= (set (keys owner-paths)) (set (keys (:owner-sources snapshot))))
+                 (every? string? (vals (:owner-sources snapshot)))) :owner-source-set)
+    (doseq [[owner path] owner-paths]
+      (check! (= (get-in contract [:source-pins path]) (get-in snapshot [:inputs path])
+                 (sha (.getBytes ^String (get-in snapshot [:owner-sources owner]) "UTF-8"))) :owner-source-bytes))
+    (doseq [[path digest] (:source-pins contract)]
+      (check! (= digest (get-in snapshot [:inputs path])) :owner-input-pin))
+    (doseq [[name digest] (:bridge-pins contract)]
+      (check! (= digest (sha (.getBytes (pr-str (get tests name)) "UTF-8"))) :owner-bridge))
+    (let [owners (into {} (for [[owner text] (:owner-sources snapshot)] [owner (definitions text)]))]
+    (doseq [{:keys [selector apis owner-apis]} (:selection manifest)]
+      (let [reached (owner-closure tests selector)]
+        (check! (and (map? owner-apis) (seq owner-apis)
+                     (= apis (set (mapcat val owner-apis)))) :owner-api-shape)
+        (doseq [[owner names] owner-apis]
+          (check! (and (contains? owners owner) (set? names) (seq names)
+                       (every? #(and (contains? reached [owner %]) (contains? (get owners owner) %)) names)) :wrong-owner-consumer))))
+    (doseq [[owner caller callee] (:consumer-edges contract)]
+      (let [defs (get owners owner)]
+        (check! (and (contains? defs caller) (contains? defs callee)
+                     (some #(= callee (first %)) (calls (get defs caller)))) :wrong-owner-edge)))
+    (check! (= (set (keys owner-paths)) (set (map first (:consumer-edges contract)))) :missing-owner-edge))))
 
 (defn prepare [manifest observation snapshot]
   (let [before (:before observation) after (:after observation)
@@ -155,7 +223,8 @@
         (check! (contains? (:inputs snapshot) path) :resource-input-missing)
         (check! (= (.resolve ^java.net.URI (:root observation) path) expected) :resource-path)
         (check! (= [expected] actual) :resource-shadow-or-mismatch)))
-    (check! (= closure-sha256 (closure-digest manifest)) :closure-contract)
+    (check! (= (if (:owner-contract manifest) owner-closure-sha256 closure-sha256)
+               (closure-digest manifest)) :closure-contract)
     (check! (= (list 'ns (symbol test-ns))
                (binding [*read-eval* false]
                  (take 2 (read-string (:tests snapshot))))) :test-namespace)
@@ -163,8 +232,11 @@
                  (= (count selection) (count (set (map :selector selection))))) :selection)
     (doseq [{:keys [selector apis]} selection]
       (check! (= 'deftest (first (get tests selector))) :wrong-selector)
-      (check! (and (set? apis) (seq apis)
-                   (every? (helper-closure tests selector) apis)) :wrong-test-consumer))
+      (when-not (:owner-contract manifest)
+        (check! (and (set? apis) (seq apis)
+                     (every? (helper-closure tests selector) apis)) :wrong-test-consumer)))
+    (when (:owner-contract manifest)
+      (check-owner-contract! manifest observation snapshot tests))
     (check! (seq (:consumer-edges manifest)) :missing-consumers)
     (doseq [[caller callee] (:consumer-edges manifest)]
       (check! (and (contains? source caller) (contains? source callee)
@@ -177,6 +249,7 @@
      :launch (:launch snapshot) :closure (:selection manifest)
      :selection (mapv #(str test-ns "/" (:selector %)) selection)
      :consumer-edges (:consumer-edges manifest)
+     :owner-contract (:owner-contract manifest)
      :argv (into ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace" test-ns]
                  (mapcat #(vector "--exact" (str (:selector %))) selection))}))
 
@@ -197,7 +270,8 @@
     (let [passed? (and (= test (count (:selection plan))) (zero? fail) (zero? error))]
       (check! (and (= (if passed? :passed :failed) (:outcome result))
                    (= (if passed? 0 1) (:exit-code result))) :misattributed-result))
-    {:schema :pmk-attributed-run-v1 :authenticated? false
+    (cond-> {:schema :pmk-attributed-run-v1 :authenticated? false
      :source-revision (:source-revision plan) :checkout (:checkout plan)
      :inputs-sha256 (:inputs-sha256 plan) :selection (:selection plan)
-     :reported-result result :semantic-acceptance :not-established}))
+     :reported-result result :semantic-acceptance :not-established}
+      (:owner-contract plan) (assoc :owner-contract (:owner-contract plan) :closure (:closure plan)))))
