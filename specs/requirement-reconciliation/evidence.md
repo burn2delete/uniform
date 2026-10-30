@@ -2214,3 +2214,47 @@ dependency joins and 360 pending owner/metadata adjudications. Population checks
 pass 2 / 16; serialized readback confirms all original populations and their
 disjointness from the explicit extensions. The two changed extension source
 descriptors still require rebinding.
+
+## Retired-owner current successors and conserved attached context
+
+At source `08e8417a28055a2b249bb7b1bbce23bebe01c94a`,
+`retired-owner-current-successor-proposals.edn` retains all three original
+retired IDs and binds their proposed current semantic successors to seven
+authenticated current criteria. The retired set, all 833 decision records,
+561 historical bindings, implementation acceptance and task states are
+unchanged. No retired record is reactivated or newly retired.
+
+The historical Core Language proposal contains exact original-ID context
+records under `language/effects/authorize-and-record-build-effect` and
+`language/library/publish-public-contract`. The corresponding current criteria
+cover hermetic build authorization/recording and actual public export metadata;
+the existing unsafe-wrapper eligibility owner separately retains proof/check,
+cleanup, audit and boundary-test obligations. These are source-lineage joins
+pending independent acceptance, not renewed historical or implementation credit.
+
+No historical successor alias for `gravity/workflow-ai-vertical-slice` was
+found in that retained context source. Its current support-agent, agent-facet
+and workflow-replay criteria are therefore a new explicit successor proposal.
+The actual support-triage criterion does not explicitly bind D2's required
+positive fixture with one model call, one schema-validated tool, one
+human-review step and one durable replay record. The artifact records an
+actionable refinement for the existing Open AI task; it does not treat that
+fixture as covered or create another task. These counts describe the required
+fixture shape, not project cost or input-admission accounting.
+
+All 72 distinct attached facets and 73 retired-owner memberships remain visible:
+43 hermetic-build attachments, 15 library attachments and 15 workflow/AI
+attachments, with the reproducibility facet shared once. Nine primary behavior
+facets have successor proposals; the exact D2 positive fixture remains a gap;
+62 other attached facets still require their own exact joins. In particular,
+project/resolver/signing, compiler artifact/origin, host/AI/workflow,
+specialization/domain-IR, library implementation, milestone and reproducibility
+predicates cannot be discharged by a build-grant or API-metadata alias.
+
+Source checks pass 2 tests / 15 assertions, authenticating all selected source
+bytes and criterion spans, the retired set and memberships, preservation of
+the shared facet, and refusal of a tampered source hash or a false covered
+status for the triage fixture. This lineage audit is separate from the 668
+pending facet-entailment proposals; that count is unchanged. Independent
+successor/facet acceptance, the identified task refinement, full original
+entailment, final counting and coordinator integration remain required.

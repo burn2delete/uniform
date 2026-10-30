@@ -46,6 +46,11 @@ binds its original owner to the existing diagnostic producer, module/fact
 preservation, stage-comparison, TEST13 and compatibility-review criteria.
 Its added producer predicate and all fifteen facet joins await independent
 source acceptance; the join adds no task or stable decision ID.
+The [retired-owner successor proposals](retired-owner-current-successor-proposals.edn)
+preserve all three retired IDs, their current criterion candidates and all
+72 attached facets. Two older context-absorption records are authenticated;
+the support-triage successor is a new proposal with an explicit D2 fixture gap.
+The remaining attached predicates are not discharged by those owner names.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
