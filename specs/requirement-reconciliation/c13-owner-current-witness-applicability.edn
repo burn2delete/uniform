@@ -1,0 +1,100 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+  :sha256
+  "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+  :sha256
+  "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"},
+ :historical-file-pin-changes 21,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :c13-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:contracts
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 2681,
+   :end-byte 3812,
+   :raw-sha256
+   "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"},
+  :families
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 5959,
+   :end-byte 7367,
+   :raw-sha256
+   "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"},
+  :checks
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 7748,
+   :end-byte 8836,
+   :raw-sha256
+   "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"},
+  :verification
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 9183,
+   :end-byte 10482,
+   :raw-sha256
+   "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"},
+  :pipeline
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 13467,
+   :end-byte 15155,
+   :raw-sha256
+   "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/c13-owner-source-refinement.edn",
+  :sha256
+  "31c11f012a5b96083dddd031fb99b04ec39b7b58df601b7fed01c08b1746d30c"},
+ :full-file-inverse :exact-declared-insertion-removal}

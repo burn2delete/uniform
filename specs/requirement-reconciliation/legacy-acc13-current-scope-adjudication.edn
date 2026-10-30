@@ -1,0 +1,2954 @@
+{:scope-disposition
+ {:registry-accepted 3,
+  :stable-ACC-ids 13,
+  :policy-criteria :eight-existing-ACC01-ACC12-clauses-not-extra-tasks,
+  :provisional-registry-total 195,
+  :whole-task-aliases [],
+  :implementation-credit :none,
+  :new-registry-entries [],
+  :open-or-partial 11,
+  :registry-remaining 192,
+  :counting :not-additive-to-the-provisional-registry-census,
+  :retired-entries [],
+  :final-whole-project-denominator
+  :requires-independent-overlap-and-scope-acceptance,
+  :historically-closed 2,
+  :relation
+  :separate-crosscutting-remediation-ledger-with-explicit-component-interfaces,
+  :denominator-delta 0},
+ :ledger
+ {:path "specs/accounting-removal/tasks.md",
+  :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+  :sha256
+  "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+  :status-authority :sole-existing-ACC-ledger},
+ :proposal-negative-controls
+ [{:refused true,
+   :reason :duplicate-completion-credit,
+   :case :same-closure-credited-twice}
+  {:refused true,
+   :reason :wrong-completion-subject,
+   :case :ACC02-evidence-substituted-for-Reader-Accepted}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-01"],
+   :case [:dropped-required-closing-criterion "ACC-01"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-02"],
+   :case [:dropped-required-closing-criterion "ACC-02"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-03"],
+   :case [:dropped-required-closing-criterion "ACC-03"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-04"],
+   :case [:dropped-required-closing-criterion "ACC-04"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-05"],
+   :case [:dropped-required-closing-criterion "ACC-05"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-06"],
+   :case [:dropped-required-closing-criterion "ACC-06"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-07"],
+   :case [:dropped-required-closing-criterion "ACC-07"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-08"],
+   :case [:dropped-required-closing-criterion "ACC-08"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-09"],
+   :case [:dropped-required-closing-criterion "ACC-09"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-10"],
+   :case [:dropped-required-closing-criterion "ACC-10"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-11"],
+   :case [:dropped-required-closing-criterion "ACC-11"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-12"],
+   :case [:dropped-required-closing-criterion "ACC-12"]}
+  {:refused true,
+   :reason [:original-criterion-preserved "ACC-13"],
+   :case [:dropped-required-closing-criterion "ACC-13"]}
+  {:refused true,
+   :reason :stale-completion-source,
+   :case
+   [:old-closure-receipt-reused-as-fresh-current-source "ACC-02"]}
+  {:refused true,
+   :reason :stale-completion-source,
+   :case
+   [:old-closure-receipt-reused-as-fresh-current-source "ACC-03"]}],
+ :evidence
+ {:path "specs/accounting-removal/evidence.md",
+  :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+  :sha256
+  "b5058405c0f0c64264ad7f8bb074c8c21659980f0b1b150ed652389f4c1e6182",
+  :reuse :historical-named-scope-only-not-fresh-current-execution},
+ :accounting-policy-criteria
+ [{:id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :task-id "ACC-12",
+   :criterion-id "accounting-beyond-limit-late-invalid",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/accounting/closure-evidence-record",
+   :task-id "ACC-12",
+   :criterion-id "accounting-closure-evidence",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/accounting/host-external-boundary-separation",
+   :task-id "ACC-12",
+   :criterion-id "accounting-host-external-boundaries",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/accounting/preserve-semantic-validation",
+   :task-id "ACC-12",
+   :criterion-id "accounting-semantic-validation-preservation",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/accounting/remove-artificial-refusals",
+   :task-id "ACC-12",
+   :criterion-id "accounting-artificial-refusal-removal",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/accounting/source-grounded-inventory",
+   :task-id "ACC-01",
+   :criterion-id "accounting-source-inventory",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/development/autonomy-and-conflict-coordination",
+   :task-id "ACC-12",
+   :criterion-id "development-autonomy-conflict-coordination",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}
+  {:id "policy/development/exact-candidate-admission",
+   :task-id "ACC-12",
+   :criterion-id "development-exact-candidate-admission",
+   :task-authority :existing-thirteen-row-ACC-ledger,
+   :task-status :open,
+   :source-review-sha256
+   "e5143dfc366f4eece8bd9b5a713f7e95f7adffc842e43f6da6a2dc48df79706b"}],
+ :checks {:test 2, :pass 22, :fail 0, :error 0, :type :summary},
+ :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+ :rows
+ [{:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Exhaustive per-guard/transitive/schema/test/contract classification and unresolved-owner list remain required; a component ownership projection or search-hit list is not this census.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Finite source-pinned inventory; all per-guard dispositions reviewed, including literal maxima and transitive callsites",
+   :recorded-state :open-or-partial,
+   :id "ACC-01",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "None",
+   :affected-contract
+   "Whole in-scope source, adapter, schema, test and contract census",
+   :current-task-interfaces
+   [{:component "compiler-api",
+     :task-id "development-boundaries",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 162,
+      :end-line 190,
+      :sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :raw-sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 162,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 45619,
+      :end-line 190,
+      :sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :start-byte 43103},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "compiler-api",
+     :task-id "pipeline",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 16612,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :start-byte 743},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 314,
+    :end-byte 519,
+    :raw-sha256
+    "05253c683e9e86f219f890aac88ee38ac9b19059156c715d01c56a7c8c0fb7ba"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Preserve historical integrated guard and six-field Map/List premise closure only; recursive helpers, source authentication and runtime remain outside this row. This is not Reader decoding, lexical output or Syntax handoff.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Separate reviewed guard and four-field repair, valid adaptation/identity/not-applicable and invalid/opaque/extent/source/callee controls; publication, release and integration acceptance",
+   :recorded-state :historically-closed-in-integrated-named-scope,
+   :id "ACC-02",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies
+   "Prior writer published `972a2126` and released ownership; accounting successor owns reconciliation",
+   :affected-contract
+   "C7 keyword integral classification; Effects/emitter `mp-compatibility`, `lp-compatibility`; owning SH08/compatibility tests",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1948,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :start-byte 1017},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6000,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :start-byte 5627},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6365,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :start-byte 6002},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 520,
+    :end-byte 945,
+    :raw-sha256
+    "1c6e0b5bafa955b9a4b43072c63d68631986f5ce8e0764d622e260ad1bdc16c9"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Preserve integrated coherent LR v2 premise/schema/invalidation and every-member/extent/typed-definition closure; recursive helper admission stays ACC-06. No whole Types, Effects or Emit task acceptance follows.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Three-owner premise/schema alignment, invalidation, exact full equality, preserved checked-member/element extents and every-member controls, typed definitions",
+   :recorded-state :historically-closed-in-integrated-named-scope,
+   :id "ACC-03",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-02 release",
+   :affected-contract
+   "C7/Effects/emitter `lr-type-work`, `lr-derive`, `lr-row`, `lr-context`",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 26,
+      :end-line 30,
+      :sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :raw-sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 26,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4624,
+      :end-line 30,
+      :sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :start-byte 1950},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6000,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :start-byte 5627},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6365,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :start-byte 6002},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 946,
+    :end-byte 1207,
+    :raw-sha256
+    "8d27fdb4eb57faf644ca13b21e4dae66dfeaa3ac03dfc35cd12e8f004065e87d"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Finite BKA anchor/header removals do not close PMK/ANE/DSE, remaining proof/pool/runtime policy or complete owner-consumer acceptance. Preserve unknown historical mode operation without retry.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Actual-owner baseline, precise removal disposition, preserved binding/domain/equality/mode semantics; original blocked mode operation separate",
+   :recorded-state :open-or-partial,
+   :id "ACC-04",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-02 release; routing ownership",
+   :affected-contract
+   "C7/Effects/emitter `pmk-source/header/proof`, `ane-source`, `bka-header`, `dse-header`",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1948,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :start-byte 1017},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6000,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :start-byte 5627},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 1208,
+    :end-byte 1488,
+    :raw-sha256
+    "c0a9550a463697fbbfb6696874b833fe0c4181e2526d73129143d5dce31fc70c"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Finite PL validation/insertion descriptor results do not close runtime construction/member ingress or outer source/inference/emitter pools; preserve callback/collision/Unicode and complete construction evidence.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Coherent operand/result/construction work removal across all variants; real construction and callback/collision controls",
+   :recorded-state :open-or-partial,
+   :id "ACC-05",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-02 release; runtime coordination",
+   :affected-contract
+   "C7/Effects/emitter `pl-source`, `pl-type-work`, String/Symbol/Keyword insertion variants",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1948,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :start-byte 1017},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6000,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :start-byte 5627},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "runtime",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 24,
+      :end-line 30,
+      :sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :raw-sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 24,
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 17993,
+      :end-line 30,
+      :sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :start-byte 7720},
+     :dependencies-source
+     {:path "specs/runtime-workflow/plan.md",
+      :sha256
+      "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "stdlib",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/stdlib-workflow/tasks.md",
+      :start-line 23,
+      :end-line 29,
+      :sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :raw-sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/stdlib-workflow/tasks.md",
+      :start-line 23,
+      :file-sha256
+      "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+      :raw-sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 36394,
+      :end-line 29,
+      :sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :start-byte 3314},
+     :dependencies-source
+     {:path "specs/stdlib-workflow/plan.md",
+      :sha256
+      "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 1489,
+    :end-byte 1752,
+    :raw-sha256
+    "3211f1e9375b724fafbeec16db211a1dbcc72900c483ee4b82ce969401439da7"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Intrinsic/LR helper/private-chain increments do not close all recursive construction and source/conversion allowances; preserve nested Never/parity/late malformed/opaque traversal and actual consumer acceptance.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Work/depth/width admission removed with complete nested type, Never, parity and late malformed/opaque validation",
+   :recorded-state :open-or-partial,
+   :id "ACC-06",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-02 release",
+   :affected-contract
+   "C7 `lc-validate-types`, `lc-type-work`, construction helpers; Effects/emitter `lc/pl/lr-type-work`",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1948,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :start-byte 1017},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 26,
+      :end-line 30,
+      :sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :raw-sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 26,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4624,
+      :end-line 30,
+      :sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :start-byte 1950},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6365,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :start-byte 6002},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 1753,
+    :end-byte 1996,
+    :raw-sha256
+    "9be951fa5be7de3f5e2fef8c54d168f660d184ba209bf1ea9dfca894601241ec"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Artificial inference allowances and policy premises must be removed while independently proving fixed-point/cycle/conflict semantics and fresh result verification. Finite node IDs alone do not prove evolving-type convergence.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Remove allowances/debits/reservations and policy API premises; preserve fixed-point/cycle/conflict semantics and genuine fresh result verification",
+   :recorded-state :open-or-partial,
+   :id "ACC-07",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-02 release; ACC-01 call graph",
+   :affected-contract
+   "C7 `ft-effective-work-policy`, `ft-invalid-work-policy`, `ft-work-allowance`, `ft-infer-acyclic-with-context`, `ft-inference-round-bound`, `ft-infer-pass-products-prepared`, public work-policy entrypoints",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1948,
+      :end-line 24,
+      :sha256
+      "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+      :start-byte 1017},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6000,
+      :end-line 42,
+      :sha256
+      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+      :start-byte 5627},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 26,
+      :end-line 30,
+      :sha256
+      "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+      :raw-sha256
+      "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 26,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1755,
+      :end-line 30,
+      :sha256
+      "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+      :start-byte 1396},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "7f17130115957d43765f7b26020cddfc73ba195389eee4f958239a1006a05504",
+      :raw-sha256
+      "7f17130115957d43765f7b26020cddfc73ba195389eee4f958239a1006a05504",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "7f17130115957d43765f7b26020cddfc73ba195389eee4f958239a1006a05504",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 3184,
+      :end-line 42,
+      :sha256
+      "7f17130115957d43765f7b26020cddfc73ba195389eee4f958239a1006a05504",
+      :start-byte 2138},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "compiler-api",
+     :task-id "pipeline",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 16612,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :start-byte 743},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 1997,
+    :end-byte 2399,
+    :raw-sha256
+    "1268644b1eb4ec3769dc5854961b11186006a692a66613cdd950f6d578916416"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Imported-module/Core-shape increments are partial. Coherent full module/profile/Effects/emitter pools, real joins and typed emission remain; dependencies are actual ACC-03/05/06/07 interfaces, not a second implementation.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Remove module/profile-validation work and cumulative pools coherently; genuine complete joins, typed emission, effects/capabilities and tamper rejection",
+   :recorded-state :open-or-partial,
+   :id "ACC-08",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-03/05/06/07 as interfaces require",
+   :affected-contract
+   "C7 module products; Effects `body-analyze-module` and imports; emitter `typed-compile-node`",
+   :current-task-interfaces
+   [{:component "types",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/types-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 6365,
+      :end-line 48,
+      :sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :start-byte 6002},
+     :dependencies-source
+     {:path "specs/types-workflow/plan.md",
+      :sha256
+      "9b07d34ad39956c32e6a6849654ce1f8e25e3e3a65c09065ec5be0e8c671f145",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+      :raw-sha256
+      "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2136,
+      :end-line 36,
+      :sha256
+      "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+      :start-byte 1757},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "effects",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/effects-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4225,
+      :end-line 48,
+      :sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :start-byte 3186},
+     :dependencies-source
+     {:path "specs/effects-workflow/plan.md",
+      :sha256
+      "03888dedb442023125287e4aa78df78f803622c3b902b64efe1b6c56312965ed",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "core",
+     :task-id
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/core-workflow/tasks.md",
+      :start-line 44,
+      :end-line 48,
+      :sha256
+      "fb3cd983adce03bab8a30dedc413ee176aa9a23401a12bf544b43975c2a135bf",
+      :raw-sha256
+      "fb3cd983adce03bab8a30dedc413ee176aa9a23401a12bf544b43975c2a135bf",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/core-workflow/tasks.md",
+      :start-line 44,
+      :file-sha256
+      "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+      :raw-sha256
+      "fb3cd983adce03bab8a30dedc413ee176aa9a23401a12bf544b43975c2a135bf",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 3301,
+      :end-line 48,
+      :sha256
+      "fb3cd983adce03bab8a30dedc413ee176aa9a23401a12bf544b43975c2a135bf",
+      :start-byte 2389},
+     :dependencies-source
+     {:path "specs/core-workflow/plan.md",
+      :sha256
+      "433f425fc43e9c33a5a9993d5d6b6db3520c48dc22958492cde768ce87a9b6de",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2053,
+      :end-line 36,
+      :sha256
+      "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151",
+      :start-byte 1674},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :raw-sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2442,
+      :end-line 42,
+      :sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :start-byte 2055},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 2400,
+    :end-byte 2699,
+    :raw-sha256
+    "d2519776b8d0cbd7c65eb493a4ed073bfa88bb0e6e1376d409ece560e62aa0c6"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Module-read and census/uniqueness integrations are finite closed slices, not all initializer/Set/Vector/List/domain/equality/insertion/construction/runtime-shape obligations. Preserve actual source/type/native/callback/collision/Unicode checks and held owner operations.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Census allowance/shared initializer pool removal and its metadata integration are complete. Remaining initializer, collection and runtime-shape accounting, exhaustive dispositions and their actual owner acceptance stay open; preserve genuine runtime/source/type/uniqueness/constructor/callback/collision/Unicode checks",
+   :recorded-state :open-or-partial,
+   :id "ACC-09",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies
+   "Module-read traversal merged in PR433; census/root-uniqueness and fresh guarded metadata composition merged in PR444 at `6b2e63b3`, exact reviewed tree `68609de1`; ACC-01",
+   :affected-contract
+   "Runtime `initializer-work`, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, `module-census`, `instruction-children`, `runtime-module-reads`; emitter callers",
+   :current-task-interfaces
+   [{:component "runtime",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 24,
+      :end-line 30,
+      :sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :raw-sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 24,
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 17993,
+      :end-line 30,
+      :sha256
+      "fa4ccb9910505acd8c5c7645b2756c5f435152432f081daa8b09ed6863597aec",
+      :start-byte 7720},
+     :dependencies-source
+     {:path "specs/runtime-workflow/plan.md",
+      :sha256
+      "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "runtime",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 32,
+      :end-line 38,
+      :sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :raw-sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 36338,
+      :end-line 38,
+      :sha256
+      "3c0fe383b91a6f11e6963ad51696468f05e2b2d3f81530491eccb39df3d42f60",
+      :start-byte 17995},
+     :dependencies-source
+     {:path "specs/runtime-workflow/plan.md",
+      :sha256
+      "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "runtime",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 48,
+      :end-line 54,
+      :sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :raw-sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :start-line 48,
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 60960,
+      :end-line 54,
+      :sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :start-byte 53908},
+     :dependencies-source
+     {:path "specs/runtime-workflow/plan.md",
+      :sha256
+      "6714be6a4bad82620ee0e3aec2d26db995e14e9ac4d05a9ea602d1b5af97063c",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "stdlib",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/stdlib-workflow/tasks.md",
+      :start-line 23,
+      :end-line 29,
+      :sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :raw-sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/stdlib-workflow/tasks.md",
+      :start-line 23,
+      :file-sha256
+      "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+      :raw-sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 36394,
+      :end-line 29,
+      :sha256
+      "18109ea09fbab12dab67d76ce8d52ad9e1a71614078fefd45e97293f39b22365",
+      :start-byte 3314},
+     :dependencies-source
+     {:path "specs/stdlib-workflow/plan.md",
+      :sha256
+      "109f6df4db9b5837a6452a0fe98f6d7136c6af3a7fc7eb43933b1e19d3d402d2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "emit",
+     :task-id
+     "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :raw-sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/emit-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+      :raw-sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2442,
+      :end-line 42,
+      :sha256
+      "25e171aaa769e58e60997944f6c0456fac36f3e8e650e781d1eccb9f638075e6",
+      :start-byte 2055},
+     :dependencies-source
+     {:path "specs/emit-workflow/plan.md",
+      :sha256
+      "71d2319e4dcbd1856caf9688e83fd370274bacad5c323f97ee233c10965d1b5f",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 2700,
+    :end-byte 3414,
+    :raw-sha256
+    "23cfd6f394233e3d03ae338c4d0c7a0dc8561d38dd493d7b4756d718687d0630"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Existing MIR/Native producer-consumer owner acceptance and current-main integration remain required; helper or normalized results cannot establish genuine source replay or whole MIR/Native completion.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Exact producer/consumer removal acceptance, genuine source replay and negative controls, independently reviewed current-main integration; helper passes alone insufficient",
+   :recorded-state :open-or-partial,
+   :id "ACC-10",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "Existing owners; shared codec resolution",
+   :affected-contract
+   "Existing MIR PR378/421 and Native PR383/parameter paths",
+   :current-task-interfaces
+   [{:component "mir",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 14,
+      :end-line 18,
+      :sha256
+      "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e",
+      :raw-sha256
+      "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 14,
+      :file-sha256
+      "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+      :raw-sha256
+      "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 878,
+      :end-line 18,
+      :sha256
+      "562f6fd3e2638a1c7ccdc610c3b9aa0d61f586ed7b5fdca8b96a2d4ce046968e",
+      :start-byte 489},
+     :dependencies-source
+     {:path "specs/mir-workflow/plan.md",
+      :sha256
+      "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "mir",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 26,
+      :end-line 30,
+      :sha256
+      "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+      :raw-sha256
+      "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 26,
+      :file-sha256
+      "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+      :raw-sha256
+      "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1571,
+      :end-line 30,
+      :sha256
+      "717bed3a25cd2fb33968e922d35ed6250c218b544463648dba63004d200689e5",
+      :start-byte 1200},
+     :dependencies-source
+     {:path "specs/mir-workflow/plan.md",
+      :sha256
+      "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "mir",
+     :task-id
+     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1",
+      :raw-sha256
+      "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/mir-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+      :raw-sha256
+      "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2294,
+      :end-line 42,
+      :sha256
+      "5f840f87f0a42012ba83f6e8438ed5b1e44dad536dd18ecc24aaabb8d1f7ecd1",
+      :start-byte 1892},
+     :dependencies-source
+     {:path "specs/mir-workflow/plan.md",
+      :sha256
+      "153cb7c18c66dc2e41d9806056def631b0d08754432dc7e6f5fc33267484661e",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "domains",
+     :task-id "native",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/domains-workflow/tasks.md",
+      :start-line 2607,
+      :end-line 2616,
+      :sha256
+      "c2d6f1b9cec129145c957ae33ef4a0d51ec3161a7c7d6aafca2f2b185f0adb7b",
+      :raw-sha256
+      "c2d6f1b9cec129145c957ae33ef4a0d51ec3161a7c7d6aafca2f2b185f0adb7b",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/domains-workflow/tasks.md",
+      :start-line 2647,
+      :file-sha256
+      "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+      :raw-sha256
+      "c2d6f1b9cec129145c957ae33ef4a0d51ec3161a7c7d6aafca2f2b185f0adb7b",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 375463,
+      :end-line 2656,
+      :sha256
+      "c2d6f1b9cec129145c957ae33ef4a0d51ec3161a7c7d6aafca2f2b185f0adb7b",
+      :start-byte 373619},
+     :dependencies-source
+     {:path "specs/domains-workflow/plan.md",
+      :sha256
+      "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "compiler-api",
+     :task-id "pass-evidence",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 97,
+      :end-line 137,
+      :sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 97,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 37489,
+      :end-line 137,
+      :sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :start-byte 25490},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 3415,
+    :end-byte 3699,
+    :raw-sha256
+    "ff1111e2a5e438a4f8031cf7ea3d9de064f07f4f422fecc62352c5131f37638c"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Existing optimization/lowering owners must demonstrate actual composition and source/fact/profile/safety preservation; PR publication or historical pass does not close their current interfaces.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Actual opt/lower composition, source/fact/profile/safety preservation, independent review and current-main integration",
+   :recorded-state :open-or-partial,
+   :id "ACC-11",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "Existing PR370 owner",
+   :affected-contract
+   "Existing PR370 optimization/lowering owners and consumers",
+   :current-task-interfaces
+   [{:component "opt",
+     :task-id
+     "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 14,
+      :end-line 18,
+      :sha256
+      "745a953f05646853d807bf7a6bebd37658281cf8d21f845619c46f1a29ddb8a4",
+      :raw-sha256
+      "745a953f05646853d807bf7a6bebd37658281cf8d21f845619c46f1a29ddb8a4",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 14,
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "745a953f05646853d807bf7a6bebd37658281cf8d21f845619c46f1a29ddb8a4",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2680,
+      :end-line 18,
+      :sha256
+      "745a953f05646853d807bf7a6bebd37658281cf8d21f845619c46f1a29ddb8a4",
+      :start-byte 489},
+     :dependencies-source
+     {:path "specs/opt-workflow/plan.md",
+      :sha256
+      "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "opt",
+     :task-id
+     "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 26,
+      :end-line 30,
+      :sha256
+      "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f",
+      :raw-sha256
+      "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 26,
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 5206,
+      :end-line 30,
+      :sha256
+      "303611af398aefa25168eed543f64de165a2988c657934b66c760d011387b99f",
+      :start-byte 4828},
+     :dependencies-source
+     {:path "specs/opt-workflow/plan.md",
+      :sha256
+      "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "opt",
+     :task-id
+     "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :raw-sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 5552,
+      :end-line 36,
+      :sha256
+      "7a4d7f87ab8391c1501d6477b940268bdd0dda1a2597d9a4ed2d2203158869f4",
+      :start-byte 5208},
+     :dependencies-source
+     {:path "specs/opt-workflow/plan.md",
+      :sha256
+      "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "opt",
+     :task-id
+     "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "185b9cd1ff377cb6b4fb8e9a215076dd0fcf17a0bddea901a2588630372454d1",
+      :raw-sha256
+      "185b9cd1ff377cb6b4fb8e9a215076dd0fcf17a0bddea901a2588630372454d1",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/opt-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "185b9cd1ff377cb6b4fb8e9a215076dd0fcf17a0bddea901a2588630372454d1",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 8536,
+      :end-line 42,
+      :sha256
+      "185b9cd1ff377cb6b4fb8e9a215076dd0fcf17a0bddea901a2588630372454d1",
+      :start-byte 5554},
+     :dependencies-source
+     {:path "specs/opt-workflow/plan.md",
+      :sha256
+      "bcc085f65141e2419611644554da4565b93ba7ea5bd7c3b838a32e27edd037c2",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "lower",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 14,
+      :end-line 18,
+      :sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :raw-sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 14,
+      :file-sha256
+      "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+      :raw-sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 4679,
+      :end-line 18,
+      :sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :start-byte 495},
+     :dependencies-source
+     {:path "specs/lower-workflow/plan.md",
+      :sha256
+      "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "lower",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 32,
+      :end-line 36,
+      :sha256
+      "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+      :raw-sha256
+      "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 32,
+      :file-sha256
+      "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+      :raw-sha256
+      "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 7262,
+      :end-line 36,
+      :sha256
+      "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+      :start-byte 5394},
+     :dependencies-source
+     {:path "specs/lower-workflow/plan.md",
+      :sha256
+      "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "lower",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "aad0a19181b566179d4562a5956c1225e67bc6af9373ff90e471b995ef2b2262",
+      :raw-sha256
+      "aad0a19181b566179d4562a5956c1225e67bc6af9373ff90e471b995ef2b2262",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/lower-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+      :raw-sha256
+      "aad0a19181b566179d4562a5956c1225e67bc6af9373ff90e471b995ef2b2262",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 9046,
+      :end-line 42,
+      :sha256
+      "aad0a19181b566179d4562a5956c1225e67bc6af9373ff90e471b995ef2b2262",
+      :start-byte 7264},
+     :dependencies-source
+     {:path "specs/lower-workflow/plan.md",
+      :sha256
+      "050799db268949970a1bb5c2f653247da4994fdf59a8da32d89acdbd63cf1305",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 3700,
+    :end-byte 3914,
+    :raw-sha256
+    "c48ed9a0345477a07f94827fcba87bf8bb4108ceb773f0d27ca7abd77ab7670e"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Cross-owner final census/removal/semantic-preservation/beyond-limit/late-invalid/source/dependency/review/integration bundle remains required. Includes operative tests/docs/schema cleanup beyond any single component implementation task.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "No current accounting requirement or orphan producer/consumer field, reviewed exhaustive dispositions, current-main regression/integration receipts and explicit restricted boundaries",
+   :recorded-state :open-or-partial,
+   :id "ACC-12",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "Every other applicable ACC item",
+   :affected-contract
+   "Accounting-only tests/docs/schema premises and final main reconciliation",
+   :current-task-interfaces
+   [{:component "compiler-api",
+     :task-id "development-boundaries",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 162,
+      :end-line 190,
+      :sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :raw-sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 162,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 45619,
+      :end-line 190,
+      :sha256
+      "3d9c3b14079d70ce75a19f7f2e186697b06338eccc3c710d96ff67922140c4f7",
+      :start-byte 43103},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "compiler-api",
+     :task-id "pass-evidence",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 97,
+      :end-line 137,
+      :sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 97,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 37489,
+      :end-line 137,
+      :sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :start-byte 25490},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "compiler-api",
+     :task-id "pipeline",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :start-line 16,
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 16612,
+      :end-line 63,
+      :sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :start-byte 743},
+     :dependencies-source
+     {:path "specs/compiler-api-workflow/plan.md",
+      :sha256
+      "423150590d3f66c6e1abaad7a009fbc008883a94037e84f5e3a98e01ffe6ad73",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "reader",
+     :task-id
+     "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/reader-workflow/tasks.md",
+      :start-line 48,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :raw-sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/reader-workflow/tasks.md",
+      :start-line 48,
+      :file-sha256
+      "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+      :raw-sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 5743,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :start-byte 5159},
+     :dependencies-source
+     {:path "specs/reader-workflow/plan.md",
+      :sha256
+      "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 3915,
+    :end-byte 4219,
+    :raw-sha256
+    "55dffb058a5d9c6a582f89371bb5d1bf12b3ca0354f44eea6ac5265847602b44"}}
+  {:retired false,
+   :whole-task-alias :not-established,
+   :unresolved-or-residual
+   "Classify every Syntax/container/schema/macro/census discovery under the actual source rule; migrate eligible artificial limits with owner acceptance. Full schema/expansion/Syntax implementation is broader; unknown/held paths remain open.",
+   :acceptance
+   :existing-ledger-scope-only-independent-current-scope-review-pending,
+   :disposition :retained-crosscutting-remediation-obligation,
+   :current-source-execution :not-performed,
+   :closing-evidence
+   "Source-grounded remove/retain/history decisions under current verification policy; eligible removals and owner-path acceptance; unknown classifications remain open",
+   :recorded-state :open-or-partial,
+   :id "ACC-13",
+   :additional-registry-task false,
+   :completion-credit :none,
+   :dependencies "ACC-01; each actual writer confirmed",
+   :affected-contract
+   "Syntax graph/container ceilings; canonical-schema reservations/debits; macro expansion depth; other census discoveries",
+   :current-task-interfaces
+   [{:component "syntax",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 21,
+      :end-line 25,
+      :sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :raw-sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 21,
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 1385,
+      :end-line 25,
+      :sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :start-byte 1014},
+     :dependencies-source
+     {:path "specs/syntax-workflow/plan.md",
+      :sha256
+      "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "syntax",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 39,
+      :end-line 43,
+      :sha256
+      "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9",
+      :raw-sha256
+      "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 39,
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 3531,
+      :end-line 43,
+      :sha256
+      "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9",
+      :start-byte 3177},
+     :dependencies-source
+     {:path "specs/syntax-workflow/plan.md",
+      :sha256
+      "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "syntax",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 45,
+      :end-line 49,
+      :sha256
+      "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00",
+      :raw-sha256
+      "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/syntax-workflow/tasks.md",
+      :start-line 45,
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 3895,
+      :end-line 49,
+      :sha256
+      "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00",
+      :start-byte 3533},
+     :dependencies-source
+     {:path "specs/syntax-workflow/plan.md",
+      :sha256
+      "42fd46ec97afb2bd19e92afcd23fc78910c78de2612c6efd9516fa5f4d1a121d",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "expand",
+     :task-id
+     "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/expand-workflow/tasks.md",
+      :start-line 20,
+      :end-line 24,
+      :sha256
+      "da5c95cf655f6348ef324849a5c9c087f3e7e4966f9ef14e2de8fe289b6b6d10",
+      :raw-sha256
+      "da5c95cf655f6348ef324849a5c9c087f3e7e4966f9ef14e2de8fe289b6b6d10",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/expand-workflow/tasks.md",
+      :start-line 20,
+      :file-sha256
+      "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+      :raw-sha256
+      "da5c95cf655f6348ef324849a5c9c087f3e7e4966f9ef14e2de8fe289b6b6d10",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 2922,
+      :end-line 24,
+      :sha256
+      "da5c95cf655f6348ef324849a5c9c087f3e7e4966f9ef14e2de8fe289b6b6d10",
+      :start-byte 1062},
+     :dependencies-source
+     {:path "specs/expand-workflow/plan.md",
+      :sha256
+      "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "expand",
+     :task-id
+     "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/expand-workflow/tasks.md",
+      :start-line 38,
+      :end-line 42,
+      :sha256
+      "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867",
+      :raw-sha256
+      "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/expand-workflow/tasks.md",
+      :start-line 38,
+      :file-sha256
+      "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+      :raw-sha256
+      "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 14828,
+      :end-line 42,
+      :sha256
+      "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867",
+      :start-byte 14472},
+     :dependencies-source
+     {:path "specs/expand-workflow/plan.md",
+      :sha256
+      "c2afde071832136d4c8e6d52ff46ab5bf643ce06fa96bcc87e2e8f186667d1cf",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}
+    {:component "domains",
+     :task-id "schema",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/domains-workflow/tasks.md",
+      :start-line 589,
+      :end-line 801,
+      :sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/domains-workflow/tasks.md",
+      :start-line 619,
+      :file-sha256
+      "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+      :raw-sha256
+      "f7d88d6bf077a61dc01dbd61a100fb794a087613022eb8da1eb3d7ed9043de9e",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 128718,
+      :end-line 656,
+      :sha256
+      "f7d88d6bf077a61dc01dbd61a100fb794a087613022eb8da1eb3d7ed9043de9e",
+      :start-byte 119349},
+     :dependencies-source
+     {:path "specs/domains-workflow/plan.md",
+      :sha256
+      "1d3751d979f07f1a807b847db0357241e8845de9cc4204cc79339fde038fdcb7",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :canonical-schema-semantics-and-validation-only-not-all-new-schema-siblings}
+    {:component "reader",
+     :task-id
+     "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+     :relation
+     :affected-semantic-interface-only-not-whole-task-alias-or-closure,
+     :prior-context
+     {:path "specs/reader-workflow/tasks.md",
+      :start-line 48,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :raw-sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d"},
+     :current-context
+     {:path "specs/reader-workflow/tasks.md",
+      :start-line 48,
+      :file-sha256
+      "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+      :raw-sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+      :end-byte 5743,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :start-byte 5159},
+     :dependencies-source
+     {:path "specs/reader-workflow/plan.md",
+      :sha256
+      "f31dcb79796e87f4d55b22733befdf4c4a89f4d932380c86d97201a305971f91",
+      :commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff"},
+     :scope
+     :only-the-named-ACC-removal-and-retained-semantic-obligation}],
+   :row-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 4220,
+    :end-byte 4556,
+    :raw-sha256
+    "2497d9116bcf597d4446421cc14d75fafe1f152e2d2cc5a00e300bee3ab34cdc"}}],
+ :historical-closure-evidence
+ [{:tree "340c05407cfd782f8226ecd6ce1a6adccce7ed86",
+   :candidate "26768f8ec3c9bab87864f5beb371463893ac7407",
+   :retained-credit :historical-exact-row-only,
+   :current-component-completion :not-conferred,
+   :source-input-comparison
+   [{:path
+     "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+     :historical-sha256
+     "3ceabc93ceaa8899d7274c1eec32838828862a1c9be1109c1b639d45ca4823ee",
+     :frozen-sha256
+     "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+     :whole-file-equal false}
+    {:path "bootstrap/gravity/src/gravity/effects.gravity",
+     :historical-sha256
+     "e0e261df37c4af1103b1d73bd9b26008ed232a98f39ff42631fff43fee078578",
+     :frozen-sha256
+     "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+     :whole-file-equal false}
+    {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+     :historical-sha256
+     "1c9c242002fbdf8174356974bf4b29c9bdc34f81c27bfc386abefa39a246e7be",
+     :frozen-sha256
+     "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+     :whole-file-equal false}],
+   :integration "a33e0eef2561ec0f522d05763cbdd33b5b01f418",
+   :scope :keyword-guard-and-map-list-parameter-premises,
+   :id "ACC-02",
+   :attribution :existing-owner-record-not-new-runtime-result,
+   :fresh-execution false,
+   :evidence-receipt
+   "2e84466ebd6fc010ba1384447ee3ea0741226e0f1e7ef26f7802806e55dd5912"}
+  {:tree "6a21f1aad49a7152c725cfa0c5dd18cee055b8b1",
+   :candidate "01e9ec5f8ae8e39dbc2d0b9a3f52d13db26ab0d0",
+   :retained-credit :historical-exact-row-only,
+   :current-component-completion :not-conferred,
+   :source-input-comparison
+   [{:path
+     "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+     :historical-sha256
+     "e81f55f444d5a0e3a131eba719c1a57973c2a84fb227b1a0ee1479088f14c239",
+     :frozen-sha256
+     "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+     :whole-file-equal false}
+    {:path "bootstrap/gravity/src/gravity/effects.gravity",
+     :historical-sha256
+     "155e9c3912f3f88d22376ab22efa7fcd4569234966b8b5e57772c6fde1dfe137",
+     :frozen-sha256
+     "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+     :whole-file-equal false}
+    {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+     :historical-sha256
+     "4dee31fd3fcec487157a8f3c2432b145f097974f2ac237e50ed682c97e1b9454",
+     :frozen-sha256
+     "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+     :whole-file-equal false}],
+   :integration "4fa8575b2a134b090734d0a1daf93ab99b12f4a6",
+   :scope :lr-v2-premise-schema-invalidation,
+   :id "ACC-03",
+   :attribution :existing-owner-record-not-new-runtime-result,
+   :fresh-execution false,
+   :evidence-receipt
+   "b01444416478393ccf3cc36c89e2deb4ff8c99e072c0c962af6288c5a4a4bf50"}],
+ :status
+ :owner-adjudicated-source-relations-pending-independent-review,
+ :accepted-reader-reports
+ [{:task-id
+   "reader/finite-remaining-work/decode-and-source-identity-closure",
+   :path
+   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md",
+   :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+   :sha256
+   "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91",
+   :scope :existing-finite-Reader-only,
+   :new-execution false}
+  {:task-id
+   "reader/finite-remaining-work/lexical-products-and-origins-closure",
+   :path
+   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md",
+   :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+   :sha256
+   "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
+   :scope :existing-finite-Reader-only,
+   :new-execution false}
+  {:task-id "reader/finite-remaining-work/fresh-syntax-handoff",
+   :path
+   "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md",
+   :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+   :sha256
+   "8349689573969359e95c678518bb81df7a8b9d685d764927f33ac7dfd4a5f7c9",
+   :scope :existing-finite-Reader-only,
+   :new-execution false}],
+ :kind :legacy-acc13-current-scope-adjudication,
+ :qualification
+ "Every original ACC closing criterion, dependency, unresolved boundary and historical state remains in its existing ledger. Component relations identify affected semantic interfaces; they do not assert whole-task equivalence, fulfill current remediation, retire a row or confer component completion. ACC-01 discovery, ACC-13 actual owned dispositions and ACC-12 composed closure remain distinct outputs. The same finite runtime or Core evidence is referenced once across its original criteria. Historical ACC-02/03 closure is distinct from the three Accepted Reader outcomes. Changed current source cannot inherit fresh execution from old whole-file receipts. The provisional 195-task census remains a scoped registry observation, not the final all-project denominator; independent final scope/count acceptance remains required. No runtime or restricted operation is executed.",
+ :overlap-relations
+ [{:rows ["ACC-03" "ACC-06"],
+   :relation :premise-migration-vs-recursive-helper-admission,
+   :same-scope-alias false,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 62476,
+    :end-byte 62554,
+    :raw-sha256
+    "049cec6e3d3f9ab30aaece3becf6a59fbf1652275630a1a58c3031500db2a3e5"},
+   :disposition
+   "LR schema closure remains ACC03; unfinished helper admission remains ACC06. Shared LR source does not merge predicates.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-05" "ACC-09"],
+   :relation :explicit-existing-owner-partition,
+   :same-scope-alias :runtime-subobligation-only,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 65388,
+    :end-byte 65830,
+    :raw-sha256
+    "3dbb077b761a4c7e60438b05eb84cc5379edea3d1597b1a79dafdce508e8ffbe"},
+   :disposition
+   "The same runtime construction/membership subobligation is routed to ACC09. Retain ACC05 dependency/remaining consumer boundary without creating a second runtime implementation or completion unit.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-05" "ACC-06" "ACC-07" "ACC-08"],
+   :relation :outer-pool-interface-dependencies,
+   :same-scope-alias false,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 65831,
+    :end-byte 66172,
+    :raw-sha256
+    "2d8e0b0a9f78b2efe111a388a988a92f3d6360525a8b180e2fe17293d2454727"},
+   :disposition
+   "Do not duplicate outer allowances under PL helpers; preserve separately owned source/recursive/inference/module acceptance.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-08" "ACC-13"],
+   :relation :one-finite-integrated-change-shared-evidence,
+   :same-scope-alias :PR474-Core-envelope-binding-shape-unit-only,
+   :integration "029e0bd2b93542e62854b57eb7d8146e5354cb19",
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 48884,
+    :end-byte 48935,
+    :raw-sha256
+    "f76ff7a3c3205c3f1feff0043e1d80188bdb97f3255675efcdb3e8d11c0d2ad1"},
+   :disposition
+   "Record the one integrated finite unit once, with both original criterion references; neither whole row closes.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-01" "ACC-13"],
+   :relation :discovery-classification-vs-owned-removal,
+   :same-scope-alias false,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 4220,
+    :end-byte 4556,
+    :raw-sha256
+    "2497d9116bcf597d4446421cc14d75fafe1f152e2d2cc5a00e300bee3ab34cdc"},
+   :disposition
+   "The source census inventories/classifies discoveries; ACC13 requires their actual owner removal/retention dispositions and acceptance. Do not drop the latter because census found them.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-01" "ACC-12"],
+   :relation :inventory-vs-final-composed-closure,
+   :same-scope-alias false,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 3915,
+    :end-byte 4219,
+    :raw-sha256
+    "55dffb058a5d9c6a582f89371bb5d1bf12b3ca0354f44eea6ac5265847602b44"},
+   :disposition
+   "Inventory and final removal/test/contract/current-main evidence are distinct outputs. Their eight shared policy clauses refine existing rows rather than eight new tasks.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}
+  {:rows ["ACC-10" "ACC-11"],
+   :relation :distinct-pipeline-owner-interfaces,
+   :same-scope-alias false,
+   :existing-authority
+   {:path "specs/accounting-removal/tasks.md",
+    :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+    :file-sha256
+    "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+    :start-byte 3700,
+    :end-byte 3914,
+    :raw-sha256
+    "c48ed9a0345477a07f94827fcba87bf8bb4108ceb773f0d27ca7abd77ab7670e"},
+   :disposition
+   "MIR/Native production and optimization/lowering composition retain different producer/consumer checks; a common MIR input is not an alias.",
+   :adjudication
+   :retain-distinct-criteria-and-count-shared-implementation-evidence-once,
+   :new-completion-credit 0}],
+ :proposal
+ {:path "/tmp/acc13-baseline-audit/proposal.edn",
+  :sha256
+  "b7f1b1caa4a66c5af08d59acb0c8de1386767cb31bf329abb339baaa313a1fe3",
+  :frozen-candidate "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+  :frozen-tree "4b6970abb8d7c91d335e83573ed6dc33a09740d9"}}

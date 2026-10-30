@@ -9,6 +9,13 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 Seven separately accepted domain outcomes: Math, Schema, Query, Workflow, AI, GPU and UI. Application sectors remain integration claims, not automatically new completed components.
 
+The task authority also contains nine Open integration interfaces for
+automation, blockchain, cryptography, formal verification, native computing,
+services, simulation, storage and visual workflows. Their concrete positive
+and negative fixtures, output artifacts and consumed dependency interfaces
+come from the independently source-reviewed Domains70 proposal. They neither
+add completed components nor select provider/target policy implicitly.
+
 Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/domains.md). Language rules stay in their retained contracts; implementation outcome/task records are edited only in [tasks.md](tasks.md#implementation-tasks), with checked generated roadmap views. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
 
 [Inventory](../../docs/document-inventory.json) entries routed for this component are listed below as reviewable navigation, not proof of semantic conformance or exclusive ownership. The routing proposal must be reconciled centrally; cross-component links are legitimate.

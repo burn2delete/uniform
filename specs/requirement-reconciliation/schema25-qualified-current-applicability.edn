@@ -1,0 +1,919 @@
+{:distinct-source-facets 463,
+ :source-files 28,
+ :bindings
+ [{:id "interface/language/types/project-schema-static-type",
+   :unchanged-decision-record-sha256
+   "38dc9d51a31b5a7a6ac2c8aaddfce7e8c524ee93786e18dbb9d7651255a6e8b1",
+   :task-links
+   [{:path "specs/types-workflow/tasks.md",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/types-workflow/tasks.md",
+       :marker "types-implementation-tasks",
+       :task-id
+       "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+       :start-byte 2294,
+       :end-byte 3586,
+       :raw-sha256
+       "fb3482c7da2a55dd52155061fed055ffa52a5b4e562dfc0abb56ee328c6d9038"}],
+     :current-task-context
+     {:path "specs/types-workflow/tasks.md",
+      :task-id
+      "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+      :marker "types-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4624,
+      :start-byte 1950}}],
+   :dependency-interfaces []}
+  {:id "interface/safety/safe10/runtime-authority",
+   :unchanged-decision-record-sha256
+   "c06edb2d7d5bcd211f443668b85e2b66a50248c89703f75d21abfb9b1e01bea3",
+   :task-links
+   [{:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+     :role :runtime-consumer-and-checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 57569,
+       :end-byte 59523,
+       :raw-sha256
+       "962c143e9a532a445a59c2348056a06d459a31b74e713003b760ae22d661a09e"}],
+     :current-task-context
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "208a7b25452c76d37c0da7d1bbe003cd54dc977a05f78db6ab0d094c5325e28d",
+      :marker "runtime-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 60960,
+      :start-byte 53908}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/authorize-runtime-migration",
+   :unchanged-decision-record-sha256
+   "4814159fdcd4172f55ea565a5362c2f6b24ea945d126f8eacd2a42d979222df6",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :runtime-admission-consumer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 138129,
+       :end-byte 139908,
+       :raw-sha256
+       "38eede6b8dcce5b9cb0be02b45406537e67c9dab66434eb0df8b3d229a036b3f"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/check-binary-reference-layout",
+   :unchanged-decision-record-sha256
+   "81ed654d1e969cc716c035b0b58f375ea212b3dc144eddfde4f6eb14370c6dcd",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 134816,
+       :end-byte 136479,
+       :raw-sha256
+       "16311ca1a8818f1fe9e1483ff208947f8a4bc35870b1f1a9c878145950198727"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/check-canonical-identity-input",
+   :unchanged-decision-record-sha256
+   "4c8e95c13fd03d9e6a8dac93b6a529c73c93da97012a66c5260403597ac2f10a",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 133210,
+       :end-byte 134814,
+       :raw-sha256
+       "dbd1b20d9dee5e55fdd97b7d58700fd7d330fa04660f4c321483c9a90d4e3cdf"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/check-client-operation",
+   :unchanged-decision-record-sha256
+   "2ca2bad7a0a15af9fd7a13f081b9e42a72c1e1b83e73d211d23aa51234a73265",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 126521,
+       :end-byte 127606,
+       :raw-sha256
+       "c1f033600eb51e7e7bc210434fdf29a63ba1186af91d265cb4527760b64ff9b1"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 118480,
+       :end-byte 120029,
+       :raw-sha256
+       "708be837bf05d04576b6ff3fa2da311b99cb2aea8f7c6914ace836d4c785229c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/compatibility-diff",
+   :unchanged-decision-record-sha256
+   "cd8e5b1d2f2486cbc7aa2db5483af5b33620e8452c3b643216f0d26511db3f73",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker-and-artifact-producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 136481,
+       :end-byte 138127,
+       :raw-sha256
+       "5463c452009feb7961fd8b44e401cf5f91444f94e58b4dbde702229321014b4b"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/decode-canonical-value",
+   :unchanged-decision-record-sha256
+   "d47544cf95936d14f6427406802608e2147242b6926949e67868a121f5d4a167",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer-and-boundary-checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 133210,
+       :end-byte 134814,
+       :raw-sha256
+       "dbd1b20d9dee5e55fdd97b7d58700fd7d330fa04660f4c321483c9a90d4e3cdf"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/decode-declared-format",
+   :unchanged-decision-record-sha256
+   "c7577dcb96c9972578e8fc906a8c9fff43a48038a12914ec58b19cbbb1468cb9",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer-and-boundary-checker,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 131496,
+       :end-byte 133208,
+       :raw-sha256
+       "7307b89e2f7dc8f252dc7a4c8083fc6a419735d2aaa013755afa4d9ca031de4c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-binary-codec-binding-input",
+   :unchanged-decision-record-sha256
+   "2f65ebf3683f965f269001c41b5a9957a220936a41711406dc23890782601941",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 134816,
+       :end-byte 136479,
+       :raw-sha256
+       "16311ca1a8818f1fe9e1483ff208947f8a4bc35870b1f1a9c878145950198727"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-database-structure",
+   :unchanged-decision-record-sha256
+   "259381fed981c6ee9cc4284343d61776bad14215a287e40bbe5b757948e165e3",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 120031,
+       :end-byte 121717,
+       :raw-sha256
+       "128731047746cec1788d874c526e9ce81c150a8367c5af06c62ae0c15af4c2c2"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-explicit-binary-layout",
+   :unchanged-decision-record-sha256
+   "188d779154a26a70a6c237253f3af52d9983539500c141926a1489c802e5e2a5",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 134816,
+       :end-byte 136479,
+       :raw-sha256
+       "16311ca1a8818f1fe9e1483ff208947f8a4bc35870b1f1a9c878145950198727"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-graphql-resolver-adapter",
+   :unchanged-decision-record-sha256
+   "d3983b9d3afff63646ae0328ace0d8db059392e6bb19184ce8667aea55fca3f1",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 118480,
+       :end-byte 120029,
+       :raw-sha256
+       "708be837bf05d04576b6ff3fa2da311b99cb2aea8f7c6914ace836d4c785229c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-graphql-sdl",
+   :unchanged-decision-record-sha256
+   "543649e86d46d9ae11bd5c4626af77e255c2ae55a9dc68553c419267dce0fedd",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 118480,
+       :end-byte 120029,
+       :raw-sha256
+       "708be837bf05d04576b6ff3fa2da311b99cb2aea8f7c6914ace836d4c785229c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-http-boundary-validators",
+   :unchanged-decision-record-sha256
+   "cd02f4cbed675550950664f77574348cd076c5a08558c6be47d1cc59cfe9599d",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 128693,
+       :end-byte 129801,
+       :raw-sha256
+       "5b836d1427e2310b26b3924cbc261eb6d89259a4d6fb06902e990f0c88c53b5c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-openapi-document",
+   :unchanged-decision-record-sha256
+   "c37c9e15657f1c0f914e2bb2a9480244d5218178549d1d9f55cc2108557975d8",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 128693,
+       :end-byte 129801,
+       :raw-sha256
+       "5b836d1427e2310b26b3924cbc261eb6d89259a4d6fb06902e990f0c88c53b5c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-typed-api-client",
+   :unchanged-decision-record-sha256
+   "4c2f95f0bea2810475b89a7c2ddde0b3dbc4ccbc36adab0ac9935411113421c4",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 126521,
+       :end-byte 127606,
+       :raw-sha256
+       "c1f033600eb51e7e7bc210434fdf29a63ba1186af91d265cb4527760b64ff9b1"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 118480,
+       :end-byte 120029,
+       :raw-sha256
+       "708be837bf05d04576b6ff3fa2da311b99cb2aea8f7c6914ace836d4c785229c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-typed-migration-plan",
+   :unchanged-decision-record-sha256
+   "c7d974f51c61f37623e149f56ce08b9104dd423dbdbfa70737c4e5d9873f485e",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 138129,
+       :end-byte 139908,
+       :raw-sha256
+       "38eede6b8dcce5b9cb0be02b45406537e67c9dab66434eb0df8b3d229a036b3f"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/emit-typed-row-adapter",
+   :unchanged-decision-record-sha256
+   "b2067b12f56ad621071a13ee056e2497cfd8c13899bba66196aab7853ed02071",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 120031,
+       :end-byte 121717,
+       :raw-sha256
+       "128731047746cec1788d874c526e9ce81c150a8367c5af06c62ae0c15af4c2c2"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/encode-canonical-value",
+   :unchanged-decision-record-sha256
+   "e1873e0060b3c1d75dd75639c5ca92b8a6114a00bdd5b536ed463d9807f3ef86",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 133210,
+       :end-byte 134814,
+       :raw-sha256
+       "dbd1b20d9dee5e55fdd97b7d58700fd7d330fa04660f4c321483c9a90d4e3cdf"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/encode-declared-format",
+   :unchanged-decision-record-sha256
+   "a0bea95fa3f722ac5e825131b23866c2747362922a9beaed68b1e877c7ef6c5b",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 131496,
+       :end-byte 133208,
+       :raw-sha256
+       "7307b89e2f7dc8f252dc7a4c8083fc6a419735d2aaa013755afa4d9ca031de4c"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/expand-authoritative-schema",
+   :unchanged-decision-record-sha256
+   "9859aabf57264cc03e93e56400121f6942fa375f955dde4f837ec641f64919e3",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 129803,
+       :end-byte 131494,
+       :raw-sha256
+       "37ac445d17fe0ccd9d1bed7fb11acccda02fdd7fef677bd7b727caad210fb960"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/generate-source-validator",
+   :unchanged-decision-record-sha256
+   "c67304d3c9d7aeef0d6c5709a6bcd63a5cff269dd7d256878e9fe91c5e989790",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :producer,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 129803,
+       :end-byte 131494,
+       :raw-sha256
+       "37ac445d17fe0ccd9d1bed7fb11acccda02fdd7fef677bd7b727caad210fb960"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/run-http-contract-tests",
+   :unchanged-decision-record-sha256
+   "6b84cf0d1feb39c2952b4dd654f6002a4f89d0d0d171a4213ab4732f7d318480",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker-execution,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 139910,
+       :end-byte 141408,
+       :raw-sha256
+       "0422244a37317f6b5ff9927a2d2c9d0aa1fbf09162bf760ec452915773b2992d"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}
+  {:id "interface/schema/validate-migration-change",
+   :unchanged-decision-record-sha256
+   "eae9f412ee0d491891cd131a644889a26da0e00e1c61341e77ccf3229ff4c43f",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :checker-execution,
+     :owner-role nil,
+     :current-criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "schema",
+       :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 138129,
+       :end-byte 139908,
+       :raw-sha256
+       "38eede6b8dcce5b9cb0be02b45406537e67c9dab66434eb0df8b3d229a036b3f"}],
+     :current-task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}],
+   :dependency-interfaces []}],
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-memberships 463,
+ :source-commit "893bb4b85926a9d7f8953798544b2126baf6ef58",
+ :independent-source-review
+ {:verdict :pass,
+  :candidate "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+  :tree "660d52cc849a9da5bd0332d04014e75a25658768",
+  :receipt-sha256
+  "d2e6d92d9a20c6c1873292e308e15eff21da1bf798d2f393ddc88e33d162e7b8",
+  :audit-commit "23876b02c7064b0b895550b9012f3296096e4539",
+  :scope :exactly25-current-decision-allocations,
+  :not-conferred
+  [:whole-facet-entailment
+   :implementation
+   :new-aliases
+   :retirements
+   :later-composition
+   :other-allocations
+   :atomicity-or-nonoverlap
+   :denominator
+   :publication-or-integration]},
+ :new-source-review :none-existing-completed-pass-consumed,
+ :kind :canonical-schema25-qualified-current-applicability,
+ :all-registry-task-and-plan-files-checked 50,
+ :qualification
+ "Only the25 unchanged decision allocations and27 current criterion witnesses with declared producer/checker/consumer roles are adopted. All later Profile/Safety/Stdlib/Math/GPU/Foundation field operations are reconstructed; the GPU operation is an exact metadata-qualification replacement. Later predicates retain separate review scope. Schema generation, validator and static projection, compatibility/diff, codec/projection outputs and actual runtime migration/authority admission remain distinct. No whole-facet, implementation, task/denominator, publication or integration acceptance.",
+ :later-compositions
+ [{:path
+   "specs/requirement-reconciliation/profile74-current-composition.edn",
+   :sha256
+   "51dbd2bd4443045b525490a37f9c7a88a9a62dc595ad96d31576ea13db2b669a",
+   :applying-source "16cdeb5e741310eb1cde09bfb0558b92140ed431",
+   :task-source "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+   :operations 42,
+   :complete-files-reconstructed 10,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/safety107-current-composition.edn",
+   :sha256
+   "2d773f4b85bf33673ae68263b6929e483908ab4bbb93faf02876301e6cab9b83",
+   :applying-source "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+   :task-source "bc485c7e4b0197873f6a3104021764711215b3b1",
+   :operations 16,
+   :complete-files-reconstructed 6,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/stdlib83-current-composition.edn",
+   :sha256
+   "bdf4d4392406a203cd3a7d00383b0cbd5abf563e3798f7aa5e98718c6c713b69",
+   :applying-source "b02726477f571ce6fb280c4631495c3e45b38144",
+   :task-source "dc20fc5db3c8db3d5d947de56cd4e0d0c8938903",
+   :operations 4,
+   :complete-files-reconstructed 1,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/math20-current-composition.edn",
+   :sha256
+   "4e9bb8419df9eddb1d9cd6562173d5d7c99694fe7f53939a2795c5e31f8fba65",
+   :applying-source "6fb01a5430e3b571d7c286a104ddba5af406a31b",
+   :task-source "f291697806406c289d243724a96a0338f4713ff0",
+   :operations 6,
+   :complete-files-reconstructed 2,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
+   :sha256
+   "1b4e9d6e9e317fb2f12eb300172ce466d7192dfdad56a65b3600ccb44a36474d",
+   :applying-source "1a9f2f2e38cf92509e50a995cb727c98109dbc63",
+   :task-source "87692395c05938ebb02e48cbbc56756d5842f93e",
+   :operations 1,
+   :complete-files-reconstructed 1,
+   :prefixes-and-all-added-predicates-preserved true}
+  {:path
+   "specs/requirement-reconciliation/foundation7-current-composition.edn",
+   :sha256
+   "af12c40ac6e9b2c64d7422e0f4edbc3526f59097b4ca031d6c849c171b462ba3",
+   :applying-source "b7523d9b0f8846724e74cd4d62536d67f72560b5",
+   :task-source "df11890b21f71d3f246cc47e9f63d866239a0d68",
+   :operations 3,
+   :complete-files-reconstructed 3,
+   :prefixes-and-all-added-predicates-preserved true}],
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-schema25.edn",
+  :sha256
+  "a60faab27ad4b45dad980f0209bb3c265890cb266cf6887aab481e59916b6c15",
+  :unchanged-from-reviewed-source true},
+ :canonical-adoption
+ :independent-finite-source-review-accepted-current-join-verified}

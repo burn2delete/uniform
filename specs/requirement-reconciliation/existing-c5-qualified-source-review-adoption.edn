@@ -1,0 +1,551 @@
+{:receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-b6ff-77a3-b5de-835ef9d4b5ab/c5-review-a993e1e0/receipt.edn",
+  :sha256
+  "53c6de61dd359f1071a2b0e7152f7b3cb574f20be6833463e2bcc60d7e19db51",
+  :scope :existing-C5-source-criteria-and-current-witnesses-only,
+  :checks 7551,
+  :refusal-controls 98},
+ :coordinator-integration :required-separately,
+ :reviewed-source "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :authorship-exclusions
+ {:Tooling65 :conservation-only-semantic-self-acceptance-excluded,
+  :C5-author :canonical},
+ :task-id "backend-c",
+ :finite386-facet-review :pending,
+ :original-obligation-ids
+ ["backend/c/source-emission"
+  "backend/c/abi-layout"
+  "backend/c/memory-lowering"
+  "backend/c/numeric-lowering"
+  "backend/c/helper-selection"],
+ :implementation-credit :none,
+ :conservation
+ {:all833-decision-records :unchanged,
+  :predicate-review-adoptions-530 :unchanged,
+  :current-spans 4819,
+  :current-binding-sha256
+  "15d5afcad1d9e3649f4b444a4f9e88361bbfce11608fd27101eaae6b9fda6d13",
+  :historical-IDs 561,
+  :new-task-units 0,
+  :other-records-byte-identical 14,
+  :backend-task-ids 15,
+  :binding-vector :unchanged,
+  :current-owning-criterion-spans 931,
+  :current-binding-path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+  :new-decision-ids 0},
+ :scope
+ :five-existing-C-backend-obligation-criteria-and-conserved-current-witnesses-only,
+ :source-commit "0395302fb87b108eb5a0cf8a20f3aaaef56da713",
+ :prior-source-review-statuses
+ :retained-derivation-history-this-adoption-is-current-C-criterion-authority,
+ :full-B2-facet-entailment :not-conferred,
+ :historical-pin-qualification
+ "Exactly two span maps shift in the existing Backend-file hardware-parallel-state binding (one criterion witness and its nested preserved context). Their raw predicate bytes are identical; prewalk replacement recovers all561 prior binding rows exactly. No historical C-task context expands; five new C criteria have separately authenticated witnesses and inherit no previous acceptance.",
+ :status
+ :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+ :runtime :UNRUN,
+ :kind
+ :qualified-independent-five-C-backend-source-criteria-review-adoption,
+ :sealed-source-review
+ {:prior-granularity
+  {:receipt-sha256
+   "e10d615fd3b48411846d4a46631d2c1398a2ec35377d0ec693ca2324fe738a12",
+   :nine-artifacts :conserved,
+   :task-roadmap-files-reconstructed 53,
+   :scope-not-extended true},
+  :criterion-assessment
+  "The five existing obligations have explicit artifact outputs, positive/refusal cases and actual dependency roles grounded in full B2. ABI fields, pointer facts, checked/wrapping/saturating/floating modes, MATH8/MATH5 and compiler flags, profile/runtime/helper graph and source/provenance/compilation evidence remain separate. They refine one existing Open backend-c record; no new task/decision or implementation credit. B2 remains normative; exhaustive facet entailment is not certified.",
+  :tree "c9c57411d9b931707228e751ab18ffcbe178c3d1",
+  :execution
+  {:reader-eval false,
+   :Bootstrap false,
+   :runtime :UNRUN,
+   :canonical-writes :none,
+   :APPROVE :none},
+  :decisions
+  {:IDs 833,
+   :Open 833,
+   :all-records-unchanged true,
+   :current-owning-criterion-spans 931},
+  :negative-controls
+  [[:missing-B2-obligation "backend/c/source-emission"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :outputs
+    "C translation units and headers"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :outputs
+    "manifests"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :outputs
+    "source/debug/provenance maps"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :accept
+    "B1-eligible verified MIR or domain IR"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :accept
+    "freestanding C11"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :accept
+    "hosted C17"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :accept
+    "initialized storage"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :accept
+    "proof-to-C assumptions"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "signed-overflow"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "uninitialized-read"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "invalid-shift"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "fallthrough"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "unchecked-narrowing"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "B2-DIALECT"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :refuse
+    "B2-MANIFEST"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :dependencies
+    "B1 eligible packet"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :dependencies
+    "C14 lowering/proof request"]
+   [:coherently-weakened
+    "backend/c/source-emission"
+    :dependencies
+    "Emit/Build consume actual translation/header/build/map artifacts"]
+   [:missing-B2-obligation "backend/c/abi-layout"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "compiler family/version constraint"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "target/platform"]
+   [:coherently-weakened "backend/c/abi-layout" :accept "data model"]
+   [:coherently-weakened "backend/c/abi-layout" :accept "endianness"]
+   [:coherently-weakened "backend/c/abi-layout" :accept "alignment"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "field order/padding"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "enum/tag widths"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "closure/slice/buffer/region/arena/linear-handle representations"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :accept
+    "FFI calling convention"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :refuse
+    "Unpinned implementation-defined assumptions"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :refuse
+    "incompatible or unrepresentable ABI/layout"]
+   [:coherently-weakened "backend/c/abi-layout" :refuse "invalidation"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :dependencies
+    "B1/C14 target/layout request"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :dependencies
+    "SAFE7 FFI contract"]
+   [:coherently-weakened
+    "backend/c/abi-layout"
+    :dependencies
+    "C source and foreign adapters consume this exact manifest"]
+   [:missing-B2-obligation "backend/c/memory-lowering"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "object identity"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "valid range"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "alignment"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "lifetime"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "aliasing mode"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "mutability"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "nullability"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "allocator/provider identity"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "provenance across casts"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "unsafe island or bounds/lifetime proof"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "audited helpers"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "width/address-space/ordering"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :accept
+    "volatile and atomics"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :refuse
+    "Lost cast provenance"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :refuse
+    "strict-aliasing or check erasure"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :refuse
+    "atomic order"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :refuse
+    "B2-POINTER/B2-MMIO"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :dependencies
+    "SAFE2/SAFE7/SAFE15"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :dependencies
+    "C14 fact map"]
+   [:coherently-weakened
+    "backend/c/memory-lowering"
+    :dependencies
+    "selected allocator/provider"]
+   [:missing-B2-obligation "backend/c/numeric-lowering"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :outputs
+    "MATH8 manifests"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :outputs
+    "MATH5 certificate references"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :outputs
+    "compiler-flag assumptions"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :accept
+    "Checked integers keep checks or matching proof-elision records"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :accept
+    "wrapping uses unsigned or explicitly wrapped operations"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :accept
+    "saturating uses explicit helpers/inlining"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :accept
+    "floating modes"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :accept
+    "every flag affecting floating/overflow behavior"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :refuse
+    "signed-UB shortcuts"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :refuse
+    "missing/stale approximation evidence"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :refuse
+    "B2-NUMERIC/B2-UB"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :dependencies
+    "SAFE9 numeric legality"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :dependencies
+    "MATH8 mode and MATH5 certificate/checker outputs"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :dependencies
+    "Build compiler flags"]
+   [:coherently-weakened
+    "backend/c/numeric-lowering"
+    :dependencies
+    "no benchmark or backend optimization substitutes"]
+   [:missing-B2-obligation "backend/c/helper-selection"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :outputs
+    "panic/trap"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :outputs
+    "allocation/region/arena"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :outputs
+    "cleanup"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :outputs
+    "atomics"]
+   [:coherently-weakened "backend/c/helper-selection" :outputs "FFI"]
+   [:coherently-weakened "backend/c/helper-selection" :outputs "math"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :outputs
+    "debug/provenance helpers"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :accept
+    "profile support"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :accept
+    "runtime/provider dependencies"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :accept
+    "Freestanding helpers must be supplied by the package/target"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :accept
+    "Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :refuse
+    "Hidden/forbidden libc, allocator, runtime or GC dependence"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :refuse
+    "unavailable/profile-incompatible helper"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :refuse
+    "missing provider identity"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :refuse
+    "B2-RUNTIME/B2-MANIFEST"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :dependencies
+    "P6/P7"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :dependencies
+    "Runtime/provider panic/check/resource interfaces"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :dependencies
+    "package/target supplied freestanding helpers"]
+   [:coherently-weakened
+    "backend/c/helper-selection"
+    :dependencies
+    "Build/Emit consume the declared dependency graph"]
+   :wrong-producer-consumer-direction
+   :ABI-role-reversal
+   :stale-C-span
+   :forged-current-raw
+   :legacy-envelope-self-auth
+   :wrong-obligation-witness-label-with-valid-byte-hashes],
+  :excluded
+  [:legacy-ACC-scope
+   :386-facet-dispositions
+   :final195-denominator
+   :implementation-runtime-acceptance
+   :whole-project-or-facet-entailment],
+  :current-published-readback
+  {:head "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+   :tree "c9c57411d9b931707228e751ab18ffcbe178c3d1",
+   :four-artifacts
+   {"specs/requirement-reconciliation/all833-existing-c5-current-criterion-conservation.edn"
+    {:reviewed-sha256
+     "9e3a3b0f9c9d5d4a644088fd6089bb45a3859e316eccf5221598c09c59a8f7c0",
+     :current-sha256
+     "9e3a3b0f9c9d5d4a644088fd6089bb45a3859e316eccf5221598c09c59a8f7c0",
+     :unchanged true},
+    "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn"
+    {:reviewed-sha256
+     "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+     :current-sha256
+     "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+     :unchanged true},
+    "specs/requirement-reconciliation/existing-c5-current-witness-applicability.edn"
+    {:reviewed-sha256
+     "89416c2a90d5e8921b93aa03e7cfa50bea405424f7df41ee4aded8e42d5ac6a2",
+     :current-sha256
+     "89416c2a90d5e8921b93aa03e7cfa50bea405424f7df41ee4aded8e42d5ac6a2",
+     :unchanged true},
+    "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn"
+    {:reviewed-sha256
+     "a68a4ce431fa25dc45e37cb93e916f66a68fd23837d714fc5a5417015c1d13dd",
+     :current-sha256
+     "a68a4ce431fa25dc45e37cb93e916f66a68fd23837d714fc5a5417015c1d13dd",
+     :unchanged true}},
+   :backend-task-unchanged true,
+   :scope
+   "Exact reviewed a993e1e0 tuple only. Matching current source is conservation evidence; canonical performs guarded applicability/adoption. No later ACC/facet/count or whole-head acceptance."},
+  :criteria
+  ["backend/c/source-emission"
+   "backend/c/abi-layout"
+   "backend/c/memory-lowering"
+   "backend/c/numeric-lowering"
+   "backend/c/helper-selection"],
+  :reproduction
+  {"binding-diff.edn"
+   "faeb64b0d94ab9a8a6216cb372740172e682c3bf3fffd3887fb059ea3fd0931b",
+   "check.clj"
+   "7ad1abd84861699f88d52559950621abcc297e8cfb10516e3e22358f2c750b13",
+   "check.log"
+   "57bbc9fc6f5301a1b985a8b79f3c423482f586b38f8427d0443e0b1a09c2e945",
+   "finalize.clj"
+   "84fc9e93e67f6eb4f767a9c9f2225ecf839cd17c984ce24876af384cff3939d8",
+   "inspect-bindings.clj"
+   "c6763577bf3c19d0de39e77f3de1bf5556058a721d54fb90a942cb0233ccaab5"},
+  :checks 7551,
+  :scope :existing-C5-source-criteria-and-current-witnesses-only,
+  :adoption :canonical-only-after-current-applicability,
+  :new-criterion-witness-roles
+  :all-five-bind-their-own-ID-and-entire-output-accept-positive-refuse-dependency-text,
+  :original-documents
+  {:count 240, :all-bytes-and-hashes-conserved true},
+  :tasks
+  {:stable-IDs 15,
+   :other-byte-identical-records 14,
+   :new-task-units 0,
+   :allOpen true},
+  :head "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+  :task-source-tree "341ea45c60665992c166e8d49ba1fb4c0f409c0d",
+  :task-source "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+  :historical-pin-qualification
+  "Exactly two span maps shift in the existing Backend-file hardware-parallel-state binding (one criterion witness and its nested preserved context). Their raw predicate bytes are identical; prewalk replacement recovers all561 prior binding rows exactly. No historical C-task context expands; five new C criteria have separately authenticated witnesses and inherit no previous acceptance.",
+  :predecessor "16a9aa48a126e7a60776290b1753cd3635662e8e",
+  :authorship
+  {:Tooling65 :conservation-only-semantic-self-acceptance-excluded,
+   :C5-author :canonical},
+  :existing-ID-Git-provenance
+  {:commit "145442c5434cad807870505fb75d523a0ef22998",
+   :path "specs/requirement-reconciliation/source-dispositions.edn",
+   :sha256
+   "ca3d33afa9c1e93f5b4bd987b5f047ffb051e9966a3bc99f2ebcdf0a14abba20",
+   :original-document "B2",
+   :semantic-source-IDs
+   ["backend/c/abi-layout"
+    "backend/c/helper-selection"
+    "backend/c/memory-lowering"
+    "backend/c/numeric-lowering"
+    "backend/c/source-emission"],
+   :supporting-task-IDs ["backend-c"]},
+  :source-grounding
+  {:B2-file-sha256
+   "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1",
+   :catalog-sha256
+   "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f",
+   :source-obligations :five-existing-stableIDs,
+   :implementation-credit :none,
+   :full-B2-facet-entailment :not-conferred},
+  :harness-sha256
+  "7ad1abd84861699f88d52559950621abcc297e8cfb10516e3e22358f2c750b13",
+  :historical
+  {:IDs 561,
+   :current-spans 4819,
+   :C-file-updated-spans 2,
+   :complete-binding-inverse :exact,
+   :new-clauses-inherit-no-acceptance true},
+  :decision :PASS,
+  :artifacts
+  {"specs/requirement-reconciliation/all833-existing-c5-current-criterion-conservation.edn"
+   "9e3a3b0f9c9d5d4a644088fd6089bb45a3859e316eccf5221598c09c59a8f7c0",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn"
+   "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+   "specs/requirement-reconciliation/existing-c5-current-witness-applicability.edn"
+   "89416c2a90d5e8921b93aa03e7cfa50bea405424f7df41ee4aded8e42d5ac6a2",
+   "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn"
+   "a68a4ce431fa25dc45e37cb93e916f66a68fd23837d714fc5a5417015c1d13dd"}},
+ :limits
+ [:legacy-ACC-scope
+  :386-facet-dispositions
+  :final195-denominator
+  :implementation-runtime-acceptance
+  :whole-project-or-facet-entailment],
+ :source-grounding
+ {:B2-file-sha256
+  "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1",
+  :catalog-sha256
+  "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f",
+  :source-obligations :five-existing-stableIDs,
+  :implementation-credit :none,
+  :full-B2-facet-entailment :not-conferred},
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/existing-c5-qualified-current-applicability.edn",
+  :sha256
+  "062af2f4d73d449def1707cdea0409d8e15add2386b9b6bc53bb031e991c38ad"},
+ :census
+ {:total 195,
+  :accepted 3,
+  :remaining 192,
+  :final-project-denominator :not-accepted}}

@@ -1,0 +1,105 @@
+{:field-edits
+ [{:id "compiler/c11/mir-verifier-gate",
+   :field :additional-task-interfaces,
+   :before-present? true,
+   :before [],
+   :after-present? true,
+   :after
+   [{:path "specs/mir-workflow/tasks.md",
+     :marker "mir-implementation-tasks",
+     :id
+     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+     :sha256
+     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :observed-status "Open",
+     :acceptance
+     "Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption.",
+     :detailed-acceptance :unassessed}],
+   :guard :exact-field-predecessor,
+   :unrelated-fields :preserve}
+  {:id "language/effects/record-or-replay-nondeterminism",
+   :field :additional-task-interfaces,
+   :before-present? true,
+   :before
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Actual supported platform API fixtures, unsafe audits and compatibility/stability report",
+     :detailed-acceptance :unassessed}],
+   :after-present? true,
+   :after
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :marker "stdlib-implementation-tasks",
+     :id
+     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+     :sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :source-commit "7ce31b520578112bb6ff4f9868afcd7ade68d45c",
+     :observed-status "Open",
+     :acceptance
+     "Actual supported platform API fixtures, unsafe audits and compatibility/stability report",
+     :detailed-acceptance :unassessed}
+    {:path "specs/runtime-workflow/tasks.md",
+     :marker "runtime-implementation-tasks",
+     :id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :sha256
+     "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+     :source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+     :observed-status "Open",
+     :acceptance
+     "Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial",
+     :detailed-acceptance :unassessed}],
+   :guard :exact-field-predecessor,
+   :unrelated-fields :preserve}
+  {:id "runtime/typed-host-delegation",
+   :field :task-gap,
+   :before-present? true,
+   :before
+   "Fits an authoritative implementation row, but no stable task ID exists; package migration IDs cannot project implementation acceptance. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+   :after-present? true,
+   :after
+   "At current task baseline 6276c94b0b753c888ef8fecc794bcc81245ea3b3, stable runtime implementation IDs exist. No exact task interface entails every delegated host service's type/effect/grant/taint/error/source-map contract. Existing stdlib platform integration remains partial; actual service-hook enforcement and typed FFI tasks are related but not blanket delegation acceptance. Current implementation acceptance remains unassessed; historical no-stable-ID wording is retained only as history.",
+   :guard :exact-field-predecessor,
+   :unrelated-fields :preserve}
+  {:id "runtime/foreign-symbol-resolution",
+   :field :task-gap,
+   :before-present? true,
+   :before
+   "Existing package T001-T004 tasks are migration delivery. Canonical roadmap implementation tasks are coarse prose/rows without stable task IDs; specialized/application-sector behaviors may have no fitting named task. No generic package reference is forced into acceptance authority. This fragment assigns no implementation acceptance and does not substitute migration T001-T004.",
+   :after-present? true,
+   :after
+   "At current task baseline 6276c94b0b753c888ef8fecc794bcc81245ea3b3, stable runtime implementation IDs exist. Exact task coverage for policy-authorized foreign symbol resolution and dynamic loading with provider identity remains unestablished. Link/load family-selection and typed FFI task criteria do not by themselves entail that whole predicate. Do not substitute migration T001-T004. Current implementation acceptance remains unassessed; historical no-stable-ID wording is retained only as history.",
+   :guard :exact-field-predecessor,
+   :unrelated-fields :preserve}],
+ :application :applied-to-exact-latest-field-projection,
+ :added-task-count 0,
+ :latest-reviewed-source-view
+ "6056b2efa7188e7756cda6100b831d9bc489d4d52dbff5e924b0aa859c303418",
+ :schema-version 1,
+ :canonical-whole-manifest-adoption :pending,
+ :controls
+ {:exact-current-field-predecessors :pass,
+  :other-record-fields :unchanged,
+  :reapplication :rejected,
+  :forged-gap-predecessor :rejected,
+  :referenced-task-hashes-and-literal-ids :pass},
+ :task-source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+ :input-patch-sha256
+ "c7c0ae97f6fd79538b1b7babcc301379d6ef6f2733a1011371053108d5e95b72",
+ :kind :reviewed-requirement-task-interface-amendment,
+ :source-review-sha256
+ "db4f00723aab9d3bb3ce8a238f283e847c7a3507af5ed63646924121511403a1",
+ :qualification
+ "The four field changes compose reviewed source/task mappings only. Original source facets, later source memberships and historical records are preserved. Missing whole-predicate runtime coverage remains explicit; no whole-family or denominator acceptance is conferred.",
+ :historical-application-sha256
+ "9d4d726d0194a2a02f9ef72b2f617b72785014a359cf1600ed08785c25c05225",
+ :task-source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+ :implementation-acceptance :unassessed}

@@ -1,0 +1,2934 @@
+{:decisions
+ [{:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C2/facet/12376-12417"
+    "C2/facet/12418-12463"
+    "C2/facet/12463-12520"
+    "C2/facet/12520-12578"
+    "C2/facet/12578-12669"
+    "C2/facet/12669-12739"
+    "C2/facet/12739-12971"
+    "C2/facet/12971-13009"
+    "C2/facet/13009-13078"
+    "C2/facet/13078-13159"
+    "C2/facet/13159-13216"
+    "C2/facet/13216-13374"
+    "C2/facet/13374-13469"
+    "C2/facet/13470-13630"
+    "C2/facet/14135-14173"
+    "C2/facet/14174-14223"
+    "C2/facet/1670-1735"
+    "C2/facet/1735-1781"
+    "C2/facet/1781-1840"
+    "C2/facet/1840-1900"
+    "C2/facet/1900-1954"
+    "C2/facet/1954-2003"
+    "C2/facet/2003-2082"
+    "C2/facet/2109-2131"
+    "C2/facet/2131-2147"
+    "C2/facet/2147-2160"
+    "C2/facet/2160-2182"
+    "C2/facet/2182-2203"
+    "C2/facet/2203-2231"
+    "C2/facet/2231-2270"
+    "C2/facet/2270-2292"
+    "C2/facet/2292-2319"
+    "C2/facet/326-584"
+    "C2/facet/585-732"
+    "C2/facet/750-836"],
+   :requested-target "reader/source/decode-policy-bytes",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same declared-encoding decoder. Exact UTF-8/scalar/UTF16/CRLF positions and diagnostics strengthen source-map acceptance without adding a second decoder.",
+   :archived-record-sha256
+   "00c053ca7a295342a0c29b27b4187b74deab607bbdf4dea1507011e8a353bd92",
+   :status :accepted,
+   :id "compiler/c2/decode-source",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One Reader operation with unioned Language and Compiler acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "reader/source/decode-policy-bytes",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C2/facet/12376-12417"
+    "C2/facet/12418-12463"
+    "C2/facet/12463-12520"
+    "C2/facet/12520-12578"
+    "C2/facet/12578-12669"
+    "C2/facet/12669-12739"
+    "C2/facet/12739-12971"
+    "C2/facet/12971-13009"
+    "C2/facet/13009-13078"
+    "C2/facet/13078-13159"
+    "C2/facet/13159-13216"
+    "C2/facet/13216-13374"
+    "C2/facet/13374-13469"
+    "C2/facet/13470-13630"
+    "C2/facet/14135-14173"
+    "C2/facet/14279-14335"
+    "C2/facet/1670-1735"
+    "C2/facet/1735-1781"
+    "C2/facet/1781-1840"
+    "C2/facet/1840-1900"
+    "C2/facet/1900-1954"
+    "C2/facet/1954-2003"
+    "C2/facet/2003-2082"
+    "C2/facet/2109-2131"
+    "C2/facet/2131-2147"
+    "C2/facet/2147-2160"
+    "C2/facet/2160-2182"
+    "C2/facet/2182-2203"
+    "C2/facet/2203-2231"
+    "C2/facet/2231-2270"
+    "C2/facet/2270-2292"
+    "C2/facet/2292-2319"
+    "C2/facet/326-584"
+    "C2/facet/4710-4784"
+    "C2/facet/4785-4992"
+    "C2/facet/4993-5071"
+    "C2/facet/585-732"
+    "C2/facet/965-1125"],
+   :requested-target "reader/abbreviation/explicit-syntax",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same enabled shorthand-to-explicit-syntax producer with original and generated origins; before macro invocation.",
+   :archived-record-sha256
+   "4261a0a4e0d39656100acf4945008b41bfbc530143a40ba5fe57c965e7f1bb0c",
+   :status :accepted,
+   :id "compiler/c2/abbreviation-origins",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One Reader operation with unioned Language and Compiler acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "reader/abbreviation/explicit-syntax",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C2/facet/11546-11607"
+    "C2/facet/11608-11764"
+    "C2/facet/11765-12007"
+    "C2/facet/12376-12417"
+    "C2/facet/12418-12463"
+    "C2/facet/12463-12520"
+    "C2/facet/12520-12578"
+    "C2/facet/12578-12669"
+    "C2/facet/12669-12739"
+    "C2/facet/12739-12971"
+    "C2/facet/12971-13009"
+    "C2/facet/13009-13078"
+    "C2/facet/13078-13159"
+    "C2/facet/13159-13216"
+    "C2/facet/13216-13374"
+    "C2/facet/13374-13469"
+    "C2/facet/13470-13630"
+    "C2/facet/1352-1450"
+    "C2/facet/13770-13828"
+    "C2/facet/14135-14173"
+    "C2/facet/14510-14561"
+    "C2/facet/1670-1735"
+    "C2/facet/1735-1781"
+    "C2/facet/1781-1840"
+    "C2/facet/1840-1900"
+    "C2/facet/1900-1954"
+    "C2/facet/1954-2003"
+    "C2/facet/2003-2082"
+    "C2/facet/2109-2131"
+    "C2/facet/2131-2147"
+    "C2/facet/2147-2160"
+    "C2/facet/2160-2182"
+    "C2/facet/2182-2203"
+    "C2/facet/2203-2231"
+    "C2/facet/2231-2270"
+    "C2/facet/2270-2292"
+    "C2/facet/2292-2319"
+    "C2/facet/326-584"
+    "C2/facet/585-732"],
+   :requested-target "reader/extension/registered-effect-authority",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same registered tagged-reader dispatch admission; syntax-seed I/O and granted invocation-effect artifacts strengthen this boundary. No ambient host services.",
+   :archived-record-sha256
+   "815939c1c2a6ba39d55cd41df2434fe3f8e73eb81214c9a5fcda3f5313bfeea5",
+   :status :accepted,
+   :id "compiler/c2/reader-extension-policy",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One Reader operation with unioned Language and Compiler acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "reader/extension/registered-effect-authority",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/1007-1196"
+    "C1/facet/1906-1996"
+    "C1/facet/1996-2118"
+    "C1/facet/2118-2184"
+    "C1/facet/2184-2221"
+    "C1/facet/2221-2262"
+    "C1/facet/2262-2311"
+    "C1/facet/2311-2450"
+    "C1/facet/2477-2498"
+    "C1/facet/2498-2524"
+    "C1/facet/2524-2550"
+    "C1/facet/2550-2566"
+    "C1/facet/2566-2588"
+    "C1/facet/2588-2609"
+    "C1/facet/2609-2638"
+    "C1/facet/2638-2663"
+    "C1/facet/2663-2697"
+    "C1/facet/328-570"
+    "C1/facet/3955-4001"
+    "C1/facet/4002-4428"
+    "C1/facet/4429-4595"
+    "C1/facet/571-874"
+    "C1/facet/7070-7126"
+    "C1/facet/7127-7171"
+    "C1/facet/7171-7223"
+    "C1/facet/7223-7289"
+    "C1/facet/7289-7356"
+    "C1/facet/7356-7416"
+    "C1/facet/7416-7480"
+    "C1/facet/7480-7560"
+    "C1/facet/7561-7717"
+    "C1/facet/7739-7816"
+    "C1/facet/8160-8213"
+    "C1/facet/8244-8272"],
+   :requested-target "meta/pass-contract-execution",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same pre-execution and downstream pass-contract validator; compiler-wide input/output/fact/authority/artifact fields strengthen the existing contract, not separate field behaviors.",
+   :archived-record-sha256
+   "ad7df6e3603eed3bcbafb1e5ac9a29fe614cb13dc0450085287b4a3b28cf59ab",
+   :status :accepted,
+   :id "compiler/c1/pass-contract",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "meta/pass-contract-execution",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/1419-1532"
+    "C1/facet/1906-1996"
+    "C1/facet/1996-2118"
+    "C1/facet/2118-2184"
+    "C1/facet/2184-2221"
+    "C1/facet/2221-2262"
+    "C1/facet/2262-2311"
+    "C1/facet/2311-2450"
+    "C1/facet/2477-2498"
+    "C1/facet/2498-2524"
+    "C1/facet/2524-2550"
+    "C1/facet/2550-2566"
+    "C1/facet/2566-2588"
+    "C1/facet/2588-2609"
+    "C1/facet/2609-2638"
+    "C1/facet/2638-2663"
+    "C1/facet/2663-2697"
+    "C1/facet/328-570"
+    "C1/facet/571-874"
+    "C1/facet/7070-7126"
+    "C1/facet/7127-7171"
+    "C1/facet/7171-7223"
+    "C1/facet/7223-7289"
+    "C1/facet/7289-7356"
+    "C1/facet/7356-7416"
+    "C1/facet/7416-7480"
+    "C1/facet/7480-7560"
+    "C1/facet/7561-7717"
+    "C1/facet/7817-7897"
+    "C1/facet/8160-8213"
+    "C1/facet/8367-8407"],
+   :requested-target "backend/input-eligibility",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same backend request admission boundary. Checked MIR or verified domain IR is a required input qualification, strengthened further by C14's current manifest packet; no extra unchecked-input gate outcome.",
+   :archived-record-sha256
+   "2adae291b0274baabe47c90754614ac8bded95e173d9b8bb0db715dd98b0c656",
+   :status :accepted,
+   :id "compiler/c1/checked-backend-ingress",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "backend/input-eligibility",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/1532-1598"
+    "C1/facet/1906-1996"
+    "C1/facet/1996-2118"
+    "C1/facet/2118-2184"
+    "C1/facet/2184-2221"
+    "C1/facet/2221-2262"
+    "C1/facet/2262-2311"
+    "C1/facet/2311-2450"
+    "C1/facet/2477-2498"
+    "C1/facet/2498-2524"
+    "C1/facet/2524-2550"
+    "C1/facet/2550-2566"
+    "C1/facet/2566-2588"
+    "C1/facet/2588-2609"
+    "C1/facet/2609-2638"
+    "C1/facet/2638-2663"
+    "C1/facet/2663-2697"
+    "C1/facet/328-570"
+    "C1/facet/5271-5345"
+    "C1/facet/571-874"
+    "C1/facet/7070-7126"
+    "C1/facet/7127-7171"
+    "C1/facet/7171-7223"
+    "C1/facet/7223-7289"
+    "C1/facet/7289-7356"
+    "C1/facet/7356-7416"
+    "C1/facet/7416-7480"
+    "C1/facet/7480-7560"
+    "C1/facet/7561-7717"
+    "C1/facet/7990-8061"
+    "C1/facet/8160-8213"
+    "C1/facet/8407-8437"],
+   :requested-target "compiler/c12/domain-semantic-anchor",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same source/typed-core/MIR semantic anchor invariant, detailed by C12; preserve C1 provenance and its downstream consumer context.",
+   :archived-record-sha256
+   "7bbb664fb17a5fce27cfd82e73f01c645690df97388a9219f893462e0c7b43ab",
+   :status :accepted,
+   :id "compiler/c1/domain-anchor",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c12/domain-semantic-anchor",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C3/facet/1132-1279"
+    "C3/facet/1523-1590"
+    "C3/facet/1590-1621"
+    "C3/facet/1621-1655"
+    "C3/facet/1655-1707"
+    "C3/facet/1707-1809"
+    "C3/facet/1809-1855"
+    "C3/facet/1855-1907"
+    "C3/facet/1934-1958"
+    "C3/facet/1958-1982"
+    "C3/facet/1982-2005"
+    "C3/facet/2005-2027"
+    "C3/facet/2027-2046"
+    "C3/facet/2046-2073"
+    "C3/facet/2073-2103"
+    "C3/facet/2103-2135"
+    "C3/facet/317-548"
+    "C3/facet/4132-4254"
+    "C3/facet/4255-4304"
+    "C3/facet/4305-4328"
+    "C3/facet/4328-4348"
+    "C3/facet/4348-4368"
+    "C3/facet/4368-4393"
+    "C3/facet/4393-4408"
+    "C3/facet/4408-4428"
+    "C3/facet/4428-4442"
+    "C3/facet/4442-4458"
+    "C3/facet/4458-4477"
+    "C3/facet/4477-4498"
+    "C3/facet/4499-4636"
+    "C3/facet/549-683"
+    "C3/facet/5565-5613"
+    "C3/facet/5614-5663"
+    "C3/facet/5663-5714"
+    "C3/facet/5714-5765"
+    "C3/facet/5765-5816"
+    "C3/facet/5816-5862"
+    "C3/facet/5862-5915"
+    "C3/facet/5915-5968"
+    "C3/facet/5968-6029"
+    "C3/facet/6029-6087"
+    "C3/facet/6088-6221"
+    "C3/facet/6561-6621"
+    "C3/facet/6806-6861"
+    "C3/facet/6861-6897"],
+   :requested-target "compiler/c1/preserve-evidence",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Syntax metadata preservation and producer/version/invalidation conditions strengthen the same compiler evidence replacement outcome; stale facts cannot be silently reused.",
+   :archived-record-sha256
+   "baf94a9e99a1e1f302651798fc01272b0f25cc84fee972c6512840147e8c40d9",
+   :status :accepted,
+   :id "compiler/c3/fact-invalidation",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c1/preserve-evidence",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C4/facet/1505-1537"
+    "C4/facet/1537-1629"
+    "C4/facet/1629-1674"
+    "C4/facet/1674-1733"
+    "C4/facet/1733-1786"
+    "C4/facet/1786-1848"
+    "C4/facet/1875-1901"
+    "C4/facet/1901-1926"
+    "C4/facet/1926-1957"
+    "C4/facet/1957-1977"
+    "C4/facet/1977-2012"
+    "C4/facet/2012-2043"
+    "C4/facet/2043-2066"
+    "C4/facet/2066-2091"
+    "C4/facet/327-607"
+    "C4/facet/4411-4617"
+    "C4/facet/4618-4641"
+    "C4/facet/4641-4677"
+    "C4/facet/4677-4690"
+    "C4/facet/4690-4754"
+    "C4/facet/4754-4771"
+    "C4/facet/4772-4847"
+    "C4/facet/5711-5761"
+    "C4/facet/5762-5809"
+    "C4/facet/5809-5866"
+    "C4/facet/5960-6023"
+    "C4/facet/6023-6062"
+    "C4/facet/6062-6098"
+    "C4/facet/608-714"
+    "C4/facet/6098-6167"
+    "C4/facet/6167-6238"
+    "C4/facet/6238-6286"
+    "C4/facet/6287-6488"
+    "C4/facet/6861-6915"
+    "C4/facet/6995-7051"
+    "C4/facet/919-996"
+    "C4/normalized-facet/5866-5869/934fa8d0c0971796"
+    "C4/normalized-facet/5869-5910/4902048ad50c5fe6"
+    "C4/normalized-facet/5911-5914/934fa8d0c0971796"
+    "C4/normalized-facet/5914-5959/fa42b0f1bf9b4487"],
+   :requested-target "safety/safe12/hygiene",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same macro expansion capture enforcement including explicit API, traces and policy on authority-bearing bindings. Syntax context fields remain acceptance evidence.",
+   :archived-record-sha256
+   "01e7bdcd386a18ebf24450262097d31f8df2671bb8444a1e9b13f63565f2fe10",
+   :status :accepted,
+   :id "compiler/c4/hygiene-capture",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe12/hygiene",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C4/facet/1505-1537"
+    "C4/facet/1537-1629"
+    "C4/facet/1629-1674"
+    "C4/facet/1674-1733"
+    "C4/facet/1733-1786"
+    "C4/facet/1786-1848"
+    "C4/facet/1875-1901"
+    "C4/facet/1901-1926"
+    "C4/facet/1926-1957"
+    "C4/facet/1957-1977"
+    "C4/facet/1977-2012"
+    "C4/facet/2012-2043"
+    "C4/facet/2043-2066"
+    "C4/facet/2066-2091"
+    "C4/facet/327-607"
+    "C4/facet/3950-4157"
+    "C4/facet/4158-4218"
+    "C4/facet/4218-4233"
+    "C4/facet/4233-4276"
+    "C4/facet/4276-4293"
+    "C4/facet/4293-4314"
+    "C4/facet/4315-4386"
+    "C4/facet/5711-5761"
+    "C4/facet/5762-5809"
+    "C4/facet/5809-5866"
+    "C4/facet/5960-6023"
+    "C4/facet/6023-6062"
+    "C4/facet/6062-6098"
+    "C4/facet/608-714"
+    "C4/facet/6098-6167"
+    "C4/facet/6167-6238"
+    "C4/facet/6238-6286"
+    "C4/facet/6287-6488"
+    "C4/facet/6569-6635"
+    "C4/facet/6861-6915"
+    "C4/facet/7091-7144"
+    "C4/facet/996-1075"
+    "C4/normalized-facet/5866-5869/934fa8d0c0971796"
+    "C4/normalized-facet/5869-5910/4902048ad50c5fe6"
+    "C4/normalized-facet/5911-5914/934fa8d0c0971796"
+    "C4/normalized-facet/5914-5959/fa42b0f1bf9b4487"],
+   :requested-target
+   "language/effects/authorize-and-record-build-effect",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same declared/granted compiler build-effect operation with redacted trace, hermeticity, replay and invalidation qualifiers in the macro context. Runtime effects remain separate.",
+   :archived-record-sha256
+   "6d7f19d7e6606f428e6960b1cadfd7336a7042ae4a00f5acd81e21ec00b07b43",
+   :status :accepted,
+   :id "compiler/c4/build-authority",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/effects/authorize-and-record-build-effect",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C4/facet/1075-1156"
+    "C4/facet/1505-1537"
+    "C4/facet/1537-1629"
+    "C4/facet/1629-1674"
+    "C4/facet/1674-1733"
+    "C4/facet/1733-1786"
+    "C4/facet/1786-1848"
+    "C4/facet/1875-1901"
+    "C4/facet/1901-1926"
+    "C4/facet/1926-1957"
+    "C4/facet/1957-1977"
+    "C4/facet/1977-2012"
+    "C4/facet/2012-2043"
+    "C4/facet/2043-2066"
+    "C4/facet/2066-2091"
+    "C4/facet/327-607"
+    "C4/facet/5711-5761"
+    "C4/facet/5762-5809"
+    "C4/facet/5809-5866"
+    "C4/facet/5960-6023"
+    "C4/facet/6023-6062"
+    "C4/facet/6062-6098"
+    "C4/facet/608-714"
+    "C4/facet/6098-6167"
+    "C4/facet/6167-6238"
+    "C4/facet/6238-6286"
+    "C4/facet/6287-6488"
+    "C4/facet/6861-6915"
+    "C4/facet/7144-7193"
+    "C4/normalized-facet/5866-5869/934fa8d0c0971796"
+    "C4/normalized-facet/5869-5910/4902048ad50c5fe6"
+    "C4/normalized-facet/5911-5914/934fa8d0c0971796"
+    "C4/normalized-facet/5914-5959/fa42b0f1bf9b4487"],
+   :requested-target "compiler/c3/origin-preservation",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Macro definition/call/input/producer/step origins are the macro-specific refinement of the existing generated syntax origin producer, not another source-map pipeline.",
+   :archived-record-sha256
+   "5b9df4e26539c330d6226ae102f7e283a1efa01d59e793cfec3bbaadc98bc1e2",
+   :status :accepted,
+   :id "compiler/c4/generated-origin",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c3/origin-preservation",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C5/facet/1026-1105"
+    "C5/facet/1105-1197"
+    "C5/facet/1665-1751"
+    "C5/facet/1751-1799"
+    "C5/facet/1799-1832"
+    "C5/facet/1832-1929"
+    "C5/facet/1929-1979"
+    "C5/facet/1979-2065"
+    "C5/facet/2092-2123"
+    "C5/facet/2123-2140"
+    "C5/facet/2140-2155"
+    "C5/facet/2155-2182"
+    "C5/facet/2182-2205"
+    "C5/facet/2205-2225"
+    "C5/facet/2225-2254"
+    "C5/facet/2254-2280"
+    "C5/facet/2280-2313"
+    "C5/facet/2885-2902"
+    "C5/facet/2903-2924"
+    "C5/facet/2924-2947"
+    "C5/facet/2947-2974"
+    "C5/facet/2974-2989"
+    "C5/facet/2989-3017"
+    "C5/facet/3017-3043"
+    "C5/facet/3043-3088"
+    "C5/facet/3088-3117"
+    "C5/facet/3117-3145"
+    "C5/facet/3145-3164"
+    "C5/facet/3165-3319"
+    "C5/facet/3341-3365"
+    "C5/facet/3366-3392"
+    "C5/facet/3392-3427"
+    "C5/facet/341-679"
+    "C5/facet/3427-3475"
+    "C5/facet/3475-3522"
+    "C5/facet/3522-3560"
+    "C5/facet/3560-3593"
+    "C5/facet/3593-3648"
+    "C5/facet/3648-3710"
+    "C5/facet/3711-3867"
+    "C5/facet/3868-3902"
+    "C5/facet/5526-5571"
+    "C5/facet/5572-5619"
+    "C5/facet/5619-5665"
+    "C5/facet/5665-5708"
+    "C5/facet/5708-5755"
+    "C5/facet/5755-5792"
+    "C5/facet/5792-5846"
+    "C5/facet/5846-5895"
+    "C5/facet/5895-5968"
+    "C5/facet/5968-6015"
+    "C5/facet/6015-6068"
+    "C5/facet/6069-6224"
+    "C5/facet/6426-6473"
+    "C5/facet/6594-6634"
+    "C5/facet/6635-6704"
+    "C5/facet/6704-6751"
+    "C5/facet/6781-6822"
+    "C5/facet/680-753"
+    "C5/facet/6822-6853"
+    "C5/facet/771-886"],
+   :requested-target "language/module/resolve-binding",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same expression/macro/type-position resolver, specified precedence, legal shadowing and ambiguity rejection; compiler binding artifacts strengthen its acceptance.",
+   :archived-record-sha256
+   "45c144c174797d4708a803753acbbcf36e819126bb065a7304948ec8be6e779d",
+   :status :accepted,
+   :id "compiler/c5/position-resolution",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/module/resolve-binding",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/4741-4816"
+    "C5/facet/1665-1751"
+    "C5/facet/1751-1799"
+    "C5/facet/1799-1832"
+    "C5/facet/1832-1929"
+    "C5/facet/1929-1979"
+    "C5/facet/1979-2065"
+    "C5/facet/2092-2123"
+    "C5/facet/2123-2140"
+    "C5/facet/2140-2155"
+    "C5/facet/2155-2182"
+    "C5/facet/2182-2205"
+    "C5/facet/2205-2225"
+    "C5/facet/2225-2254"
+    "C5/facet/2254-2280"
+    "C5/facet/2280-2313"
+    "C5/facet/2335-2724"
+    "C5/facet/2725-2861"
+    "C5/facet/341-679"
+    "C5/facet/3926-4492"
+    "C5/facet/4493-4651"
+    "C5/facet/5526-5571"
+    "C5/facet/5572-5619"
+    "C5/facet/5619-5665"
+    "C5/facet/5665-5708"
+    "C5/facet/5708-5755"
+    "C5/facet/5755-5792"
+    "C5/facet/5792-5846"
+    "C5/facet/5846-5895"
+    "C5/facet/5895-5968"
+    "C5/facet/5968-6015"
+    "C5/facet/6015-6068"
+    "C5/facet/6069-6224"
+    "C5/facet/6474-6568"
+    "C5/facet/6594-6634"
+    "C5/facet/6751-6781"
+    "C5/facet/680-753"
+    "C5/facet/6853-6882"
+    "C5/facet/886-1026"],
+   :requested-target "language/module/publish-definition-entries",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same analyzed definition/binding entry producer; semantic identity, visibility/profile/target/package/source fields and formatting exclusion qualify it. Namespace graph consumers do not add a second binding producer.",
+   :archived-record-sha256
+   "abf31a185dbfd7c4f93d3b857445091c4febae8cfa0549c3dbb1d949f9d090a3",
+   :status :accepted,
+   :id "compiler/c5/binding-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/module/publish-definition-entries",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C5/facet/1302-1456"
+    "C5/facet/1665-1751"
+    "C5/facet/1751-1799"
+    "C5/facet/1799-1832"
+    "C5/facet/1832-1929"
+    "C5/facet/1929-1979"
+    "C5/facet/1979-2065"
+    "C5/facet/2092-2123"
+    "C5/facet/2123-2140"
+    "C5/facet/2140-2155"
+    "C5/facet/2155-2182"
+    "C5/facet/2182-2205"
+    "C5/facet/2205-2225"
+    "C5/facet/2225-2254"
+    "C5/facet/2254-2280"
+    "C5/facet/2280-2313"
+    "C5/facet/341-679"
+    "C5/facet/4676-4766"
+    "C5/facet/4767-4787"
+    "C5/facet/4787-4814"
+    "C5/facet/4814-4851"
+    "C5/facet/4851-4927"
+    "C5/facet/4927-4990"
+    "C5/facet/4991-5091"
+    "C5/facet/5526-5571"
+    "C5/facet/5572-5619"
+    "C5/facet/5619-5665"
+    "C5/facet/5665-5708"
+    "C5/facet/5708-5755"
+    "C5/facet/5755-5792"
+    "C5/facet/5792-5846"
+    "C5/facet/5846-5895"
+    "C5/facet/5895-5968"
+    "C5/facet/5968-6015"
+    "C5/facet/6015-6068"
+    "C5/facet/6069-6224"
+    "C5/facet/6358-6425"
+    "C5/facet/6594-6634"
+    "C5/facet/680-753"
+    "C5/facet/6882-6933"
+    "C5/facet/6933-6984"],
+   :requested-target "language/module/check-import-boundary",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same import edge admission under pure core/facade/schema/FFI/generated-artifact boundaries. Runtime availability alone remains insufficient.",
+   :archived-record-sha256
+   "4e197d0d9b8ff3544674c9261d29f29afcc781aefe32643ac06c20a008f1d13b",
+   :status :accepted,
+   :id "compiler/c5/cross-profile-boundary",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/module/check-import-boundary",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C5/facet/1456-1560"
+    "C5/facet/1665-1751"
+    "C5/facet/1751-1799"
+    "C5/facet/1799-1832"
+    "C5/facet/1832-1929"
+    "C5/facet/1929-1979"
+    "C5/facet/1979-2065"
+    "C5/facet/2092-2123"
+    "C5/facet/2123-2140"
+    "C5/facet/2140-2155"
+    "C5/facet/2155-2182"
+    "C5/facet/2182-2205"
+    "C5/facet/2205-2225"
+    "C5/facet/2225-2254"
+    "C5/facet/2254-2280"
+    "C5/facet/2280-2313"
+    "C5/facet/341-679"
+    "C5/facet/5526-5571"
+    "C5/facet/5572-5619"
+    "C5/facet/5619-5665"
+    "C5/facet/5665-5708"
+    "C5/facet/5708-5755"
+    "C5/facet/5755-5792"
+    "C5/facet/5792-5846"
+    "C5/facet/5846-5895"
+    "C5/facet/5895-5968"
+    "C5/facet/5968-6015"
+    "C5/facet/6015-6068"
+    "C5/facet/6069-6224"
+    "C5/facet/6594-6634"
+    "C5/facet/680-753"],
+   :requested-target "language/module/check-initialization-graph",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same namespace dependency/initialization cycle rejection with only an explicit checked later protocol exception.",
+   :archived-record-sha256
+   "639afaef1f107ef45de0bae97fe2b67b55afa0c74ac9f17edc2a24765f135cba",
+   :status :accepted,
+   :id "compiler/c5/dependency-cycle",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/module/check-initialization-graph",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C5/facet/1560-1647"
+    "C5/facet/1665-1751"
+    "C5/facet/1751-1799"
+    "C5/facet/1799-1832"
+    "C5/facet/1832-1929"
+    "C5/facet/1929-1979"
+    "C5/facet/1979-2065"
+    "C5/facet/2092-2123"
+    "C5/facet/2123-2140"
+    "C5/facet/2140-2155"
+    "C5/facet/2155-2182"
+    "C5/facet/2182-2205"
+    "C5/facet/2205-2225"
+    "C5/facet/2225-2254"
+    "C5/facet/2254-2280"
+    "C5/facet/2280-2313"
+    "C5/facet/341-679"
+    "C5/facet/5121-5150"
+    "C5/facet/5151-5179"
+    "C5/facet/5179-5209"
+    "C5/facet/5209-5232"
+    "C5/facet/5232-5270"
+    "C5/facet/5270-5292"
+    "C5/facet/5292-5316"
+    "C5/facet/5316-5349"
+    "C5/facet/5349-5379"
+    "C5/facet/5379-5423"
+    "C5/facet/5424-5509"
+    "C5/facet/5526-5571"
+    "C5/facet/5572-5619"
+    "C5/facet/5619-5665"
+    "C5/facet/5665-5708"
+    "C5/facet/5708-5755"
+    "C5/facet/5755-5792"
+    "C5/facet/5792-5846"
+    "C5/facet/5846-5895"
+    "C5/facet/5895-5968"
+    "C5/facet/5968-6015"
+    "C5/facet/6015-6068"
+    "C5/facet/6069-6224"
+    "C5/facet/6594-6634"
+    "C5/facet/680-753"
+    "C5/facet/6984-7065"],
+   :requested-target "compiler/c16/dependency-invalidation",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Resolver-specific dependency fields and recheck stages refine the same incremental graph invalidator, preserving actual alias/export/expanded-position dependencies.",
+   :archived-record-sha256
+   "56549be26e2f4a9c54185ee1ee90a4cecb62f311c6e1c3e284ce0825c3cb8ecc",
+   :status :accepted,
+   :id "compiler/c5/resolution-invalidation",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c16/dependency-invalidation",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C6/facet/1621-1673"
+    "C6/facet/1673-1737"
+    "C6/facet/1737-1794"
+    "C6/facet/1794-1845"
+    "C6/facet/1845-1878"
+    "C6/facet/1878-1937"
+    "C6/facet/1937-2036"
+    "C6/facet/2036-2074"
+    "C6/facet/2101-2120"
+    "C6/facet/2120-2143"
+    "C6/facet/2143-2163"
+    "C6/facet/2163-2190"
+    "C6/facet/2190-2217"
+    "C6/facet/2217-2241"
+    "C6/facet/2241-2270"
+    "C6/facet/326-579"
+    "C6/facet/3481-3503"
+    "C6/facet/3504-3615"
+    "C6/facet/3615-3663"
+    "C6/facet/3663-3723"
+    "C6/facet/3723-3836"
+    "C6/facet/3836-3933"
+    "C6/facet/3933-4021"
+    "C6/facet/4021-4096"
+    "C6/facet/4097-4242"
+    "C6/facet/5625-5673"
+    "C6/facet/5674-5731"
+    "C6/facet/5731-5775"
+    "C6/facet/5775-5840"
+    "C6/facet/580-771"
+    "C6/facet/5840-5897"
+    "C6/facet/5897-5960"
+    "C6/facet/5960-6021"
+    "C6/facet/6021-6086"
+    "C6/facet/6086-6128"
+    "C6/facet/6129-6280"
+    "C6/facet/6302-6347"
+    "C6/facet/6348-6429"
+    "C6/facet/6592-6674"
+    "C6/facet/6700-6755"
+    "C6/facet/6756-6800"
+    "C6/facet/6992-7030"
+    "C6/facet/7137-7177"
+    "C6/facet/789-910"
+    "C6/facet/910-1092"],
+   :requested-target "language/core/normalize-to-declared-core",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same surface-to-enumerated-core/declared-primitive/domain-boundary producer. Preserve literal constructors, no textual rewrite, no unknown/target-specific leak; D1 ordering qualification does not create another normalization stage.",
+   :archived-record-sha256
+   "1ad20c9fb8c1a790eeae5e6e6a516ac6b4b6adce6ae8169f4c820f18b6f82286",
+   :status :accepted,
+   :id "compiler/c6/core-lowering",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/core/normalize-to-declared-core",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C6/facet/1092-1166"
+    "C6/facet/1621-1673"
+    "C6/facet/1673-1737"
+    "C6/facet/1737-1794"
+    "C6/facet/1794-1845"
+    "C6/facet/1845-1878"
+    "C6/facet/1878-1937"
+    "C6/facet/1937-2036"
+    "C6/facet/2036-2074"
+    "C6/facet/2101-2120"
+    "C6/facet/2120-2143"
+    "C6/facet/2143-2163"
+    "C6/facet/2163-2190"
+    "C6/facet/2190-2217"
+    "C6/facet/2217-2241"
+    "C6/facet/2241-2270"
+    "C6/facet/326-579"
+    "C6/facet/4264-4318"
+    "C6/facet/4319-4341"
+    "C6/facet/4341-4365"
+    "C6/facet/4365-4380"
+    "C6/facet/4380-4396"
+    "C6/facet/4396-4437"
+    "C6/facet/4437-4457"
+    "C6/facet/4457-4475"
+    "C6/facet/4475-4510"
+    "C6/facet/4511-4640"
+    "C6/facet/5625-5673"
+    "C6/facet/5674-5731"
+    "C6/facet/5731-5775"
+    "C6/facet/5775-5840"
+    "C6/facet/580-771"
+    "C6/facet/5840-5897"
+    "C6/facet/5897-5960"
+    "C6/facet/5960-6021"
+    "C6/facet/6021-6086"
+    "C6/facet/6086-6128"
+    "C6/facet/6129-6280"
+    "C6/facet/6700-6755"
+    "C6/facet/6865-6921"],
+   :requested-target
+   "language/core/preserve-observable-evaluation-order",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same left-to-right/effect/cleanup/handler semantic preservation contract; explicit lowering records and proof before later pure reordering qualify it.",
+   :archived-record-sha256
+   "71b4680b267e95ec01b2217bcb6ec79efe7538b933c5ccad3cf1c37dda91a81a",
+   :status :accepted,
+   :id "compiler/c6/evaluation-order",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/core/preserve-observable-evaluation-order",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C6/facet/1271-1425"
+    "C6/facet/1621-1673"
+    "C6/facet/1673-1737"
+    "C6/facet/1737-1794"
+    "C6/facet/1794-1845"
+    "C6/facet/1845-1878"
+    "C6/facet/1878-1937"
+    "C6/facet/1937-2036"
+    "C6/facet/2036-2074"
+    "C6/facet/2101-2120"
+    "C6/facet/2120-2143"
+    "C6/facet/2143-2163"
+    "C6/facet/2163-2190"
+    "C6/facet/2190-2217"
+    "C6/facet/2217-2241"
+    "C6/facet/2241-2270"
+    "C6/facet/2291-2683"
+    "C6/facet/2684-2873"
+    "C6/facet/326-579"
+    "C6/facet/5625-5673"
+    "C6/facet/5674-5731"
+    "C6/facet/5731-5775"
+    "C6/facet/5775-5840"
+    "C6/facet/580-771"
+    "C6/facet/5840-5897"
+    "C6/facet/5897-5960"
+    "C6/facet/5960-6021"
+    "C6/facet/6021-6086"
+    "C6/facet/6086-6128"
+    "C6/facet/6129-6280"
+    "C6/facet/6496-6591"
+    "C6/facet/6700-6755"
+    "C6/facet/7085-7137"],
+   :requested-target "compiler/c1/preserve-evidence",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Source declarations/seed bindings/allocation/ownership/proof obligations survive core lowering without inventing later facts; concrete lowering context strengthens the existing pass evidence conservation outcome.",
+   :archived-record-sha256
+   "3e2146d454672e93ce462cbeabb9483ab5b6150c686fa9fc4891cca0bfb9d8ae",
+   :status :accepted,
+   :id "compiler/c6/lowering-facts",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c1/preserve-evidence",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C7/facet/1071-1142"
+    "C7/facet/1710-1742"
+    "C7/facet/1742-1817"
+    "C7/facet/1817-1891"
+    "C7/facet/1891-1926"
+    "C7/facet/1926-1981"
+    "C7/facet/1981-2070"
+    "C7/facet/2070-2135"
+    "C7/facet/2162-2183"
+    "C7/facet/2183-2203"
+    "C7/facet/2203-2224"
+    "C7/facet/2224-2255"
+    "C7/facet/2255-2287"
+    "C7/facet/2287-2315"
+    "C7/facet/2315-2346"
+    "C7/facet/2346-2373"
+    "C7/facet/2373-2393"
+    "C7/facet/317-599"
+    "C7/facet/3179-3200"
+    "C7/facet/3201-3213"
+    "C7/facet/3213-3224"
+    "C7/facet/3224-3251"
+    "C7/facet/3251-3279"
+    "C7/facet/3279-3307"
+    "C7/facet/3307-3344"
+    "C7/facet/3344-3380"
+    "C7/facet/3380-3402"
+    "C7/facet/3402-3426"
+    "C7/facet/3426-3447"
+    "C7/facet/3447-3475"
+    "C7/facet/3476-3581"
+    "C7/facet/600-804"
+    "C7/facet/6079-6126"
+    "C7/facet/6127-6194"
+    "C7/facet/6194-6250"
+    "C7/facet/6250-6308"
+    "C7/facet/6308-6357"
+    "C7/facet/6357-6422"
+    "C7/facet/6422-6471"
+    "C7/facet/6471-6524"
+    "C7/facet/6524-6581"
+    "C7/facet/6581-6630"
+    "C7/facet/6630-6680"
+    "C7/facet/6681-6858"
+    "C7/facet/7238-7282"
+    "C7/facet/7283-7390"
+    "C7/facet/7390-7442"
+    "C7/facet/822-882"],
+   :requested-target "language/types/check-core-typing",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same local deterministic per-expression typing/constraint decision with rule/dependency/current-type evidence, no silent Dynamic fallback.",
+   :archived-record-sha256
+   "9ca016f572f7cf4accbbca97942f3502e37ba5863cfe243409e10c5bb8a3e09d",
+   :status :accepted,
+   :id "compiler/c7/type-inference",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/types/check-core-typing",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C7/facet/1142-1283"
+    "C7/facet/1710-1742"
+    "C7/facet/1742-1817"
+    "C7/facet/1817-1891"
+    "C7/facet/1891-1926"
+    "C7/facet/1926-1981"
+    "C7/facet/1981-2070"
+    "C7/facet/2070-2135"
+    "C7/facet/2162-2183"
+    "C7/facet/2183-2203"
+    "C7/facet/2203-2224"
+    "C7/facet/2224-2255"
+    "C7/facet/2255-2287"
+    "C7/facet/2287-2315"
+    "C7/facet/2315-2346"
+    "C7/facet/2346-2373"
+    "C7/facet/2373-2393"
+    "C7/facet/317-599"
+    "C7/facet/3612-3800"
+    "C7/facet/3801-3859"
+    "C7/facet/3859-3938"
+    "C7/facet/3938-4050"
+    "C7/facet/4050-4136"
+    "C7/facet/4137-4271"
+    "C7/facet/600-804"
+    "C7/facet/6079-6126"
+    "C7/facet/6127-6194"
+    "C7/facet/6194-6250"
+    "C7/facet/6250-6308"
+    "C7/facet/6308-6357"
+    "C7/facet/6357-6422"
+    "C7/facet/6422-6471"
+    "C7/facet/6471-6524"
+    "C7/facet/6524-6581"
+    "C7/facet/6581-6630"
+    "C7/facet/6630-6680"
+    "C7/facet/6681-6858"
+    "C7/facet/6880-6947"
+    "C7/facet/7238-7282"
+    "C7/facet/7442-7486"
+    "C7/facet/7608-7645"],
+   :requested-target "language/types/check-core-typing",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same typing decision under source-qualified profile requirements for layout/ownership/initialization/numeric/region/resource annotations; missing evidence diagnoses rather than changes scope.",
+   :archived-record-sha256
+   "c78cc2fa3e3684fcad95932b18c2a8976acabcbfccdf9ceb20260f24f6066863",
+   :status :accepted,
+   :id "compiler/c7/profile-annotations",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/types/check-core-typing",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C7/facet/1283-1358"
+    "C7/facet/1710-1742"
+    "C7/facet/1742-1817"
+    "C7/facet/1817-1891"
+    "C7/facet/1891-1926"
+    "C7/facet/1926-1981"
+    "C7/facet/1981-2070"
+    "C7/facet/2070-2135"
+    "C7/facet/2162-2183"
+    "C7/facet/2183-2203"
+    "C7/facet/2203-2224"
+    "C7/facet/2224-2255"
+    "C7/facet/2255-2287"
+    "C7/facet/2287-2315"
+    "C7/facet/2315-2346"
+    "C7/facet/2346-2373"
+    "C7/facet/2373-2393"
+    "C7/facet/317-599"
+    "C7/facet/4295-4320"
+    "C7/facet/4321-4585"
+    "C7/facet/4586-4738"
+    "C7/facet/600-804"
+    "C7/facet/6079-6126"
+    "C7/facet/6127-6194"
+    "C7/facet/6194-6250"
+    "C7/facet/6250-6308"
+    "C7/facet/6308-6357"
+    "C7/facet/6357-6422"
+    "C7/facet/6422-6471"
+    "C7/facet/6471-6524"
+    "C7/facet/6524-6581"
+    "C7/facet/6581-6630"
+    "C7/facet/6630-6680"
+    "C7/facet/6681-6858"
+    "C7/facet/6880-6947"
+    "C7/facet/7238-7282"
+    "C7/facet/7486-7530"],
+   :requested-target "language/types/check-dynamic-boundary",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same explicit profile-gated Dynamic/host boundary; record propagation through effects/MIR/runtime is required acceptance, not a second runtime implementation.",
+   :archived-record-sha256
+   "85b0967751a6a70ea44c43b082ae23ac08a4553a50ed09d01fd70f40bfac3e99",
+   :status :accepted,
+   :id "compiler/c7/dynamic-boundaries",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/types/check-dynamic-boundary",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C7/facet/1603-1692"
+    "C7/facet/1710-1742"
+    "C7/facet/1742-1817"
+    "C7/facet/1817-1891"
+    "C7/facet/1891-1926"
+    "C7/facet/1926-1981"
+    "C7/facet/1981-2070"
+    "C7/facet/2070-2135"
+    "C7/facet/2162-2183"
+    "C7/facet/2183-2203"
+    "C7/facet/2203-2224"
+    "C7/facet/2224-2255"
+    "C7/facet/2255-2287"
+    "C7/facet/2287-2315"
+    "C7/facet/2315-2346"
+    "C7/facet/2346-2373"
+    "C7/facet/2373-2393"
+    "C7/facet/317-599"
+    "C7/facet/600-804"
+    "C7/facet/6079-6126"
+    "C7/facet/6127-6194"
+    "C7/facet/6194-6250"
+    "C7/facet/6250-6308"
+    "C7/facet/6308-6357"
+    "C7/facet/6357-6422"
+    "C7/facet/6422-6471"
+    "C7/facet/6471-6524"
+    "C7/facet/6524-6581"
+    "C7/facet/6581-6630"
+    "C7/facet/6630-6680"
+    "C7/facet/6681-6858"
+    "C7/facet/7077-7145"
+    "C7/facet/7238-7282"
+    "C7/facet/7572-7608"],
+   :requested-target "language/types/derive-schema-type",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Schema identity/validation links are required acceptance facets of the existing derived type producer, not a separately counted reference field.",
+   :archived-record-sha256
+   "bbd8729e8e86ea3c59ec33591ef6f6a160cb989b6be791e838d10d827d233b9d",
+   :status :accepted,
+   :id "compiler/c7/schema-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/types/derive-schema-type",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C8/facet/1068-1235"
+    "C8/facet/1574-1608"
+    "C8/facet/1608-1657"
+    "C8/facet/1657-1697"
+    "C8/facet/1697-1744"
+    "C8/facet/1744-1791"
+    "C8/facet/1791-1851"
+    "C8/facet/1851-1943"
+    "C8/facet/1970-1986"
+    "C8/facet/1986-2018"
+    "C8/facet/2018-2059"
+    "C8/facet/2059-2086"
+    "C8/facet/2086-2106"
+    "C8/facet/2106-2136"
+    "C8/facet/2136-2167"
+    "C8/facet/2167-2193"
+    "C8/facet/2193-2215"
+    "C8/facet/3003-3070"
+    "C8/facet/3071-3432"
+    "C8/facet/319-678"
+    "C8/facet/3433-3567"
+    "C8/facet/5691-5740"
+    "C8/facet/5741-5801"
+    "C8/facet/5801-5849"
+    "C8/facet/5849-5914"
+    "C8/facet/5914-5956"
+    "C8/facet/5956-6027"
+    "C8/facet/6027-6081"
+    "C8/facet/6081-6135"
+    "C8/facet/6135-6181"
+    "C8/facet/6181-6227"
+    "C8/facet/6228-6396"
+    "C8/facet/6418-6481"
+    "C8/facet/6482-6552"
+    "C8/facet/679-790"
+    "C8/facet/6846-6892"
+    "C8/facet/6963-7008"
+    "C8/facet/7008-7045"
+    "C8/facet/7280-7328"
+    "C8/facet/989-1068"],
+   :requested-target "language/effects/check-narrowest-allowance",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same intersection of declarations/profile/package/deployment/runtime/safety and separate grants; downstream runtime support cannot create authority.",
+   :archived-record-sha256
+   "9cf605503766cb9a8fc71eb61d6e59eb78c72a73a35a5980ce954c966c2fe39d",
+   :status :accepted,
+   :id "compiler/c8/declaration-legality",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "language/effects/check-narrowest-allowance",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C9/facet/1673-1730"
+    "C9/facet/1730-1785"
+    "C9/facet/1785-1823"
+    "C9/facet/1823-1865"
+    "C9/facet/1865-1932"
+    "C9/facet/1932-1978"
+    "C9/facet/1978-2027"
+    "C9/facet/2027-2080"
+    "C9/facet/2080-2122"
+    "C9/facet/2149-2168"
+    "C9/facet/2168-2184"
+    "C9/facet/2184-2209"
+    "C9/facet/2209-2237"
+    "C9/facet/2237-2263"
+    "C9/facet/2263-2288"
+    "C9/facet/2288-2314"
+    "C9/facet/2314-2344"
+    "C9/facet/2344-2364"
+    "C9/facet/2364-2389"
+    "C9/facet/2389-2416"
+    "C9/facet/2416-2441"
+    "C9/facet/3389-3495"
+    "C9/facet/343-629"
+    "C9/facet/3496-3516"
+    "C9/facet/3516-3534"
+    "C9/facet/3534-3554"
+    "C9/facet/3554-3579"
+    "C9/facet/3579-3587"
+    "C9/facet/3587-3598"
+    "C9/facet/3598-3610"
+    "C9/facet/3610-3656"
+    "C9/facet/3657-3803"
+    "C9/facet/5889-5941"
+    "C9/facet/5942-5984"
+    "C9/facet/5984-6045"
+    "C9/facet/6045-6101"
+    "C9/facet/6101-6158"
+    "C9/facet/6158-6227"
+    "C9/facet/6227-6285"
+    "C9/facet/6285-6336"
+    "C9/facet/630-788"
+    "C9/facet/6336-6387"
+    "C9/facet/6387-6442"
+    "C9/facet/6442-6490"
+    "C9/facet/6490-6563"
+    "C9/facet/6563-6634"
+    "C9/facet/6635-6818"
+    "C9/facet/7273-7322"
+    "C9/facet/7323-7373"
+    "C9/facet/7373-7441"
+    "C9/facet/806-919"],
+   :requested-target "safety/safe3/borrow-exclusivity",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same immutable/exclusive mutable borrow checker over ranges with proved splitting, otherwise conservative aliasing.",
+   :archived-record-sha256
+   "0f73e0b584e8b426f7fa74a2d2dafaae88f641931c974e2b388df29f4ae92233",
+   :status :accepted,
+   :id "compiler/c9/borrow-alias",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe3/borrow-exclusivity",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C9/facet/1673-1730"
+    "C9/facet/1730-1785"
+    "C9/facet/1785-1823"
+    "C9/facet/1823-1865"
+    "C9/facet/1865-1932"
+    "C9/facet/1932-1978"
+    "C9/facet/1978-2027"
+    "C9/facet/2027-2080"
+    "C9/facet/2080-2122"
+    "C9/facet/2149-2168"
+    "C9/facet/2168-2184"
+    "C9/facet/2184-2209"
+    "C9/facet/2209-2237"
+    "C9/facet/2237-2263"
+    "C9/facet/2263-2288"
+    "C9/facet/2288-2314"
+    "C9/facet/2314-2344"
+    "C9/facet/2344-2364"
+    "C9/facet/2364-2389"
+    "C9/facet/2389-2416"
+    "C9/facet/2416-2441"
+    "C9/facet/343-629"
+    "C9/facet/5889-5941"
+    "C9/facet/5942-5984"
+    "C9/facet/5984-6045"
+    "C9/facet/6045-6101"
+    "C9/facet/6101-6158"
+    "C9/facet/6158-6227"
+    "C9/facet/6227-6285"
+    "C9/facet/6285-6336"
+    "C9/facet/630-788"
+    "C9/facet/6336-6387"
+    "C9/facet/6387-6442"
+    "C9/facet/6442-6490"
+    "C9/facet/6490-6563"
+    "C9/facet/6563-6634"
+    "C9/facet/6635-6818"
+    "C9/facet/6840-6919"
+    "C9/facet/7157-7247"
+    "C9/facet/7273-7322"
+    "C9/facet/7373-7441"
+    "C9/facet/919-1022"],
+   :requested-target "safety/safe3/ownership-move",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same availability transition after move/consume, persistent/copyable exception and prohibition on implicit owned mutable copies/generated duplication.",
+   :archived-record-sha256
+   "6bc7707b4c1b5c6eb99adb098b447bf0c697b947b6bf1bc43ffb05a051cfb705",
+   :status :accepted,
+   :id "compiler/c9/move-consume",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe3/ownership-move",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C9/facet/1214-1302"
+    "C9/facet/1673-1730"
+    "C9/facet/1730-1785"
+    "C9/facet/1785-1823"
+    "C9/facet/1823-1865"
+    "C9/facet/1865-1932"
+    "C9/facet/1932-1978"
+    "C9/facet/1978-2027"
+    "C9/facet/2027-2080"
+    "C9/facet/2080-2122"
+    "C9/facet/2149-2168"
+    "C9/facet/2168-2184"
+    "C9/facet/2184-2209"
+    "C9/facet/2209-2237"
+    "C9/facet/2237-2263"
+    "C9/facet/2263-2288"
+    "C9/facet/2288-2314"
+    "C9/facet/2314-2344"
+    "C9/facet/2344-2364"
+    "C9/facet/2364-2389"
+    "C9/facet/2389-2416"
+    "C9/facet/2416-2441"
+    "C9/facet/343-629"
+    "C9/facet/4673-4895"
+    "C9/facet/4896-5047"
+    "C9/facet/5889-5941"
+    "C9/facet/5942-5984"
+    "C9/facet/5984-6045"
+    "C9/facet/6045-6101"
+    "C9/facet/6101-6158"
+    "C9/facet/6158-6227"
+    "C9/facet/6227-6285"
+    "C9/facet/6285-6336"
+    "C9/facet/630-788"
+    "C9/facet/6336-6387"
+    "C9/facet/6387-6442"
+    "C9/facet/6442-6490"
+    "C9/facet/6490-6563"
+    "C9/facet/6563-6634"
+    "C9/facet/6635-6818"
+    "C9/facet/6991-7065"
+    "C9/facet/7273-7322"
+    "C9/facet/7609-7673"],
+   :requested-target "safety/safe5/terminal-flow",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same every-modeled-path exactly-one valid terminal or cleanup-bearing ownership transfer; normal/error/panic/cancel/early return scope and no finalizer-only proof survive.",
+   :archived-record-sha256
+   "655fe4c61c920ca607fe9d1a42d99d0cbfbcbd7bb9b4276531badab991c1f1cc",
+   :status :accepted,
+   :id "compiler/c9/linear-terminal",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe5/terminal-flow",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C9/facet/1433-1548"
+    "C9/facet/1673-1730"
+    "C9/facet/1730-1785"
+    "C9/facet/1785-1823"
+    "C9/facet/1823-1865"
+    "C9/facet/1865-1932"
+    "C9/facet/1932-1978"
+    "C9/facet/1978-2027"
+    "C9/facet/2027-2080"
+    "C9/facet/2080-2122"
+    "C9/facet/2149-2168"
+    "C9/facet/2168-2184"
+    "C9/facet/2184-2209"
+    "C9/facet/2209-2237"
+    "C9/facet/2237-2263"
+    "C9/facet/2263-2288"
+    "C9/facet/2288-2314"
+    "C9/facet/2314-2344"
+    "C9/facet/2344-2364"
+    "C9/facet/2364-2389"
+    "C9/facet/2389-2416"
+    "C9/facet/2416-2441"
+    "C9/facet/343-629"
+    "C9/facet/5520-5558"
+    "C9/facet/5559-5583"
+    "C9/facet/5583-5604"
+    "C9/facet/5604-5624"
+    "C9/facet/5624-5651"
+    "C9/facet/5651-5685"
+    "C9/facet/5686-5872"
+    "C9/facet/5889-5941"
+    "C9/facet/5942-5984"
+    "C9/facet/5984-6045"
+    "C9/facet/6045-6101"
+    "C9/facet/6101-6158"
+    "C9/facet/6158-6227"
+    "C9/facet/6227-6285"
+    "C9/facet/6285-6336"
+    "C9/facet/630-788"
+    "C9/facet/6336-6387"
+    "C9/facet/6387-6442"
+    "C9/facet/6442-6490"
+    "C9/facet/6490-6563"
+    "C9/facet/6563-6634"
+    "C9/facet/6635-6818"
+    "C9/facet/7273-7322"
+    "C9/facet/7744-7787"],
+   :requested-target "compiler/c10/runtime-safety-checks",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Specialized borrow/generation/provider/resource guards are cases of the existing check-record producer; retain profile/provider metadata, allocation and failure legality. No inference that every profile supplies runtime checks.",
+   :archived-record-sha256
+   "f249f5a7c9ac9e48eb280712cf522d395f7de322274135f1764c0637f79360e6",
+   :status :accepted,
+   :id "compiler/c9/runtime-ownership",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe1/runtime-checks",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/5030-5165"
+    "C10/facet/1737-1774"
+    "C10/facet/1774-1840"
+    "C10/facet/1840-1892"
+    "C10/facet/1892-2000"
+    "C10/facet/2000-2038"
+    "C10/facet/2038-2084"
+    "C10/facet/2084-2189"
+    "C10/facet/2216-2246"
+    "C10/facet/2246-2272"
+    "C10/facet/2272-2294"
+    "C10/facet/2294-2319"
+    "C10/facet/2319-2355"
+    "C10/facet/2355-2387"
+    "C10/facet/2387-2425"
+    "C10/facet/2425-2461"
+    "C10/facet/2461-2483"
+    "C10/facet/2508-2571"
+    "C10/facet/2572-2642"
+    "C10/facet/2642-2682"
+    "C10/facet/2682-2706"
+    "C10/facet/2706-2784"
+    "C10/facet/2784-2849"
+    "C10/facet/2849-2884"
+    "C10/facet/2884-2955"
+    "C10/facet/2955-2973"
+    "C10/facet/2973-3013"
+    "C10/facet/3013-3065"
+    "C10/facet/3065-3110"
+    "C10/facet/3110-3164"
+    "C10/facet/3165-3302"
+    "C10/facet/330-614"
+    "C10/facet/3322-3791"
+    "C10/facet/3792-3882"
+    "C10/facet/5553-5669"
+    "C10/facet/5670-5693"
+    "C10/facet/5693-5751"
+    "C10/facet/5751-5783"
+    "C10/facet/5783-5804"
+    "C10/facet/5804-5850"
+    "C10/facet/5850-5877"
+    "C10/facet/5877-5920"
+    "C10/facet/5920-5957"
+    "C10/facet/5958-6081"
+    "C10/facet/6098-6149"
+    "C10/facet/615-800"
+    "C10/facet/6150-6225"
+    "C10/facet/6225-6278"
+    "C10/facet/6278-6331"
+    "C10/facet/6331-6402"
+    "C10/facet/6402-6478"
+    "C10/facet/6478-6531"
+    "C10/facet/6531-6601"
+    "C10/facet/6601-6647"
+    "C10/facet/6647-6688"
+    "C10/facet/6688-6758"
+    "C10/facet/6759-6948"
+    "C10/facet/6970-7028"
+    "C10/facet/7336-7383"
+    "C10/facet/7384-7416"
+    "C10/facet/7416-7476"
+    "C10/facet/7576-7630"
+    "C10/facet/818-885"
+    "C10/facet/885-1103"],
+   :requested-target "safety/safe1/outcomes",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same total exactly-one safety classification producer; specialized inventory and source/type/effect/ownership/profile attachments strengthen coverage, not another safety engine.",
+   :archived-record-sha256
+   "6ea35e40ffdd7dc53c57d490d07284af2088a8cf4dc34ba8c978a76c2b9e0f9b",
+   :status :accepted,
+   :id "compiler/c10/safety-classification",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe1/outcomes",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C10/facet/1103-1239"
+    "C10/facet/1737-1774"
+    "C10/facet/1774-1840"
+    "C10/facet/1840-1892"
+    "C10/facet/1892-2000"
+    "C10/facet/2000-2038"
+    "C10/facet/2038-2084"
+    "C10/facet/2084-2189"
+    "C10/facet/2216-2246"
+    "C10/facet/2246-2272"
+    "C10/facet/2272-2294"
+    "C10/facet/2294-2319"
+    "C10/facet/2319-2355"
+    "C10/facet/2355-2387"
+    "C10/facet/2387-2425"
+    "C10/facet/2425-2461"
+    "C10/facet/2461-2483"
+    "C10/facet/330-614"
+    "C10/facet/3909-3932"
+    "C10/facet/3933-3954"
+    "C10/facet/3954-3974"
+    "C10/facet/3974-4000"
+    "C10/facet/4000-4022"
+    "C10/facet/4022-4042"
+    "C10/facet/4042-4077"
+    "C10/facet/4077-4098"
+    "C10/facet/4098-4156"
+    "C10/facet/4156-4183"
+    "C10/facet/4184-4276"
+    "C10/facet/6098-6149"
+    "C10/facet/615-800"
+    "C10/facet/6150-6225"
+    "C10/facet/6225-6278"
+    "C10/facet/6278-6331"
+    "C10/facet/6331-6402"
+    "C10/facet/6402-6478"
+    "C10/facet/6478-6531"
+    "C10/facet/6531-6601"
+    "C10/facet/6601-6647"
+    "C10/facet/6647-6688"
+    "C10/facet/6688-6758"
+    "C10/facet/6759-6948"
+    "C10/facet/7176-7240"
+    "C10/facet/7336-7383"
+    "C10/facet/7476-7533"],
+   :requested-target "safety/safe1/runtime-checks",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same exact-operation guard/check record producer with precise condition, emitted location, profile-legal failure/effects, dominance and invalidation. Runtime execution of the failure outcome remains distinct.",
+   :archived-record-sha256
+   "2ea3b87aed70d781fc45947c9750773f05dd478beba27f8ad062bd818cf3b0bc",
+   :status :accepted,
+   :id "compiler/c10/runtime-safety-checks",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe1/runtime-checks",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C10/facet/1623-1719"
+    "C10/facet/1737-1774"
+    "C10/facet/1774-1840"
+    "C10/facet/1840-1892"
+    "C10/facet/1892-2000"
+    "C10/facet/2000-2038"
+    "C10/facet/2038-2084"
+    "C10/facet/2084-2189"
+    "C10/facet/2216-2246"
+    "C10/facet/2246-2272"
+    "C10/facet/2272-2294"
+    "C10/facet/2294-2319"
+    "C10/facet/2319-2355"
+    "C10/facet/2355-2387"
+    "C10/facet/2387-2425"
+    "C10/facet/2425-2461"
+    "C10/facet/2461-2483"
+    "C10/facet/330-614"
+    "C10/facet/6098-6149"
+    "C10/facet/615-800"
+    "C10/facet/6150-6225"
+    "C10/facet/6225-6278"
+    "C10/facet/6278-6331"
+    "C10/facet/6331-6402"
+    "C10/facet/6402-6478"
+    "C10/facet/6478-6531"
+    "C10/facet/6531-6601"
+    "C10/facet/6601-6647"
+    "C10/facet/6647-6688"
+    "C10/facet/6688-6758"
+    "C10/facet/6759-6948"
+    "C10/facet/7241-7310"
+    "C10/facet/7336-7383"
+    "C10/facet/7796-7865"],
+   :requested-target "safety/safe1/safety-artifact",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same consumable safety artifact producer for certificate/conformance users, retaining operation/outcome/proof/import-trust/taint/capability links. Publishing it does not validate an imported proof.",
+   :archived-record-sha256
+   "27630b4d903be2279fcff6d08559488a40c0545527f1ea0684baea98d3ec260b",
+   :status :accepted,
+   :id "compiler/c10/certificate-consumption",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe1/safety-artifact",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C11/facet/1495-1624"
+    "C11/facet/1710-1736"
+    "C11/facet/1736-1817"
+    "C11/facet/1817-1852"
+    "C11/facet/1852-1893"
+    "C11/facet/1893-1933"
+    "C11/facet/1933-1986"
+    "C11/facet/1986-2064"
+    "C11/facet/2091-2105"
+    "C11/facet/2105-2127"
+    "C11/facet/2127-2146"
+    "C11/facet/2146-2213"
+    "C11/facet/2213-2248"
+    "C11/facet/2248-2271"
+    "C11/facet/2271-2294"
+    "C11/facet/2294-2319"
+    "C11/facet/324-631"
+    "C11/facet/5518-5663"
+    "C11/facet/5664-5827"
+    "C11/facet/5828-5882"
+    "C11/facet/632-825"
+    "C11/facet/6665-6704"
+    "C11/facet/6705-6750"
+    "C11/facet/6750-6797"
+    "C11/facet/6797-6842"
+    "C11/facet/6842-6874"
+    "C11/facet/6874-6927"
+    "C11/facet/6927-6989"
+    "C11/facet/6989-7044"
+    "C11/facet/7044-7087"
+    "C11/facet/7087-7154"
+    "C11/facet/7154-7210"
+    "C11/facet/7211-7362"
+    "C11/facet/7590-7651"
+    "C11/facet/7757-7807"
+    "C11/facet/8216-8244"],
+   :requested-target "compiler/c12/domain-semantic-anchor",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same semantic anchor with MIR op set, domain artifact, equivalence and fallback references, plus rejection of unanchored/target-opaque representations.",
+   :archived-record-sha256
+   "c9c68787bfce9091ed36ded29e3ad8c15ea88347875102b6abf6a045a101a900",
+   :status :accepted,
+   :id "compiler/c11/mir-domain-anchor",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c12/domain-semantic-anchor",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C11/facet/1710-1736"
+    "C11/facet/1736-1817"
+    "C11/facet/1817-1852"
+    "C11/facet/1852-1893"
+    "C11/facet/1893-1933"
+    "C11/facet/1933-1986"
+    "C11/facet/1986-2064"
+    "C11/facet/2091-2105"
+    "C11/facet/2105-2127"
+    "C11/facet/2127-2146"
+    "C11/facet/2146-2213"
+    "C11/facet/2213-2248"
+    "C11/facet/2248-2271"
+    "C11/facet/2271-2294"
+    "C11/facet/2294-2319"
+    "C11/facet/324-631"
+    "C11/facet/5902-6086"
+    "C11/facet/632-825"
+    "C11/facet/6665-6704"
+    "C11/facet/6705-6750"
+    "C11/facet/6750-6797"
+    "C11/facet/6797-6842"
+    "C11/facet/6842-6874"
+    "C11/facet/6874-6927"
+    "C11/facet/6927-6989"
+    "C11/facet/6989-7044"
+    "C11/facet/7044-7087"
+    "C11/facet/7087-7154"
+    "C11/facet/7154-7210"
+    "C11/facet/7211-7362"
+    "C11/facet/7757-7807"
+    "C11/facet/8186-8216"],
+   :requested-target "safety/safe15/check-erasure",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same preservation unless exact valid proof dominates the guarded operation, specifically forbidding generic DCE from erasing checks; PERF10 qualification retained.",
+   :archived-record-sha256
+   "6d8738c958f5a0d4a15839ee901617fbcb003b5c772f98d64ee1f989a1f9abc7",
+   :status :accepted,
+   :id "compiler/c11/mir-runtime-checks",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe15/check-erasure",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C13/facet/1744-1786"
+    "C13/facet/1786-1821"
+    "C13/facet/1821-1877"
+    "C13/facet/1877-1929"
+    "C13/facet/1929-1991"
+    "C13/facet/1991-2046"
+    "C13/facet/2046-2119"
+    "C13/facet/2146-2163"
+    "C13/facet/2163-2189"
+    "C13/facet/2189-2218"
+    "C13/facet/2218-2245"
+    "C13/facet/2245-2271"
+    "C13/facet/2271-2310"
+    "C13/facet/2310-2340"
+    "C13/facet/2340-2368"
+    "C13/facet/2387-2888"
+    "C13/facet/2889-2961"
+    "C13/facet/2989-3025"
+    "C13/facet/3026-3062"
+    "C13/facet/3062-3087"
+    "C13/facet/3087-3123"
+    "C13/facet/3123-3135"
+    "C13/facet/3135-3176"
+    "C13/facet/3176-3210"
+    "C13/facet/3210-3275"
+    "C13/facet/3275-3308"
+    "C13/facet/329-637"
+    "C13/facet/3308-3393"
+    "C13/facet/3393-3450"
+    "C13/facet/3450-3498"
+    "C13/facet/3498-3537"
+    "C13/facet/3537-3566"
+    "C13/facet/3566-3593"
+    "C13/facet/3593-3621"
+    "C13/facet/3621-3664"
+    "C13/facet/3664-3699"
+    "C13/facet/3699-3740"
+    "C13/facet/3741-3842"
+    "C13/facet/5555-5603"
+    "C13/facet/5604-5649"
+    "C13/facet/5649-5718"
+    "C13/facet/5718-5771"
+    "C13/facet/5771-5829"
+    "C13/facet/5829-5887"
+    "C13/facet/5887-5933"
+    "C13/facet/5933-5994"
+    "C13/facet/5994-6052"
+    "C13/facet/6052-6113"
+    "C13/facet/6113-6160"
+    "C13/facet/6161-6340"
+    "C13/facet/638-776"
+    "C13/facet/6713-6758"
+    "C13/facet/6759-6800"
+    "C13/facet/794-1015"],
+   :requested-target "meta/pass-contract-execution",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same before/after pass-contract execution validator, strengthened by optimization analyses/proof/profile/target contexts. Standard pass-family list is coverage, not invented per-name algorithms.",
+   :archived-record-sha256
+   "7c38bf3e0ac62e260c4a9c59267f46106dfb1aaa92fd150f86b081f54728a752",
+   :status :accepted,
+   :id "compiler/c13/optimization-contract",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "meta/pass-contract-execution",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/5345-5402"
+    "C13/facet/1145-1317"
+    "C13/facet/1744-1786"
+    "C13/facet/1786-1821"
+    "C13/facet/1821-1877"
+    "C13/facet/1877-1929"
+    "C13/facet/1929-1991"
+    "C13/facet/1991-2046"
+    "C13/facet/2046-2119"
+    "C13/facet/2146-2163"
+    "C13/facet/2163-2189"
+    "C13/facet/2189-2218"
+    "C13/facet/2218-2245"
+    "C13/facet/2245-2271"
+    "C13/facet/2271-2310"
+    "C13/facet/2310-2340"
+    "C13/facet/2340-2368"
+    "C13/facet/329-637"
+    "C13/facet/4349-4382"
+    "C13/facet/4383-4407"
+    "C13/facet/4407-4428"
+    "C13/facet/4428-4454"
+    "C13/facet/4454-4492"
+    "C13/facet/4492-4519"
+    "C13/facet/4519-4537"
+    "C13/facet/4537-4561"
+    "C13/facet/4562-4668"
+    "C13/facet/5555-5603"
+    "C13/facet/5604-5649"
+    "C13/facet/5649-5718"
+    "C13/facet/5718-5771"
+    "C13/facet/5771-5829"
+    "C13/facet/5829-5887"
+    "C13/facet/5887-5933"
+    "C13/facet/5933-5994"
+    "C13/facet/5994-6052"
+    "C13/facet/6052-6113"
+    "C13/facet/6113-6160"
+    "C13/facet/6161-6340"
+    "C13/facet/638-776"
+    "C13/facet/6713-6758"
+    "C13/facet/6938-6994"
+    "C13/facet/7137-7196"],
+   :requested-target "compiler/c1/preserve-evidence",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same conservative semantic fact survival/replace/check/reject outcome at optimization context; proofs/cache/diagnostics downstream dependencies strengthen the original.",
+   :archived-record-sha256
+   "f47df6bb3e672ce416294ba866271731b98c6716291a816cefe70f5a11d903bf",
+   :status :accepted,
+   :id "compiler/c13/regenerate-invalidated-facts",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c1/preserve-evidence",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C13/facet/1317-1355"
+    "C13/facet/1744-1786"
+    "C13/facet/1786-1821"
+    "C13/facet/1821-1877"
+    "C13/facet/1877-1929"
+    "C13/facet/1929-1991"
+    "C13/facet/1991-2046"
+    "C13/facet/2046-2119"
+    "C13/facet/2146-2163"
+    "C13/facet/2163-2189"
+    "C13/facet/2189-2218"
+    "C13/facet/2218-2245"
+    "C13/facet/2245-2271"
+    "C13/facet/2271-2310"
+    "C13/facet/2310-2340"
+    "C13/facet/2340-2368"
+    "C13/facet/329-637"
+    "C13/facet/5555-5603"
+    "C13/facet/5604-5649"
+    "C13/facet/5649-5718"
+    "C13/facet/5718-5771"
+    "C13/facet/5771-5829"
+    "C13/facet/5829-5887"
+    "C13/facet/5887-5933"
+    "C13/facet/5933-5994"
+    "C13/facet/5994-6052"
+    "C13/facet/6052-6113"
+    "C13/facet/6113-6160"
+    "C13/facet/6161-6340"
+    "C13/facet/6362-6420"
+    "C13/facet/638-776"
+    "C13/facet/6495-6548"
+    "C13/facet/6549-6608"
+    "C13/facet/6713-6758"
+    "C13/facet/6994-7033"
+    "C13/facet/7033-7081"],
+   :requested-target "safety/safe15/check-erasure",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same proof-authorized exact check erasure; PERF10 dominance, surviving source/effects/safety/domain facts and no undefined-behavior assumption remain mandatory.",
+   :archived-record-sha256
+   "76161241d47d20ca441543e7beb516bdc1ee23089a9520459a15d18040bfe8f0",
+   :status :accepted,
+   :id "compiler/c13/check-elision",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe15/check-erasure",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C14/facet/1708-1729"
+    "C14/facet/1729-1771"
+    "C14/facet/1771-1827"
+    "C14/facet/1827-1884"
+    "C14/facet/1884-1952"
+    "C14/facet/1952-1998"
+    "C14/facet/1998-2106"
+    "C14/facet/2133-2153"
+    "C14/facet/2153-2182"
+    "C14/facet/2182-2198"
+    "C14/facet/2198-2227"
+    "C14/facet/2227-2253"
+    "C14/facet/2253-2285"
+    "C14/facet/2285-2320"
+    "C14/facet/2320-2340"
+    "C14/facet/2340-2370"
+    "C14/facet/2370-2394"
+    "C14/facet/2416-2890"
+    "C14/facet/2891-2967"
+    "C14/facet/2991-3042"
+    "C14/facet/3043-3073"
+    "C14/facet/3073-3130"
+    "C14/facet/3130-3190"
+    "C14/facet/3190-3239"
+    "C14/facet/3239-3299"
+    "C14/facet/327-578"
+    "C14/facet/3299-3342"
+    "C14/facet/3342-3379"
+    "C14/facet/3379-3424"
+    "C14/facet/3424-3478"
+    "C14/facet/3479-3606"
+    "C14/facet/579-767"
+    "C14/facet/6078-6129"
+    "C14/facet/6130-6183"
+    "C14/facet/6183-6237"
+    "C14/facet/6237-6302"
+    "C14/facet/6302-6349"
+    "C14/facet/6349-6407"
+    "C14/facet/6407-6454"
+    "C14/facet/6454-6512"
+    "C14/facet/6512-6582"
+    "C14/facet/6582-6644"
+    "C14/facet/6644-6704"
+    "C14/facet/6705-6913"
+    "C14/facet/6935-6987"
+    "C14/facet/7300-7360"
+    "C14/facet/7361-7392"
+    "C14/facet/7392-7439"
+    "C14/facet/785-950"],
+   :requested-target "backend/input-eligibility",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same verified current backend input packet admission; all ABI/runtime/provider/authority/profile/target/proof eligibility predicates strengthen the common gate.",
+   :archived-record-sha256
+   "f811735d60ee732caf3ad0040a4555d5937fc72d09eaabb81bcd4130a2cea876",
+   :status :accepted,
+   :id "compiler/c14/verified-lowering-ingress",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "backend/input-eligibility",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C1/facet/5402-5518"
+    "C14/facet/1280-1450"
+    "C14/facet/1708-1729"
+    "C14/facet/1729-1771"
+    "C14/facet/1771-1827"
+    "C14/facet/1827-1884"
+    "C14/facet/1884-1952"
+    "C14/facet/1952-1998"
+    "C14/facet/1998-2106"
+    "C14/facet/2133-2153"
+    "C14/facet/2153-2182"
+    "C14/facet/2182-2198"
+    "C14/facet/2198-2227"
+    "C14/facet/2227-2253"
+    "C14/facet/2253-2285"
+    "C14/facet/2285-2320"
+    "C14/facet/2320-2340"
+    "C14/facet/2340-2370"
+    "C14/facet/2370-2394"
+    "C14/facet/327-578"
+    "C14/facet/5143-5614"
+    "C14/facet/5615-5710"
+    "C14/facet/579-767"
+    "C14/facet/6078-6129"
+    "C14/facet/6130-6183"
+    "C14/facet/6183-6237"
+    "C14/facet/6237-6302"
+    "C14/facet/6302-6349"
+    "C14/facet/6349-6407"
+    "C14/facet/6407-6454"
+    "C14/facet/6454-6512"
+    "C14/facet/6512-6582"
+    "C14/facet/6582-6644"
+    "C14/facet/6644-6704"
+    "C14/facet/6705-6913"
+    "C14/facet/7186-7274"
+    "C14/facet/7300-7360"
+    "C14/facet/7531-7576"
+    "C14/facet/7639-7707"],
+   :requested-target "backend/common-emission-validation",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same emitted artifact's required common manifest/provenance/effects/grants/safety/proof/runtime/dependency/source packet at emission; consumer tests do not constitute extra producer behavior.",
+   :archived-record-sha256
+   "2797d7262c642efc20327ef276cbca7545b5cf22eb160fe71bf47440649f0bf3",
+   :status :accepted,
+   :id "compiler/c14/target-provenance",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "backend/common-emission-validation",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C14/facet/1708-1729"
+    "C14/facet/1729-1771"
+    "C14/facet/1771-1827"
+    "C14/facet/1827-1884"
+    "C14/facet/1884-1952"
+    "C14/facet/1952-1998"
+    "C14/facet/1998-2106"
+    "C14/facet/2133-2153"
+    "C14/facet/2153-2182"
+    "C14/facet/2182-2198"
+    "C14/facet/2198-2227"
+    "C14/facet/2227-2253"
+    "C14/facet/2253-2285"
+    "C14/facet/2285-2320"
+    "C14/facet/2320-2340"
+    "C14/facet/2340-2370"
+    "C14/facet/2370-2394"
+    "C14/facet/327-578"
+    "C14/facet/3626-3658"
+    "C14/facet/3659-3681"
+    "C14/facet/3681-3706"
+    "C14/facet/3706-3735"
+    "C14/facet/3735-3775"
+    "C14/facet/3775-3801"
+    "C14/facet/3801-3829"
+    "C14/facet/3829-3863"
+    "C14/facet/3863-3891"
+    "C14/facet/3891-3916"
+    "C14/facet/3916-3938"
+    "C14/facet/3938-3973"
+    "C14/facet/3973-4002"
+    "C14/facet/4003-4100"
+    "C14/facet/579-767"
+    "C14/facet/6078-6129"
+    "C14/facet/6130-6183"
+    "C14/facet/6183-6237"
+    "C14/facet/6237-6302"
+    "C14/facet/6302-6349"
+    "C14/facet/6349-6407"
+    "C14/facet/6407-6454"
+    "C14/facet/6454-6512"
+    "C14/facet/6512-6582"
+    "C14/facet/6582-6644"
+    "C14/facet/6644-6704"
+    "C14/facet/6705-6913"
+    "C14/facet/7300-7360"
+    "C14/facet/7439-7467"],
+   :requested-target "performance/layout-boundary",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same explicit boundary layout/ABI fact producer across calling/data/closure/error/resource/FFI/address/GC/debug/unwind representations; target manifest recording is acceptance, not backend folklore.",
+   :archived-record-sha256
+   "4f8c520fec4088066403658684350965845518be6972fb86006105a54614401c",
+   :status :accepted,
+   :id "compiler/c14/abi-layout",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "performance/layout-boundary",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C17/facet/1052-1137"
+    "C17/facet/1224-1390"
+    "C17/facet/1657-1690"
+    "C17/facet/1690-1759"
+    "C17/facet/1759-1801"
+    "C17/facet/1801-1889"
+    "C17/facet/1889-1929"
+    "C17/facet/1929-1958"
+    "C17/facet/1958-2034"
+    "C17/facet/2061-2080"
+    "C17/facet/2080-2108"
+    "C17/facet/2108-2134"
+    "C17/facet/2134-2163"
+    "C17/facet/2163-2221"
+    "C17/facet/2221-2247"
+    "C17/facet/2247-2274"
+    "C17/facet/2274-2296"
+    "C17/facet/2296-2326"
+    "C17/facet/341-626"
+    "C17/facet/3632-4016"
+    "C17/facet/4017-4128"
+    "C17/facet/5386-5428"
+    "C17/facet/5429-5478"
+    "C17/facet/5478-5530"
+    "C17/facet/5530-5597"
+    "C17/facet/5597-5647"
+    "C17/facet/5647-5687"
+    "C17/facet/5687-5737"
+    "C17/facet/5737-5792"
+    "C17/facet/5792-5843"
+    "C17/facet/5843-5889"
+    "C17/facet/5889-5945"
+    "C17/facet/5946-6133"
+    "C17/facet/6155-6214"
+    "C17/facet/627-819"
+    "C17/facet/6479-6524"
+    "C17/facet/6666-6694"],
+   :requested-target "meta/pass-contract-execution",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same declared pass I/O/required/preserved/invalidated/regenerated/emitted contract validator for plugin passes, with normal semantic artifacts. Scoped write authority remains independently checked.",
+   :archived-record-sha256
+   "17d7ace5b99c4789fdf1d86d78a8e5e1422b6041f2f319d00a7dfa324631654c",
+   :status :accepted,
+   :id "compiler/c17/plugin-pass-contract",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "meta/pass-contract-execution",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :hash-verified,
+   :source-facet-ids
+   ["C18/facet/1218-1332"
+    "C18/facet/1609-1655"
+    "C18/facet/1655-1756"
+    "C18/facet/1756-1811"
+    "C18/facet/1811-1868"
+    "C18/facet/1868-2000"
+    "C18/facet/2000-2068"
+    "C18/facet/2095-2125"
+    "C18/facet/2125-2153"
+    "C18/facet/2153-2178"
+    "C18/facet/2178-2209"
+    "C18/facet/2209-2244"
+    "C18/facet/2244-2289"
+    "C18/facet/2289-2314"
+    "C18/facet/2314-2337"
+    "C18/facet/2337-2365"
+    "C18/facet/350-633"
+    "C18/facet/6005-6062"
+    "C18/facet/6063-6130"
+    "C18/facet/6130-6178"
+    "C18/facet/6178-6233"
+    "C18/facet/6233-6282"
+    "C18/facet/6282-6342"
+    "C18/facet/634-820"
+    "C18/facet/6342-6405"
+    "C18/facet/6405-6468"
+    "C18/facet/6468-6517"
+    "C18/facet/6517-6571"
+    "C18/facet/6572-6737"
+    "C18/facet/6909-6988"
+    "C18/facet/7148-7210"
+    "C18/facet/7420-7504"],
+   :requested-target "backend/conformance-execution-pack",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same actual backend output semantic comparison/conformance evidence producer, strengthened by source/core/MIR intent and supported-profile scope. Manifests and prose supply no execution credit.",
+   :archived-record-sha256
+   "22dd9cd4ca1208425163c906ac3955b0e17787cd947733ac9eeb1072ed0470af",
+   :status :accepted,
+   :id "compiler/c18/backend-validation",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Compiler and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "backend/conformance-execution-pack",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test1/347-713"
+    "testing/partition/test1/714-822"
+    "testing/test1/diagnostic-match/conformance-criteria/L100"
+    "testing/test1/diagnostic-match/diagnostics/L92"
+    "testing/test1/diagnostic-match/rejection-rules/L83"
+    "testing/test1/diagnostic-match/requirements/L44"],
+   :requested-target "testing/test2/diagnostic-match",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same structured negative-result diagnostic matcher. Union stable rule codes/source spans and context-specific profile/target/remediation fields, retaining early-stage unavailable metadata rather than inventing it. C15 produces diagnostics; it is not the matcher.",
+   :archived-record-sha256
+   "6b64f95847083044049ea9d46538c2cd1d55b55cf4b86292f03a91b3480ebf3c",
+   :status :accepted,
+   :id "testing/test1/diagnostic-match",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test2/diagnostic-match",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test2/339-693"
+    "testing/partition/test2/694-833"
+    "testing/test2/crash-minimization/conformance-criteria/L120"
+    "testing/test2/crash-minimization/requirements/L59"],
+   :requested-target "testing/test9/minimize-regressions",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Compiler crash minimization is a failure-to-repro case of the shared shrink/replay operation. Preserve compiler version and source fixture identity; don't infer a particular shrink algorithm or require a crash where a diagnostic was expected.",
+   :archived-record-sha256
+   "181fe88e6f9912ef641d2c083184483253e444c2c4750958354073b2554c61cf",
+   :status :accepted,
+   :id "testing/test2/crash-minimization",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test9/minimize-regressions",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test4/345-697"
+    "testing/partition/test4/698-841"
+    "testing/test4/fixture-identity/diagnostics/L89"
+    "testing/test4/fixture-identity/rejection-rules/L81"
+    "testing/test4/fixture-identity/requirements/L39"],
+   :requested-target "testing/test1/fixture-contract",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Profile/target metadata is the profile-fixture case of the shared pre-dispatch fixture admission gate; preserve both required fields, and do not require accepted-language type/effect expectations for nonlanguage fixtures unless applicable.",
+   :archived-record-sha256
+   "a72e5a5cff998851e805df5613b216888637f659347513840476bd62e5ce2a0b",
+   :status :accepted,
+   :id "testing/test4/fixture-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test1/fixture-contract",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test5/345-750"
+    "testing/partition/test5/751-822"
+    "testing/test5/ai-misuse/conformance-criteria/L110"
+    "testing/test5/ai-misuse/diagnostics/L99"
+    "testing/test5/ai-misuse/rejection-rules/L89"
+    "testing/test5/ai-misuse/requirements/L47"],
+   :requested-target "behavior/a9/safety-probe-coverage",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "AI injection/unauthorized-tool safety fixtures are contexts of the actual defense-probe operation; preserve explicit deny-by-policy AND recorded attempts assertions from TEST5, rather than inventing an autonomous detector from a monitor-record clause. Full context-relevant A9 categories remain binding.",
+   :archived-record-sha256
+   "4bb769411d90c5f0f82c76b70516faa114f0fcc0c9622e6f4036bcb35548a3a0",
+   :status :accepted,
+   :id "testing/test5/ai-misuse",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/a9/safety-probe-coverage",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test6/346-712"
+    "testing/partition/test6/713-801"
+    "testing/test6/supported-semantics/backend-matrix/L21"
+    "testing/test6/supported-semantics/backend-matrix/L23"
+    "testing/test6/supported-semantics/backend-matrix/L35"
+    "testing/test6/supported-semantics/conformance-criteria/L103"
+    "testing/test6/supported-semantics/diagnostics/L94"
+    "testing/test6/supported-semantics/requirements/L41"],
+   :requested-target "backend/conformance-execution-pack",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same actual backend output execution OR accepted semantic comparison and metadata/diagnostic validation operation. Preserve the eleven-backend matrix and applicable compile/run/diagnostic/source-map/artifact/negative fixture classes. Non-runnable targets still need B14 artifact/verifier/metadata/diagnostic checks and explicit availability records; no execution-only conformance claim.",
+   :archived-record-sha256
+   "60b6e7d71e6742f9cd4baf4b7dd2868f4157d53cbbfba5c4a5904835953ec294",
+   :status :accepted,
+   :id "testing/test6/supported-semantics",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "backend/conformance-execution-pack",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test6/346-712"
+    "testing/partition/test6/713-801"
+    "testing/test6/fixture-identity/diagnostics/L93"
+    "testing/test6/fixture-identity/rejection-rules/L83"
+    "testing/test6/fixture-identity/requirements/L40"],
+   :requested-target "testing/test1/fixture-contract",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Backend/profile/target/runtime-family/artifact-kind are backend fixture admission fields of the shared gate; required conditional fields remain explicit, not merely a target label.",
+   :archived-record-sha256
+   "f2729c439a806f5723d4f615c5f04235d51961556b9f7b1f5bac0fa8610d854e",
+   :status :accepted,
+   :id "testing/test6/fixture-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test1/fixture-contract",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test6/346-712"
+    "testing/partition/test6/713-801"
+    "testing/test6/runtime-authority/diagnostics/L99"
+    "testing/test6/runtime-authority/rejection-rules/L88"
+    "testing/test6/runtime-authority/requirements/L46"],
+   :requested-target "testing/test1/offline-authority",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Backend runtime fixtures use the same nonambient harness authority policy with explicit runtime selection and fixture grants. This neither grants authority to generated code nor executes unavailable targets.",
+   :archived-record-sha256
+   "f97eaaa61a17dbc309cad07035e422b26c92fbd05011adb59609f8aefb13ad66",
+   :status :accepted,
+   :id "testing/test6/runtime-authority",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test1/offline-authority",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test7/347-719"
+    "testing/partition/test7/720-818"
+    "testing/test7/documentation/conformance-criteria/L109"
+    "testing/test7/documentation/diagnostics/L99"
+    "testing/test7/documentation/rejection-rules/L90"
+    "testing/test7/documentation/requirements/L50"],
+   :requested-target "behavior/t7/runnable-doc-examples",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same marked-runnable example checker. Preserve actual test/doc-check runner and profile/target/effect policy; TEST7 failing runnable examples must reject. T7's inapplicability marking is not permission to relabel a claimed-runnable failure as success. L13 claimed-profile compiled examples are additional contexts for root, not all documentation generation.",
+   :archived-record-sha256
+   "73a2cd36caf02b0c0a78374d2c770cffc3ecc13a151a68b85b7e13d3a1576d8f",
+   :status :accepted,
+   :id "testing/test7/documentation",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/t7/runnable-doc-examples",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test8/352-707"
+    "testing/partition/test8/708-859"
+    "testing/test8/eval-identity/conformance-criteria/L103"
+    "testing/test8/eval-identity/diagnostics/L98"
+    "testing/test8/eval-identity/evaluation-areas/L21"
+    "testing/test8/eval-identity/evaluation-areas/L23"
+    "testing/test8/eval-identity/rejection-rules/L88"
+    "testing/test8/eval-identity/requirements/L37"],
+   :requested-target "behavior/a9/eval-subject-binding",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same exact consumed subject/dataset/model/prompt/tool/memory/policy/workflow/runtime identity binding, including release-candidate artifact hash and stale-subject rejection. Identity fields are acceptance facets, not separate count units or proof that an eval ran.",
+   :archived-record-sha256
+   "f87532874014300598ca2a453896f6bbbf93c9be8f61e69143b021eaf22b3d91",
+   :status :accepted,
+   :id "testing/test8/eval-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/a9/eval-subject-binding",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test8/352-707"
+    "testing/partition/test8/708-859"
+    "testing/test8/structured-output/diagnostics/L96"
+    "testing/test8/structured-output/rejection-rules/L86"
+    "testing/test8/structured-output/requirements/L38"],
+   :requested-target "behavior/a3/typed-output-admission",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "AI evaluation consumes tainted structured output only after declared schema/intended-use validation; this is the same admission gate in eval context. Actual schema validation is required, not a schema-validity count alone; optional unstructured text cannot authorize a trusted tool.",
+   :archived-record-sha256
+   "e41a745b6729fe574021a3aa2fc699381f10164f2b137bf41384cb86cdd4fd20",
+   :status :accepted,
+   :id "testing/test8/structured-output",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/a3/typed-output-admission",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test8/352-707"
+    "testing/partition/test8/708-859"
+    "testing/test8/safety-probes/conformance-criteria/L105"
+    "testing/test8/safety-probes/diagnostics/L97"
+    "testing/test8/safety-probes/rejection-rules/L87"
+    "testing/test8/safety-probes/requirements/L39"],
+   :requested-target "behavior/a9/safety-probe-coverage",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same actual context-relevant defense probes, with TEST8 injection/unauthorized-tool/secret/policy-override cases and denied injection/tool results. Do not omit A9 policy-denial/schema/refusal categories or confuse probe execution with mere runtime monitoring.",
+   :archived-record-sha256
+   "d04d30e8998183080fb927a4716a5abe9999a3896b9bd0445cba84ece697a46d",
+   :status :accepted,
+   :id "testing/test8/safety-probes",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/a9/safety-probe-coverage",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test8/352-707"
+    "testing/partition/test8/708-859"
+    "testing/test8/replay/conformance-criteria/L104"
+    "testing/test8/replay/diagnostics/L95"
+    "testing/test8/replay/rejection-rules/L85"
+    "testing/test8/replay/requirements/L40"],
+   :requested-target "testing/test3/replay",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Evaluation supplies required first-run and replay traces to the same workflow replay conformance operation. Preserve recorded nondeterminism and no repeated effects, plus exact evaluation subject; do not alias the test to the replay runtime implementation.",
+   :archived-record-sha256
+   "d29bce776a5d4e9ce0ada579938c0460c53a35e4c36d6d21284a337cef8f31a6",
+   :status :accepted,
+   :id "testing/test8/replay",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test3/replay",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test8/352-707"
+    "testing/partition/test8/708-859"
+    "testing/test8/live-provider-policy/conformance-criteria/L108"
+    "testing/test8/live-provider-policy/diagnostics/L94"
+    "testing/test8/live-provider-policy/rejection-rules/L84"
+    "testing/test8/live-provider-policy/requirements/L43"],
+   :requested-target "behavior/a9/live-eval-policy",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same live eval credential/actual external spend/retention policy and enforcement. Preserve recorded/mocked identification, actual budget where relevant, and no ambient credential assumption; removed compiler-work accounting does not cancel real provider billing or privacy.",
+   :archived-record-sha256
+   "6038533a96d7ecf1aa342b25d555b1ad7750b5bbbc060b601ebd7066a7eab0ca",
+   :status :accepted,
+   :id "testing/test8/live-provider-policy",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "behavior/a9/live-eval-policy",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test10/347-654"
+    "testing/partition/test10/655-758"
+    "testing/test10/diagnostic-comparison/conformance-criteria/L100"
+    "testing/test10/diagnostic-comparison/diagnostics/L93"
+    "testing/test10/diagnostic-comparison/rejection-rules/L84"
+    "testing/test10/diagnostic-comparison/requirements/L41"],
+   :requested-target "testing/test2/diagnostic-match",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same stable structured diagnostic comparator, with TEST10 code/category comparisons when text differs and no category drift ignored. Preserve family-specific source spans/context when required; do not require identical localized prose.",
+   :archived-record-sha256
+   "c125d8dd31f3a7faad0e3b97f17e987a7c3e232d30c94a72cc9d55c54c79120e",
+   :status :accepted,
+   :id "testing/test10/diagnostic-comparison",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test2/diagnostic-match",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test10/347-654"
+    "testing/partition/test10/655-758"
+    "testing/test10/failure-report/conformance-criteria/L102"
+    "testing/test10/failure-report/requirements/L45"],
+   :requested-target "testing/test9/minimize-regressions",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Differential failure produces reproducible minimized input plus both actual oracle outputs. Preserve TEST10 oracle/version/observable/context/divergence provenance; minimization is shared across failure kinds, not a new algorithm per comparer.",
+   :archived-record-sha256
+   "2e1ce08a2b3e4e548988c817f496b29b6ef1e700e95513e03784368ce11c4485",
+   :status :accepted,
+   :id "testing/test10/failure-report",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "testing/test9/minimize-regressions",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test11/356-682"
+    "testing/partition/test11/683-792"
+    "testing/test11/proof-invalidation/conformance-criteria/L102"
+    "testing/test11/proof-invalidation/diagnostics/L91"
+    "testing/test11/proof-invalidation/rejection-rules/L81"
+    "testing/test11/proof-invalidation/requirements/L39"],
+   :requested-target "safety/safe15/invalidation",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same consumed proof applicability invalidation, retaining source/spec/compiler/dependency and previously approved DOM19 closure. Only relevant consumed changes invalidate a claim; immutable historical evidence keeps its original applicability scope.",
+   :archived-record-sha256
+   "b4c7adc856b5f912c1f0eb6b52f82592f5e8965c86bda62a9f76f62e550c36bb",
+   :status :accepted,
+   :id "testing/test11/proof-invalidation",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "safety/safe15/invalidation",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test11/356-682"
+    "testing/partition/test11/683-792"
+    "testing/test11/counterexamples/conformance-criteria/L103"
+    "testing/test11/counterexamples/requirements/L40"],
+   :requested-target "compiler/c18/counterexample-regression",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Formal counterexample persistence/reproducible fixture is a counterexample-capture context. Preserve C18's when-possible generation/available-field qualification, but once a formal counterexample exists TEST11 requires storing it; that conditional cannot waive an existing counterexample. Retain proof/oracle/input/version provenance without assuming a solver ran or inventing a minimizer algorithm.",
+   :archived-record-sha256
+   "be44c5d0a34bf49c6c43952f0d45df3dfcae8bca909d271df6e5c47a5f2360ff",
+   :status :accepted,
+   :id "testing/test11/counterexamples",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c18/counterexample-regression",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test11/356-682"
+    "testing/partition/test11/683-792"
+    "testing/test11/machine-evidence/diagnostics/L92"
+    "testing/test11/machine-evidence/rejection-rules/L82"
+    "testing/test11/machine-evidence/requirements/L41"],
+   :requested-target "schema/release-evidence-gating",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Release admission consumes the applicable actual machine-checkable formal evidence, rejecting prose-only claims. Preserve formal artifacts as complement, never replacement, for required executable tests; manifest/schema field presence alone cannot make a proof checked.",
+   :archived-record-sha256
+   "6b51876ec4a9e2d77747fc853519abd0161ba06e4174300a2367c2f02db2e31e",
+   :status :accepted,
+   :id "testing/test11/machine-evidence",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "schema/release-evidence-gating",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test11/356-682"
+    "testing/partition/test11/683-792"
+    "testing/test11/math-certificates/conformance-criteria/L104"
+    "testing/test11/math-certificates/diagnostics/L93"
+    "testing/test11/math-certificates/rejection-rules/L83"
+    "testing/test11/math-certificates/requirements/L42"],
+   :requested-target "math/semantic-equality-proof-gate",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same semantic-equality evidence admission for EML/symbolic/math claims; require applicable proof/certificate actually checked by the declared checker. Syntactic normal forms, tree identity or conformance report names are insufficient.",
+   :archived-record-sha256
+   "5a41d70180c32138d26b401ae693b2e4e6faebd40ce8859b0d4fd522adad2012",
+   :status :accepted,
+   :id "testing/test11/math-certificates",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "math/semantic-equality-proof-gate",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test12/350-663"
+    "testing/partition/test12/664-801"
+    "testing/test12/benchmark-identity/benchmark-areas/L20"
+    "testing/test12/benchmark-identity/benchmark-areas/L22"
+    "testing/test12/benchmark-identity/conformance-criteria/L103"
+    "testing/test12/benchmark-identity/conformance-criteria/L97"
+    "testing/test12/benchmark-identity/diagnostics/L88"
+    "testing/test12/benchmark-identity/rejection-rules/L79"
+    "testing/test12/benchmark-identity/requirements/L37"],
+   :requested-target "gravity/benchmark-reproducibility",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same attributable reproducible measurement operation, with actual samples and source/compiler/target/artifact/environment/metric/harness/baseline identities. Preserve all named benchmark areas as coverage, stored raw artifacts and real provider versions; a declared manifest alone is not a measurement.",
+   :archived-record-sha256
+   "b280639d993eacb8d84155a0fb8c2f9bf1f12d2ab79ca268c660ad6bdd7341f7",
+   :status :accepted,
+   :id "testing/test12/benchmark-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "gravity/benchmark-reproducibility",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test12/350-663"
+    "testing/partition/test12/664-801"
+    "testing/test12/regression-decision/conformance-criteria/L98"
+    "testing/test12/regression-decision/diagnostics/L89"
+    "testing/test12/regression-decision/rejection-rules/L80"
+    "testing/test12/regression-decision/requirements/L39"
+    "testing/test12/regression-decision/requirements/L40"],
+   :requested-target "performance/baseline-governance",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same deterministic threshold/variance/repeat/compatible-normalization regression decision with baseline/drift history. Preserve explicit variance OR repeat policy, differing-artifact normalization only when approved and no baseline update hiding correctness failures.",
+   :archived-record-sha256
+   "35077163e26b130cf5405d837ab45ded77a87aa7120fbcab19169e6369cb6d5d",
+   :status :accepted,
+   :id "testing/test12/regression-decision",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "performance/baseline-governance",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test13/346-717"
+    "testing/partition/test13/3532-3620"
+    "testing/partition/test13/718-887"
+    "testing/test13/stage-identity/requirements/L36"
+    "testing/test13/stage-identity/stages/L22"
+    "testing/test13/stage-identity/stages/L24"],
+   :requested-target "bootstrap/stage-evidence",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same declared stage trusted-input/generated-artifact/provenance manifest across the named transition sequence. Stage/module metadata does not establish implementation, reduced TCB or stage advancement.",
+   :archived-record-sha256
+   "5e8517cf7cc0d9ae69ffe6ada4d9391f733408f81ba27229ca66bbf9b9b05a20",
+   :status :accepted,
+   :id "testing/test13/stage-identity",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "bootstrap/stage-evidence",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test13/346-717"
+    "testing/partition/test13/718-887"
+    "testing/test13/unsafe-audit/conformance-criteria/L103"
+    "testing/test13/unsafe-audit/diagnostics/L93"
+    "testing/test13/unsafe-audit/rejection-rules/L83"
+    "testing/test13/unsafe-audit/requirements/L42"],
+   :requested-target "compiler/c10/unsafe-islands",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Unsafe compiler internals require the same actual audit/isolation artifacts with compiler stage/source/profile context. This is an artifact obligation, not evidence that the whole compiler is safe; manual source translation cannot erase unsafe history.",
+   :archived-record-sha256
+   "9642ac60c0cee99fcb50747aa722dd8b88cf45bd62a65862363646a2fc40932b",
+   :status :accepted,
+   :id "testing/test13/unsafe-audit",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "compiler/c10/unsafe-islands",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test13/346-717"
+    "testing/partition/test13/718-887"
+    "testing/test13/release-provenance/diagnostics/L89"
+    "testing/test13/release-provenance/rejection-rules/L79"
+    "testing/test13/release-provenance/requirements/L43"],
+   :requested-target "bootstrap/release-supply-chain",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Bootstrap release evidence must include signed OR OTHERWISE VERIFIABLE provenance under active policy, rejecting missing provenance. Do not turn the alternative into universal mandatory signing or treat SBOM/signature presence as successful final self-hosting.",
+   :archived-record-sha256
+   "c709ac7401b6bfbfbd050155a37ad63b94da938a585a25ad579ece479df06251",
+   :status :accepted,
+   :id "testing/test13/release-provenance",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "bootstrap/release-supply-chain",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}
+  {:historical-review-authentication :unverified,
+   :source-facet-ids
+   ["testing/partition/test13/346-717"
+    "testing/partition/test13/718-887"
+    "testing/test13/tcb-delta/conformance-criteria/L104"
+    "testing/test13/tcb-delta/diagnostics/L94"
+    "testing/test13/tcb-delta/rejection-rules/L84"],
+   :requested-target "bootstrap/trust-reduction",
+   :scope :applied-alias-identity-and-conservation,
+   :rationale
+   "Same explicit trusted-input/source boundary delta at each stage before claiming reduced trust. Writing code in Gravity alone is insufficient; unchanged or increased TCB must be reported honestly, not reset all original progress or fabricate seed retirement.",
+   :archived-record-sha256
+   "da1b1f3a72ca10dba49ceb7dc0e1d02b6fed4c7f5a2c99c5036affeecc053282",
+   :status :accepted,
+   :id "testing/test13/tcb-delta",
+   :task-interface-entailment :partial-scoped-interfaces-only,
+   :context :source-qualified-refinement-of-shared-operation,
+   :qualification
+   "One source-qualified operation with unioned Testing and owning-family acceptance conditions. Applied graph requires independent conservation review; task acceptance does not confer whole-requirement acceptance.",
+   :target "bootstrap/trust-reduction",
+   :whole-family-atomicity :unassessed,
+   :implementation-acceptance :unassessed}],
+ :added-task-count 0,
+ :predicate-corrections
+ [{:id "testing/test5/unsafe-audit",
+   :status :accepted-source-predicate-correction,
+   :prior-record-sha256
+   "fa26dcb68b4c70ea7655b99cb83f09f7fb07b562efb1ac4ee0d61f0c61857b85",
+   :current-acceptance :unassessed,
+   :historical-review-authentication :unverified}
+  {:id "testing/test2/generated-reentry",
+   :status :accepted-source-predicate-correction,
+   :prior-record-sha256
+   "8f2c89b5c90fc7b3ccd4ae840cee79fabf799b42701a27a9fc6e73a437c3120a",
+   :current-acceptance :unassessed,
+   :historical-review-authentication :unverified}
+  {:id "testing/test9/property-oracle",
+   :status :accepted-source-predicate-correction,
+   :prior-record-sha256
+   "03c6ad0fa3f66aedc9028c9ac92de92f2d0ce3be8b994e00de6d6c94b56720b2",
+   :current-acceptance :unassessed,
+   :historical-review-authentication :unverified}
+  {:id "testing/test2/cache-invalidation",
+   :status :accepted-source-predicate-correction,
+   :prior-record-sha256
+   "e8122718341160be20f023be4baf7344cb8084342ec478aa3a510492b407a3fb",
+   :current-acceptance :unassessed,
+   :historical-review-authentication :unverified}],
+ :schema-version 1,
+ :canonical-whole-manifest-adoption :pending,
+ :historical-testing-review
+ {:sha256
+  "5cf2f5240a2b41d3b81f4d4bd89d395d3d2dfa19d0c3e63ccdc9c660ca36e26a",
+  :authentication :unestablished,
+  :replacement-by-current-review false},
+ :scope :applied-alias-identity-and-conservation-only,
+ :kind :reviewed-source-alias-decisions,
+ :qualification
+ "Adopt these exact 65 alias decisions and four predicate corrections for source identity only. The independent review does not authenticate the unlocated historical Testing receipt. Source entailment flags, Testing splits, all missing task interfaces and implementation assessments remain open.",
+ :identities
+ {:source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+  :source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
+  :compiler-before "2c761cca47b77e8825e42640529308a3730637ae",
+  :compiler-after "22325cf4437599d97b79fccdd72172679e39e86f",
+  :pr445-candidate "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :pr445-tree "ba82bddb7e39e26f8219435f5b279ce7359cba40",
+  :current-task-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+  :current-task-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"},
+ :independent-review-sha256
+ "11410e1bf915276ec07b8f7cf73b41f882b302c4893278d70234b553ba46d1cc",
+ :implementation-acceptance :unassessed}

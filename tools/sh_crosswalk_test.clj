@@ -29,6 +29,15 @@
     (is (= expected (sh-crosswalk/task-ref {"core" (vec (reverse rows))} ["core" 1])))
     (is (thrown? Exception (sh-crosswalk/task-ref {"core" (vec (rest rows))} ["core" 1])))))
 
+(deftest compiler-domain-record-keeps-existing-routing-positions
+  (let [rows (sh-crosswalk/task-records "compiler-api")
+        tasks {"compiler-api" rows}
+        reordered {"compiler-api" (vec (reverse rows))}]
+    (is (= "development-boundaries" (:id (sh-crosswalk/task-ref tasks ["compiler-api" 4]))))
+    (is (= "domain-ir-boundaries" (:id (sh-crosswalk/task-ref tasks ["compiler-api" 5]))))
+    (is (= (sh-crosswalk/task-ref tasks ["compiler-api" 4])
+           (sh-crosswalk/task-ref reordered ["compiler-api" 4])))))
+
 (deftest regeneration-refuses-to-relabel-changed-bytes-with-an-old-source-commit
   (let [text "original source" digest (sh-inventory/sha256 text)
         record {:nested (sorted-map "string-key" "value")
@@ -177,8 +186,65 @@
     (is (= ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"] (:changed-records lineage)))
     (is (every? #(= "Open" (get-in % [:after :status])) rows))
     (is (:historical-suffix-unchanged lineage))
-    (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
-      (is (= (:applying-task-source bridge) (get-in view [:applying-source-pins path]))))
+    (let [domain-successor (get-in view [:mapping-review :domains70-current-composition])
+          compiler-successor (get-in view [:mapping-review :compiler-testing85-current-composition])
+          governance-successor (get-in view [:mapping-review :governance-core43-current-composition])
+          build-successor (get-in view [:mapping-review :build68-current-composition])
+          decision-successor (get-in view [:mapping-review :compiler-testing34-current-composition])
+          package-successor (get-in view [:mapping-review :package7-current-composition])
+          safety-successor (get-in view [:mapping-review :safety107-current-composition])
+          bootstrap-successor (get-in view [:mapping-review :bootstrap25-current-source-composition])
+          incremental-successor (get-in view [:mapping-review :incremental-owner-current-source])
+          successor (or (:source-commit incremental-successor)
+                        (:source-commit bootstrap-successor)
+                        (:source-commit safety-successor)
+                        (:source-commit package-successor)
+                        (:source-commit decision-successor)
+                        (:source-commit build-successor)
+                        (:source-commit governance-successor)
+                        (:source-commit compiler-successor)
+                        (:source-commit domain-successor)
+                        (get-in view [:mapping-review :historical-criterion-source-composition :source-commit])
+                        (get-in view [:mapping-review :family-task-source-composition :source-commit]))
+          historical (edn/read-string (slurp "specs/build-workflow/fixtures/yank-task-source.edn"))]
+      (is (= (:applying-task-source bridge) (:source-commit historical)))
+      (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
+        (is (= (or successor (:applying-task-source bridge))
+               (get-in view [:applying-source-pins path])))
+        (when successor
+          (is (= (slurp path) (sh-crosswalk/git-source successor path)))
+          (let [old (if (= path (:path historical)) historical (:roadmap-source historical))]
+            (is (= path (:path old)))
+            (is (= (get-in (first (filter #(= path (:path %)) (:source-files bridge))) [:after :sha256])
+                   (:sha256 old) (sh-inventory/sha256 (:text old)))))))
+      (doseq [declared-successor (remove nil? [domain-successor compiler-successor governance-successor build-successor decision-successor package-successor safety-successor bootstrap-successor])]
+        (let [record (edn/read-string (slurp (:record declared-successor)))
+              path "specs/build-workflow/tasks.md"
+              before (sh-crosswalk/git-source (or (:applying-source record) (:source-commit record)) path)
+              operations (filter #(= path (:path %)) (:operations record))]
+          (is (= (case (:kind record)
+                   :guarded-governance12-core31-current-task-composition 4
+                   :guarded-build68-current-task-composition 5
+                   :guarded-safety107-current-task-composition 3
+                   1)
+                 (count operations)))
+          (is (= (get {:guarded-domains70-current-task-composition "19e1120301643581e6a8b55b933ec12643d0ba2f"
+                       :guarded-compiler-testing85-current-task-composition "d7ff9de2d916918acb5aeabfa3f2409784a33f2a"
+                       :guarded-governance12-core31-current-task-composition "53ebb7f4f0bc712b253436b8f53182b07e3399df"
+                       :guarded-build68-current-task-composition "122c13e4591a1503e7f030e291b3cde673d36973"
+                       :guarded-compiler-testing34-current-task-composition "c2f6e48f49066e3edda0e0f194c925de01e2af22"
+                       :guarded-package7-current-task-composition "dc983dcd35ef1bfde47dd14c27a03e7aad601c04"
+                       :guarded-safety107-current-task-composition "bc485c7e4b0197873f6a3104021764711215b3b1"
+                       :bootstrap25-current-source-composition "46a58eddd4e412064c7a5d0898cc1e583e3dffcc"}
+                      (:kind record))
+                 (:source-commit declared-successor)))
+          (doseq [op operations]
+            (is (= (:applying-before-sha256 op) (sh-inventory/sha256 (:before op))))
+            (is (= (:applying-after-sha256 op) (sh-inventory/sha256 (:after op))))
+            (is (str/starts-with? (:after op) (str/trimr (:before op))))
+            (is (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote (:before op))) before)))))
+          (is (= (sh-crosswalk/git-source (:source-commit declared-successor) path)
+                 (reduce (fn [text op] (str/replace text (:before op) (:after op))) before operations))))))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
     (is (= "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57"

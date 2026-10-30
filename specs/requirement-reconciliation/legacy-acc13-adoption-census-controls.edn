@@ -1,0 +1,16 @@
+{:kind :legacy-ACC-qualified-scope-census-source-controls,
+ :source-commit "e2f0d94c4fc70d42b70383ae8c690c63154f461d",
+ :checks {:test 2, :pass 6, :fail 0, :error 0, :type :summary},
+ :valid-progress
+ {:total 195,
+  :accepted-complete-in-declared-task-scope 3,
+  :remaining 192},
+ :qualified-status
+ :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
+ :refused-synthetic-fixtures
+ [:missing-review-body
+  :coherent-wrong-scope-subject
+  :coherent-status-mismatch],
+ :fixture-authority
+ :data-validation-only-not-review-or-canonical-adoption,
+ :implementation-credit :none}

@@ -1,0 +1,28 @@
+{:task-id
+ "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+ :criterion-text
+ "Bootstrap diagnostic criterion bootstrap/compiler-diagnostic-compatibility (Open): Every declared self-hosted compiler module emits the C15 structured diagnostic record and a diagnostic manifest naming its actual stable codes and source spans; seed diagnostic codes remain stable enough for conformance fixtures. Reject a missing or unstable seed code with BOOT2004 and a self-hosted diagnostic code gap with BOOT4006. Positive fixtures exercise actual seed and self-hosted diagnostic production against accepted code/span expectations, retaining the module/compiler/source identities, manifest and golden records. Negative fixtures exercise missing/unstable codes and lost or changed source spans. Produce the module diagnostic products consumed by the existing release stage-equivalence and TEST13 diagnostic-schema checks. Diagnostic drift without compatibility review fails BOOT3003; accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report, rather than a producer-supplied success flag. Preserve C15 phase availability, generated origins, privacy/redaction and ordinary-development versus authoritative-migration distinctions; this criterion does not itself compare stage executables or admit migration.",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-commit "d952fb25c82e104f99967f94a65abf77a4f9d210",
+ :status :owner-applied-pending-independent-source-facet-review,
+ :kind :bootstrap-diagnostic-existing-task-refinement,
+ :original-obligation-id "bootstrap/compiler-diagnostic-compatibility",
+ :operations
+ [{:path "specs/diag-workflow/tasks.md",
+   :before-sha256
+   "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+   :after-sha256
+   "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+   :inserted-text
+   " Bootstrap diagnostic criterion bootstrap/compiler-diagnostic-compatibility (Open): Every declared self-hosted compiler module emits the C15 structured diagnostic record and a diagnostic manifest naming its actual stable codes and source spans; seed diagnostic codes remain stable enough for conformance fixtures. Reject a missing or unstable seed code with BOOT2004 and a self-hosted diagnostic code gap with BOOT4006. Positive fixtures exercise actual seed and self-hosted diagnostic production against accepted code/span expectations, retaining the module/compiler/source identities, manifest and golden records. Negative fixtures exercise missing/unstable codes and lost or changed source spans. Produce the module diagnostic products consumed by the existing release stage-equivalence and TEST13 diagnostic-schema checks. Diagnostic drift without compatibility review fails BOOT3003; accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report, rather than a producer-supplied success flag. Preserve C15 phase availability, generated origins, privacy/redaction and ordinary-development versus authoritative-migration distinctions; this criterion does not itself compare stage executables or admit migration."}
+  {:path "docs/component-roadmaps/diag.md",
+   :before-sha256
+   "68cde53e7862196844a860c366229d9338f59e6fbcc2d626a79e70f98d89e3b5",
+   :after-sha256
+   "8e255ce324ecb7c05544c705d161304f18b72fc1b9e477be6d00a331da28da9b",
+   :kind :derived-projection}],
+ :qualification
+ "Existing diagnostic producer, release comparison, TEST13 and GOV2 owners remain distinct. Historical and independent source review scopes are preserved, not extended to this added predicate.",
+ :full-file-inverse :remove-exact-inserted-text,
+ :new-decision-ids 0}

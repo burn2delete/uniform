@@ -1,0 +1,44 @@
+{:task-id "ai",
+ :criterion-text
+ "D2 support-triage fixture refinement (Open; existing domain/support-agent-integration): Compile the Milestone6 positive fixture through ordinary Gravity source, macro/type/effect/capability/profile/safety and artifact checks, then execute its declared support-triage workflow with one model-call step, one schema-validated tool step, one human-review step and one durable replay record binding those steps to the same source-bound fixture. Preserve the detailed typed event/log records required by Workflow and the selected replay contract; these fixture members are not a work allowance or a cap on required internal records. Required outputs: Actual source/compiler/profile/provider identities, agent manifest, prompt artifact, tool schema, workflow graph, replay-log schema and durable record, model/tool schema-validation and review decisions, evaluation and record-versus-replay results. Show the actual corresponding operation/event for every required member; fixture counts or supplied success flags alone are not evidence. The AI task owns this integrated support-triage result; Schema, Workflow, Auth and compiler owners retain their actual validation, durability, replay, grants and ordinary-pipeline products. Refuse: A missing required model/tool/review/durable-replay member, an SDK-only side path, tool use without capability, unvalidated model output, prompt-injected authority escalation, replay-sensitive current-time access without an event record, or an agent-memory write outside its granted namespace. Retain stable source-mapped diagnostics, failed inputs and linked negative records for each refusal. Dependencies consume the actual Schema validation, Workflow typed graph/event/replay, Auth grant and ordinary compiler-legality artifacts; no whole-component completion prerequisite is introduced. This is a required future fixture and product contract; implementation acceptance remains Open and no live operation or stage/milestone completion is claimed.",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-witness
+ {:path
+  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+  :file-sha256
+  "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+  :raw-sha256
+  "ad7f1e43e6e5ca1a660463673d4d581e40fd874b4ccbc3f7290968428c6e9005",
+  :source-text
+  "- support triage workflow with one model call, one schema-validated tool, one human-review step, and one durable replay record.",
+  :source-occurrence-id
+  "D2/source/fee3d369848d6b484b0528ba8d2e83253c64e1694294a3a2124af81e52ae0368",
+  :source-commit "44a15681612db144fe2b7b38a3f285b1ca6d76ba",
+  :id "facet/foundation/f136c5e4884858e8fe73a5eb",
+  :document-id "D2",
+  :end-byte 8359,
+  :start-byte 8232},
+ :scope
+ "The existing AI task gains D2's explicit source-bound positive fixture and its five negative conditions. Existing criteria and all other22 Domains records remain unchanged. Required fixture shape is distinct from removed compiler work/input accounting; detailed replay records remain required. Earlier source adoptions and retired-owner proposals do not independently accept this addition or its attached source contexts.",
+ :source-commit "44a15681612db144fe2b7b38a3f285b1ca6d76ba",
+ :status :owner-applied-pending-independent-source-facet-review,
+ :refines-existing-criterion "domain/support-agent-integration",
+ :kind :D2-support-triage-existing-task-refinement,
+ :operations
+ [{:path "specs/domains-workflow/tasks.md",
+   :before-sha256
+   "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+   :after-sha256
+   "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+   :inserted-text
+   "D2 support-triage fixture refinement (Open; existing domain/support-agent-integration): Compile the Milestone6 positive fixture through ordinary Gravity source, macro/type/effect/capability/profile/safety and artifact checks, then execute its declared support-triage workflow with one model-call step, one schema-validated tool step, one human-review step and one durable replay record binding those steps to the same source-bound fixture. Preserve the detailed typed event/log records required by Workflow and the selected replay contract; these fixture members are not a work allowance or a cap on required internal records. Required outputs: Actual source/compiler/profile/provider identities, agent manifest, prompt artifact, tool schema, workflow graph, replay-log schema and durable record, model/tool schema-validation and review decisions, evaluation and record-versus-replay results. Show the actual corresponding operation/event for every required member; fixture counts or supplied success flags alone are not evidence. The AI task owns this integrated support-triage result; Schema, Workflow, Auth and compiler owners retain their actual validation, durability, replay, grants and ordinary-pipeline products. Refuse: A missing required model/tool/review/durable-replay member, an SDK-only side path, tool use without capability, unvalidated model output, prompt-injected authority escalation, replay-sensitive current-time access without an event record, or an agent-memory write outside its granted namespace. Retain stable source-mapped diagnostics, failed inputs and linked negative records for each refusal. Dependencies consume the actual Schema validation, Workflow typed graph/event/replay, Auth grant and ordinary compiler-legality artifacts; no whole-component completion prerequisite is introduced. This is a required future fixture and product contract; implementation acceptance remains Open and no live operation or stage/milestone completion is claimed.\n\n"}
+  {:path "docs/component-roadmaps/domains.md",
+   :before-sha256
+   "7ef5c26ed10bbcb5b90f922aa6f658bbd8d50fe4641c3cc6129da962d7490e78",
+   :after-sha256
+   "3423c9bb473ac7cb90c86cf8152af87eab1b092767cc36406ecb5a1b6e17af11",
+   :kind :derived-projection}],
+ :original-owner "gravity/workflow-ai-vertical-slice",
+ :full-file-inverse :remove-exact-inserted-text,
+ :new-decision-ids 0}

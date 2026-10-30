@@ -1,0 +1,100 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+  :sha256
+  "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
+  :sha256
+  "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945"},
+ :historical-file-pin-changes 0,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :core-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:forms
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 1341,
+   :end-byte 2856,
+   :raw-sha256
+   "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+  :bindings
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 3222,
+   :end-byte 4507,
+   :raw-sha256
+   "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+  :desugaring
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 4856,
+   :end-byte 6296,
+   :raw-sha256
+   "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+  :verification
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 6631,
+   :end-byte 7995,
+   :raw-sha256
+   "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+  :domains
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 8910,
+   :end-byte 10523,
+   :raw-sha256
+   "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/core-owner-source-refinement.edn",
+  :sha256
+  "6ea02f928b33cb462e220add5d33aa18c13f409c8adb0e643aa10af3b8f99099"},
+ :full-file-inverse :exact-declared-insertion-removal}

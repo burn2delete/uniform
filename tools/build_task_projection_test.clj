@@ -35,10 +35,36 @@
         (throw (ex-info "Missing yank/revocation acceptance predicate" {}))))
     true))
 
+(defn historical-task-source [a fixture]
+  (when-not (and (= :historical-build-task-source (:kind fixture))
+                 (= (:task-source-commit a) (:source-commit fixture))
+                 (= (get-in a [:after :task-reference :path]) (:path fixture))
+                 (string? (:text fixture))
+                 (= (get-in a [:after :task-reference :sha256]) (:sha256 fixture)
+                    (interface-sha (:text fixture))))
+    (throw (ex-info "Changed historical yank task source" {})))
+  (:text fixture))
+
 (deftest exact-yank-interface-and-field-conservation
   (let [a (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
-        source (slurp (get-in a [:source-document :path]))]
-    (is (check-interface a tasks source))
+        source (slurp (get-in a [:source-document :path]))
+        historical (edn/read-string (slurp "specs/build-workflow/fixtures/yank-task-source.edn"))
+        pinned-tasks (historical-task-source a historical)
+        prior-row (first (build-task-projection/records pinned-tasks))
+        current-row (first (build-task-projection/records tasks))]
+    ;; This immutable receipt binds its original complete file, not every later
+    ;; task amendment. Preserve the actual current yank criterion separately.
+    (is (check-interface a pinned-tasks source))
+    (is (= (select-keys prior-row [:id :title :status :evidence])
+           (select-keys current-row [:id :title :status :evidence])))
+    (is (str/starts-with? (:acceptance current-row) (:acceptance prior-row)))
+    (doseq [bad [(assoc historical :source-commit "wrong")
+                 (assoc historical :path "other/tasks.md")
+                 (assoc historical :sha256 "wrong")
+                 (dissoc historical :text)
+                 (update historical :text str "changed")
+                 (assoc historical :kind :current-implementation-acceptance)]]
+      (is (rejects? #(historical-task-source a bad))))
     (is (= :unassessed (get-in a [:conservation :implementation-acceptance])))
     (doseq [bad [(assoc a :allowed-fields [:task-reference :task-gap :atomicity])
                  (assoc-in a [:after :atomicity] :accepted)
@@ -48,9 +74,9 @@
                  (update a :source-facets conj (first (:source-facets a)))
                  (assoc-in a [:after :task-reference :sha256] (apply str (repeat 64 "0")))
                  (assoc-in a [:source-facets 0 :raw-sha256] (apply str (repeat 64 "0")))]]
-      (is (rejects? #(check-interface bad tasks source))))
-    (is (rejects? #(check-interface a (str tasks "\nchanged") source)))
-    (is (rejects? #(check-interface a tasks (str source "\nchanged"))))))
+      (is (rejects? #(check-interface bad pinned-tasks source))))
+    (is (rejects? #(check-interface a (str pinned-tasks "\nchanged") source)))
+    (is (rejects? #(check-interface a pinned-tasks (str source "\nchanged"))))))
 
 (deftest canonical-records-and-generated-boundaries
   (let [rows (build-task-projection/records tasks)]
@@ -132,7 +158,8 @@
       (doseq [path (concat ["tools/task_projection.clj" "tools/task_projection_links.clj" "tools/build_task_projection.clj"
                            build-task-projection/task-path roadmap-path]
                     (for [row (build-task-projection/records tasks)
-                          [_ _ target] (re-seq build-task-projection/link-pattern (:evidence row))]
+                          field [(:evidence row) (:acceptance row)]
+                          [_ _ target] (re-seq build-task-projection/link-pattern field)]
                       (str (build-task-projection/relative-target build-task-projection/task-path target))))]
         (io/make-parents (io/file root path)) (spit (io/file root path) (slurp path)))
       (spit sentinel "Outside write boundary")

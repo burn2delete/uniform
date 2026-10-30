@@ -1,0 +1,64 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+  :sha256
+  "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+  :sha256
+  "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16"},
+ :historical-file-pin-changes 169,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :incremental-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:existing
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 22471,
+   :end-byte 27237,
+   :raw-sha256
+   "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"},
+  :records
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 27238,
+   :end-byte 30497,
+   :raw-sha256
+   "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/incremental-owner-source-refinement.edn",
+  :sha256
+  "4fdc355ae5f335e80db6ea890b7a87c0d0109daf79975252a344c8a8161d2f82"},
+ :full-file-inverse :exact-declared-insertion-removal}

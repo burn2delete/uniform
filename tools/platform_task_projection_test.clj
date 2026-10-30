@@ -1,5 +1,6 @@
 (load-file "tools/platform_task_projection.clj")
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
+         '[clojure.set :as set]
          '[clojure.java.io :as io])
 (def tasks (slurp platform-task-projection/task-path))
 (def roadmap (slurp platform-task-projection/roadmap-path))
@@ -67,8 +68,13 @@
 
 (deftest whole-product-scope-is-independent
   (let [scope (platform-task-projection/product-scope tasks)
-        rows (platform-task-projection/records tasks)]
+        rows (platform-task-projection/records tasks)
+        product-rows (platform-task-projection/product-records tasks)]
     (is (= 4 (count rows)))
+    (is (= 11 (count product-rows)))
+    (is (every? #(= "Open" (:status %)) product-rows))
+    (is (empty? (set/intersection (set (map :id rows))
+                                 (set (map :id product-rows)))))
     (is (str/includes? scope "semantic key `platform-product`."))
     (is (str/includes? scope "Each task is open."))
     (is (str/includes? (str/replace scope #"\s+" " ")
@@ -87,6 +93,11 @@
                (str/replace tasks "After these records are adopted, remaining product tasks are:" "Conditional work:")
                (str/replace tasks "External prerequisites are not language features:" "Dependencies:")
                (str/replace tasks "Product acceptance is yes/no:" "Product questions:")]]
+    (is (rejects? #(platform-task-projection/project bad roadmap))))
+  (doseq [bad [(str/replace tasks "platform-product/implement-hardware" "platform-product/implement-os")
+               (str/replace tasks "<!-- platform-product-implementation-tasks:end -->" "")
+               (str/replace tasks "- [ ] `platform-product/adopt-hardware-contract`"
+                                  "- [x] `platform-product/adopt-hardware-contract`")]]
     (is (rejects? #(platform-task-projection/project bad roadmap))))
   (doseq [bad [(str/replace roadmap "<!-- platform-product-projection:end -->" "")
                (str roadmap "<!-- platform-product-projection:start -->")]]

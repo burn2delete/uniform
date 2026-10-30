@@ -1,0 +1,2695 @@
+{:all-original-documents-unchanged 240,
+ :assigned-ids
+ ["interface/behavior/a1/generated-source-reentry"
+  "interface/behavior/a1/human-review-gate"
+  "interface/behavior/a1/profile-admission"
+  "interface/behavior/a1/tool-authority"
+  "interface/behavior/a3/prompt-authority-rendering"
+  "interface/behavior/a6/typed-compensation"
+  "interface/behavior/a6/workflow-graph-artifact"
+  "interface/behavior/a6/workflow-replay-mode"
+  "interface/behavior/a6/workflow-side-effect-repetition"
+  "interface/behavior/a6/workflow-state-evolution"
+  "interface/behavior/a7/retrieval-replay-identity"
+  "interface/behavior/a7/retrieval-taint"
+  "interface/behavior/a7/tenant-sharing-admission"
+  "interface/behavior/a9/eval-gate"
+  "interface/behavior/a9/eval-subject-binding"
+  "interface/behavior/a9/metric-decision"
+  "interface/performance/target-intrinsic-map"],
+ :later-field-appends-inverted 8,
+ :independent-receipt-sha256
+ "d8ec0f5863b8d55d6c88205172e7dfdaef7f255b1e1d80405341180cb85ba653",
+ :task-plan-paths
+ ["specs/compiler-api-workflow/tasks.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/reader-workflow/tasks.md"
+  "specs/reader-workflow/plan.md"
+  "specs/syntax-workflow/tasks.md"
+  "specs/syntax-workflow/plan.md"
+  "specs/expand-workflow/tasks.md"
+  "specs/expand-workflow/plan.md"
+  "specs/resolve-workflow/tasks.md"
+  "specs/resolve-workflow/plan.md"
+  "specs/core-workflow/tasks.md"
+  "specs/core-workflow/plan.md"
+  "specs/types-workflow/tasks.md"
+  "specs/types-workflow/plan.md"
+  "specs/effects-workflow/tasks.md"
+  "specs/effects-workflow/plan.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/legality-workflow/plan.md"
+  "specs/auth-workflow/tasks.md"
+  "specs/auth-workflow/plan.md"
+  "specs/mir-workflow/tasks.md"
+  "specs/mir-workflow/plan.md"
+  "specs/opt-workflow/tasks.md"
+  "specs/opt-workflow/plan.md"
+  "specs/lower-workflow/tasks.md"
+  "specs/lower-workflow/plan.md"
+  "specs/emit-workflow/tasks.md"
+  "specs/emit-workflow/plan.md"
+  "specs/backends-workflow/tasks.md"
+  "specs/backends-workflow/plan.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/runtime-workflow/plan.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/stdlib-workflow/plan.md"
+  "specs/build-workflow/tasks.md"
+  "specs/build-workflow/plan.md"
+  "specs/cli-workflow/tasks.md"
+  "specs/cli-workflow/plan.md"
+  "specs/tools-workflow/tasks.md"
+  "specs/tools-workflow/plan.md"
+  "specs/diag-workflow/tasks.md"
+  "specs/diag-workflow/plan.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/domains-workflow/plan.md"
+  "specs/platform-workflow/tasks.md"
+  "specs/platform-workflow/plan.md"
+  "specs/release-workflow/tasks.md"
+  "specs/release-workflow/plan.md"
+  "specs/evolution-workflow/tasks.md"
+  "specs/evolution-workflow/plan.md"],
+ :bindings
+ [{:id "interface/behavior/a1/generated-source-reentry",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 301693,
+       :end-byte 302530,
+       :raw-sha256
+       "99ba7b0205895d1b2a370980e5bd3cebd60347c1a9db21360716302c85653085"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a1/human-review-gate",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 157926,
+       :end-byte 158395,
+       :raw-sha256
+       "328521ccba0ed29ab11be7becd18d4db2b8eb585b87314d1a75b0a2356eb2c55"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 159920,
+       :end-byte 160526,
+       :raw-sha256
+       "61364a1c03b3fecd5611b38a022a2ad7b036f55493c223ecc0aa5c62a8e8eee1"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 162907,
+       :end-byte 163456,
+       :raw-sha256
+       "12da8147f759addea44770af8f16b6903552065ea0aba039025a288d0431388f"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a1/profile-admission",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 302532,
+       :end-byte 303294,
+       :raw-sha256
+       "9d01e2faf494c7bb123ce6789e5806211cdcff6fa6b2601a53163bef4cb66436"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a1/tool-authority",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 157926,
+       :end-byte 158395,
+       :raw-sha256
+       "328521ccba0ed29ab11be7becd18d4db2b8eb585b87314d1a75b0a2356eb2c55"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 159920,
+       :end-byte 160526,
+       :raw-sha256
+       "61364a1c03b3fecd5611b38a022a2ad7b036f55493c223ecc0aa5c62a8e8eee1"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 162907,
+       :end-byte 163456,
+       :raw-sha256
+       "12da8147f759addea44770af8f16b6903552065ea0aba039025a288d0431388f"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a3/prompt-authority-rendering",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 159182,
+       :end-byte 159918,
+       :raw-sha256
+       "d19bc316f83d72143e667badacc6368bd643578081eafde2ecca143803d3b7ed"}
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 164946,
+       :end-byte 165793,
+       :raw-sha256
+       "9e7194181c861e80c9eea47cb620a78dc18c43f83ec2e728086da8ba332a554e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a6/typed-compensation",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 160528,
+       :end-byte 161075,
+       :raw-sha256
+       "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a6/workflow-graph-artifact",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 160528,
+       :end-byte 161075,
+       :raw-sha256
+       "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a6/workflow-replay-mode",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 160528,
+       :end-byte 161075,
+       :raw-sha256
+       "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a6/workflow-side-effect-repetition",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 160528,
+       :end-byte 161075,
+       :raw-sha256
+       "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a6/workflow-state-evolution",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 160528,
+       :end-byte 161075,
+       :raw-sha256
+       "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a7/retrieval-replay-identity",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 161077,
+       :end-byte 161657,
+       :raw-sha256
+       "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a7/retrieval-taint",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 161077,
+       :end-byte 161657,
+       :raw-sha256
+       "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a7/tenant-sharing-admission",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 161077,
+       :end-byte 161657,
+       :raw-sha256
+       "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a9/eval-gate",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 162197,
+       :end-byte 162905,
+       :raw-sha256
+       "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a9/eval-subject-binding",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 162197,
+       :end-byte 162905,
+       :raw-sha256
+       "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/behavior/a9/metric-decision",
+   :task-links
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :role :ai-domain-producer-checker-and-runtime-consumer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+       :start-byte 162197,
+       :end-byte 162905,
+       :raw-sha256
+       "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+     :task-context
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "b8a625f6d2ae87c0c1330685b85dd9dbbbcb3e2d53ebff9d43a659150807e96d",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 303294,
+      :start-byte 157451}}],
+   :dependency-interfaces
+   [{:path "specs/domains-workflow/tasks.md",
+     :task-id "schema",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed declaration/input/output and artifact schemas.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "schema",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "a2f0672e46e2245f67800ad95729b4c6bbbacd1753f21b1f47e2f7c5dda6b70b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 141408,
+      :start-byte 112509}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Compile-time profile/effect/grant and generated-form verdicts.",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "5b45f612b85971672ce3b0131821fef0cb58a5c19ca4672b33b6c315186ae08e",
+      :marker "legality-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 11545,
+      :start-byte 513}}
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "workflow",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Typed graph/state/event-log, effect-checked compensation and durable replay/migration artifacts.",
+     :current-source
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "workflow",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :raw-sha256
+      "3a7b45e10b5741250c2751896bb9da61c1720fffd390f6be4f4669d2d003e83b",
+      :marker "domains-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 157449,
+      :start-byte 146394}}
+    {:path "specs/runtime-workflow/tasks.md",
+     :task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual scoped model/tool/memory execution, replay, review and redacted audit records.",
+     :current-source
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :raw-sha256
+      "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+      :marker "runtime-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 53906,
+      :start-byte 36340}}
+    {:path "specs/auth-workflow/tasks.md",
+     :task-id
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Applicable grant intersection, review, revocation and scoped handle checks.",
+     :current-source
+     {:path "specs/auth-workflow/tasks.md",
+      :task-id
+      "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+      :file-sha256
+      "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+      :raw-sha256
+      "e9ce5ebc1b8226e0584ed463b831e2f25b043c4196435255d227e4f3dc762d49",
+      :marker "auth-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open",
+      :end-byte 14455,
+      :start-byte 892}}]}
+  {:id "interface/performance/target-intrinsic-map",
+   :task-links
+   [{:path "specs/lower-workflow/tasks.md",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+     :role :target-proof-preservation-producer-checker,
+     :criterion-witnesses
+     [{:path "specs/lower-workflow/tasks.md",
+       :marker "lower-implementation-tasks",
+       :task-id
+       "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+       :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+       :file-sha256
+       "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+       :start-byte 6292,
+       :end-byte 7262,
+       :raw-sha256
+       "188a7fb78b10b59ae36cd69c2a2c254ad7e6d175ed6e6177c72c56b8fc749049"}],
+     :task-context
+     {:path "specs/lower-workflow/tasks.md",
+      :task-id
+      "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+      :file-sha256
+      "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+      :raw-sha256
+      "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+      :marker "lower-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 7262,
+      :start-byte 5394}}],
+   :dependency-interfaces
+   [{:path "specs/lower-workflow/tasks.md",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Verified IR and explicit operation/target eligibility records.",
+     :current-source
+     {:path "specs/lower-workflow/tasks.md",
+      :task-id
+      "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+      :file-sha256
+      "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+      :raw-sha256
+      "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+      :marker "lower-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4679,
+      :start-byte 495}}
+    {:path "specs/opt-workflow/tasks.md",
+     :task-id
+     "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Vector lane/alias/bounds/alignment/numeric/order proof or residual-check records and applicable math certificates.",
+     :current-source
+     {:path "specs/opt-workflow/tasks.md",
+      :task-id
+      "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+      :file-sha256
+      "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+      :raw-sha256
+      "0af699bdfaf135edba2604eb5faa82867d4edc0f813f2898f86fb7079d3d3503",
+      :marker "opt-implementation-tasks",
+      :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4826,
+      :start-byte 2682}}]}],
+ :new-tasks 0,
+ :independent-receipt
+ {:semantic-assessment
+  {:prompt-authority
+   :sanitizer-or-delimiter-exception-without-authority-promotion,
+   :tool-authority
+   :toolset-deployment-grant-scoped-handle-and-policy-conjunction,
+   :generated-source :ordinary-pipeline-reentry-before-use,
+   :workflow
+   :typed-graph-compensation-state-event-log-and-replay-policy-preserved,
+   :memory
+   :taint-recorded-retrieval-identities-and-explicit-sharing-policy,
+   :evaluation
+   :complete-subject-identity-metric-direction-threshold-aggregation-confidence-and-fail-closed-release-gate,
+   :intrinsics
+   :required-features-numeric-mode-alignment-memory-order-fallback-or-guard-and-applicable-proof-certificate},
+  :findings [],
+  :tree "3f50a43e51df88cda74c80155d2dbe45225588d8",
+  :candidate "63284c853d93526cda4ff1e0c94dae2a95831f98",
+  :reviewer-thread "01a18529-3435-7443-abc8-67b0648a2151",
+  :semantic-findings
+  [{:id "interface/behavior/a1/generated-source-reentry",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "99ba7b0205895d1b2a370980e5bd3cebd60347c1a9db21360716302c85653085"}],
+    :preserved-critical-predicates
+    ["reader, macro, type, effect, profile and safety"
+     "provider-only path"
+     "preserved origins"
+     "Reject"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a1/human-review-gate",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "328521ccba0ed29ab11be7becd18d4db2b8eb585b87314d1a75b0a2356eb2c55"}
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "61364a1c03b3fecd5611b38a022a2ad7b036f55493c223ecc0aa5c62a8e8eee1"}
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "12da8147f759addea44770af8f16b6903552065ea0aba039025a288d0431388f"}],
+    :preserved-critical-predicates
+    ["privileged deployments without review policy"
+     "Block required actions until matching valid review"
+     "changed payloads, expiry or revocation"
+     "denial as a workflow"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a1/profile-admission",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "9d01e2faf494c7bb123ce6789e5806211cdcff6fa6b2601a53163bef4cb66436"}],
+    :preserved-critical-predicates
+    [":ai, :distributed, :hosted"
+     "explicitly legal bridged profile"
+     "backend or runtime adapter cannot legalize"
+     "Compile-time"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a1/tool-authority",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "328521ccba0ed29ab11be7becd18d4db2b8eb585b87314d1a75b0a2356eb2c55"}
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "61364a1c03b3fecd5611b38a022a2ad7b036f55493c223ecc0aa5c62a8e8eee1"}
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "12da8147f759addea44770af8f16b6903552065ea0aba039025a288d0431388f"}],
+    :preserved-critical-predicates
+    ["Tool declaration, agent toolset, package/deployment"
+     "scoped runtime handle and policy must all agree"
+     "Plans and model text"
+     "grant no authority"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a3/prompt-authority-rendering",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "d19bc316f83d72143e667badacc6368bd643578081eafde2ecca143803d3b7ed"}
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "9e7194181c861e80c9eea47cb620a78dc18c43f83ec2e728086da8ba332a554e"}],
+    :preserved-critical-predicates
+    ["approved sanitizer OR approved"
+     "delimiter policy without promoting data to instruction authority"
+     "source/taint, grant, secret or review obligations"
+     "authority/taint maps"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a6/typed-compensation",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+    :preserved-critical-predicates
+    ["Workflow task's typed graph"
+     "typed/effect-checked compensation"
+     "node effects, capabilities"
+     "compensation and lowering metadata"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a6/workflow-graph-artifact",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+    :preserved-critical-predicates
+    ["Workflow task's typed graph, state/event-log schemas"
+     "node effects, capabilities"
+     "review payload binding"
+     "lowering metadata"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a6/workflow-replay-mode",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+    :preserved-critical-predicates
+    ["explicit replay modes"
+     "Record or forbid model"
+     "memory, random, clock and external IO nondeterminism"
+     "actual recorded decisions"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a6/workflow-side-effect-repetition",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+    :preserved-critical-predicates
+    ["idempotency"
+     "non-idempotent retries/replay require declared idempotency or"
+     "compensation"
+     "reject unsafe repeated"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a6/workflow-state-evolution",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"}],
+    :preserved-critical-predicates
+    ["incompatible graph/state/log evolution"
+     "without migration"
+     "state/event-log schemas"
+     "replay records"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a7/retrieval-replay-identity",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+    :preserved-critical-predicates
+    ["query/result ids, scores, embedding identity"
+     "old/new embedding lineage"
+     "fresh retrieval where a"
+     "recorded result is required"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a7/retrieval-taint",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+    :preserved-critical-predicates
+    ["authority/taint maps"
+     "retrieved"
+     "instruction authority"
+     "source/taint"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a7/tenant-sharing-admission",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"}],
+    :preserved-critical-predicates
+    ["partitions"
+     "scoped"
+     "implicit cross-tenant sharing"
+     "replay policies"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a9/eval-gate",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+    :preserved-critical-predicates
+    ["release decisions"
+     "absent/stale/incompatible release evidence"
+     "Required safety probes"
+     "thresholds"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a9/eval-subject-binding",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+    :preserved-critical-predicates
+    ["every behavior-changing subject/model/prompt/tool/memory/policy/runtime"
+     "Record changed artifacts"
+     "absent/stale/incompatible"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/behavior/a9/metric-decision",
+    :verdict :pass,
+    :role :ai-domain-producer-checker-and-runtime-consumer,
+    :criteria
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"}],
+    :preserved-critical-predicates
+    ["metric direction/threshold/aggregation"
+     "confidence/sample or variance rules"
+     "seeds/traces"
+     "release decisions"],
+    :dependency-task-ids
+    ["schema"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "workflow"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+   {:id "interface/performance/target-intrinsic-map",
+    :verdict :pass,
+    :role :target-proof-preservation-producer-checker,
+    :criteria
+    [{:path "specs/lower-workflow/tasks.md",
+      :task-id
+      "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :raw-sha256
+      "188a7fb78b10b59ae36cd69c2a2c254ad7e6d175ed6e6177c72c56b8fc749049"}],
+    :preserved-critical-predicates
+    ["required features, numeric mode, alignment, memory order"
+     "proof or math certificate"
+     "fallback or an execution-preventing guard"
+     "Source-operation to target-intrinsic map"],
+    :dependency-task-ids
+    ["lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
+     "opt/current-evidence-and-remaining-work/opt2-implement-structural-families"]}],
+  :limitations
+  {:governance14-semantics :not-reviewed,
+   :full-attached-facet-entailment :not-conferred,
+   :implementation-credit :none,
+   :runtime-probe-or-target-execution :none,
+   :canonical-writes :none,
+   :GitHub-approval :none,
+   :human-or-product-policy-selection :none,
+   :canonical-adoption :owner-required},
+  :supporting-checks
+  {:boundary
+   {:tests 6,
+    :assertions 11,
+    :fail 0,
+    :error 0,
+    :scope :own-unchanged-checkout},
+   :checker-lint {:errors 0, :warnings 0, :version "2025.10.23"}},
+  :independence
+  {:authored-family :runtime20,
+   :authored-primary-fields :runtime-task-records,
+   :reviewed-primary-fields [:domains-ai :lower-proof-preservation],
+   :overlapping-authored-predicates [],
+   :own-runtime-dependencies
+   :authenticated-source-context-only-no-new-independent-semantic-acceptance,
+   :intake
+   :latest-canonical-helper-read-no-exact-overlapping-reservation-observed},
+  :excluded-partition :governance14,
+  :task-composition-base "f117fd1e311703cac73dc5fa2359d5b8a98a2db8",
+  :source-documents
+  {"docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md"
+   "61cde7536f8ab51f4b0705af885250a003c00fc445e43f4e50c374e0c56d2b87",
+   "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md"
+   "016d272bb500590a6f72230bfbb529d5767c354b0865a876f25fb3a53f81074f",
+   "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md"
+   "cd418638f117af98501032681cbbfa7b5a9c74991c44fdfa129d0c63b81388bc",
+   "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md"
+   "1089aa25876565f44f1c9f969a4a5c9421de978a97111082783ce678acdeb34c",
+   "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md"
+   "6b9bac09636fbbb6f85a7dcf4c1985aa01f86273a366c6737d148cd9078f755e",
+   "docs/phase-16-standard-library/222-std12-workflow-library-specification.md"
+   "2065de63512a16e52761a5624d1495ee07156557488a5b982d63e771067d6c83",
+   "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md"
+   "c55cad9b7336b59874d749540e5382d77ba67d5c30fbed3990485edaa665d0ed",
+   "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md"
+   "529b5ac5b7990959e1a9b7040f2c3965c3be33a40457472324b44d08f37f7db8",
+   "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md"
+   "b578d3d39ed72930f3b6c838349fa3dbcdebe77698b98b88f3d93531f87a853f"},
+  :controls
+  [:stale-record
+   :already-allocated-record
+   :forged-criterion-bytes
+   :coherently-removed-obligation-all17
+   :missing-field-predecessor],
+  :checks {:test 3, :pass 2065, :fail 0, :error 0},
+  :scope
+  {:all833open true,
+   :qualified-prefix 474,
+   :historical-context-refinement :mechanically-verified-only,
+   :later-review-field-joins 2,
+   :semantic-partition-count 17,
+   :remaining-bootstrap 25,
+   :source-documents 9,
+   :shared-field-operations 10,
+   :accepted-historical 561,
+   :selected-source-memberships 468,
+   :shared-allocation-fields 31},
+  :checker
+  {:sha256
+   "7160bb7a11f913a3f67b7107d54e04d7fe4b4d66804c61194434a07eea6a4990"},
+  :allocation-base "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+  :selected-ids
+  ["interface/behavior/a1/generated-source-reentry"
+   "interface/behavior/a1/human-review-gate"
+   "interface/behavior/a1/profile-admission"
+   "interface/behavior/a1/tool-authority"
+   "interface/behavior/a3/prompt-authority-rendering"
+   "interface/behavior/a6/typed-compensation"
+   "interface/behavior/a6/workflow-graph-artifact"
+   "interface/behavior/a6/workflow-replay-mode"
+   "interface/behavior/a6/workflow-side-effect-repetition"
+   "interface/behavior/a6/workflow-state-evolution"
+   "interface/behavior/a7/retrieval-replay-identity"
+   "interface/behavior/a7/retrieval-taint"
+   "interface/behavior/a7/tenant-sharing-admission"
+   "interface/behavior/a9/eval-gate"
+   "interface/behavior/a9/eval-subject-binding"
+   "interface/behavior/a9/metric-decision"
+   "interface/performance/target-intrinsic-map"],
+  :kind :independent-performance-ai17-current-composition-review,
+  :verdict :pass,
+  :artifacts
+  {"specs/requirement-reconciliation/current-decision-allocation-governance-ai31.edn"
+   "17a114476ccfc0ce8f35f7a5c903e365fdf7b2fc8a66c456705fffdce9c1c4e2",
+   "specs/requirement-reconciliation/governance-ai31-current-composition.edn"
+   "20ae121c5f777898fad41cd3f63b771666723387e2509794d4b9522fa6d1fdfb",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn"
+   "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786",
+   "specs/requirement-reconciliation/governance-ai31-context-refinement.edn"
+   "de7b9ad6b0c7f87242f1c58047fe62c0f438ffe118be66cee678d87b65e35109"}},
+ :implementation-credit :none,
+ :full-attached-facet-entailment :not-conferred,
+ :scope :only17-reviewed-predicates,
+ :source-memberships 468,
+ :decision-records :all17-unchanged,
+ :source-commit "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+ :later-bootstrap25-predicates :not-reviewed,
+ :reviewer-runtime-contexts
+ :no-new-independent-runtime-semantic-acceptance,
+ :kind :exact-performance-ai17-current-source-review-applicability,
+ :governance14-semantics :not-reviewed,
+ :later-composition
+ {:path
+  "specs/requirement-reconciliation/bootstrap25-current-composition.edn",
+  :sha256
+  "b0477962a72f09918b3fcd940aab43a12d8f1572893b120cccc72d013129a2d2"},
+ :current-criteria 22}

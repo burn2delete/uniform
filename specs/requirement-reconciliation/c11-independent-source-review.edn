@@ -1,0 +1,534 @@
+{:findings [],
+ :reproduce
+ {:semantic-review
+  ["clojure"
+   "-J-Xmx1g"
+   "-M"
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/semantic.clj"],
+  :final-context-check
+  ["clojure"
+   "-J-Xmx768m"
+   "-M"
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/finalize.clj"],
+  :project-code-execution :none,
+  :source-repository "/Users/matt/code/burn2delete/uniform"},
+ :preparation-history
+ {:disposable-inspection-reader-typos :corrected,
+  :checker-assumptions
+  [:optional-need-label
+   :refreshed-disposition-hash-not-authority-change
+   :Clojure-reader-regex-and-gensym-identity-normalization
+   :metadata-assoc-key-value-removal
+   :auxiliary-ACC-source-sections-and-inherited-legacy-checklist-context],
+  :diagnostic-failures :not-source-findings,
+  :final-source-data-checks :passed},
+ :semantic-boundaries
+ {:domain-anchors
+  :representation-and-relationships-only-no-domain-execution-or-EML-equality,
+  :verifier
+  :actual-subject-bound-reports-and-each-invariant-positive-negative-fixtures,
+  :construction
+  :actual-canonical-MIR-CFG-DFG-and-full-C11-schema-family-fixtures,
+  :pass-order :unrelated-D1-C1-C6-questions-remain-open,
+  :runtime-checks
+  :generic-DCE-preserves-checked-PERF10-subject-and-dominance-evidence-or-retain-reject,
+  :consumption
+  :actual-verifier-after-construction-and-invalidating-transforms-failed-missing-stale-refused-before-Opt-Lower,
+  :examples
+  :literal-native-call-network-and-placeholder-identities-illustrative-not-forced-universal-values,
+  :effects :actual-order-edges-no-result-only-reordering-license,
+  :facts
+  :checked-core-and-current-semantic-producer-products-before-admission-explicit-invalidation-regeneration,
+  :serialization
+  :actual-record-graphs-tables-origins-anchor-proof-fallback-round-trip-with-invalidation},
+ :tree "fa894cb274b869cd93e5ade1ad0c7a1a014cba44",
+ :nonclaims
+ [:compiler-execution
+  :MIR-verifier-execution
+  :Bootstrap
+  :runtime
+  :provider
+  :model
+  :target-allocation
+  :domain-producer-execution
+  :proof-checker-execution
+  :whole-task-completion
+  :whole-document-entailment
+  :whole-project
+  :final-denominator
+  :release
+  :main-integration
+  :GitHub-APPROVE
+  :canonical-adoption
+  :held-operation-clearance],
+ :candidate "de0c5c94392b398c6e8ff128b0010d454dd739e2",
+ :source-facet-ids
+ ["C11/normalized-facet/0-34/0ca771dbc3dcd697"
+  "C11/normalized-facet/35-311/5d2a2088ba679b30"
+  "C11/normalized-facet/312-323/994413297a3e95a9"
+  "C11/facet/324-631"
+  "C11/facet/632-825"
+  "C11/normalized-facet/826-842/d8416f1863ce5290"
+  "C11/facet/843-993"
+  "C11/facet/993-1129"
+  "C11/facet/1129-1243"
+  "C11/facet/1243-1299"
+  "C11/facet/1299-1495"
+  "C11/facet/1495-1624"
+  "C11/facet/1624-1692"
+  "C11/normalized-facet/1693-1709/21d1931a332d9b7f"
+  "C11/facet/1710-1736"
+  "C11/facet/1736-1817"
+  "C11/facet/1817-1852"
+  "C11/facet/1852-1893"
+  "C11/facet/1893-1933"
+  "C11/facet/1933-1986"
+  "C11/facet/1986-2064"
+  "C11/normalized-facet/2065-2090/f4280a4d61a89adc"
+  "C11/facet/2091-2105"
+  "C11/facet/2105-2127"
+  "C11/facet/2127-2146"
+  "C11/facet/2146-2213"
+  "C11/facet/2213-2248"
+  "C11/facet/2248-2271"
+  "C11/facet/2271-2294"
+  "C11/facet/2294-2319"
+  "C11/normalized-facet/2320-2336/4d531a725174934c"
+  "C11/facet/2337-2713"
+  "C11/facet/2714-2809"
+  "C11/normalized-facet/2810-2838/5ea53aa21869290c"
+  "C11/facet/2839-3030"
+  "C11/facet/3031-3092"
+  "C11/facet/3093-3103"
+  "C11/facet/3103-3125"
+  "C11/facet/3125-3153"
+  "C11/facet/3153-3163"
+  "C11/facet/3163-3172"
+  "C11/facet/3172-3181"
+  "C11/facet/3181-3207"
+  "C11/facet/3207-3257"
+  "C11/facet/3257-3281"
+  "C11/facet/3282-3427"
+  "C11/normalized-facet/3428-3448/501caac3ca481656"
+  "C11/facet/3449-3898"
+  "C11/facet/3899-3988"
+  "C11/normalized-facet/3989-4011/996f92139d3e96b1"
+  "C11/facet/4012-4035"
+  "C11/facet/4036-4062"
+  "C11/facet/4062-4092"
+  "C11/facet/4092-4125"
+  "C11/facet/4125-4161"
+  "C11/facet/4161-4213"
+  "C11/facet/4213-4267"
+  "C11/facet/4267-4313"
+  "C11/facet/4313-4351"
+  "C11/facet/4351-4417"
+  "C11/facet/4417-4472"
+  "C11/facet/4472-4525"
+  "C11/facet/4525-4574"
+  "C11/facet/4574-4640"
+  "C11/facet/4640-4684"
+  "C11/facet/4684-4745"
+  "C11/facet/4745-4789"
+  "C11/facet/4789-4831"
+  "C11/facet/4831-4859"
+  "C11/facet/4859-4887"
+  "C11/facet/4887-4943"
+  "C11/facet/4944-5068"
+  "C11/normalized-facet/5069-5088/61e2421ebafc9e73"
+  "C11/facet/5089-5126"
+  "C11/facet/5127-5141"
+  "C11/facet/5141-5157"
+  "C11/facet/5157-5189"
+  "C11/facet/5189-5215"
+  "C11/facet/5215-5239"
+  "C11/facet/5239-5262"
+  "C11/facet/5262-5293"
+  "C11/facet/5293-5316"
+  "C11/facet/5316-5344"
+  "C11/facet/5344-5367"
+  "C11/facet/5368-5498"
+  "C11/normalized-facet/5499-5517/d1d7bbd11e1e4d0b"
+  "C11/facet/5518-5663"
+  "C11/facet/5664-5827"
+  "C11/facet/5828-5882"
+  "C11/normalized-facet/5883-5901/7abb313f4c08c781"
+  "C11/facet/5902-6086"
+  "C11/normalized-facet/6087-6107/3116804a18dc6ffc"
+  "C11/facet/6108-6129"
+  "C11/facet/6130-6156"
+  "C11/facet/6156-6193"
+  "C11/facet/6193-6226"
+  "C11/facet/6226-6269"
+  "C11/facet/6269-6326"
+  "C11/facet/6326-6354"
+  "C11/facet/6354-6390"
+  "C11/facet/6390-6442"
+  "C11/facet/6442-6489"
+  "C11/facet/6489-6517"
+  "C11/facet/6517-6587"
+  "C11/facet/6588-6648"
+  "C11/normalized-facet/6649-6664/84b964dab09b580d"
+  "C11/facet/6665-6704"
+  "C11/facet/6705-6750"
+  "C11/facet/6750-6797"
+  "C11/facet/6797-6842"
+  "C11/facet/6842-6874"
+  "C11/facet/6874-6927"
+  "C11/facet/6927-6989"
+  "C11/facet/6989-7044"
+  "C11/facet/7044-7087"
+  "C11/facet/7087-7154"
+  "C11/facet/7154-7210"
+  "C11/facet/7211-7362"
+  "C11/normalized-facet/7363-7383/81a99744c82b0f20"
+  "C11/facet/7384-7441"
+  "C11/facet/7442-7512"
+  "C11/facet/7513-7589"
+  "C11/facet/7590-7651"
+  "C11/facet/7652-7731"
+  "C11/normalized-facet/7732-7756/4cea7efb2bd3a140"
+  "C11/facet/7757-7807"
+  "C11/facet/7808-7864"
+  "C11/facet/7864-7921"
+  "C11/facet/7921-8050"
+  "C11/facet/8050-8186"
+  "C11/facet/8186-8216"
+  "C11/facet/8216-8244"
+  "C11/facet/8244-8279"
+  "C11/facet/8279-8315"
+  "facet/foundation/323763b61b5a8229ee095219"
+  "facet/foundation/664ce4c2d7210d7c68a6fdf6"
+  "facet/foundation/f3b156311d98d9eec509d616"
+  "facet/foundation/f9351bdadf09d60d128637e7"
+  "facet/foundation/c467b67e1b8f85a1c901aaf3"
+  "facet/foundation/04e44e8fd101cf903622d39b"
+  "facet/foundation/fabc239487047134810ab229"
+  "facet/foundation/62132f31bdc329c7e53a0622"
+  "facet/foundation/177b8e98d817586c440a3753"
+  "facet/foundation/3d67ba40cb8878ce8549dcdc"
+  "facet/foundation/b7972ffc27b2bccbe3a5b65d"
+  "facet/foundation/8e86db0055b6d5e794df26f9"
+  "facet/foundation/f7947df593184121969bee34"
+  "facet/foundation/cb58f07051685e6ccfb803e8"],
+ :later-heads
+ {:acceptance :not-conferred,
+  :required :separate-exact-conservation-and-current-applicability},
+ :held-scope-exclusion
+ [{:path
+   "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn",
+   :held-identities 372,
+   :context-only-overlap
+   ["C11/normalized-facet/35-311/5d2a2088ba679b30"],
+   :semantic-overlap [],
+   :operation :identity-exclusion-only-no-held-review}
+  {:path
+   "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn",
+   :held-identities 14,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :operation :identity-exclusion-only-no-held-review}
+  {:path
+   "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+   :held-identities 1,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :operation :identity-exclusion-only-no-held-review}],
+ :prior-reviews
+ {:new-append-inherited-acceptance :none,
+  :older-snapshots :conserved-only,
+  :whole-facet-or-owner-envelope-inheritance :none},
+ :source-artifacts
+ [{:path
+   "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+   :sha256
+   "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"}
+  {:path
+   "specs/requirement-reconciliation/c11-owner-source-refinement.edn",
+   :sha256
+   "c2dd3c07bf633a9e105249399b21fa0718672e1b6f7b0b9dd921c3b2d4e1c5db"}
+  {:path
+   "specs/requirement-reconciliation/c11-owner-current-witness-applicability.edn",
+   :sha256
+   "c1fc19317242280ea3b9575110c31e5dd20dcd4c0237b7108f1e8084ac195caf"}],
+ :residual-source-facet-ids
+ ["facet/foundation/557f36f6329baa78ba7c6a72"
+  "facet/foundation/0964b041922655167e1ed203"
+  "facet/foundation/528442403bdb8f97c7e4784d"
+  "facet/foundation/4d101049b1e75abe93fb6884"
+  "facet/foundation/a68f791861366970acd49ce8"
+  "facet/foundation/c86087cf94730ef9980a3832"
+  "facet/foundation/c7d0495c7a6d26d2333ec528"
+  "facet/foundation/519d3ab33a9d79dc84047281"
+  "facet/foundation/dad828552e448572ff069cb3"
+  "facet/foundation/8fe95759b81bded3c2d3eaa7"
+  "facet/foundation/815a60bc8a0c27c7467f1579"
+  "facet/foundation/8a088e39f71e161162011d65"
+  "facet/foundation/201a6b125aae7c9697e44a5d"
+  "facet/foundation/b0476099c29ee19fd9b8283b"
+  "facet/foundation/ea9af5667b0b095d5aadf517"
+  "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+  "facet/foundation/88e6c82eff0c6a6fb53002ab"
+  "facet/foundation/6417313d2f333de7082cf785"
+  "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+  "facet/foundation/8e92ffcc004134a32d87e553"
+  "facet/foundation/2c160e28d27085795f49c712"
+  "facet/foundation/10b263fc4b8c7b313581cec9"
+  "facet/foundation/6e5d6f4950dc4b7b4ef71d12"
+  "facet/foundation/fab284642d19b35ea1c3ee45"
+  "facet/foundation/170e16d562129d7a5b01b0da"
+  "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+  "facet/foundation/5cfffe1796426a81a91015bc"
+  "facet/foundation/523b8379cdd950c846157716"
+  "facet/foundation/10da89a275c908917e039346"
+  "facet/foundation/6bf793d5f7c5656aab741023"
+  "facet/foundation/75eec15133c55efd31cbebd3"
+  "facet/foundation/61c5e6448861b942b8e1ae1a"
+  "facet/foundation/abc6bd1bb664485f35eb63f2"
+  "facet/foundation/4c17b8ae89124808966dbe13"
+  "facet/foundation/ae9572d2ebd35cc86007cf3d"
+  "facet/foundation/bf24b1a1eaf740e97c49c91f"
+  "facet/foundation/07228cfdcbc5a6d77f1871cf"
+  "facet/foundation/d281dd522ea8562986f1c4b9"
+  "facet/foundation/8433916cb3ac1ee47f43a930"
+  "facet/foundation/08bda61bbea21f9d10e3d601"
+  "facet/foundation/1d587641600405d203ef25b2"
+  "facet/foundation/a5d0bb438aa5a87c7aba8cde"
+  "facet/foundation/dfc7eb005a23558e34a9898a"
+  "facet/foundation/f8aef486fa872468c9046025"
+  "facet/foundation/eadecabd7e6a6f1e0e8ee13b"
+  "facet/foundation/f8133131f15a2d8bd9d7a3c8"
+  "facet/foundation/c0da8522f09a0352bf0cef20"
+  "facet/foundation/8cc79d2fe13e1dd73f62694c"
+  "facet/foundation/b5b379aaae41e1351b4e9b6d"
+  "facet/foundation/1e38ea6f07453efd720439aa"
+  "facet/foundation/549333fb473083cd1697c55f"
+  "facet/foundation/190b81ad12b7733da67b9817"
+  "facet/foundation/2336dae1e6bfce26fc357af7"
+  "facet/foundation/5f8aecc1ce278f223f320bbe"
+  "facet/foundation/21eb43b934256e6f10875d80"
+  "facet/foundation/585504d215d9ffa198c67879"
+  "facet/foundation/9db1acf044749a97851bab96"
+  "facet/foundation/ede1c4d5e66d96d7d32b9d79"
+  "facet/foundation/5b42b51208761d13fe28019b"
+  "facet/foundation/69b2446e5f70f48489038924"
+  "facet/foundation/d51b9fa2f21db1867b44d66d"
+  "facet/foundation/62ba45290b10db616f91119a"
+  "facet/foundation/5be06327a0aa6d6874f599c1"
+  "facet/foundation/407eed4cae64c77c6e3e498b"
+  "facet/foundation/1617ef1370cda52aa98de080"
+  "facet/foundation/d472c31ea128f3b0f1a06d1b"
+  "facet/foundation/3b57cc70c705d4cd890cae80"
+  "facet/foundation/bd9136e6dee34ae8a2396ad2"
+  "facet/foundation/6b70b6af44ccd79fe7c90a4e"
+  "facet/foundation/2745645d4a937a89241dc22c"],
+ :conservation
+ {:executable-generator-bodies :unchanged,
+  :entire-MIR-task-inverse :exact,
+  :current-criterion-witnesses 931,
+  :historical-nested-raw-spans 4819,
+  :projection-code :unchanged,
+  :task-count-delta 0,
+  :current-coordinate-matches 4819,
+  :decision-records 833,
+  :all-other-task-ledgers :byte-identical,
+  :original-documents 240,
+  :source-facets 28785,
+  :historical-mappings 561,
+  :census-task-identities-and-statuses 195,
+  :source-occurrences 9945,
+  :generator
+  :only-two-MIR-source-pins-input-fingerprint-and-C11-metadata-append,
+  :decision-states :all-open,
+  :actual-task-or-auxiliary-owner-containment 4819,
+  :entire-derived-roadmap-reconstruction :exact,
+  :code-reading :inert-read-eval-false-data-only},
+ :checks
+ {:source-data 117248,
+  :semantic-and-structural 107570,
+  :final-context-and-scope 9678,
+  :inert-negative-controls 299,
+  :negative-controls-result :all-rejected,
+  :coherently-rehashed-obligation-controls :included,
+  :actual-compiler-verifier-execution :none},
+ :scope
+ {:criterion-roles 6,
+  :foundation-MIR-semantic-facets 14,
+  :foundation-context :not-whole-D1-D2-D9-or-milestone-acceptance,
+  :foundation-residual-facets 70,
+  :existing-MIR-task-records 5,
+  :C11-semantic-conjunctions 36,
+  :total-traced-facets 148,
+  :context-only-facets 17,
+  :context :identity-hierarchy-and-provenance-conservation-only,
+  :semantic-facets 131,
+  :C11-source-facets 134,
+  :original-owner-joins 6,
+  :predicate-acceptance
+  :only-enumerated-source-to-exact-current-task-criterion-conjunctions,
+  :C11-source-occurrences 53},
+ :actions
+ {:canonical-writes :none,
+  :project-source-edits :none,
+  :project-helper-execution :none,
+  :new-workers :none,
+  :old-denied-notification-retry :none,
+  :held-scope-review-or-delivery :none,
+  :outbound-message :none,
+  :helper-return :available-for-existing-coordinator-readback},
+ :task-source "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+ :predecessor "3f14a02ea78990b9e7090474d63cd1b87a250bf9",
+ :authorship
+ {:C11-append :canonical-owner-bcb98c1c,
+  :reviewer-prior-Build68-predicates :conservation-only,
+  :semantic-self-acceptance :none},
+ :kind :independent-frozen-C11-MIR148-source-criterion-review,
+ :verdict :PASS-exact-frozen-source-criterion-conjunctions,
+ :criterion-witnesses
+ {:construction
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 879,
+   :end-byte 2853,
+   :raw-sha256
+   "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+  :facts
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 3174,
+   :end-byte 4585,
+   :raw-sha256
+   "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+  :ordering
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 4586,
+   :end-byte 5319,
+   :raw-sha256
+   "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+  :verifier
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 5693,
+   :end-byte 6801,
+   :raw-sha256
+   "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+  :serialization
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 7121,
+   :end-byte 8121,
+   :raw-sha256
+   "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+  :consumption
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 8526,
+   :end-byte 9964,
+   :raw-sha256
+   "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+ :reviewer "01a18529-68f3-74f0-b915-a63983ba628a",
+ :implementation :unassessed,
+ :support-artifacts
+ [{:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/check.clj",
+   :sha256
+   "d3eee4c4ba554c499c097fee1d11353bbc45dc1ba019b2dc93a96cdc2253e50a"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/check.log",
+   :sha256
+   "d7c3dd1f37fc9d5214a289378366ed84ad08a450b822d001abc27f82b54464c0"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/semantic.clj",
+   :sha256
+   "211a81967bd3669453721906d4035f6fe414cd1493fa2b3b3686c25fba58fa13"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/semantic.log",
+   :sha256
+   "ba6fe828094cf4b7b6f27e4552faae0cacb667de734e7d6283cc3996d42d8989"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/finalize.clj",
+   :sha256
+   "c5ceba5a183e26b27d74f899aa52585596ec20f7de39b26ed49799e059442d3d"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/finalize.log",
+   :sha256
+   "1b5a5fbd507488fc2cec5aebfadf22bb08a63a27e55c927d93c4cb72ab741942"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/seal.clj",
+   :sha256
+   "106425007e19b4a8993313a719b174d214aef1fb708d01d31e2bfd0f268120d3"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/intake.json",
+   :sha256
+   "778f0b35619bae55dda40cac307ba3fd1c66a8f845239e429f1664620f7413ae"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/original-facet-matrix.edn",
+   :sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/c11-complete-current-facet-trace.edn",
+   :sha256
+   "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/c11-owner-source-refinement.edn",
+   :sha256
+   "c2dd3c07bf633a9e105249399b21fa0718672e1b6f7b0b9dd921c3b2d4e1c5db"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/c11-owner-current-witness-applicability.edn",
+   :sha256
+   "c1fc19317242280ea3b9575110c31e5dd20dcd4c0237b7108f1e8084ac195caf"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/structural-result.edn",
+   :sha256
+   "4f5c0629eae6c9b69b0e5d110147a6e3cc93ec4d511c89f28318f21d0fbef03f"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/review-result.edn",
+   :sha256
+   "2b5a1bb642010dee1ea2bd6035d592d69741454a3f66b5fe91513e63640f7ad8"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/semantic-assessments.edn",
+   :sha256
+   "9aa0a957f748476fdc6d1b0cb9883c4279acf7ccdd8aafb3212d93715adc6e29"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/foundation-assessments.edn",
+   :sha256
+   "dc35734ef09ddc903b60839aedce840d4d730386cc922f0b03845b449d90af30"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/negative-controls.edn",
+   :sha256
+   "b2ffbd8180401f863798eaf9c136726990f6fec7f51562cd7b869ae901a2f103"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/scope-and-conservation.edn",
+   :sha256
+   "385c8418eb4aa882a2c3cdf52bc75d01461e5c23d5e6ed783801ae65e47fb0b8"}]}

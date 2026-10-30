@@ -1,0 +1,111 @@
+{:kind :authenticated-stdlib83-source-metadata-recovery,
+ :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+ :proposal-sha256
+ "c3098645ca874c72ccc70e1ecb209888a8b3e5d581c1b95a533b0c307059037a",
+ :saved-base-sha256
+ "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980",
+ :facets
+ [{:before-sha256
+   "9952a9de40674e08c69d56bba8c71872433ddf9c3608e49c8dd292a0c129db04",
+   :member-routes
+   [{:original-id "domain/compiler-plugin-boundary",
+     :replacement-ids ["domain/compiler-plugin-boundary"],
+     :role :bounded-interface-attribution}],
+   :original-facet-id
+   "facet/runtime-domains-schema/dom17/6024e135349023238cf20f04",
+   :source-path
+   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+   :raw-text
+   "```clojure\n{:domain :compiler-tooling\n :profiles #{:meta :hosted :native}\n :backends #{:jvm :javascript-typescript :llvm}\n :artifacts #{:syntax-tools :pass-manifest :mir-inspector\n              :diagnostic-fixtures :plugin-manifest}\n :examples #{:macro-expander :formatter :mir-pass :lsp-query}\n :rejects #{:metadata-loss :unchecked-generated-code\n",
+   :original-facet
+   {:start-line 54,
+    :raw-sha256
+    "b1072b3172b3ba789e6308ef9e0ea72b29f2b1e9a66b12af2c03990a360ab642",
+    :unresolved false,
+    :source-occurrence-id
+    "DOM17/source/57a85fcdd48b643810bf1b6d8d82ea8fb1132d52ff68aa48300388360c7022de",
+    :origin-facet-ids
+    ["facet/runtime-domains-schema/dom17/6024e135349023238cf20f04"
+     "DOM17/facet/7234ce69ad6736c41aa2d3365f777faf03c8b95a8169171e7e889d131359cab6"],
+    :id "finite18/facet/05eab1246424bce92900fe05e9e8a1bc",
+    :kind :example,
+    :document-id "DOM17",
+    :end-byte 2436,
+    :end-line 61,
+    :unit-ids ["domain/compiler-plugin-boundary"],
+    :start-byte 2088},
+   :id "finite18/facet/05eab1246424bce92900fe05e9e8a1bc",
+   :current-document-identical true,
+   :source-document-sha256
+   "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69"}
+  {:before-sha256
+   "9952a9de40674e08c69d56bba8c71872433ddf9c3608e49c8dd292a0c129db04",
+   :member-routes
+   [{:original-id "domain/compiler-plugin-boundary",
+     :replacement-ids ["domain/compiler-plugin-boundary"],
+     :role :bounded-interface-attribution}],
+   :original-facet-id
+   "facet/runtime-domains-schema/dom17/6024e135349023238cf20f04",
+   :source-path
+   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+   :raw-text "```\n",
+   :original-facet
+   {:start-line 63,
+    :raw-sha256
+    "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d",
+    :unresolved false,
+    :source-occurrence-id
+    "DOM17/source/57a85fcdd48b643810bf1b6d8d82ea8fb1132d52ff68aa48300388360c7022de",
+    :origin-facet-ids
+    ["facet/runtime-domains-schema/dom17/6024e135349023238cf20f04"
+     "DOM17/facet/7234ce69ad6736c41aa2d3365f777faf03c8b95a8169171e7e889d131359cab6"],
+    :id "finite18/facet/5699ffcebd906da8322dbfb5d24d9059",
+    :kind :example,
+    :document-id "DOM17",
+    :end-byte 2502,
+    :end-line 63,
+    :unit-ids ["domain/compiler-plugin-boundary"],
+    :start-byte 2498},
+   :id "finite18/facet/5699ffcebd906da8322dbfb5d24d9059",
+   :current-document-identical true,
+   :source-document-sha256
+   "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69"}
+  {:before-sha256
+   "1ec7f70bd9a573e79901a18cc2b648eb88b9883d608b06ebe2b7ced8f730abde",
+   :member-routes
+   [{:original-id "domain/compiler-plugin-boundary",
+     :replacement-ids ["domain/compiler-plugin-boundary"],
+     :role :bounded-interface-attribution}
+    {:original-id "domain/mir-pass-integration",
+     :replacement-ids ["domain/mir-pass-integration"],
+     :role :external-unmodified}],
+   :original-facet-id
+   "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d",
+   :source-path
+   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+   :raw-text "  and diagnostics.\n",
+   :original-facet
+   {:start-line 84,
+    :raw-sha256
+    "c5ab1286d96ca933ea1c6158d955170528cb44e6b70475b3c602b80e5848a088",
+    :unresolved false,
+    :source-occurrence-id
+    "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+    :origin-facet-ids
+    ["facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d"
+     "DOM17/facet/76e879b56b1ffc9eb949cc0df81ac6fb62c17c7c4326a5972cd3d1f0b0eaa91c"],
+    :id "finite18/facet/68c7d815a928b2376c0155266d509e87",
+    :kind :condition,
+    :document-id "DOM17",
+    :end-byte 2998,
+    :end-line 84,
+    :unit-ids
+    ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+    :start-byte 2979},
+   :id "finite18/facet/68c7d815a928b2376c0155266d509e87",
+   :current-document-identical true,
+   :source-document-sha256
+   "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69"}],
+ :status
+ :proposed-pending-independent-source-and-owning-clause-context-review,
+ :canonical-facet-index-adoption false}

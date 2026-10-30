@@ -1,0 +1,35 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+ :new-criterion-witness
+ {:path "specs/domains-workflow/tasks.md",
+  :marker "domains-implementation-tasks",
+  :task-id "ai",
+  :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+  :file-sha256
+  "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+  :start-byte 313532,
+  :end-byte 315511,
+  :raw-sha256
+  "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+  :sha256
+  "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+  :sha256
+  "06fc51ee46d659538b862dce3830e3fc4bbf9857eac3b94747e64790a44b3604"},
+ :historical-file-pin-changes 4046,
+ :kind :d2-triage-current-witness-applicability,
+ :composition
+ {:path
+  "specs/requirement-reconciliation/d2-triage-source-refinement.edn",
+  :sha256
+  "bfd298ec9e91ad598fbd5e5e8ad60b7378327512e4f6459b84a9e660829320c5"},
+ :full-file-inverse :exact-declared-insertion-removal}

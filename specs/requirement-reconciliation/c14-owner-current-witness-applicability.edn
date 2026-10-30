@@ -1,0 +1,100 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+  :sha256
+  "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+  :sha256
+  "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25"},
+ :historical-file-pin-changes 4,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :c14-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:input
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 4680,
+   :end-byte 6096,
+   :raw-sha256
+   "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+  :layout
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 6459,
+   :end-byte 8289,
+   :raw-sha256
+   "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+  :providers
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 8641,
+   :end-byte 9654,
+   :raw-sha256
+   "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+  :proof
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 11525,
+   :end-byte 12643,
+   :raw-sha256
+   "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+  :emission
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 14428,
+   :end-byte 15781,
+   :raw-sha256
+   "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/c14-owner-source-refinement.edn",
+  :sha256
+  "81174c3ae27406421ea0d48277326f40ade42cd976e989d2a7a321cd8f8e1534"},
+ :full-file-inverse :exact-declared-insertion-removal}

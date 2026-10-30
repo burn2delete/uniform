@@ -1,0 +1,52 @@
+{:original-failure-preserved true,
+ :failure-classification
+ :dependency-fetch-not-observed-source-test-failure,
+ :duplicate-retry false,
+ :manual-retry-dispatched false,
+ :full-run-at-last-observation :completed-success,
+ :alternate-executor-or-network-bypass false,
+ :dependency-or-security-policy-change false,
+ :superseding
+ {:run-id 40953758973,
+  :job-id 123728395208,
+  :head "5da47ef00521216dd7109932fb630c57dbd72c9e",
+  :tree "ccbc18349621262431eb5736290c8957ec9184f2",
+  :job "fresh-leaf-regressions / portable",
+  :status :completed,
+  :conclusion :success,
+  :url
+  "https://github.com/burn2delete/uniform/actions/runs/40953758973"},
+ :overall-run
+ {:conclusion :success,
+  :workflow-id 397837070,
+  :run-number 415,
+  :head "5da47ef00521216dd7109932fb630c57dbd72c9e",
+  :skipped-jobs 2,
+  :status :completed,
+  :id 40953758973,
+  :successful-jobs 7,
+  :failed-jobs 0},
+ :later-head-ci :not-inherited,
+ :original
+ {:conclusion :failure,
+  :observed-at "2026-10-29T20:43:51Z",
+  :stage :classpath-resolution-before-leaf-tests,
+  :exit 1,
+  :job-id 123720358655,
+  :failure :maven-central-http429,
+  :head "893bb4b85926a9d7f8953798544b2126baf6ef58",
+  :decoded-log-utf8-sha256
+  "4e353998c215a56face4b1b7003536138e492201c7521fb733647780a1aaee0e",
+  :url
+  "https://github.com/burn2delete/uniform/actions/runs/40951456643",
+  :artifact "org.clojure:clojure:pom:1.12.5",
+  :run-id 40951456643},
+ :implementation-credit :none,
+ :scope :exact-superseding-published-head-only,
+ :newer-ci-existed-at-recovery-intake true,
+ :predecessor
+ {:sha256
+  "f19c431789dd4eb7763196ee26fba7e4b6801a283ede5aa1115ca7cb5adb764c",
+  :scope
+  :portable-job-success-with-projections-still-pending-at-that-observation},
+ :kind :pr554-portable-fetch-recovery-and-overall-ci-observation}

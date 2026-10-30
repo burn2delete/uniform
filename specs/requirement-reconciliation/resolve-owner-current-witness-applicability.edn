@@ -1,0 +1,100 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn",
+  :sha256
+  "872e73b9d8a4bb00216f4992fd1bb000e6eb0672357f67204c5bd5bec94f70f4"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+  :sha256
+  "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+ :historical-file-pin-changes 2,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :resolve-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:binding
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 1660,
+   :end-byte 3094,
+   :raw-sha256
+   "f6ef53176e81c4ea0b6f2a8a8181bdaabbe9285a1e4ace9cd58cc51393158edb"},
+  :imports
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 3974,
+   :end-byte 5263,
+   :raw-sha256
+   "b98438a4d97dfdd9f7e72559c2f8eb5423bbff002bf8cc1c96f43ed9ea01b170"},
+  :graph
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 6197,
+   :end-byte 8040,
+   :raw-sha256
+   "9540d80e61e99839d90a6a054ea9326597faef3a66cbbde68f967858a85704e4"},
+  :interface
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 8385,
+   :end-byte 10166,
+   :raw-sha256
+   "06a659768d2ad38c16741410a4957e9c31d9aa65f709d8b4a5269b372e81780c"},
+  :consumers
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 10553,
+   :end-byte 12167,
+   :raw-sha256
+   "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/resolve-owner-source-refinement.edn",
+  :sha256
+  "afe1a406228a6a278f3f16d18176b0ee90d5378914c1b72013d747656da9cd53"},
+ :full-file-inverse :exact-declared-insertion-removal}

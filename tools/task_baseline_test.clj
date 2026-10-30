@@ -1,0 +1,38 @@
+(ns task-baseline-test
+  (:require [clojure.test :refer [deftest is run-tests]]))
+(binding [*command-line-args* nil] (load-file "tools/task_baseline.clj"))
+(require '[task-baseline :as baseline] '[sh-crosswalk])
+(defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
+(deftest scoped-status-and-false-acceptance
+  (is (= :accepted (:state (baseline/status true "Status: Accepted; exact scoped receipt"))))
+  (is (= :unassessed (:state (baseline/status false "Status: Extension records/projected views exist"))))
+  (is (rejects? #(baseline/status false "Status: Accepted; invented")))
+  (is (rejects? #(baseline/status true "Status: Open"))))
+(deftest canonical-identity-and-unweighted-counting
+  (let [tasks [{:id "a" :status {:state :accepted}} {:id "b" :status {:state :open}}
+               {:id "c" :status {:state :partial}} {:id "d" :status {:state :unassessed}}]
+        p (baseline/progress tasks)]
+    (is (= [1 4 3] (mapv p [:accepted-complete-in-declared-task-scope :total :remaining])))
+    (is (= {:numerator 1 :denominator 4} (:unweighted-ratio p)))
+    (is (rejects? #(baseline/progress (conj tasks (first tasks)))))))
+(deftest stale-source-refuses-before-counting
+  (with-redefs [clojure.core/slurp (constantly "changed")
+                sh-crosswalk/git-source (fn [_ _] "pinned")]
+    (is (rejects? #(baseline/pinned-text "source" "task.md")))))
+(deftest concrete-criterion-links-control-work-association
+  (let [legacy {:id "decision" :accountable-task "release" :supporting-task-ids ["consumer"]}
+        bound (assoc legacy :criterion-task-allocation {:task-links [{:task-id "producer"}]})]
+    (is (= #{"release" "consumer"} (baseline/decision-task-ids legacy)))
+    (is (= #{"producer"} (baseline/decision-task-ids bound)))
+    (is (= ["decision"] (baseline/task-decisions [bound] "producer")))
+    (is (empty? (baseline/task-decisions [bound] "release")))
+    (is (rejects? #(baseline/decision-task-ids (assoc legacy :criterion-task-allocation {:task-links []}))))))
+(deftest complete-allocation-is-separate-from-acceptance
+  (let [open {:id "d" :status :open :criterion-task-allocation {:task-links [{:task-id "producer"}]}}
+        unallocated {:id "other" :status :open}]
+    (is (= :unassessed (baseline/criterion-allocation-state [])))
+    (is (= :unassessed (baseline/criterion-allocation-state [unallocated])))
+    (is (= :partially-criterion-witness-bound (baseline/criterion-allocation-state [open unallocated])))
+    (is (= :criterion-witness-bound (baseline/criterion-allocation-state [open])))
+    (is (rejects? #(baseline/criterion-allocation-state [(assoc open :criterion-task-allocation {:task-links []})])))))
+(let [r (run-tests)] (shutdown-agents) (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

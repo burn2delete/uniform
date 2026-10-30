@@ -13,6 +13,12 @@
     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
     "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-query-and-transaction-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-compiler-and-syntax-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-cryptographic-adapters"
+    "stdlib/remaining-tasks-and-evidence/implement-ui-and-event-adapters"
     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"})
 (def link-pattern task-projection-links/link-pattern)
 (def record-pattern
@@ -75,9 +81,12 @@
                {:component "Standard Library" :task-marker "stdlib-implementation-tasks"
                 :record-pattern record-pattern :semantic-ids semantic-ids
                 :record-keys [:id :title :status :evidence :acceptance]
-                :title-id-prefix "stdlib/remaining-tasks-and-evidence/"
-                :title-id-error "Standard Library task ID and preserved title disagree"
                 :validate-field validate-field} text)]
+    (doseq [{:keys [id title]} rows]
+      (when-not (if (= id "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters")
+                  (= title "Complete schema and serialization adapters")
+                  (= id (str "stdlib/remaining-tasks-and-evidence/" (-> title str/lower-case (str/replace #"[^a-z0-9 -]" "") (str/replace #" +" "-")))))
+        (fail "Standard Library task ID and declared leaf title disagree")))
     (validate-targets rows)))
 
 (defn table [rows]

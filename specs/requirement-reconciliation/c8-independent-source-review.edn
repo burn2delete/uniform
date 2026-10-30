@@ -1,0 +1,663 @@
+{:derived-controls
+ {:kind :independent-C8-derived-source-conservation,
+  :head "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+  :checks 42,
+  :verdict :pass-exact-derived-data-conservation,
+  :prior-review-scopes :unchanged-new-append-not-inherited,
+  :implementation :not-assessed},
+ :findings [],
+ :external-notification :not-performed,
+ :frozen-head "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+ :tree "49603cd38b9d5d58850ac552612a225c85f28a4a",
+ :nonclaims
+ [:implementation
+  :compiler-execution
+  :runtime
+  :provider
+  :model
+  :replay-execution
+  :target-probe
+  :full-L6-entailment
+  :foundation-attached-predicates
+  :whole-project
+  :final-denominator
+  :future-head
+  :canonical-adoption
+  :APPROVE
+  :held-action-clearance],
+ :negative-controls
+ [{:control
+   "coherently-rehashed-missing-obligation/computation/actual typed-core expression, function, namespace, module and macro-output",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/direct/latent/transitive/build/replay/residual",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/effect facts or a diagnostic",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/concrete registered labels",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/thrown-error effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/source/generated identities",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/reader-extension/macro/compile-time/plugin/probe/generator build effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/emitted-program runtime effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/dependency-resolution/artifact-generation package/build effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/build-effectful macro can emit pure code",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/pure macro can emit runtime effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/module/node identity",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/function declared/inferred/latent/throws",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/namespace declared/inferred and module summaries",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/runtime checks, dynamic dispatch, fallback-provider calls, residual capability checks and replay logging",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/reject missing facts",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/computation/C8-UNKNOWN/BUILD/VERIFY",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/actual resolved typed call/closure/dispatch/recursive edges",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/not by copying declared allowances",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/conservative branch alternatives",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/every branch contributes to legality",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/calls consume actual latent effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/escaping versus handled labels",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/handler type/profile/capability/continuation/replay facts",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/handling does not erase original labels or grant authority",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/Reject underreported reachability",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/propagation/Recompute or invalidate affected summaries",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/complete applicable intersection of function and namespace declarations, profile, package manifest, build/deployment grants, actual runtime/provider support and safety mode before MIR",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/Effects and capability sets remain distinct",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/actual use to explicit authority evidence",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/effect, core source, capability, provider, grant scope/principal/phase and status",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/reject missing or insufficient scoped grants before MIR",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/may narrow support but cannot grant authority",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/Authority evidence is not a safety proof",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/sequence, may-commute, must-not-duplicate, must-not-eliminate",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/resource acquire/release bracketing",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/volatile/MMIO/atomic and replay-order",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/actual optimizers consume them before reordering/fusion/elimination",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/resource/volatile/MMIO/atomic/workflow/AI order cases",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/Reject type-only legality, effect-name-derived grants, authority-widening handlers/providers",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/legality/missing ordering evidence",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/source-bound replay/audit obligations",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/time, randomness, external IO, external database reads, workflow events, model calls, tool calls, :ai/human-review and scheduler-sensitive operations",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/including distributed/AI effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/Actual workflow/AI/runtime/test consumers satisfy",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/rejects missing records before target lowering",
+   :outcome :refused}
+  {:control "coherently-rehashed-missing-obligation/replay/distinct",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/actual hermetic build grants",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/qualified R6/R7/R8 scope",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/Reject hidden macro runtime effects, absent required replay/audit records, unreplayable hermetic behavior and ungranted build effects",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/replay/cannot replace actual recorded consumer evidence",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/actual current effect graph, latent/throws tables, namespace/module summaries, capability proof, build log, replay obligations, ordering constraints, residual report and diagnostics",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/to checked-core/profile/capability/safety validation and MIR",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/actual MIR/optimizer/runtime/tool consumers",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/actual C7 typed calls, L6 effect and L15 grant contracts, L9 throws, L12 build/hermetic policy",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/actual positive/negative producer-consumer fixtures",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/reject malformed/stale or missing semantic facts",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/C8-UNDECLARED/PROFILE/CAPABILITY/BUILD/REPLAY/ORDER/RUNTIME/UNKNOWN/VERIFY",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/core-node/span/generated-origin/function/namespace/effect/capability/profile/target/provider/grant/remediation",
+   :outcome :refused}
+  {:control
+   "coherently-rehashed-missing-obligation/handoff/future execution requirements",
+   :outcome :refused}
+  {:control "wrong-owner-role-direction", :outcome :refused}
+  {:control "missing-conjunction-member", :outcome :refused}
+  {:control "scope-promotion-implementation", :outcome :refused}
+  {:control "scope-promotion-prior-review", :outcome :refused}
+  {:control "forged-full-file-pin", :outcome :refused}
+  {:control "stale-witness-source", :outcome :refused}
+  {:control "forged-raw-range", :outcome :refused}],
+ :goal-native-readback "goal-readback-before-seal.json",
+ :canonical-writes :none,
+ :later-head-applicability :separate-required-no-inheritance,
+ :accepted-scope
+ {:C8-original-facets 103,
+  :C8-original-occurrences 50,
+  :semantic-conjunctions 34,
+  :hierarchy-provenance-contexts 16,
+  :existing-Effects-owner-criteria 5,
+  :original-C8-owner-interfaces 5,
+  :new-task-units 0,
+  :new-decision-ids 0},
+ :review-artifact-hashes
+ {"context-review.clj"
+  "ff3f05600093190ce4c0279198b08d3beb93d55691b4c37122921fc4197d9c78",
+  "derived-controls.edn"
+  "2f1fa63c7dacc609b8ab714c6070151e2f3692f1e5bc6b1f2e6f4a6fd473cb81",
+  "derived-review.clj"
+  "1d05fb028a8e026532aa9ae031b1c763aad7bf78bed8601172150365f3982c61",
+  "owner-context-controls.edn"
+  "61935930a53a1544dcc0bf3ba1b90f8ef6dab798a5300b6475ce72729b5b580e",
+  "receipt.edn"
+  "789a34deeac3dddda3c4eec2112633bec2a354b12b7daae57d685e9a78c582d9",
+  "review.clj"
+  "11695782e8313bbd031f05127bd4a3218e1e5d51bc642cfa1710250da5fa0d26"},
+ :authorship-and-conflict
+ {:own-new-C8-predicates false,
+  :latest-owner-helper-and-six-related-reviewer-readbacks
+  :no-competing-exact-C8-review-or-denial-found,
+  :other-C11-C14-retirement-extension-and-PR637-reviews :distinct,
+  :private-exact-C8-receipt-search :none-found-before-this-review},
+ :delivery :normal-result-channel-only,
+ :conservation
+ {:original-effects-criterion-prefixes :exact-full-file-inverse,
+  :own-Math20-records 20,
+  :all833-Open-records :exactly-unchanged,
+  :recorded-R6-R7-R8-qualification :unchanged,
+  :new-append-inherited-review :none,
+  :historical-raw-spans 4819,
+  :original-documents 240,
+  :all-task-identities-and-states :preserved,
+  :roadmap :exact-derived-forward-and-inverse,
+  :original-occurrences 9945,
+  :original-facets 28785,
+  :own-Math20 :conservation-only-not-semantic-self-review,
+  :all561-historical-identities :preserved},
+ :checks 48846,
+ :owner-context-controls
+ {:kind :independent-C8-original-owner-context-check,
+  :head "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+  :checks 35,
+  :original-owner-obligations 5,
+  :real-owner-contexts 5,
+  :verdict :pass},
+ :negative-controls-count 67,
+ :task-source "94dfa9c535268276765b76366c5c60687fa3807a",
+ :kind :independent-complete-C8-source-and-owner-refinement-review,
+ :verdict :pass-qualified-frozen-C8-source-conjunctions-only,
+ :per-occurrence
+ [{:id
+   "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84",
+   :source-range [0 29],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58",
+   :source-range [30 306],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265",
+   :source-range [307 318],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f",
+   :source-range [319 678],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb",
+   :source-range [679 790],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a",
+   :source-range [791 807],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :source-range [808 1556],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b",
+   :source-range [1557 1573],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :source-range [1574 1943],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5",
+   :source-range [1944 1969],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :source-range [1970 2215],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e",
+   :source-range [2216 2232],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a",
+   :source-range [2233 2845],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4",
+   :source-range [2846 2976],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:propagation :legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b",
+   :source-range [2977 3002],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e",
+   :source-range [3003 3070],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2",
+   :source-range [3071 3432],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0",
+   :source-range [3433 3567],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7",
+   :source-range [3568 3588],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86",
+   :source-range [3589 3644],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352",
+   :source-range [3645 3917],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee",
+   :source-range [3918 4073],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f",
+   :source-range [4074 4103],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38",
+   :source-range [4104 4144],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+   :source-range [4145 4394],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3",
+   :source-range [4395 4555],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2",
+   :source-range [4556 4585],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e",
+   :source-range [4586 4635],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :source-range [4636 4837],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe",
+   :source-range [4838 5030],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b",
+   :source-range [5031 5055],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f",
+   :source-range [5056 5089],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :source-range [5090 5279],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead",
+   :source-range [5280 5367],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a",
+   :source-range [5368 5388],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1",
+   :source-range [5389 5674],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41",
+   :source-range [5675 5690],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be",
+   :source-range [5691 5740],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :source-range [5741 6227],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2",
+   :source-range [6228 6396],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7",
+   :source-range [6397 6417],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59",
+   :source-range [6418 6481],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5",
+   :source-range [6482 6552],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648",
+   :source-range [6553 6603],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c",
+   :source-range [6604 6666],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2",
+   :source-range [6667 6743],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785",
+   :source-range [6744 6820],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082",
+   :source-range [6821 6845],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9",
+   :source-range [6846 6892],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}
+  {:id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :source-range [6893 7328],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :verdict :pass-finite-C8-conjunction,
+   :implementation :not-assessed}],
+ :reviewer "01a183df-0570-76e0-adfa-796c573e66f7",
+ :preparation-corrections
+ ["The inert census audit initially assumed every record used a byte-span envelope. Eleven unchanged Product records use inline criterion/dependency envelopes; those are now checked against their exact predecessor instead. No canonical change was made."],
+ :check-breakdown {:main 48769, :derived 42, :owner-context 35},
+ :source-refinement-base "9d1517399654bd115543d23b4f1d65af6d30f222",
+ :held-actions :unchanged-no-equivalent-substitution,
+ :semantic-review
+ {:real-producer-checker-consumer-directions :pass,
+  :L6-and-foundation-full-attached-predicates :not-assessed,
+  :all-nine-diagnostic-meanings-and-twelve-context-fields :pass,
+  :explicit-scoped-grants-not-safety-proof :pass,
+  :separate-build-runtime-package-authority :pass,
+  :typed-C7-L6-L9-L12-L15-contract-boundaries :pass,
+  :actual-inference-and-thrown-errors :pass,
+  :conservative-calls-and-branches :pass,
+  :all-order-families-and-real-optimizer-consumption :pass,
+  :all-nine-replay-families-and-profile-refusals :pass,
+  :examples-not-defaults-or-authority :pass},
+ :artifacts
+ {"docs/component-roadmaps/effects.md"
+  "7eb3816b23d0a92627c8f4db232537a71c1f12f31423320470ac4c612255eab3",
+  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+  "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+  "specs/effects-workflow/tasks.md"
+  "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+  "specs/requirement-reconciliation/all833-c8-owner-current-criterion-conservation.edn"
+  "97e39bbed6af8d4f72c635845e5fb50d7cafd002953b1b74947be54dd72c51b3",
+  "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn"
+  "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199",
+  "specs/requirement-reconciliation/c8-owner-current-witness-applicability.edn"
+  "0e718ebf7224ca112581e589bf1284e13102bb7dc8c2505b14608139bc9df7e4",
+  "specs/requirement-reconciliation/c8-owner-source-refinement.edn"
+  "319ba5a26f543effe3eb9c35620b4cc377a5ddb8d3e2d78db9d326a4a0099de4",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn"
+  "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"}}

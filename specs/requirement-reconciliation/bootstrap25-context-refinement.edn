@@ -1,0 +1,159 @@
+{:composition-sha256
+ "b0477962a72f09918b3fcd940aab43a12d8f1572893b120cccc72d013129a2d2",
+ :task-count-delta 0,
+ :expanded-context-references 21,
+ :implementation-credit :none,
+ :references
+ [{:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/security-review",
+   :original-raw-sha256
+   "ae02d2a7efeed10c5df1f319ea75cc9c89c860104c253fedbef70c70cb566fa9",
+   :current-raw-sha256
+   "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/security-review",
+   :original-raw-sha256
+   "ae02d2a7efeed10c5df1f319ea75cc9c89c860104c253fedbef70c70cb566fa9",
+   :current-raw-sha256
+   "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/security-review",
+   :original-raw-sha256
+   "ae02d2a7efeed10c5df1f319ea75cc9c89c860104c253fedbef70c70cb566fa9",
+   :current-raw-sha256
+   "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/security-review",
+   :original-raw-sha256
+   "ae02d2a7efeed10c5df1f319ea75cc9c89c860104c253fedbef70c70cb566fa9",
+   :current-raw-sha256
+   "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/security-review",
+   :original-raw-sha256
+   "ae02d2a7efeed10c5df1f319ea75cc9c89c860104c253fedbef70c70cb566fa9",
+   :current-raw-sha256
+   "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}
+  {:path "specs/evolution-workflow/tasks.md",
+   :task-id "evolution/change-review",
+   :original-raw-sha256
+   "6bff7c8cd92044a8c5882c8865a6156dcf5cd54dcde06d89672742c422aec6ef",
+   :current-raw-sha256
+   "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+   :retained-operations 1}],
+ :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+ :kind :exact-bootstrap25-task-context-refinement-proof,
+ :new-predicate-acceptance :not-conferred,
+ :historical-adoptions-preserved 561,
+ :semantic-preservation
+ :original-task-blocks-exactly-recovered-by-inverting-declared-field-appends}

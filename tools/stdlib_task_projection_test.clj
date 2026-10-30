@@ -7,7 +7,7 @@
 
 (deftest canonical-records-and-generated-boundaries
   (let [rows (stdlib-task-projection/records tasks)]
-    (is (= 5 (count rows)))
+    (is (= 11 (count rows)))
     (is (= stdlib-task-projection/semantic-ids (set (map :id rows))))
     (is (every? #(= "Open" (:status %)) rows))
     (is (stdlib-task-projection/check-projection tasks roadmap))
@@ -23,7 +23,7 @@
              (part (task-projection/region projected "stdlib-task-projection"))))))
   (let [accepted (-> tasks (str/replace-first "- [ ]" "- [x]")
                      (str/replace-first "Status: Open" "Status: Accepted; [receipt](https://example.com/review)"))]
-    (is (= 5 (count (stdlib-task-projection/records accepted))))
+    (is (= 11 (count (stdlib-task-projection/records accepted))))
     (is (not (str/includes? (stdlib-task-projection/project accepted roadmap) "Task (all open)")))))
 
 (deftest identity-and-structure-rejections
@@ -138,5 +138,18 @@
           (is (= before (snapshot root)))))
       (is (= "Outside write boundary" (slurp sentinel)))
       (finally (doseq [f (reverse (file-seq temp))] (io/delete-file f))))))
+
+(deftest grouped-adapter-id-is-one-schema-leaf
+  (let [rows (into {} (map (juxt :id identity) (stdlib-task-projection/records tasks)))
+        legacy "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+        schema (rows legacy)]
+    (is (= "Complete schema and serialization adapters" (:title schema)))
+    (is (str/includes? (:acceptance schema) "Own the STD10 public library boundary"))
+    (is (not (str/includes? (:acceptance schema) "STD11")))
+    (is (str/includes? (:acceptance (rows "stdlib/remaining-tasks-and-evidence/implement-query-and-transaction-adapters")) "commit, rollback, retry"))
+    (is (rejects? #(stdlib-task-projection/records
+                    (str/replace tasks "Complete schema and serialization adapters" "Complete schema/query/workflow/AI/meta/crypto/UI adapters"))))
+    (is (rejects? #(stdlib-task-projection/records
+                    (str/replace tasks "`stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters`" "`stdlib/remaining-tasks-and-evidence/implement-unknown-adapters`"))))))
 
 (let [r (run-tests)] (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))

@@ -1,0 +1,48 @@
+{:task-id "backend-c",
+ :criterion-text
+ "B2 C-subset refinement (Open; existing backend/c/source-emission).\nRequired outputs: Generated C width-sensitive declarations and operations using explicit fixed-width integer types, with their existing ABI/numeric representation facts.\nAccept: Where width matters, use explicit fixed-width C integer types and preserve the mapping from Gravity value width/mode through the pinned C compiler, target and data model. Any dialect, extension, helper or alternate representation used must remain explicit and profile-legal under the existing ABI/numeric contracts.\nPositive evidence: For every claimed width-sensitive representation, the generated declarations and compilation fixtures demonstrate the chosen type widths and Gravity numeric behavior under the recorded compiler/flags.\nRefuse: Width-sensitive generated C relies on ambient int/long width, loses declared Gravity width/mode facts, or uses an unsupported/unrepresentable type without a legal explicit mapping; emit applicable B2-ABI/B2-NUMERIC/B2-UB with the existing owning source context.\nDependencies consume actual artifacts: backend/c/source-emission consumes backend/c/abi-layout representation facts and backend/c/numeric-lowering mode/check/proof decisions. This adds no target selection or execution claim.",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-witness
+ {:path
+  "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+  :file-sha256
+  "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1",
+  :raw-sha256
+  "69eccb74cc8a54d43215b54cb21b10e080ac216cf19b6dcb5fed69b13f450e4c",
+  :source-text
+  "- uses explicit fixed-width integer types where width matters,",
+  :source-occurrence-id
+  "B2/source/fee666331ef3698bedde0fc46e77bdf1a04fbb54b5dd2a78e35e6bcdaff9e742",
+  :source-path
+  "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+  :source-commit "022eb59a3be14ef7275d5154e4801ec16dc592a9",
+  :id
+  "B2/partition-facet/f96f49eb0c48f7f5bf137df68d987a12c199183a18ff38b27898d31f7074bc7e",
+  :document-id "B2",
+  :end-byte 2847,
+  :start-byte 2785},
+ :scope
+ "Only the explicit fixed-width generated-C predicate. Existing five-clause review scope is retained; it is not extended to this addition. All other fourteen backend records, task identities, selected target and original B2 bytes are unchanged. Full B2 facet entailment and independent acceptance remain separate.",
+ :source-commit "022eb59a3be14ef7275d5154e4801ec16dc592a9",
+ :refines-existing-obligation "backend/c/source-emission",
+ :status :owner-applied-pending-independent-facet-review,
+ :five-reviewed-C-criterion-bodies :all-exactly-preserved,
+ :kind :exact-B2-fixed-width-source-facet-refinement,
+ :operations
+ [{:path "specs/backends-workflow/tasks.md",
+   :before-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :after-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :inserted-text
+   "\nB2 C-subset refinement (Open; existing backend/c/source-emission).\nRequired outputs: Generated C width-sensitive declarations and operations using explicit fixed-width integer types, with their existing ABI/numeric representation facts.\nAccept: Where width matters, use explicit fixed-width C integer types and preserve the mapping from Gravity value width/mode through the pinned C compiler, target and data model. Any dialect, extension, helper or alternate representation used must remain explicit and profile-legal under the existing ABI/numeric contracts.\nPositive evidence: For every claimed width-sensitive representation, the generated declarations and compilation fixtures demonstrate the chosen type widths and Gravity numeric behavior under the recorded compiler/flags.\nRefuse: Width-sensitive generated C relies on ambient int/long width, loses declared Gravity width/mode facts, or uses an unsupported/unrepresentable type without a legal explicit mapping; emit applicable B2-ABI/B2-NUMERIC/B2-UB with the existing owning source context.\nDependencies consume actual artifacts: backend/c/source-emission consumes backend/c/abi-layout representation facts and backend/c/numeric-lowering mode/check/proof decisions. This adds no target selection or execution claim.\n"}
+  {:path "docs/component-roadmaps/backends.md",
+   :before-sha256
+   "09b23ffb0c64054e2c6fb0257473b1881947486638787ea33fec5aa06f2f94df",
+   :after-sha256
+   "fea2d14692b608a528b9a942d985f98f265a1e9ca9c69b988ea733b582932aaf",
+   :kind :derived-projection}],
+ :numeric-input-interface "backend/c/numeric-lowering",
+ :full-file-inverse :remove-exact-inserted-text,
+ :new-decision-ids 0}

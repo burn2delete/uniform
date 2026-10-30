@@ -1,0 +1,457 @@
+{:negative-controls
+ {:wrong-field true,
+  :stale-prefix true,
+  :replacement-not-additive true,
+  :duplicate-addition true,
+  :missing-before true},
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :partition-sha256
+ "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+ :kind :reviewed-residual-additive-composition,
+ :files
+ [{:path "specs/domains-workflow/tasks.md",
+   :before-sha256
+   "2a493b74ef6d71181beec333f683b26c9a622163f1b56c2e3b89bf4c60f3ae7f",
+   :after-sha256
+   "fc35b809401d0bbf2c504361af57210578e73f83bf0e6bb9f4c7a47b71d2ac16"}
+  {:path "specs/legality-workflow/tasks.md",
+   :before-sha256
+   "c16324ef250cf156254facf094f86399d008aee983981526c02a122050b78139",
+   :after-sha256
+   "e140f10b35bbb73ffb65f5860557979fc5c69f36d87682dd1a03bcb3faffda9a"}
+  {:path "specs/lower-workflow/tasks.md",
+   :before-sha256
+   "1e0a2269724532391564f8b8cb584a6a784b917522afd0ce4f4b8e323f573a21",
+   :after-sha256
+   "df2d520b8cb980c67d97b7dc10dc7d25c54112c48eb884e0fc11bf6ed1da8c08"}
+  {:path "specs/platform-workflow/tasks.md",
+   :before-sha256
+   "f4a4619901c8f8109896b0741890ccb3444dbb4d02420c62fcf6d36f34db2db1",
+   :after-sha256
+   "8e7de234b3acd89ec2679264ce9a88a22012d0f978385799c67e8115f5d2b1da"}
+  {:path "specs/runtime-workflow/tasks.md",
+   :before-sha256
+   "ce3b6cd74f094834ec39d1919a884d6312e9ef685d17555410bb3cd1b5dce09a",
+   :after-sha256
+   "6ff78024c54997d53b5e371f983e90b78e97af875060b9ff4cded7cfc9b35695"}],
+ :applying-source "f115e76ec8c30234ad129d154d44f03a5f99c877",
+ :groups
+ [{:family "phase-11",
+   :assigned-ids
+   ["behavior/a1/credential-source"
+    "behavior/a1/declaration-lowering"
+    "behavior/a1/deployment-eval-gate"
+    "behavior/a1/effect-exposure"
+    "behavior/a1/external-call-policy"
+    "behavior/a1/memory-write-policy"
+    "behavior/a1/model-call-contract"
+    "behavior/a1/output-admission"
+    "behavior/a1/prompt-authority"
+    "behavior/a1/replay-execution"
+    "behavior/a1/runtime-audit-ledger"
+    "behavior/a10/emergency-review-bypass"
+    "behavior/a10/payload-bound-review-gate"
+    "behavior/a10/review-audit-ledger"
+    "behavior/a10/review-declaration-artifact"
+    "behavior/a10/review-replay-policy"
+    "behavior/a10/typed-reviewer-evidence"
+    "behavior/a11/generated-source-trust"
+    "behavior/a11/incident-reconstruction"
+    "behavior/a11/privileged-defense-gate"
+    "behavior/a11/runtime-escalation-monitor"
+    "behavior/a11/secret-access-policy"
+    "behavior/a11/tool-authority-agreement"
+    "behavior/a11/untrusted-instruction-boundary"
+    "behavior/a2/credential-binding"
+    "behavior/a2/embedding-shape-admission"
+    "behavior/a2/external-spend-preflight"
+    "behavior/a2/failure-classification"
+    "behavior/a2/fallback-admission"
+    "behavior/a2/floating-identity-upgrade"
+    "behavior/a2/live-ci-policy"
+    "behavior/a2/provider-call-ledger"
+    "behavior/a2/provider-effect"
+    "behavior/a2/provider-handle"
+    "behavior/a2/provider-manifest"
+    "behavior/a2/provider-retention-admission"
+    "behavior/a2/replay-model-identity"
+    "behavior/a2/secret-and-no-store-isolation"
+    "behavior/a2/structured-mode-contract"
+    "behavior/a2/tool-mediation-contract"
+    "behavior/a3/input-schema-admission"
+    "behavior/a3/output-schema-admission"
+    "behavior/a3/partial-output-admission"
+    "behavior/a3/prompt-artifact"
+    "behavior/a3/prompt-evolution"
+    "behavior/a3/prompt-no-store"
+    "behavior/a3/refusal-routing"
+    "behavior/a3/render-identity"
+    "behavior/a3/repair-recording"
+    "behavior/a3/repair-termination-policy"
+    "behavior/a3/secret-to-provider-policy"
+    "behavior/a3/taint-propagation"
+    "behavior/a3/tool-visibility"
+    "behavior/a3/typed-output-admission"
+    "behavior/a4/foreign-error-normalization"
+    "behavior/a4/nonidempotent-retry"
+    "behavior/a4/privileged-tool-review"
+    "behavior/a4/tool-authority-agreement"
+    "behavior/a4/tool-effects"
+    "behavior/a4/tool-manifest"
+    "behavior/a4/tool-redaction"
+    "behavior/a4/tool-result-admission"
+    "behavior/a5/agent-eval-admission"
+    "behavior/a5/agent-external-call-policy"
+    "behavior/a5/agent-ledger-identity"
+    "behavior/a5/agent-manifest"
+    "behavior/a5/agent-memory-access"
+    "behavior/a5/agent-output-admission"
+    "behavior/a5/agent-tool-authority"
+    "behavior/a5/generated-code-reentry"
+    "behavior/a6/validated-branch-input"
+    "behavior/a6/workflow-retry-policy"
+    "behavior/a6/workflow-review-binding"
+    "behavior/a7/deletion-index-coherence"
+    "behavior/a7/embedding-authority"
+    "behavior/a7/memory-access-handles"
+    "behavior/a7/memory-manifest"
+    "behavior/a7/persistence-data-policy"
+    "behavior/a7/reembedding-lineage"
+    "behavior/a8/ai-policy-artifact"
+    "behavior/a8/authority-change-compatibility"
+    "behavior/a8/emergency-override-policy"
+    "behavior/a8/fallback-evidence-policy"
+    "behavior/a8/generated-code-admission"
+    "behavior/a8/output-and-instruction-boundary"
+    "behavior/a8/policy-composition"
+    "behavior/a8/policy-decision-ledger"
+    "behavior/a8/review-rule-enforcement"
+    "behavior/a9/changed-artifact-comparison"
+    "behavior/a9/eval-dataset-artifact"
+    "behavior/a9/eval-redaction"
+    "behavior/a9/live-eval-policy"
+    "behavior/a9/nondeterministic-eval-evidence"
+    "behavior/a9/safety-probe-coverage"],
+   :input
+   "specs/requirement-reconciliation/ai-residual-interfaces.edn",
+   :input-sha256
+   "cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7",
+   :source-review-sha256
+   "152d65a68512f7403af153163d2eaa6a670db8392e488f9b061bfbbd40c22fcd",
+   :operations
+   [{:path "specs/domains-workflow/tasks.md",
+     :id "ai",
+     :field :projection,
+     :frozen-before-sha256
+     "3fc2c6c1d67ef9decbfe299f3dcec195edfa4a97f4900e27dabd6564a44455c1",
+     :reviewed-after-sha256
+     "85edd43eff28b2792b3c820201b7810f220acdfb21e940a69843a8119e87f27d",
+     :applying-before-sha256
+     "de35653f283ccfce4464c77b2852375b498368f76e4780b8656ca4be32f00a79",
+     :applying-after-sha256
+     "4834d56a02403c7dffb9e64b6c1ed05e14e074fc53f38587e0b0aa814aee0f0c",
+     :later-prefix-retained true}],
+   :task-count-delta 0,
+   :implementation-credit :none}
+  {:family "phase-10",
+   :assigned-ids
+   ["schema/artifact-validation"
+    "schema/configuration-reload"
+    "schema/database-mapping"
+    "schema/graphql-generation"
+    "schema/release-evidence-gating"],
+   :input
+   "specs/requirement-reconciliation/schema-residual-interfaces.edn",
+   :input-sha256
+   "c923eb3da6f799d5bc72a0938917f09f7b6635ff2d7d2233ffa7a1fd2ae3ed29",
+   :source-review-sha256
+   "e144d8f4c9823d4f832d4bdd14eb385e34e44581462072469240ac413a02c36b",
+   :operations
+   [{:path "specs/domains-workflow/tasks.md",
+     :id "schema",
+     :field :projection,
+     :frozen-before-sha256
+     "b9afa81873e742484b007edc7030974c5106712d30edc78f8a14ced4f787ca29",
+     :reviewed-after-sha256
+     "c37a0b2b4edf66db23acd01c6a1889f58963e9956c642f78c46ed52ffed27fd8",
+     :applying-before-sha256
+     "88f0376cdaf17925fd17a8ca1a5085c5ea8845cde73b5f54a32379fa16889f2b",
+     :applying-after-sha256
+     "f34163ba551326d577156ec23b3165757d74622b338aaeb00afef767b162b1af",
+     :later-prefix-retained true}],
+   :task-count-delta 0,
+   :implementation-credit :none}
+  {:family "phase-03",
+   :assigned-ids
+   ["ai/profile-tool-contract"
+    "ai/prompt-memory-boundary"
+    "ai/replay-evaluation-artifacts"
+    "distributed/durable-step-contract"
+    "distributed/message-state-boundary"
+    "domain/hardware-cdc"
+    "firmware/device-mmio"
+    "firmware/interrupt-contract"
+    "firmware/physical-timing-contract"
+    "firmware/profile-memory-contract"
+    "formal/numeric-semantics"
+    "formal/profile-proof-contract"
+    "gpu/host-device-boundary"
+    "gpu/memory-synchronization"
+    "gpu/numeric-mode-contract"
+    "hardware/capability-representation"
+    "hardware/capability-tag-paths"
+    "hardware/clock-reset-contract"
+    "hardware/compartment-boundary"
+    "hardware/external-port-contract"
+    "hardware/state-machine-contract"
+    "hardware/structural-profile-contract"
+    "hardware/temporal-protection"
+    "hosted/deterministic-resource-cleanup"
+    "hosted/failure-source-mapping"
+    "hosted/typed-object-boundary"
+    "kernel/driver-boundary"
+    "kernel/interrupt-scheduling-contract"
+    "kernel/profile-memory-contract"
+    "math/numeric-profile-eligibility"
+    "meta/audited-implementation-provider"
+    "native/feature-guard"
+    "native/ffi-boundary"
+    "native/profile-runtime-contract"],
+   :input
+   "specs/requirement-reconciliation/profile-residual-interfaces.edn",
+   :input-sha256
+   "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
+   :source-review-sha256
+   "e5dd9e58dde628ec449803faf27bae6f886a6c15c5d254312db7169bcc961225",
+   :operations
+   [{:path "specs/domains-workflow/tasks.md",
+     :id "math",
+     :field :projection,
+     :frozen-before-sha256
+     "4c99da1ea3f3c91f02da44e08b54a9fa7318d6a53a5281f88cde3cc2c8617c96",
+     :reviewed-after-sha256
+     "37a14b8d0d6cbcf6ae67df9bea5b98c684549e49801ed2b1026e8397c8361f81",
+     :applying-before-sha256
+     "91bf43238eacef46a29b5561a7b6bf53926bb3833e02fabe44f858ffb10f1924",
+     :applying-after-sha256
+     "0db0556e59966348a7ebbfeb0939ccec6f12fd7d9c8e505aec900a16c9495632",
+     :later-prefix-retained true}
+    {:path "specs/domains-workflow/tasks.md",
+     :id "workflow",
+     :field :projection,
+     :frozen-before-sha256
+     "01774e36fc594ab744250570ee96cc66e42aec2a4e7fad63a919f1fd5be076e3",
+     :reviewed-after-sha256
+     "f9842e0fced04c1e97c5a2f0f1993d28aaa03ea40f90de4f95f7e36cc13ca9c0",
+     :applying-before-sha256
+     "01774e36fc594ab744250570ee96cc66e42aec2a4e7fad63a919f1fd5be076e3",
+     :applying-after-sha256
+     "f9842e0fced04c1e97c5a2f0f1993d28aaa03ea40f90de4f95f7e36cc13ca9c0",
+     :later-prefix-retained false}
+    {:path "specs/domains-workflow/tasks.md",
+     :id "ai",
+     :field :projection,
+     :frozen-before-sha256
+     "3fc2c6c1d67ef9decbfe299f3dcec195edfa4a97f4900e27dabd6564a44455c1",
+     :reviewed-after-sha256
+     "5fe49144b57a71013fbf6778d35f9071d72f704daa9223833389c1e6b3a06bdc",
+     :applying-before-sha256
+     "4834d56a02403c7dffb9e64b6c1ed05e14e074fc53f38587e0b0aa814aee0f0c",
+     :applying-after-sha256
+     "bde1ccb44cf4461ed831ccdd402ede3a8761d099e29ce3b5d9d091f020ef72e3",
+     :later-prefix-retained true}
+    {:path "specs/domains-workflow/tasks.md",
+     :id "gpu",
+     :field :projection,
+     :frozen-before-sha256
+     "4395e252720fc5af9278029bb09f1ece481179e7cdc6d84dc99c295e7f837c24",
+     :reviewed-after-sha256
+     "593a64475ee477119268d814fff727ed8d82fbb84f8683cd19289a42e7165589",
+     :applying-before-sha256
+     "4395e252720fc5af9278029bb09f1ece481179e7cdc6d84dc99c295e7f837c24",
+     :applying-after-sha256
+     "593a64475ee477119268d814fff727ed8d82fbb84f8683cd19289a42e7165589",
+     :later-prefix-retained false}
+    {:path "specs/legality-workflow/tasks.md",
+     :id
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :field :acceptance,
+     :frozen-before-sha256
+     "bf43badc0ed4a73900ad8ab0101489a5ce7b6d80cdc4efb3be2cb575f95300bc",
+     :reviewed-after-sha256
+     "48a62b20404cd1e322b2406874178c57c74a1aafd3682559e1b209a820ddf756",
+     :applying-before-sha256
+     "08e258c474eb890e26f0d23fe9b0d74e11e130d07b34f2e676166ba5ebb5cb64",
+     :applying-after-sha256
+     "e48c5fa1b25b17c8f7d069f19dccd462ec88ac3a6cb7571ed9c7559e1d47c97b",
+     :later-prefix-retained true}
+    {:path "specs/lower-workflow/tasks.md",
+     :id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :field :acceptance,
+     :frozen-before-sha256
+     "f6b86fe76e0111c30b6e3f19dc49af05deaef84c297c8bcf9182d5b33359e370",
+     :reviewed-after-sha256
+     "a457500ae2cff47aeb3a449d536df85c3d20633c6175d564b718571ea28332de",
+     :applying-before-sha256
+     "af89f38c055a13870d649e69b15bb62c1c06a477e516cff5ad49c5077e73571f",
+     :applying-after-sha256
+     "8a6abac51b44929318f7bd7a5fa4b8da0029b0eaa416e544f9e754c2bd3288a2",
+     :later-prefix-retained true}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "hardware",
+     :field :work,
+     :frozen-before-sha256
+     "772d0ad48a44d7ccdf7f43501dbacd279c30359cc85d1a03742f5247f1f8c31d",
+     :reviewed-after-sha256
+     "24dddd0d5163a70eabc2e16e0a5c3ea207f20f3dbdde78f62173c180df3d83cc",
+     :applying-before-sha256
+     "772d0ad48a44d7ccdf7f43501dbacd279c30359cc85d1a03742f5247f1f8c31d",
+     :applying-after-sha256
+     "24dddd0d5163a70eabc2e16e0a5c3ea207f20f3dbdde78f62173c180df3d83cc",
+     :later-prefix-retained false}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "firmware",
+     :field :work,
+     :frozen-before-sha256
+     "d432e82ca5f34e47446f4fb639e416a5aceeed9bbf6e8496e4e79d88c80c994a",
+     :reviewed-after-sha256
+     "d541aa9264c9a8200aa5301a0771710ea4600e4c41727d6614cb5ddc9e548409",
+     :applying-before-sha256
+     "fa56d7cd4773cf447ca8b2472aab57f173c6dbf63e4567366427ba7849c791cb",
+     :applying-after-sha256
+     "f8ab3e0154fbebf1b74ad96723d4ccad30b6c0b1b94adabb25ba95a4cdb6543c",
+     :later-prefix-retained true}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "kernel",
+     :field :work,
+     :frozen-before-sha256
+     "3a30c9c2b8fb8b8aaea9fbf55b3471cb71d90544ba20ced44efaffc875cd8fd7",
+     :reviewed-after-sha256
+     "6d5f776720f8e180c93f5c12b2d7622e4ac9ed19ce48f93580a9921d7f37fc78",
+     :applying-before-sha256
+     "3a30c9c2b8fb8b8aaea9fbf55b3471cb71d90544ba20ced44efaffc875cd8fd7",
+     :applying-after-sha256
+     "6d5f776720f8e180c93f5c12b2d7622e4ac9ed19ce48f93580a9921d7f37fc78",
+     :later-prefix-retained false}
+    {:path "specs/runtime-workflow/tasks.md",
+     :id
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+     :field :acceptance,
+     :frozen-before-sha256
+     "23da401a2d6b317fa4b45128e684d2dcde1ae6f7a7daf99f5fa66b5f4a9d13a3",
+     :reviewed-after-sha256
+     "5944f651fbdd763e64c1993896b55cb907bc277aed48eb83ccf1a4768c487c81",
+     :applying-before-sha256
+     "3b18dddf47fcbcff9b66afd0597b84c29786a9b4b13959fa57625d92f13f9394",
+     :applying-after-sha256
+     "6058404330ac2c4897f2f6f79cd7363f52be0c0fa0df38b5139b356ea6aebfda",
+     :later-prefix-retained true}
+    {:path "specs/runtime-workflow/tasks.md",
+     :id
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :field :acceptance,
+     :frozen-before-sha256
+     "3d2b90e21b458068ce76d0abc50fbcaf1f8ceb16eae0967130c0341d135369d5",
+     :reviewed-after-sha256
+     "1c8a27042e4517fd1807eac4cf07043965cdbff88a6521201b6a56f14037281a",
+     :applying-before-sha256
+     "8ba2261d770ea88a8b1c1998ede404e79bbeffbd906645d0e6998f0a6feb70f5",
+     :applying-after-sha256
+     "e60d492751fb23784e13f853ccc35a60c1f03fa47bc9c22c13a05e3841e25e91",
+     :later-prefix-retained true}
+    {:path "specs/runtime-workflow/tasks.md",
+     :id
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+     :field :acceptance,
+     :frozen-before-sha256
+     "0e1b1b8ba96df0cc08eda45aa681bde5e2aee6c14f000074dda1d349ec7013d5",
+     :reviewed-after-sha256
+     "65d9aaa83cfcb06c437aa1655b59998b3a742234d92ddf36241a41b4954ca228",
+     :applying-before-sha256
+     "0e1b1b8ba96df0cc08eda45aa681bde5e2aee6c14f000074dda1d349ec7013d5",
+     :applying-after-sha256
+     "65d9aaa83cfcb06c437aa1655b59998b3a742234d92ddf36241a41b4954ca228",
+     :later-prefix-retained false}],
+   :task-count-delta 0,
+   :implementation-credit :none}
+  {:family "platform-product",
+   :assigned-ids
+   ["platform/device-provider-conformance"
+    "platform/external-tool-dependency-provenance"
+    "platform/firmware-target-conformance"
+    "platform/hardware-target-conformance"
+    "platform/kernel-target-conformance"
+    "platform/target-adoption-record"
+    "platform/target-integration-evidence"],
+   :input
+   "specs/requirement-reconciliation/platform-residual-interfaces.edn",
+   :input-sha256
+   "6778a1ede4e57076c54a574bcb9f2d1c44d520897a2900d58a4ff46cda63bd69",
+   :source-review-sha256
+   "6ecfc29213598088fa6f3f8511b9c45abadba28a7bfec4e9f6ac6d99a8c99ba6",
+   :operations
+   [{:path "specs/platform-workflow/tasks.md",
+     :id "hardware",
+     :field :work,
+     :frozen-before-sha256
+     "772d0ad48a44d7ccdf7f43501dbacd279c30359cc85d1a03742f5247f1f8c31d",
+     :reviewed-after-sha256
+     "a5e5e3229486b8dc97eb3139a4ac10d8875599504c0f7bc9b9830c2907dabadd",
+     :applying-before-sha256
+     "24dddd0d5163a70eabc2e16e0a5c3ea207f20f3dbdde78f62173c180df3d83cc",
+     :applying-after-sha256
+     "fae77ce1afb48683147684bbeb4a4ae22c2be3150bd6d6590079fc6eee23176b",
+     :later-prefix-retained true}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "firmware",
+     :field :work,
+     :frozen-before-sha256
+     "d432e82ca5f34e47446f4fb639e416a5aceeed9bbf6e8496e4e79d88c80c994a",
+     :reviewed-after-sha256
+     "69c9a70acc59b7717b8bbeefeb5e5845f89972d487772ac568a27cddc484cf03",
+     :applying-before-sha256
+     "f8ab3e0154fbebf1b74ad96723d4ccad30b6c0b1b94adabb25ba95a4cdb6543c",
+     :applying-after-sha256
+     "fe84ce983dc0ee05d7d071caef4a53259174c3c67518154fa97a92ad47a41bcc",
+     :later-prefix-retained true}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "kernel",
+     :field :work,
+     :frozen-before-sha256
+     "3a30c9c2b8fb8b8aaea9fbf55b3471cb71d90544ba20ced44efaffc875cd8fd7",
+     :reviewed-after-sha256
+     "329b5c01bd321275976c3e5b2e38c08cb166f3e9df8b435a3e602ce79243ba46",
+     :applying-before-sha256
+     "6d5f776720f8e180c93f5c12b2d7622e4ac9ed19ce48f93580a9921d7f37fc78",
+     :applying-after-sha256
+     "ab44d3522d20873ba5651dba8e88de2e3ef2b3ffba308f3cd8cb4656ef2be74b",
+     :later-prefix-retained true}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "devices",
+     :field :work,
+     :frozen-before-sha256
+     "e68bd333b068ccaeca398f1d029aadd5e1928a4157d0b83f277f0ce14b865686",
+     :reviewed-after-sha256
+     "40c8719ce859cc0445ccbcf236ac96476050140dbddc0350968902380ef047fd",
+     :applying-before-sha256
+     "e68bd333b068ccaeca398f1d029aadd5e1928a4157d0b83f277f0ce14b865686",
+     :applying-after-sha256
+     "40c8719ce859cc0445ccbcf236ac96476050140dbddc0350968902380ef047fd",
+     :later-prefix-retained false}
+    {:path "specs/platform-workflow/tasks.md",
+     :id "platform-product/adopt-physical-boundary",
+     :field :acceptance,
+     :frozen-before-sha256
+     "5b0e5ce5f3848cd8348a004425bc2377a69ec8f058d9de02eff0c68100b1cb4e",
+     :reviewed-after-sha256
+     "b663825ca13b63507f4703eb1a113fa7c917595f313ec44919177dba088ea416",
+     :applying-before-sha256
+     "5b0e5ce5f3848cd8348a004425bc2377a69ec8f058d9de02eff0c68100b1cb4e",
+     :applying-after-sha256
+     "b663825ca13b63507f4703eb1a113fa7c917595f313ec44919177dba088ea416",
+     :later-prefix-retained false}],
+   :task-count-delta 0,
+   :implementation-credit :none}],
+ :whole-candidate-review :pending}

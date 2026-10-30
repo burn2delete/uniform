@@ -1,0 +1,207 @@
+{:findings [],
+ :preparation-history
+ "Reviewer scratch code initially had closing-delimiter/arity errors and assumed an insufficient generic link rebase. Corrected only the scratch checker, used actual normalized source/destination document paths and completed the entire frozen review. No candidate/source changed. The coherent mutation harness initially required uniqueness for repeated unchanged-file lines; retained their exact authenticated offsets instead, preserving the declared distinction from relocated unique matches. Final harness and all18 coherent corruption controls passed.",
+ :additional-tuple-authentication
+ {:source-descriptor-tuples 5,
+  :historical-recovery-tuples 392,
+  :actual-owner-tuples 4,
+  :result :pass},
+ :tree "a86032467ad301aa49ae14485c5c7666ff9fd377",
+ :candidate "4486ad9e3eda0ec648696edc407a8b57f5c864d1",
+ :independence
+ {:reviewer-thread "01a18529-5d00-7762-a4b9-b6b0f6e6cc53",
+  :prior-authorship
+  "AI17 proposal criteria and earlier phase11 source proposal: all conserved as bytes only; no semantic selfacceptance. No authored predicate in the reviewed seven replacement/context binding relations.",
+  :duplicate-and-denial-intake
+  "Actual get_goal null before new create_goal; previous AI17 completion remains closed. Latest canonical/helper readback and distinct C8/C11/C14 review assignments checked; no exact392 reservation/receipt or authored-predicate conflict found. No denied messages/reviews or held work replayed."},
+ :completion-audit
+ {:later-head :requires-separate-applicability,
+  :operation-and-entailment-authority :not-conferred,
+  :stable392facet151occurrence5descriptor-seals :proved,
+  :all-five-original-contexts :reviewed-source-data-only,
+  :four-real-owner-generated-row-relations :proved,
+  :all-other-authority-task-and-roadmap-records :unchanged,
+  :coherent-semantic-and-role-corruptions :refused,
+  :frozen-source-and-tree :proved,
+  :833Open561history240docs :conserved,
+  :exact-five-dispositions :proved,
+  :entire-five-file-metadata-diff :reconstructed-in-memory,
+  :required-work-remaining [],
+  :all-historical-byte-hashes-and-literal-witnesses :proved,
+  :original-and-later-requirement-separation :preserved,
+  :untraced-current-ranges :exact-gaps-preserved},
+ :later-head-condition
+ "Any head after4486ad9e requires a separate exact conservation/applicability check; no future/current-head blanket acceptance follows.",
+ :delivery
+ :normal-result-for-existing-helper-readback-no-cross-chat-retry,
+ :reproducible-review-files
+ {"check.clj"
+  "0bde047fb6577c5e98767c97856a2734c6cd62b3713e9f5a4f5215691eef28fb",
+  "base-controls.edn"
+  "38b1acf2ea9bf6f853d732cdef23b5984fe38a9ce8613c47daa3051f4f663a72",
+  "coherent-review.clj"
+  "a93d05beca8e9a2fef2878e6b3f34a4916c9d68fcfa858d14e4dc9b99b70d944",
+  "final-controls.clj"
+  "67a7428b38e5fcd6f4791a3b304e4c3f6523e9be039a39ae2b51e98635a5d42e",
+  "seal.clj"
+  "f5758804d9e278bff8e23bd53d931c9e3333b70f1682def606af16e320553e0b"},
+ :scope
+ {:facets 392,
+  :occurrences 151,
+  :descriptors 5,
+  :binding-kinds
+  {:identical-file-exact-span 277,
+   :changed-file-unique-exact-byte-match 108,
+   :exact-table-delimiter-disambiguated-by-named-header 2,
+   :expanded-generated-target-row-original-predicate-prefix-retained 4,
+   :integration-provenance-policy-explicit-replacement 1},
+  :historical-kinds
+  {:nonnormative 45, :requirement 221, :unresolved 126},
+  :untraced-current-range-counts
+  {"release-extension" 15,
+   "release-tasks" 65,
+   "platform-product" 24,
+   "accounting-policy" 34,
+   "accounting-removal" 9}},
+ :assessment
+ {:original-normative-context
+  "Read original five descriptors: release README and roadmap distinguish current hosted command evidence from incomplete final seedless release; Platform separates four target projects from architecture/product acceptance and physical prerequisites; AGENTS is authenticated source data, not session authority; Accounting spec separates synthetic allowances from semantics/host/external boundaries.",
+  :exact-byte-classes
+  "All277 full-file-identical facets retain original ranges;108 unique raw matches relocate within changed files;2 literal table separators resolve by distinct actual headers;4 old complete work cells remain exact prefixes of real owner fields and independently generated roadmap rows;1 policy block retains original failclosed provenance clauses while identifying additions as unaccepted.",
+  :role-output-negative-dependency-context
+  "Original target work cells retain outputs, refusals and authority/lifetime obligations. Target source-basis links and Lower/Emit, Legality/Auth, Runtime/Stdlib dependency context remain. Real source-backed Open task records and their complete current work fields authenticate. New appended requirements receive no semantic acceptance.",
+  :policy
+  "The explicit integration/source-tuple/workstream-id/independently-reviewed-metadata replacement is source provenance only. It grants no integration, metadata lane, retry or other operation authority."},
+ :sealed-id-vectors
+ {:facet-id-order-sha256
+  "656252b0eb59f293ff0d3613f85335fe98ff113ffcf981e02fcafca3c2d63de9",
+  :occurrence-id-order-sha256
+  "e165a3cc3c32103f8905c1a2818ffc43e6e58a9ffd694293b839f7b8238ac130",
+  :descriptor-id-order-sha256
+  "71214323d14de8682957d7fbe1cb39d1aa091165462ff37e94f8abc9e88f33da"},
+ :inputs
+ {"specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn"
+  "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+  "specs/requirement-reconciliation/explicit-extension-source-trace.edn"
+  "5da775346f671697ee7ade4e9d3cd304ba8812e36739f56bad2b67077f41867b",
+  :retained-original-extension
+  "2fc9a79bea88a54e34856c35722411676df24cedfad13ae0182d09249995e1ba",
+  :checker
+  "a93d05beca8e9a2fef2878e6b3f34a4916c9d68fcfa858d14e4dc9b99b70d944"},
+ :subject-source "ab9782c592b262aba422f29261e35fd361b52454",
+ :kind :independent-explicit-extension392-source-byte-rebinding-review,
+ :verdict :pass-exact-frozen-byte-rebinding-only,
+ :held-scope-separation
+ "This392 explicit-extension coordinate review does not clear Metadata372 delivery, Policy14 instruction/two EFIR facets, fixedwidth, OWN, old303/569 or any equivalent held action. Source-byte provenance is not a proxy for those operations.",
+ :observed
+ {:base-negative-controls
+  {:implementation-credit true,
+   :forged-file-pin true,
+   :missing-facet true,
+   :lost-untraced-range true,
+   :stale-witness true,
+   :lost-occurrence true,
+   :operation-authority-promotion true,
+   :lost-history-role true,
+   :original240-promotion true,
+   :duplicate-facet true,
+   :scope-promotion true},
+  :base-assertion-evaluations 28331,
+  :whole-metadata-patch-files 5,
+  :all-original-inventory-fields :exact-transaction-reconstructed,
+  :authentic-wrong-context-role-or-obligation-controls
+  [:two-repeated-contexts-swapped
+   :real-other-owner-and-criterion
+   :real-other-facet-byte-span],
+  :all-other-records-and-task-roadmap-bytes :unchanged,
+  :all833-decisions :exact-bytes-preserved-open,
+  :platform-generated-rows 4,
+  :all240-documents :byte-identical,
+  :base-checker-sha256
+  "0bde047fb6577c5e98767c97856a2734c6cd62b3713e9f5a4f5215691eef28fb",
+  :assertion-evaluations 166412,
+  :all561-history :exact-bytes-preserved,
+  :coherently-rehashed-controls
+  [{:control :coherently-removed-target-obligation,
+    :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+    :clause "reject illegal dynamic/runtime operations",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/bd6b008cf43a9d14cf95ea9e",
+    :clause "emit traceable hardware artifact",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/ee630855078eaef6b70e812c",
+    :clause "rejected unsupported services",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/ee630855078eaef6b70e812c",
+    :clause "verify image/link map",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/db3504f343e95aa12b940c47",
+    :clause "no hidden hosted services",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/db3504f343e95aa12b940c47",
+    :clause
+    "memory and scheduling interface slice required by contract",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/76522348020c9b41fc2ad242",
+    :clause "denial without grants",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-target-obligation,
+    :id "facet/extension/76522348020c9b41fc2ad242",
+    :clause "device failure translation",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "preflight in `integration` mode",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "immediately before integration",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "Dirty or detached worktrees",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "divergent bases, and identity mismatches fail closed.",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "exact complete integration",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "immutable source commit/tree and workstream id",
+    :all-new-hashes-authentic true,
+    :refused true}
+   {:control :coherently-removed-policy-provenance-or-refusal,
+    :clause "permitted metadata delta requires independent review",
+    :all-new-hashes-authentic true,
+    :refused true}]},
+ :limits
+ [:no-whole-current-extension-entailment
+  :no-original240-membership
+  :no-current-addition-inheritance
+  :no-implementation-credit
+  :no-final-denominator-credit
+  :no-operation-authority
+  :no-future-head-acceptance
+  :no-semantic-selfacceptance
+  :no-canonical-writes
+  :no-bootstrap-compiler-runtime-model-provider-helper-kernel-target-execution
+  :no-GitHub-APPROVE
+  :no-new-worker
+  :no-held-operations-cleared]}

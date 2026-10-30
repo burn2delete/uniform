@@ -1,0 +1,3105 @@
+{:counts
+ {:new-reviewed-facets 409,
+  :all-reviewed-facets 424,
+  :semantic-conjunction-facets 376,
+  :retained-context-facets 48,
+  :finite-proposal-ids 1331,
+  :pending-finite-proposal-ids 916,
+  :reviewed-outside-finite-proposals 9},
+ :implementation-credit :none,
+ :conservation
+ {:decisions 833,
+  :decision-witnesses 931,
+  :historical-IDs 561,
+  :historical-spans 4819,
+  :decision-records-and-historical-authorities :unchanged,
+  :binding
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+   :sha256
+   "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+  :task-criteria-statuses :unchanged-by-adoption},
+ :checks {:test 2, :pass 49, :fail 0, :error 0, :type :summary},
+ :final-denominator :not-accepted,
+ :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+ :kind :completed-frozen-source-reviews-current-applicability,
+ :reviews
+ {:C14-PERF4
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c14-perf4-independent-source-review.edn",
+    :sha256
+    "509eb7cb7c0fbc3689ab3e56d9e2f4e6826b38dceed41f4d98730070281498f6",
+    :reviewed-source "9d1517399654bd115543d23b4f1d65af6d30f222"},
+   :trace
+   {:path
+    "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn",
+    :sha256
+    "1f01e802c48d8b477b35cf8c962360eca8d11174120f0e085c2cea25db91e678"},
+   :current-criteria
+   {:input
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 4680,
+     :end-byte 6096,
+     :raw-sha256
+     "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+    :layout
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 6459,
+     :end-byte 8289,
+     :raw-sha256
+     "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+    :providers
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 8641,
+     :end-byte 9654,
+     :raw-sha256
+     "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+    :proof
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 11525,
+     :end-byte 12643,
+     :raw-sha256
+     "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+    :emission
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 14428,
+     :end-byte 15781,
+     :raw-sha256
+     "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"}},
+   :facets
+   [{:id "facet/perf4/d62a0aaeaf09bdfa8845",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/3422a0a356f952864e989e530524aa370e5b83af94136ffad93cf0c5521d6fae",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/340931f6bba3f37224b3",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/3422a0a356f952864e989e530524aa370e5b83af94136ffad93cf0c5521d6fae",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/d6ae6b796d51474ef998",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/3422a0a356f952864e989e530524aa370e5b83af94136ffad93cf0c5521d6fae",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/81d81afc89701a47a191",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/3422a0a356f952864e989e530524aa370e5b83af94136ffad93cf0c5521d6fae",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/5fc3de7c50bfd2d44de3",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/3e17fb9dc491342b9a2d",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/9ddc992c997ec3bcf849",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/bcd1533a6f1d6e1a1d53",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/32c3b2f3be11ed418976",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/c6fc9c241fac464ba8ac",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/6b1d088e47c56f0bd9197dbfd05e0d1fe250052ade6bb8b4cf715e22454b8c63",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/7a1a8cbc79bfa4fafc51",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/289a1e152a39bb54900988974348e645786a5e4f0cc66500be89534aeb5de06e",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/c9554a1652aab93c160e",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/a39cd81328c9cbf970ece25cb103c57db95e7030042b53f5c1486a109ce3000b",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/352b43e7dd16e414c129",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/1b1d222cb2a33e718eaa1d462609c996a1141b5d1501e8895cd0d090385b26ff",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/330d8e9f6e537115a6fe",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/0ed6490e6f90ed00dc0b64d6b7ce03667a2142f656a3903dc8b8e3f454e67e18",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/c9f1afccc290131778c5",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/0ed6490e6f90ed00dc0b64d6b7ce03667a2142f656a3903dc8b8e3f454e67e18",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/60e75115f681bfae6f05",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/0ed6490e6f90ed00dc0b64d6b7ce03667a2142f656a3903dc8b8e3f454e67e18",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/7d2fb82b9d769847fcfe",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/0ed6490e6f90ed00dc0b64d6b7ce03667a2142f656a3903dc8b8e3f454e67e18",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/2bd7bedf4dce6d5042cb",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/0ed6490e6f90ed00dc0b64d6b7ce03667a2142f656a3903dc8b8e3f454e67e18",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/3ae9c3318557d175c2a1",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/4951d729195ec48471962db56bf8b81242f8059f5169bb10e99e0d07ebfcba38",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/e08a642a3379081834ac",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/b12a3eeb9abf87e5d9416d87b5bedf1a6223bdfbf62f9fc1769caa2d1d3f5fc7",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/fd357e454732c162e1bb",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/cf9a3795adb080fb8f2441d3898964cc0809876402f456477059ccbe98b8a9f6",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/6f26b9325d7a0eede32c",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/7740ab8604b927f6653ec3e5f80cb1c4fec7fe7184bc27aaaff77fd7cb69dfda",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "facet/perf4/3dc70587798740713163",
+     :document-id "PERF4",
+     :source-occurrence-id
+     "PERF4/source/7740ab8604b927f6653ec3e5f80cb1c4fec7fe7184bc27aaaff77fd7cb69dfda",
+     :role :PERF4-boundary-layout-predicate,
+     :criterion-keys [:layout :proof :emission]}
+    {:id "C14/normalized-facet/0-37/1992f829d8290227",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/3e2c9defe62efb6bf880d0f1a1afa804b37e4f5990e81c527024b57995720d11",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/normalized-facet/38-314/2d90a44cab032ab7",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9632769a54a9ae807676dd4097d689b1549900e7b14924e55f6c08162cb98595",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/normalized-facet/315-326/994413297a3e95a9",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/b14d0ad54399aade15ff3dec3f036732b43e0c2be6588a4df639f659696bd412",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/327-578",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/47918dc61996e9c65e96d22aab59ab818ed485ffb14699575efecba7932a2fd2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/facet/579-767",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/ebab201d6216f62a4cf1ae689ce9d44fe205c22295b6f5d3501d44def8feefbc",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/normalized-facet/768-784/d8416f1863ce5290",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/421a70349e4a2ec317009a5956ad898288f33709009d78076788257189296f79",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/785-950",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/950-1080",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/1080-1280",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/1280-1450",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/1450-1553",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/1553-1605",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/facet/1605-1690",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/9e3bb51dff579a8cf8332371514c817158790520758897806b849b5a51f49e21",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof :emission]}
+    {:id "C14/normalized-facet/1691-1707/21d1931a332d9b7f",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/974db246d69a4880c41be6e4791ab7e44665c52366aa55d95833042e295f0450",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/1708-1729",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1729-1771",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1771-1827",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1827-1884",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1884-1952",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1952-1998",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/1998-2106",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/7fd1cf3ece3c2f67307558fa40c1869225773daa2339eb35da4af81392f18987",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/normalized-facet/2107-2132/f4280a4d61a89adc",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/ac5b7370ffe4e8f6b8240a4a3283caa9766eb5b54512bb558de01cc15308d5d0",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/2133-2153",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2153-2182",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2182-2198",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2198-2227",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2227-2253",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2253-2285",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2285-2320",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2320-2340",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2340-2370",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/2370-2394",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1834059852df942f37485c3f67935edda0508e0c1dba6fa8d917a2be56b74340",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/normalized-facet/2395-2415/60248cd2c630c50a",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/59425cfacf1bbf9d645992e670d8bd4d6f2b673ffb751574aac0ff3a1b206cce",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/2416-2890",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/1886a07b46e4227744289145fa812b34f5957d3024f3d95dc411c83812179c4d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :providers :proof]}
+    {:id "C14/facet/2891-2967",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/c2b99accbb71ac4268a606a893554e69b10771c3dfec031944c823e01805e0eb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input]}
+    {:id "C14/normalized-facet/2968-2990/5c5ce272ca744ce8",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e5fc50edee6533db229b0f3eea3e61418a1f572a0cb4b0776a9aa24db6283f9b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/2991-3042",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/88ae8f8a4f3a557adec9115f2d24740cf6572f960dc4314331ce33797d1bc9f7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input]}
+    {:id "C14/facet/3043-3073",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3073-3130",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3130-3190",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3190-3239",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3239-3299",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3299-3342",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3342-3379",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3379-3424",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3424-3478",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6428872ca161a978a1c42b720f1520151992e44044dce3e7c88c642250096fb0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof]}
+    {:id "C14/facet/3479-3606",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/8f72dcc56e2f2ab8eb4953da346e069cde206da24418e2e1e31f9a657ff06b7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/normalized-facet/3607-3625/9428e1c77174ed54",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/4014eb3e9cd233c1b052cda990abb844064c05a3bd321bcd09f12d58e7ea9b25",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/3626-3658",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/a686670d19c1ffe533aa0f52fa038b661ea7cca8c0abcc9da3e5c8385e089bac",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3659-3681",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3681-3706",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3706-3735",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3735-3775",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3775-3801",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3801-3829",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3829-3863",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3863-3891",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3891-3916",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3916-3938",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3938-3973",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/3973-4002",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fed8a531ccde67289f76c35f8cafa54c7ca4d5c9185aa9f8706203578eb7386d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout]}
+    {:id "C14/facet/4003-4100",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/087b2379acd78f5eb922c54a24b485ba011289afa402e52629f852b629b9ca6d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:layout :emission]}
+    {:id "C14/normalized-facet/4101-4135/c2f28fa638dce988",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/3ab79a13ef8fac781132709e514f2440e7bce8462ce0400b466887bde86e4d6d",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/4136-4186",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/814c0a85c02a1e94773f82e68eeccdbacd4063003ba9c92aea5c0421fb903ba2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4187-4201",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4201-4229",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4229-4257",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4257-4288",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4288-4340",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4340-4358",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4358-4374",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4374-4394",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4394-4419",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4419-4440",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5e633ec7ae68a9786d597586059c9f920802c29c26d074615b83e54ad760bf94",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers]}
+    {:id "C14/facet/4441-4602",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/bdebc8a921e01aaaf777ad098e5f42a08de5907bde1a1fc1b4602277cb69c678",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers :input]}
+    {:id "C14/normalized-facet/4603-4628/4dc04be3f1c3ea82",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/97e8042ee85207d04fef2cba5d560c50ed013eab70a521d0e2cbe0bac1440115",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/4629-5047",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/2490a4477f5639d8ddbecd275c2437767911552c8aecedcc06e4347b6aa4a640",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:proof]}
+    {:id "C14/facet/5048-5112",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e7822cd744f5b8fce7de359599b1baeaa22ce52faa27547795fcd8f69f7d5ee0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:proof]}
+    {:id "C14/normalized-facet/5113-5142/90a1ae051a04252f",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/5075753fbab502268067a7df18b8f11c49cf845f2cb43dead7d98417550d2362",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/5143-5614",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/d80b4e40d2bffbeed97d258b6166ef13d85b073cfb49e9eba07a15b8533b9399",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission :proof :providers]}
+    {:id "C14/facet/5615-5710",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/360e5faddc62af9a3538722564c130424f4ab0faa01b0a91dc5a8ffc07ecd32f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/normalized-facet/5711-5735/c83c83ee135cd918",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6f81c0302626704452cbcbc8cc32387ff8ba095afd1bcbc949f1911b7a54b286",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/5736-5773",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/35ba3cdf7d82ce5e8764e9ec8ebf03afa699e7baf9f19704d8ea93789d8c5cfd",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5774-5803",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5803-5823",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5823-5841",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5841-5852",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5852-5867",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5867-5893",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5893-5912",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5912-5929",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/f8b06acbab494de64b9a4d2708d12edc23f2c1d6c86e67c292f7667322e5fb7c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:emission]}
+    {:id "C14/facet/5930-6061",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/edcd981c7ab80479e511cee5622ca5234aecce80c682c3c576b35d0359825fd1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers :emission]}
+    {:id "C14/normalized-facet/6062-6077/84b964dab09b580d",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/af91c12dd226af24b20a39663215170de80af4fb654f7b27eed84386508e59d2",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/6078-6129",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/083d92ae537962cdf15967e6702e72c0e8d6fdce58ed6be72b63f89af52d4c13",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/facet/6130-6183",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6183-6237",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6237-6302",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6302-6349",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6349-6407",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6407-6454",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6454-6512",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6512-6582",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6582-6644",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6644-6704",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/18915a3d4e766269655d533e5df2824fa41be75faf0824b0421ad77fb47aba83",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/6705-6913",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/155f5b8e9e2ff8873d3433b65f05d5ccc3d1c16ae8ea7b5beee687f2a1488042",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/normalized-facet/6914-6934/81a99744c82b0f20",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/d39317617aabf71acbbb7785fcb733b220f762182f44f05b61ed76c399c4953d",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/6935-6987",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/8b99642677d737bfe94032cf1a251685ca7a02d3b5802668b00d1930f442e89f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/facet/6988-7052",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/fdeb9c6e1f0354afd6ce19dd11c091165fa85e720458dbc704665b01cb99de80",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:providers :emission]}
+    {:id "C14/facet/7053-7120",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/21b70f9870f9f0926a5004599be0828cb298d804b3aeff0bfb0285ced9f93e86",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :emission]}
+    {:id "C14/facet/7121-7185",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6fe142e82df654b4ae25ef6dfb0c59c4e5837d5c52c7fdef10168857a8b398e7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:proof]}
+    {:id "C14/facet/7186-7274",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/ee106d49cd22f13a4edf95b4e2ffd883991fcea9a4988441dd937bf0d2fe7c08",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:proof :emission]}
+    {:id "C14/normalized-facet/7275-7299/4cea7efb2bd3a140",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/6d5fe60c946a6cdee5fb2d2b5b78e0a32b8538589860f3e9df77f999bf31dde5",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C14/facet/7300-7360",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/3c4614075b51d56a9f40c5c38ebd28caf804339b25a2fa212550fb4e0d504c5e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7361-7392",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7392-7439",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7439-7467",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7467-7505",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7505-7531",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7531-7576",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7576-7639",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7639-7707",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}
+    {:id "C14/facet/7707-7773",
+     :document-id "C14",
+     :source-occurrence-id
+     "C14/source/e3af742245281bedd375b7eaff0b812f51054772204141ea316394c16308d4d1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:input :layout :providers :proof :emission]}],
+   :current-witnesses 5,
+   :refreshed-file-pins 0,
+   :source-and-predicate-raw-bytes :unchanged,
+   :scope-and-exclusions :retained-in-sealed-receipt},
+  :C15
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c15-independent-source-review.edn",
+    :sha256
+    "95e6cd809685131b6ffbea52b0c79e63c7779689cc38d4d4de3de760f812334e",
+    :reviewed-source "3f14a02ea78990b9e7090474d63cd1b87a250bf9"},
+   :trace
+   {:path
+    "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
+    :sha256
+    "4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034"},
+   :current-criteria
+   {:structured
+    {:decision-id "interface/compiler/c15/structured-diagnostic",
+     :task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :path "specs/diag-workflow/tasks.md",
+       :role :owning-artifact-producer-and-checker,
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 942,
+         :end-byte 2074,
+         :raw-sha256
+         "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}]}]},
+    :identity
+    {:decision-id "interface/compiler/c15/diagnostic-identity",
+     :task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+       :path "specs/diag-workflow/tasks.md",
+       :role :owning-artifact-producer-and-checker,
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 7073,
+         :end-byte 8112,
+         :raw-sha256
+         "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}]}]},
+    :tests
+    {:decision-id "interface/testing/test2/diagnostic-match",
+     :task-links
+     [{:task-id
+       "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+       :path "specs/release-workflow/tasks.md",
+       :role nil,
+       :criterion-witnesses
+       [{:path "specs/release-workflow/tasks.md",
+         :marker "release-implementation-tasks",
+         :task-id
+         "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+         :start-byte 34202,
+         :end-byte 34704,
+         :raw-sha256
+         "806e5a9f3c43be17d0d46355795271e0cf7e901dffdb9823b1d1da9a1ec15ee8"}]}]},
+    :record-stream
+    {:task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 3340,
+         :end-byte 5321,
+         :raw-sha256
+         "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}]}]},
+    :foundation
+    {:task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 5322,
+         :end-byte 6700,
+         :raw-sha256
+         "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"}]}]},
+    :views
+    {:task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 8463,
+         :end-byte 9504,
+         :raw-sha256
+         "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"}]}]},
+    :redaction
+    {:task-links
+     [{:task-id
+       "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+       :criterion-witnesses
+       [{:path "specs/diag-workflow/tasks.md",
+         :marker "diag-implementation-tasks",
+         :task-id
+         "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+         :start-byte 9505,
+         :end-byte 10813,
+         :raw-sha256
+         "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"}]}]}},
+   :facets
+   [{:id "C15/normalized-facet/0-43/a566725261eb9a34",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/d13928118fa4cff45780848a76bb451a5212e950ecf67af860287660efccd34a",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/normalized-facet/44-320/b485539e48884ed3",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/aa546c3344ca6380e4dd85d1772f1046d181e46f06586cd8e4f82c937edd9f00",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/normalized-facet/321-332/994413297a3e95a9",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/81aedf8af51b929f19ad7babc417ce06914c643b2bb71dfa5b3d9e660b0ee37a",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/333-669",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/779a0c7273bbafcdda181827dff06d1a500e79853bd789def143bc5ab1ffc136",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :record-stream :views]}
+    {:id "C15/facet/670-864",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/75569291c9356abab01c43588d889864f41ef360e89cacb1ff561a2de7fc68a3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :foundation]}
+    {:id "C15/normalized-facet/865-881/d8416f1863ce5290",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/73eedc73a3a539f8f8f77fe4c41e69f0c0a3a761c44537880b1a2d0c7e81c7c0",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/882-1081",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1081-1228",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1228-1354",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1354-1410",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1410-1475",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1475-1600",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/facet/1600-1655",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :identity :record-stream :views :redaction]}
+    {:id "C15/normalized-facet/1656-1672/21d1931a332d9b7f",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/ee2b8982af2d057425dad689d1595735b1aaa70e28df46128cc27267e153a5a3",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/1673-1741",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/facet/1741-1780",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/facet/1780-1831",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/facet/1831-1879",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/facet/1879-1935",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/facet/1935-2024",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :views :redaction :tests]}
+    {:id "C15/normalized-facet/2025-2050/f4280a4d61a89adc",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8476d48ee133c0117b279e2e54d140a795148cbe06b78b494bbc3e83c4674da",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/2051-2072",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2072-2093",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2093-2115",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2115-2135",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2135-2172",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2172-2192",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2192-2221",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/facet/2221-2251",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:record-stream :structured :identity :views :redaction]}
+    {:id "C15/normalized-facet/2252-2272/d2979a65781a4add",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f5df0c1044f8554c506bac875e31cdc32655f84a92377bb2af4e1caf24ade81f",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/2273-3078",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/16613a2c915ce62c4535d995d2bcfc3f29d4628795948d9edc37eacba13873ca",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/3079-3202",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/bf614a12bf33cea5eab1be7b67dde2e4910285684685a29df91fa08e658ca90d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:identity]}
+    {:id "C15/facet/3203-3834",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f4fcefd5ea4b52e4f0fcc7281df49b9385254007a482a0e81a47dd35f26d54d3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :identity :record-stream :redaction]}
+    {:id "C15/normalized-facet/3835-3861/d568f890c9cac8d8",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/670cea30e1cff15944706f7ec76bc96a4638ca92f4c94d7f4ed8ee3668144fec",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/3862-3879",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/b020192090277d73abe94df48ef0b00d52a34c1b77a961aa4d3fff87b3ca86d3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/3880-3941",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/3941-4038",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4038-4087",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4087-4145",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4145-4240",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4241-4275",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/11ae262c88b68a8ddabfda33db7e5061f32aebca4d146e5736b47803d6cc6a09",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4276-4289",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :redaction]}
+    {:id "C15/facet/4289-4316",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :redaction]}
+    {:id "C15/facet/4316-4331",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :redaction]}
+    {:id "C15/facet/4331-4353",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :redaction]}
+    {:id "C15/facet/4353-4376",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :redaction]}
+    {:id "C15/facet/4377-4449",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/0e2cc3f2d9fa6ad0fd7bcae1aab103c3ddea9d52efa229b4191d473162d7b0ec",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :redaction]}
+    {:id "C15/normalized-facet/4450-4475/1c70661a41a4727e",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/9e0c86a48ec7f995925a123a2e453da6e10d509d1b1351d0e1ea4c9cd6cb3d00",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/4476-4495",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/aea1325bae92053e4eab0e028727dd7c384dbbebfa91bb477a6eeb98db8bcd1d",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/4496-4511",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4511-4529",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4529-4554",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4554-4578",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4578-4596",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4596-4623",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4623-4640",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4640-4658",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4658-4678",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4678-4704",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/4705-4935",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/ea826dc1746daaf24f139165c7636982c3c1ad1d224e8ce5698d8455cf3fd809",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :identity :views]}
+    {:id "C15/normalized-facet/4936-4961/c3940eb57a6a540c",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/773ac0bb2b7f98ba5c766f3c970506d52cfc6b3edf5967937112c69bcdc1adff",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/4962-5033",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f9b67e32d1e7fd0108d1251e184812a87db24c3fe724fe8034b07037d9699b44",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5034-5063",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5063-5096",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5096-5118",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5118-5160",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5160-5200",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5200-5218",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5218-5245",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5245-5263",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5263-5285",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5285-5300",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :structured]}
+    {:id "C15/facet/5301-5425",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/9c45b1bd25e0af35852ca2944e0aec098cf8b607ad9377b90d89374ef83ff4a6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream]}
+    {:id "C15/normalized-facet/5426-5439/00c53e42752fffad",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/8e0c8560caf592bf74402eea592876a42d6842f6d573fcac14bfcd28c3f3fcc3",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/5440-5596",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f6a0709a3879e6e107abd1507a58d4395f47dc436fd13fa6995b656203902795",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/5597-5621",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/5621-5667",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/5667-5701",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/5701-5769",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/5770-5871",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/bd80c28556146080b5ce767e3dfbe87e85d3b3446f657331f63ecdad453fcbd5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction :structured]}
+    {:id "C15/normalized-facet/5872-5894/e6c4fdcbc8f2f90c",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/d7aa619a921177d357fe0a098e3c20d241ea1df285f7bcb696d7e842f1d85361",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/5895-5970",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/e7339d6512278bbaf1f6fba2adb88a94f59027d409aadbcb23d9cd8b721f753e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :identity]}
+    {:id "C15/facet/5971-5980",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/5980-5998",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/5998-6024",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6024-6039",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6039-6069",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6069-6099",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6099-6119",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6119-6140",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/facet/6141-6215",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/2265a8ac5fdebd34bafe3bae8e4d14cef5702a7f1710444c77869b4c7c065f48",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/normalized-facet/6216-6235/084001f47503071a",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/e83ffa1b8aa16110160057dc498fe2b416eb87522d092eeec3b6a4d2cfe2bdb5",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/6236-6268",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/334fa16a3b3712bbe5ff8199361d9f64ac873d40c11af727ab548b70da5df147",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views]}
+    {:id "C15/facet/6269-6280",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6280-6292",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6292-6308",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6308-6330",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6330-6339",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6339-6361",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6361-6385",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6385-6411",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6411-6432",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6432-6451",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :record-stream :identity]}
+    {:id "C15/facet/6452-6520",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/b64a02dada68bf11fecfdf0a8b53d5cf7d86297454c1bc2a73d6f774fb8b21a3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :identity]}
+    {:id "C15/normalized-facet/6521-6536/84b964dab09b580d",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/9b476f605b487363e9c07a1523336552f6841b2587afb1b2b8f138f632116105",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/6537-6590",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/8a667f39fb017aaead29d07f310ee8ad1339d2f284b549edc5c08aefc610deda",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream :identity :views :redaction]}
+    {:id "C15/facet/6591-6640",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6640-6693",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6693-6747",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6747-6798",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6798-6855",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6855-6926",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6926-6994",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/6994-7046",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/7046-7094",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/7095-7214",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/1cdf46286b0950a1cffff74519026f2a89de080ac030e560af067758daa1d235",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:record-stream]}
+    {:id "C15/normalized-facet/7215-7235/81a99744c82b0f20",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/d18d48f1ca4b8c28d313975892e129421ed750d8ce60225b570631c4d33d47b5",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/7236-7282",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/387bae761c962c98fd767a131461a4db696c71b6b4e5c373422d8582fe8f9fab",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :views]}
+    {:id "C15/facet/7283-7357",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/54429bff0adca5774809543d59ea6d3f2ed33e17af69f9775cfb7dc5937590fe",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:structured :record-stream :redaction]}
+    {:id "C15/facet/7358-7406",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/9b8c0d26fa29193c5f978c669dfcd65a3bbe063fbe4562bd3e97f4cf1f8a30d0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:identity :views]}
+    {:id "C15/facet/7407-7460",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/f5b9b259de41314ade508d9900d1313b88f837f8c0a4e7770605195e9cb23668",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:redaction]}
+    {:id "C15/facet/7461-7527",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/bd78885828ca06f6d5ead5b47ed17f646d45569acc11fe670de6df3423204fd4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:views :identity]}
+    {:id "C15/normalized-facet/7528-7552/4cea7efb2bd3a140",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/c115e4462ae821de38e12d6ab08eb6f7370e9d5c823bcc8ed7f810cc88b23ed5",
+     :role :retained-heading-or-provenance-context,
+     :criterion-keys []}
+    {:id "C15/facet/7553-7602",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/b89abb8d99f694879fa96de9c6541b28ee2967e71a3b4ea7e66da1eb4c6f0d04",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction]}
+    {:id "C15/facet/7603-7665",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7665-7709",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7709-7746",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7746-7797",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7797-7845",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7845-7875",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7875-7908",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7908-7960",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "C15/facet/7960-8022",
+     :document-id "C15",
+     :source-occurrence-id
+     "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:structured :record-stream :identity :views :redaction :tests]}
+    {:id "facet/foundation/5eae63f667c2e59e234e53a3",
+     :document-id "D0",
+     :source-occurrence-id
+     "D0/source/e9947a95a23758e887a4ff9cbf3fd29f8ab33a2d254c1d67dc2b4d42f133b85f",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/3d22361e1e84f207fd15ddf6",
+     :document-id "D1",
+     :source-occurrence-id
+     "D1/source/7e19d9ea01bf17179060d74be82ef1c5a7d316380554323720fcd90c8242032e",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/6bfc3a6e135070e2cd47ef2b",
+     :document-id "D1",
+     :source-occurrence-id
+     "D1/source/af4142aa32715adf9596fe0032be09a26507b0fa29cef1b768e6fec7ff8bd264",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/5b02d314722b779441c98e9f",
+     :document-id "D1",
+     :source-occurrence-id
+     "D1/source/817830e8ca6ebdb616a862f34bffbce83789d27440e75c0fda0be83edadb54b7",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/70c0606f97232aa4c3f8b51a",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/7b8b57d0a60213657cfcbe020cf0cc00c43d93a1ede014306331685fce79d6d8",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/1e15eb82634f1c4ca12518be",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/d1e5a89aeb64cf2d510592b9d9341a4f8f114fcb0797547d0a1390003e79b056",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/7e52b6d32418a1bd042a1ebe",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/635fd10ae46ac83166d332401c457b18477856dbfb20eecfc3675e43dff58d23",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/dfc06ac3052ae093eef3f8b4",
+     :document-id "D3",
+     :source-occurrence-id
+     "D3/source/936fbdd9a448b163ce8f2d5a8f70b8c2d40e79466eb3ebeae56e7c403bdd7108",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/974822244f4c08635ce96a33",
+     :document-id "D4",
+     :source-occurrence-id
+     "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/66e0b397f4e5b304e4b01d2e",
+     :document-id "D4",
+     :source-occurrence-id
+     "D4/source/3827f9ba08b135ae35c60e79d9dbe60d18fa75c365123cdac70595d85d99aaad",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/fa55ce50a8890744cac71820",
+     :document-id "D4",
+     :source-occurrence-id
+     "D4/source/43ce27140f48dfa83abdc30be95489bece87a2b27d1ab37f0a5163f8d218c9bc",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/1cffa49e5483b3b285e29d01",
+     :document-id "D7",
+     :source-occurrence-id
+     "D7/source/4a0385c940cd22c944a961438ee3e98346687e227c1edc9fc388abc77631f186",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}
+    {:id "facet/foundation/42670325cd3d93cb7eb4bb7f",
+     :document-id "D7",
+     :source-occurrence-id
+     "D7/source/4a0385c940cd22c944a961438ee3e98346687e227c1edc9fc388abc77631f186",
+     :role :foundation-diagnostic-predicate,
+     :criterion-keys
+     [:foundation :structured :record-stream :identity]}],
+   :current-witnesses 7,
+   :refreshed-file-pins 0,
+   :source-and-predicate-raw-bytes :unchanged,
+   :scope-and-exclusions :retained-in-sealed-receipt},
+  :C8
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c8-independent-source-review.edn",
+    :sha256
+    "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb",
+    :reviewed-source "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a"},
+   :trace
+   {:path
+    "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+    :sha256
+    "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199"},
+   :current-criteria
+   {:computation
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 1395,
+     :end-byte 2864,
+     :raw-sha256
+     "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+    :propagation
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 3226,
+     :end-byte 4445,
+     :raw-sha256
+     "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+    :legality
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 4827,
+     :end-byte 6319,
+     :raw-sha256
+     "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+    :replay
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 7368,
+     :end-byte 8501,
+     :raw-sha256
+     "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+    :handoff
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}},
+   :facets
+   [{:id "C8/normalized-facet/0-29/ed41993e1ddf0ef4",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/normalized-facet/30-306/e47eb799105c6eee",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/normalized-facet/307-318/994413297a3e95a9",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/319-678",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/679-790",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/normalized-facet/791-807/d8416f1863ce5290",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/808-915",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/915-989",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/989-1068",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/1068-1235",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/1235-1291",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/1291-1402",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/1402-1491",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/1491-1556",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/normalized-facet/1557-1573/21d1931a332d9b7f",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/1574-1608",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1608-1657",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1657-1697",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1697-1744",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1744-1791",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1791-1851",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/facet/1851-1943",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay]}
+    {:id "C8/normalized-facet/1944-1969/f4280a4d61a89adc",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/1970-1986",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/1986-2018",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2018-2059",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2059-2086",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2086-2106",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2106-2136",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2136-2167",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2167-2193",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/2193-2215",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/normalized-facet/2216-2232/46a7930f8402005f",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/2233-2845",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/2846-2976",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:propagation :legality]}
+    {:id "C8/normalized-facet/2977-3002/137f13237b7f3de5",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/3003-3070",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/facet/3071-3432",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/3433-3567",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/normalized-facet/3568-3588/1e7d7850b0cdcb12",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/3589-3644",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/facet/3645-3917",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/3918-4073",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/normalized-facet/4074-4103/a040493e9f1b2ae4",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/4104-4144",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/facet/4145-4274",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/facet/4274-4318",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/facet/4318-4394",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/facet/4395-4555",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/normalized-facet/4556-4585/e58cd582f73ca1b8",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/4586-4635",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4636-4644",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4644-4658",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4658-4673",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4673-4705",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4705-4724",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4724-4739",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4739-4753",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4753-4803",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4803-4837",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay]}
+    {:id "C8/facet/4838-5030",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff]}
+    {:id "C8/normalized-facet/5031-5055/9f824f169210ee8d",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/5056-5089",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/facet/5090-5102",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5102-5117",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5117-5139",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5139-5161",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5161-5202",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5202-5249",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5249-5279",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/facet/5280-5367",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/normalized-facet/5368-5388/539f9381bff11baf",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/5389-5674",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation :replay :handoff]}
+    {:id "C8/normalized-facet/5675-5690/84b964dab09b580d",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/5691-5740",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff]}
+    {:id "C8/facet/5741-5801",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/5801-5849",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/5849-5914",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/5914-5956",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/5956-6027",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/6027-6081",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/6081-6135",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/6135-6181",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/6181-6227",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff]}
+    {:id "C8/facet/6228-6396",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff]}
+    {:id "C8/normalized-facet/6397-6417/81a99744c82b0f20",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/6418-6481",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/facet/6482-6552",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation]}
+    {:id "C8/facet/6553-6603",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay]}
+    {:id "C8/facet/6604-6666",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality]}
+    {:id "C8/facet/6667-6743",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff]}
+    {:id "C8/facet/6744-6820",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff]}
+    {:id "C8/normalized-facet/6821-6845/4cea7efb2bd3a140",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys []}
+    {:id "C8/facet/6846-6892",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/6893-6963",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/6963-7008",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7008-7045",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7045-7090",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7090-7125",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7125-7155",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7155-7242",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7242-7280",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}
+    {:id "C8/facet/7280-7328",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff]}],
+   :current-witnesses 5,
+   :refreshed-file-pins 0,
+   :source-and-predicate-raw-bytes :unchanged,
+   :scope-and-exclusions :retained-in-sealed-receipt},
+  :D2-triage6
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/d2-triage6-independent-source-review.edn",
+    :sha256
+    "7e99e184f23396724d5afd428e945fc42553d018868669bc0d19e19d2c5d8483",
+    :reviewed-source "ab9782c592b262aba422f29261e35fd361b52454"},
+   :trace
+   {:path
+    "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn",
+    :sha256
+    "8c875e5cc3c04d2690f2b23d166a6ae1bda410773028970d8b01aaf6279194f1"},
+   :current-criteria
+   {:fixture-criterion
+    {:path "specs/domains-workflow/tasks.md",
+     :marker "domains-implementation-tasks",
+     :task-id "ai",
+     :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+     :file-sha256
+     "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+     :start-byte 313532,
+     :end-byte 315511,
+     :raw-sha256
+     "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+    :supporting-criteria
+    [{:id "interface/domain/support-agent-integration",
+      :semantic-source-id "domain/support-agent-integration",
+      :task-links
+      [{:task-id "ai",
+        :path "specs/domains-workflow/tasks.md",
+        :role nil,
+        :criterion-witnesses
+        [{:path "specs/domains-workflow/tasks.md",
+          :marker "domains-implementation-tasks",
+          :task-id "ai",
+          :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+          :file-sha256
+          "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+          :start-byte 294518,
+          :end-byte 295544,
+          :raw-sha256
+          "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}]}]}
+     {:id "interface/language/effects/interpret-workflow-replay",
+      :semantic-source-id "language/effects/interpret-workflow-replay",
+      :task-links
+      [{:task-id
+        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+        :path "specs/runtime-workflow/tasks.md",
+        :role :runtime-effect-resource-and-error-consumer,
+        :criterion-witnesses
+        [{:path "specs/runtime-workflow/tasks.md",
+          :marker "runtime-implementation-tasks",
+          :task-id
+          "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+          :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+          :file-sha256
+          "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+          :start-byte 41280,
+          :end-byte 42647,
+          :raw-sha256
+          "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}]}]}
+     {:id "interface/language/facet/emit-agent-plan",
+      :semantic-source-id "language/facet/emit-agent-plan",
+      :task-links
+      [{:task-id "ai",
+        :path "specs/domains-workflow/tasks.md",
+        :role :agent-artifact-producer,
+        :criterion-witnesses
+        [{:path "specs/domains-workflow/tasks.md",
+          :marker "domains-implementation-tasks",
+          :task-id "ai",
+          :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+          :file-sha256
+          "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+          :start-byte 295575,
+          :end-byte 296792,
+          :raw-sha256
+          "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}]}]}]},
+   :facets
+   [{:id "facet/foundation/f136c5e4884858e8fe73a5eb",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/fee3d369848d6b484b0528ba8d2e83253c64e1694294a3a2124af81e52ae0368",
+     :role :positive-fixture}
+    {:id "facet/foundation/d942d0f1bb9b2d707dc46839",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+     :role :negative-fixture}
+    {:id "facet/foundation/fc1ba6249d7f1ddd5e8363fa",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+     :role :negative-fixture}
+    {:id "facet/foundation/2d169328cfb707afa1ea451a",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+     :role :negative-fixture}
+    {:id "facet/foundation/22e991514a0487e8af6bfe1c",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+     :role :negative-fixture}
+    {:id "facet/foundation/34327b533af3c1f0bc85723c",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+     :role :negative-fixture}],
+   :current-witnesses 4,
+   :refreshed-file-pins 0,
+   :source-and-predicate-raw-bytes :unchanged,
+   :scope-and-exclusions :retained-in-sealed-receipt},
+  :retired-primary9
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/retired-primary9-independent-source-review.edn",
+    :sha256
+    "fee63f55fb5dfe16fa27ae71da799589db0459708bc30169047944fd5e0bb247",
+    :reviewed-source "44a15681612db144fe2b7b38a3f285b1ca6d76ba"},
+   :trace
+   {:path
+    "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+    :sha256
+    "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be"},
+   :current-criteria
+   {"interface/domain/support-agent-integration"
+    {:id "interface/domain/support-agent-integration",
+     :semantic-source-id "domain/support-agent-integration",
+     :task-links
+     [{:task-id "ai",
+       :path "specs/domains-workflow/tasks.md",
+       :role nil,
+       :criterion-witnesses
+       [{:path "specs/domains-workflow/tasks.md",
+         :marker "domains-implementation-tasks",
+         :task-id "ai",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+         :start-byte 294518,
+         :end-byte 295544,
+         :raw-sha256
+         "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}]}],
+     :current-raw-predicates
+     ["Criterion `domain/support-agent-integration`: Execute and evaluate declared support triage with prompt provenance, structured-output/taint, durable graph/replay, tool policy and required refund/review transitions. Accepted fixture: Run support triage with prompt provenance, structured validated outputs, retrieval trust, durable replay, tool policy and explicit refund human-review transition. Negative fixture: Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review. Required evidence: agent/tool/prompt/memory/review graph, eval and replay reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume schema, workflow outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed."]},
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    {:id "interface/gravity/unsafe-island-safe-api-eligibility",
+     :semantic-source-id "gravity/unsafe-island-safe-api-eligibility",
+     :task-links
+     [{:task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :path "specs/legality-workflow/tasks.md",
+       :role nil,
+       :criterion-witnesses
+       [{:path "specs/legality-workflow/tasks.md",
+         :marker "legality-implementation-tasks",
+         :task-id
+         "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+         :start-byte 72209,
+         :end-byte 73327,
+         :raw-sha256
+         "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"}]}],
+     :current-raw-predicates
+     ["Foundation requirement gravity/unsafe-island-safe-api-eligibility: Expose unsafe-backed functionality as a safe API only when the wrapper proves or checks every required precondition and cleanup obligation, with source-bound audit and actual boundary tests; preserve internal-only status as a separate permitted boundary. Refusals: Reject invalid state escaping into safe code, a missing wrapper test/audit, an unproved precondition or treating internal-only unsafe code as a safe exported API. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products."]},
+    "interface/language/effects/authorize-and-record-build-effect"
+    {:id
+     "interface/language/effects/authorize-and-record-build-effect",
+     :semantic-source-id
+     "language/effects/authorize-and-record-build-effect",
+     :task-links
+     [{:task-id
+       "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+       :path "specs/expand-workflow/tasks.md",
+       :role :build-authority-checker,
+       :criterion-witnesses
+       [{:path "specs/expand-workflow/tasks.md",
+         :marker "expand-implementation-tasks",
+         :task-id
+         "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+         :start-byte 12202,
+         :end-byte 12727,
+         :raw-sha256
+         "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"}]}],
+     :current-raw-predicates
+     ["Decision criterion interface/language/effects/authorize-and-record-build-effect: Authorize build/compile-time effects against hermetic package/provider/deployment policy and record each granted effect with input/output/replay identity. Reject: Reject undeclared filesystem/environment/network/shell/model/tool authority, runtime grants reused in meta context and missing required replay records. Required outputs: Build-effect grant/deny log and hermetic input/replay artifact with positive/negative phase-authority fixtures."]},
+    "interface/language/effects/interpret-workflow-replay"
+    {:id "interface/language/effects/interpret-workflow-replay",
+     :semantic-source-id "language/effects/interpret-workflow-replay",
+     :task-links
+     [{:task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :path "specs/runtime-workflow/tasks.md",
+       :role :runtime-effect-resource-and-error-consumer,
+       :criterion-witnesses
+       [{:path "specs/runtime-workflow/tasks.md",
+         :marker "runtime-implementation-tasks",
+         :task-id
+         "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+         :start-byte 41280,
+         :end-byte 42647,
+         :raw-sha256
+         "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}]}],
+     :current-raw-predicates
+     ["Source obligation `language/effects/interpret-workflow-replay`: Interpret workflow event/replay operations and their time/random/activity/model/tool/review/retry/compensation records under the durable replay contract. Accept: Record workflow/event and workflow/replay operations with stable event/step identity, input/output schemas, effects, external results, time/random/activity/model/tool/review/retry/compensation decisions and replay IDs. Record mode writes and replay mode reads; concurrent branches replay deterministically with original handler labels/identity. Preserve R6 graph-declared replay-safe operations only where no R7/R8 recorded-output obligation applies. Reject: Reject missing/mismatched/reordered replay records, live nondeterministic work in recorded-output segments and silent repetition of external effects; emit L11-REPLAY-RACE when durable concurrency lacks a record. Required outputs: Typed handler/event/step graph, replay log, record-versus-replay traces, deterministic branch comparison and refusal diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+    "interface/language/facet/emit-agent-plan"
+    {:id "interface/language/facet/emit-agent-plan",
+     :semantic-source-id "language/facet/emit-agent-plan",
+     :task-links
+     [{:task-id "ai",
+       :path "specs/domains-workflow/tasks.md",
+       :role :agent-artifact-producer,
+       :criterion-witnesses
+       [{:path "specs/domains-workflow/tasks.md",
+         :marker "domains-implementation-tasks",
+         :task-id "ai",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+         :start-byte 295575,
+         :end-byte 296792,
+         :raw-sha256
+         "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}]}],
+     :current-raw-predicates
+     ["Source obligation `language/facet/emit-agent-plan`: Emit an agent facet's prompt/tool/model/evaluation/trace/guardrail artifacts with explicit model/tool effects and capabilities. Accept: Compile an explicitly activated agent facet into prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks; retain model/tool effects and capabilities without hidden runtime privilege. The SupportAgent example is an artifact-generation fixture, not authorization for live calls. Reject: Reject missing prompt/tool/model/evaluation/trace/guardrail products, inactive/unsupported facet use or authority inferred from prompt text. Required outputs: Versioned source-bound agent artifact bundle and accepted fixture plus missing-product/effect/grant rejection diagnostics. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+    "interface/language/library/compile-contract-examples"
+    {:id "interface/language/library/compile-contract-examples",
+     :semantic-source-id "language/library/compile-contract-examples",
+     :task-links
+     [{:task-id
+       "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+       :path "specs/stdlib-workflow/tasks.md",
+       :role :library-operation-producer,
+       :criterion-witnesses
+       [{:path "specs/stdlib-workflow/tasks.md",
+         :marker "stdlib-implementation-tasks",
+         :task-id
+         "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+         :start-byte 5805,
+         :end-byte 6316,
+         :raw-sha256
+         "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"}]}],
+     :current-raw-predicates
+     ["Decision criterion interface/language/library/compile-contract-examples: Compile positive and negative public documentation examples for every claimed major profile with actual declared imports and contracts. Reject: Reject missing imports, hidden state/authority, unsupported profile claims and examples whose diagnostic outcome disagrees with their public contract. Required outputs: Profile-qualified example build/diagnostic matrix tied to namespace/API/source versions and executable conformance artifacts."]},
+    "interface/language/library/publish-public-contract"
+    {:id "interface/language/library/publish-public-contract",
+     :semantic-source-id "language/library/publish-public-contract",
+     :task-links
+     [{:task-id
+       "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+       :path "specs/stdlib-workflow/tasks.md",
+       :role :public-library-contract-producer,
+       :criterion-witnesses
+       [{:path "specs/stdlib-workflow/tasks.md",
+         :marker "stdlib-implementation-tasks",
+         :task-id
+         "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+         :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+         :file-sha256
+         "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+         :start-byte 2759,
+         :end-byte 3312,
+         :raw-sha256
+         "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"}]}],
+     :current-raw-predicates
+     ["Decision criterion interface/language/library/publish-public-contract: Publish machine-readable namespace/operation contracts for profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics; bind them to actual exports. Reject: Reject missing/false export metadata, hidden host behavior, untracked authority and public declarations inconsistent with callable implementations. Required outputs: Versioned public API/export/profile manifests and contract-to-implementation conformance/denial evidence."]}},
+   :facets
+   [{:id "facet/foundation/81e82ba9ebe6c80f0da7458c",
+     :document-id "D1",
+     :source-occurrence-id
+     "D1/source/ea477c4fd7314391a4eb6efbebdd0504a0b97104481c8becac9f5cd108c49710"}
+    {:id "facet/foundation/033b858fcf81ea48527cb53c",
+     :document-id "D1",
+     :source-occurrence-id
+     "D1/source/22532a1fac00d433eebd2755d19f6a93ec8afa17411df6cf3665f7e2fa12803d"}
+    {:id "facet/foundation/f906b9a1f284d1e6c9baff14",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/639cd93054407650898cd3862c201ab390c0b2873b395e0461c9a4b9a53ddb0b"}
+    {:id "facet/foundation/b299622c70031e5c57f5b88b",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/797f25eaec04a00144a9a5014b9022f11860ff96d3b74ab446fc36d4277ba014"}
+    {:id "facet/foundation/0612cd01b329cf5f0bf60847",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/797f25eaec04a00144a9a5014b9022f11860ff96d3b74ab446fc36d4277ba014"}
+    {:id "facet/foundation/74d6b9456610aa7cb23bfdeb",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/4f1ff6919524815949c0e4895a771c13fbbc33aee196a86440cfeaf996161daf"}
+    {:id "facet/foundation/755678d937cbb1f223ce2401",
+     :document-id "D2",
+     :source-occurrence-id
+     "D2/source/046aac7a534493d54a289bd4d488ffa362cd00b3589383dd8c728dcdd2d3244d"}
+    {:id "facet/foundation/0cd03a1cc41c3ecabe52c7d0",
+     :document-id "D6",
+     :source-occurrence-id
+     "D6/source/2f4f7011ab5a092f663e5b9723f982de9c7eae21b77beee4dc31e5f13892932b"}
+    {:id "facet/foundation/a773f6f34d03eaf3602e92aa",
+     :document-id "D7",
+     :source-occurrence-id
+     "D7/source/467d28136a6432713661e9a6c2c1bcc19a2775d13769fc67c252ad05547e03e7"}],
+   :current-witnesses 7,
+   :refreshed-file-pins 2,
+   :source-and-predicate-raw-bytes :unchanged,
+   :scope-and-exclusions :retained-in-sealed-receipt}},
+ :receipts
+ {:C14-PERF4
+  {:path
+   "specs/requirement-reconciliation/c14-perf4-independent-source-review.edn",
+   :sha256
+   "509eb7cb7c0fbc3689ab3e56d9e2f4e6826b38dceed41f4d98730070281498f6",
+   :reviewed-source "9d1517399654bd115543d23b4f1d65af6d30f222"},
+  :C15
+  {:path
+   "specs/requirement-reconciliation/c15-independent-source-review.edn",
+   :sha256
+   "95e6cd809685131b6ffbea52b0c79e63c7779689cc38d4d4de3de760f812334e",
+   :reviewed-source "3f14a02ea78990b9e7090474d63cd1b87a250bf9"},
+  :C8
+  {:path
+   "specs/requirement-reconciliation/c8-independent-source-review.edn",
+   :sha256
+   "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb",
+   :reviewed-source "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a"},
+  :D2-triage6
+  {:path
+   "specs/requirement-reconciliation/d2-triage6-independent-source-review.edn",
+   :sha256
+   "7e99e184f23396724d5afd428e945fc42553d018868669bc0d19e19d2c5d8483",
+   :reviewed-source "ab9782c592b262aba422f29261e35fd361b52454"},
+  :retired-primary9
+  {:path
+   "specs/requirement-reconciliation/retired-primary9-independent-source-review.edn",
+   :sha256
+   "fee63f55fb5dfe16fa27ae71da799589db0459708bc30169047944fd5e0bb247",
+   :reviewed-source "44a15681612db144fe2b7b38a3f285b1ca6d76ba"}},
+ :checker-sha256
+ "56ad0a62cfbc1a8959f397930caf4cf100eb8691394833e076c3dbda330fe807"}

@@ -1,0 +1,32 @@
+{:errors 0,
+ :tests 3,
+ :independent-granularity-acceptance :not-conferred,
+ :implementation-credit :none,
+ :boundary {:tests 6, :assertions 11},
+ :partition
+ {:path
+  "specs/requirement-reconciliation/granularity13-current-partition.edn",
+  :sha256
+  "a63b8c315a95ad7a1d48a997cd12b6c096c33c050f8db16371f8c25b18299f4a"},
+ :domain-projection-controls {:tests 8, :assertions 275},
+ :lint
+ {:new-findings 0,
+  :preexisting-unresolved-namespace-warnings {:domains 5, :stdlib 6},
+  :comparison-source "b0ab14a6f29d3171878d7c044cb598a0c97135b9"},
+ :kind :granularity13-task-source-predicate-conservation-controls,
+ :other-task-records :unchanged,
+ :applying-source "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+ :stdlib-projection-controls {:tests 6, :assertions 97},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/granularity13-current-task-composition.edn",
+  :sha256
+  "f090b0acec61ffe3b1db12303efba7b9a56b9ff9bc2b7f28cd511843b105c456"},
+ :split-boundary-rendering :terminal-separator-whitespace-only,
+ :current-decision-and-historical-witness-redirection :pending,
+ :checker-sha256
+ "15752b0f9d570faeafacde9c46a83ee12a10e729622eea29a1d4e5ffe5d1a42a",
+ :failures 0,
+ :assertions 316,
+ :new-siblings 13,
+ :document-validators :both-pass}

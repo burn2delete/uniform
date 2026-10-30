@@ -5,235 +5,9 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/README.md" "53ebb7f4f0bc712b253436b8f53182b07e3399df", "docs/component-roadmaps/auth.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "docs/component-roadmaps/backends.md" "89a96a0c132790a256fad24bf86810c5b6c5b4bd", "docs/component-roadmaps/build.md" "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7", "docs/component-roadmaps/cli.md" "9d07f448301bd9453c795d2af7031c8873820a00", "docs/component-roadmaps/compiler-api.md" "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63", "docs/component-roadmaps/core.md" "a330051b3c0062cff2fb91df5bd6ff6252676c08", "docs/component-roadmaps/diag.md" "916f020c064991fd308550e4e934c0b4443f6d6b", "docs/component-roadmaps/domains.md" "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc", "docs/component-roadmaps/effects.md" "94dfa9c535268276765b76366c5c60687fa3807a", "docs/component-roadmaps/evolution.md" "46a58eddd4e412064c7a5d0898cc1e583e3dffcc", "docs/component-roadmaps/expand.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "docs/component-roadmaps/legality.md" "46a58eddd4e412064c7a5d0898cc1e583e3dffcc", "docs/component-roadmaps/lower.md" "e94de7388589c8251f40fbb1da4a6af6da6f5918", "docs/component-roadmaps/mir.md" "bcb98c1c377cbdc79ed1e23a6814727a8f16254e", "docs/component-roadmaps/opt.md" "ded6c1d2eede7985e078af57ed53fa367645436a", "docs/component-roadmaps/platform.md" "19e1120301643581e6a8b55b933ec12643d0ba2f", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/component-roadmaps/release.md" "df11890b21f71d3f246cc47e9f63d866239a0d68", "docs/component-roadmaps/resolve.md" "11350110bc0c0456699a31151b321a7ddfaa6d7e", "docs/component-roadmaps/runtime.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "docs/component-roadmaps/stdlib.md" "90392ba9eb4b43443941065593950af0188d9354", "docs/component-roadmaps/syntax.md" "c2f6e48f49066e3edda0e0f194c925de01e2af22", "docs/component-roadmaps/tools.md" "df11890b21f71d3f246cc47e9f63d866239a0d68", "docs/component-roadmaps/types.md" "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea", "docs/phase-02-safety/039-safe10-capability-security-model.md" "5405d8bf9ac08c7e2486a34def974d9d57d76e36", "docs/phase-02-safety/043-safe14-supply-chain-safety.md" "5405d8bf9ac08c7e2486a34def974d9d57d76e36", "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md" "5405d8bf9ac08c7e2486a34def974d9d57d76e36", "docs/phase-02-safety/README.md" "5405d8bf9ac08c7e2486a34def974d9d57d76e36", "docs/self-hosting-slice-ownership.edn" "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7", "specs/accounting-removal/tasks.md" "7687c79684ade2ec13147a2c987967c5757703ae", "specs/auth-workflow/tasks.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "specs/backends-workflow/tasks.md" "89a96a0c132790a256fad24bf86810c5b6c5b4bd", "specs/build-workflow/tasks.md" "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7", "specs/cli-workflow/tasks.md" "9d07f448301bd9453c795d2af7031c8873820a00", "specs/compiler-api-workflow/tasks.md" "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63", "specs/core-workflow/tasks.md" "a330051b3c0062cff2fb91df5bd6ff6252676c08", "specs/diag-workflow/tasks.md" "916f020c064991fd308550e4e934c0b4443f6d6b", "specs/domains-workflow/tasks.md" "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc", "specs/effects-workflow/tasks.md" "94dfa9c535268276765b76366c5c60687fa3807a", "specs/evolution-workflow/tasks.md" "46a58eddd4e412064c7a5d0898cc1e583e3dffcc", "specs/expand-workflow/tasks.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "specs/legality-workflow/plan.md" "5405d8bf9ac08c7e2486a34def974d9d57d76e36", "specs/legality-workflow/tasks.md" "46a58eddd4e412064c7a5d0898cc1e583e3dffcc", "specs/lower-workflow/tasks.md" "e94de7388589c8251f40fbb1da4a6af6da6f5918", "specs/mir-workflow/tasks.md" "bcb98c1c377cbdc79ed1e23a6814727a8f16254e", "specs/opt-workflow/tasks.md" "ded6c1d2eede7985e078af57ed53fa367645436a", "specs/platform-workflow/tasks.md" "19e1120301643581e6a8b55b933ec12643d0ba2f", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "specs/release-workflow/tasks.md" "df11890b21f71d3f246cc47e9f63d866239a0d68", "specs/resolve-workflow/tasks.md" "11350110bc0c0456699a31151b321a7ddfaa6d7e", "specs/runtime-workflow/tasks.md" "bc485c7e4b0197873f6a3104021764711215b3b1", "specs/stdlib-workflow/tasks.md" "90392ba9eb4b43443941065593950af0188d9354", "specs/syntax-workflow/tasks.md" "c2f6e48f49066e3edda0e0f194c925de01e2af22", "specs/tools-workflow/tasks.md" "df11890b21f71d3f246cc47e9f63d866239a0d68", "specs/types-workflow/tasks.md" "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea"})
 (def pinned-evidence-hashes
-  {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
- "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
- "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
- "7bde0be1b0e264276827deeac058f7fed5d283f58a7f23580173c147d336d644",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj"
- "cb3e62b8b02c86928ecc99ab529f6aaeac467c8d0d4353dad9a175073f22fdba",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00225-b1-document-source-artifact.clj"
- "36735e2c6b87a13001458fd082f7e9792a7f5fbdc64d402394157d0054b1c50c",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00231-b4-document-feature-requirement.clj"
- "efb0d89ceba4fee78cc505381062719533da7105079e3d2eab72e7c0a34fd047",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj"
- "5e3a7c67e7c4b4d60d4ae4f8d3f7eec580bdfa2cdf9967b6a6de54889cea160b",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00499-standard-library-source-artifact.clj"
- "dee011c3155f1b6b1a0c760d8611015f54963adfae51751f2369f79142becd37",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj"
- "b6412dcea3ca0381b5e9a8148c385a6a67a7d155b0d1ab63c786a6836e531bd0",
- "bootstrap/clojure/src/gravity/bootstrap_impl/components/runtimes/00284-runtime-selection-validate.clj"
- "ca1375b5ca24d23f718f24c8a3758a0d27ceffdf215022d98ac7b013ae18b7ce",
- "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/036-linux-artifact-record.clj"
- "cf8ba3f557e37ef26c3529269df1b36ff4de386fff41453930c1a21b81339957",
- "bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj"
- "8cf168a5af4006e251cfaaae637728cf88b73afe72fc4af3df52ae4858269ce3",
- "bootstrap/clojure/src/gravity/c10_safety_analysis/pipeline.clj"
- "58f1bbb4a653ef2a06477a26fb34fd1474344d86c68d9afb5b417cd38aaad92e",
- "bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj"
- "b55d236b871aa7349f4fd54bf5789549feb77973f9649a71278bf874e57e3cff",
- "bootstrap/clojure/src/gravity/c15_diagnostics/records.clj"
- "b1f43e279d969602fe9451683bf252ddbd025ae8cd4f35faa4599b5a09981ac4",
- "bootstrap/clojure/src/gravity/c9_ownership_checker/contract.clj"
- "ecc8150d635099807efa7144c2c88f1ea32c2ef4292413ba71ccd5604c88d5f7",
- "bootstrap/clojure/src/gravity/capability_validation/authority.clj"
- "0eac12123d0cb9e391de99aabf88171a96307b9cc6146b207592a5c00d3c30c4",
- "bootstrap/clojure/src/gravity/capability_validation/contract.clj"
- "d67e00692336c8cc798225d52c761f905d70639fbac988311472b0103832992f",
- "bootstrap/clojure/src/gravity/cli/compile_command.clj"
- "eaaeefa2248422926eb18ca2509fb1e3c77c3d53fa54d1545490888a86fad1b7",
- "bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
- "0620ea14272bd374b17f735d934beeaff9eb5983864fbf0c57fa02da86aab776",
- "bootstrap/clojure/src/gravity/cli/dispatch.clj"
- "1c23d0f7a305e65446c8edb1289fb9ff3bb85b9c159835452a6983f338313b41",
- "bootstrap/clojure/src/gravity/diagnostics.clj"
- "3192c25407f204fe059fa2360b6025702ec6fb80385f61b7a49434362e9761dd",
- "bootstrap/clojure/src/gravity/pass_cache.clj"
- "876b51a55b516e2f4e278f81432d2d3ae012b66d4d2dbeab3b25ba660cc9ebe9",
- "bootstrap/clojure/src/gravity/profile_validation/contract.clj"
- "59183cc2a887358e346c24af5f5b1a2c714ff330c6ffd0e923cfebf6e67ad70a",
- "bootstrap/clojure/test/gravity/bootstrap_test.clj"
- "cecacec87f9b081872f4ca46e4c7c518ddf3cfadad765056f01921dba87d7d4f",
- "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj"
- "431116755e5825f665a321c33bbdd644e2381dfd49bbcfaa326432f9bbcd9943",
- "bootstrap/clojure/test/gravity/self_hosting/sh01_language_boundary_test.clj"
- "3d972955a3d9515a83b8a881c9704b794ca9235ca9dfe559bbdd5f81ed26e2f9",
- "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj"
- "66d0eefb780c0f4b45accc9feb7c11b9d1f298080dd0136a6d2181cca27f8099",
- "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
- "887d9b65ee46b71ab4317e5953813bca9f1813e7ba681930086217d863b6ba47",
- "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj"
- "a3bcdc1df57330a4d7de956f67cb4a6f16582acdbbb12da939fe4e3f6fcc2fd3",
- "bootstrap/clojure/test/gravity/self_hosting/sh02_sh06_authenticated_plan_context_test.clj"
- "4798aa96b495c8c5d00b4231ab2544c9189f407e0fd265d81c4277a59fae46ef",
- "bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj"
- "27421a5d70b2baa3ad3ee69aeebcfea9319670830d2460fa8d49ef25e1fc2302",
- "bootstrap/clojure/test/gravity/self_hosting/sh04_syntax_adapter_test.clj"
- "9e4690a34aa256a33bbb801a5613dfc61e79269d8b099141399bc4afca6c1266",
- "bootstrap/clojure/test/gravity/self_hosting/sh05_macro_adapter_test.clj"
- "52a77cca2d5f2f481800b60474997c2df0ea6329e59439ae17493524b6654c43",
- "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj"
- "238a7ed27c00913763115af50c1c931dd7bf3719d44847b3d4298e872e7e2f76",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_control_flow_test.clj"
- "76f75ad41e28fd6652924b48b2cef37b8e6b14c229777bcb3cabb6480f9445cd",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_lexical_binding_test.clj"
- "8ce18d0f249afc866aef63dcbbc0c2b3923eb5d886e267ad896d062ba85f0966",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_loop_recur_test.clj"
- "15fb348163ae8bf306d94be7fa118d6343282a17590e0326f913e44666a393cd",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
- "ba6d622223a196172c8d991691732f14800584ccdddaba0ca312afa2b4e37f32",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
- "05974c9863ec5935f5d816701bdf7d5cbe15cb3da93092783247a9caca74695c",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_references_calls_test.clj"
- "d8cef53696c68509db5017bfeced6900e9dde4f04921818b59f494dfd05f13f6",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj"
- "fc68dc99a8f2182e9214a4875b38391ffa1b02ea71c20d987a6645d2e56895b7",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
- "653ad9ae33f484a95ce70945b90b7ef96be4ec4398854d590167bce1f42a7faa",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
- "1a26d06cac7f8d3a1aeeecbb15a414d05d01ec0e8b8c24a083606f88b2d00cfe",
- "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
- "a6354270568ccf2e2307d33bf34357dcf8ae976db40598540c50bb9aaa224131",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_authenticated_type_integration_test.clj"
- "0511784e670ee38a38307fd294d626da116d0306e00fbe7bb01cda1bcefb190b",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
- "b2c0dd7f07918dcee4b3aa9fba8d853ebd0eb8317ef3f2262abf0a23e46cbd55",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_loop_recur_type_test.clj"
- "5138701462f4befb0c95402f860814e0bf85820377a2db6f2d9b4ecd023e46fe",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_type_test.clj"
- "3a7a9688aa06af90ae57db2f8fe6192babe18ca70fbda61a56d336d8ac5df7eb",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_record_access_match_typing_test.clj"
- "90c82e179de877e080b8d9fb33d1bca4da2f0b7aea5fa3a45145c1f7014683c7",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_records_unions_type_test.clj"
- "e568874e11fefbc4fe5901287db0f1402fd58e9f9731a5ddc0e838f360f1d8c9",
- "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj"
- "7bf84a2794cfe0566a284774f2f3c807626910e24285c7c1ea411b972432f989",
- "bootstrap/clojure/test/gravity/self_hosting/sh09_authenticated_effect_integration_test.clj"
- "dc23d7db311eb702b40082f7b112e24572b933475a7698a1f3426de5a47c5687",
- "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
- "6b3d16a8905ebe41aa3fd8bf9e247c120b28351700059dd467de13bebe3bdd40",
- "bootstrap/clojure/test/gravity/self_hosting/sh09_effect_legality_test.clj"
- "bc64aabba65f4096f7e5ad1c0b15399b510f7373e4a0edd7cc26b36ed6fa0ee1",
- "bootstrap/clojure/test/gravity/self_hosting/sh09_error_effect_integration_test.clj"
- "372d583538739d6925d2ecfd53a3084cd63754a0fea9143c0e8df1194ad87392",
- "bootstrap/clojure/test/gravity/self_hosting/sh10_authenticated_ownership_integration_test.clj"
- "829a618c542480743ad37dd25bf363d63131ba1a7aaab3651a564d797790a326",
- "bootstrap/clojure/test/gravity/self_hosting/sh10_initialization_move_family_test.clj"
- "fceca0912fb5b735333bd4f307b76df42f8f6e6c4ea3591303dbdf312ac86f2a",
- "bootstrap/clojure/test/gravity/self_hosting/sh10_ownership_transition_test.clj"
- "7e7b79152b46aecf074bd71734ad522ddb0c1a4f4b14048c1df5172265d215ca",
- "bootstrap/clojure/test/gravity/self_hosting/sh10_runtime_borrow_conflict_family_test.clj"
- "901cd3f147375cd6de4d704faf2e8c92c95a6600c57c6833cbd3ef31aa20d690",
- "bootstrap/clojure/test/gravity/self_hosting/sh11_authenticated_safety_integration_test.clj"
- "752d26c8360b5a2ffb919159d0ee3a45da296c9aed8efab93430180f2d3f7aa1",
- "bootstrap/clojure/test/gravity/self_hosting/sh11_division_bounds_safety_test.clj"
- "e44b66d801f61a1d8289ff17f79eec976eaa7865e88e98bf5ce5724d31ab392c",
- "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj"
- "29b031ce2aaa1fb85c837ab6d5e326352828a88e3e01ed2b29cd89738ecf9eaa",
- "bootstrap/clojure/test/gravity/self_hosting/sh11_overflow_cast_safety_test.clj"
- "a9958fe1dacf2b0e2d5717e1b3c08615bb2181182d6206b91841338505ae614d",
- "bootstrap/clojure/test/gravity/self_hosting/sh11_runtime_checked_verifier_test.clj"
- "57500369d36f0f0a38e882a997e9d0bca6c3885fbf1af56e88dc2c0b852a3df1",
- "bootstrap/clojure/test/gravity/self_hosting/sh12_authenticated_mir_integration_test.clj"
- "b3f12a2494754901f70b5fc05825504df59896c3175a5eade452cc9a418171de",
- "bootstrap/clojure/test/gravity/self_hosting/sh12_branch_join_mir_test.clj"
- "0eb16ecacd53d121878b8915b8fd8b795ecef2f0e684953e70864a26f03967b8",
- "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"
- "fe33063821c6abc341e26010de0e6cb795efc634137551769da39863ca8a117d",
- "bootstrap/clojure/test/gravity/self_hosting/sh12_runtime_checked_mir_test.clj"
- "393637c9a5baa04da7031a6408816c9e10787bd4a2e75fed597013fe82611351",
- "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj"
- "535b34b19b2012d91360cbe1812b9edaa91eb6ede4b96c182860945c659eb942",
- "bootstrap/clojure/test/gravity/self_hosting/sh13_control_flow_test.clj"
- "a8677e97accfc62249262c077bb33366e140260d3e59c46df0ee222394e18dc5",
- "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj"
- "1250a522fbb357923259da392a5721c17344429936f865e464e6b02d34672d23",
- "bootstrap/clojure/test/gravity/self_hosting/sh14_data_layout_test.clj"
- "974678d777c137168fbfa128843b896fe10c5ef577131e7ccd52e56a9deb2074",
- "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj"
- "c196af2412af8c93356321106df62a8b870e0b1861a9a6c87863d8cbe8a977f5",
- "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj"
- "a8919f49e5c33c2f40ee87fdc4cb894eb621432563b683f93c410f1d05d9bf4c",
- "bootstrap/clojure/test/gravity/self_hosting/sh16_mir_optimization_test.clj"
- "df7ca8a3020c69230f5fd849947e53b0bca92ce39352fcb97c86157da98bf2e8",
- "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_evidence_rejection_test.clj"
- "a86d18747c8db900cf4cc0e1c6b8602c5fe0c2ba0412dc36ae2c7ce2b7291863",
- "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"
- "24f01f3573a07526e94e3954eda508fe113bf6e939ec0c9f85a2593eb1509f81",
- "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj"
- "1ed99ccced41d9861a07b9083013b02539e9a31a1bc53f8a0225295cdbe1dfdf",
- "bootstrap/clojure/test/gravity/self_hosting/sh18_native_c_emitter_test.clj"
- "decb3fc6f4201ce92d35abeefb4197ef371d19f9ae760fe853f056c6295aa3b0",
- "bootstrap/clojure/test/gravity/self_hosting/sh18_native_toolchain_harness_test.clj"
- "41fc1a1437a08e30234636e0642f5de559e7f8a24d0eec29fa1ccb6bc03f1e2d",
- "bootstrap/clojure/test/gravity/self_hosting/sh19_minimal_runtime_test.clj"
- "4be7d51e30e250db493daff7b16b14c950358d8fbb7ff03e1859a88da1475df7",
- "bootstrap/clojure/test/gravity/self_hosting/sh20_artifact_emission_test.clj"
- "492ec3fcfe0ae9975472fa91cee6fa6dba944ea0d2d7bd561d1a3477409cf07d",
- "bootstrap/clojure/test/gravity/self_hosting/sh21_meta_compiler_legality_test.clj"
- "2d6d39e6818011222f7d5c785d49136b598c376d339f94ea97d7c44e4f2bf29a",
- "bootstrap/clojure/test/gravity/self_hosting/sh22_authenticated_library_integration_test.clj"
- "e8754e923f4df7f195c2dfab9912a48782df0b0475659e12c33e7323614c0384",
- "bootstrap/clojure/test/gravity/self_hosting/sh22_standard_library_test.clj"
- "7657111768d7d83fc41c39cdec9eadc63ddd9e128eae59770ed60e161fa95929",
- "bootstrap/clojure/test/gravity/self_hosting/sh23_hermetic_package_build_test.clj"
- "14ce07bc8df79b8d6d231aaf3346923bfb3f996b6639b0a74afd22ca97cc5a0e",
- "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj"
- "1a04f682369e30980f5508cd417ffdb8fe07b0c1890f469e7fa2838a503b2fd3",
- "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj"
- "d2c0865d3e2ebc34855c765897e1719e838ff849bc8e5d106483cd9969202d91",
- "bootstrap/clojure/test/gravity/self_hosting/sh27_stage_equivalence_test.clj"
- "ec7cb6dd712c1442c95ffc45d4a136dcde10988e81f4c38e1b8a902fda37d39f",
- "bootstrap/clojure/test/gravity/self_hosting/sh28_trust_provenance_test.clj"
- "eb49a8c58c2fa9817c12d13120fa973a1fef32444f66938059b9f546e4f08403",
- "bootstrap/gravity/src/gravity/runtime.gravity"
- "e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe",
- "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
- "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91",
- "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
- "8349689573969359e95c678518bb81df7a8b9d685d764927f33ac7dfd4a5f7c9",
- "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"
- "d62075e0ae7d974d69d24796a101bcf6e6ceab34f4d18a60d18877f0618b6d76",
- "docs/artifacts/phase-15/bootstrap/p15-s23-whole-language-self-hosting-gate.edn"
- "5c13d84dbec78cc7afad44c749d32c2ee5716621ba08af89de08d45a32564f18",
- "docs/implementation-roadmap.md"
- "c1116495bf4140ccbefe45e5fa6952d370917abf8c11cf170444827aee32d834",
- "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
- "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
- "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
- "81a875ffbbc43bf05f95aafd60774aaf1b1fa2e54c0eb9331b03dd28597f6ae5",
- "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
- "030fa2eca59ce7be61371bc12e02c312de2f0aa413ef0d12dc2858e531c84c36",
- "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
- "f61931ada4a1759bcdac74ef5c114e34f674d1eee9199f0833b72a5c31c205b0",
- "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
- "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
- "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md"
- "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5",
- "docs/phase-08-runtime-architecture/README.md"
- "339b1cf4dedbc7a6dade0c3ab971e1a2e169aa565cc3471f0d799439fa6666fe",
- "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md"
- "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8",
- "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md"
- "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e",
- "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md"
- "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
- "docs/phase-13-tooling-and-developer-experience/README.md"
- "f376b4cafaaa5a968ef2a589a824b868f0ae2505cc63efc8d425c019808cb736",
- "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md"
- "d4bcdb03479049bdfb30b3c59591f2c97242102aee07e8ce714d52664a6aa75f",
- "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md"
- "769fc29e7c1872f4b9634f0b542f2d6da6174b77fd84c8240f6a0eb9aa2a40d5",
- "docs/phase-16-standard-library/211-std1-standard-library-architecture.md"
- "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a",
- "docs/phase-16-standard-library/README.md"
- "a6d2ecdd024ab3b5da368bb8eb8d1630037b07642f2905f0ffb776a40fe5a59b",
- "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
- "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
- "docs/phase-18-binary-distribution-and-seedless-release/README.md"
- "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
-)
+  {"bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj" "7bde0be1b0e264276827deeac058f7fed5d283f58a7f23580173c147d336d644", "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj" "cb3e62b8b02c86928ecc99ab529f6aaeac467c8d0d4353dad9a175073f22fdba", "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00225-b1-document-source-artifact.clj" "36735e2c6b87a13001458fd082f7e9792a7f5fbdc64d402394157d0054b1c50c", "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00231-b4-document-feature-requirement.clj" "efb0d89ceba4fee78cc505381062719533da7105079e3d2eab72e7c0a34fd047", "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj" "5e3a7c67e7c4b4d60d4ae4f8d3f7eec580bdfa2cdf9967b6a6de54889cea160b", "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00499-standard-library-source-artifact.clj" "dee011c3155f1b6b1a0c760d8611015f54963adfae51751f2369f79142becd37", "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj" "b6412dcea3ca0381b5e9a8148c385a6a67a7d155b0d1ab63c786a6836e531bd0", "bootstrap/clojure/src/gravity/bootstrap_impl/components/runtimes/00284-runtime-selection-validate.clj" "ca1375b5ca24d23f718f24c8a3758a0d27ceffdf215022d98ac7b013ae18b7ce", "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/036-linux-artifact-record.clj" "cf8ba3f557e37ef26c3529269df1b36ff4de386fff41453930c1a21b81339957", "bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj" "8cf168a5af4006e251cfaaae637728cf88b73afe72fc4af3df52ae4858269ce3", "bootstrap/clojure/src/gravity/c10_safety_analysis/pipeline.clj" "58f1bbb4a653ef2a06477a26fb34fd1474344d86c68d9afb5b417cd38aaad92e", "bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj" "b55d236b871aa7349f4fd54bf5789549feb77973f9649a71278bf874e57e3cff", "bootstrap/clojure/src/gravity/c15_diagnostics/records.clj" "b1f43e279d969602fe9451683bf252ddbd025ae8cd4f35faa4599b5a09981ac4", "bootstrap/clojure/src/gravity/c9_ownership_checker/contract.clj" "ecc8150d635099807efa7144c2c88f1ea32c2ef4292413ba71ccd5604c88d5f7", "bootstrap/clojure/src/gravity/capability_validation/authority.clj" "0eac12123d0cb9e391de99aabf88171a96307b9cc6146b207592a5c00d3c30c4", "bootstrap/clojure/src/gravity/capability_validation/contract.clj" "d67e00692336c8cc798225d52c761f905d70639fbac988311472b0103832992f", "bootstrap/clojure/src/gravity/cli/compile_command.clj" "eaaeefa2248422926eb18ca2509fb1e3c77c3d53fa54d1545490888a86fad1b7", "bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj" "0620ea14272bd374b17f735d934beeaff9eb5983864fbf0c57fa02da86aab776", "bootstrap/clojure/src/gravity/cli/dispatch.clj" "1c23d0f7a305e65446c8edb1289fb9ff3bb85b9c159835452a6983f338313b41", "bootstrap/clojure/src/gravity/diagnostics.clj" "3192c25407f204fe059fa2360b6025702ec6fb80385f61b7a49434362e9761dd", "bootstrap/clojure/src/gravity/pass_cache.clj" "876b51a55b516e2f4e278f81432d2d3ae012b66d4d2dbeab3b25ba660cc9ebe9", "bootstrap/clojure/src/gravity/profile_validation/contract.clj" "59183cc2a887358e346c24af5f5b1a2c714ff330c6ffd0e923cfebf6e67ad70a", "bootstrap/clojure/test/gravity/bootstrap_test.clj" "cecacec87f9b081872f4ca46e4c7c518ddf3cfadad765056f01921dba87d7d4f", "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj" "431116755e5825f665a321c33bbdd644e2381dfd49bbcfaa326432f9bbcd9943", "bootstrap/clojure/test/gravity/self_hosting/sh01_language_boundary_test.clj" "3d972955a3d9515a83b8a881c9704b794ca9235ca9dfe559bbdd5f81ed26e2f9", "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj" "66d0eefb780c0f4b45accc9feb7c11b9d1f298080dd0136a6d2181cca27f8099", "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj" "887d9b65ee46b71ab4317e5953813bca9f1813e7ba681930086217d863b6ba47", "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj" "a3bcdc1df57330a4d7de956f67cb4a6f16582acdbbb12da939fe4e3f6fcc2fd3", "bootstrap/clojure/test/gravity/self_hosting/sh02_sh06_authenticated_plan_context_test.clj" "4798aa96b495c8c5d00b4231ab2544c9189f407e0fd265d81c4277a59fae46ef", "bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj" "27421a5d70b2baa3ad3ee69aeebcfea9319670830d2460fa8d49ef25e1fc2302", "bootstrap/clojure/test/gravity/self_hosting/sh04_syntax_adapter_test.clj" "9e4690a34aa256a33bbb801a5613dfc61e79269d8b099141399bc4afca6c1266", "bootstrap/clojure/test/gravity/self_hosting/sh05_macro_adapter_test.clj" "52a77cca2d5f2f481800b60474997c2df0ea6329e59439ae17493524b6654c43", "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj" "238a7ed27c00913763115af50c1c931dd7bf3719d44847b3d4298e872e7e2f76", "bootstrap/clojure/test/gravity/self_hosting/sh07_control_flow_test.clj" "76f75ad41e28fd6652924b48b2cef37b8e6b14c229777bcb3cabb6480f9445cd", "bootstrap/clojure/test/gravity/self_hosting/sh07_lexical_binding_test.clj" "8ce18d0f249afc866aef63dcbbc0c2b3923eb5d886e267ad896d062ba85f0966", "bootstrap/clojure/test/gravity/self_hosting/sh07_loop_recur_test.clj" "15fb348163ae8bf306d94be7fa118d6343282a17590e0326f913e44666a393cd", "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj" "ba6d622223a196172c8d991691732f14800584ccdddaba0ca312afa2b4e37f32", "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj" "05974c9863ec5935f5d816701bdf7d5cbe15cb3da93092783247a9caca74695c", "bootstrap/clojure/test/gravity/self_hosting/sh07_references_calls_test.clj" "d8cef53696c68509db5017bfeced6900e9dde4f04921818b59f494dfd05f13f6", "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj" "fc68dc99a8f2182e9214a4875b38391ffa1b02ea71c20d987a6645d2e56895b7", "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj" "653ad9ae33f484a95ce70945b90b7ef96be4ec4398854d590167bce1f42a7faa", "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj" "1a26d06cac7f8d3a1aeeecbb15a414d05d01ec0e8b8c24a083606f88b2d00cfe", "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj" "a6354270568ccf2e2307d33bf34357dcf8ae976db40598540c50bb9aaa224131", "bootstrap/clojure/test/gravity/self_hosting/sh08_authenticated_type_integration_test.clj" "0511784e670ee38a38307fd294d626da116d0306e00fbe7bb01cda1bcefb190b", "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "b2c0dd7f07918dcee4b3aa9fba8d853ebd0eb8317ef3f2262abf0a23e46cbd55", "bootstrap/clojure/test/gravity/self_hosting/sh08_loop_recur_type_test.clj" "5138701462f4befb0c95402f860814e0bf85820377a2db6f2d9b4ecd023e46fe", "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_type_test.clj" "3a7a9688aa06af90ae57db2f8fe6192babe18ca70fbda61a56d336d8ac5df7eb", "bootstrap/clojure/test/gravity/self_hosting/sh08_record_access_match_typing_test.clj" "90c82e179de877e080b8d9fb33d1bca4da2f0b7aea5fa3a45145c1f7014683c7", "bootstrap/clojure/test/gravity/self_hosting/sh08_records_unions_type_test.clj" "e568874e11fefbc4fe5901287db0f1402fd58e9f9731a5ddc0e838f360f1d8c9", "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj" "7bf84a2794cfe0566a284774f2f3c807626910e24285c7c1ea411b972432f989", "bootstrap/clojure/test/gravity/self_hosting/sh09_authenticated_effect_integration_test.clj" "dc23d7db311eb702b40082f7b112e24572b933475a7698a1f3426de5a47c5687", "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj" "6b3d16a8905ebe41aa3fd8bf9e247c120b28351700059dd467de13bebe3bdd40", "bootstrap/clojure/test/gravity/self_hosting/sh09_effect_legality_test.clj" "bc64aabba65f4096f7e5ad1c0b15399b510f7373e4a0edd7cc26b36ed6fa0ee1", "bootstrap/clojure/test/gravity/self_hosting/sh09_error_effect_integration_test.clj" "372d583538739d6925d2ecfd53a3084cd63754a0fea9143c0e8df1194ad87392", "bootstrap/clojure/test/gravity/self_hosting/sh10_authenticated_ownership_integration_test.clj" "829a618c542480743ad37dd25bf363d63131ba1a7aaab3651a564d797790a326", "bootstrap/clojure/test/gravity/self_hosting/sh10_initialization_move_family_test.clj" "fceca0912fb5b735333bd4f307b76df42f8f6e6c4ea3591303dbdf312ac86f2a", "bootstrap/clojure/test/gravity/self_hosting/sh10_ownership_transition_test.clj" "7e7b79152b46aecf074bd71734ad522ddb0c1a4f4b14048c1df5172265d215ca", "bootstrap/clojure/test/gravity/self_hosting/sh10_runtime_borrow_conflict_family_test.clj" "901cd3f147375cd6de4d704faf2e8c92c95a6600c57c6833cbd3ef31aa20d690", "bootstrap/clojure/test/gravity/self_hosting/sh11_authenticated_safety_integration_test.clj" "752d26c8360b5a2ffb919159d0ee3a45da296c9aed8efab93430180f2d3f7aa1", "bootstrap/clojure/test/gravity/self_hosting/sh11_division_bounds_safety_test.clj" "e44b66d801f61a1d8289ff17f79eec976eaa7865e88e98bf5ce5724d31ab392c", "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj" "29b031ce2aaa1fb85c837ab6d5e326352828a88e3e01ed2b29cd89738ecf9eaa", "bootstrap/clojure/test/gravity/self_hosting/sh11_overflow_cast_safety_test.clj" "a9958fe1dacf2b0e2d5717e1b3c08615bb2181182d6206b91841338505ae614d", "bootstrap/clojure/test/gravity/self_hosting/sh11_runtime_checked_verifier_test.clj" "57500369d36f0f0a38e882a997e9d0bca6c3885fbf1af56e88dc2c0b852a3df1", "bootstrap/clojure/test/gravity/self_hosting/sh12_authenticated_mir_integration_test.clj" "b3f12a2494754901f70b5fc05825504df59896c3175a5eade452cc9a418171de", "bootstrap/clojure/test/gravity/self_hosting/sh12_branch_join_mir_test.clj" "0eb16ecacd53d121878b8915b8fd8b795ecef2f0e684953e70864a26f03967b8", "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj" "fe33063821c6abc341e26010de0e6cb795efc634137551769da39863ca8a117d", "bootstrap/clojure/test/gravity/self_hosting/sh12_runtime_checked_mir_test.clj" "393637c9a5baa04da7031a6408816c9e10787bd4a2e75fed597013fe82611351", "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj" "535b34b19b2012d91360cbe1812b9edaa91eb6ede4b96c182860945c659eb942", "bootstrap/clojure/test/gravity/self_hosting/sh13_control_flow_test.clj" "a8677e97accfc62249262c077bb33366e140260d3e59c46df0ee222394e18dc5", "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj" "1250a522fbb357923259da392a5721c17344429936f865e464e6b02d34672d23", "bootstrap/clojure/test/gravity/self_hosting/sh14_data_layout_test.clj" "974678d777c137168fbfa128843b896fe10c5ef577131e7ccd52e56a9deb2074", "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj" "c196af2412af8c93356321106df62a8b870e0b1861a9a6c87863d8cbe8a977f5", "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj" "a8919f49e5c33c2f40ee87fdc4cb894eb621432563b683f93c410f1d05d9bf4c", "bootstrap/clojure/test/gravity/self_hosting/sh16_mir_optimization_test.clj" "df7ca8a3020c69230f5fd849947e53b0bca92ce39352fcb97c86157da98bf2e8", "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_evidence_rejection_test.clj" "a86d18747c8db900cf4cc0e1c6b8602c5fe0c2ba0412dc36ae2c7ce2b7291863", "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj" "24f01f3573a07526e94e3954eda508fe113bf6e939ec0c9f85a2593eb1509f81", "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj" "1ed99ccced41d9861a07b9083013b02539e9a31a1bc53f8a0225295cdbe1dfdf", "bootstrap/clojure/test/gravity/self_hosting/sh18_native_c_emitter_test.clj" "decb3fc6f4201ce92d35abeefb4197ef371d19f9ae760fe853f056c6295aa3b0", "bootstrap/clojure/test/gravity/self_hosting/sh18_native_toolchain_harness_test.clj" "41fc1a1437a08e30234636e0642f5de559e7f8a24d0eec29fa1ccb6bc03f1e2d", "bootstrap/clojure/test/gravity/self_hosting/sh19_minimal_runtime_test.clj" "4be7d51e30e250db493daff7b16b14c950358d8fbb7ff03e1859a88da1475df7", "bootstrap/clojure/test/gravity/self_hosting/sh20_artifact_emission_test.clj" "492ec3fcfe0ae9975472fa91cee6fa6dba944ea0d2d7bd561d1a3477409cf07d", "bootstrap/clojure/test/gravity/self_hosting/sh21_meta_compiler_legality_test.clj" "2d6d39e6818011222f7d5c785d49136b598c376d339f94ea97d7c44e4f2bf29a", "bootstrap/clojure/test/gravity/self_hosting/sh22_authenticated_library_integration_test.clj" "e8754e923f4df7f195c2dfab9912a48782df0b0475659e12c33e7323614c0384", "bootstrap/clojure/test/gravity/self_hosting/sh22_standard_library_test.clj" "7657111768d7d83fc41c39cdec9eadc63ddd9e128eae59770ed60e161fa95929", "bootstrap/clojure/test/gravity/self_hosting/sh23_hermetic_package_build_test.clj" "14ce07bc8df79b8d6d231aaf3346923bfb3f996b6639b0a74afd22ca97cc5a0e", "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj" "1a04f682369e30980f5508cd417ffdb8fe07b0c1890f469e7fa2838a503b2fd3", "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj" "d2c0865d3e2ebc34855c765897e1719e838ff849bc8e5d106483cd9969202d91", "bootstrap/clojure/test/gravity/self_hosting/sh27_stage_equivalence_test.clj" "ec7cb6dd712c1442c95ffc45d4a136dcde10988e81f4c38e1b8a902fda37d39f", "bootstrap/clojure/test/gravity/self_hosting/sh28_trust_provenance_test.clj" "eb49a8c58c2fa9817c12d13120fa973a1fef32444f66938059b9f546e4f08403", "bootstrap/gravity/src/gravity/runtime.gravity" "e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91", "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md" "8349689573969359e95c678518bb81df7a8b9d685d764927f33ac7dfd4a5f7c9", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6", "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn" "d62075e0ae7d974d69d24796a101bcf6e6ceab34f4d18a60d18877f0618b6d76", "docs/artifacts/phase-15/bootstrap/p15-s23-whole-language-self-hosting-gate.edn" "5c13d84dbec78cc7afad44c749d32c2ee5716621ba08af89de08d45a32564f18", "docs/implementation-roadmap.md" "c1116495bf4140ccbefe45e5fa6952d370917abf8c11cf170444827aee32d834", "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md" "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75", "docs/phase-01-core-language/025-l15-capability-provider-specification.md" "81a875ffbbc43bf05f95aafd60774aaf1b1fa2e54c0eb9331b03dd28597f6ae5", "docs/phase-02-safety/039-safe10-capability-security-model.md" "2dd2fa436ec3d3d3ac7fcae4070d712c66cd157d171b62acf929936bbfc12449", "docs/phase-02-safety/043-safe14-supply-chain-safety.md" "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5", "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md" "9d6f56b496118a9680a7b963568dd25dc8c775e21c4ec6ec9d490022adcc0eb4", "docs/phase-02-safety/README.md" "409c55822bb5db5a2dcc9a863589f3769922279fcaa81d6b8d3f572f7bfb8c71", "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md" "030fa2eca59ce7be61371bc12e02c312de2f0aa413ef0d12dc2858e531c84c36", "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md" "f61931ada4a1759bcdac74ef5c114e34f674d1eee9199f0833b72a5c31c205b0", "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md" "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3", "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md" "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5", "docs/phase-08-runtime-architecture/README.md" "339b1cf4dedbc7a6dade0c3ab971e1a2e169aa565cc3471f0d799439fa6666fe", "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md" "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8", "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md" "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e", "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md" "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933", "docs/phase-13-tooling-and-developer-experience/README.md" "f376b4cafaaa5a968ef2a589a824b868f0ae2505cc63efc8d425c019808cb736", "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md" "d4bcdb03479049bdfb30b3c59591f2c97242102aee07e8ce714d52664a6aa75f", "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md" "769fc29e7c1872f4b9634f0b542f2d6da6174b77fd84c8240f6a0eb9aa2a40d5", "docs/phase-16-standard-library/211-std1-standard-library-architecture.md" "117423ed96525984f0f643133d90c6118a2e72827e107e9796885f2e486aae2a", "docs/phase-16-standard-library/README.md" "a6d2ecdd024ab3b5da368bb8eb8d1630037b07642f2905f0ffb776a40fe5a59b", "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md" "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57", "docs/phase-18-binary-distribution-and-seedless-release/README.md" "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5", "specs/legality-workflow/plan.md" "d65b1b432392f9771e8849d3780232031d20f082c0bfcead2319ebe6d169c646"})
 (defn source-pin [path] (get applying-source-pins path baseline))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
@@ -249,155 +23,7 @@
 ;; Integers below select pinned literal IDs, never live document/display order.
 ;; The mapping keys are local routing shorthand, not tasks or completion units.
 (def stable-task-routing-keys
-  {"auth"
- ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
-  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
-  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
-  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
-  "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"],
- "backends"
- ["backend-interface"
-  "backend-c"
-  "backend-llvm"
-  "backend-wasm"
-  "backend-jvm"
-  "backend-js"
-  "backend-mlir"
-  "backend-gpu"
-  "backend-hdl"
-  "backend-workflow"
-  "backend-ai"
-  "backend-query"
-  "backend-mobile"
-  "backend-emission"
-  "backend-conformance"],
- "build"
- ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
-  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
-  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
-  "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
-  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
- "cli"
- ["cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families"
-  "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services"
-  "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services"
-  "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction"
-  "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"],
- "compiler-api"
- ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
- "core"
- ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
-  "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
-  "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss"
-  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
-  "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
- "diag"
- ["diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema"
-  "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order"
-  "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts"
-  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
- "domains" ["math" "schema" "query" "workflow" "ai" "gpu" "ui"],
- "effects"
- ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
-  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
-  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
-  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
-  "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
- "emit"
- ["emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts"
-  "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs"
-  "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes"
-  "emit/current-evidence-and-remaining-work/emit4-establish-conformance"
-  "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers"],
- "expand"
- ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
-  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
-  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
-  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
-  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"],
- "legality"
- ["legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
-  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
-  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
-  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
-  "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"],
- "lower"
- ["lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
-  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
-  "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers"
-  "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins"
-  "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"],
- "mir"
- ["mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
-  "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
-  "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
-  "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"
-  "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"],
- "opt"
- ["opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"
-  "opt/current-evidence-and-remaining-work/opt2-implement-structural-families"
-  "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"
-  "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
-  "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline"],
- "platform" ["hardware" "firmware" "kernel" "devices"],
- "reader"
- ["reader/finite-remaining-work/contract-coverage-reconciliation"
-  "reader/finite-remaining-work/decode-and-source-identity-closure"
-  "reader/finite-remaining-work/lexical-products-and-origins-closure"
-  "reader/finite-remaining-work/extension-policy-closure"
-  "reader/finite-remaining-work/authentication-and-quota-removal-closure"
-  "reader/finite-remaining-work/fresh-syntax-handoff"
-  "reader/finite-remaining-work/component-release-evidence"],
- "release"
- ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
-  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
-  "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
-  "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
-  "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"],
- "resolve"
- ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
-  "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
-  "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality"
-  "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes"
-  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"],
- "runtime"
- ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
-  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
-  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
-  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
-  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
- "stdlib"
- ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
-  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
-  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
-  "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
-  "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
- "syntax"
- ["syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
-  "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
-  "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
-  "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify"
-  "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"],
- "tools"
- ["tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer"
-  "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer"],
- "types"
- ["types/current-evidence-and-remaining-work/types1-solve-core-constraints"
-  "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
-  "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
-  "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
-  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]}
-)
+  {"release" ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance" "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler" "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom" "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate" "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations" "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures" "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures" "release/remaining-tasks-and-evidence/execute-formal-evidence-checks" "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures" "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures" "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures" "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures" "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures" "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures" "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures" "release/remaining-tasks-and-evidence/execute-staged-compiler-validation" "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"], "diag" ["diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema" "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order" "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts" "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"], "resolve" ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions" "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries" "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality" "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes" "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"], "tools" ["tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer" "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer" "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer" "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer" "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer" "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer" "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer"], "opt" ["opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts" "opt/current-evidence-and-remaining-work/opt2-implement-structural-families" "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors" "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate" "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline"], "reader" ["reader/finite-remaining-work/contract-coverage-reconciliation" "reader/finite-remaining-work/decode-and-source-identity-closure" "reader/finite-remaining-work/lexical-products-and-origins-closure" "reader/finite-remaining-work/extension-policy-closure" "reader/finite-remaining-work/authentication-and-quota-removal-closure" "reader/finite-remaining-work/fresh-syntax-handoff" "reader/finite-remaining-work/component-release-evidence"], "expand" ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros" "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety" "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects" "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination" "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"], "legality" ["legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks" "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis" "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries" "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution" "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"], "runtime" ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection" "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup" "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries" "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution" "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"], "evolution" ["evolution/change-review" "evolution/experiment-lifecycle" "evolution/library-admission" "evolution/namespace-decision" "evolution/registry-yank" "evolution/rfc-review" "evolution/security-response" "evolution/security-review" "evolution/stabilization-decision" "evolution/target-support-admission"], "auth" ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection" "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime" "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks" "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity" "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"], "effects" ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects" "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects" "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering" "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation" "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"], "types" ["types/current-evidence-and-remaining-work/types1-solve-core-constraints" "types/current-evidence-and-remaining-work/types2-check-declared-abstractions" "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit" "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts" "types/current-evidence-and-remaining-work/types5-integrate-typed-core"], "mir" ["mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir" "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables" "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality" "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules" "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"], "stdlib" ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations" "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis" "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters" "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests" "stdlib/remaining-tasks-and-evidence/implement-query-and-transaction-adapters" "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters" "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters" "stdlib/remaining-tasks-and-evidence/implement-compiler-and-syntax-adapters" "stdlib/remaining-tasks-and-evidence/implement-cryptographic-adapters" "stdlib/remaining-tasks-and-evidence/implement-ui-and-event-adapters"], "cli" ["cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families" "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services" "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services" "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction" "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"], "emit" ["emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts" "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs" "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes" "emit/current-evidence-and-remaining-work/emit4-establish-conformance" "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers"], "build" ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution" "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects" "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation" "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records" "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"], "domains" ["math" "schema" "query" "workflow" "ai" "gpu" "ui" "automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual" "math/eml-normalization-and-search" "math/certified-implementation-synthesis" "math/interval-and-real-proof-production" "math/symbolic-rule-and-trace-production" "math/independent-proof-and-certificate-checking" "schema/compatibility-and-migration" "schema/checked-consumer-projection"], "syntax" ["syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax" "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations" "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts" "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify" "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"], "lower" ["lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs" "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout" "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers" "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins" "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"], "platform" ["hardware" "firmware" "kernel" "devices"], "core" ["core/current-evidence-and-remaining-work/core1-lower-core-forms" "core/current-evidence-and-remaining-work/core2-preserve-binding-structure" "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss" "core/current-evidence-and-remaining-work/core4-verify-and-serialize" "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"], "compiler-api" ["pipeline" "plugins" "pass-evidence" "development-boundaries" "domain-ir-boundaries"], "backends" ["backend-interface" "backend-c" "backend-llvm" "backend-wasm" "backend-jvm" "backend-js" "backend-mlir" "backend-gpu" "backend-hdl" "backend-workflow" "backend-ai" "backend-query" "backend-mobile" "backend-emission" "backend-conformance"]})
 
 (def routes
   [[[["mir" 1] ["lower" 1]] [["backends" "backend-wasm"] ["emit" 2]] [["backends" "backend-conformance"] ["emit" 4]] [["lower" 1] ["backends" "backend-interface"]] [["compiler-api" "pass-evidence"]] [["release" 5]]]
@@ -503,7 +129,7 @@
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
-(def mapping-review
+(def platform-source-review-predecessor
 {:status :pending-source-version-review,
  :input-fingerprint
  "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
@@ -637,6 +263,2290 @@
  :prior-current-main-qualification
  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
+(def mapping-review
+  (assoc platform-source-review-predecessor
+    :input-fingerprint "6ada4e0b1d13f60a0fd2a1854ee6fb7546371a578a7726fcfd4af990bd5df800"
+    :reviewed-criterion-source-composition
+    {:source-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c"
+     :predecessor-input-fingerprint "4bcec6acf693dac79dcf249bf759e2a3c5be9f96f5a0a08ec4ade3143bdd6de1"
+     :record "specs/requirement-reconciliation/reviewed-residual-composition.edn"
+     :current-witnesses "specs/requirement-reconciliation/current-criterion-bindings.edn"
+     :source-reviewed-and-rebound-criteria 200
+     :canonical-mapping-adoptions 200
+     :mapping-composition-receipt-sha256 "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"
+     :task-population-change 0
+     :status :accepted-finite-historical-mapping-composition}
+    :release-residual-current-composition
+    {:new-source-reviewed-and-rebound-criteria 16,
+ :canonical-mapping-adoptions 16,
+ :current-join-review-sha256
+ "1d9173a7670998d3ccb0a93cc586be94e3e74d7b2fd3086cbd3f67a687fdbd61",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-216.edn",
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+ :mapping-composition-receipt-sha256
+ "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb",
+ :previously-accepted-mappings-preserved 200,
+ :source-commit "d3d8f8356f6a5472c37ac66f87340b1dd93f630a",
+ :status :accepted-finite-historical-mapping-composition,
+ :task-population-change 0,
+ :record
+ "specs/requirement-reconciliation/release-residual-current-composition.edn",
+ :predecessor-input-fingerprint
+ "c6a6b6e57c6dc40d51e0531ff806ac49e1f9298ae860717dcdba52c1ee48a510",
+ :accepted-current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-275.edn"}
+    :math-performance-current-composition
+    {:new-source-reviewed-and-rebound-criteria 59,
+ :prior-pending-release-extension-bindings-preserved 16,
+ :canonical-mapping-adoptions 59,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+ :mapping-composition-receipt-sha256
+ "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb",
+ :previously-accepted-mappings-preserved 200,
+ :source-commit "6905570c41d81afb1d2917a479cf4d92b2304b30",
+ :status :accepted-finite-historical-mapping-composition,
+ :task-population-change 0,
+ :record
+ "specs/requirement-reconciliation/math-performance-current-composition.edn",
+ :source-review-sha256
+ ["47cd24337d8754e96b1fd4ae063f7cc39b8ef8a35b71a1e197824bd59453038f"
+  "8899df3ce7d88e04943a2541f3a0b8d0c1502506bccb9cf154adface760ade60"],
+ :predecessor-input-fingerprint
+ "4c5287ec8d411b0be79b76c8450cff06ae3fa93b6c5ef74d14b981fa322e7314"}
+    :domains70-current-composition
+    {:new-source-reviewed-and-rebound-criteria 70,
+ :canonical-mapping-adoptions 70,
+ :original-routing-positions :preserved,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
+ :mapping-composition-receipt-sha256
+ "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612",
+ :prior-pending-bindings-preserved 75,
+ :previously-accepted-mappings-preserved 200,
+ :source-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+ :status
+ :accepted-finite-historical-mapping-and-nine-open-task-composition,
+ :new-task-status :open,
+ :task-population-change 9,
+ :record
+ "specs/requirement-reconciliation/domains70-current-composition.edn",
+ :source-review-sha256
+ "78d7a2759be0ead125417d15aed3b8cad37e29ad918fae61166b3b9e38b9b437",
+ :predecessor-input-fingerprint
+ "014bb7e69aefa10c63d6a29869d842cf7d897574ac0707b92de9596d52f182c2"}
+    :accepted-historical-mapping-source-successor
+    {:reviewed-candidate "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+ :remaining-unadopted-dispatch-ids 0,
+ :accepted-manifest-sha256
+ "8cece6ea69d14fb857f0ac047e070bf0f1f6e4552886c44fe315220b59f649bd",
+ :whole-sh-source-version :pending,
+ :source-review-provenance
+ {:current-independent-receipt-sha256
+  "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6",
+  :current-review-scope :Build68-historical-only,
+  :direct-current-composition-source-check :independently-compared,
+  :prior-source-receipt-bytes :unavailable,
+  :prior-PASS-provenance :supported-reviewer-readback-only,
+  :qualification
+  "The prior receipt hash is supported by original reviewer readback, not locally rehashed receipt bytes. Current composition is independently checked here."},
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn",
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
+ :implementation-credit :none,
+ :accepted-delta 68,
+ :source-commit "712b7bef6d9e3a1c9aaadb1b222b4973e2b525b7",
+ :status :accepted-finite-historical-mapping-composition,
+ :predecessor
+ {:reviewed-candidate "c21258a8d3a4b98f97f11c1a5acb1d061b8ae548",
+  :remaining-unadopted-dispatch-ids 68,
+  :accepted-manifest-sha256
+  "d8afc85647114e63699db6a49fec6715dd503fa6959fdcb7d06e12e1d3177147",
+  :whole-sh-source-version :pending,
+  :current-witnesses
+  "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+  :accepted-manifest
+  "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+  :implementation-credit :none,
+  :accepted-delta 63,
+  :source-commit "66d6bfa395c64e3cf5ee28a71380d15328131433",
+  :status :accepted-finite-historical-mapping-composition,
+  :predecessor
+  {:reviewed-candidate "8b4543c35a1c267722428691ef7da62c5feb9d87",
+   :remaining-unadopted-dispatch-ids 131,
+   :thirteen-open-producer-tasks :already-in-declared171-census,
+   :whole-sh-source-version :pending,
+   :current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+   :independent-receipt-sha256
+   "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579",
+   :accepted-manifest
+   "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+   :implementation-credit :none,
+   :accepted-delta 85,
+   :source-commit "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
+   :status :accepted-finite-historical-mapping-composition,
+   :predecessor
+   {:current-retention-source
+    "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
+    :reviewed-candidate "64303ba2ccc254b6eb04c775c93c2f62c87ba1b8",
+    :remaining-unadopted-dispatch-ids 216,
+    :whole-sh-source-version :pending,
+    :current-witnesses
+    "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+    :independent-receipt-sha256
+    "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612",
+    :accepted-manifest
+    "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
+    :task-count-delta 9,
+    :implementation-credit :none,
+    :other-85-bindings-and-thirteen-open-tasks
+    :pending-independent-composition-and-task-scope-review,
+    :accepted-delta 70,
+    :source-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+    :status :accepted-finite-historical-mapping-composition,
+    :predecessor
+    {:current-retention-source
+     "19e1120301643581e6a8b55b933ec12643d0ba2f",
+     :reviewed-candidate "1f38064e22494ceee03f7fafc22fc93741110a9a",
+     :remaining-unadopted-dispatch-ids 286,
+     :whole-sh-source-version :pending,
+     :current-witnesses
+     "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
+     :independent-receipt-sha256
+     "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb",
+     :accepted-manifest
+     "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+     :task-count-delta 0,
+     :implementation-credit :none,
+     :accepted-delta 75,
+     :source-commit "6905570c41d81afb1d2917a479cf4d92b2304b30",
+     :status :accepted-finite-historical-mapping-composition,
+     :current-witnesses-sha256
+     "6abfff77840a7a12abdd3eb6b11096424871058fd67976cbfbb2d80bd3c9ceea",
+     :current-retention-witnesses
+     "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+     :accepted-mappings 275,
+     :other-70-bindings
+     :pending-independent-composition-and-task-scope-review},
+    :current-witnesses-sha256
+    "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
+    :current-retention-witnesses
+    "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+    :accepted-mappings 345},
+   :current-witnesses-sha256
+   "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
+   :accepted-mappings 430,
+   :task-count-delta-on-adoption 0},
+  :current-witnesses-sha256
+  "2361911fca48e9a083fa1f95b901c05c0c89b080c0a0f62968eb10279ed41195",
+  :independent-receipts
+  [{:cohort "governance12",
+    :independent-receipt-sha256
+    "c280c6bb5ec9a38b83e6800f4d158f9e1f284fda970a9f7be391c846b468f891"}
+   {:cohort "core31",
+    :independent-receipt-sha256
+    "4b01218ef47c2cc3665fef3167e0c602f2cbfbb752496716b3a6fb9d7dbf6e55"}
+   {:cohort "bootstrap12",
+    :independent-receipt-sha256
+    "994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e"}
+   {:cohort "accounting8",
+    :independent-receipt-sha256
+    "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
+  :accepted-mappings 493,
+  :current-applicability
+  {:path
+   "specs/requirement-reconciliation/historical63-current-applicability.edn",
+   :sha256
+   "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
+  :legacy-ACC-denominator :pending-final-scope-review,
+  :task-count-delta-on-adoption 0},
+ :current-witnesses-sha256
+ "b1afac0c2ff9cff17412f3472d52accad4abc0287766b69795075e5c22d67d39",
+ :independent-receipts
+ [{:cohort "build68",
+   :independent-receipt-sha256
+   "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
+ :accepted-mappings 561,
+ :current-applicability
+ {:path
+  "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
+  :sha256
+  "6e112737f53a045165b832cbe0b00720092282c5e6feed54ed54c61e84994e62"},
+ :legacy-ACC-denominator :pending-final-scope-review,
+ :task-count-delta-on-adoption 0}
+    :compiler-testing85-current-composition
+    {:new-source-reviewed-and-rebound-criteria 85,
+ :canonical-mapping-adoptions 85,
+ :original-routing-positions :preserved,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+ :mapping-composition-receipt-sha256
+ "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579",
+ :previously-accepted-mappings-preserved 345,
+ :source-commit "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
+ :status
+ :accepted-finite-historical-mapping-and-thirteen-open-task-composition,
+ :new-task-status :open,
+ :task-population-change 13,
+ :current-witnesses-sha256
+ "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
+ :record
+ "specs/requirement-reconciliation/compiler-testing85-current-composition.edn",
+ :source-review-sha256
+ "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec",
+ :predecessor-input-fingerprint
+ "11571ac96636b1c004f942bb042b2f2433cd6f9e95cc5b9b29f400b82b97b701"}
+    :governance-core43-current-composition
+    {:pre-adoption-state
+ {:prior-criterion-allocations-preserved 303,
+  :canonical-mapping-adoptions 0,
+  :decision-identities-and-states :all-833-open-preserved,
+  :extra-core-task 0,
+  :current-witnesses
+  "specs/requirement-reconciliation/current-criterion-bindings-473.edn",
+  :new-source-reviewed-criteria 43,
+  :implementation-credit :none,
+  :previously-accepted-mappings-preserved 430,
+  :source-commit "53ebb7f4f0bc712b253436b8f53182b07e3399df",
+  :status :pending-independent-actual-composition-review,
+  :record
+  "specs/requirement-reconciliation/governance-core43-current-composition.edn",
+  :shared-adoption-producer "evolution/change-review",
+  :new-open-tasks 10},
+ :prior-criterion-allocations-preserved 303,
+ :canonical-mapping-adoptions 43,
+ :decision-identities-and-states :all-833-open-preserved,
+ :extra-core-task 0,
+ :adoption-source-commit "66d6bfa395c64e3cf5ee28a71380d15328131433",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+ :new-source-reviewed-criteria 43,
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+ :later-predicates :pending-separate-review,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :source-commit "53ebb7f4f0bc712b253436b8f53182b07e3399df",
+ :status :accepted-finite-historical-source-criterion-joins,
+ :record
+ "specs/requirement-reconciliation/governance-core43-current-composition.edn",
+ :shared-adoption-producer "evolution/change-review",
+ :independent-receipts
+ [{:cohort "governance12",
+   :independent-receipt-sha256
+   "c280c6bb5ec9a38b83e6800f4d158f9e1f284fda970a9f7be391c846b468f891"}
+  {:cohort "core31",
+   :independent-receipt-sha256
+   "4b01218ef47c2cc3665fef3167e0c602f2cbfbb752496716b3a6fb9d7dbf6e55"}],
+ :new-open-tasks 10}
+    :bootstrap12-current-composition
+    {:pre-adoption-state
+ {:prior-criterion-allocations-preserved 303,
+  :canonical-mapping-adoptions 0,
+  :decision-identities-and-states :all-833-open-unchanged,
+  :current-witnesses
+  "specs/requirement-reconciliation/current-criterion-bindings-485.edn",
+  :new-source-reviewed-criteria 12,
+  :implementation-credit :none,
+  :previously-accepted-mappings-preserved 430,
+  :source-commit "8ab091e04b53beac6a4a59c82d116382a5ea9f30",
+  :status :pending-independent-actual-composition-review,
+  :record
+  "specs/requirement-reconciliation/bootstrap12-current-composition.edn",
+  :new-open-tasks 1},
+ :prior-criterion-allocations-preserved 303,
+ :canonical-mapping-adoptions 12,
+ :decision-identities-and-states :all-833-open-unchanged,
+ :adoption-source-commit "66d6bfa395c64e3cf5ee28a71380d15328131433",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+ :new-source-reviewed-criteria 12,
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+ :later-predicates :pending-separate-review,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :source-commit "8ab091e04b53beac6a4a59c82d116382a5ea9f30",
+ :status :accepted-finite-historical-source-criterion-joins,
+ :record
+ "specs/requirement-reconciliation/bootstrap12-current-composition.edn",
+ :independent-receipts
+ [{:cohort "bootstrap12",
+   :independent-receipt-sha256
+   "994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e"}],
+ :new-open-tasks 1}
+    :build68-current-composition
+    {:pre-adoption-state
+ {:prior-criterion-allocations-preserved 303,
+  :canonical-mapping-adoptions 0,
+  :decision-identities-and-states :all-833-open-unchanged,
+  :current-witnesses
+  "specs/requirement-reconciliation/current-criterion-bindings-553.edn",
+  :new-source-reviewed-criteria 68,
+  :implementation-credit :none,
+  :previously-accepted-mappings-preserved 430,
+  :source-commit "122c13e4591a1503e7f030e291b3cde673d36973",
+  :status :pending-independent-actual-composition-review,
+  :record
+  "specs/requirement-reconciliation/build68-current-composition.edn",
+  :new-open-tasks 0},
+ :prior-source-PASS-provenance
+ :supported-readback-with-unavailable-private-receipt,
+ :prior-criterion-allocations-preserved 303,
+ :canonical-mapping-adoptions 68,
+ :decision-identities-and-states :all-833-open-unchanged,
+ :adoption-source-commit "712b7bef6d9e3a1c9aaadb1b222b4973e2b525b7",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn",
+ :independent-receipt-sha256
+ "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6",
+ :new-source-reviewed-criteria 68,
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
+ :later-predicates :separate-review-scope,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :source-commit "122c13e4591a1503e7f030e291b3cde673d36973",
+ :status :accepted-finite-historical-source-criterion-joins,
+ :record
+ "specs/requirement-reconciliation/build68-current-composition.edn",
+ :new-open-tasks 0}
+    :accounting8-current-composition
+    {:legacy-task-source "specs/accounting-removal/tasks.md",
+ :pre-adoption-state
+ {:legacy-task-source "specs/accounting-removal/tasks.md",
+  :prior-criterion-allocations-preserved 303,
+  :canonical-mapping-adoptions 0,
+  :decision-identities-and-states :all-833-open-unchanged,
+  :current-witnesses
+  "specs/requirement-reconciliation/current-criterion-bindings-561.edn",
+  :new-source-reviewed-criteria 8,
+  :implementation-credit :none,
+  :previously-accepted-mappings-preserved 430,
+  :legacy-task-count 13,
+  :source-commit "7687c79684ade2ec13147a2c987967c5757703ae",
+  :legacy-counting-scope
+  :pending-final-explicit-scope-and-overlap-audit,
+  :status :pending-independent-actual-composition-review,
+  :record
+  "specs/requirement-reconciliation/accounting8-current-composition.edn",
+  :new-open-tasks 0,
+  :authority-correction-review-sha256
+  "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89"},
+ :prior-criterion-allocations-preserved 303,
+ :canonical-mapping-adoptions 8,
+ :decision-identities-and-states :all-833-open-unchanged,
+ :adoption-source-commit "66d6bfa395c64e3cf5ee28a71380d15328131433",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+ :new-source-reviewed-criteria 8,
+ :accepted-manifest
+ "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+ :later-predicates :pending-separate-review,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :legacy-task-count 13,
+ :source-commit "7687c79684ade2ec13147a2c987967c5757703ae",
+ :legacy-counting-scope
+ :pending-final-explicit-scope-and-overlap-audit,
+ :status :accepted-finite-historical-source-criterion-joins,
+ :record
+ "specs/requirement-reconciliation/accounting8-current-composition.edn",
+ :independent-receipts
+ [{:cohort "accounting8",
+   :independent-receipt-sha256
+   "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
+ :new-open-tasks 0,
+ :authority-correction-review-sha256
+ "0006908ce96012c0ef56063f737186e76dec70e5808231a0b0bb3ef752ccbb89"}
+    :compiler-testing34-current-composition
+    {:allocation-source-commit "e3f51140beb4665f1f612b1c195ac3967697eeff",
+ :canonical-mapping-adoptions 0,
+ :unresolved-source-metadata 3,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34.edn",
+ :remaining-allocation-work 496,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-compiler-testing34.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :source-commit "c2f6e48f49066e3edda0e0f194c925de01e2af22",
+ :prior-concrete-links-preserved 303,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/compiler-testing34-current-composition.edn",
+ :byte-verified-source-memberships 1070,
+ :new-concrete-links-pending-review 34,
+ :total-concrete-links 337}
+    :package7-current-composition
+    {:allocation-source-commit "1fe616719bc9f27236d44a2c003d1b3b19756247",
+ :new-aliases-or-retirements-applied false,
+ :canonical-mapping-adoptions 0,
+ :reused-field-clauses 4,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-package7.edn",
+ :remaining-allocation-work 489,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-package7.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 41,
+ :source-commit "dc983dcd35ef1bfde47dd14c27a03e7aad601c04",
+ :prior-concrete-links-preserved 337,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/package7-current-composition.edn",
+ :new-concrete-links-pending-review 7,
+ :new-task-fields 1,
+ :total-concrete-links 344}
+    :schema25-current-composition
+    {:allocation-source-commit "1ce47440d9c8bf1f2a1b684bb8a10def96fd7946",
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-schema25.edn",
+ :remaining-allocation-work 464,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-schema25.edn",
+ :task-count-delta 0,
+ :new-criterion-groups 9,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 66,
+ :source-commit "0569306b52fe0972540c76e21d7707e1ee6eb55e",
+ :prior-concrete-links-preserved 344,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/schema25-current-composition.edn",
+ :byte-verified-source-memberships 463,
+ :new-concrete-links-pending-review 25,
+ :new-task-fields 3,
+ :total-concrete-links 369}
+    :tooling65-current-composition
+    {:allocation-source-commit "f1b78d6d368ea6b636e131d258ec342decc88fba",
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-tooling65.edn",
+ :remaining-allocation-work 399,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-tooling65.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 131,
+ :source-commit "9d07f448301bd9453c795d2af7031c8873820a00",
+ :prior-concrete-links-preserved 369,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/tooling65-current-composition.edn",
+ :byte-verified-source-memberships 990,
+ :new-concrete-links-pending-review 65,
+ :new-task-fields 15,
+ :total-concrete-links 434}
+    :domains30-current-composition
+    {:allocation-source-commit "6bb2e263f167ec3d7748f3de13c68284367ad283",
+ :canonical-mapping-adoptions 0,
+ :unresolved-gpu-metadata-ids 2,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-domains30.edn",
+ :remaining-allocation-work 369,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-domains30.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 161,
+ :source-commit "a91ba41db8921492dde452b7c3cf0854afb1ecd2",
+ :prior-concrete-links-preserved 434,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/domains30-current-composition.edn",
+ :byte-verified-source-memberships 878,
+ :new-concrete-links-pending-review 30,
+ :distinct-available-source-facets 435,
+ :new-task-fields 10,
+ :total-concrete-links 464}
+    :runtime20-current-composition
+    {:allocation-source-commit "714c9e057bb89e9af0fc87e921da6106e5fd1f29",
+ :canonical-mapping-adoptions 0,
+ :recovered-source-metadata-ids 10,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-runtime20.edn",
+ :remaining-allocation-work 349,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-runtime20.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 181,
+ :source-commit "21b7070328589f5d8ecc7fd732e470f3e7257135",
+ :prior-concrete-links-preserved 464,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/runtime20-current-composition.edn",
+ :byte-verified-source-memberships 2131,
+ :new-concrete-links-pending-review 20,
+ :source-recovery-review :pending-independent-review,
+ :new-task-fields 4,
+ :total-concrete-links 484}
+    :profile74-current-composition
+    {:allocation-source-commit "7063afd8bfdf2d77d95e1b9f591f9d523f4b5393",
+ :record-guards-exact 43,
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-profile74.edn",
+ :remaining-allocation-work 275,
+ :proposed-recovered-source-metadata-ids 17,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-profile74.edn",
+ :task-count-delta 0,
+ :record-guards-exact-field-lineage 31,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 255,
+ :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+ :prior-concrete-links-preserved 484,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :source-recovery-incidences 22,
+ :record
+ "specs/requirement-reconciliation/profile74-current-composition.edn",
+ :byte-verified-source-memberships 2816,
+ :new-concrete-links-pending-review 74,
+ :source-recovery-review :pending-independent-review,
+ :new-task-fields 21,
+ :total-concrete-links 558}
+    :safety107-current-composition
+    {:allocation-source-commit "e8b30404da883433274acf7eabb90e9077f56e8e",
+ :record-guards-exact 107,
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-safety107.edn",
+ :remaining-allocation-work 168,
+ :proposed-recovered-source-metadata-ids 2,
+ :preserved-decision-context-citations 2,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-safety107.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 362,
+ :source-commit "bc485c7e4b0197873f6a3104021764711215b3b1",
+ :prior-concrete-links-preserved 558,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/safety107-current-composition.edn",
+ :byte-verified-source-memberships 1927,
+ :new-concrete-links-pending-review 107,
+ :source-recovery-review :pending-independent-review,
+ :new-task-fields 16,
+ :total-concrete-links 665}
+    :package7-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/package7-qualified-review-adoption.edn",
+ :remaining-allocation-work 168,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 355,
+ :source-commit "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 10,
+ :reviewed-predicates 7,
+ :total-concrete-links 665,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/package7-current-applicability.edn"}
+    :stdlib83-current-composition
+    {:allocation-source-commit "848cb140b132109a692ed7e1781f77a589a8c62b",
+ :record-guards-exact 83,
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-stdlib83.edn",
+ :remaining-allocation-work 85,
+ :proposed-recovered-source-metadata-ids 3,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-stdlib83.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 438,
+ :source-commit "dc20fc5db3c8db3d5d947de56cd4e0d0c8938903",
+ :prior-concrete-links-preserved 665,
+ :qualified-package-source-review-adoptions-preserved 7,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :record
+ "specs/requirement-reconciliation/stdlib83-current-composition.edn",
+ :byte-verified-source-memberships 426,
+ :new-concrete-links-pending-review 83,
+ :source-recovery-review :pending-independent-review,
+ :new-task-fields 4,
+ :total-concrete-links 748,
+ :distinct-verified-source-facets 354}
+    :tooling-runtime-domains-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/tooling-runtime-domains-qualified-review-adoption.edn",
+ :remaining-allocation-work 85,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 323,
+ :source-commit "4ee78ca564d73063dbba833793555fb6d68f5e82",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 130,
+ :reviewed-predicates 115,
+ :total-concrete-links 748,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/tooling-runtime-domains-current-applicability.edn"}
+    :profile74-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/profile74-qualified-review-adoption.edn",
+ :remaining-allocation-work 85,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 430,
+ :total-allocation-review-pending 249,
+ :source-commit "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 74,
+ :reviewed-predicates 74,
+ :total-concrete-links 748,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/profile74-current-applicability.edn"}
+    :math20-current-composition
+    {:allocation-source-commit "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33",
+ :private-source-review-scope :frozen-private-proposal-only,
+ :record-guards-exact 20,
+ :canonical-mapping-adoptions 0,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-math20.edn",
+ :remaining-allocation-work 65,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-math20.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 493,
+ :total-allocation-review-pending 269,
+ :source-commit "f291697806406c289d243724a96a0338f4713ff0",
+ :qualified-current-source-review-adoptions-preserved 196,
+ :prior-concrete-links-preserved 748,
+ :status
+ :pending-independent-actual-source-and-allocation-composition-review,
+ :unresolved-source-memberships 13,
+ :record
+ "specs/requirement-reconciliation/math20-current-composition.edn",
+ :byte-verified-source-memberships 1768,
+ :unresolved-source-metadata-ids 9,
+ :new-concrete-links-pending-review 20,
+ :private-proposal-source-review-sha256
+ "fda61bac80c48d88c938976826d4edca250db9c1c59502330efd01b3fb46d768",
+ :formatting-only-adjustments 1,
+ :affected-current-formatting-review :pending,
+ :new-task-fields 6,
+ :total-concrete-links 768,
+ :distinct-verified-source-facets 1413}
+    :safety-stdlib-qualified-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/safety-stdlib-qualified-review-adoption.edn",
+ :remaining-allocation-work 65,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :previously-accepted-mappings-preserved 493,
+ :total-allocation-review-pending 79,
+ :source-commit "5331194fcf47baf9419566e839b11607e45470a3",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :new-historical-mapping-adoptions 0,
+ :criterion-witnesses 194,
+ :reviewed-predicates 190,
+ :total-concrete-links 768,
+ :later-added-predicates :pending-separate-review,
+ :applicability
+ "specs/requirement-reconciliation/safety-stdlib-current-applicability.edn"}
+    :gpu2-source-metadata-admission
+    {:metadata-records 2,
+ :admission
+ {:path
+  "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
+  :sha256
+  "1b4e9d6e9e317fb2f12eb300172ce466d7192dfdad56a65b3600ccb44a36474d",
+  :source-commit "87692395c05938ebb02e48cbbc56756d5842f93e",
+  :scope :exact-two-supporting-source-contexts},
+ :full-facet-entailment :not-conferred,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn",
+ :remaining-allocation-work 65,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :concrete-links 768,
+ :qualified-source-review-adoptions 386,
+ :new-requirements 0,
+ :source-commit "2c16e1dbe634189e203356e00e5a2007a5cf8e44",
+ :historical-adoptions 493,
+ :status
+ :accepted-exact-two-supporting-source-context-metadata-records,
+ :pending-current-allocation-reviews 79,
+ :allocation-overlay
+ {:path
+  "specs/requirement-reconciliation/gpu2-source-metadata-allocation-overlay.edn",
+  :sha256
+  "060dc7f6789a45907513e5503aaa3f059a0819d15eb25f4cf410b9d57c086cdc"}}
+    :accounting-policy1-current-allocation
+    {:current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
+ :remaining-allocation-work 64,
+ :task-count-delta 0,
+ :new-task-criteria 0,
+ :implementation-credit :none,
+ :source-spans 15,
+ :pending-allocation-review 80,
+ :source-commit "71b7adb71e229358f2fcf32136f42732be9dbc4e",
+ :new-concrete-links 1,
+ :status :pending-independent-current-composition-review,
+ :qualified-source-reviews-preserved 386,
+ :source-contexts 15,
+ :historical-adoptions-preserved 493,
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-accounting-policy1.edn",
+  :sha256
+  "48a7180a033f83670c46d8f71a8f5c7936636c9d1d6a76dc1bca691a23def743"},
+ :total-concrete-links 769}
+    :product1-current-allocation
+    {:current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn",
+ :architecture-decision-producers 4,
+ :remaining-allocation-work 63,
+ :task-count-delta 0,
+ :new-task-criteria 0,
+ :implementation-credit :none,
+ :pending-allocation-review 81,
+ :source-commit "7543e6ec966d96678843a176d8d30820ee4c07a8",
+ :conditional-consumers 7,
+ :new-concrete-links 1,
+ :status :pending-independent-current-composition-review,
+ :qualified-source-reviews-preserved 386,
+ :historical-adoptions-preserved 493,
+ :allocation
+ {:path
+  "specs/requirement-reconciliation/current-decision-allocation-product1.edn",
+  :sha256
+  "7f306ae45e364a849d5cd861b028d7d0dabdad11d671660a8d7dac838d48720d"},
+ :total-concrete-links 770}
+    :math20-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/math20-qualified-review-adoption.edn",
+ :unresolved-incidences 13,
+ :remaining-allocation-work 63,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :unresolved-metadata-ids 9,
+ :qualified-source-review-adoptions 406,
+ :pending-allocation-review 61,
+ :source-commit "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :formatting-adjustments-reviewed 1,
+ :reviewed-predicates 20,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 770,
+ :applicability
+ "specs/requirement-reconciliation/math20-qualified-current-applicability.edn"}
+    :foundation7-current-composition
+    {:allocation-source-commit "8677d9e3daa440b9f1f7af3d62cee67ef595a2e4",
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7.edn",
+ :distinct-source-facets 219,
+ :remaining-allocation-work 56,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-foundation7.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-memberships 360,
+ :total-allocation-review-pending 68,
+ :source-commit "df11890b21f71d3f246cc47e9f63d866239a0d68",
+ :prior-concrete-links-preserved 770,
+ :status :pending-independent-current-composition-review,
+ :record
+ "specs/requirement-reconciliation/foundation7-current-composition.edn",
+ :qualified-source-reviews-preserved 406,
+ :new-concrete-links-pending-review 7,
+ :new-task-fields 3,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777}
+    :compiler-testing34-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/compiler-testing34-qualified-review-adoption.edn",
+ :remaining-allocation-work 56,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 440,
+ :pending-allocation-review 34,
+ :source-commit "79876421a2576008e005b6cbcc31b5570db8ad6f",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :unresolved-source-metadata-gaps 3,
+ :reviewed-predicates 34,
+ :later-fields-reconstructed 30,
+ :current-criteria 37,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777,
+ :applicability
+ "specs/requirement-reconciliation/compiler-testing34-qualified-current-applicability.edn"}
+    :schema25-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/schema25-qualified-review-adoption.edn",
+ :remaining-allocation-work 56,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 465,
+ :pending-allocation-review 9,
+ :source-commit "65e0704bc180521c3393725b39c284995657a065",
+ :source-facets 463,
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :reviewed-predicates 25,
+ :later-fields-reconstructed 72,
+ :current-criteria 27,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777,
+ :applicability
+ "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"}
+    :foundation7-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/foundation7-qualified-review-adoption.edn",
+ :refined-fields 3,
+ :remaining-allocation-work 56,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 472,
+ :pending-allocation-review 2,
+ :declared-dependency-contexts 15,
+ :source-commit "bac911632784079dbbeb93e244a3489c4208d234",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :reviewed-predicates 7,
+ :current-criteria 13,
+ :historical-adoptions-preserved 493,
+ :total-concrete-links 777,
+ :applicability
+ "specs/requirement-reconciliation/foundation7-qualified-current-applicability.edn"}
+    :governance-ai31-current-composition
+    {:allocation-source-commit "370a7b5d26814243b1a8fecbfd2ebf0b904db489",
+ :performance-ai-memberships 468,
+ :context-refinement-proof
+ "specs/requirement-reconciliation/governance-ai31-context-refinement.edn",
+ :new-criterion-families 5,
+ :expanded-historical-context-references 10,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn",
+ :remaining-allocation-work 25,
+ :allocation-receipt
+ "specs/requirement-reconciliation/current-decision-allocation-governance-ai31.edn",
+ :task-count-delta 0,
+ :new-predicate-review :not-inherited,
+ :implementation-credit :none,
+ :source-memberships 937,
+ :total-allocation-review-pending 33,
+ :governance-memberships 469,
+ :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+ :prior-concrete-links-preserved 777,
+ :status :pending-independent-current-composition-review,
+ :record
+ "specs/requirement-reconciliation/governance-ai31-current-composition.edn",
+ :qualified-source-reviews-preserved 472,
+ :new-concrete-links-pending-review 31,
+ :new-task-fields 10,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 808}
+    :policy-product2-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/policy-product2-qualified-review-adoption.edn",
+ :remaining-allocation-work 25,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 474,
+ :pending-allocation-review 31,
+ :source-commit "eac630f380023ab9d91eb548594f21d566b7a39c",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 808,
+ :applicability
+ "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+ :reviewed-records 2}
+    :bootstrap25-current-source-composition
+    {:allocation-source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+ :context-refinement-proof
+ "specs/requirement-reconciliation/bootstrap25-context-refinement.edn",
+ :new-criterion-families 8,
+ :expanded-historical-context-references 21,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 474,
+ :pending-allocation-review 56,
+ :source-memberships 973,
+ :source-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+ :status :pending-independent-current-composition-review,
+ :record
+ "specs/requirement-reconciliation/bootstrap25-current-composition.edn",
+ :new-concrete-links-pending-review 25,
+ :new-field-appends 8,
+ :reused-criterion-families 17,
+ :distinct-refined-fields 6,
+ :historical-adoptions-preserved 561,
+ :allocation
+ "specs/requirement-reconciliation/current-decision-allocation-bootstrap25.edn",
+ :total-concrete-links 833}
+    :performance-ai17-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/performance-ai17-qualified-review-adoption.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 491,
+ :pending-allocation-review 39,
+ :source-memberships 468,
+ :source-commit "c55255b582504bf44f4dbe661b3674daeb785963",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :current-criteria 22,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :applicability
+ "specs/requirement-reconciliation/performance-ai17-qualified-current-applicability.edn",
+ :reviewed-records 17}
+    :bootstrap25-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/bootstrap25-qualified-review-adoption.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 516,
+ :pending-allocation-review 14,
+ :source-memberships 973,
+ :source-commit "4686e37b28181c5c712573cafc651d74ef40166a",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :current-criteria 25,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :applicability
+ "specs/requirement-reconciliation/bootstrap25-qualified-current-applicability.edn",
+ :reviewed-records 25}
+    :governance14-qualified-current-review-adoption
+    {:receipt
+ "specs/requirement-reconciliation/governance14-qualified-review-adoption.edn",
+ :remaining-allocation-work 0,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :qualified-source-review-adoptions 530,
+ :pending-allocation-review 0,
+ :source-memberships 469,
+ :source-commit "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+ :status
+ :independent-finite-source-review-accepted-current-join-verified,
+ :current-criteria 50,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :applicability
+ "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+ :reviewed-records 14}
+    :granularity13-current-task-composition
+    {:allocation-source-commit "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
+ :current-historical-spans 4819,
+ :current-criterion-conservation
+ "specs/requirement-reconciliation/all833-granularity13-current-criterion-conservation.edn",
+ :full-facet-entailment :pending,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+ :remaining 192,
+ :remaining-allocation-work 0,
+ :task-count-delta 13,
+ :changed-decision-records 321,
+ :accepted 3,
+ :implementation-credit :none,
+ :historical-refinement
+ "specs/requirement-reconciliation/granularity13-historical-witness-refinement.edn",
+ :qualified-source-review-adoptions 530,
+ :pending-allocation-review 0,
+ :source-commit "90392ba9eb4b43443941065593950af0188d9354",
+ :provisional-total 195,
+ :legacy-ACC-scope :pending-current-adjudication,
+ :status :pending-independent-current-granularity-review,
+ :record
+ "specs/requirement-reconciliation/granularity13-current-task-composition.edn",
+ :prior-source-predicate-review-scopes :preserved-only,
+ :historical-adoptions-preserved 561,
+ :total-concrete-links 833,
+ :routing
+ "specs/requirement-reconciliation/granularity13-current-decision-routing.edn"}
+    :existing-c5-current-source-refinement
+    {:current-historical-spans 4819,
+ :all833-decision-records :unchanged,
+ :prior-review-scope :not-extended-to-new-C-clauses,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn",
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+ :status :pending-independent-current-source-refinement-review,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-existing-c5-current-criterion-conservation.edn",
+ :existing-original-obligation-ids
+ ["backend/c/source-emission"
+  "backend/c/abi-layout"
+  "backend/c/memory-lowering"
+  "backend/c/numeric-lowering"
+  "backend/c/helper-selection"],
+ :composition
+ "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
+ :historical-adoptions-preserved 561,
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/existing-c5-current-witness-applicability.edn",
+ :qualified-predicate-reviews 530}
+    :granularity13-qualified-source-review-adoption
+    {:reviewed-source "145442c5434cad807870505fb75d523a0ef22998",
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+ :predicate-reviews-unchanged 530,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
+ :new-C-source-review :pending,
+ :new-open-leaves 13,
+ :final-count-acceptance :not-conferred,
+ :source-commit "611fc634c62910ca040ae47c66e62674c6678a6a",
+ :historical-bindings 561,
+ :status
+ :independent-finite-source-repartition-review-accepted-current-join-verified,
+ :decision-records-unchanged 833,
+ :applicability
+ "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn"}
+    :legacy-acc13-qualified-source-review-adoption
+    {:reviewed-source "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+ :ACC-criteria 13,
+ :policy-criteria 8,
+ :component-interfaces 66,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/legacy-acc13-qualified-source-review-adoption.edn",
+ :final-denominator :not-accepted,
+ :source-commit "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :status
+ :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
+ :new-completion-credit 0,
+ :overlap-relations 7,
+ :scope-artifact
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+  :sha256
+  "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
+ :applicability
+ "specs/requirement-reconciliation/legacy-acc13-qualified-current-applicability.edn"}
+    :existing-c5-qualified-source-review-adoption
+    {:reviewed-source "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+ :source-commit "0395302fb87b108eb5a0cf8a20f3aaaef56da713",
+ :historical-bindings 561,
+ :full-B2-facet-entailment :not-conferred,
+ :status
+ :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+ :existing-original-C-obligations 5,
+ :applicability
+ "specs/requirement-reconciliation/existing-c5-qualified-current-applicability.edn",
+ :current-owning-witnesses 5}
+    :B2-fixed-width-and-current-facet-trace
+    {:five-C-criteria-raw-bodies :exactly-preserved,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+ :manual-predicate-cases 32,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :full-B2-owner-trace
+ "specs/requirement-reconciliation/b2-complete-current-facet-trace.edn",
+ :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+ :source-facets 271,
+ :historical-bindings 561,
+ :status :pending-independent-complete-B2-facet-review,
+ :source-occurrences 47,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-b2-fixed-width-current-criterion-conservation.edn",
+ :prior-qualified-source-adoptions :scope-conserved-not-extended,
+ :composition
+ "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+ :applicability
+ "specs/requirement-reconciliation/b2-fixed-width-current-witness-applicability.edn"}
+    :bootstrap-diagnostic-current-source
+    {:all833-decision-records :unchanged,
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+  :sha256
+  "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12"},
+ :original-source-facets 15,
+ :implementation-credit :none,
+ :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+ :historical-bindings 561,
+ :current-criterion-roles 8,
+ :status :pending-independent-source-facet-review,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-bootstrap-diagnostic-current-criterion-conservation.edn",
+ :qualification
+ "An exact original-owner criterion conjunction addresses the initial inventory's missing same-ID resolution. It does not add a stable decision ID or confer independent source/implementation acceptance.",
+ :original-owner "bootstrap/compiler-diagnostic-compatibility",
+ :composition
+ "specs/requirement-reconciliation/bootstrap-diagnostic-source-refinement.edn",
+ :applicability
+ "specs/requirement-reconciliation/bootstrap-diagnostic-current-witness-applicability.edn"}
+    :d2-triage-current-source
+    {:all833-decision-records :unchanged,
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn",
+  :sha256
+  "8c875e5cc3c04d2690f2b23d166a6ae1bda410773028970d8b01aaf6279194f1"},
+ :original-source-facets 6,
+ :implementation-credit :none,
+ :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+ :historical-bindings 561,
+ :current-criterion-roles 4,
+ :status :pending-independent-source-facet-review,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-d2-triage-current-criterion-conservation.edn",
+ :qualification
+ "The exact D2 positive support-triage fixture and five negative conditions refine the existing AI criterion. This addresses the retired-owner proposal's explicit current fixture gap without changing retirement history, other attached-context residuals, independent review, implementation acceptance or task/decision populations.",
+ :original-owner "gravity/workflow-ai-vertical-slice",
+ :composition
+ "specs/requirement-reconciliation/d2-triage-source-refinement.edn",
+ :applicability
+ "specs/requirement-reconciliation/d2-triage-current-witness-applicability.edn"}
+    :c15-owner-current-source
+    {:all833-decision-records :unchanged,
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+ :foundation-context-residuals 20,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
+  :sha256
+  "4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034"},
+ :original-source-facets 146,
+ :implementation-credit :none,
+ :C15-occurrences 54,
+ :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+ :historical-bindings 561,
+ :current-criterion-roles 7,
+ :status :pending-independent-source-facet-review,
+ :C15-source-facets 133,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+ :qualification
+ "Complete C15 and thirteen actual foundation diagnostic predicates have manual current criterion conjunctions. Five original diagnostic owners gain exact source criterion candidates; twenty unrelated attached foundation predicates remain residuals. Earlier qualified reviews and bootstrap/Reader results do not accept these additions, full implementation or final counting.",
+ :composition
+ "specs/requirement-reconciliation/c15-owner-source-refinement.edn",
+ :C15-semantic-cases 38,
+ :original-owner-joins
+ ["compiler/c15/diagnostic-identity-order"
+  "compiler/c15/diagnostic-redaction"
+  "compiler/c15/diagnostic-views"
+  "compiler/c15/generated-diagnostic-origins"
+  "gravity/foundation-diagnostic-context"],
+ :applicability
+ "specs/requirement-reconciliation/c15-owner-current-witness-applicability.edn"}
+    :c11-owner-current-source
+    {:new-MIR-criterion-witnesses
+ {:construction
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 879,
+   :end-byte 2853,
+   :raw-sha256
+   "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+  :facts
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 3174,
+   :end-byte 4585,
+   :raw-sha256
+   "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+  :ordering
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 4586,
+   :end-byte 5319,
+   :raw-sha256
+   "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+  :verifier
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 5693,
+   :end-byte 6801,
+   :raw-sha256
+   "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+  :serialization
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 7121,
+   :end-byte 8121,
+   :raw-sha256
+   "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+  :consumption
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 8526,
+   :end-byte 9964,
+   :raw-sha256
+   "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+ :foundation-MIR-facets 14,
+ :C11-occurrences 53,
+ :existing-decision-criteria
+ {:path
+  "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+  :sha256
+  "588f40a4c58a0fd0a9876d63f7e603f317eeab7ac2244600e803230c13afae16",
+  :ids 833,
+  :spans 931,
+  :file-and-raw-bytes :unchanged},
+ :foundation-context-residuals 70,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+  :sha256
+  "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"},
+ :implementation-credit :none,
+ :C11-semantic-cases 36,
+ :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+ :existing-historical-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+  :sha256
+  "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+  :ids 561,
+  :spans 4819,
+  :file-and-raw-bytes :unchanged},
+ :status :pending-independent-source-facet-review,
+ :qualification
+ "Six original MIR owners have exact current task-criterion candidates. All older current witnesses remain byte-identical; the changed MIR paths were absent from those span sets. Existing source reviews, source/data applicability and these proposals confer no compiler/verifier/domain/runtime execution, implementation, final-count or unrelated ordering acceptance.",
+ :composition
+ "specs/requirement-reconciliation/c11-owner-source-refinement.edn",
+ :C11-source-facets 134,
+ :original-owner-joins
+ ["compiler/c11/mir-effect-order"
+  "compiler/c11/mir-fact-binding"
+  "compiler/c11/mir-verifier-gate"
+  "compiler/c11/semantic-mir-construction"
+  "gravity/mir-verification-after-transform"
+  "gravity/semantic-facts-before-mir"],
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/c11-owner-current-witness-applicability.edn"}
+    :c14-owner-current-source
+    {:earlier-current-applicability
+ {:C11-MIR-criterion-bodies :unchanged-current-checked,
+  :C11-whole-span-result :retained-at-its-bcb98c1c-subject-not-renewed,
+  :active-current-basis :C14-refreshed-historical-and-decision-spans},
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn",
+  :sha256
+  "1f01e802c48d8b477b35cf8c962360eca8d11174120f0e085c2cea25db91e678"},
+ :C14-semantic-cases 33,
+ :implementation-credit :none,
+ :C14-source-facets 122,
+ :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+  :sha256
+  "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7"},
+ :status :pending-independent-source-facet-review,
+ :new-Lower-criterion-witnesses
+ {:input
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 4680,
+   :end-byte 6096,
+   :raw-sha256
+   "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+  :layout
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 6459,
+   :end-byte 8289,
+   :raw-sha256
+   "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+  :providers
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 8641,
+   :end-byte 9654,
+   :raw-sha256
+   "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+  :proof
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 11525,
+   :end-byte 12643,
+   :raw-sha256
+   "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+  :emission
+  {:path "specs/lower-workflow/tasks.md",
+   :marker "lower-implementation-tasks",
+   :task-id
+   "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :file-sha256
+   "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+   :start-byte 14428,
+   :end-byte 15781,
+   :raw-sha256
+   "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"}},
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-c14-owner-current-criterion-conservation.edn",
+ :PERF4-boundary-facets 23,
+ :qualification
+ "Four original lowering/layout owners have exact current criterion candidates. Four historical Lower-file pins refresh without changing raw predicates; all other current criteria, including the six MIR bodies, remain current. Earlier source reviews and applicability verdicts retain their actual subject/scope; these additions do not implement backends/providers/proof checkers, choose a target or confer independent acceptance or final counting.",
+ :C14-occurrences 49,
+ :composition
+ "specs/requirement-reconciliation/c14-owner-source-refinement.edn",
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c14/authority-preserving-providers"
+  "compiler/c14/proof-target-metadata"
+  "compiler/c14/unsupported-target"
+  "performance/layout-boundary"],
+ :new-decision-ids 0,
+ :historical-Lower-file-pin-refreshes 4,
+ :applicability
+ "specs/requirement-reconciliation/c14-owner-current-witness-applicability.edn"}
+    :c8-owner-current-source
+    {:earlier-current-applicability
+ {:C11-MIR-and-C14-Lower-criterion-bodies :unchanged-current-checked,
+  :earlier-whole-span-results :retain-original-subjects-not-renewed,
+  :active-current-basis :C8-refreshed-historical-and-decision-spans},
+ :C8-source-facets 103,
+ :new-Effects-criterion-witnesses
+ {:computation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 1395,
+   :end-byte 2864,
+   :raw-sha256
+   "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+  :propagation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 3226,
+   :end-byte 4445,
+   :raw-sha256
+   "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+  :legality
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 4827,
+   :end-byte 6319,
+   :raw-sha256
+   "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+  :replay
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 7368,
+   :end-byte 8501,
+   :raw-sha256
+   "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+  :handoff
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 9543,
+   :end-byte 10929,
+   :raw-sha256
+   "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}},
+ :C8-semantic-cases 34,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+  :sha256
+  "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199"},
+ :implementation-credit :none,
+ :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+ :historical-Effects-file-pin-refreshes 2,
+ :C8-occurrences 50,
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+  :sha256
+  "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"},
+ :status :pending-independent-source-facet-review,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-c8-owner-current-criterion-conservation.edn",
+ :qualification
+ "Five original C8 owners gain exact current criterion candidates. Two historical Effects-file span maps refresh without changing raw predicates. Earlier reviews retain their subjects and exclusions. This does not establish full L6/foundation attached-predicate coverage, actual effect computation/checking, replay/runtime/provider/probe execution, independent acceptance or final counting.",
+ :composition
+ "specs/requirement-reconciliation/c8-owner-source-refinement.edn",
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c8/capability-proof"
+  "compiler/c8/effect-computation"
+  "compiler/c8/effect-domains"
+  "compiler/c8/effect-order"
+  "compiler/c8/replay-audit"],
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/c8-owner-current-witness-applicability.edn"}
+    :c13-owner-current-source
+    {:historical-Opt-file-pin-refreshes 21,
+ :C13-occurrences 47,
+ :C13-source-facets 120,
+ :earlier-current-applicability
+ {:C11-MIR-C14-Lower-C8-Effects-criterion-bodies
+  :unchanged-current-checked,
+  :earlier-whole-span-results :retain-original-subjects-not-renewed,
+  :active-current-basis :C13-refreshed-historical-and-decision-spans},
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/c13-complete-current-facet-trace.edn",
+  :sha256
+  "84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99"},
+ :implementation-credit :none,
+ :new-Opt-criterion-witnesses
+ {:contracts
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 2681,
+   :end-byte 3812,
+   :raw-sha256
+   "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"},
+  :families
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 5959,
+   :end-byte 7367,
+   :raw-sha256
+   "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"},
+  :checks
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 7748,
+   :end-byte 8836,
+   :raw-sha256
+   "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"},
+  :verification
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 9183,
+   :end-byte 10482,
+   :raw-sha256
+   "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"},
+  :pipeline
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 13467,
+   :end-byte 15155,
+   :raw-sha256
+   "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"}},
+ :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+  :sha256
+  "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+ :status :pending-independent-source-facet-review,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-c13-owner-current-criterion-conservation.edn",
+ :qualification
+ "Four original C13 owners gain exact current criterion candidates. Twenty-one Opt-file span maps refresh without changing raw predicates. Earlier performance and other reviews retain their subjects/exclusions. Complete PERF/math/foundation attached-predicate coverage, actual optimization/verification/proof/domain/runtime/benchmark/probe execution, independent acceptance and final counting remain unestablished.",
+ :composition
+ "specs/requirement-reconciliation/c13-owner-source-refinement.edn",
+ :C13-semantic-cases 32,
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c13/legal-variant-selection"
+  "compiler/c13/optimization-decision"
+  "compiler/c13/post-pass-verification"
+  "compiler/c13/reproducible-pass-order"],
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/c13-owner-current-witness-applicability.edn"}
+    :bootstrap-diagnostic15-qualified-source-review-adoption
+    {:receipt
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-independent-source-review.edn",
+  :sha256
+  "4bbc549276ab31e9e47e668f76dfb83c7bbfeb99c83a214e9080b5ab47d7d30e",
+  :reviewed-source "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+  :reviewed-tree "f17aaa36cdef24b581d224f1d3b755cacd420a4c",
+  :checks 37869,
+  :refusal-controls 142,
+  :scope :fifteen-source-criterion-conjunctions-eight-roles-only},
+ :criterion-roles 8,
+ :predicate-review-adoptions-530 :unchanged,
+ :facet-ids
+ ["facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+  "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"
+  "facet/bootstrap-governance/4514878458baabba4c930293"
+  "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+  "facet/bootstrap-governance/505da451b5f3bb264884df1c"
+  "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+  "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"
+  "facet/bootstrap-governance/6dd8f73469e22b8835f02853"
+  "facet/bootstrap-governance/71337a13a101b5814adb0daa"
+  "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"
+  "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"
+  "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+  "facet/bootstrap-governance/d63a3272d89be72bdb912798"
+  "facet/bootstrap-governance/da002dafeceba6c139475076"
+  "facet/bootstrap-governance/f6dab719b49d575e4206c260"],
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-trace
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+  :sha256
+  "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+  :bytes :unchanged},
+ :scope :fifteen-source-criterion-conjunctions-eight-roles-only,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-qualified-source-review-adoption.edn",
+  :sha256
+  "eb076f3ba8e213a369021b76cad82c00bf91eada8e013bc2ea131611da866a7e"},
+ :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+ :source-facets 15,
+ :status :qualified-independent-source-criterion-conjunction-accepted,
+ :source-occurrences 14,
+ :qualification
+ "Independent sealed review of fifteen BOOT2/3/4 diagnostic source conjunctions is adopted after exact current byte/owner conservation. Two Diagnostics-file pins refresh unchanged predicates after C15 additions. No whole BOOT document, enclosing unselected conjunction, later C15/C11/C14/C8/C13 addition, implementation, migration or final denominator is accepted; full-owner entailment remains separately pending.",
+ :limits
+ [:fifteen-facets-only
+  :eight-exact-criterion-roles
+  :no-whole-BOOT-document-entailment
+  :no-runtime-or-implementation-acceptance
+  :no-authoritative-migration-or-release
+  :no-prior833-review-inheritance-of-new-append
+  :no-later9d151739-acceptance-inheritance
+  :current-applicability-and-adoption-separate
+  :no-project-denominator-or-completion-count],
+ :new-decision-ids 0,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-qualified-current-applicability.edn",
+  :sha256
+  "26603737c7d5e2161f39cc0c3513836a781553d68471a734b4a87239fc31221c"}}
+    :completed-source-reviews-qualified-adoption
+    {:C8-full-L6 :not-accepted,
+ :whole-owner-entailment :not-conferred,
+ :counts
+ {:new-reviewed-facets 409,
+  :all-reviewed-facets 424,
+  :semantic-conjunction-facets 376,
+  :retained-context-facets 48,
+  :finite-proposal-ids 1331,
+  :pending-finite-proposal-ids 916,
+  :reviewed-outside-finite-proposals 9},
+ :retired-scope
+ {:primary-lineages-only 9,
+  :frozen-residual-facets 62,
+  :frozen-D2-fixture-gap :retained-history,
+  :later-D2-six :separate-review-no-backdating,
+  :retirements :unchanged},
+ :decision-source-review-adoptions-530 :unchanged,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :C14-complete-PERF4 :not-accepted,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/completed-source-reviews-qualified-adoption.edn",
+  :sha256
+  "06d53307ea9464591b30ec8777890c1b8c5f11e32b5040397f44d7a025b74bd5"},
+ :final-denominator :not-accepted,
+ :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+ :status
+ :qualified-independent-source-conjunctions-and-contexts-adopted,
+ :receipts
+ {:C14-PERF4
+  {:path
+   "specs/requirement-reconciliation/c14-perf4-independent-source-review.edn",
+   :sha256
+   "509eb7cb7c0fbc3689ab3e56d9e2f4e6826b38dceed41f4d98730070281498f6",
+   :reviewed-source "9d1517399654bd115543d23b4f1d65af6d30f222"},
+  :C15
+  {:path
+   "specs/requirement-reconciliation/c15-independent-source-review.edn",
+   :sha256
+   "95e6cd809685131b6ffbea52b0c79e63c7779689cc38d4d4de3de760f812334e",
+   :reviewed-source "3f14a02ea78990b9e7090474d63cd1b87a250bf9"},
+  :C8
+  {:path
+   "specs/requirement-reconciliation/c8-independent-source-review.edn",
+   :sha256
+   "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb",
+   :reviewed-source "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a"},
+  :D2-triage6
+  {:path
+   "specs/requirement-reconciliation/d2-triage6-independent-source-review.edn",
+   :sha256
+   "7e99e184f23396724d5afd428e945fc42553d018868669bc0d19e19d2c5d8483",
+   :reviewed-source "ab9782c592b262aba422f29261e35fd361b52454"},
+  :retired-primary9
+  {:path
+   "specs/requirement-reconciliation/retired-primary9-independent-source-review.edn",
+   :sha256
+   "fee63f55fb5dfe16fa27ae71da799589db0459708bc30169047944fd5e0bb247",
+   :reviewed-source "44a15681612db144fe2b7b38a3f285b1ca6d76ba"}},
+ :qualification
+ "Five independent frozen reviews are adopted only for unchanged source predicates, owning criterion bodies and declared roles. Across this batch and BOOT15,376 semantic facets and48 context facets have qualified source dispositions;916 finite proposal facets remain pending. Retired62 residuals and its frozen D2 fixture gap stay history; later D2six is separately reviewed. No whole-owner, unselected enclosing predicate, later addition, runtime, migration, release or final-count acceptance follows.",
+ :C13 :not-accepted,
+ :C15-foundation-residuals 20,
+ :new-decision-ids 0,
+ :held-actions :no-clearance-or-retry,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/completed-source-reviews-current-applicability.edn",
+  :sha256
+  "1bb0a9f27ec37b95499ca75ed816c0ff49fab65b4d85129a01aadf4b490e134a"}}
+    :c11-extension-qualified-review-adoption
+    {:extension-receipt
+ {:path
+  "specs/requirement-reconciliation/extension392-independent-byte-review.edn",
+  :sha256
+  "cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98",
+  :reviewed-source "4486ad9e3eda0ec648696edc407a8b57f5c864d1",
+  :scope :historical-extension-byte-provenance-only},
+ :extension-operation-authority :not-conferred,
+ :whole-owner-entailment :not-conferred,
+ :counts
+ {:reviewed-original-source-facets 572,
+  :semantic-conjunction-facets 507,
+  :retained-context-facets 65,
+  :pending-finite-proposal-facets 768},
+ :extension-occurrences 151,
+ :C11-semantic-facets 131,
+ :extension-full-entailment :not-accepted,
+ :decision-source-review-adoptions-530 :unchanged,
+ :extension-current-additions :not-accepted,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :C11-context-facets 17,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/c11-extension-qualified-review-adoption.edn",
+  :sha256
+  "7eb13914d8e6176de07a07b854a0a968fb8083065f8644dd48f66046d58d9393"},
+ :final-denominator :not-accepted,
+ :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+ :status :qualified-C11-source-and-extension-byte-review-adopted,
+ :C11-receipt
+ {:path
+  "specs/requirement-reconciliation/c11-independent-source-review.edn",
+  :sha256
+  "622d42263745b4dac6545ca26eb50f11e711da5d0af53d0cf468305cd8087d5a",
+  :reviewed-source "de0c5c94392b398c6e8ff128b0010d454dd739e2",
+  :scope :C11-enumerated-conjunctions-and-contexts-only},
+ :extension-byte-facets 392,
+ :qualification
+ "C11 accepts only its enumerated131 semantic facets and17 conservation contexts through six unchanged current criterion roles;70 foundation residuals and D1/C1/C6 ordering remain. Extension review accepts the historical392 byte bindings only, preserving added/untraced ranges and legacy check subjects. Neither grants whole-head, operational, implementation, migration, release or counting authority, or clearance of held scopes.",
+ :extension-descriptors 5,
+ :C11-source-facets 148,
+ :C13 :not-accepted,
+ :C11-foundation-residuals 70,
+ :new-decision-ids 0,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/c11-extension-qualified-current-applicability.edn",
+  :sha256
+  "38dbf78d2e2430c9915e00975d5eda8ff27be5318a62eeb8ead2757fd84406c8"}}
+    :resolve-owner-current-source
+    {:reviewed-original-source-facets 572,
+ :qualified-source-dispositions :unchanged,
+ :frozen-Resolve-verification-package :unchanged-finite-scope-only,
+ :C5-source-facets 112,
+ :task-count-delta 0,
+ :L3-source-facets 83,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
+  :sha256
+  "b4e2491c179e0dd79c3118ee714b4bf36178026f72301843e5b4f6fb84861665"},
+ :implementation-credit :none,
+ :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn",
+  :sha256
+  "872e73b9d8a4bb00216f4992fd1bb000e6eb0672357f67204c5bd5bec94f70f4"},
+ :status :pending-independent-source-facet-review,
+ :earlier-qualified-source-reviews
+ :retain-captured-subjects-scopes-and-exclusions,
+ :source-occurrences 107,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-resolve-owner-current-criterion-conservation.edn",
+ :historical-Resolve-file-pin-refreshes 2,
+ :qualification
+ "Six original Resolve/module owners gain exact current criterion candidates. Two historical Resolve-file span maps refresh unchanged predicates; all833 current owning spans and earlier supplemental bodies authenticate. Earlier qualified reviews retain their subjects and confer no acceptance on these new C5/L3 clauses. The frozen source-to-Core package remains finite history; no compiler/module/package/profile/runtime/probe, component, release or final-count credit follows.",
+ :composition
+ "specs/requirement-reconciliation/resolve-owner-source-refinement.edn",
+ :active-current-basis
+ :Resolve-refreshed-historical-and-decision-spans,
+ :semantic-conjunction-cases 76,
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c5/explicit-imports"
+  "language/module/check-initialization-graph"
+  "language/module/emit-reproducible-interface"
+  "language/module/enforce-export-visibility"
+  "language/module/publish-definition-entries"
+  "language/module/resolve-binding"],
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/resolve-owner-current-witness-applicability.edn",
+ :new-Resolve-criterion-witnesses
+ {:binding
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 1660,
+   :end-byte 3094,
+   :raw-sha256
+   "f6ef53176e81c4ea0b6f2a8a8181bdaabbe9285a1e4ace9cd58cc51393158edb"},
+  :imports
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 3974,
+   :end-byte 5263,
+   :raw-sha256
+   "b98438a4d97dfdd9f7e72559c2f8eb5423bbff002bf8cc1c96f43ed9ea01b170"},
+  :graph
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 6197,
+   :end-byte 8040,
+   :raw-sha256
+   "9540d80e61e99839d90a6a054ea9326597faef3a66cbbde68f967858a85704e4"},
+  :interface
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 8385,
+   :end-byte 10166,
+   :raw-sha256
+   "06a659768d2ad38c16741410a4957e9c31d9aa65f709d8b4a5269b372e81780c"},
+  :consumers
+  {:path "specs/resolve-workflow/tasks.md",
+   :marker "resolve-implementation-tasks",
+   :task-id
+   "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+   :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+   :file-sha256
+   "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+   :start-byte 10553,
+   :end-byte 12167,
+   :raw-sha256
+   "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"}}}
+    :types-owner-current-source
+    {:reviewed-original-source-facets 572,
+ :new-Types-criterion-witnesses
+ {:constraints
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 1949,
+   :end-byte 8134,
+   :raw-sha256
+   "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+  :abstractions
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 10811,
+   :end-byte 12861,
+   :raw-sha256
+   "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+  :boundaries
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 13863,
+   :end-byte 16132,
+   :raw-sha256
+   "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+  :artifacts
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 16508,
+   :end-byte 18455,
+   :raw-sha256
+   "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+  :verification
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 18821,
+   :end-byte 21061,
+   :raw-sha256
+   "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}},
+ :C7-source-facets 121,
+ :L5-source-facets 137,
+ :qualified-source-dispositions :unchanged,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/types-complete-current-facet-trace.edn",
+  :sha256
+  "43248784058a7268d785dba722aad172675b96fe96c55cf7355cf88fb96264e8"},
+ :implementation-credit :none,
+ :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
+  :sha256
+  "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945"},
+ :status :pending-independent-source-facet-review,
+ :historical-Types-file-pin-refreshes 0,
+ :earlier-qualified-source-reviews
+ :retain-captured-subjects-scopes-and-exclusions,
+ :source-occurrences 150,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-types-owner-current-criterion-conservation.edn",
+ :context-occurrences 42,
+ :qualification
+ "Twenty original Types owners have current conjunction candidates: eighteen former task-reference-only joins and two existing candidates extended without changing old scopes. All833 and all561 current bytes authenticate, as do earlier supplemental criteria. Two accounting fragments remain superseded history; no quota is restored. Earlier qualified reviews accept no new C7/L5 clause. No type helper/compiler/runtime/probe, implementation, release or final-count credit follows.",
+ :composition
+ "specs/requirement-reconciliation/types-owner-source-refinement.edn",
+ :active-current-basis :Types-refreshed-historical-and-decision-spans,
+ :semantic-conjunction-cases 108,
+ :superseded-accounting-fragments 2,
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["language/types/check-dynamic-boundary"
+  "language/types/version-type-form"
+  "language/types/infer-list-projection-type"
+  "language/types/join-independent-nil-branches"
+  "language/types/derive-schema-type"
+  "language/types/check-core-typing"
+  "compiler/c7/function-types"
+  "language/types/check-memory-sensitive-type-use"
+  "compiler/c7/typed-core-gate"
+  "language/types/emit-typed-core-interface"
+  "compiler/c7/generic-dispatch"
+  "language/types/derive-private-map-member"
+  "language/types/join-independent-list-branches"
+  "language/types/derive-private-keyword-map-domain"
+  "language/types/derive-grounded-symbol-set-loop"
+  "language/types/check-bare-list-parameter"
+  "compiler/c7/casts-boundaries"
+  "language/types/check-explicit-conversion"
+  "language/types/check-homogeneous-list-boundary"
+  "language/types/check-bare-map-parameter"],
+ :new-decision-ids 0,
+ :applicability
+ "specs/requirement-reconciliation/types-owner-current-witness-applicability.edn"}
+    :core-owner-current-source
+    {:reviewed-original-source-facets 572,
+ :qualified-source-dispositions :unchanged,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
+  :sha256
+  "b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58"},
+ :implementation-credit :none,
+ :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+  :sha256
+  "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16"},
+ :status :pending-independent-source-facet-review,
+ :earlier-qualified-source-reviews
+ :retain-captured-subjects-scopes-and-exclusions,
+ :source-occurrences 46,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-core-owner-current-criterion-conservation.edn",
+ :context-occurrences 15,
+ :historical-Core-file-pin-refreshes 0,
+ :qualification
+ "Five original owners gain exact current Core conjunction candidates: three C6 and two L2 operations. All833/all561 and earlier supplemental bodies authenticate. C6 source is complete as proposed candidates; full L2/C1/domain predicates and earlier finite evidence are not extended. Earlier qualified reviews accept no new C6 clause. No compiler/domain checker/runtime/probe, implementation, release or final-count credit follows.",
+ :composition
+ "specs/requirement-reconciliation/core-owner-source-refinement.edn",
+ :active-current-basis :Core-refreshed-historical-and-decision-spans,
+ :semantic-conjunction-cases 31,
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c6/core-verification"
+  "compiler/c6/desugaring-origins"
+  "compiler/c6/domain-boundary"
+  "language/core/normalize-to-declared-core"
+  "language/core/preserve-observable-evaluation-order"],
+ :new-decision-ids 0,
+ :new-Core-criterion-witnesses
+ {:forms
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 1341,
+   :end-byte 2856,
+   :raw-sha256
+   "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+  :bindings
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 3222,
+   :end-byte 4507,
+   :raw-sha256
+   "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+  :desugaring
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 4856,
+   :end-byte 6296,
+   :raw-sha256
+   "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+  :verification
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 6631,
+   :end-byte 7995,
+   :raw-sha256
+   "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+  :domains
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 8910,
+   :end-byte 10523,
+   :raw-sha256
+   "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}},
+ :C6-source-facets 103,
+ :applicability
+ "specs/requirement-reconciliation/core-owner-current-witness-applicability.edn"}
+    :incremental-owner-current-source
+    {:reviewed-original-source-facets 572,
+ :qualified-source-dispositions :unchanged,
+ :new-Incremental-criterion-witnesses
+ {:existing
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 22471,
+   :end-byte 27237,
+   :raw-sha256
+   "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"},
+  :records
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 27238,
+   :end-byte 30497,
+   :raw-sha256
+   "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}},
+ :historical-Incremental-file-pin-refreshes 169,
+ :task-count-delta 0,
+ :source-facet-trace
+ {:path
+  "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+  :sha256
+  "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1"},
+ :implementation-credit :none,
+ :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+  :sha256
+  "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21"},
+ :status :pending-independent-source-facet-review,
+ :earlier-qualified-source-reviews
+ :retain-captured-subjects-scopes-and-exclusions,
+ :source-occurrences 44,
+ :criterion-conservation
+ "specs/requirement-reconciliation/all833-incremental-owner-current-criterion-conservation.edn",
+ :context-occurrences 15,
+ :qualification
+ "Six original C16 owners were already candidates. Current existing cache predicates and explicit graph/record/diagnostic detail conjoin with the authentic unchanged Build rebuild producer. All833/all561 and prior supplemental bodies authenticate; 169 historical Build-file span maps refresh unchanged predicates. Earlier reviews retain captured subjects and accept no new C16 clause. No compiler/cache-build/proof checker/runtime/probe, implementation, release or final-count credit follows.",
+ :composition
+ "specs/requirement-reconciliation/incremental-owner-source-refinement.edn",
+ :active-current-basis
+ :Incremental-refreshed-historical-and-decision-spans,
+ :semantic-conjunction-cases 29,
+ :historical-predicate-raw-bodies :unchanged,
+ :original-owner-joins
+ ["compiler/c16/cache-revalidation"
+  "compiler/c16/dependency-invalidation"
+  "compiler/c16/proof-reuse"
+  "compiler/c16/recorded-rebuild"
+  "compiler/c16/semantic-cache-key"
+  "compiler/c16/speculation-publication-gate"],
+ :new-decision-ids 0,
+ :C16-source-facets 114,
+ :applicability
+ "specs/requirement-reconciliation/incremental-owner-current-witness-applicability.edn",
+ :rebuild-dependency-witness
+ {:path "specs/build-workflow/tasks.md",
+  :marker "build-implementation-tasks",
+  :task-id
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+  :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+  :file-sha256
+  "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+  :start-byte 52302,
+  :end-byte 60337,
+  :raw-sha256
+  "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}}
+    :historical-criterion-source-composition
+    {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
+     :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
+     :foundation-record "specs/requirement-reconciliation/foundation-residual-composition.edn"
+     :runtime-record "specs/requirement-reconciliation/runtime-residual-composition.edn"
+     :prepared-historical-criteria 60
+     :task-population-change 0
+     :status :pending-independent-composed-review}
+    :stdlib-interface-source-composition
+    {:source-commit "625a74467e33ed9f203673dd8edd0b48e530e575"
+     :predecessor-input-fingerprint "679c84dc9a76594755ae87139a4e1baeb1f040e08c51985968bbf56988623e6a"
+     :record "specs/requirement-reconciliation/stdlib-interface-composition.edn"
+     :adjudication-sha256 "2c1fa6b6ac8f508485a410c90f197017ee7eaaa88b41110402fe83c4e43f94bc"
+     :scope :five-distinct-stdlib-obligations-and-qualified-dependencies
+     :task-population-change 0
+     :status :pending-independent-composed-review}
+    :family-task-source-composition
+    {:source-commit "5405d8bf9ac08c7e2486a34def974d9d57d76e36"
+     :main-composition "60f59d225b03338eb30cdc22850838ecebd07303"
+     :predecessor-input-fingerprint "7d9e373daaaa4110dbde94757c141e002678d11988f14f157c401d67a312d45a"
+     :source-dispositions "specs/requirement-reconciliation/source-dispositions.edn"
+     :task-criteria-composition "specs/requirement-reconciliation/task-criteria-composition.edn"
+     :overlap-decisions "specs/requirement-reconciliation/overlap-decisions.edn"
+     :scope :reviewed-task-criteria-and-source-locators-only
+     :status :pending-independent-composed-review}
+    :platform-task-source-composition
+    {:source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"
+     :predecessor-review platform-source-review-predecessor
+     :scope :platform-product-task-interfaces-only
+     :qualification "Four target task records and all SH predicates retain their scope. Eleven existing product outputs gain separate Open interfaces. Source-version and product-task acceptance remain pending; prior Reader/Build reviews stay historical."}
+    :qualification "Family task criteria and current-main Reader source histories composed. Changed task/evidence source mapping awaits independent composed review. All 180 whole-criterion implementation assessments remain unassessed."))
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))
@@ -668,6 +2578,7 @@
                                     "docs/self-hosting-slice-backlog.md" "docs/self-hosting-current-migration-cohort.md"
                                     "docs/self-hosting-slice-ownership.edn" "docs/document-inventory.json"
                                     "docs/acceptance-dependencies.md" "docs/component-roadmaps/README.md"
+                                    "specs/accounting-removal/tasks.md"
                                     "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"

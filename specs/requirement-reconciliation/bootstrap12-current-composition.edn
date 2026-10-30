@@ -1,0 +1,672 @@
+{:canonical-mapping-adoptions 0,
+ :decision-identities-and-states :all-833-open-unchanged,
+ :independent-actual-composition-review :pending,
+ :bindings
+ [{:id "bootstrap/compiler-lineage-query",
+   :criterion-text
+   "Bootstrap criterion bootstrap/compiler-lineage-query: Execute the auditor query on a bootstrap compiler provenance graph and return which compiler built every queried stage/compiler artifact, recursively reaching its seed inputs. Record the queried artifact identities, traversed edges, compiler/source/lock/build/environment/evidence links and declared stage-cycle annotations; a provenance file alone is not a successful query. Reject missing compiler nodes/edges, broken release-to-seed traversal, undeclared cycles and an auditor query that cannot reconstruct a compiler's builder. Preserve explicitly declared stage cycles; do not reject them as undeclared cycles. Keep BOOT6002 and BOOT8002/BOOT8003/BOOT8007 with the offending artifact and edge. Required outputs: compiler lineage graph; auditor query index and successful traversal result; broken-edge/undeclared-cycle/query-failure fixtures and diagnostics.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/eb8871a48006ea70a0a1d0ca"
+    "facet/bootstrap-governance/2a4097a7a384bb63dc2b98c6"
+    "facet/bootstrap-governance/58bd31c2e9b0fb794bddb8b4"
+    "facet/bootstrap-governance/772cf6104cc450e9252beb2d"
+    "facet/bootstrap-governance/cb1586ce86e810c3369f872f"
+    "facet/bootstrap-governance/eaaa115702e838495fddbe0b"
+    "facet/bootstrap-governance/98ee8f31ce4d6ec6e27283d0"
+    "facet/bootstrap-governance/c4af0e330735acb86e75ea4b"
+    "facet/bootstrap-governance/7f738a41d40eae9a3c0d97dd"
+    "facet/bootstrap-governance/4ca5622a843a752d1d232577"
+    "facet/bootstrap-governance/207cb99e78ea0abe2a430d62"
+    "facet/bootstrap-governance/f3f6330994902f897184cf0b"
+    "facet/bootstrap-governance/0d37a6a4a065640ac8b78c39"
+    "facet/bootstrap-governance/039a82fbe46dc3d23f939c16"
+    "facet/bootstrap-governance/3d2b08bb4ffe783b4beeb48d"
+    "facet/bootstrap-governance/02ddeddbb54fd52c484b1eb2"
+    "facet/bootstrap-governance/0f872991f8d3825b2f264624"],
+   :source-occurrence-ids
+   ["BOOT6/source/4ee169f46e0ce94b40de45a45f309099f94b254ac1aa20bcb426f478c4039ad0"
+    "BOOT6/source/247bd1766be46f27d1ba2427950b5d9ad6389a6e5a1ec1c3c058ca4298cb9fc9"
+    "BOOT6/source/abff070a2c4033b2e274cee94b7eb3e01312c705222c8dcfb55a05b95c6d3bff"
+    "BOOT6/source/a399534b52e402e742bb51109bed18cbad9b7a8cf9343acffcc240249f6ffacd"
+    "BOOT6/source/54d88024254bc25728c65fe277369d931daa418a154ee6837700117d8754afca"
+    "BOOT8/source/d04bb9283faa8f1585dd03eda419d90924f783f5330cb5b3e5cc801d44637ccb"
+    "BOOT8/source/e8a7cd300192ee42a33dfb5fa77afa85f0bdc31296c7752337d4095d0dbadb58"
+    "BOOT8/source/a7abdebee090dada5ba74386d29efd03769184c5f21c159b859062505c211995"
+    "BOOT8/source/9ec0801489a316edc472770fb46312a3b4a0a8d61f4f77bdfed49ef86e03e33d"
+    "BOOT8/source/a9e01246368f8dfb775133332123004e129519abccd8520454085a4ea3aa8573"
+    "BOOT8/source/dbdb1b91576ba2015d291e25cc5926cd8a09bbaae6fbd41116fea7521f68475e"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["producer of stage/source/compiler provenance"
+     "release reproducibility and equivalence reports"],
+    :reviewed-owner-role "bootstrap provenance maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/compiler-meta-authority",
+   :criterion-text
+   "Bootstrap criterion bootstrap/compiler-meta-authority: Compile and invoke each declared migrated compiler module under meta or an explicitly narrower bootstrap profile. Check its declared effects and capabilities separately against scoped grants and declared compiler inputs; pure analysis remains pure unless declared compiler artifact IO is required. Record the admitted module/profile/input/grant/effect identities and actual allowed result. Before an effect occurs, reject undeclared compiler effects and ambient environment/time/random/network/filesystem/shell/registry access outside declared inputs. Exercise a valid narrow compiler-artifact operation and forbidden host access with BOOT3002/BOOT4001/BOOT4004. A trusted implementation label does not grant ambient authority; explicit audited implementation-provider exceptions retain their governing profile and unsafe boundary. Required outputs: module profile/effect/capability manifest; allowed invocation and denied-effect fixtures; source-bound authority diagnostics.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/ccdc803aaa9322ec078977ce"
+    "facet/bootstrap-governance/5476f7f790a549ba553bef56"
+    "facet/bootstrap-governance/682aac77890c6cb63db16859"
+    "facet/bootstrap-governance/be58c0117eba672809c72bdd"
+    "facet/bootstrap-governance/5a98f8e8b4a0345b7d8c5061"
+    "facet/bootstrap-governance/77e1f20f4d19ae2bc476d2b6"
+    "facet/bootstrap-governance/11937303862a72443c4583e3"
+    "facet/bootstrap-governance/546e9aac99242f81a95ca64c"
+    "facet/bootstrap-governance/d38a4a53b7a1289b0e611625"
+    "facet/bootstrap-governance/8050c51083b2cbff2d7d79e7"
+    "facet/bootstrap-governance/4a7c8d099a55983197912185"
+    "facet/bootstrap-governance/8343e026171a8cf57ddbf9f4"],
+   :source-occurrence-ids
+   ["BOOT3/source/98ebb84a25021b3f290043723eb82248c597d0bb7fb20affa077542cb2de8720"
+    "BOOT3/source/d9a2befdb2ccf229823c711ced410ea62121a6818846d5bbaf99a6bb40613011"
+    "BOOT3/source/109bdda236f54387d7332fa7a9d13616be247ad09253bee927dcf6bd190bacdd"
+    "BOOT3/source/f4b0bbe1e4aa13f3dd170d8efa29a1e5b4bdb9be489dc08086139281a5a60ef7"
+    "BOOT4/source/e85ed82d0754bd46d54a07de9939d61386afdad4f73a25704f3d87800b28562b"
+    "BOOT4/source/3e377c5f9375ba8f8afc0ba46433ec058f2b8dbacdccd70e277836f724e054b3"
+    "BOOT4/source/c203991f28ebfd2756427b80e524a72b7cb47c44f8fdef2ce1be182dd9313a28"
+    "BOOT4/source/23f021996a87151c0d00406dfcea65f62de76a48ac68c12831d9f6f98b88b307"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/compiler-api-workflow/plan.md",
+    :file-sha256
+    "dc4d01604003e9ac528bf762e3312fd978fd131ed7bdfb2ab5fb789232ce23ef",
+    :reviewed-dependencies
+    ["Auth scoped-grant enforcement"
+     "Legality meta-profile admission"
+     "module-interface manifest"],
+    :reviewed-owner-role "compiler module and profile maintainer"},
+   :task-source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :id "pipeline",
+    :marker "compiler-api-implementation-tasks",
+    :file-sha256
+    "a0c9a18a6dddd5e82a5e0bcfa3228c5e79c39bad03321d10611d67867e2d350d",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/generated-compiler-checking",
+   :criterion-text
+   "Bootstrap criterion bootstrap/generated-compiler-checking: Feed generated compiler code back through the normal reader/resolution/type/effect/profile/capability/ownership/safety pipeline before it becomes usable. Emit source and generated-origin links binding generator, module/pass/compiler, inputs and produced artifacts; preserve the ordinary code/span diagnostic contract. Reject missing generated-source provenance or skipped ordinary checks, including a generated illegal effect/profile/type program. A generator success flag or artifact link cannot bypass the checkers. Retain BOOT3004 and demonstrate both accepted generated compiler source and rejected generated source with traceable origins. Required outputs: checked generated compiler artifact; generated-origin provenance chain; positive and negative re-entry fixtures and BOOT3004 diagnostic.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/ba87fb77891af7a9c1dd2103"
+    "facet/bootstrap-governance/8de00201471534244c1b65df"
+    "facet/bootstrap-governance/99e5873ee73e130a77c89f56"
+    "facet/bootstrap-governance/1beb23407d0bb66e64b31823"],
+   :source-occurrence-ids
+   ["BOOT3/source/98ebb84a25021b3f290043723eb82248c597d0bb7fb20affa077542cb2de8720"
+    "BOOT3/source/d9a2befdb2ccf229823c711ced410ea62121a6818846d5bbaf99a6bb40613011"
+    "BOOT3/source/109bdda236f54387d7332fa7a9d13616be247ad09253bee927dcf6bd190bacdd"
+    "BOOT3/source/f4b0bbe1e4aa13f3dd170d8efa29a1e5b4bdb9be489dc08086139281a5a60ef7"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/compiler-api-workflow/plan.md",
+    :file-sha256
+    "dc4d01604003e9ac528bf762e3312fd978fd131ed7bdfb2ab5fb789232ce23ef",
+    :reviewed-dependencies
+    ["Expand generated-program integration"
+     "normal compiler checkers"
+     "source/generated-origin diagnostic producer"],
+    :reviewed-owner-role "compiler pipeline maintainer"},
+   :task-source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :id "pipeline",
+    :marker "compiler-api-implementation-tasks",
+    :file-sha256
+    "a0c9a18a6dddd5e82a5e0bcfa3228c5e79c39bad03321d10611d67867e2d350d",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/locked-rebuild",
+   :criterion-text
+   "Bootstrap criterion bootstrap/locked-rebuild: Actually rebuild the declared bootstrap artifact from locked dependencies and its recorded recipe and environment, controlling time, locale, filesystem order, toolchain and network inputs. Run the applicable seed-built/self-built/clean-environment/diverse strategies, explicitly declaring unsupported strategies; a diverse report names the independent toolchain. Compare canonical manifests and relevant content hashes, retain compiler lineage, actual outputs and residual trusted components, and record policy-reviewed accepted deltas or a documented release reproducibility exception. Reject unlocked bootstrap dependencies, absent environment/lineage records, uncontrolled or unrecorded network input, unexplained hash drift and a diverse rebuild without independent toolchain identity. Revoked builders/dependencies/signatures block release. Exercise repeatable rebuild and each failure with BOOT1005/BOOT2005/BOOT6001-BOOT6006; the seed's declared host dependencies and runtime assumptions remain explicit. Required outputs: reproducible bootstrap recipe and controlled environment; real rebuild manifests/content comparisons and diverse-or-unsupported strategy report; accepted-delta/exception and residual-trust records; revocation and negative-fixture reports.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/57658927a0f7ae5a61e9f1db"
+    "facet/bootstrap-governance/cc496ba02aa9a9b3b431afd3"
+    "facet/bootstrap-governance/94bd117104b6b395876336c5"
+    "facet/bootstrap-governance/7d3c000274cd548a771a6228"
+    "facet/bootstrap-governance/93cd8292e36948eb544a309d"
+    "facet/bootstrap-governance/a91139ef4856642137426f0b"
+    "facet/bootstrap-governance/1e4fcd05d0bbf8a3853ebef9"
+    "facet/bootstrap-governance/300fd744a3470bd60c5e2c7b"
+    "facet/bootstrap-governance/f1778b97996e32860a50f05a"
+    "facet/bootstrap-governance/679db926496e7055ff9b9208"
+    "facet/bootstrap-governance/277ce764ba135d836f45a192"
+    "facet/bootstrap-governance/3088b012a704514c064b9116"
+    "facet/bootstrap-governance/58537f1399728e13366576b5"
+    "facet/bootstrap-governance/b7435c9e0dd8a5e4d9e6b53f"
+    "facet/bootstrap-governance/526a8a21f62890cc1bce2f8e"
+    "facet/bootstrap-governance/d130251264f960c4a4076387"
+    "facet/bootstrap-governance/9977443de3ceb38e168fdd34"
+    "facet/bootstrap-governance/299c2620aae89e77dbdcf26c"
+    "facet/bootstrap-governance/dbdda6531a92d10e8003b771"
+    "facet/bootstrap-governance/249a7ba5c2cafe027d21755b"
+    "facet/bootstrap-governance/8f5fa01ba51038d7376c4ae3"
+    "facet/bootstrap-governance/dee9b5c6c96911631622d672"
+    "facet/bootstrap-governance/49161ccbe7a9497f19e9a0b6"
+    "facet/bootstrap-governance/d85c4cd3dec4573fb1506d55"
+    "facet/bootstrap-governance/083a51f3ea5eeb86a2253300"
+    "facet/bootstrap-governance/41437d73114dc9c161b15e7c"
+    "facet/bootstrap-governance/066bb72eddee116d4da0892b"
+    "facet/bootstrap-governance/71bc8934dfcaa69fdad54ddc"
+    "facet/bootstrap-governance/3d0f9c7efec0d70073eb1d7f"
+    "facet/bootstrap-governance/4ffb133df5f535737867438e"],
+   :source-occurrence-ids
+   ["BOOT1/source/3434ea24ed2f164ab57901dabc4a8b71c71a543845a94f64951627501b80bdbe"
+    "BOOT1/source/06dbee9ae177b0bdd7af5198a548db2a4e48f7dba4c59d6f7420bbf5c93619b2"
+    "BOOT1/source/2ab90e50ca19a3838b2a30102487a2713faa95544aa3ca6fd1b012be3f4e6a1a"
+    "BOOT1/source/8f88276e436069e56d815cc37e8aef041ee8be5ddef56a47238ca0aa996451dc"
+    "BOOT1/source/6ce67610bf9876abe88003bbb2695dc4f64cd4965daeb55714a998225fff8d27"
+    "BOOT2/source/ad35a949fa119b99f232a5fd46c8d724289053df32887194caa6fa229a38265e"
+    "BOOT6/source/68b3204ffd1fdfb2ad034a032493210da4eb681aaf6e673fb5bede787392d617"
+    "BOOT6/source/8a7c03e9133c5295bad33c7904acd886f719b60c072d3189b85af90c6d78e590"
+    "BOOT6/source/5b0ec18a36810f1ea711e5060fd1e76d95d612063f5e4c9e5d43e0f75be8bda6"
+    "BOOT6/source/247bd1766be46f27d1ba2427950b5d9ad6389a6e5a1ec1c3c058ca4298cb9fc9"
+    "BOOT6/source/97d319244559b726a295a248b43690cbf09c6af89226ba18b1f226645c23483b"
+    "BOOT6/source/890f4fe3a87c974d4b4056ed766961c3a9d1a85fa162113a5eb119b9d5d0372a"
+    "BOOT6/source/abff070a2c4033b2e274cee94b7eb3e01312c705222c8dcfb55a05b95c6d3bff"
+    "BOOT6/source/a399534b52e402e742bb51109bed18cbad9b7a8cf9343acffcc240249f6ffacd"
+    "BOOT6/source/54d88024254bc25728c65fe277369d931daa418a154ee6837700117d8754afca"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["Build locked dependency and recipe execution"
+     "stage/compiler/source provenance"
+     "signing and revocation policy"],
+    :reviewed-owner-role "bootstrap build maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/module-interface",
+   :criterion-text
+   "Bootstrap criterion bootstrap/module-interface: Produce and validate a manifest for every declared migrated compiler module: role, input/output schemas, permitted effects and capabilities, preserved/transformed facts, generated artifacts, diagnostics, tests/fixtures and unsafe islands when present. Bind actual source/module/pass/compiler/input hashes and produced outputs, module conformance and preservation reports; do not substitute a generic pass schema for an instantiated migration interface. Reject a missing or inconsistent module field, unversioned ownership/matrix update or a manifest whose actual pass input/output/preservation behavior disagrees with its declaration. Positive, negative and preservation fixtures must execute the declared module boundary; source-file presence and a manifest alone do not prove migration. Required outputs: instantiated module migration and compiler-module manifests; module conformance/diagnostic/preservation reports; field-mismatch and missing-interface negative fixtures.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/f7b7fbedea6a122145449e46"
+    "facet/bootstrap-governance/0235f2667f06382494f25ea7"
+    "facet/bootstrap-governance/328874b1cc725f9a7d45570b"
+    "facet/bootstrap-governance/21c3abfce45d9fb1be96a430"
+    "facet/bootstrap-governance/aec17f5ab620c88709fbbc0d"
+    "facet/bootstrap-governance/6208e4a142b25640e8dbad53"
+    "facet/bootstrap-governance/939642a12e739fb5b85d8a15"
+    "facet/bootstrap-governance/747c7d3a5401eaa5dbbfd59c"
+    "facet/bootstrap-governance/7d9288b59b138bfaf467716b"
+    "facet/bootstrap-governance/658dc17a0909c08c121e9050"
+    "facet/bootstrap-governance/160663619b2428e4ac4dceed"
+    "facet/bootstrap-governance/f4b5f57be203d03558d992aa"
+    "facet/bootstrap-governance/27924969aa8878d7ab2ccad1"
+    "facet/bootstrap-governance/45d4f658347a96646274849d"
+    "facet/bootstrap-governance/fc9a8d8fad2c1154b5dc73b0"
+    "facet/bootstrap-governance/8b9e7c620a7dcdabf98dc725"],
+   :source-occurrence-ids
+   ["BOOT3/source/98ebb84a25021b3f290043723eb82248c597d0bb7fb20affa077542cb2de8720"
+    "BOOT3/source/2486a7888ae9c40daa1cbb5d6b551f6eb7a110e6747062933750a1108802ff5b"
+    "BOOT3/source/e22654b4bfc11106674748c12bb8ba098b1390b6647c9b75fa51cfad1d98a753"
+    "BOOT4/source/7dfb13969a93f2d79638ff312a8651f8a61932a223d74fa9a5d28ad4c3cadefe"
+    "BOOT4/source/52d80059b4a1c79345e6e850d3b10e001c4d8572459aa719a8c27a2b77a43d36"
+    "BOOT4/source/e85ed82d0754bd46d54a07de9939d61386afdad4f73a25704f3d87800b28562b"
+    "BOOT4/source/96b53ccb980470ba6c0c1ca53325a67c1a6423f01fd137ebbe5dd5ee64025da1"
+    "BOOT4/source/7fe912022a7e285cd7f519395e41a51e5307485c2bd0bb92ba53992fde46a29d"
+    "BOOT4/source/e5b77559c82f734faaaa01be7ed88c7938f301fea6867f565efdc358491f5692"
+    "BOOT4/source/23f021996a87151c0d00406dfcea65f62de76a48ac68c12831d9f6f98b88b307"
+    "BOOT4/source/8eba53ee54e4d5ab1c7f9cc18ff0c4b6c95a4994bc313efcbc2a5d5497cd0297"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/compiler-api-workflow/plan.md",
+    :file-sha256
+    "dc4d01604003e9ac528bf762e3312fd978fd131ed7bdfb2ab5fb789232ce23ef",
+    :reviewed-dependencies
+    ["compiler stage schema/version registry"
+     "pass-evidence producer"
+     "stage compatibility matrix and owner projection"],
+    :reviewed-owner-role "self-hosted compiler module maintainer"},
+   :task-source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :id "pipeline",
+    :marker "compiler-api-implementation-tasks",
+    :file-sha256
+    "a0c9a18a6dddd5e82a5e0bcfa3228c5e79c39bad03321d10611d67867e2d350d",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/native-carrier-header",
+   :criterion-text
+   "Bootstrap criterion bootstrap/native-carrier-header: Implement unary bootstrap-native-carrier-header only for compiler-artifact meta/JVM plans, returning exactly kind, metadata-present?, extent, metric, child0 and child1. Unknown or inaccessible observations return the six-slot unsupported header with unknown metrics nil. Check every operand and nested receiver by exact native class before native observation. Cover nil, Boolean, Character, Byte/Short/Integer/Long, String/Symbol/Keyword, the declared native maps/set/vector/List/Cons/SubVector and BigInt/BigInteger/Ratio/BigDecimal/Float/Double contours. Preserve the source's UTF16 spelling metrics, native null-name Boolean, integer absolute-magnitude bits, checked BigInt backing, separate Ratio numerator/denominator without GCD/printing, fixed Float/Double carrier widths and BigDecimal unscaled-bits plus widened signed scale. For PersistentArrayMap, require an available non-null even physical array and return length/2 before metadata/count; reject odd/null/inaccessible backing as unsupported, including a HashSet's backing map. Preserve TreeMap default-versus-foreign comparator identity without invoking it, List raw head/tail without forcing Cons, and SubVector raw backing/start/widened end-minus-start extent without backing methods. HashSet uses only the fixed checked impl field. Construct only the selected returned header, with no unconditional fallback tuple. Exercise wrong arity/context, foreign/spoofed classes or nested numeric/Keyword receivers, inaccessible/odd/null backing, comparator callbacks, metadata callbacks, Cons forcing and SubVector delegated methods. Unsupported results have unsupported kind and nil in all remaining slots, never zero for an unknown metric. Symbol child0 is false for a null name and true for an empty or other non-null name, with child1 nil. Metadata is only a native-class-checked presence Boolean and is never walked or returned; use no Number coercion, numeric normalization or equality. Require L2-BUILTIN-ARITY or L2-BUILTIN-ERROR without operand rendering as specified; unsupported observation never implies DATA illegality. No equality/hashing/rendering/traversal, general reflection, caller-selected fields, module opening, Unsafe, denial retry or security bypass is permitted. Fixed field-access denial stays sticky; its Delay/Atom/Field state caches only fixed infrastructure including denial, never DATA or DATA validity. Cold resolution and accessor initialization remain audited host mechanisms. Headers do not confer provenance, admission or child validity. Keep the ABI outside ordinary Core/C5 catalogs and authenticated-source admission, and invalidate affected seed fingerprints without renewing old migration evidence. Required outputs: six-slot result corpus for every declared native contour and numeric extrema; callback/non-forcing and exact-class negative reports; sticky-denial/physical-backing and arity/context diagnostic fixtures; seed TCB and ordinary-export exclusion records.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/7285b413f6fc29dd8c391277"
+    "facet/bootstrap-governance/910957d747500403e46d50df"
+    "facet/bootstrap-governance/87310c1a67e4c0f55a4fb3b5"
+    "facet/bootstrap-governance/4a5df1b80337391113f93689"
+    "facet/bootstrap-governance/8fa9c5ed655eee792678ac85"
+    "facet/bootstrap-governance/6967ac07f31b5bf835aa35d9"
+    "facet/bootstrap-governance/30223d77960477547e51ed57"
+    "facet/bootstrap-governance/e782e93cc51761d5a89c90be"
+    "facet/bootstrap-governance/190291777fa252e8c667a59a"
+    "facet/bootstrap-governance/307ed1a6ef674c579366a0f8"],
+   :source-occurrence-ids
+   ["BOOT2/source/fa24e749635317fc62b9ddc8f02504d8e2d27e0985124717bd094b4713e7dd26"
+    "BOOT2/source/906d63d0d65d206562f3f2d5debafdebdb5043b285e570bd1ff839bc8cd8b586"
+    "BOOT2/source/5f7dedc8008aa8979598bc205e4fb6e60ffb224025cb363e609e508d7cee7350"
+    "BOOT2/source/be3b8c905a1ee646acf1fbe36e947934c5b67519abd8da1f43ff0ec8b8c706b5"
+    "BOOT2/source/0c906c590deb694090472f16a480cf45f05fa49516ac07154800f8dead9fa69a"
+    "BOOT2/source/916df9e0d0b4d0a470f382d2260dc44765fef3a102167c1d5a233fa51880935e"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["seed compiler-artifact builtin registration"
+     "ordinary once-only operand evaluation"
+     "native getter/access TCB under existing host restrictions"],
+    :reviewed-owner-role "seed compiler native-ABI maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/native-reference-identity",
+   :criterion-text
+   "Bootstrap criterion bootstrap/native-reference-identity: Implement binary bootstrap-native-identical? in compiler-artifact meta/JVM plans with compiler-artifact kind and flag. Evaluate each operand once, then return Boolean native JVM reference sameness, including two null references, while distinguishing ancestor cycles from repeated shared values. Reject wrong arity/context with L2-BUILTIN-ARITY/L2-BUILTIN-ERROR without rendering. Instrument operands so equality/hash/metadata/render/traversal callbacks never run. Expose no address or stable token and grant no DATA/comparison legality; interning or boxing does not establish language identity. Keep ordinary Core/C5 catalogs and source admissions unchanged and retain the implementation/allowlist as seed TCB without migration credit. Required outputs: same/distinct/null/shared/cyclic reference result fixtures; once-evaluation and zero-callback controls; arity/context and no-export diagnostics/records.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/588c43ea08709ab78e85ccb2"
+    "facet/bootstrap-governance/c0965fb803ecb58e5582ef07"],
+   :source-occurrence-ids
+   ["BOOT2/source/045dac9b602c2ddc3d480f6bc1fa187be36a2fef17b0e0fd3c2ea484b4a4c6c0"
+    "BOOT2/source/6f01f41981b5ce60664d6734596f1f7659f88d5878f7b120611a6b9b844a8883"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["seed compiler-artifact builtin registration"
+     "ordinary operand evaluation and error dispatch"],
+    :reviewed-owner-role "seed compiler native-ABI maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/native-symbol-units",
+   :criterion-text
+   "Bootstrap criterion bootstrap/native-symbol-units: Implement unary bootstrap-symbol-utf16-unit-count only in compiler-artifact meta/JVM kind/flag/module context for exactly native clojure.lang.Symbol. Count native name and namespace String UTF16 lengths with a slash for every non-null namespace, including empty; null names add zero with null namespace and four literal null units with present namespace. Preserve empty names, supplementary pairs and unpaired surrogates, using arithmetic wide enough for two maximal String lengths and a separator. Evaluate the operand once before ABI checks. Use exact-class, wrong-context and wrong-arity fixtures with L2-BUILTIN-ERROR/L2-BUILTIN-ARITY without rendering; exclude user Named callbacks, interning/hash/metadata/UTF8 conversion. This is neither Unicode validation nor scalar counting, source authentication, C5 evidence or a public Core/library export. Record affected seed TCB/fingerprint invalidation without renewing historical migration or self-hosting evidence. Required outputs: UTF16 name/namespace/null/surrogate and representability fixtures; once-evaluation/no-callback controls; arity/context/class diagnostic and export-exclusion records.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/8193d74afb8d46ab153d884f"
+    "facet/bootstrap-governance/698ed105c4c8d9d690dc25cc"
+    "facet/bootstrap-governance/d3eaa425e08844710f617469"
+    "facet/bootstrap-governance/99c37fe2872d454c9653ea07"],
+   :source-occurrence-ids
+   ["BOOT2/source/e4533e1da0fb1456f9f1cef2929bd06c51f19aa24b547a5fc2bfc7fd28c2824b"
+    "BOOT2/source/aab84a753c03c06538b3dfce283777acebf8bf1fb25664314a7024b292a64f78"
+    "BOOT2/source/f4b854a579cd2845baf41a016f77dd7e68c4f69fd76636eeb6c362889fa02d89"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["seed native Symbol getter contract"
+     "compiler-artifact builtin registration"
+     "ordinary operand evaluation"],
+    :reviewed-owner-role "seed compiler native-ABI maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/pass-determinism",
+   :criterion-text
+   "Bootstrap criterion bootstrap/pass-determinism: Run each declared compiler transformation on identical pinned inputs and compare actual ordered outputs, diagnostics and generated artifacts. Produce a deterministic-output report identifying module/pass/compiler/input identities. This verifies transformation behavior itself, separately from a preservation-contract validator or a deterministic scheduler. A fixture whose actual pass output/order differs for identical declared inputs must fail with BOOT4002; undeclared time/random/environment influence cannot be hidden in the comparison. Preserve the source's fixed-input condition rather than claiming all differing inputs must produce the same output. Required outputs: actual repeated-pass output and order comparisons; deterministic output report; nondeterministic transformation rejection fixture with BOOT4002.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/c7e34c4eadcf3780eb582907"
+    "facet/bootstrap-governance/6bfa6488de3af0693843aa54"
+    "facet/bootstrap-governance/9055f87a302beb1e27f40f8e"
+    "facet/bootstrap-governance/ffabba230040dd5d20fb1ef3"
+    "facet/bootstrap-governance/4277c69c530a9986b0bc1d48"],
+   :source-occurrence-ids
+   ["BOOT4/source/3e377c5f9375ba8f8afc0ba46433ec058f2b8dbacdccd70e277836f724e054b3"
+    "BOOT4/source/e5b77559c82f734faaaa01be7ed88c7938f301fea6867f565efdc358491f5692"
+    "BOOT4/source/c203991f28ebfd2756427b80e524a72b7cb47c44f8fdef2ce1be182dd9313a28"
+    "BOOT4/source/23f021996a87151c0d00406dfcea65f62de76a48ac68c12831d9f6f98b88b307"
+    "BOOT4/source/8eba53ee54e4d5ab1c7f9cc18ff0c4b6c95a4994bc313efcbc2a5d5497cd0297"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/compiler-api-workflow/plan.md",
+    :file-sha256
+    "dc4d01604003e9ac528bf762e3312fd978fd131ed7bdfb2ab5fb789232ce23ef",
+    :reviewed-dependencies
+    ["instantiated module/pass interfaces"
+     "controlled declared input identities"
+     "diagnostic and artifact canonicalization where applicable"],
+    :reviewed-owner-role "compiler pass implementation maintainer"},
+   :task-source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :id "pipeline",
+    :marker "compiler-api-implementation-tasks",
+    :file-sha256
+    "a0c9a18a6dddd5e82a5e0bcfa3228c5e79c39bad03321d10611d67867e2d350d",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/pass-fact-preservation",
+   :criterion-text
+   "Bootstrap criterion bootstrap/pass-fact-preservation: Run positive, negative and preservation fixtures through actual compiler passes, comparing the declared input/output facts and emitted preservation report. Preserve source spans, types, effects, capabilities and safety facts or explicitly declare and verify their transformations; generated artifacts retain source/module/pass/compiler/input provenance. Deliberately drop each preserved fact or perform an undeclared transformation and require BOOT4003; omit preservation tests and require BOOT4007. A pass metadata declaration or proof-link presence does not substitute for a real transformed output and executed preservation check. Keep unsafe internals isolated/audited and stable diagnostic codes/spans as their separate governing boundaries. Required outputs: before/after pass preservation report; executed positive/negative/preservation fixture records; dropped-fact and missing-test diagnostics BOOT4003/BOOT4007.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/2effba19467ac405595d3fbf"
+    "facet/bootstrap-governance/2e43d4c8f7eb271758ddc68b"
+    "facet/bootstrap-governance/9fbb5fa7af39e08b74425185"
+    "facet/bootstrap-governance/c8d3a2a0a00e61d33e964b9f"
+    "facet/bootstrap-governance/9e7c9f80157cf23cdf70eb36"
+    "facet/bootstrap-governance/fb5a78f9b2f92d76ccdacf56"
+    "facet/bootstrap-governance/173a94c15c58a3ef2f1a0eea"
+    "facet/bootstrap-governance/073933f8c3c3ac2624783989"],
+   :source-occurrence-ids
+   ["BOOT4/source/e85ed82d0754bd46d54a07de9939d61386afdad4f73a25704f3d87800b28562b"
+    "BOOT4/source/3e377c5f9375ba8f8afc0ba46433ec058f2b8dbacdccd70e277836f724e054b3"
+    "BOOT4/source/e5b77559c82f734faaaa01be7ed88c7938f301fea6867f565efdc358491f5692"
+    "BOOT4/source/c203991f28ebfd2756427b80e524a72b7cb47c44f8fdef2ce1be182dd9313a28"
+    "BOOT4/source/23f021996a87151c0d00406dfcea65f62de76a48ac68c12831d9f6f98b88b307"
+    "BOOT4/source/8eba53ee54e4d5ab1c7f9cc18ff0c4b6c95a4994bc313efcbc2a5d5497cd0297"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/compiler-api-workflow/plan.md",
+    :file-sha256
+    "dc4d01604003e9ac528bf762e3312fd978fd131ed7bdfb2ab5fb789232ce23ef",
+    :reviewed-dependencies
+    ["module required/preserved/invalidated/regenerated fact contracts"
+     "actual pass implementation"
+     "source and safety fact verifiers"],
+    :reviewed-owner-role "compiler verification maintainer"},
+   :task-source
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :id "pass-evidence",
+    :marker "compiler-api-implementation-tasks",
+    :file-sha256
+    "a0c9a18a6dddd5e82a5e0bcfa3228c5e79c39bad03321d10611d67867e2d350d",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/seed-subset",
+   :criterion-text
+   "Bootstrap criterion bootstrap/seed-subset: Execute the declared minimal seed reader/syntax/core/namespace/macro/type/effect/MIR/diagnostic/backend/artifact-manifest surface against its upstream language contracts. Publish implemented and excluded documents/features/profiles, host dependencies and runtime assumptions, stable diagnostic report and subset conformance; emit the seed executable/backend artifact and manifest with source/compiler/backend/environment/dependency hashes and metadata sufficient to compare stage1. The seed remains an auditable temporary subset, not an alternate language definition. Accepted subset programs must emit real declared artifacts; undeclared features, unsupported profiles/forms (including warning-only acceptance), missing provenance, unstable/missing diagnostic codes, untracked host dependencies or upstream semantic mismatch must reject with BOOT2001-BOOT2006 as applicable. Ordinary development results do not confer seed retirement; explicit exclusions limit this seed surface and do not remove full-language obligations. Required outputs: seed executable/backend artifact and source-bound manifest; supported/excluded subset and host/runtime trust reports; accepted/rejected subset fixtures, stable BOOT2 diagnostics and stage1 comparison metadata.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/98eb033af3209fd1a36524e8"
+    "facet/bootstrap-governance/f839a7aa627a8abda5f111c7"
+    "facet/bootstrap-governance/42199845721d93ff106ebfda"
+    "facet/bootstrap-governance/1fde7f8cdb43097961d3f67d"
+    "facet/bootstrap-governance/c3248d24c8923304aad36d4e"
+    "facet/bootstrap-governance/6776e7a4b53bbb9468532659"
+    "facet/bootstrap-governance/033245b154284ea15b04f94a"
+    "facet/bootstrap-governance/c5403934f2190fb4c166b4f7"
+    "facet/bootstrap-governance/fa9af26f975c305a5528f615"
+    "facet/bootstrap-governance/dc7b7355d5572b2bbc7337f3"
+    "facet/bootstrap-governance/9aee385c71a0b8eb3b33c9e7"],
+   :source-occurrence-ids
+   ["BOOT2/source/3b576c9beef7f2c8022673b382be0336da58396bde5e13bf0b89944ba055a1ad"
+    "BOOT2/source/b89359119eb606bac11a37663d7b60bed07fb900e69f4bfe8bfae643f8069101"
+    "BOOT2/source/f17486e071f99a0fb85d9293ace5e6c83fc03286c9b13307ee40c60b6c0958b8"
+    "BOOT2/source/d770554d5e0e9a0aed71cfbde13ebf4d880d34ba223627c81bfd6a5c1147a789"
+    "BOOT2/source/ae7be094087b0b75c9a470dff45869928ef4d402b058c139faf7d01378554488"
+    "BOOT2/source/8f82b01a85c43d10db27990a48a68d62e37c59e09463b4d4366cee5c34ef150a"
+    "BOOT2/source/276ba68720710ad3c39591113699d57ccd476ae764e8d40e155d61f59d6ea2d3"
+    "BOOT2/source/ccfe370a520288fa4ef1d6abb4ffaed06cd723aa75fa0c727be39ba24528ff17"
+    "BOOT2/source/ad35a949fa119b99f232a5fd46c8d724289053df32887194caa6fa229a38265e"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["seed reader/core/resolution/type/effect/MIR implementations"
+     "declared bootstrap backend and diagnostic producer"
+     "artifact/source provenance"],
+    :reviewed-owner-role "seed compiler maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}
+  {:id "bootstrap/stage-equivalence",
+   :criterion-text
+   "Bootstrap criterion bootstrap/stage-equivalence: Actually compare outputs of both named compiler artifacts on pinned source/compiler/stdlib/conformance inputs using every comparison mode declared applicable for that stage: hash, canonical manifest, diagnostic, conformance, runtime output, IR modulo IDs, conditional performance and reviewed accepted-delta. Identify compared artifacts, inputs, outputs, canonicalization and applicable stage support level; emit a provenance-bound equivalence report linked from bootstrap provenance with diagnostic, IR, conformance and accepted/rejected difference records. Fail missing compiler identity/output, unexplained artifact or diagnostic drift, unreviewed or policy-unlinked deltas, failing supported-feature conformance and performance regression beyond a declared acceptance bound when performance is applicable. Preserve stable codes/source spans; permitted metadata/timestamp/wording differences require the declared reviewed comparison policy and cannot hide semantic drift. Retain BOOT1004/BOOT3003/BOOT6003 and BOOT7001-BOOT7007, and exercise both a valid comparison and each applicable refusal. Comparison does not produce compiler executables or independently admit intermediate migration/final release. Required outputs: actual stage comparison inputs/outputs and equivalence artifact; diagnostic/IR/conformance and accepted-delta reports; missing-output/drift/unreviewed-delta/conformance/conditional-performance negative fixtures.",
+   :source-facet-ids
+   ["facet/bootstrap-governance/f8a0581a936ae2f933486547"
+    "facet/bootstrap-governance/fc2b4bfbe32614a3da52f385"
+    "facet/bootstrap-governance/02e35a3b01e5b36b6b08164c"
+    "facet/bootstrap-governance/3cb244aec173fed35cceb7fe"
+    "facet/bootstrap-governance/361788fcc2d1079c6f0deac9"
+    "facet/bootstrap-governance/0f2b386f1912f210a79962d3"
+    "facet/bootstrap-governance/84f8d763bb336b829d69e079"
+    "facet/bootstrap-governance/f44cb5bd7ff7269e947b6fe4"
+    "facet/bootstrap-governance/c7597d1822734cd1e0fede88"
+    "facet/bootstrap-governance/1e3902458f131d57dfd9d527"
+    "facet/bootstrap-governance/314dda63061c12c077331d27"
+    "facet/bootstrap-governance/7fe47dcb06f6d4b3e794819b"
+    "facet/bootstrap-governance/0ce96c8366f558fbff508164"
+    "facet/bootstrap-governance/1847714a2b7af991b225250a"
+    "facet/bootstrap-governance/5e53bc4f93edafe6c755f39e"
+    "facet/bootstrap-governance/74c6fe73fb5fdb660a76f7b8"
+    "facet/bootstrap-governance/2a8eeeb82a717694d419a785"
+    "facet/bootstrap-governance/8cb98d52ef32de1de767c3a1"
+    "facet/bootstrap-governance/518a2413fa11f7179fbd5114"
+    "facet/bootstrap-governance/0da0d24065f7e530f00a4244"
+    "facet/bootstrap-governance/f482149be3900eec57fc263c"
+    "facet/bootstrap-governance/f97c1b05e128ebb047215596"
+    "facet/bootstrap-governance/f97e1c74693a483b06ab5032"
+    "facet/bootstrap-governance/f2d692cc09b14caa5d642b08"
+    "facet/bootstrap-governance/8a78db172ecc4c6075f7ed77"
+    "facet/bootstrap-governance/686db6bb37cc8dda310edf0d"
+    "facet/bootstrap-governance/1a4e317424b4397d701338a5"
+    "facet/bootstrap-governance/bb21dc7033f372b9bfdab1f1"
+    "facet/bootstrap-governance/8ff8e1c3e3c7919b22205417"
+    "facet/bootstrap-governance/fb72b9371173a3ae5a74afee"
+    "facet/bootstrap-governance/eb29cd07be0e77097c74a61f"
+    "facet/bootstrap-governance/528127ffcd8ea889d7867e89"
+    "facet/bootstrap-governance/62b4953d80651c8d7d4c22f0"
+    "facet/bootstrap-governance/c0bc3c40b0f21a5d6d5c8e92"
+    "facet/bootstrap-governance/8b2851c722ea3d77a3d14f13"
+    "facet/bootstrap-governance/079691851a54f01f0b1e3fac"
+    "facet/bootstrap-governance/d2176b072af65503022bc4cd"
+    "facet/bootstrap-governance/1cc60b734e5e3ae26799ec7a"
+    "facet/bootstrap-governance/9fb7195e55db51a805899004"
+    "facet/bootstrap-governance/2a88bb20fa159c31973950a4"
+    "facet/bootstrap-governance/bf4c20064f932bb6c87634ea"
+    "facet/bootstrap-governance/38f49662abdc8d9bb330b123"
+    "facet/bootstrap-governance/1c9b842dedee8d5dcb84a613"
+    "facet/bootstrap-governance/c65d0efb1c11004b1af91ec1"
+    "facet/bootstrap-governance/b538bc778c8a396aaf7adce5"
+    "facet/bootstrap-governance/f6e7730f48309947cd4d991b"
+    "facet/bootstrap-governance/4074f2ea009a9302518edefb"
+    "facet/bootstrap-governance/182c333b81b7a8bea85ba2fb"
+    "facet/bootstrap-governance/1b47f43756dffdc7afbaa88c"
+    "facet/bootstrap-governance/857d5094626a13f814eb3216"
+    "facet/bootstrap-governance/c71c7df40f995b24b84fd894"
+    "facet/bootstrap-governance/4d4418376702fd0a806e5848"
+    "facet/bootstrap-governance/d6dbdf9177e09a75865b5a80"
+    "facet/bootstrap-governance/47769371a6764794c377f66c"
+    "facet/bootstrap-governance/dcd49003fc0adf0fa282b274"
+    "facet/bootstrap-governance/f67fe388714b1c56d141e5ab"
+    "facet/bootstrap-governance/ab9af4b89e85dd7215f023ee"
+    "facet/bootstrap-governance/a70c2f22d16796d837052aa0"
+    "facet/bootstrap-governance/271e7367488ebeb234795bc0"
+    "facet/bootstrap-governance/fcb887f16d96d7b6702d5723"
+    "facet/bootstrap-governance/c2fadc809f12465f05e537f1"
+    "facet/bootstrap-governance/93f6c786214a962aab1ff333"],
+   :source-occurrence-ids
+   ["BOOT1/source/3434ea24ed2f164ab57901dabc4a8b71c71a543845a94f64951627501b80bdbe"
+    "BOOT1/source/06dbee9ae177b0bdd7af5198a548db2a4e48f7dba4c59d6f7420bbf5c93619b2"
+    "BOOT1/source/2ab90e50ca19a3838b2a30102487a2713faa95544aa3ca6fd1b012be3f4e6a1a"
+    "BOOT1/source/8f88276e436069e56d815cc37e8aef041ee8be5ddef56a47238ca0aa996451dc"
+    "BOOT1/source/6ce67610bf9876abe88003bbb2695dc4f64cd4965daeb55714a998225fff8d27"
+    "BOOT2/source/ad35a949fa119b99f232a5fd46c8d724289053df32887194caa6fa229a38265e"
+    "BOOT3/source/98ebb84a25021b3f290043723eb82248c597d0bb7fb20affa077542cb2de8720"
+    "BOOT3/source/e22654b4bfc11106674748c12bb8ba098b1390b6647c9b75fa51cfad1d98a753"
+    "BOOT3/source/f4b0bbe1e4aa13f3dd170d8efa29a1e5b4bdb9be489dc08086139281a5a60ef7"
+    "BOOT6/source/8a7c03e9133c5295bad33c7904acd886f719b60c072d3189b85af90c6d78e590"
+    "BOOT6/source/247bd1766be46f27d1ba2427950b5d9ad6389a6e5a1ec1c3c058ca4298cb9fc9"
+    "BOOT6/source/890f4fe3a87c974d4b4056ed766961c3a9d1a85fa162113a5eb119b9d5d0372a"
+    "BOOT6/source/abff070a2c4033b2e274cee94b7eb3e01312c705222c8dcfb55a05b95c6d3bff"
+    "BOOT6/source/a399534b52e402e742bb51109bed18cbad9b7a8cf9343acffcc240249f6ffacd"
+    "BOOT6/source/54d88024254bc25728c65fe277369d931daa418a154ee6837700117d8754afca"
+    "BOOT7/source/9df886d75b9b3ab9663fca48a46da1434565b681d8f6fc78d2577791785dd175"
+    "BOOT7/source/2f8c8b148461c4a0173a9a2d1962f967c96777bb879f54cf7194e334ff3c65b5"
+    "BOOT7/source/78f6950831aa393e85774b378613496d733109c31fbc91f379f543933916f6f0"
+    "BOOT7/source/ba26ed3a8340d537ebb6035f37f386e54068bfb22ecc7ccb28e4cec3461ec16a"
+    "BOOT7/source/0da6666d08c054785519b42460334320c956057333e354824d1dbc410c907bb6"
+    "BOOT7/source/afd82e7586aab1945e61d19005161cde185cb34bffe13a4b76f5d6b3464a0daf"
+    "BOOT7/source/22003082e948525a6a3beeb567ace544527f33082aecc2dae03fe3a77512fc66"
+    "BOOT7/source/04e1bbfc9ce9f93334287131525191990b55186555f5abcd5ccd34a3fbd45706"
+    "BOOT7/source/acd4b496b563c2093a6b8f2c733998c960a9e2db7c05f8239e38f373c2bdfdfd"
+    "BOOT7/source/df0dc8e71f7939661cbdf3b322d4952018fd22b544c82dd178ebd151e4b2e861"
+    "BOOT7/source/4d55c93a1d1389c34925e08603acd952c469f07d1e1530ddc9fe5a815f40b229"],
+   :source-review-sha256
+   "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+   :dependencies
+   {:path "specs/release-workflow/plan.md",
+    :file-sha256
+    "f14c3bc138214532fd33e5a619cf137cacdb57b4bfd10c6a026879f611df6d93",
+    :reviewed-dependencies
+    ["actual seed/prior-stage compiler outputs"
+     "stage support matrix and applicable suites"
+     "reviewed delta policy and bootstrap provenance"],
+    :reviewed-owner-role "bootstrap equivalence maintainer"},
+   :task-source
+   {:path "specs/release-workflow/tasks.md",
+    :id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :marker "release-implementation-tasks",
+    :file-sha256
+    "87932ab6d27bf8ab4492efa9c56ceb7b32f105cdf62a04d14b36bdb30eb73983",
+    :source-state :private-post-transaction-bytes,
+    :input-commit "92d0ff734190ea260edfb56667803be2651d3256"}}],
+ :task-count-delta 1,
+ :schema-version 1,
+ :implementation-credit :none,
+ :criterion-allocations-preserved 303,
+ :current-join-sha256
+ "ce00753a399cbf3f6b25b32e46f14c6cae6685696f1f3764addb00ce04d6c1de",
+ :kind :guarded-bootstrap12-current-task-composition,
+ :source-review-sha256
+ "bc6a3c2dd6bc80496f46e1fa5aec5fb855c56c1e935646f9bf2a2c805128db35",
+ :new-task-interface
+ {:path "specs/release-workflow/tasks.md",
+  :marker "release-implementation-tasks",
+  :id
+  "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+  :record
+  "- [ ] `release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations` Implement declared seed compiler and native observations\n\nStatus: Open\n\nEvidence baseline: [Seed compiler contract](../../docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md)\n\nClosing evidence: Retain existing seed/native implementations and bounded historical receipts at their original scope; reuse applicable evidence without treating a new task interface as missing implementation or promoting historical acceptance. Bootstrap criterion bootstrap/native-carrier-header: Implement unary bootstrap-native-carrier-header only for compiler-artifact meta/JVM plans, returning exactly kind, metadata-present?, extent, metric, child0 and child1. Unknown or inaccessible observations return the six-slot unsupported header with unknown metrics nil. Check every operand and nested receiver by exact native class before native observation. Cover nil, Boolean, Character, Byte/Short/Integer/Long, String/Symbol/Keyword, the declared native maps/set/vector/List/Cons/SubVector and BigInt/BigInteger/Ratio/BigDecimal/Float/Double contours. Preserve the source's UTF16 spelling metrics, native null-name Boolean, integer absolute-magnitude bits, checked BigInt backing, separate Ratio numerator/denominator without GCD/printing, fixed Float/Double carrier widths and BigDecimal unscaled-bits plus widened signed scale. For PersistentArrayMap, require an available non-null even physical array and return length/2 before metadata/count; reject odd/null/inaccessible backing as unsupported, including a HashSet's backing map. Preserve TreeMap default-versus-foreign comparator identity without invoking it, List raw head/tail without forcing Cons, and SubVector raw backing/start/widened end-minus-start extent without backing methods. HashSet uses only the fixed checked impl field. Construct only the selected returned header, with no unconditional fallback tuple. Exercise wrong arity/context, foreign/spoofed classes or nested numeric/Keyword receivers, inaccessible/odd/null backing, comparator callbacks, metadata callbacks, Cons forcing and SubVector delegated methods. Unsupported results have unsupported kind and nil in all remaining slots, never zero for an unknown metric. Symbol child0 is false for a null name and true for an empty or other non-null name, with child1 nil. Metadata is only a native-class-checked presence Boolean and is never walked or returned; use no Number coercion, numeric normalization or equality. Require L2-BUILTIN-ARITY or L2-BUILTIN-ERROR without operand rendering as specified; unsupported observation never implies DATA illegality. No equality/hashing/rendering/traversal, general reflection, caller-selected fields, module opening, Unsafe, denial retry or security bypass is permitted. Fixed field-access denial stays sticky; its Delay/Atom/Field state caches only fixed infrastructure including denial, never DATA or DATA validity. Cold resolution and accessor initialization remain audited host mechanisms. Headers do not confer provenance, admission or child validity. Keep the ABI outside ordinary Core/C5 catalogs and authenticated-source admission, and invalidate affected seed fingerprints without renewing old migration evidence. Required outputs: six-slot result corpus for every declared native contour and numeric extrema; callback/non-forcing and exact-class negative reports; sticky-denial/physical-backing and arity/context diagnostic fixtures; seed TCB and ordinary-export exclusion records. Bootstrap criterion bootstrap/native-reference-identity: Implement binary bootstrap-native-identical? in compiler-artifact meta/JVM plans with compiler-artifact kind and flag. Evaluate each operand once, then return Boolean native JVM reference sameness, including two null references, while distinguishing ancestor cycles from repeated shared values. Reject wrong arity/context with L2-BUILTIN-ARITY/L2-BUILTIN-ERROR without rendering. Instrument operands so equality/hash/metadata/render/traversal callbacks never run. Expose no address or stable token and grant no DATA/comparison legality; interning or boxing does not establish language identity. Keep ordinary Core/C5 catalogs and source admissions unchanged and retain the implementation/allowlist as seed TCB without migration credit. Required outputs: same/distinct/null/shared/cyclic reference result fixtures; once-evaluation and zero-callback controls; arity/context and no-export diagnostics/records. Bootstrap criterion bootstrap/native-symbol-units: Implement unary bootstrap-symbol-utf16-unit-count only in compiler-artifact meta/JVM kind/flag/module context for exactly native clojure.lang.Symbol. Count native name and namespace String UTF16 lengths with a slash for every non-null namespace, including empty; null names add zero with null namespace and four literal null units with present namespace. Preserve empty names, supplementary pairs and unpaired surrogates, using arithmetic wide enough for two maximal String lengths and a separator. Evaluate the operand once before ABI checks. Use exact-class, wrong-context and wrong-arity fixtures with L2-BUILTIN-ERROR/L2-BUILTIN-ARITY without rendering; exclude user Named callbacks, interning/hash/metadata/UTF8 conversion. This is neither Unicode validation nor scalar counting, source authentication, C5 evidence or a public Core/library export. Record affected seed TCB/fingerprint invalidation without renewing historical migration or self-hosting evidence. Required outputs: UTF16 name/namespace/null/surrogate and representability fixtures; once-evaluation/no-callback controls; arity/context/class diagnostic and export-exclusion records. Bootstrap criterion bootstrap/seed-subset: Execute the declared minimal seed reader/syntax/core/namespace/macro/type/effect/MIR/diagnostic/backend/artifact-manifest surface against its upstream language contracts. Publish implemented and excluded documents/features/profiles, host dependencies and runtime assumptions, stable diagnostic report and subset conformance; emit the seed executable/backend artifact and manifest with source/compiler/backend/environment/dependency hashes and metadata sufficient to compare stage1. The seed remains an auditable temporary subset, not an alternate language definition. Accepted subset programs must emit real declared artifacts; undeclared features, unsupported profiles/forms (including warning-only acceptance), missing provenance, unstable/missing diagnostic codes, untracked host dependencies or upstream semantic mismatch must reject with BOOT2001-BOOT2006 as applicable. Ordinary development results do not confer seed retirement; explicit exclusions limit this seed surface and do not remove full-language obligations. Required outputs: seed executable/backend artifact and source-bound manifest; supported/excluded subset and host/runtime trust reports; accepted/rejected subset fixtures, stable BOOT2 diagnostics and stage1 comparison metadata.",
+  :status :open,
+  :owner-role "seed compiler/native-ABI maintainer",
+  :source-ids
+  ["bootstrap/native-carrier-header"
+   "bootstrap/native-reference-identity"
+   "bootstrap/native-symbol-units"
+   "bootstrap/seed-subset"]},
+ :accepted-mappings-preserved 430,
+ :operations
+ [{:path "specs/release-workflow/tasks.md",
+   :applying-after-sha256
+   "7322efe3633bff09eaf8b3b7f040733561abe3d11e58e7ed320bc631b151a7e5",
+   :reviewed-record-after-sha256
+   "e77dc37c3959bb6c2942a63ff93b4b2b383236994f64c28452040f50f1dc8854",
+   :field :acceptance,
+   :applying-before-sha256
+   "628ddacf1aae72e9c3b7218d470484feff4d84c7bd9b0fd9f914d4ed1299e971",
+   :after
+   "Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BOOT1/BOOT3/BOOT5/BOOT7: Publish a versioned row for every claimed stage and authoritative module revision, naming source/compiler/artifact identities, supported and unsupported documents/features/profiles/backends/runtime/package/library/test closure, owned or deferred gaps, conformance links and release eligibility. Record exact compiler-module ownership and residual TCB with measurable migration delta. Compare both named compilers and canonical artifacts under declared applicable hash/manifest/diagnostic/conformance/runtime/IR/performance/accepted-delta modes; preserve stable codes/spans and provenance. Reject missing outputs, implicit inherited support, omitted stage rows, unsupported claims, stale matrix versions and unexplained drift; accept deltas only with policy-linked review. Performance bounds apply only when performance is part of acceptance; no compiler work quota is introduced. Execute the intermediate authoritative stage/module admission decision against this exact candidate and declared subset, consuming the fresh conformance, equivalence/accepted-delta, matrix, provenance, TCB and applicable audit records. Record admit or deny with candidate/source/compiler/artifact identities and failed predicates. Deny failing applicable suites, stale or missing required evidence, unexplained drift, unsupported claimed support and missing ownership/matrix updates. Exercise both a valid intermediate admission and each refusal. Retain explicitly owned/deferred gaps outside the claimed subset; final release policy separately rejects unreviewed gaps for claimed release support. This decision does not produce the evidence it consumes, replace final release acceptance, or gate ordinary semantic development. Foundation requirement gravity/bootstrap-equivalence-before-retirement: Before retiring a named seed component, compare the declared predecessor and Gravity successor stages on accepted and rejected programs, canonical outputs and diagnostics; record residual TCB and an explicit retirement decision for that component only. Refusals: Deny retirement for missing stage products, unreviewed drift, stale compiler/source identities or required conformance failures; an intermediate stage admission cannot retire unrelated seed components. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Foundation requirement gravity/bootstrap-staged-trust-reduction: Record each actual compiler/platform component migration into Gravity with source and predecessor/successor compiler identities, reproducible stage products, exact supported subset and the measured residual seed/TCB inventory. Refusals: Reject a claimed seed reduction without an actual migrated product or with missing lineage; plans, supplied success labels and one migrated helper cannot establish complete seed absence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Source compiler/c1/self-hosting-comparison: Represent compiler structures as Gravity values and expose comparable public stage artifacts across seed and self-hosted implementations, even with optimized private layouts. Concrete acceptance: Compare actual seed and next-stage public artifacts for the same module; missing public stage output, an unrepresentable compiler structure, unexplained semantic drift or a provenance mismatch fails even when private layouts differ legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Bootstrap criterion bootstrap/stage-equivalence: Actually compare outputs of both named compiler artifacts on pinned source/compiler/stdlib/conformance inputs using every comparison mode declared applicable for that stage: hash, canonical manifest, diagnostic, conformance, runtime output, IR modulo IDs, conditional performance and reviewed accepted-delta. Identify compared artifacts, inputs, outputs, canonicalization and applicable stage support level; emit a provenance-bound equivalence report linked from bootstrap provenance with diagnostic, IR, conformance and accepted/rejected difference records. Fail missing compiler identity/output, unexplained artifact or diagnostic drift, unreviewed or policy-unlinked deltas, failing supported-feature conformance and performance regression beyond a declared acceptance bound when performance is applicable. Preserve stable codes/source spans; permitted metadata/timestamp/wording differences require the declared reviewed comparison policy and cannot hide semantic drift. Retain BOOT1004/BOOT3003/BOOT6003 and BOOT7001-BOOT7007, and exercise both a valid comparison and each applicable refusal. Comparison does not produce compiler executables or independently admit intermediate migration/final release. Required outputs: actual stage comparison inputs/outputs and equivalence artifact; diagnostic/IR/conformance and accepted-delta reports; missing-output/drift/unreviewed-delta/conformance/conditional-performance negative fixtures.",
+   :id
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+   :reviewed-record-before-sha256
+   "018958e35696e28bda7a7de75db54649519c8f9e91d6d424f3bb2e0b10891b73",
+   :before
+   "Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BOOT1/BOOT3/BOOT5/BOOT7: Publish a versioned row for every claimed stage and authoritative module revision, naming source/compiler/artifact identities, supported and unsupported documents/features/profiles/backends/runtime/package/library/test closure, owned or deferred gaps, conformance links and release eligibility. Record exact compiler-module ownership and residual TCB with measurable migration delta. Compare both named compilers and canonical artifacts under declared applicable hash/manifest/diagnostic/conformance/runtime/IR/performance/accepted-delta modes; preserve stable codes/spans and provenance. Reject missing outputs, implicit inherited support, omitted stage rows, unsupported claims, stale matrix versions and unexplained drift; accept deltas only with policy-linked review. Performance bounds apply only when performance is part of acceptance; no compiler work quota is introduced. Execute the intermediate authoritative stage/module admission decision against this exact candidate and declared subset, consuming the fresh conformance, equivalence/accepted-delta, matrix, provenance, TCB and applicable audit records. Record admit or deny with candidate/source/compiler/artifact identities and failed predicates. Deny failing applicable suites, stale or missing required evidence, unexplained drift, unsupported claimed support and missing ownership/matrix updates. Exercise both a valid intermediate admission and each refusal. Retain explicitly owned/deferred gaps outside the claimed subset; final release policy separately rejects unreviewed gaps for claimed release support. This decision does not produce the evidence it consumes, replace final release acceptance, or gate ordinary semantic development. Foundation requirement gravity/bootstrap-equivalence-before-retirement: Before retiring a named seed component, compare the declared predecessor and Gravity successor stages on accepted and rejected programs, canonical outputs and diagnostics; record residual TCB and an explicit retirement decision for that component only. Refusals: Deny retirement for missing stage products, unreviewed drift, stale compiler/source identities or required conformance failures; an intermediate stage admission cannot retire unrelated seed components. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Foundation requirement gravity/bootstrap-staged-trust-reduction: Record each actual compiler/platform component migration into Gravity with source and predecessor/successor compiler identities, reproducible stage products, exact supported subset and the measured residual seed/TCB inventory. Refusals: Reject a claimed seed reduction without an actual migrated product or with missing lineage; plans, supplied success labels and one migrated helper cannot establish complete seed absence. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. Source compiler/c1/self-hosting-comparison: Represent compiler structures as Gravity values and expose comparable public stage artifacts across seed and self-hosted implementations, even with optimized private layouts. Concrete acceptance: Compare actual seed and next-stage public artifacts for the same module; missing public stage output, an unrepresentable compiler structure, unexplained semantic drift or a provenance mismatch fails even when private layouts differ legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence."}
+  {:path "specs/release-workflow/tasks.md",
+   :applying-after-sha256
+   "03419f68d16cbeabb51c3432224deca3b6cdaff1f12054e4aaf9f97ee0305da4",
+   :reviewed-record-after-sha256
+   "85318a2e52cc3c47030d72cb8e742f449376c93de58ce914edaaa252e40b78bd",
+   :field :acceptance,
+   :applying-before-sha256
+   "8dcf8c4dcb89bebe4b0f147f5a04eb1fe03f4ee37c13e0c31835fa2e1d1231f2",
+   :after
+   "Rebuild identity and signature/provenance verification plus tamper rejection BOOT1/BOOT6/BOOT8: Retain locked dependencies, recipe and environment controls for time/locale/filesystem order/toolchain/network, compiler lineage and manifest/content-hash comparisons. Declare unsupported rebuild strategies; diverse rebuilds require independent toolchain identity. Reproducibility exceptions and accepted deltas require recorded review. Produce canonical signed provenance binding stage/artifact/source graph/compiler/lockfile/recipe/environment/dependencies/builder and conformance/equivalence/safety/SBOM/signature links. Auditor queries must traverse release compiler to seed inputs; permit only explicitly declared stage cycles. Reject lineage gaps, undeclared cycles, uncontrolled network inputs, noncanonical signing, missing required evidence, unexplained drift and revoked compiler/builder/dependency/signature inputs. Release extension release/final-rebuild-reproducibility: Rebuild the actual final gravity artifact at least twice from the recorded recipe, locked inputs and environment. Compare binary, provenance, SBOM, signing-record and command-contract evidence identities; retain both actual rebuild outputs and comparison report. Reject missing rebuilds/comparisons, unexplained drift and supplied-record substitution. Earlier hosted packaging reproducibility cannot close final release rebuilds. Release extension release/final-supply-chain-governance-bundle: Produce and validate the selected actual final release's provenance, SBOM, canonical signing records, release notes, target-support policy, compatibility, security-review and governance approval evidence. Bind records to actual binary, recipe/environment, source/compiler/dependency/target identities and accepted command evidence. Reject missing, stale, tampered, revoked or mismatched records, unsupported targets and governance gaps with applicable P18T06001-P18T06008 blockers. A hosted bundle is not final seedless evidence. Bootstrap criterion bootstrap/compiler-lineage-query: Execute the auditor query on a bootstrap compiler provenance graph and return which compiler built every queried stage/compiler artifact, recursively reaching its seed inputs. Record the queried artifact identities, traversed edges, compiler/source/lock/build/environment/evidence links and declared stage-cycle annotations; a provenance file alone is not a successful query. Reject missing compiler nodes/edges, broken release-to-seed traversal, undeclared cycles and an auditor query that cannot reconstruct a compiler's builder. Preserve explicitly declared stage cycles; do not reject them as undeclared cycles. Keep BOOT6002 and BOOT8002/BOOT8003/BOOT8007 with the offending artifact and edge. Required outputs: compiler lineage graph; auditor query index and successful traversal result; broken-edge/undeclared-cycle/query-failure fixtures and diagnostics. Bootstrap criterion bootstrap/locked-rebuild: Actually rebuild the declared bootstrap artifact from locked dependencies and its recorded recipe and environment, controlling time, locale, filesystem order, toolchain and network inputs. Run the applicable seed-built/self-built/clean-environment/diverse strategies, explicitly declaring unsupported strategies; a diverse report names the independent toolchain. Compare canonical manifests and relevant content hashes, retain compiler lineage, actual outputs and residual trusted components, and record policy-reviewed accepted deltas or a documented release reproducibility exception. Reject unlocked bootstrap dependencies, absent environment/lineage records, uncontrolled or unrecorded network input, unexplained hash drift and a diverse rebuild without independent toolchain identity. Revoked builders/dependencies/signatures block release. Exercise repeatable rebuild and each failure with BOOT1005/BOOT2005/BOOT6001-BOOT6006; the seed's declared host dependencies and runtime assumptions remain explicit. Required outputs: reproducible bootstrap recipe and controlled environment; real rebuild manifests/content comparisons and diverse-or-unsupported strategy report; accepted-delta/exception and residual-trust records; revocation and negative-fixture reports.",
+   :id
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+   :reviewed-record-before-sha256
+   "0568f8a145be160b60d5e78a073860c1a36454dbf2cbbedc5579ec3035d6afd8",
+   :before
+   "Rebuild identity and signature/provenance verification plus tamper rejection BOOT1/BOOT6/BOOT8: Retain locked dependencies, recipe and environment controls for time/locale/filesystem order/toolchain/network, compiler lineage and manifest/content-hash comparisons. Declare unsupported rebuild strategies; diverse rebuilds require independent toolchain identity. Reproducibility exceptions and accepted deltas require recorded review. Produce canonical signed provenance binding stage/artifact/source graph/compiler/lockfile/recipe/environment/dependencies/builder and conformance/equivalence/safety/SBOM/signature links. Auditor queries must traverse release compiler to seed inputs; permit only explicitly declared stage cycles. Reject lineage gaps, undeclared cycles, uncontrolled network inputs, noncanonical signing, missing required evidence, unexplained drift and revoked compiler/builder/dependency/signature inputs. Release extension release/final-rebuild-reproducibility: Rebuild the actual final gravity artifact at least twice from the recorded recipe, locked inputs and environment. Compare binary, provenance, SBOM, signing-record and command-contract evidence identities; retain both actual rebuild outputs and comparison report. Reject missing rebuilds/comparisons, unexplained drift and supplied-record substitution. Earlier hosted packaging reproducibility cannot close final release rebuilds. Release extension release/final-supply-chain-governance-bundle: Produce and validate the selected actual final release's provenance, SBOM, canonical signing records, release notes, target-support policy, compatibility, security-review and governance approval evidence. Bind records to actual binary, recipe/environment, source/compiler/dependency/target identities and accepted command evidence. Reject missing, stale, tampered, revoked or mismatched records, unsupported targets and governance gaps with applicable P18T06001-P18T06008 blockers. A hosted bundle is not final seedless evidence."}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :applying-after-sha256
+   "de91d72315d2ffbb21dac70ce98b3aa9adc43785ee3142ebd244c7b1cd57812a",
+   :reviewed-record-after-sha256
+   "dbb9af7a4118b7393cef794f2974eba0ee16e16e65e92fab2bf04df5991746fc",
+   :field :projection,
+   :applying-before-sha256
+   "2d439724cd8f0fae570e067e25dd7394af2bc156b07935d4e743fe7e4465d23b",
+   :after
+   "Owner role: compiler API/pipeline maintainer. All tasks open; source evidence\nabove is partial implementation evidence, not closure.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Stabilize public request/context/result API | Versioned schema and compatibility fixtures for source and stage-artifact calls; missing versions, incompatible schemas and hidden mutable-context access reject. A direct caller and CLI adapter receive the same semantic results. |\n| Register and schedule actual passes | Built-in registration binds implementation/version to complete requires/preserves/invalidates/regenerates/effects/profile contracts; execute declared order and reject missing facts, duplicate/conflicting registration and illegal ordering before consumption. |\n| Execute and retain stage products | Actual selected compiler invocation records input/output identities, diagnostics, source origins and provenance for every required stage, including fused-pass observable boundaries; verifier failure stops downstream execution. |\n| Derive cache keys and invalidate facts | Use actual source/compiler/pass/plugin/grant/replay/policy/target inputs; unchanged-input reuse agrees with a clean run, and every contract invalidation class triggers revalidation or recomputation. Stale proofs, diagnostics and speculative release reuse reject. |\n| Integrate compiler consumers | Build, CLI and inspection callers consume the same API artifacts; positive and negative selected-target programs demonstrate no raw/unchecked backend input and no runnable output from diagnostic-only mode. |\n\nYes/no acceptance: are passes actually invoked? Are all required stage facts\nverified and retained? Are clean and reused results semantically equivalent?\nAre stale inputs and invalid stage orders rejected? Does public API behavior\nremain independent of ambient mutable compiler state? All must be yes.\n\nFoundation requirement gravity/canonical-pass-order: Resolve the retained D1 Core-AST-before-name-resolution versus C1/C6 resolved-lowering identity/order conflict through an explicit governing-source decision. Encode the adopted semantic boundaries and demonstrate their order on actual stage products, including fused execution without inventing another stage. Refusals: Reject unresolved or conflicting order claims, unresolved required names before typed acceptance and a fused pass that omits an adopted boundary; no manifest ordering label alone resolves the source conflict. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nFoundation requirement gravity/domain-anchor-preservation: Carry each domain operation's typed Core/MIR semantic anchor and required facts through optimization until its owning domain contract authorizes lowering; expose replacement or invalidation edges in the emitted artifacts. Refusals: Reject an unanchored opaque domain payload, a lost source/fact edge or premature lowering that prevents the required domain verification. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/feature-layer-classification: Attach each introduced feature to its owning source semantic layer, compile-time contract, domain IR, backend/runtime provider or tooling surface, with explicit dependencies and observable artifacts. Refusals: Reject a feature classified as portable source semantics solely because a host runtime or target supports it, or a backend used to defer compile-time profile/effect/authority legality. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n\nFoundation requirement gravity/fused-pass-observability: For each physically fused pass expose the same adopted semantic input/output boundaries, preserved/invalidated/regenerated facts, diagnostics and artifacts as the canonical pipeline; compare fused and unfused accepted/refused cases. Refusals: Reject lost intermediate obligations, unobservable invalidation or a fused path that accepts an input the canonical required boundary rejects. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/pass-contract-schema: Publish and validate versioned pass input/output schemas including required, preserved, invalidated and regenerated facts, profiles, effects, capabilities, diagnostics and emitted artifacts; actual registrations and consumers use those versions. Refusals: Reject absent or incompatible schema versions, undeclared invalidation, missing required facts and a pass output that violates the selected contract. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/unified-source-semantics: Compile the same supported Gravity source across its declared profiles/targets with one source semantic model, recording only contract-permitted representation/provider differences and explicit unsupported cases. Refusals: Reject a host truth/null/equality/overflow rule substituted for Gravity semantics or a backend accepting source behavior already rejected by profile/effect/safety analysis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nSource compiler/c1/compiler-program-legality: Apply ordinary Gravity type/effect/capability/profile/safety/artifact rules to compiler programs. Concrete acceptance: Compile an otherwise valid compiler module with a forbidden effect, missing grant, illegal profile operation or invalid safety fact; reject it by the same owning rule as an equivalent user module, without a compiler-internal exemption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence.\n\nBootstrap criterion bootstrap/compiler-meta-authority: Compile and invoke each declared migrated compiler module under meta or an explicitly narrower bootstrap profile. Check its declared effects and capabilities separately against scoped grants and declared compiler inputs; pure analysis remains pure unless declared compiler artifact IO is required. Record the admitted module/profile/input/grant/effect identities and actual allowed result. Before an effect occurs, reject undeclared compiler effects and ambient environment/time/random/network/filesystem/shell/registry access outside declared inputs. Exercise a valid narrow compiler-artifact operation and forbidden host access with BOOT3002/BOOT4001/BOOT4004. A trusted implementation label does not grant ambient authority; explicit audited implementation-provider exceptions retain their governing profile and unsafe boundary. Required outputs: module profile/effect/capability manifest; allowed invocation and denied-effect fixtures; source-bound authority diagnostics.\n\nBootstrap criterion bootstrap/generated-compiler-checking: Feed generated compiler code back through the normal reader/resolution/type/effect/profile/capability/ownership/safety pipeline before it becomes usable. Emit source and generated-origin links binding generator, module/pass/compiler, inputs and produced artifacts; preserve the ordinary code/span diagnostic contract. Reject missing generated-source provenance or skipped ordinary checks, including a generated illegal effect/profile/type program. A generator success flag or artifact link cannot bypass the checkers. Retain BOOT3004 and demonstrate both accepted generated compiler source and rejected generated source with traceable origins. Required outputs: checked generated compiler artifact; generated-origin provenance chain; positive and negative re-entry fixtures and BOOT3004 diagnostic.\n\nBootstrap criterion bootstrap/module-interface: Produce and validate a manifest for every declared migrated compiler module: role, input/output schemas, permitted effects and capabilities, preserved/transformed facts, generated artifacts, diagnostics, tests/fixtures and unsafe islands when present. Bind actual source/module/pass/compiler/input hashes and produced outputs, module conformance and preservation reports; do not substitute a generic pass schema for an instantiated migration interface. Reject a missing or inconsistent module field, unversioned ownership/matrix update or a manifest whose actual pass input/output/preservation behavior disagrees with its declaration. Positive, negative and preservation fixtures must execute the declared module boundary; source-file presence and a manifest alone do not prove migration. Required outputs: instantiated module migration and compiler-module manifests; module conformance/diagnostic/preservation reports; field-mismatch and missing-interface negative fixtures.\n\nBootstrap criterion bootstrap/pass-determinism: Run each declared compiler transformation on identical pinned inputs and compare actual ordered outputs, diagnostics and generated artifacts. Produce a deterministic-output report identifying module/pass/compiler/input identities. This verifies transformation behavior itself, separately from a preservation-contract validator or a deterministic scheduler. A fixture whose actual pass output/order differs for identical declared inputs must fail with BOOT4002; undeclared time/random/environment influence cannot be hidden in the comparison. Preserve the source's fixed-input condition rather than claiming all differing inputs must produce the same output. Required outputs: actual repeated-pass output and order comparisons; deterministic output report; nondeterministic transformation rejection fixture with BOOT4002.",
+   :id "pipeline",
+   :reviewed-record-before-sha256
+   "1a2d272def3de48f77ce67b91db9fdf2955f097193c3f57f93d85cefbdfcf40a",
+   :before
+   "Owner role: compiler API/pipeline maintainer. All tasks open; source evidence\nabove is partial implementation evidence, not closure.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Stabilize public request/context/result API | Versioned schema and compatibility fixtures for source and stage-artifact calls; missing versions, incompatible schemas and hidden mutable-context access reject. A direct caller and CLI adapter receive the same semantic results. |\n| Register and schedule actual passes | Built-in registration binds implementation/version to complete requires/preserves/invalidates/regenerates/effects/profile contracts; execute declared order and reject missing facts, duplicate/conflicting registration and illegal ordering before consumption. |\n| Execute and retain stage products | Actual selected compiler invocation records input/output identities, diagnostics, source origins and provenance for every required stage, including fused-pass observable boundaries; verifier failure stops downstream execution. |\n| Derive cache keys and invalidate facts | Use actual source/compiler/pass/plugin/grant/replay/policy/target inputs; unchanged-input reuse agrees with a clean run, and every contract invalidation class triggers revalidation or recomputation. Stale proofs, diagnostics and speculative release reuse reject. |\n| Integrate compiler consumers | Build, CLI and inspection callers consume the same API artifacts; positive and negative selected-target programs demonstrate no raw/unchecked backend input and no runnable output from diagnostic-only mode. |\n\nYes/no acceptance: are passes actually invoked? Are all required stage facts\nverified and retained? Are clean and reused results semantically equivalent?\nAre stale inputs and invalid stage orders rejected? Does public API behavior\nremain independent of ambient mutable compiler state? All must be yes.\n\nFoundation requirement gravity/canonical-pass-order: Resolve the retained D1 Core-AST-before-name-resolution versus C1/C6 resolved-lowering identity/order conflict through an explicit governing-source decision. Encode the adopted semantic boundaries and demonstrate their order on actual stage products, including fused execution without inventing another stage. Refusals: Reject unresolved or conflicting order claims, unresolved required names before typed acceptance and a fused pass that omits an adopted boundary; no manifest ordering label alone resolves the source conflict. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nFoundation requirement gravity/domain-anchor-preservation: Carry each domain operation's typed Core/MIR semantic anchor and required facts through optimization until its owning domain contract authorizes lowering; expose replacement or invalidation edges in the emitted artifacts. Refusals: Reject an unanchored opaque domain payload, a lost source/fact edge or premature lowering that prevents the required domain verification. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/feature-layer-classification: Attach each introduced feature to its owning source semantic layer, compile-time contract, domain IR, backend/runtime provider or tooling surface, with explicit dependencies and observable artifacts. Refusals: Reject a feature classified as portable source semantics solely because a host runtime or target supports it, or a backend used to defer compile-time profile/effect/authority legality. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n\nFoundation requirement gravity/fused-pass-observability: For each physically fused pass expose the same adopted semantic input/output boundaries, preserved/invalidated/regenerated facts, diagnostics and artifacts as the canonical pipeline; compare fused and unfused accepted/refused cases. Refusals: Reject lost intermediate obligations, unobservable invalidation or a fused path that accepts an input the canonical required boundary rejects. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/pass-contract-schema: Publish and validate versioned pass input/output schemas including required, preserved, invalidated and regenerated facts, profiles, effects, capabilities, diagnostics and emitted artifacts; actual registrations and consumers use those versions. Refusals: Reject absent or incompatible schema versions, undeclared invalidation, missing required facts and a pass output that violates the selected contract. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.\n\nFoundation requirement gravity/unified-source-semantics: Compile the same supported Gravity source across its declared profiles/targets with one source semantic model, recording only contract-permitted representation/provider differences and explicit unsupported cases. Refusals: Reject a host truth/null/equality/overflow rule substituted for Gravity semantics or a backend accepting source behavior already rejected by profile/effect/safety analysis. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer - Canonical D3 vocabulary/layer maps and source/manifest terminology check results.\n\nSource compiler/c1/compiler-program-legality: Apply ordinary Gravity type/effect/capability/profile/safety/artifact rules to compiler programs. Concrete acceptance: Compile an otherwise valid compiler module with a forbidden effect, missing grant, illegal profile operation or invalid safety fact; reject it by the same owning rule as an equivalent user module, without a compiler-internal exemption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence."}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :applying-after-sha256
+   "05da569b8d96f74c78f5c9e6b98bd81afdd9a8b3b45d68a74d15cd427bbd316a",
+   :reviewed-record-after-sha256
+   "234b09e155e2ce74d3843c1db904c75a7fb9befdbb1d08260284fc5e48b17d26",
+   :field :projection,
+   :applying-before-sha256
+   "a57539394e9b33eafa66a8b6d9b52668e289cfde4eba8706bd8e692e25c9bf3d",
+   :after
+   "Owner role: compiler verification maintainer. All tasks open.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Classify real pass population | Enumerate every pass in the declared compiler closure with version, risk, affected profiles/targets and governing minimum evidence; reject omitted passes or incompatible evidence classes. |\n| Execute required verification gates | Invoke actual schema/semantic verifiers at required compiler boundaries; bind reports to input/output identity and stop affected artifact production on failure rather than accepting supplied success flags. |\n| Bind transformation evidence | Changed MIR functions receive the governing translation validation or checked proof evidence; check-elision proofs/certificates are checked, and target lowering has actual differential/backend conformance receipts for claimed targets. |\n| Capture failures and preserve trust boundaries | Record counterexample input/output/property/diagnostic and source identities, retain the prior valid artifact after rejected transformation, and turn reproducible failures into regression fixtures. |\n| Emit truthful trust and release-gate records | Reports enumerate supported profiles/targets, residual evidence gaps and experimental gates; missing/high-risk/stale evidence blocks affected release artifacts. Release consumes this decision but independently owns final acceptance. |\n\nYes/no acceptance: do reports derive from actual checks on exact artifacts?\nAre plugin and backend passes included when used? Are absent evidence and\ncounterexamples visible? Do failures block the affected claimed release path?\nAll must be yes. No claim of a fully mechanized compiler is implied.\n\nFoundation requirement gravity/checker-actually-verifies: Invoke the declared checker on the exact submitted proof/certificate and current claim inputs before emitting a checked result; retain checker implementation/version, invocation input/output identity and accepted or rejected verdict. Refusals: Reject an unchecked supplied success flag, wrong checker, malformed proof and a certificate whose checker fails; producing a proof record or schema alone must never create checked status. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.\n\nFoundation requirement gravity/evidence-artifact-provenance: Emit inspectable verification, audit, replay, differential and benchmark artifacts with their distinct evidence kinds, exact subjects, source/compiler/checker/provider inputs and result identities; consumers can traverse each claim to its evidence. Refusals: Reject a missing subject/input edge, stale or tampered evidence and an artifact relabelled as a stronger evidence kind; preserve failed and historical attempts at their original identities. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison.\n\nFoundation requirement gravity/proof-artifact-claim-binding: Produce proof/certificate evidence naming the exact claim, domain/assumptions, subject inputs, checker/version and accepted or rejected result, and preserve those bindings at each consuming artifact. Refusals: Reject substituted subject/claim/domain/assumptions/checker, missing result or stale input identities; proof production does not itself establish actual checking. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): math - EFIR, numeric modes and independently checked math certificates; pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.\n\nFoundation requirement gravity/verification-evidence-kind: Label each claim's proof, checked certificate, test, audit, replay, differential or benchmark evidence explicitly, bind its subject and scope and make consumers enforce the required kind. Refusals: Reject a benchmark used as correctness proof, an unchecked certificate called checked, a replay log without actual replay or an audit label presented as executable conformance. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.\n\nCriterion `domain/mir-pass-integration`: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence. Accepted fixture: Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison. Negative fixture: Reject metadata loss, missing required facts or ungranted transformation effects. Required evidence: before/after MIR inspector artifacts and differential/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume pipeline, opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nBootstrap criterion bootstrap/pass-fact-preservation: Run positive, negative and preservation fixtures through actual compiler passes, comparing the declared input/output facts and emitted preservation report. Preserve source spans, types, effects, capabilities and safety facts or explicitly declare and verify their transformations; generated artifacts retain source/module/pass/compiler/input provenance. Deliberately drop each preserved fact or perform an undeclared transformation and require BOOT4003; omit preservation tests and require BOOT4007. A pass metadata declaration or proof-link presence does not substitute for a real transformed output and executed preservation check. Keep unsafe internals isolated/audited and stable diagnostic codes/spans as their separate governing boundaries. Required outputs: before/after pass preservation report; executed positive/negative/preservation fixture records; dropped-fact and missing-test diagnostics BOOT4003/BOOT4007.",
+   :id "pass-evidence",
+   :reviewed-record-before-sha256
+   "406bc619bf4e528834ee639ce93b981dcbf9428d01b6243655ef16bbdc269b8b",
+   :before
+   "Owner role: compiler verification maintainer. All tasks open.\n\n| Task | Concrete closing evidence |\n| --- | --- |\n| Classify real pass population | Enumerate every pass in the declared compiler closure with version, risk, affected profiles/targets and governing minimum evidence; reject omitted passes or incompatible evidence classes. |\n| Execute required verification gates | Invoke actual schema/semantic verifiers at required compiler boundaries; bind reports to input/output identity and stop affected artifact production on failure rather than accepting supplied success flags. |\n| Bind transformation evidence | Changed MIR functions receive the governing translation validation or checked proof evidence; check-elision proofs/certificates are checked, and target lowering has actual differential/backend conformance receipts for claimed targets. |\n| Capture failures and preserve trust boundaries | Record counterexample input/output/property/diagnostic and source identities, retain the prior valid artifact after rejected transformation, and turn reproducible failures into regression fixtures. |\n| Emit truthful trust and release-gate records | Reports enumerate supported profiles/targets, residual evidence gaps and experimental gates; missing/high-risk/stale evidence blocks affected release artifacts. Release consumes this decision but independently owns final acceptance. |\n\nYes/no acceptance: do reports derive from actual checks on exact artifacts?\nAre plugin and backend passes included when used? Are absent evidence and\ncounterexamples visible? Do failures block the affected claimed release path?\nAll must be yes. No claim of a fully mechanized compiler is implied.\n\nFoundation requirement gravity/checker-actually-verifies: Invoke the declared checker on the exact submitted proof/certificate and current claim inputs before emitting a checked result; retain checker implementation/version, invocation input/output identity and accepted or rejected verdict. Refusals: Reject an unchecked supplied success flag, wrong checker, malformed proof and a certificate whose checker fails; producing a proof record or schema alone must never create checked status. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.\n\nFoundation requirement gravity/evidence-artifact-provenance: Emit inspectable verification, audit, replay, differential and benchmark artifacts with their distinct evidence kinds, exact subjects, source/compiler/checker/provider inputs and result identities; consumers can traverse each claim to its evidence. Refusals: Reject a missing subject/input edge, stale or tampered evidence and an artifact relabelled as a stronger evidence kind; preserve failed and historical attempts at their original identities. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison.\n\nFoundation requirement gravity/proof-artifact-claim-binding: Produce proof/certificate evidence naming the exact claim, domain/assumptions, subject inputs, checker/version and accepted or rejected result, and preserve those bindings at each consuming artifact. Refusals: Reject substituted subject/claim/domain/assumptions/checker, missing result or stale input identities; proof production does not itself establish actual checking. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): math - EFIR, numeric modes and independently checked math certificates; pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.\n\nFoundation requirement gravity/verification-evidence-kind: Label each claim's proof, checked certificate, test, audit, replay, differential or benchmark evidence explicitly, bind its subject and scope and make consumers enforce the required kind. Refusals: Reject a benchmark used as correctness proof, an unchecked certificate called checked, a replay log without actual replay or an audit label presented as executable conformance. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.\n\nCriterion `domain/mir-pass-integration`: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence. Accepted fixture: Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison. Negative fixture: Reject metadata loss, missing required facts or ungranted transformation effects. Required evidence: before/after MIR inspector artifacts and differential/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume pipeline, opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed."}],
+ :applying-source "0cb7897fa4ef1bf2904252385950389104c1dd3e"}

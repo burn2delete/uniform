@@ -1,5 +1,47 @@
 # Evidence: Platform workflow migration
 
+## Current product task-interface reconciliation
+
+Against input `6276c94b0b753c888ef8fecc794bcc81245ea3b3`, the unchanged
+product scope already named four architecture decision records and seven
+conditional product outputs. Those eleven outputs now have literal Open task
+IDs in the same sole task authority. The four original language target project
+records and historical migration suffix are retained. No ISA, kernel model,
+application inventory, physical deliverable or implementation is adopted.
+
+The product parser and generated roadmap conserve all eleven interfaces
+separately from the four target-conformance records. Focused validation passed
+5 tests / 86 assertions, including duplicate identity, missing region and false
+acceptance rejection. The initial added test omitted its clojure.set require
+and failed to compile; the explicit require corrected it before the passing
+run. Both document validators and the boundary gate (6 tests / 11 assertions)
+passed. No target execution or external action occurred.
+
+The first SH projection check rejected the changed source fingerprint. Its
+prior review is retained in an explicit pending source-version successor,
+binding task and roadmap bytes to source commit
+`99de41da4e1f9d22a9112238b52877b825cbfd4f`. The SH check now passes with
+fingerprint `7d9e373daaaa4110dbde94757c141e002678d11988f14f157c401d67a312d45a`.
+All 180 SH predicates and 18 sequence rows, other component task authorities,
+and the original four Platform records remain identical in scope and content.
+Only the Platform file/source pins change. No SH implementation state is promoted.
+
+The [source binding receipt](../requirement-reconciliation/platform-task-interfaces.edn)
+has SHA256 `661cb323190acc6d7d92ee26e169643b5a9716af34bc184abe119c7e6beb5767`.
+It binds each of the eleven task IDs to an exact original source span and
+proves that removing the interface insertion recovers the complete original
+task file byte-for-byte, including its scope and historical suffix.
+SH, Platform and dependency controls pass 30 tests / 633 assertions; the
+boundary gate passes 6 / 11. Independent acceptance of these eleven
+source-derived interfaces and their all-project count remains pending.
+
+PR554 static CI run `40800139944`, job `123206010819`, rejected a duplicate
+mapping-review definition introduced by the source successor. The correction
+names the original value platform-source-review-predecessor and defines the
+successor once; both values and the complete prior history are retained. SH
+11 tests / 145 assertions and exact projection check pass after the change.
+Local clj-kondo is unavailable; changed-head automatic lint remains pending.
+
 ## Source and scope
 
 Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.

@@ -1,0 +1,627 @@
+{:requirements
+ ["behavior/pkg4/package-operation-artifacts"
+  "behavior/pkg5/dependency-authority-admission"
+  "behavior/pkg5/deterministic-dependency-solver"
+  "behavior/pkg5/yank-revocation-admission"
+  "behavior/pkg6/transitive-deny-precedence"
+  "behavior/pkg8/package-safety-metadata"
+  "governance/security-response"],
+ :field-edits
+ [{:collection :source-facets,
+   :id "facet/bootstrap-governance/ac6a32f273c128198678db0b",
+   :field-path [:unit-ids],
+   :before-present? true,
+   :before
+   ["governance/security-response"
+    "behavior/pkg5/yank-revocation-admission"
+    "behavior/pkg5/dependency-authority-admission"],
+   :after
+   ["behavior/pkg5/yank-revocation-admission"
+    "behavior/pkg5/dependency-authority-admission"
+    "behavior/pkg6/transitive-deny-precedence"
+    "behavior/pkg5/deterministic-dependency-solver"]}
+  {:collection :source-facets,
+   :id "facet/bootstrap-governance/ac6a32f273c128198678db0b",
+   :field-path [:bootgov33-source-context],
+   :before-present? true,
+   :before
+   {:state :proposed,
+    :routes
+    [{:owners
+      ["governance/security-response"
+       "behavior/pkg5/yank-revocation-admission"
+       "behavior/pkg5/dependency-authority-admission"],
+      :role :advisory-consumption-not-incident-review,
+      :predicate
+      "Package policy consumes the advisory/yank record; this neither creates an advisory nor performs the incident response review.",
+      :original-id "governance/security-response"}],
+    :source-entailment :qualified-predicate-only,
+    :atomicity-and-global-nonoverlap :not-approved},
+   :after
+   {:state :proposed,
+    :routes
+    [{:owners
+      ["behavior/pkg5/yank-revocation-admission"
+       "behavior/pkg5/dependency-authority-admission"
+       "behavior/pkg6/transitive-deny-precedence"
+       "behavior/pkg5/deterministic-dependency-solver"],
+      :role :qualified-selection-and-install-consumers,
+      :predicate
+      "Package managers enforce the named yank, advisory, compatibility and capability policies at selection and installation. Each existing owner receives only its applicable policy predicate. Selection grants no authority; preserve locked history and explicit emergency exceptions.",
+      :original-id "governance/package-policy-consumption"}],
+    :source-entailment :qualified-predicate-only,
+    :atomicity-and-global-nonoverlap :not-approved}}
+  {:collection :source-facets,
+   :id "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc",
+   :field-path [:unit-ids],
+   :before-present? true,
+   :before
+   ["behavior/pkg5/yank-revocation-admission"
+    "behavior/pkg5/dependency-authority-admission"
+    "behavior/pkg6/transitive-deny-precedence"
+    "behavior/pkg5/deterministic-dependency-solver"],
+   :after
+   ["behavior/pkg8/package-safety-metadata"
+    "behavior/pkg4/package-operation-artifacts"]}
+  {:collection :source-facets,
+   :id "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc",
+   :field-path [:bootgov33-source-context],
+   :before-present? true,
+   :before
+   {:state :proposed,
+    :routes
+    [{:owners
+      ["behavior/pkg5/yank-revocation-admission"
+       "behavior/pkg5/dependency-authority-admission"
+       "behavior/pkg6/transitive-deny-precedence"
+       "behavior/pkg5/deterministic-dependency-solver"],
+      :role :qualified-selection-and-install-consumers,
+      :predicate
+      "Apply the named yank/advisory/compatibility/capability policy at actual selection/install boundaries; each owner receives only its corresponding policy predicate. Selecting a package grants no authority; retain locked history and explicit emergency exceptions.",
+      :original-id "governance/package-policy-consumption"}],
+    :source-entailment :qualified-predicate-only,
+    :atomicity-and-global-nonoverlap :not-approved},
+   :after
+   {:state :proposed,
+    :routes
+    [{:owners ["behavior/pkg8/package-safety-metadata"],
+      :role :package-surface-metadata-producer,
+      :predicate
+      "Unsafe and AI package surfaces have explicit safety/effect/capability metadata available for the package manager's preinstallation disclosure. Metadata production alone does not prove that a consumer actually exposes it.",
+      :original-id "governance/package-policy-consumption"}
+     {:owners ["behavior/pkg4/package-operation-artifacts"],
+      :role :preinstallation-visibility-consumer,
+      :predicate
+      "Actual package operations expose unsafe and AI surfaces before installation, with machine-readable and human-readable reviewable output. Reject hidden surfaces; do not substitute policy-selection records or an unused metadata schema for disclosure.",
+      :original-id "governance/package-policy-consumption"}],
+    :source-entailment :qualified-predicate-only,
+    :atomicity-and-global-nonoverlap :not-approved}}
+  {:collection :requirements,
+   :id "behavior/pkg4/package-operation-artifacts",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg4/722-837"
+    "facet/ai-build-tools/pkg4/853-883"
+    "facet/ai-build-tools/pkg4/884-893"
+    "facet/ai-build-tools/pkg4/893-905"
+    "facet/ai-build-tools/pkg4/930-941"
+    "facet/ai-build-tools/pkg4/953-964"
+    "facet/ai-build-tools/pkg4/964-977"
+    "facet/ai-build-tools/pkg4/1000-1012"
+    "facet/ai-build-tools/pkg4/1012-1024"
+    "facet/ai-build-tools/pkg4/1025-1167"
+    "facet/ai-build-tools/pkg4/1750-1815"
+    "facet/ai-build-tools/pkg4/1967-2044"
+    "facet/ai-build-tools/pkg4/2071-2103"
+    "facet/ai-build-tools/pkg4/2132-2171"
+    "facet/ai-build-tools/pkg4/2205-2242"
+    "facet/ai-build-tools/pkg4/2242-2272"
+    "facet/ai-build-tools/pkg4/2321-2361"
+    "facet/ai-build-tools/pkg4/2388-2405"
+    "facet/ai-build-tools/pkg4/2406-2426"
+    "facet/ai-build-tools/pkg4/2556-2582"
+    "facet/ai-build-tools/pkg4/3185-3243"
+    "facet/ai-build-tools/pkg4/3528-3587"
+    "facet/ai-build-tools/pkg4/3631-3676"
+    "facet/ai-build-tools/pkg4/3814-3923"
+    "facet/ai-build-tools/pkg4/4252-4309"
+    "facet/ai-build-tools/pkg4/4371-4435"],
+   :after
+   ["facet/ai-build-tools/pkg4/722-837"
+    "facet/ai-build-tools/pkg4/853-883"
+    "facet/ai-build-tools/pkg4/884-893"
+    "facet/ai-build-tools/pkg4/893-905"
+    "facet/ai-build-tools/pkg4/930-941"
+    "facet/ai-build-tools/pkg4/953-964"
+    "facet/ai-build-tools/pkg4/964-977"
+    "facet/ai-build-tools/pkg4/1000-1012"
+    "facet/ai-build-tools/pkg4/1012-1024"
+    "facet/ai-build-tools/pkg4/1025-1167"
+    "facet/ai-build-tools/pkg4/1750-1815"
+    "facet/ai-build-tools/pkg4/1967-2044"
+    "facet/ai-build-tools/pkg4/2071-2103"
+    "facet/ai-build-tools/pkg4/2132-2171"
+    "facet/ai-build-tools/pkg4/2205-2242"
+    "facet/ai-build-tools/pkg4/2242-2272"
+    "facet/ai-build-tools/pkg4/2321-2361"
+    "facet/ai-build-tools/pkg4/2388-2405"
+    "facet/ai-build-tools/pkg4/2406-2426"
+    "facet/ai-build-tools/pkg4/2556-2582"
+    "facet/ai-build-tools/pkg4/3185-3243"
+    "facet/ai-build-tools/pkg4/3528-3587"
+    "facet/ai-build-tools/pkg4/3631-3676"
+    "facet/ai-build-tools/pkg4/3814-3923"
+    "facet/ai-build-tools/pkg4/4252-4309"
+    "facet/ai-build-tools/pkg4/4371-4435"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"]}
+  {:collection :requirements,
+   :id "behavior/pkg5/dependency-authority-admission",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg5/348-649"
+    "facet/ai-build-tools/pkg5/650-799"
+    "facet/ai-build-tools/pkg5/1001-1022"
+    "facet/ai-build-tools/pkg5/1022-1050"
+    "facet/ai-build-tools/pkg5/1050-1085"
+    "facet/ai-build-tools/pkg5/1448-1529"
+    "facet/ai-build-tools/pkg5/2158-2180"
+    "facet/ai-build-tools/pkg5/2180-2209"
+    "facet/ai-build-tools/pkg5/2209-2238"
+    "facet/ai-build-tools/pkg5/2461-2504"
+    "facet/ai-build-tools/pkg5/2827-2846"
+    "facet/ai-build-tools/pkg5/2962-2995"
+    "facet/ai-build-tools/pkg5/2995-3034"
+    "facet/ai-build-tools/pkg5/3034-3061"
+    "facet/ai-build-tools/pkg5/3061-3099"
+    "facet/ai-build-tools/pkg5/3099-3138"
+    "facet/ai-build-tools/pkg5/3138-3180"
+    "facet/ai-build-tools/pkg5/3180-3217"
+    "facet/ai-build-tools/pkg5/3217-3247"
+    "facet/ai-build-tools/pkg5/3247-3251"
+    "facet/ai-build-tools/pkg5/3373-3426"
+    "facet/ai-build-tools/pkg5/3495-3538"
+    "facet/ai-build-tools/pkg5/3538-3616"
+    "facet/ai-build-tools/pkg5/3826-3882"
+    "facet/ai-build-tools/pkg5/4167-4317"
+    "facet/ai-build-tools/pkg5/4493-4569"
+    "facet/ai-build-tools/pkg5/4632-4692"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"],
+   :after
+   ["facet/ai-build-tools/pkg5/348-649"
+    "facet/ai-build-tools/pkg5/650-799"
+    "facet/ai-build-tools/pkg5/1001-1022"
+    "facet/ai-build-tools/pkg5/1022-1050"
+    "facet/ai-build-tools/pkg5/1050-1085"
+    "facet/ai-build-tools/pkg5/1448-1529"
+    "facet/ai-build-tools/pkg5/2158-2180"
+    "facet/ai-build-tools/pkg5/2180-2209"
+    "facet/ai-build-tools/pkg5/2209-2238"
+    "facet/ai-build-tools/pkg5/2461-2504"
+    "facet/ai-build-tools/pkg5/2827-2846"
+    "facet/ai-build-tools/pkg5/2962-2995"
+    "facet/ai-build-tools/pkg5/2995-3034"
+    "facet/ai-build-tools/pkg5/3034-3061"
+    "facet/ai-build-tools/pkg5/3061-3099"
+    "facet/ai-build-tools/pkg5/3099-3138"
+    "facet/ai-build-tools/pkg5/3138-3180"
+    "facet/ai-build-tools/pkg5/3180-3217"
+    "facet/ai-build-tools/pkg5/3217-3247"
+    "facet/ai-build-tools/pkg5/3247-3251"
+    "facet/ai-build-tools/pkg5/3373-3426"
+    "facet/ai-build-tools/pkg5/3495-3538"
+    "facet/ai-build-tools/pkg5/3538-3616"
+    "facet/ai-build-tools/pkg5/3826-3882"
+    "facet/ai-build-tools/pkg5/4167-4317"
+    "facet/ai-build-tools/pkg5/4493-4569"
+    "facet/ai-build-tools/pkg5/4632-4692"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"]}
+  {:collection :requirements,
+   :id "behavior/pkg5/deterministic-dependency-solver",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg5/348-649"
+    "facet/ai-build-tools/pkg5/650-799"
+    "facet/ai-build-tools/pkg5/818-839"
+    "facet/ai-build-tools/pkg5/840-881"
+    "facet/ai-build-tools/pkg5/955-973"
+    "facet/ai-build-tools/pkg5/973-1001"
+    "facet/ai-build-tools/pkg5/1085-1107"
+    "facet/ai-build-tools/pkg5/1107-1139"
+    "facet/ai-build-tools/pkg5/1140-1208"
+    "facet/ai-build-tools/pkg5/1226-1292"
+    "facet/ai-build-tools/pkg5/1602-1653"
+    "facet/ai-build-tools/pkg5/1653-1694"
+    "facet/ai-build-tools/pkg5/1947-1986"
+    "facet/ai-build-tools/pkg5/1987-2013"
+    "facet/ai-build-tools/pkg5/2042-2071"
+    "facet/ai-build-tools/pkg5/2071-2092"
+    "facet/ai-build-tools/pkg5/2274-2354"
+    "facet/ai-build-tools/pkg5/2381-2416"
+    "facet/ai-build-tools/pkg5/2416-2461"
+    "facet/ai-build-tools/pkg5/2504-2538"
+    "facet/ai-build-tools/pkg5/2586-2623"
+    "facet/ai-build-tools/pkg5/2623-2668"
+    "facet/ai-build-tools/pkg5/2668-2710"
+    "facet/ai-build-tools/pkg5/2737-2757"
+    "facet/ai-build-tools/pkg5/2758-2779"
+    "facet/ai-build-tools/pkg5/2779-2808"
+    "facet/ai-build-tools/pkg5/2870-2905"
+    "facet/ai-build-tools/pkg5/2962-2995"
+    "facet/ai-build-tools/pkg5/2995-3034"
+    "facet/ai-build-tools/pkg5/3034-3061"
+    "facet/ai-build-tools/pkg5/3061-3099"
+    "facet/ai-build-tools/pkg5/3099-3138"
+    "facet/ai-build-tools/pkg5/3138-3180"
+    "facet/ai-build-tools/pkg5/3180-3217"
+    "facet/ai-build-tools/pkg5/3217-3247"
+    "facet/ai-build-tools/pkg5/3247-3251"
+    "facet/ai-build-tools/pkg5/3272-3314"
+    "facet/ai-build-tools/pkg5/3314-3373"
+    "facet/ai-build-tools/pkg5/3616-3683"
+    "facet/ai-build-tools/pkg5/3683-3757"
+    "facet/ai-build-tools/pkg5/3774-3826"
+    "facet/ai-build-tools/pkg5/3926-3967"
+    "facet/ai-build-tools/pkg5/4066-4117"
+    "facet/ai-build-tools/pkg5/4117-4166"
+    "facet/ai-build-tools/pkg5/4167-4317"
+    "facet/ai-build-tools/pkg5/4343-4404"
+    "facet/ai-build-tools/pkg5/4404-4493"
+    "facet/ai-build-tools/pkg5/4692-4756"
+    "facet/ai-build-tools/pkg5/4756-4834"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"],
+   :after
+   ["facet/ai-build-tools/pkg5/348-649"
+    "facet/ai-build-tools/pkg5/650-799"
+    "facet/ai-build-tools/pkg5/818-839"
+    "facet/ai-build-tools/pkg5/840-881"
+    "facet/ai-build-tools/pkg5/955-973"
+    "facet/ai-build-tools/pkg5/973-1001"
+    "facet/ai-build-tools/pkg5/1085-1107"
+    "facet/ai-build-tools/pkg5/1107-1139"
+    "facet/ai-build-tools/pkg5/1140-1208"
+    "facet/ai-build-tools/pkg5/1226-1292"
+    "facet/ai-build-tools/pkg5/1602-1653"
+    "facet/ai-build-tools/pkg5/1653-1694"
+    "facet/ai-build-tools/pkg5/1947-1986"
+    "facet/ai-build-tools/pkg5/1987-2013"
+    "facet/ai-build-tools/pkg5/2042-2071"
+    "facet/ai-build-tools/pkg5/2071-2092"
+    "facet/ai-build-tools/pkg5/2274-2354"
+    "facet/ai-build-tools/pkg5/2381-2416"
+    "facet/ai-build-tools/pkg5/2416-2461"
+    "facet/ai-build-tools/pkg5/2504-2538"
+    "facet/ai-build-tools/pkg5/2586-2623"
+    "facet/ai-build-tools/pkg5/2623-2668"
+    "facet/ai-build-tools/pkg5/2668-2710"
+    "facet/ai-build-tools/pkg5/2737-2757"
+    "facet/ai-build-tools/pkg5/2758-2779"
+    "facet/ai-build-tools/pkg5/2779-2808"
+    "facet/ai-build-tools/pkg5/2870-2905"
+    "facet/ai-build-tools/pkg5/2962-2995"
+    "facet/ai-build-tools/pkg5/2995-3034"
+    "facet/ai-build-tools/pkg5/3034-3061"
+    "facet/ai-build-tools/pkg5/3061-3099"
+    "facet/ai-build-tools/pkg5/3099-3138"
+    "facet/ai-build-tools/pkg5/3138-3180"
+    "facet/ai-build-tools/pkg5/3180-3217"
+    "facet/ai-build-tools/pkg5/3217-3247"
+    "facet/ai-build-tools/pkg5/3247-3251"
+    "facet/ai-build-tools/pkg5/3272-3314"
+    "facet/ai-build-tools/pkg5/3314-3373"
+    "facet/ai-build-tools/pkg5/3616-3683"
+    "facet/ai-build-tools/pkg5/3683-3757"
+    "facet/ai-build-tools/pkg5/3774-3826"
+    "facet/ai-build-tools/pkg5/3926-3967"
+    "facet/ai-build-tools/pkg5/4066-4117"
+    "facet/ai-build-tools/pkg5/4117-4166"
+    "facet/ai-build-tools/pkg5/4167-4317"
+    "facet/ai-build-tools/pkg5/4343-4404"
+    "facet/ai-build-tools/pkg5/4404-4493"
+    "facet/ai-build-tools/pkg5/4692-4756"
+    "facet/ai-build-tools/pkg5/4756-4834"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"]}
+  {:collection :requirements,
+   :id "behavior/pkg5/yank-revocation-admission",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg5/1694-1763"
+    "facet/ai-build-tools/pkg5/2238-2273"
+    "facet/ai-build-tools/pkg5/3538-3616"
+    "facet/ai-build-tools/pkg5/4019-4066"
+    "facet/bootstrap-governance/53c56836f5fa7ca7c04c67fb"
+    "facet/bootstrap-governance/69f29b4973b533f0a59e8441"
+    "facet/bootstrap-governance/9fe061276444352ea4105a6f"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"
+    "facet/bootstrap-governance/a712d98619ae7b573cfaefe8"],
+   :after
+   ["facet/ai-build-tools/pkg5/1694-1763"
+    "facet/ai-build-tools/pkg5/2238-2273"
+    "facet/ai-build-tools/pkg5/3538-3616"
+    "facet/ai-build-tools/pkg5/4019-4066"
+    "facet/bootstrap-governance/53c56836f5fa7ca7c04c67fb"
+    "facet/bootstrap-governance/69f29b4973b533f0a59e8441"
+    "facet/bootstrap-governance/9fe061276444352ea4105a6f"
+    "facet/bootstrap-governance/a712d98619ae7b573cfaefe8"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"]}
+  {:collection :requirements,
+   :id "behavior/pkg6/transitive-deny-precedence",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg6/1786-1874"
+    "facet/ai-build-tools/pkg6/2243-2256"
+    "facet/ai-build-tools/pkg6/4055-4129"
+    "facet/ai-build-tools/pkg6/5088-5169"
+    "facet/foundation/81e82ba9ebe6c80f0da7458c"
+    "facet/foundation/4bcff66d183f4d00a5870739"
+    "facet/foundation/8a088e39f71e161162011d65"
+    "facet/foundation/ba3baf0f546c967ecb909c8e"
+    "facet/foundation/b0476099c29ee19fd9b8283b"
+    "facet/foundation/ea9af5667b0b095d5aadf517"
+    "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+    "facet/foundation/88e6c82eff0c6a6fb53002ab"
+    "facet/foundation/6417313d2f333de7082cf785"
+    "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+    "facet/foundation/a0ca95290615dfdfa854d4fd"
+    "facet/foundation/8e92ffcc004134a32d87e553"
+    "facet/foundation/2c160e28d27085795f49c712"
+    "facet/foundation/d54f020ae0c9c3c60aa25a2b"
+    "facet/foundation/10b263fc4b8c7b313581cec9"
+    "facet/foundation/033b858fcf81ea48527cb53c"
+    "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+    "facet/foundation/523b8379cdd950c846157716"
+    "facet/foundation/10da89a275c908917e039346"
+    "facet/foundation/6bf793d5f7c5656aab741023"
+    "facet/foundation/75eec15133c55efd31cbebd3"
+    "facet/foundation/9ef6fbc71713de8426563175"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"],
+   :after
+   ["facet/ai-build-tools/pkg6/1786-1874"
+    "facet/ai-build-tools/pkg6/2243-2256"
+    "facet/ai-build-tools/pkg6/4055-4129"
+    "facet/ai-build-tools/pkg6/5088-5169"
+    "facet/foundation/81e82ba9ebe6c80f0da7458c"
+    "facet/foundation/4bcff66d183f4d00a5870739"
+    "facet/foundation/8a088e39f71e161162011d65"
+    "facet/foundation/ba3baf0f546c967ecb909c8e"
+    "facet/foundation/b0476099c29ee19fd9b8283b"
+    "facet/foundation/ea9af5667b0b095d5aadf517"
+    "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+    "facet/foundation/88e6c82eff0c6a6fb53002ab"
+    "facet/foundation/6417313d2f333de7082cf785"
+    "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+    "facet/foundation/a0ca95290615dfdfa854d4fd"
+    "facet/foundation/8e92ffcc004134a32d87e553"
+    "facet/foundation/2c160e28d27085795f49c712"
+    "facet/foundation/d54f020ae0c9c3c60aa25a2b"
+    "facet/foundation/10b263fc4b8c7b313581cec9"
+    "facet/foundation/033b858fcf81ea48527cb53c"
+    "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+    "facet/foundation/523b8379cdd950c846157716"
+    "facet/foundation/10da89a275c908917e039346"
+    "facet/foundation/6bf793d5f7c5656aab741023"
+    "facet/foundation/75eec15133c55efd31cbebd3"
+    "facet/foundation/9ef6fbc71713de8426563175"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"]}
+  {:collection :requirements,
+   :id "behavior/pkg8/package-safety-metadata",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/ai-build-tools/pkg8/360-737"
+    "facet/ai-build-tools/pkg8/738-863"
+    "facet/ai-build-tools/pkg8/884-918"
+    "facet/ai-build-tools/pkg8/919-957"
+    "facet/ai-build-tools/pkg8/957-1006"
+    "facet/ai-build-tools/pkg8/1006-1042"
+    "facet/ai-build-tools/pkg8/1042-1129"
+    "facet/ai-build-tools/pkg8/1129-1156"
+    "facet/ai-build-tools/pkg8/1156-1197"
+    "facet/ai-build-tools/pkg8/1197-1220"
+    "facet/ai-build-tools/pkg8/1264-1300"
+    "facet/ai-build-tools/pkg8/1347-1446"
+    "facet/ai-build-tools/pkg8/1464-1532"
+    "facet/ai-build-tools/pkg8/1532-1622"
+    "facet/ai-build-tools/pkg8/1622-1707"
+    "facet/ai-build-tools/pkg8/1707-1776"
+    "facet/ai-build-tools/pkg8/1776-1852"
+    "facet/ai-build-tools/pkg8/1852-1930"
+    "facet/ai-build-tools/pkg8/2116-2167"
+    "facet/ai-build-tools/pkg8/2186-2219"
+    "facet/ai-build-tools/pkg8/2252-2275"
+    "facet/ai-build-tools/pkg8/2333-2406"
+    "facet/ai-build-tools/pkg8/2433-2485"
+    "facet/ai-build-tools/pkg8/2485-2515"
+    "facet/ai-build-tools/pkg8/2515-2550"
+    "facet/ai-build-tools/pkg8/2550-2590"
+    "facet/ai-build-tools/pkg8/2590-2639"
+    "facet/ai-build-tools/pkg8/2639-2678"
+    "facet/ai-build-tools/pkg8/2678-2714"
+    "facet/ai-build-tools/pkg8/2714-2753"
+    "facet/ai-build-tools/pkg8/2780-2804"
+    "facet/ai-build-tools/pkg8/2805-2832"
+    "facet/ai-build-tools/pkg8/2832-2855"
+    "facet/ai-build-tools/pkg8/2855-2877"
+    "facet/ai-build-tools/pkg8/2877-2897"
+    "facet/ai-build-tools/pkg8/2897-2918"
+    "facet/ai-build-tools/pkg8/3013-3040"
+    "facet/ai-build-tools/pkg8/3040-3064"
+    "facet/ai-build-tools/pkg8/3064-3106"
+    "facet/ai-build-tools/pkg8/3106-3143"
+    "facet/ai-build-tools/pkg8/3143-3184"
+    "facet/ai-build-tools/pkg8/3184-3219"
+    "facet/ai-build-tools/pkg8/3219-3274"
+    "facet/ai-build-tools/pkg8/3274-3335"
+    "facet/ai-build-tools/pkg8/3335-3357"
+    "facet/ai-build-tools/pkg8/3357-3361"
+    "facet/ai-build-tools/pkg8/3382-3428"
+    "facet/ai-build-tools/pkg8/3428-3488"
+    "facet/ai-build-tools/pkg8/3488-3548"
+    "facet/ai-build-tools/pkg8/3627-3664"
+    "facet/ai-build-tools/pkg8/3664-3730"
+    "facet/ai-build-tools/pkg8/3730-3773"
+    "facet/ai-build-tools/pkg8/3851-3902"
+    "facet/ai-build-tools/pkg8/3902-3949"
+    "facet/ai-build-tools/pkg8/3949-3994"
+    "facet/ai-build-tools/pkg8/3994-4040"
+    "facet/ai-build-tools/pkg8/4040-4087"
+    "facet/ai-build-tools/pkg8/4087-4128"
+    "facet/ai-build-tools/pkg8/4240-4361"
+    "facet/ai-build-tools/pkg8/4387-4439"
+    "facet/ai-build-tools/pkg8/4439-4515"
+    "facet/ai-build-tools/pkg8/4515-4589"
+    "facet/ai-build-tools/pkg8/4649-4689"
+    "facet/ai-build-tools/pkg8/4689-4741"],
+   :after
+   ["facet/ai-build-tools/pkg8/360-737"
+    "facet/ai-build-tools/pkg8/738-863"
+    "facet/ai-build-tools/pkg8/884-918"
+    "facet/ai-build-tools/pkg8/919-957"
+    "facet/ai-build-tools/pkg8/957-1006"
+    "facet/ai-build-tools/pkg8/1006-1042"
+    "facet/ai-build-tools/pkg8/1042-1129"
+    "facet/ai-build-tools/pkg8/1129-1156"
+    "facet/ai-build-tools/pkg8/1156-1197"
+    "facet/ai-build-tools/pkg8/1197-1220"
+    "facet/ai-build-tools/pkg8/1264-1300"
+    "facet/ai-build-tools/pkg8/1347-1446"
+    "facet/ai-build-tools/pkg8/1464-1532"
+    "facet/ai-build-tools/pkg8/1532-1622"
+    "facet/ai-build-tools/pkg8/1622-1707"
+    "facet/ai-build-tools/pkg8/1707-1776"
+    "facet/ai-build-tools/pkg8/1776-1852"
+    "facet/ai-build-tools/pkg8/1852-1930"
+    "facet/ai-build-tools/pkg8/2116-2167"
+    "facet/ai-build-tools/pkg8/2186-2219"
+    "facet/ai-build-tools/pkg8/2252-2275"
+    "facet/ai-build-tools/pkg8/2333-2406"
+    "facet/ai-build-tools/pkg8/2433-2485"
+    "facet/ai-build-tools/pkg8/2485-2515"
+    "facet/ai-build-tools/pkg8/2515-2550"
+    "facet/ai-build-tools/pkg8/2550-2590"
+    "facet/ai-build-tools/pkg8/2590-2639"
+    "facet/ai-build-tools/pkg8/2639-2678"
+    "facet/ai-build-tools/pkg8/2678-2714"
+    "facet/ai-build-tools/pkg8/2714-2753"
+    "facet/ai-build-tools/pkg8/2780-2804"
+    "facet/ai-build-tools/pkg8/2805-2832"
+    "facet/ai-build-tools/pkg8/2832-2855"
+    "facet/ai-build-tools/pkg8/2855-2877"
+    "facet/ai-build-tools/pkg8/2877-2897"
+    "facet/ai-build-tools/pkg8/2897-2918"
+    "facet/ai-build-tools/pkg8/3013-3040"
+    "facet/ai-build-tools/pkg8/3040-3064"
+    "facet/ai-build-tools/pkg8/3064-3106"
+    "facet/ai-build-tools/pkg8/3106-3143"
+    "facet/ai-build-tools/pkg8/3143-3184"
+    "facet/ai-build-tools/pkg8/3184-3219"
+    "facet/ai-build-tools/pkg8/3219-3274"
+    "facet/ai-build-tools/pkg8/3274-3335"
+    "facet/ai-build-tools/pkg8/3335-3357"
+    "facet/ai-build-tools/pkg8/3357-3361"
+    "facet/ai-build-tools/pkg8/3382-3428"
+    "facet/ai-build-tools/pkg8/3428-3488"
+    "facet/ai-build-tools/pkg8/3488-3548"
+    "facet/ai-build-tools/pkg8/3627-3664"
+    "facet/ai-build-tools/pkg8/3664-3730"
+    "facet/ai-build-tools/pkg8/3730-3773"
+    "facet/ai-build-tools/pkg8/3851-3902"
+    "facet/ai-build-tools/pkg8/3902-3949"
+    "facet/ai-build-tools/pkg8/3949-3994"
+    "facet/ai-build-tools/pkg8/3994-4040"
+    "facet/ai-build-tools/pkg8/4040-4087"
+    "facet/ai-build-tools/pkg8/4087-4128"
+    "facet/ai-build-tools/pkg8/4240-4361"
+    "facet/ai-build-tools/pkg8/4387-4439"
+    "facet/ai-build-tools/pkg8/4439-4515"
+    "facet/ai-build-tools/pkg8/4515-4589"
+    "facet/ai-build-tools/pkg8/4649-4689"
+    "facet/ai-build-tools/pkg8/4689-4741"
+    "facet/bootstrap-governance/31af1c0f2a6ab88f5e4215fc"]}
+  {:collection :requirements,
+   :id "governance/security-response",
+   :field-path [:source-facet-ids],
+   :before-present? true,
+   :before
+   ["facet/bootstrap-governance/2bf95166f918c67587e0b1e9"
+    "facet/bootstrap-governance/c647fbb3c36ac3309b80fa6f"
+    "facet/bootstrap-governance/dc4ecf2471295618ff2414bd"
+    "facet/bootstrap-governance/bbb12909388812c19e58e02a"
+    "facet/bootstrap-governance/9bb86288277cb1701cfacd2b"
+    "facet/bootstrap-governance/51ca7bd1343f11a87a1a6403"
+    "facet/bootstrap-governance/a2fec94838b37b33c3ecd47f"
+    "facet/bootstrap-governance/806e6933c0ea683c25bd3331"
+    "facet/bootstrap-governance/7435c695142ce35eac013b34"
+    "facet/bootstrap-governance/9fe061276444352ea4105a6f"
+    "facet/bootstrap-governance/b364ca1ec0544b5b1b23b307"
+    "facet/bootstrap-governance/ac6a32f273c128198678db0b"
+    "facet/bootstrap-governance/a712d98619ae7b573cfaefe8"],
+   :after
+   ["facet/bootstrap-governance/2bf95166f918c67587e0b1e9"
+    "facet/bootstrap-governance/c647fbb3c36ac3309b80fa6f"
+    "facet/bootstrap-governance/dc4ecf2471295618ff2414bd"
+    "facet/bootstrap-governance/bbb12909388812c19e58e02a"
+    "facet/bootstrap-governance/9bb86288277cb1701cfacd2b"
+    "facet/bootstrap-governance/51ca7bd1343f11a87a1a6403"
+    "facet/bootstrap-governance/a2fec94838b37b33c3ecd47f"
+    "facet/bootstrap-governance/806e6933c0ea683c25bd3331"
+    "facet/bootstrap-governance/7435c695142ce35eac013b34"
+    "facet/bootstrap-governance/9fe061276444352ea4105a6f"
+    "facet/bootstrap-governance/b364ca1ec0544b5b1b23b307"
+    "facet/bootstrap-governance/a712d98619ae7b573cfaefe8"]}
+  {:collection :source-dispositions,
+   :id
+   "GOV10/source/8c9acbeaf70f67f0214c968b4e0f9b7345edf519c68c6058494e155e3f94fe9d",
+   :field-path [:requirement-ids],
+   :before-present? true,
+   :before
+   ["behavior/pkg5/dependency-authority-admission"
+    "behavior/pkg5/deterministic-dependency-solver"
+    "behavior/pkg5/yank-revocation-admission"
+    "behavior/pkg6/transitive-deny-precedence"
+    "behavior/pkg9/registry-history-retention"
+    "behavior/pkg9/registry-publication-gate"
+    "governance/namespace-decision"
+    "governance/security-response"],
+   :after
+   ["behavior/pkg4/package-operation-artifacts"
+    "behavior/pkg5/dependency-authority-admission"
+    "behavior/pkg5/deterministic-dependency-solver"
+    "behavior/pkg5/yank-revocation-admission"
+    "behavior/pkg6/transitive-deny-precedence"
+    "behavior/pkg8/package-safety-metadata"
+    "behavior/pkg9/registry-history-retention"
+    "behavior/pkg9/registry-publication-gate"
+    "governance/namespace-decision"
+    "governance/security-response"]}],
+ :base-source-view
+ "6056b2efa7188e7756cda6100b831d9bc489d4d52dbff5e924b0aa859c303418",
+ :schema-version 1,
+ :controls
+ {:both-original-raw-spans :pass,
+  :reciprocal-seven-owner-memberships :pass,
+  :occurrence-union :pass,
+  :other-fields-and-memberships :unchanged,
+  :wrong-context-owner-swap :rejected,
+  :missing-reciprocal-visibility :rejected},
+ :state :proposed,
+ :new-task-count 0,
+ :source-document
+ {:path
+  "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md",
+  :sha256
+  "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3"},
+ :kind :current-governance-source-role-correction,
+ :independent-review :pending,
+ :qualification
+ "Line110 constrains policy consumers, not incident-response production. Line112 requires actual preinstallation surface visibility, distinct from selection/admission policy and metadata production. Seven current active owners are used; retired broad governance IDs remain archived. This source correction assigns no implementation, atomicity, nonoverlap or global-count acceptance.",
+ :source-role-predecessor
+ "f13f4d04a5101eac72920915ce84ae7d29ecb3441a1b758782bfdc6d765d3249",
+ :implementation-acceptance :unassessed,
+ :canonical-adoption :not-applied}

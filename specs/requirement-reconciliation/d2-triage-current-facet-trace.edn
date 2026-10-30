@@ -1,0 +1,361 @@
+{:fixture-criterion
+ {:path "specs/domains-workflow/tasks.md",
+  :marker "domains-implementation-tasks",
+  :task-id "ai",
+  :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+  :file-sha256
+  "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+  :start-byte 313532,
+  :end-byte 315511,
+  :raw-sha256
+  "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+ :authority :owner-proposal-pending-independent-source-facet-review,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :checks {:test 2, :pass 17, :fail 0, :error 0, :type :summary},
+ :supporting-criteria
+ [{:id "interface/domain/support-agent-integration",
+   :semantic-source-id "domain/support-agent-integration",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+       :file-sha256
+       "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+       :start-byte 294518,
+       :end-byte 295544,
+       :raw-sha256
+       "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}]}]}
+  {:id "interface/language/effects/interpret-workflow-replay",
+   :semantic-source-id "language/effects/interpret-workflow-replay",
+   :task-links
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :runtime-effect-resource-and-error-consumer,
+     :criterion-witnesses
+     [{:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 41280,
+       :end-byte 42647,
+       :raw-sha256
+       "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}]}]}
+  {:id "interface/language/facet/emit-agent-plan",
+   :semantic-source-id "language/facet/emit-agent-plan",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role :agent-artifact-producer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+       :file-sha256
+       "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+       :start-byte 295575,
+       :end-byte 296792,
+       :raw-sha256
+       "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}]}]}],
+ :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+ :source-facets 6,
+ :kind :D2-support-triage-current-facet-trace,
+ :retired-owner-applicability
+ {:path
+  "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+  :sha256
+  "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+  :original-id "gravity/workflow-ai-vertical-slice",
+  :previous-gap :exact-D2-positive-fixture-refinement-required,
+  :current-gap-disposition
+  :source-criterion-refinement-applied-independent-review-pending,
+  :qualification
+  "The immutable earlier proposal's identified fixture gap is addressed in current source. Its retirement history and independent-review status remain unchanged; none of its other attached-context residuals is discharged automatically."},
+ :facets
+ [{:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :positive-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "ad7f1e43e6e5ca1a660463673d4d581e40fd874b4ccbc3f7290968428c6e9005",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8232,
+    :end-byte 8359,
+    :raw-sha256
+    "ad7f1e43e6e5ca1a660463673d4d581e40fd874b4ccbc3f7290968428c6e9005"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text
+   "- support triage workflow with one model call, one schema-validated tool, one human-review step, and one durable replay record.",
+   :source-occurrence-id
+   "D2/source/fee3d369848d6b484b0528ba8d2e83253c64e1694294a3a2124af81e52ae0368",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/f136c5e4884858e8fe73a5eb",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The ordinary-source support-triage fixture explicitly contains one model-call step, one schema-validated tool step, one human-review step and a durable replay record tying those steps to the same fixture. Real operation/event and record-versus-replay results are required; detailed event records remain required rather than capped."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :negative-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "98e75c8e1d26ac2ca91c2492b1acaee0b652e24ed0fd05cb44578da757db50f0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8390,
+    :end-byte 8421,
+    :raw-sha256
+    "98e75c8e1d26ac2ca91c2492b1acaee0b652e24ed0fd05cb44578da757db50f0"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text "- tool call without capability,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids ["gravity/ai-tool-schema-policy-record"],
+   :id "facet/foundation/d942d0f1bb9b2d707dc46839",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The integrated AI fixture refuses tool use without capability and retains the actual Auth decision and source-mapped failure."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :negative-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "98dcb4e791a74721750cc3d7475ca8717ece3ccae8237be9358e5df45c02dc58",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8422,
+    :end-byte 8463,
+    :raw-sha256
+    "98dcb4e791a74721750cc3d7475ca8717ece3ccae8237be9358e5df45c02dc58"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text "- model output without schema validation,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids ["gravity/ai-tool-schema-policy-record"],
+   :id "facet/foundation/fc1ba6249d7f1ddd5e8363fa",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The integrated AI fixture refuses unvalidated model output and retains schema-validation and refusal records."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :negative-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "4bc4de494b0daead22e779b4493e67aba37164778738415d1fb23a7bafef3832",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8464,
+    :end-byte 8522,
+    :raw-sha256
+    "4bc4de494b0daead22e779b4493e67aba37164778738415d1fb23a7bafef3832"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text
+   "- prompt-injected instruction crossing authority boundary,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids ["gravity/ai-tool-schema-policy-record"],
+   :id "facet/foundation/2d169328cfb707afa1ea451a",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The integrated AI fixture refuses prompt-injected authority escalation; prompt provenance or review cannot manufacture grants."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :negative-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "e925556ec5b04c8f60a56139904aedcecb280464645268bc645b479dc519a9ee",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8523,
+    :end-byte 8593,
+    :raw-sha256
+    "e925556ec5b04c8f60a56139904aedcecb280464645268bc645b479dc519a9ee"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text
+   "- replay-sensitive workflow reading current time without event record,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids
+   ["gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/22e991514a0487e8af6bfe1c",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The integrated fixture refuses replay-sensitive current-time access without an event record, consuming the Workflow owner's actual typed event/replay contract."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :role :negative-fixture,
+   :current-criterion-witness
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :raw-sha256
+   "10ae6f1689241b3d5a411603ac4d82ea832d158995d79f118cbdb86c7f931cd8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8594,
+    :end-byte 8641,
+    :raw-sha256
+    "10ae6f1689241b3d5a411603ac4d82ea832d158995d79f118cbdb86c7f931cd8"},
+   :disposition :owner-proposed-exact-current-criterion-conjunction,
+   :source-text "- agent memory write outside granted namespace.",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids ["gravity/ai-tool-schema-policy-record"],
+   :id "facet/foundation/34327b533af3c1f0bc85723c",
+   :document-id "D2",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The integrated AI fixture refuses agent-memory writes outside the granted namespace and retains the failed input, grant decision and diagnostic."}],
+ :qualification
+ "Only the explicit D2 positive fixture and five negative cases receive current owning-criterion conjunction proposals. Detailed runtime records remain required and no accounting refusal is restored. Actual execution, all other attached predicates, milestone/release support, independent review and final counting remain separate.",
+ :input
+ {:facet-matrix
+  {:sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"},
+  :current-criteria
+  {:path
+   "specs/requirement-reconciliation/all833-d2-triage-current-criterion-conservation.edn",
+   :sha256
+   "1928a0feb92818f6435a4500bb58fa8559d4b501cf014847409f13a87d30ced2"},
+  :current-bindings
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+   :sha256
+   "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25"}},
+ :new-decision-ids 0}

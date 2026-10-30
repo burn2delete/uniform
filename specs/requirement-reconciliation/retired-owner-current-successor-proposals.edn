@@ -1,0 +1,2880 @@
+{:all833-decision-records :unchanged,
+ :counts
+ {:retired-owner-facet-memberships 73,
+  :unique-attached-facets 72,
+  :new-task-units 0,
+  :exact-positive-fixture-gaps 1,
+  :other-attached-facet-joins-required 62,
+  :retained-retirements 3,
+  :proposed-primary-behavior-facet-joins 9,
+  :current-criteria 7,
+  :new-decision-ids 0},
+ :authority
+ :owner-proposal-pending-independent-successor-and-facet-acceptance,
+ :criteria
+ {"interface/domain/support-agent-integration"
+  {:id "interface/domain/support-agent-integration",
+   :semantic-source-id "domain/support-agent-integration",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+       :start-byte 294518,
+       :end-byte 295544,
+       :raw-sha256
+       "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}]}],
+   :current-raw-predicates
+   ["Criterion `domain/support-agent-integration`: Execute and evaluate declared support triage with prompt provenance, structured-output/taint, durable graph/replay, tool policy and required refund/review transitions. Accepted fixture: Run support triage with prompt provenance, structured validated outputs, retrieval trust, durable replay, tool policy and explicit refund human-review transition. Negative fixture: Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review. Required evidence: agent/tool/prompt/memory/review graph, eval and replay reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume schema, workflow outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed."]},
+  "interface/gravity/unsafe-island-safe-api-eligibility"
+  {:id "interface/gravity/unsafe-island-safe-api-eligibility",
+   :semantic-source-id "gravity/unsafe-island-safe-api-eligibility",
+   :task-links
+   [{:task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :path "specs/legality-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/legality-workflow/tasks.md",
+       :marker "legality-implementation-tasks",
+       :task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+       :start-byte 72209,
+       :end-byte 73327,
+       :raw-sha256
+       "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"}]}],
+   :current-raw-predicates
+   ["Foundation requirement gravity/unsafe-island-safe-api-eligibility: Expose unsafe-backed functionality as a safe API only when the wrapper proves or checks every required precondition and cleanup obligation, with source-bound audit and actual boundary tests; preserve internal-only status as a separate permitted boundary. Refusals: Reject invalid state escaping into safe code, a missing wrapper test/audit, an unproved precondition or treating internal-only unsafe code as a safe exported API. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products."]},
+  "interface/language/effects/authorize-and-record-build-effect"
+  {:id "interface/language/effects/authorize-and-record-build-effect",
+   :semantic-source-id
+   "language/effects/authorize-and-record-build-effect",
+   :task-links
+   [{:task-id
+     "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+     :path "specs/expand-workflow/tasks.md",
+     :role :build-authority-checker,
+     :criterion-witnesses
+     [{:path "specs/expand-workflow/tasks.md",
+       :marker "expand-implementation-tasks",
+       :task-id
+       "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+       :start-byte 12202,
+       :end-byte 12727,
+       :raw-sha256
+       "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/effects/authorize-and-record-build-effect: Authorize build/compile-time effects against hermetic package/provider/deployment policy and record each granted effect with input/output/replay identity. Reject: Reject undeclared filesystem/environment/network/shell/model/tool authority, runtime grants reused in meta context and missing required replay records. Required outputs: Build-effect grant/deny log and hermetic input/replay artifact with positive/negative phase-authority fixtures."]},
+  "interface/language/effects/interpret-workflow-replay"
+  {:id "interface/language/effects/interpret-workflow-replay",
+   :semantic-source-id "language/effects/interpret-workflow-replay",
+   :task-links
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :runtime-effect-resource-and-error-consumer,
+     :criterion-witnesses
+     [{:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 41280,
+       :end-byte 42647,
+       :raw-sha256
+       "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}]}],
+   :current-raw-predicates
+   ["Source obligation `language/effects/interpret-workflow-replay`: Interpret workflow event/replay operations and their time/random/activity/model/tool/review/retry/compensation records under the durable replay contract. Accept: Record workflow/event and workflow/replay operations with stable event/step identity, input/output schemas, effects, external results, time/random/activity/model/tool/review/retry/compensation decisions and replay IDs. Record mode writes and replay mode reads; concurrent branches replay deterministically with original handler labels/identity. Preserve R6 graph-declared replay-safe operations only where no R7/R8 recorded-output obligation applies. Reject: Reject missing/mismatched/reordered replay records, live nondeterministic work in recorded-output segments and silent repetition of external effects; emit L11-REPLAY-RACE when durable concurrency lacks a record. Required outputs: Typed handler/event/step graph, replay log, record-versus-replay traces, deterministic branch comparison and refusal diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+  "interface/language/facet/emit-agent-plan"
+  {:id "interface/language/facet/emit-agent-plan",
+   :semantic-source-id "language/facet/emit-agent-plan",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role :agent-artifact-producer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+       :start-byte 295575,
+       :end-byte 296792,
+       :raw-sha256
+       "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}]}],
+   :current-raw-predicates
+   ["Source obligation `language/facet/emit-agent-plan`: Emit an agent facet's prompt/tool/model/evaluation/trace/guardrail artifacts with explicit model/tool effects and capabilities. Accept: Compile an explicitly activated agent facet into prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks; retain model/tool effects and capabilities without hidden runtime privilege. The SupportAgent example is an artifact-generation fixture, not authorization for live calls. Reject: Reject missing prompt/tool/model/evaluation/trace/guardrail products, inactive/unsupported facet use or authority inferred from prompt text. Required outputs: Versioned source-bound agent artifact bundle and accepted fixture plus missing-product/effect/grant rejection diagnostics. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+  "interface/language/library/compile-contract-examples"
+  {:id "interface/language/library/compile-contract-examples",
+   :semantic-source-id "language/library/compile-contract-examples",
+   :task-links
+   [{:task-id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :path "specs/stdlib-workflow/tasks.md",
+     :role :library-operation-producer,
+     :criterion-witnesses
+     [{:path "specs/stdlib-workflow/tasks.md",
+       :marker "stdlib-implementation-tasks",
+       :task-id
+       "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+       :start-byte 5805,
+       :end-byte 6316,
+       :raw-sha256
+       "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/library/compile-contract-examples: Compile positive and negative public documentation examples for every claimed major profile with actual declared imports and contracts. Reject: Reject missing imports, hidden state/authority, unsupported profile claims and examples whose diagnostic outcome disagrees with their public contract. Required outputs: Profile-qualified example build/diagnostic matrix tied to namespace/API/source versions and executable conformance artifacts."]},
+  "interface/language/library/publish-public-contract"
+  {:id "interface/language/library/publish-public-contract",
+   :semantic-source-id "language/library/publish-public-contract",
+   :task-links
+   [{:task-id
+     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+     :path "specs/stdlib-workflow/tasks.md",
+     :role :public-library-contract-producer,
+     :criterion-witnesses
+     [{:path "specs/stdlib-workflow/tasks.md",
+       :marker "stdlib-implementation-tasks",
+       :task-id
+       "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+       :start-byte 2759,
+       :end-byte 3312,
+       :raw-sha256
+       "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/library/publish-public-contract: Publish machine-readable namespace/operation contracts for profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics; bind them to actual exports. Reject: Reject missing/false export metadata, hidden host behavior, untracked authority and public declarations inconsistent with callable implementations. Required outputs: Versioned public API/export/profile manifests and contract-to-implementation conformance/denial evidence."]}},
+ :retained-retired-ids
+ ["gravity/hermetic-build-grants"
+  "gravity/library-api-contract"
+  "gravity/workflow-ai-vertical-slice"],
+ :implementation-credit :none,
+ :checks {:test 2, :pass 15, :fail 0, :error 0, :type :summary},
+ :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+ :lineages
+ [{:primary-facet-ids
+   ["facet/foundation/81e82ba9ebe6c80f0da7458c"
+    "facet/foundation/033b858fcf81ea48527cb53c"
+    "facet/foundation/f906b9a1f284d1e6c9baff14"
+    "facet/foundation/b299622c70031e5c57f5b88b"
+    "facet/foundation/0612cd01b329cf5f0bf60847"
+    "facet/foundation/74d6b9456610aa7cb23bfdeb"
+    "facet/foundation/0cd03a1cc41c3ecabe52c7d0"
+    "facet/foundation/a773f6f34d03eaf3602e92aa"],
+   :residual
+   "Other attached project/resolve/signing/provenance, compiler artifact/diagnostic/origin, host/workflow/AI, profile/effect/memory specialization and domain-IR predicates retain separate exact-join obligations; the eight primary behavior joins do not entail all43 facets.",
+   :attached-facet-count 43,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Reject external build access and execution in hermetic mode unless the project explicitly grants the corresponding build effects.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The same compile-time/build authority boundary authorizes declared effects against hermetic policy, rejects undeclared filesystem/environment/network/shell/model/tool authority and emits grant/deny and input/output/replay records. Runtime grants cannot substitute for meta authority. The absorbed foundation name does not add a second task or permission check.",
+   :current-successor-criteria
+   ["interface/language/effects/authorize-and-record-build-effect"],
+   :original-id "gravity/hermetic-build-grants",
+   :historical-context
+   {:artifact
+    {:path
+     "specs/requirement-reconciliation/phase-01-core-language.edn",
+     :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+     :sha256
+     "4a0ec1dc74f40e87e83aa9206953963993171a50d5efbede1d31b3f00c4f8200"},
+    :unit-id "language/effects/authorize-and-record-build-effect",
+    :original-context
+    {:original-id "gravity/hermetic-build-grants",
+     :obligation
+     "Reject external build access and execution in hermetic mode unless the project explicitly grants the corresponding build effects.",
+     :observable-boundary nil,
+     :source-facet-ids
+     ["facet/foundation/1449f191974ff754be4ed2e6"
+      "facet/foundation/81e82ba9ebe6c80f0da7458c"
+      "facet/foundation/8a088e39f71e161162011d65"
+      "facet/foundation/b0476099c29ee19fd9b8283b"
+      "facet/foundation/ea9af5667b0b095d5aadf517"
+      "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+      "facet/foundation/88e6c82eff0c6a6fb53002ab"
+      "facet/foundation/6417313d2f333de7082cf785"
+      "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+      "facet/foundation/8e92ffcc004134a32d87e553"
+      "facet/foundation/2c160e28d27085795f49c712"
+      "facet/foundation/10b263fc4b8c7b313581cec9"
+      "facet/foundation/033b858fcf81ea48527cb53c"
+      "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+      "facet/foundation/523b8379cdd950c846157716"
+      "facet/foundation/10da89a275c908917e039346"
+      "facet/foundation/6bf793d5f7c5656aab741023"
+      "facet/foundation/75eec15133c55efd31cbebd3"
+      "facet/foundation/6a3fc5f3c758f30d5f92db8e"
+      "facet/foundation/e8693bed2e6ae49b9763cf26"
+      "facet/foundation/f906b9a1f284d1e6c9baff14"
+      "facet/foundation/d06435ec2f90a888ca20a4ae"
+      "facet/foundation/edf5c560d47b735d8aa5f368"
+      "facet/foundation/36ba293412c0247c08c1cc4d"
+      "facet/foundation/08c03d82bd660a18e3bca17a"
+      "facet/foundation/b299622c70031e5c57f5b88b"
+      "facet/foundation/0612cd01b329cf5f0bf60847"
+      "facet/foundation/7fa2a8cf6bc98341299bc44b"
+      "facet/foundation/74d6b9456610aa7cb23bfdeb"
+      "facet/foundation/7f07fa593703d99ad1924731"
+      "facet/foundation/72ccabc5472257dbd5fdace6"
+      "facet/foundation/802bdd57d445e55e165c0a61"
+      "facet/foundation/ad7c67f86945dad31730e8f7"
+      "facet/foundation/0cd03a1cc41c3ecabe52c7d0"
+      "facet/foundation/0631b3ea5395230e648ee07d"
+      "facet/foundation/b24b59bdbc17e477ea1d6a91"
+      "facet/foundation/20c682df6a71b5af98dda65a"
+      "facet/foundation/206ad8d9325efd0df045a894"
+      "facet/foundation/4e17133c95dbcee6d20b0b8f"
+      "facet/foundation/71e81efa62dbc52154009106"
+      "facet/foundation/89541537263fd84e68adb53b"
+      "facet/foundation/9886e0a21acf9c776dd8e894"
+      "facet/foundation/a773f6f34d03eaf3602e92aa"],
+     :qualification
+     "Complete source predicate retained as an owning-operation context. Role labels do not silently exclude scope; all source/task/history lineage survives and applied nonoverlap requires independent review."},
+    :authority
+    :historical-context-lineage-only-not-independent-current-entailment}}
+  {:additional-source-criterion
+   "interface/language/library/compile-contract-examples",
+   :primary-facet-ids ["facet/foundation/755678d937cbb1f223ce2401"],
+   :residual
+   "The full public contract and safe-wrapper obligation have current candidates. The milestone's actual core/collection/text/math/memory/IO/network/test/IR-inspector surfaces, per-profile compiled examples, support-matrix and reproducibility predicates are separate; contract publication alone does not implement or close those surfaces.",
+   :attached-facet-count 15,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Publish library API profiles, effects, capabilities, allocation behavior and stability while keeping safe-wrapper guarantees.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The current library export producer publishes profile/effect/capability/allocation/resource/failure/stability contracts tied to actual callable exports. The existing unsafe-wrapper owner separately requires checked/proved preconditions, cleanup, audit and boundary tests before safe export. Publishing metadata is not a safe-wrapper proof.",
+   :current-successor-criteria
+   ["interface/language/library/publish-public-contract"
+    "interface/gravity/unsafe-island-safe-api-eligibility"],
+   :original-id "gravity/library-api-contract",
+   :historical-context
+   {:artifact
+    {:path
+     "specs/requirement-reconciliation/phase-01-core-language.edn",
+     :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+     :sha256
+     "4a0ec1dc74f40e87e83aa9206953963993171a50d5efbede1d31b3f00c4f8200"},
+    :unit-id "language/library/publish-public-contract",
+    :original-context
+    {:original-id "gravity/library-api-contract",
+     :obligation
+     "Publish library API profiles, effects, capabilities, allocation behavior and stability while keeping safe-wrapper guarantees.",
+     :observable-boundary nil,
+     :source-facet-ids
+     ["facet/foundation/28753b4e765ed53eb5d99f78"
+      "facet/foundation/92540536ac2cad5942257171"
+      "facet/foundation/9caed46fb50632a0fb39322a"
+      "facet/foundation/dc5576667f453e627d85f271"
+      "facet/foundation/39e5e9305d1000e5334a0ea5"
+      "facet/foundation/bc7b865a898332f1373ec440"
+      "facet/foundation/6edb3037da6a3ab2f2023bae"
+      "facet/foundation/f607120231191638e5ac4cb7"
+      "facet/foundation/ce8c4ab985665a3c98d1319c"
+      "facet/foundation/3dfa5a468e08da1bed029f06"
+      "facet/foundation/f5c6c4107feed5d647405297"
+      "facet/foundation/5a25912d48373018ff6be6b0"
+      "facet/foundation/755678d937cbb1f223ce2401"
+      "facet/foundation/3028a744efd5956f2c044bd4"
+      "facet/foundation/ed94ec0c3e34fa14b9a6e513"],
+     :qualification
+     "Complete source predicate retained as an owning-operation context. Role labels do not silently exclude scope; all source/task/history lineage survives and applied nonoverlap requires independent review."},
+    :authority
+    :historical-context-lineage-only-not-independent-current-entailment}}
+  {:required-positive-fixture
+   {:source-facet "facet/foundation/f136c5e4884858e8fe73a5eb",
+    :model-calls 1,
+    :schema-validated-tools 1,
+    :human-review-steps 1,
+    :durable-replay-records 1,
+    :shape-authority
+    :D2-Milestone6-explicit-positive-fixture-not-project-work-accounting},
+   :primary-facet-ids ["facet/foundation/f136c5e4884858e8fe73a5eb"],
+   :residual
+   "Agent/workflow declarations, replay log schema and required release products need their actual artifact producers and gate consumers. The shared reproducibility record is one source facet, not duplicated completion credit.",
+   :attached-facet-count 15,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Produce the support-triage workflow slice with a model call, schema-validated tool, human-review event and durable replay record through the ordinary language artifact path.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The AI task executes and evaluates support triage with schema/taint/tool/review/replay products, the Workflow task produces and checks actual typed event/step record-versus-replay behavior, and the facet compiler emits ordinary source-bound agent products without authorizing live calls. These are different producer/consumer roles, not whole-task aliases.",
+   :current-successor-criteria
+   ["interface/domain/support-agent-integration"
+    "interface/language/effects/interpret-workflow-replay"
+    "interface/language/facet/emit-agent-plan"],
+   :exact-current-criterion-gap
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "ai",
+    :existing-criterion "domain/support-agent-integration",
+    :predicate
+    "The task says declared support triage and requires review/replay artifacts, but does not explicitly bind the D2 one-model/one-schema-tool/one-review/one-durable-record positive fixture.",
+    :required-refinement
+    "Require that exact source-bound positive fixture and real ordinary-pipeline agent/workflow products, rejecting an omitted member or counts supplied without the corresponding operation/event. Keep tool-grant, schema, taint and replay-sensitive clock refusals with their actual owners.",
+    :status :actionable-current-task-refinement-required,
+    :implementation-credit :none},
+   :original-id "gravity/workflow-ai-vertical-slice",
+   :historical-context
+   {:authority
+    :no-historical-successor-alias-found-in-the-retained-core-context-source,
+    :qualification
+    "The recorded retirement remains history. The current successor below is a new explicit proposal based on the actual original D2 predicate and current criteria, not a retroactively accepted alias."}}],
+ :kind :retained-retired-original-owner-current-successor-proposals,
+ :facets
+ [{:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Build and Package Architecture", :line 105}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "86b0c093423ed5171d4461bb52f97ec33c41634bcc3bd7bf9b746fd4dffc93e9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 5506,
+    :end-byte 5719,
+    :raw-sha256
+    "86b0c093423ed5171d4461bb52f97ec33c41634bcc3bd7bf9b746fd4dffc93e9"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "The build system is part of Gravity, not an external shell convention. A project file declares profiles, targets, entrypoints, dependencies, capabilities, artifact kinds, build policies, and allowed build effects.",
+   :source-occurrence-id
+   "D1/source/a6272fd75052a3e8d724154832ee887d90606582ceaa430a1d26275336d1992e",
+   :owner-requirement-ids ["gravity/hermetic-build-grants"],
+   :id "facet/foundation/1449f191974ff754be4ed2e6",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Build and Package Architecture", :line 105}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "6e91e7eef8df2ab08e14b8e85751cc8f07ce972a584b523c5c47f5cb6095c11b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 5721,
+    :end-byte 5942,
+    :raw-sha256
+    "6e91e7eef8df2ab08e14b8e85751cc8f07ce972a584b523c5c47f5cb6095c11b"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text
+   "Hermetic build mode denies filesystem reads outside declared roots, environment reads, network access, shell execution, package fetching, model calls, and tool calls unless the project manifest grants those build effects.",
+   :source-occurrence-id
+   "D1/source/ea477c4fd7314391a4eb6efbebdd0504a0b97104481c8becac9f5cd108c49710",
+   :owner-requirement-ids
+   ["gravity/build-authority-does-not-widen"
+    "gravity/hermetic-build-grants"],
+   :id "facet/foundation/81e82ba9ebe6c80f0da7458c",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Requirements", :line 128}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "8e505261e2a61188a5c6b288efc4daf3f77c094b5c98a3aab4c704a7d7a18de5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 8268,
+    :end-byte 8381,
+    :raw-sha256
+    "8e505261e2a61188a5c6b288efc4daf3f77c094b5c98a3aab4c704a7d7a18de5"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- Optimization must preserve diagnostics or maintain enough provenance to explain optimized code in source terms.",
+   :source-occurrence-id
+   "D1/source/a15be0162fa0fb32496871c9465a8c2af7eb9623009c231e8ce2645c4322c747",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/8a088e39f71e161162011d65",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "5f8a9ff97be77cd20e8d7c6baf39fcb1a94390c195b8e2c26cca5b5c30476659",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9350,
+    :end-byte 9373,
+    :raw-sha256
+    "5f8a9ff97be77cd20e8d7c6baf39fcb1a94390c195b8e2c26cca5b5c30476659"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- syntax object stream,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/b0476099c29ee19fd9b8283b",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "35a88080a830113ef4e8576c1e784b5f2141e59f0245529b89437f79f714a12c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9374,
+    :end-byte 9394,
+    :raw-sha256
+    "35a88080a830113ef4e8576c1e784b5f2141e59f0245529b89437f79f714a12c"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- typed core module,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/ea9af5667b0b095d5aadf517",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "520dd114ce005386b86171c7e817e4538d128be1323d18dc54e6aec087eba476",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9395,
+    :end-byte 9431,
+    :raw-sha256
+    "520dd114ce005386b86171c7e817e4538d128be1323d18dc54e6aec087eba476"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- effect and capability fact tables,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/08fbeb71ac7a9a5ce80d81ec",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "87522a5ed1a8cd41dd0ccf879feeb090ca750a0ed223597daa92d31aa3d58e79",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9432,
+    :end-byte 9460,
+    :raw-sha256
+    "87522a5ed1a8cd41dd0ccf879feeb090ca750a0ed223597daa92d31aa3d58e79"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- profile validation report,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/88e6c82eff0c6a6fb53002ab",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "acc369fe7efa448b0ee391cbc59f0fed15950db6ea07b02c0810db8990dea579",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9461,
+    :end-byte 9486,
+    :raw-sha256
+    "acc369fe7efa448b0ee391cbc59f0fed15950db6ea07b02c0810db8990dea579"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- safety analysis report,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/6417313d2f333de7082cf785",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 147}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "588537c15167a1e8296991f15d7b57f59253d73637aea07e9e5b3aa9b20cb33c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9521,
+    :end-byte 9545,
+    :raw-sha256
+    "588537c15167a1e8296991f15d7b57f59253d73637aea07e9e5b3aa9b20cb33c"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- optimization manifest,",
+   :source-occurrence-id
+   "D1/source/7dd441142db48d85294ec1befba53b7abfbe6d0ad3866ff745022540f32f442f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/evidence-artifact-provenance"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"
+    "gravity/typed-artifact-provenance"],
+   :id "facet/foundation/f4ea0b5d5c73e8b9467f9cc7",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Rejected Architectures", :line 167}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "041564e9f63c5430810153772f0176cb0dfec9ae013192cc8115c9703a526a68",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9822,
+    :end-byte 9834,
+    :raw-sha256
+    "041564e9f63c5430810153772f0176cb0dfec9ae013192cc8115c9703a526a68"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "D1 rejects:\n",
+   :source-occurrence-id
+   "D1/source/e2587933ca233fdef594a0c30c9184725179b262fdf4d483fba0ce7d7047555f",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/8e92ffcc004134a32d87e553",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Rejected Architectures", :line 167}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "810e20c9f9c9e97ce5d4120b820fedbe29ad6bf17ed7c925a33558826f26b699",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 9976,
+    :end-byte 10030,
+    :raw-sha256
+    "810e20c9f9c9e97ce5d4120b820fedbe29ad6bf17ed7c925a33558826f26b699"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- macro systems that bypass syntax objects or hygiene,",
+   :source-occurrence-id
+   "D1/source/22532a1fac00d433eebd2755d19f6a93ec8afa17411df6cf3665f7e2fa12803d",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/2c160e28d27085795f49c712",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Rejected Architectures", :line 167}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "32ede3932962dc35cd1baefd64618f5b70b579d1f9bada9d3279b4c0c868e910",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 10180,
+    :end-byte 10251,
+    :raw-sha256
+    "32ede3932962dc35cd1baefd64618f5b70b579d1f9bada9d3279b4c0c868e910"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- optimizer passes that drop source/proof metadata without replacement,",
+   :source-occurrence-id
+   "D1/source/22532a1fac00d433eebd2755d19f6a93ec8afa17411df6cf3665f7e2fa12803d",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/10b263fc4b8c7b313581cec9",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Rejected Architectures", :line 167}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "8acd96ba911cae255ab8e06e25ea85f28accf374b99cb5f1427b790c4b4e3d3e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 10252,
+    :end-byte 10323,
+    :raw-sha256
+    "8acd96ba911cae255ab8e06e25ea85f28accf374b99cb5f1427b790c4b4e3d3e"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text
+   "- package scripts that execute with ambient shell or network authority,",
+   :source-occurrence-id
+   "D1/source/22532a1fac00d433eebd2755d19f6a93ec8afa17411df6cf3665f7e2fa12803d",
+   :owner-requirement-ids
+   ["gravity/build-authority-does-not-widen"
+    "gravity/hermetic-build-grants"],
+   :id "facet/foundation/033b858fcf81ea48527cb53c",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Diagnostics", :line 181}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "55b5664bd52a037b558bacbc902c2aa60a38845305d65fb427f4a2c4dc218580",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 10822,
+    :end-byte 10906,
+    :raw-sha256
+    "55b5664bd52a037b558bacbc902c2aa60a38845305d65fb427f4a2c4dc218580"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- `D1-ARTIFACT-GAP`: an emitted artifact is missing required provenance graph edges.",
+   :source-occurrence-id
+   "D1/source/af4142aa32715adf9596fe0032be09a26507b0fa29cef1b768e6fec7ff8bd264",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/foundation-diagnostic-context"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/6bfc3a6e135070e2cd47ef2b",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 193}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "33c2f1cf4f0225505daa1a05caaa15fa7306eb8e31722de8d808a4c3d3cee14d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 11215,
+    :end-byte 11293,
+    :raw-sha256
+    "33c2f1cf4f0225505daa1a05caaa15fa7306eb8e31722de8d808a4c3d3cee14d"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- A macro-generated violation reports both generated form and macro call site.",
+   :source-occurrence-id
+   "D1/source/c26b3c08ad0125303566d36ce71a17435be58bc4f96e8a4a8dad7a30b367d45b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/523b8379cdd950c846157716",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 193}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "9f5fe269b9c6f776bf2cda9284724f22e3fa8dcb0ed690d4357058a6ebbc74a5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 11480,
+    :end-byte 11544,
+    :raw-sha256
+    "9f5fe269b9c6f776bf2cda9284724f22e3fa8dcb0ed690d4357058a6ebbc74a5"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- A hosted target demonstrates explicit host delegation records.",
+   :source-occurrence-id
+   "D1/source/c26b3c08ad0125303566d36ce71a17435be58bc4f96e8a4a8dad7a30b367d45b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/10da89a275c908917e039346",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 193}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "52c733b7da3a417b76891926a41df661c9b24f787f1f7a21f16d74faf66f0978",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 11545,
+    :end-byte 11615,
+    :raw-sha256
+    "52c733b7da3a417b76891926a41df661c9b24f787f1f7a21f16d74faf66f0978"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- A distributed workflow target demonstrates replay artifact emission.",
+   :source-occurrence-id
+   "D1/source/c26b3c08ad0125303566d36ce71a17435be58bc4f96e8a4a8dad7a30b367d45b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/6bf793d5f7c5656aab741023",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D1 - System Architecture Overview", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 193}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "94ef5464171d898ea8c6b7395d84de102a584dff62cb83e21b3c77d26431e68b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+    :start-byte 11616,
+    :end-byte 11687,
+    :raw-sha256
+    "94ef5464171d898ea8c6b7395d84de102a584dff62cb83e21b3c77d26431e68b"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- An AI target demonstrates model/tool/memory policy artifact emission.",
+   :source-occurrence-id
+   "D1/source/c26b3c08ad0125303566d36ce71a17435be58bc4f96e8a4a8dad7a30b367d45b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/build-authority-does-not-widen"
+    "gravity/canonical-pass-order"
+    "gravity/domain-anchor-preservation"
+    "gravity/explicit-runtime-service-dependencies"
+    "gravity/fused-pass-observability"
+    "gravity/hermetic-build-grants"
+    "gravity/host-boundary-normalization"
+    "gravity/pass-contract-schema"
+    "gravity/profile-legality-precedes-backend"
+    "gravity/runtime-manifest-closure"
+    "gravity/semantic-facts-before-mir"
+    "gravity/target-lowering-operation-contract"],
+   :id "facet/foundation/75eec15133c55efd31cbebd3",
+   :document-id "D1",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7070,
+    :end-byte 7077,
+    :raw-sha256
+    "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Scope:\n",
+   :source-occurrence-id
+   "D2/source/4cea4c15cbda7f600cfa0f810336b26ecd8e691bf4850f1c3d6912aa9b1098ac",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/6a3fc5f3c758f30d5f92db8e",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "e281fce7c613d7d1610146698ea4d475c35b9716f7edebb98136f80dbf6d5336",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7078,
+    :end-byte 7121,
+    :raw-sha256
+    "e281fce7c613d7d1610146698ea4d475c35b9716f7edebb98136f80dbf6d5336"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- `gravity.edn` or equivalent project file,",
+   :source-occurrence-id
+   "D2/source/639cd93054407650898cd3862c201ab390c0b2873b395e0461c9a4b9a53ddb0b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/e8693bed2e6ae49b9763cf26",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "d448781347498179be4a2c6244b47cd86eb653c977ea559851a05dce31c2d470",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7149,
+    :end-byte 7174,
+    :raw-sha256
+    "d448781347498179be4a2c6244b47cd86eb653c977ea559851a05dce31c2d470"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text "- hermetic build effects,",
+   :source-occurrence-id
+   "D2/source/639cd93054407650898cd3862c201ab390c0b2873b395e0461c9a4b9a53ddb0b",
+   :owner-requirement-ids ["gravity/hermetic-build-grants"],
+   :id "facet/foundation/f906b9a1f284d1e6c9baff14",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "8a8c64b437a8d013ae657f373cdaaf1ada2a34d3a455e20d1d3d4975286c5467",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7175,
+    :end-byte 7197,
+    :raw-sha256
+    "8a8c64b437a8d013ae657f373cdaaf1ada2a34d3a455e20d1d3d4975286c5467"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- dependency resolver,",
+   :source-occurrence-id
+   "D2/source/639cd93054407650898cd3862c201ab390c0b2873b395e0461c9a4b9a53ddb0b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/d06435ec2f90a888ca20a4ae",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "b3790baf6484a148959e7d96b16b23db0bcf3614cadac9b5ffd21b913a531d20",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7242,
+    :end-byte 7273,
+    :raw-sha256
+    "b3790baf6484a148959e7d96b16b23db0bcf3614cadac9b5ffd21b913a531d20"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- signing/SBOM record skeleton.",
+   :source-occurrence-id
+   "D2/source/639cd93054407650898cd3862c201ab390c0b2873b395e0461c9a4b9a53ddb0b",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/edf5c560d47b735d8aa5f368",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "7b8d827f90f63277511492df79842b9d100be892b111abf341c8c378a9bd3b9e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7275,
+    :end-byte 7303,
+    :raw-sha256
+    "7b8d827f90f63277511492df79842b9d100be892b111abf341c8c378a9bd3b9e"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Required negative fixtures:\n",
+   :source-occurrence-id
+   "D2/source/4d14bd3635cada5def4a4f57036f55bfad0d77b755e337ecc805525c65bb71e8",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/36ba293412c0247c08c1cc4d",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "6f35c378907e115dfbac25c96c89ad514ca8282550fe3a8d473408fe92360696",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7304,
+    :end-byte 7350,
+    :raw-sha256
+    "6f35c378907e115dfbac25c96c89ad514ca8282550fe3a8d473408fe92360696"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- dependency requesting undeclared capability,",
+   :source-occurrence-id
+   "D2/source/797f25eaec04a00144a9a5014b9022f11860ff96d3b74ab446fc36d4277ba014",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/08c03d82bd660a18e3bca17a",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "4e0a385bdbf91e170c923f9ac72faa57bb0ca560dc6a473eb16424979e95feb5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7351,
+    :end-byte 7403,
+    :raw-sha256
+    "4e0a385bdbf91e170c923f9ac72faa57bb0ca560dc6a473eb16424979e95feb5"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text "- build script reading environment in hermetic mode,",
+   :source-occurrence-id
+   "D2/source/797f25eaec04a00144a9a5014b9022f11860ff96d3b74ab446fc36d4277ba014",
+   :owner-requirement-ids ["gravity/hermetic-build-grants"],
+   :id "facet/foundation/b299622c70031e5c57f5b88b",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "446bbe06836b17fb2aacb87f4ff0e3db7765314045b244157c6235f48c7c9ba3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7404,
+    :end-byte 7448,
+    :raw-sha256
+    "446bbe06836b17fb2aacb87f4ff0e3db7765314045b244157c6235f48c7c9ba3"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text "- network fetch without build network grant,",
+   :source-occurrence-id
+   "D2/source/797f25eaec04a00144a9a5014b9022f11860ff96d3b74ab446fc36d4277ba014",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/0612cd01b329cf5f0bf60847",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "441395426eab72bd5ed057b97243fd5b443a7914fe3cabb2fc72b56c90240f96",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7538,
+    :end-byte 7550,
+    :raw-sha256
+    "441395426eab72bd5ed057b97243fd5b443a7914fe3cabb2fc72b56c90240f96"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Exit gates:\n",
+   :source-occurrence-id
+   "D2/source/20f4592eb2ea1a74e2ce6b5136f6ff2eb2fe172193ecdf3ee80d636b89ded102",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/7fa2a8cf6bc98341299bc44b",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "ef3b5ec4e003ce4b2d4f25b0759804ca58f558f292563becccc1b1752a3122f2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7640,
+    :end-byte 7669,
+    :raw-sha256
+    "ef3b5ec4e003ce4b2d4f25b0759804ca58f558f292563becccc1b1752a3122f2"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text "- build effects are recorded,",
+   :source-occurrence-id
+   "D2/source/4f1ff6919524815949c0e4895a771c13fbbc33aee196a86440cfeaf996161daf",
+   :owner-requirement-ids ["gravity/hermetic-build-grants"],
+   :id "facet/foundation/74d6b9456610aa7cb23bfdeb",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 5 - Package, Build, and Schema Spine",
+     :line 199}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "af0ffbab839cd0c574096a061a498547abf7468c694b636ee0f512f4ffd7a32c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7759,
+    :end-byte 7808,
+    :raw-sha256
+    "af0ffbab839cd0c574096a061a498547abf7468c694b636ee0f512f4ffd7a32c"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- package provenance is queryable by artifact ID.",
+   :source-occurrence-id
+   "D2/source/4f1ff6919524815949c0e4895a771c13fbbc33aee196a86440cfeaf996161daf",
+   :owner-requirement-ids
+   ["gravity/artifact-graph-reproducibility"
+    "gravity/hermetic-build-grants"
+    "gravity/source-schema-projection"],
+   :id "facet/foundation/7f07fa593703d99ad1924731",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "1e47a13d5734639645163e1059a673f17c56c3431bb7a983948acb4bbea46493",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7859,
+    :end-byte 7942,
+    :raw-sha256
+    "1e47a13d5734639645163e1059a673f17c56c3431bb7a983948acb4bbea46493"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "Milestone 6 proves that AI and workflows are Gravity artifacts, not SDK side paths.",
+   :source-occurrence-id
+   "D2/source/b0a7397b0f33f4725b6c90f830986246bd7faa983ee5f61ca679ce384b6c5504",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/356a5c17a41bbcbf09d5856a",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7944,
+    :end-byte 7951,
+    :raw-sha256
+    "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Scope:\n",
+   :source-occurrence-id
+   "D2/source/24a253c5f7c5d2fd92f1d856d6dc951b267c61ced36b02704135a5e2e21f5c6b",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/b90b381d3891213365c90a44",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "ac58e7f6cf2a2b51eba1c4e0e0385c2ced8ce53bf3553e420c16b87e513bfc35",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 7994,
+    :end-byte 8007,
+    :raw-sha256
+    "ac58e7f6cf2a2b51eba1c4e0e0385c2ced8ce53bf3553e420c16b87e513bfc35"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- `defagent`,",
+   :source-occurrence-id
+   "D2/source/b27113e6f80064386ee93ca2420b9188ab0dd43327e44a9057bda16644acc37e",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/2482cd6586c76c087d4eed23",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "ffe3e5c50f48987a2da7d8e410a6146921d81551732940f7e29405c0ca12d63f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8008,
+    :end-byte 8024,
+    :raw-sha256
+    "ffe3e5c50f48987a2da7d8e410a6146921d81551732940f7e29405c0ca12d63f"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- `defworkflow`,",
+   :source-occurrence-id
+   "D2/source/b27113e6f80064386ee93ca2420b9188ab0dd43327e44a9057bda16644acc37e",
+   :owner-requirement-ids ["gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/b0570b87a1510365300b31bb",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "7adf34b99562d4a1576e30477a8a6f10d139f13bc44d55e9e563e06bb85bc74a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8119,
+    :end-byte 8138,
+    :raw-sha256
+    "7adf34b99562d4a1576e30477a8a6f10d139f13bc44d55e9e563e06bb85bc74a"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- replay event log,",
+   :source-occurrence-id
+   "D2/source/b27113e6f80064386ee93ca2420b9188ab0dd43327e44a9057bda16644acc37e",
+   :owner-requirement-ids
+   ["gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/844534eca1a60a18352d0b6a",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "f450dc9f97c7bd0712f6fd2249f035ca10a78d638aabe3fe3011d89442871087",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8204,
+    :end-byte 8231,
+    :raw-sha256
+    "f450dc9f97c7bd0712f6fd2249f035ca10a78d638aabe3fe3011d89442871087"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Required positive fixture:\n",
+   :source-occurrence-id
+   "D2/source/e461677b537c4d4260f6555b0afe55ea5258eecd1a1117f5d8f1fb5f160f197d",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/45607af0ad3dce1fbc3c5aef",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "ad7f1e43e6e5ca1a660463673d4d581e40fd874b4ccbc3f7290968428c6e9005",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8232,
+    :end-byte 8359,
+    :raw-sha256
+    "ad7f1e43e6e5ca1a660463673d4d581e40fd874b4ccbc3f7290968428c6e9005"},
+   :disposition :exact-D2-positive-fixture-refinement-required,
+   :source-text
+   "- support triage workflow with one model call, one schema-validated tool, one human-review step, and one durable replay record.",
+   :source-occurrence-id
+   "D2/source/fee3d369848d6b484b0528ba8d2e83253c64e1694294a3a2124af81e52ae0368",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/f136c5e4884858e8fe73a5eb",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "7b8d827f90f63277511492df79842b9d100be892b111abf341c8c378a9bd3b9e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8361,
+    :end-byte 8389,
+    :raw-sha256
+    "7b8d827f90f63277511492df79842b9d100be892b111abf341c8c378a9bd3b9e"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Required negative fixtures:\n",
+   :source-occurrence-id
+   "D2/source/27d1ef7f4f615211cc7fb289b39a70e3ee3816ee0f0adba52198acf7573a3bbc",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/a2659431126f56f7c3b00841",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "e925556ec5b04c8f60a56139904aedcecb280464645268bc645b479dc519a9ee",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8523,
+    :end-byte 8593,
+    :raw-sha256
+    "e925556ec5b04c8f60a56139904aedcecb280464645268bc645b479dc519a9ee"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- replay-sensitive workflow reading current time without event record,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb",
+   :owner-requirement-ids
+   ["gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/22e991514a0487e8af6bfe1c",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "0f2a0434888d441cef75240d33b8a478f74a1a70e598aa32b54ece7d660c6c4a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8643,
+    :end-byte 8659,
+    :raw-sha256
+    "0f2a0434888d441cef75240d33b8a478f74a1a70e598aa32b54ece7d660c6c4a"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Exit artifacts:\n",
+   :source-occurrence-id
+   "D2/source/02f925099d3dff089787c1eec3522f55075df28051084d5aead2f5ee7bdf0bf8",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/3bfecb436abb55b860f3f88d",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "bc1d736eae98cb875d12c7707b38e1ca3414055a1d91f562ad8c117c3e75a366",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8660,
+    :end-byte 8677,
+    :raw-sha256
+    "bc1d736eae98cb875d12c7707b38e1ca3414055a1d91f562ad8c117c3e75a366"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- agent manifest,",
+   :source-occurrence-id
+   "D2/source/e48a8d8f5bff34cd4bb0c21d51273231a47a5913d7774d19dd3f56140c5b23dc",
+   :owner-requirement-ids
+   ["gravity/ai-tool-schema-policy-record"
+    "gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/d2a83acd2add7bf4821da9c1",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "00bdcc86ef7bee971353ff041a5222e081d3876baabd0c49f5db7bb683fb3394",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8712,
+    :end-byte 8729,
+    :raw-sha256
+    "00bdcc86ef7bee971353ff041a5222e081d3876baabd0c49f5db7bb683fb3394"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- workflow graph,",
+   :source-occurrence-id
+   "D2/source/e48a8d8f5bff34cd4bb0c21d51273231a47a5913d7774d19dd3f56140c5b23dc",
+   :owner-requirement-ids ["gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/2055ee0db6dd8eb4d007bd07",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 6 - Workflow and AI Vertical Slice",
+     :line 229}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "80a5bde93e3fe4a10fc541ab28b1ea54d78b1891293af6fb44b0c3024f1eea3e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8730,
+    :end-byte 8750,
+    :raw-sha256
+    "80a5bde93e3fe4a10fc541ab28b1ea54d78b1891293af6fb44b0c3024f1eea3e"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- replay log schema,",
+   :source-occurrence-id
+   "D2/source/e48a8d8f5bff34cd4bb0c21d51273231a47a5913d7774d19dd3f56140c5b23dc",
+   :owner-requirement-ids
+   ["gravity/replay-never-repeat-external-effect"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/30c2d905b4b095aa09dc46b4",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "32812ddb9122f6bc08338535a64a6f8d54b62c146e1be839e2485b50177e8136",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8823,
+    :end-byte 8917,
+    :raw-sha256
+    "32812ddb9122f6bc08338535a64a6f8d54b62c146e1be839e2485b50177e8136"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "Milestone 7 proves that users can build real software without bypassing the language contract.",
+   :source-occurrence-id
+   "D2/source/74fa2c65dcbabbf6c2e8be550b529e7ceff5aa01c58c945f7b34f674459381d5",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/28753b4e765ed53eb5d99f78",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8919,
+    :end-byte 8926,
+    :raw-sha256
+    "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Scope:\n",
+   :source-occurrence-id
+   "D2/source/fd5cdc33979be9a2ef8691847decc73d15b6281d5e98e8def551a66b246fa66b",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/92540536ac2cad5942257171",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "35b9169ba8e33bec0cfa99fe92ddba8178e9969dfc85e3c82d22fbc8bed8e107",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8927,
+    :end-byte 8942,
+    :raw-sha256
+    "35b9169ba8e33bec0cfa99fe92ddba8178e9969dfc85e3c82d22fbc8bed8e107"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- core library,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids ["gravity/library-api-contract"],
+   :id "facet/foundation/9caed46fb50632a0fb39322a",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "30ea2c5a5ad44dcb6082a948274c0f931cad6c314900087ae90c16233211e33f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8943,
+    :end-byte 8957,
+    :raw-sha256
+    "30ea2c5a5ad44dcb6082a948274c0f931cad6c314900087ae90c16233211e33f"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- collections,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/dc5576667f453e627d85f271",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "67d6647ed69d71d83b65877f88d03a72322e9468fe527182c65c3aed1d4e3b2a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8958,
+    :end-byte 8965,
+    :raw-sha256
+    "67d6647ed69d71d83b65877f88d03a72322e9468fe527182c65c3aed1d4e3b2a"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- text,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/39e5e9305d1000e5334a0ea5",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "088c3b59aaf4c682f859d1e09908343575717481f36e55cd15702b2852d041ce",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8966,
+    :end-byte 8994,
+    :raw-sha256
+    "088c3b59aaf4c682f859d1e09908343575717481f36e55cd15702b2852d041ce"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- math and EFIR integration,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/bc7b865a898332f1373ec440",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "27955acd7256d474663f18e0af35ca72b6c407a6437785e3d1d0d1f43b34b9fa",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 8995,
+    :end-byte 9021,
+    :raw-sha256
+    "27955acd7256d474663f18e0af35ca72b6c407a6437785e3d1d0d1f43b34b9fa"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- memory/resource library,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids ["gravity/library-api-contract"],
+   :id "facet/foundation/6edb3037da6a3ab2f2023bae",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "37e7e114d0dbbc6bc26c8faa3ffadfb6ceab77813570f302a785daa583ba73d9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9022,
+    :end-byte 9071,
+    :raw-sha256
+    "37e7e114d0dbbc6bc26c8faa3ffadfb6ceab77813570f302a785daa583ba73d9"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- filesystem/network libraries with capabilities,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids ["gravity/library-api-contract"],
+   :id "facet/foundation/f607120231191638e5ac4cb7",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "2135ad0254424306dfe947e2cb5aab78fbdc7334f281b634e789051b59585988",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9072,
+    :end-byte 9087,
+    :raw-sha256
+    "2135ad0254424306dfe947e2cb5aab78fbdc7334f281b634e789051b59585988"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- test library,",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids ["gravity/library-api-contract"],
+   :id "facet/foundation/ce8c4ab985665a3c98d1319c",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "6b30f5dfd848d396cc8d38b69b82b6226a160e5af77c4236579ec37d34ee62e5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9157,
+    :end-byte 9172,
+    :raw-sha256
+    "6b30f5dfd848d396cc8d38b69b82b6226a160e5af77c4236579ec37d34ee62e5"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- IR inspector.",
+   :source-occurrence-id
+   "D2/source/cf0882bea2cf07daf42a6597b89fb9a5c9f6a9da99474d4eed66e2355a3ecc22",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/3dfa5a468e08da1bed029f06",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "441395426eab72bd5ed057b97243fd5b443a7914fe3cabb2fc72b56c90240f96",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9174,
+    :end-byte 9186,
+    :raw-sha256
+    "441395426eab72bd5ed057b97243fd5b443a7914fe3cabb2fc72b56c90240f96"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "Exit gates:\n",
+   :source-occurrence-id
+   "D2/source/89eecf81c5d4836e82ad2ea165505eb092695addf5f2e499a18a05894945112d",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/f5c6c4107feed5d647405297",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "62cb719de36c14fabc3134d44ce0526f95c9d0d9e4ac2285c2ae81bc79f76966",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9187,
+    :end-byte 9243,
+    :raw-sha256
+    "62cb719de36c14fabc3134d44ce0526f95c9d0d9e4ac2285c2ae81bc79f76966"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- documentation examples compile under claimed profiles,",
+   :source-occurrence-id
+   "D2/source/046aac7a534493d54a289bd4d488ffa362cd00b3589383dd8c728dcdd2d3244d",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/tooling-semantic-consistency"],
+   :id "facet/foundation/5a25912d48373018ff6be6b0",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2,
+     :title "Milestone 7 - Standard Library and Tooling",
+     :line 268}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "0ce073de39c8a243d8f47f93ea2735a14ed495d6579e1ff0d6f28b439e616efb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 9244,
+    :end-byte 9335,
+    :raw-sha256
+    "0ce073de39c8a243d8f47f93ea2735a14ed495d6579e1ff0d6f28b439e616efb"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text
+   "- library APIs declare profiles, effects, capabilities, allocation behavior, and stability,",
+   :source-occurrence-id
+   "D2/source/046aac7a534493d54a289bd4d488ffa362cd00b3589383dd8c728dcdd2d3244d",
+   :owner-requirement-ids ["gravity/library-api-contract"],
+   :id "facet/foundation/755678d937cbb1f223ce2401",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2, :title "Requirements", :line 319}],
+   :retired-owner-memberships ["gravity/library-api-contract"],
+   :raw-sha256
+   "ae33b2705cc68b35daab890f9737e18e2bcd8e244b0d2ad9f082f93e0df7957b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 10317,
+    :end-byte 10490,
+    :raw-sha256
+    "ae33b2705cc68b35daab890f9737e18e2bcd8e244b0d2ad9f082f93e0df7957b"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- A milestone cannot claim support for a profile, backend, runtime, package feature, AI feature, or standard-library module unless its evidence bundle contains that surface.",
+   :source-occurrence-id
+   "D2/source/0fb4dd33932ed443025e4213239511acd5dfdd60b3b0fa654665165ba5e5a15a",
+   :owner-requirement-ids
+   ["gravity/library-api-contract"
+    "gravity/milestone-evidence-bundle"
+    "gravity/milestone-executable-evidence"
+    "gravity/release-matrix-evidence"],
+   :id "facet/foundation/3028a744efd5956f2c044bd4",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 339}],
+   :retired-owner-memberships
+   ["gravity/library-api-contract"
+    "gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "d19e296e6fe380fdf4393a3e022c3557618d1f37a0256505e02d30f57a4028e7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 11351,
+    :end-byte 11376,
+    :raw-sha256
+    "d19e296e6fe380fdf4393a3e022c3557618d1f37a0256505e02d30f57a4028e7"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- reproducibility record,",
+   :source-occurrence-id
+   "D2/source/5c116fbbcf8f86ebe6395925760f09274c4bdacc800e09788df180f0dafcd2f7",
+   :owner-requirement-ids
+   ["gravity/bootstrap-equivalence-before-retirement"
+    "gravity/documentation-lock-scope"
+    "gravity/evidence-artifact-provenance"
+    "gravity/hosted-hello-execution"
+    "gravity/library-api-contract"
+    "gravity/milestone-contract-sequencing"
+    "gravity/milestone-evidence-bundle"
+    "gravity/milestone-executable-evidence"
+    "gravity/native-target-artifact-emission"
+    "gravity/release-matrix-evidence"
+    "gravity/source-schema-projection"
+    "gravity/tooling-semantic-consistency"
+    "gravity/typed-artifact-provenance"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/ed94ec0c3e34fa14b9a6e513",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1,
+     :title "D2 - Implementation Roadmap & Milestones",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 364}],
+   :retired-owner-memberships ["gravity/workflow-ai-vertical-slice"],
+   :raw-sha256
+   "abf95b7ba53131fab275fa082fc04dab2a12132c2d8c526c8481c440c56ea6bb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+    :start-byte 12243,
+    :end-byte 12312,
+    :raw-sha256
+    "abf95b7ba53131fab275fa082fc04dab2a12132c2d8c526c8481c440c56ea6bb"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "- The sixth release emits an auditable workflow or AI agent artifact.",
+   :source-occurrence-id
+   "D2/source/f866f5b335dcbc3779a39ffee334d4087c16f48d06ad893c6530f2d20884b90e",
+   :owner-requirement-ids
+   ["gravity/milestone-evidence-bundle"
+    "gravity/milestone-executable-evidence"
+    "gravity/workflow-ai-vertical-slice"],
+   :id "facet/foundation/61ad39ce8667564b4f87c0b9",
+   :document-id "D2",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "8b29c9f968387d98aef502594f1b0c52b4c0fe23094e2937b36a223e59190911",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 2082,
+    :end-byte 2283,
+    :raw-sha256
+    "8b29c9f968387d98aef502594f1b0c52b4c0fe23094e2937b36a223e59190911"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "Profile specialization removes code paths that cannot be legal in the active profile. Example: `:kernel` code need not retain hosted reflection paths because the profile rejected reflection before MIR.",
+   :source-occurrence-id
+   "D6/source/2e36d4ba0b1e2ee29776ad8de0bf4d28fca73679dce5ca0485420badbb157ffd",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/72ccabc5472257dbd5fdace6",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "f8e79a4eb00b8e98c39a43c1211f67912f193b781dfbbfac0ac13b28afac2f7e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 2285,
+    :end-byte 2543,
+    :raw-sha256
+    "f8e79a4eb00b8e98c39a43c1211f67912f193b781dfbbfac0ac13b28afac2f7e"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "Effect specialization separates pure code from code with allocation, IO, network, raw memory, model calls, build effects, or nondeterminism. Pure code may be reordered more aggressively; effectful code must preserve ordering required by the effect semantics.",
+   :source-occurrence-id
+   "D6/source/b3945534b0edf4814610f4d9cc305a3c4320878904e158d09e27409b198b9331",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/802bdd57d445e55e165c0a61",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "6f924cdd3253501b53e89fba7c81b6f9d7c1cfb2d9475b1cbff896f56c45e6de",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 2545,
+    :end-byte 2699,
+    :raw-sha256
+    "6f924cdd3253501b53e89fba7c81b6f9d7c1cfb2d9475b1cbff896f56c45e6de"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text
+   "Memory specialization chooses stack, static, region, arena, ownership, GC, host, device, or no-allocation layouts based on profile and provider contracts.",
+   :source-occurrence-id
+   "D6/source/2a3e833361792ba7d6139b1e10591c68ed5ea114459b0c3a7b4eca78b6e52585",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/ad7c67f86945dad31730e8f7",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "423853ba817f8e5d4fe19815259465036b82d2c886cd841e20062e433198e02c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 2878,
+    :end-byte 3116,
+    :raw-sha256
+    "423853ba817f8e5d4fe19815259465036b82d2c886cd841e20062e433198e02c"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text
+   "Specialization and partial evaluation use compile-time values, const generics, profile facts, target features, and declared build effects. Compile-time work cannot read files, environment, network, or shell without explicit build effects.",
+   :source-occurrence-id
+   "D6/source/2f4f7011ab5a092f663e5b9723f982de9c7eae21b77beee4dc31e5f13892932b",
+   :owner-requirement-ids
+   ["gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"],
+   :id "facet/foundation/0cd03a1cc41c3ecabe52c7d0",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "86c90fd6ea985fa52138d3ae69dfd69f5c81225d686bad45ff222b27510e8ec5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3275,
+    :end-byte 3302,
+    :raw-sha256
+    "86c90fd6ea985fa52138d3ae69dfd69f5c81225d686bad45ff222b27510e8ec5"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- EFIR for elementary math,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/0631b3ea5395230e648ee07d",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "dbf648824738f669f302265f8359d88b2cf142ec01833b6618021a7b2d1ea81c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3303,
+    :end-byte 3338,
+    :raw-sha256
+    "dbf648824738f669f302265f8359d88b2cf142ec01833b6618021a7b2d1ea81c"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- EML traces for math proof/search,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/b24b59bdbc17e477ea1d6a91",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "f71724910a98eb9a9ecb5076a62c908d94ec57c545c421ae05f03a5c7458ab37",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3339,
+    :end-byte 3391,
+    :raw-sha256
+    "f71724910a98eb9a9ecb5076a62c908d94ec57c545c421ae05f03a5c7458ab37"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- schema IR for validation and generated interfaces,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/20c682df6a71b5af98dda65a",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "b41197e663a6e8fa61dae64c9a61f483567b8d58e08fa79b5635e9ce1b1278e4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3392,
+    :end-byte 3431,
+    :raw-sha256
+    "b41197e663a6e8fa61dae64c9a61f483567b8d58e08fa79b5635e9ce1b1278e4"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- query IR for relational optimization,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/206ad8d9325efd0df045a894",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "caed85e68995136642a11bdc4a3686e4cdebc13eb04892bdd8ffc349ccc501a8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3432,
+    :end-byte 3468,
+    :raw-sha256
+    "caed85e68995136642a11bdc4a3686e4cdebc13eb04892bdd8ffc349ccc501a8"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- workflow IR for durable execution,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/4e17133c95dbcee6d20b0b8f",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "eab3a0bf13ee0ecfdc6963f476c892db3ab7311ce5e05a8d637314184afd2a46",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3469,
+    :end-byte 3505,
+    :raw-sha256
+    "eab3a0bf13ee0ecfdc6963f476c892db3ab7311ce5e05a8d637314184afd2a46"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- AI IR for model/tool/memory plans,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/71e81efa62dbc52154009106",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "e043b7162194dc235d37f0becc4285f44c7a1adb82439f7eb1c6a3168b106d5d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3506,
+    :end-byte 3539,
+    :raw-sha256
+    "e043b7162194dc235d37f0becc4285f44c7a1adb82439f7eb1c6a3168b106d5d"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- hardware IR for state machines,",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/89541537263fd84e68adb53b",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D6 - Performance Philosophy & Charter", :line 1}
+    {:level 2, :title "Optimization Families", :line 51}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "54f5072424a29640ee6acf516f7378682756bd3d0e7b21b79584507b1e9cc16b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2",
+    :start-byte 3540,
+    :end-byte 3573,
+    :raw-sha256
+    "54f5072424a29640ee6acf516f7378682756bd3d0e7b21b79584507b1e9cc16b"},
+   :disposition
+   :retained-attached-context-requires-its-own-exact-facet-join,
+   :source-text "- GPU IR for accelerator kernels.",
+   :source-occurrence-id
+   "D6/source/02b5252f11b0c8bea62c5d6f7075a3c164d99893e3db7aa2b6e2a99831af3bba",
+   :owner-requirement-ids
+   ["gravity/check-elision-evidence"
+    "gravity/domain-anchor-preservation"
+    "gravity/effect-order-preservation"
+    "gravity/hermetic-build-grants"
+    "gravity/multiversion-guard-manifest"
+    "gravity/optimization-legality-preservation"
+    "gravity/safety-obligation-survival"],
+   :id "facet/foundation/9886e0a21acf9c776dd8e894",
+   :document-id "D6",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}
+  {:hierarchical-context
+   [{:level 1, :title "D7 - Extensibility Philosophy", :line 1}
+    {:level 2, :title "Extension Manifest", :line 87}],
+   :retired-owner-memberships ["gravity/hermetic-build-grants"],
+   :raw-sha256
+   "bbe0d24b06f37f159e47fd38dd127fbf9ad7a86df557f9b7546a97339e3d86fd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+    :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :file-sha256
+    "d7caee8ea7431a61e33bdf8c8e78a97d0fff56a54231a6c8a314cf2d27f650ea",
+    :start-byte 4929,
+    :end-byte 5154,
+    :raw-sha256
+    "bbe0d24b06f37f159e47fd38dd127fbf9ad7a86df557f9b7546a97339e3d86fd"},
+   :disposition
+   :original-behavior-current-successor-proposal-pending-independent-review,
+   :source-text
+   "Extensions loaded during builds also declare build effects. A compiler plugin that reads files, calls a solver, queries a model, or executes a process must expose those effects and be rejected in hermetic mode unless granted.",
+   :source-occurrence-id
+   "D7/source/467d28136a6432713661e9a6c2c1bcc19a2775d13769fc67c252ad05547e03e7",
+   :owner-requirement-ids
+   ["gravity/extension-compatibility-evidence"
+    "gravity/extension-manifest-contract"
+    "gravity/hermetic-build-grants"],
+   :id "facet/foundation/a773f6f34d03eaf3602e92aa",
+   :document-id "D7",
+   :qualification
+   "The retired owner name or a successor criterion cannot discharge this attached facet automatically. All original owners and context survive; the row has no implementation or independent entailment acceptance."}],
+ :all561-historical-bindings :unchanged,
+ :qualification
+ "The three original retired IDs remain retained history. Two have exact older context-absorption records; the support-triage successor is explicitly a new proposal, with its missing exact D2 fixture left actionable. All72 attached facets/73 retired-owner memberships are conserved separately from the primary obligation joins. No entire attached context, component, milestone, source document, implementation or final count is accepted by this lineage proposal. It is deliberately excluded from the668 facet-entailment proposal index until its residuals have actual exact joins.",
+ :input
+ {:source-dispositions
+  {:path "specs/requirement-reconciliation/source-dispositions.edn",
+   :sha256
+   "0c2136a81ec7a4b9c90b5430aa361f9b2ecc60db53765719d643795512ec726e"},
+  :complete-inventory
+  {:path
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   :sha256
+   "26b1ddace7f276380cfc84158854d64a6ebf54dee4549bff7daf3aeee8df54e4"},
+  :facet-matrix
+  {:sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"},
+  :current-criteria
+  {:path
+   "specs/requirement-reconciliation/all833-bootstrap-diagnostic-current-criterion-conservation.edn",
+   :sha256
+   "56a056e6463374758dfca9c4e7b89bb574ff8cafbc824b03ed58f9af77cdcb90"}}}

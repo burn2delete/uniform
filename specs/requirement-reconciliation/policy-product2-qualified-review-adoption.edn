@@ -1,0 +1,1837 @@
+{:after-decision-records-sha256
+ "2fc5a4a1cb03019beeb7d79078cffedda06b7e901bb89cc4f9a04dec8bdcf194",
+ :qualified-current-source-review-adoptions 474,
+ :remaining-allocation-work 25,
+ :task-count-delta 0,
+ :prior-decision-records-sha256
+ "7aa57e179f72bedc5b2054c4f86b10148cd01a31679d3c43633ef477933559cc",
+ :implementation-credit :none,
+ :concrete-links 808,
+ :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+ :current-composition-review-pending 31,
+ :kind :qualified-policy-product2-review-adoption,
+ :operations
+ [{:id "decision/accounting-mixed-source-contexts",
+   :before
+   {:private-proposal-source-review
+    {:sha256
+     "dfc2540a9ee8df7a18872dc5c7fbc0e9fed081e5d150f4faf4f9fea48e9a4bc6",
+     :scope :proposal-only-source-policy-consistency},
+    :declared-source-dependencies
+    ["Schema validators and typed request/response artifacts"
+     "Workflow failure/retry/idempotency and recorded-output contract"
+     "typed/effect/profile legality"
+     "Runtime/Auth scoped grants and service hooks"
+     "actual provider identity, spending/account policy and permitted audit records"],
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review :pending-independent-current-composition-review,
+    :decision-status :open,
+    :task-links
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :role :provider-call-admission-and-ledger,
+      :criterion-id "behavior/a2/external-spend-preflight",
+      :criterion-witness
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 198884,
+       :end-byte 200111,
+       :raw-sha256
+       "39b2c82fb9c38e3dd903e3d0159783165583aeac4b1709b49963e68bf2a4f37e"},
+      :task-context
+      {:path "specs/domains-workflow/tasks.md",
+       :task-id "ai",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :raw-sha256
+       "f5346183ca2cd79514ae1fea380d2c8acff4ad38392e3900375b69723a70803c",
+       :marker "domains-implementation-tasks",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :status "Open",
+       :end-byte 301691,
+       :start-byte 157451},
+      :entailment-scope :real-external-spend-only-not-whole-P10-or-R8}
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :role :runtime-effect-replay-and-policy-consumer,
+      :criterion-id nil,
+      :criterion-witness
+      {:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 38319,
+       :end-byte 38593,
+       :raw-sha256
+       "9fdc528e0494a1479b99d0251388eb35be8f1b201846d9aa5e44967063130ce3"},
+      :task-context
+      {:path "specs/runtime-workflow/tasks.md",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :raw-sha256
+       "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+       :marker "runtime-implementation-tasks",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :status "Open",
+       :end-byte 53906,
+       :start-byte 36340},
+      :entailment-scope
+      :existing-policy-boundary-with-explicit-unresolved-source}],
+    :dependency-qualification
+    :declared-typed-artifact-inputs-not-whole-component-completion,
+    :source-allocation
+    {:task-population-delta 0,
+     :policy-authority
+     {:path "AGENTS.md",
+      :start-line 104,
+      :file-sha256
+      "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
+      :raw-sha256
+      "313187653ce8da0d0c140a3eb77b5204cf7d4d8e56f9d85e18f6aad166fb0f3d",
+      :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+      :end-byte 6997,
+      :end-line 128,
+      :start-byte 5392,
+      :text
+      "## Project Accounting Removal\n\nProject cost models, work-unit budgets, producer/caller debits, prospective\nreservations, cost proofs and budget-exhaustion refusals are removed as\nimplementation and admission requirements. Delete their enforcing code,\ncontracts and budget-only tests; do not raise their constants, rename them as\ngeneric bounds or require replacement accounting before useful work proceeds.\nInput node, depth, width, scalar, byte, token and form quotas whose only purpose\nis refusing otherwise well-formed input are part of this removal.\n\nPreserve independently meaningful semantics and validation: Unicode/UTF8,\ntypes, index and arity legality, target-format representability, profiles,\neffects, capabilities, authentic inputs, native class and callback rules,\nmetadata, source provenance and tamper detection. A retained numeric condition\nmust enforce one of those concrete requirements, not a work or cost allowance.\nActual host broker, heap, process-watchdog, capture and platform restrictions\nare separate from compiler accounting. External billing and account limits are\nnot changed by this project instruction.\n\nManagers independently discover and execute work toward their standing goals.\nNo task-count, failed-attempt allowance, preparation-only stage or discretionary\nper-run permission is an ordinary-development prerequisite. Coordinate actual\nconflicting writers and incompatible interfaces; the coordinator alone routes\nindependent acceptance and integrates main. Preserve historical attempts as\nhistory, and never retry, transfer or route around a denied/restricted action.\n"},
+     :required-output
+     "Resolve the finite retained mixed accounting clauses under the user accounting-removal instruction while preserving actual external billing, provider policy and independent semantic validation.",
+     :adjudication
+     {:removed
+      "P10/R8 budget/cost language does not require project logical work, token/form/node, call/time/retry or human-review count allowances, producer/caller debits, cost proofs or budget-exhaustion refusals. Do not increase/rename these limits or require replacement accounting.",
+      :retained
+      "Actual external billing/account limits and concrete provider policy remain applicable to actual paid/provider operations. Retain observed cost/token facts only where they record external provider use or a separately required audit fact, without an internal admission/debit obligation.",
+      :independent-semantics
+      "Keep profile/type/effect/capability legality, exact schema and sink validation, prompt/taint/secret policy, required human review, provider identity/substitution policy, replay barriers, retention/deletion and semantic failure/cancellation/retry/idempotency/compensation behavior. Actual host timeout/watchdog/heap/capture/platform restrictions are separate.",
+      :mixed-diagnostics
+      "P10-BUDGET/R8-BUDGET text supplies no authority for project accounting. Existing external-policy denials keep their concrete provider/account subject and stable policy context; no diagnostic/schema rewrite or replacement diagnostic ID is proposed here.",
+      :source-edit :none-canonical-owner-adjudication-only},
+     :source-facet-ids nil,
+     :proposed-acceptance
+     {:positive
+      "A semantically valid source/action with required grants, schema and provider policy is not refused solely for removed project work/token/call/time/retry accounting. A legitimate paid call remains subject to its real external spending/account policy.",
+      :negative
+      "Retain denial of known-over-limit actual paid provider calls before issuance, missing effects/grants/review, invalid output/sink, protected-data exposure and live calls in recorded-output replay. Removing compiler accounting cannot authorize any of these.",
+      :outputs
+      "A source-policy disposition binding every quoted mixed span and unchanged criterion/provider-policy dependencies; eventual source-bound accepted/rejected fixtures and typed refusal/audit records remain with existing owning tasks and are unexecuted here."},
+     :source-spans
+     [{:path
+       "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+       :start-line 23,
+       :file-sha256
+       "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+       :raw-sha256
+       "c66149e5a72c04e180680b205813666a85e9c65b5c1e27ddab77d5f181cdaf18",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 1056,
+       :end-line 23,
+       :context
+       {:path
+        "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+        :start-line 20,
+        :file-sha256
+        "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+        :raw-sha256
+        "a76ccbe96924edc0b28558f5262d7425528b579b497e91df76da99334996ecfe",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1472,
+        :end-line 30,
+        :start-byte 801,
+        :text
+        "- Model calls, tool calls, embeddings, memory reads/writes, retrieval, and\n  `:ai/human-review` must be explicit effects.\n- Tool access must be constrained by capabilities, schemas, side-effect class,\n  budget, taint rules, policy, and deployment grants.\n- Prompt roles and provenance must be preserved.\n- Model output is tainted until validated for a specific sink.\n- Generated Gravity code must pass ordinary macro, type, effect, capability,\n  safety, package, and profile checks before execution.\n- Nondeterminism must be recorded according to replay or audit policy.\n- Secrets must not be exposed to prompts, tools, logs, or model providers without\n  explicit policy."},
+       :start-byte 1002,
+       :text "  budget, taint rules, policy, and deployment grants.\n"}
+      {:path
+       "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+       :start-line 170,
+       :file-sha256
+       "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+       :raw-sha256
+       "cba33897b5f2b89a2f842562cfee5895733d6012ae92072fd0557f71db10a075",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5350,
+       :end-line 170,
+       :context
+       {:path
+        "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+        :start-line 163,
+        :file-sha256
+        "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+        :raw-sha256
+        "70b7f432d340b8e132f51146181ca03b822b8d2631bd1cb92abb71ac67b93632",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5477,
+        :end-line 172,
+        :start-byte 4840,
+        :text
+        "- `P10-MODEL` for model calls without declared effect, provider, or policy.\n- `P10-TOOL` for tool calls without schema, capability, or human-review.\n- `P10-PROMPT` for prompt-role or prompt-injection policy violations.\n- `P10-MEMORY` for invalid memory retention, trust, or secret policy.\n- `P10-SECRET` for secret leakage risk.\n- `P10-GENERATED` for generated code used before compiler validation.\n- `P10-REPLAY` for missing replay or audit records.\n- `P10-BUDGET` for cost, token, or call budget violations.\n- `P10-DESTRUCTIVE` for destructive tool use without explicit grant.\n- `P10-RAW` for raw memory or FFI attempts in agent logic."},
+       :start-byte 5291,
+       :text
+       "- `P10-BUDGET` for cost, token, or call budget violations.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 12,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "173cc35630e87aedf32fbe370f977b228945a6da2b3a911db972c40779390e6c",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 549,
+       :end-line 12,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 10,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "3f31170639429acfaa541ce791146c47a4c8c2031464f72e7a18d5764ef279d1",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 571,
+        :end-line 13,
+        :start-byte 315,
+        :text
+        "The AI runtime executes model calls, prompt assembly, structured output\nvalidation, tool calls, retrieval, embeddings, memory reads and writes, policy\nchecks, human-review gates, budget controls, replay barriers, and evaluation hooks\nfor the `:ai` profile."},
+       :start-byte 466,
+       :text
+       "checks, human-review gates, budget controls, replay barriers, and evaluation hooks\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 22,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b69a4910ed939edb95bbd6a4872db659a5838268afacb5d861d49142aba51a4b",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 964,
+       :end-line 22,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 21,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "4b5d7cfc416bfd7fe0c70e0c64cf8f3d9dcc816641d6276ed9df990a38df52c9",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1905,
+        :end-line 37,
+        :start-byte 802,
+        :text
+        "- The runtime manifest must declare agent id, model providers, prompt templates,\n  tool contracts, memory providers, output schemas, policy graph, budget, replay\n  mode, and human-review requirements.\n- Model calls require `:ai/model-call` effect, provider capability, model\n  identity, prompt provenance, output schema or validation policy, budget, and\n  replay/audit record.\n- Tool calls require schema, effects, capabilities, side-effect class, timeout,\n  retry behavior, human-review policy, taint policy, and secret policy.\n- Model output, retrieved documents, tool output, and memory values are tainted\n  until validated for a specific sink.\n- Secrets must not enter prompts, model calls, tool calls, logs, memory, or\n  traces unless policy explicitly grants and redacts them.\n- Write, destructive, shell, filesystem, network, deployment, package mutation,\n  and secret-bearing tools require explicit human-review policy.\n- Replay-required workflow segments must use recorded model/tool outputs rather\n  than issuing live calls.\n- Generated Gravity code must pass compiler checks before execution."},
+       :start-byte 883,
+       :text
+       "  tool contracts, memory providers, output schemas, policy graph, budget, replay\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 25,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "81a1c40353392c3d9b902697bf74bdc033902ea93b39e03c8fd5650e70239397",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 1156,
+       :end-line 25,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 21,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "4b5d7cfc416bfd7fe0c70e0c64cf8f3d9dcc816641d6276ed9df990a38df52c9",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1905,
+        :end-line 37,
+        :start-byte 802,
+        :text
+        "- The runtime manifest must declare agent id, model providers, prompt templates,\n  tool contracts, memory providers, output schemas, policy graph, budget, replay\n  mode, and human-review requirements.\n- Model calls require `:ai/model-call` effect, provider capability, model\n  identity, prompt provenance, output schema or validation policy, budget, and\n  replay/audit record.\n- Tool calls require schema, effects, capabilities, side-effect class, timeout,\n  retry behavior, human-review policy, taint policy, and secret policy.\n- Model output, retrieved documents, tool output, and memory values are tainted\n  until validated for a specific sink.\n- Secrets must not enter prompts, model calls, tool calls, logs, memory, or\n  traces unless policy explicitly grants and redacts them.\n- Write, destructive, shell, filesystem, network, deployment, package mutation,\n  and secret-bearing tools require explicit human-review policy.\n- Replay-required workflow segments must use recorded model/tool outputs rather\n  than issuing live calls.\n- Generated Gravity code must pass compiler checks before execution."},
+       :start-byte 1077,
+       :text
+       "  identity, prompt provenance, output schema or validation policy, budget, and\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 60,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "180e9787f917f122bb57d943aac496405619c5e5a961db4a7025069da057e812",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 2657,
+       :end-line 60,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 52,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "89deb91073f7c3f8cacbe3d1ce69f8de82f4a0e7abf68e0211a9363bf6b22ab1",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 2707,
+        :end-line 62,
+        :start-byte 2385,
+        :text
+        "- AI runtime manifest.\n- Agent runtime state record.\n- Model call ledger.\n- Prompt provenance and digest record.\n- Tool invocation log.\n- Structured output validation report.\n- Memory access and retention record.\n- Policy and human-review decision record.\n- Budget trace.\n- Replay barrier record.\n- AI runtime diagnostics."},
+       :start-byte 2641,
+       :text "- Budget trace.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 71,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "e30b8862d705c893edc574a18c6b0af141510a9eff8a2ff79ab7726e8767c1a7",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 2914,
+       :end-line 71,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 66,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "55c7888ee7664715f26a73634df013defc8d8f76036b116aff5a22bb49a6dd73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3241,
+        :end-line 78,
+        :start-byte 2730,
+        :text
+        "```clojure\n{:artifact :gravity/ai-runtime\n :family :ai\n :agent :support-agent\n :services #{:ai/model-call :ai/tool-call :ai/memory :ai/policy\n             :ai/human-review :ai/budget}\n :requires #{:tool-capabilities :output-schemas :prompt-hashes\n             :replay-policy :secret-policy}\n :records #{:ai/model-call-ledger :ai/tool-log :ai/human-review-record\n            :ai/budget-trace}\n :rejects #{:ai/model-call-without-capability :tool-effect-exceeds-grant\n            :live-call-in-replay-segment}}\n```"},
+       :start-byte 2872,
+       :text "             :ai/human-review :ai/budget}\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 75,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "8892b81a79c18177050cf51142c31bdfbc120133b86c2ca5beffa847a82be24f",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 3122,
+       :end-line 75,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 66,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "55c7888ee7664715f26a73634df013defc8d8f76036b116aff5a22bb49a6dd73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3241,
+        :end-line 78,
+        :start-byte 2730,
+        :text
+        "```clojure\n{:artifact :gravity/ai-runtime\n :family :ai\n :agent :support-agent\n :services #{:ai/model-call :ai/tool-call :ai/memory :ai/policy\n             :ai/human-review :ai/budget}\n :requires #{:tool-capabilities :output-schemas :prompt-hashes\n             :replay-policy :secret-policy}\n :records #{:ai/model-call-ledger :ai/tool-log :ai/human-review-record\n            :ai/budget-trace}\n :rejects #{:ai/model-call-without-capability :tool-effect-exceeds-grant\n            :live-call-in-replay-segment}}\n```"},
+       :start-byte 3092,
+       :text "            :ai/budget-trace}\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 95,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b1e35c526aab85dc4ef23a23306b1cc0856b8ecba8ac708b2a6a18ff2f8ed1c9",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 3578,
+       :end-line 95,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 87,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "3cafefb64b1abfc24de2ec0ed24ee9e0015c794c3ff3831a6c69ef567df3646f",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3655,
+        :end-line 98,
+        :start-byte 3378,
+        :text
+        "- provider and model identity,\n- prompt template id,\n- message role and provenance,\n- prompt/message digests,\n- parameter settings,\n- input taint,\n- output schema,\n- validation result,\n- budget cost,\n- replay/audit mode,\n- policy decisions,\n- source and generated-origin links."},
+       :start-byte 3563,
+       :text "- budget cost,\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 123,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "43abe8bd23df4b2d4abe5923de0c8a842ced732ec7bfec857f49eddc917c6dae",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 4690,
+       :end-line 123,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 123,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "d7413864e50d5c6f3cf1439f4d33aa09d25727554d3e4f4b897fc4e4827d1a73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 4968,
+        :end-line 128,
+        :start-byte 4668,
+        :text
+        "## Replay and Budgets\n\nReplay records include model output, tool input/output, retrieval results,\nmemory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\nevents. In replay mode, the runtime returns recorded outputs or rejects the\nexecution if the record is missing."},
+       :start-byte 4668,
+       :text "## Replay and Budgets\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 126,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b03557f0ddfb78088baf0fc4d95200cd384cf82f798efa32a8a560c9e939463d",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 4857,
+       :end-line 126,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 125,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "cf5945be0341fbcbcc84a2a336b056b489215e36a995822393705d0f95537c00",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 4968,
+        :end-line 128,
+        :start-byte 4691,
+        :text
+        "Replay records include model output, tool input/output, retrieval results,\nmemory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\nevents. In replay mode, the runtime returns recorded outputs or rejects the\nexecution if the record is missing."},
+       :start-byte 4766,
+       :text
+       "memory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 130,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "7f397eb610ca30c4f2e8b215b1b9bdf16f95baa93c9f8993fb597959ccbaafa9",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5055,
+       :end-line 130,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 130,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "a167ba92fc2f048b42b774ccd5df2a504bd57c5015eed278b2411be2a8d00658",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5062,
+        :end-line 131,
+        :start-byte 4970,
+        :text
+        "Budgets track model calls, tokens, tool calls, time, cost, retries, and human-review\nlimits."},
+       :start-byte 4970,
+       :text
+       "Budgets track model calls, tokens, tool calls, time, cost, retries, and human-review\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 138,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "675f0bb501c353f4606bfbf273ad6b350fa5731a93067603b32474af204cfd75",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5236,
+       :end-line 138,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 137,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "e6b027a5ed2be7560c1f221472a18b982175e42879bdaa7f86308819fc236619",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5953,
+        :end-line 150,
+        :start-byte 5126,
+        :text
+        "- `R8-MODEL` for model calls without provider, effect, capability, output\n  schema, budget, or replay policy.\n- `R8-PROMPT` for prompt provenance or role-policy violations.\n- `R8-TOOL` for tool calls without schema, capability, human-review, timeout, or\n  retry policy.\n- `R8-TAINT` for unvalidated model, tool, retrieval, or memory output reaching a\n  trusted sink.\n- `R8-SECRET` for secret exposure risk.\n- `R8-MEMORY` for invalid memory retention, trust, privacy, or deletion policy.\n- `R8-HUMAN-REVIEW` for missing or insufficient `:ai/human-review`.\n- `R8-REPLAY` for live nondeterministic calls in replay-required segments.\n- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n- `R8-GENERATED` for generated code execution before compiler validation.\n- `R8-MANIFEST` for incomplete AI runtime artifacts."},
+       :start-byte 5200,
+       :text "  schema, budget, or replay policy.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 148,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "18644c443afeecd49bdb0520999e59c28c4028620249ad73e1a3bab56880ad0c",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5827,
+       :end-line 148,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 137,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "e6b027a5ed2be7560c1f221472a18b982175e42879bdaa7f86308819fc236619",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5953,
+        :end-line 150,
+        :start-byte 5126,
+        :text
+        "- `R8-MODEL` for model calls without provider, effect, capability, output\n  schema, budget, or replay policy.\n- `R8-PROMPT` for prompt provenance or role-policy violations.\n- `R8-TOOL` for tool calls without schema, capability, human-review, timeout, or\n  retry policy.\n- `R8-TAINT` for unvalidated model, tool, retrieval, or memory output reaching a\n  trusted sink.\n- `R8-SECRET` for secret exposure risk.\n- `R8-MEMORY` for invalid memory retention, trust, privacy, or deletion policy.\n- `R8-HUMAN-REVIEW` for missing or insufficient `:ai/human-review`.\n- `R8-REPLAY` for live nondeterministic calls in replay-required segments.\n- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n- `R8-GENERATED` for generated code execution before compiler validation.\n- `R8-MANIFEST` for incomplete AI runtime artifacts."},
+       :start-byte 5756,
+       :text
+       "- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 177,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "261cf9a33899282f495ec6686896d5ed01b0b96c027d73d395a2077a810764c8",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 6867,
+       :end-line 177,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 172,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "8f992090d6472ed0ddd57684fade35b9e60251ef9e55c172ced138435bfd07b6",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 6966,
+        :end-line 179,
+        :start-byte 6570,
+        :text
+        "- model call ledgers with prompt provenance and output validation,\n- tool invocation logs with schema, capability, human-review, and taint records,\n- memory/retrieval policy enforcement,\n- secret redaction and denial fixtures,\n- replay records for model/tool nondeterminism,\n- budget enforcement,\n- generated-code compiler validation gates,\n- distributed workflow integration for durable agents.\n"},
+       :start-byte 6845,
+       :text "- budget enforcement,\n"}],
+     :adoption :canonical-owner-only,
+     :disposition :finite-source-adjudication-proposed,
+     :status :open,
+     :no-new-task true,
+     :semantic-source-id nil,
+     :historical-proposal-sha256
+     "3db8c486e049cfa7ad142869a3c81829e7f706273e189a81ff75b9e7db2eadfe",
+     :historical-reuse
+     "Reuse the existing AI external-spend criterion and Runtime policy boundary. This decision is part of the 530 partition overlapping historical joins, not a new implementation outcome or completion.",
+     :completion-credit :none,
+     :unresolved-facet-metadata
+     {:state :not-supplied-by-assigned-decision,
+      :invented-identifiers [],
+      :whole-attached-facet-entailment :not-established},
+     :dependencies
+     ["Schema validators and typed request/response artifacts"
+      "Workflow failure/retry/idempotency and recorded-output contract"
+      "typed/effect/profile legality"
+      "Runtime/Auth scoped grants and service hooks"
+      "actual provider identity, spending/account policy and permitted audit records"],
+     :historical-join-delta 0,
+     :source-contracts ["accounting-policy" "P10" "R8"],
+     :implementation-acceptance :unassessed},
+    :task-source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+    :implementation-acceptance :unassessed},
+   :after
+   {:private-proposal-source-review
+    {:sha256
+     "dfc2540a9ee8df7a18872dc5c7fbc0e9fed081e5d150f4faf4f9fea48e9a4bc6",
+     :scope :proposal-only-source-policy-consistency},
+    :declared-source-dependencies
+    ["Schema validators and typed request/response artifacts"
+     "Workflow failure/retry/idempotency and recorded-output contract"
+     "typed/effect/profile legality"
+     "Runtime/Auth scoped grants and service hooks"
+     "actual provider identity, spending/account policy and permitted audit records"],
+    :full-attached-facet-entailment :not-conferred,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
+    :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+     :sha256
+     "e8353689c5241fc8256b3b34ddf215b952d1b937ab3d962bcde9fc9a4cd53d51",
+     :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+     :scope :exact-two-current-source-composition-joins,
+     :independent-receipt-sha256
+     "37053e4150fcc88ea27e84feb8e256d4571571c650b2c3e42a498d74a178da32"},
+    :task-links
+    [{:path "specs/domains-workflow/tasks.md",
+      :task-id "ai",
+      :role :provider-call-admission-and-ledger,
+      :criterion-id "behavior/a2/external-spend-preflight",
+      :criterion-witness
+      {:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :start-byte 198884,
+       :end-byte 200111,
+       :raw-sha256
+       "39b2c82fb9c38e3dd903e3d0159783165583aeac4b1709b49963e68bf2a4f37e"},
+      :task-context
+      {:path "specs/domains-workflow/tasks.md",
+       :task-id "ai",
+       :file-sha256
+       "256d84ff693da27723d0fa9c6a27fdfff7f6105426a7c0ab1f3c25657c14c56c",
+       :raw-sha256
+       "f5346183ca2cd79514ae1fea380d2c8acff4ad38392e3900375b69723a70803c",
+       :marker "domains-implementation-tasks",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :status "Open",
+       :end-byte 301691,
+       :start-byte 157451},
+      :entailment-scope :real-external-spend-only-not-whole-P10-or-R8}
+     {:path "specs/runtime-workflow/tasks.md",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :role :runtime-effect-replay-and-policy-consumer,
+      :criterion-id nil,
+      :criterion-witness
+      {:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 38319,
+       :end-byte 38593,
+       :raw-sha256
+       "9fdc528e0494a1479b99d0251388eb35be8f1b201846d9aa5e44967063130ce3"},
+      :task-context
+      {:path "specs/runtime-workflow/tasks.md",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :raw-sha256
+       "0a55e649268eb06327c4a01e2394c6b4869e2f05dc3aedc9a22aac3a3e57d675",
+       :marker "runtime-implementation-tasks",
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :status "Open",
+       :end-byte 53906,
+       :start-byte 36340},
+      :entailment-scope
+      :existing-policy-boundary-with-explicit-unresolved-source}],
+    :dependency-qualification
+    :declared-typed-artifact-inputs-not-whole-component-completion,
+    :source-allocation
+    {:task-population-delta 0,
+     :policy-authority
+     {:path "AGENTS.md",
+      :start-line 104,
+      :file-sha256
+      "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
+      :raw-sha256
+      "313187653ce8da0d0c140a3eb77b5204cf7d4d8e56f9d85e18f6aad166fb0f3d",
+      :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+      :end-byte 6997,
+      :end-line 128,
+      :start-byte 5392,
+      :text
+      "## Project Accounting Removal\n\nProject cost models, work-unit budgets, producer/caller debits, prospective\nreservations, cost proofs and budget-exhaustion refusals are removed as\nimplementation and admission requirements. Delete their enforcing code,\ncontracts and budget-only tests; do not raise their constants, rename them as\ngeneric bounds or require replacement accounting before useful work proceeds.\nInput node, depth, width, scalar, byte, token and form quotas whose only purpose\nis refusing otherwise well-formed input are part of this removal.\n\nPreserve independently meaningful semantics and validation: Unicode/UTF8,\ntypes, index and arity legality, target-format representability, profiles,\neffects, capabilities, authentic inputs, native class and callback rules,\nmetadata, source provenance and tamper detection. A retained numeric condition\nmust enforce one of those concrete requirements, not a work or cost allowance.\nActual host broker, heap, process-watchdog, capture and platform restrictions\nare separate from compiler accounting. External billing and account limits are\nnot changed by this project instruction.\n\nManagers independently discover and execute work toward their standing goals.\nNo task-count, failed-attempt allowance, preparation-only stage or discretionary\nper-run permission is an ordinary-development prerequisite. Coordinate actual\nconflicting writers and incompatible interfaces; the coordinator alone routes\nindependent acceptance and integrates main. Preserve historical attempts as\nhistory, and never retry, transfer or route around a denied/restricted action.\n"},
+     :required-output
+     "Resolve the finite retained mixed accounting clauses under the user accounting-removal instruction while preserving actual external billing, provider policy and independent semantic validation.",
+     :adjudication
+     {:removed
+      "P10/R8 budget/cost language does not require project logical work, token/form/node, call/time/retry or human-review count allowances, producer/caller debits, cost proofs or budget-exhaustion refusals. Do not increase/rename these limits or require replacement accounting.",
+      :retained
+      "Actual external billing/account limits and concrete provider policy remain applicable to actual paid/provider operations. Retain observed cost/token facts only where they record external provider use or a separately required audit fact, without an internal admission/debit obligation.",
+      :independent-semantics
+      "Keep profile/type/effect/capability legality, exact schema and sink validation, prompt/taint/secret policy, required human review, provider identity/substitution policy, replay barriers, retention/deletion and semantic failure/cancellation/retry/idempotency/compensation behavior. Actual host timeout/watchdog/heap/capture/platform restrictions are separate.",
+      :mixed-diagnostics
+      "P10-BUDGET/R8-BUDGET text supplies no authority for project accounting. Existing external-policy denials keep their concrete provider/account subject and stable policy context; no diagnostic/schema rewrite or replacement diagnostic ID is proposed here.",
+      :source-edit :none-canonical-owner-adjudication-only},
+     :source-facet-ids nil,
+     :proposed-acceptance
+     {:positive
+      "A semantically valid source/action with required grants, schema and provider policy is not refused solely for removed project work/token/call/time/retry accounting. A legitimate paid call remains subject to its real external spending/account policy.",
+      :negative
+      "Retain denial of known-over-limit actual paid provider calls before issuance, missing effects/grants/review, invalid output/sink, protected-data exposure and live calls in recorded-output replay. Removing compiler accounting cannot authorize any of these.",
+      :outputs
+      "A source-policy disposition binding every quoted mixed span and unchanged criterion/provider-policy dependencies; eventual source-bound accepted/rejected fixtures and typed refusal/audit records remain with existing owning tasks and are unexecuted here."},
+     :source-spans
+     [{:path
+       "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+       :start-line 23,
+       :file-sha256
+       "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+       :raw-sha256
+       "c66149e5a72c04e180680b205813666a85e9c65b5c1e27ddab77d5f181cdaf18",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 1056,
+       :end-line 23,
+       :context
+       {:path
+        "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+        :start-line 20,
+        :file-sha256
+        "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+        :raw-sha256
+        "a76ccbe96924edc0b28558f5262d7425528b579b497e91df76da99334996ecfe",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1472,
+        :end-line 30,
+        :start-byte 801,
+        :text
+        "- Model calls, tool calls, embeddings, memory reads/writes, retrieval, and\n  `:ai/human-review` must be explicit effects.\n- Tool access must be constrained by capabilities, schemas, side-effect class,\n  budget, taint rules, policy, and deployment grants.\n- Prompt roles and provenance must be preserved.\n- Model output is tainted until validated for a specific sink.\n- Generated Gravity code must pass ordinary macro, type, effect, capability,\n  safety, package, and profile checks before execution.\n- Nondeterminism must be recorded according to replay or audit policy.\n- Secrets must not be exposed to prompts, tools, logs, or model providers without\n  explicit policy."},
+       :start-byte 1002,
+       :text "  budget, taint rules, policy, and deployment grants.\n"}
+      {:path
+       "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+       :start-line 170,
+       :file-sha256
+       "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+       :raw-sha256
+       "cba33897b5f2b89a2f842562cfee5895733d6012ae92072fd0557f71db10a075",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5350,
+       :end-line 170,
+       :context
+       {:path
+        "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+        :start-line 163,
+        :file-sha256
+        "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf",
+        :raw-sha256
+        "70b7f432d340b8e132f51146181ca03b822b8d2631bd1cb92abb71ac67b93632",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5477,
+        :end-line 172,
+        :start-byte 4840,
+        :text
+        "- `P10-MODEL` for model calls without declared effect, provider, or policy.\n- `P10-TOOL` for tool calls without schema, capability, or human-review.\n- `P10-PROMPT` for prompt-role or prompt-injection policy violations.\n- `P10-MEMORY` for invalid memory retention, trust, or secret policy.\n- `P10-SECRET` for secret leakage risk.\n- `P10-GENERATED` for generated code used before compiler validation.\n- `P10-REPLAY` for missing replay or audit records.\n- `P10-BUDGET` for cost, token, or call budget violations.\n- `P10-DESTRUCTIVE` for destructive tool use without explicit grant.\n- `P10-RAW` for raw memory or FFI attempts in agent logic."},
+       :start-byte 5291,
+       :text
+       "- `P10-BUDGET` for cost, token, or call budget violations.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 12,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "173cc35630e87aedf32fbe370f977b228945a6da2b3a911db972c40779390e6c",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 549,
+       :end-line 12,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 10,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "3f31170639429acfaa541ce791146c47a4c8c2031464f72e7a18d5764ef279d1",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 571,
+        :end-line 13,
+        :start-byte 315,
+        :text
+        "The AI runtime executes model calls, prompt assembly, structured output\nvalidation, tool calls, retrieval, embeddings, memory reads and writes, policy\nchecks, human-review gates, budget controls, replay barriers, and evaluation hooks\nfor the `:ai` profile."},
+       :start-byte 466,
+       :text
+       "checks, human-review gates, budget controls, replay barriers, and evaluation hooks\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 22,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b69a4910ed939edb95bbd6a4872db659a5838268afacb5d861d49142aba51a4b",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 964,
+       :end-line 22,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 21,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "4b5d7cfc416bfd7fe0c70e0c64cf8f3d9dcc816641d6276ed9df990a38df52c9",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1905,
+        :end-line 37,
+        :start-byte 802,
+        :text
+        "- The runtime manifest must declare agent id, model providers, prompt templates,\n  tool contracts, memory providers, output schemas, policy graph, budget, replay\n  mode, and human-review requirements.\n- Model calls require `:ai/model-call` effect, provider capability, model\n  identity, prompt provenance, output schema or validation policy, budget, and\n  replay/audit record.\n- Tool calls require schema, effects, capabilities, side-effect class, timeout,\n  retry behavior, human-review policy, taint policy, and secret policy.\n- Model output, retrieved documents, tool output, and memory values are tainted\n  until validated for a specific sink.\n- Secrets must not enter prompts, model calls, tool calls, logs, memory, or\n  traces unless policy explicitly grants and redacts them.\n- Write, destructive, shell, filesystem, network, deployment, package mutation,\n  and secret-bearing tools require explicit human-review policy.\n- Replay-required workflow segments must use recorded model/tool outputs rather\n  than issuing live calls.\n- Generated Gravity code must pass compiler checks before execution."},
+       :start-byte 883,
+       :text
+       "  tool contracts, memory providers, output schemas, policy graph, budget, replay\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 25,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "81a1c40353392c3d9b902697bf74bdc033902ea93b39e03c8fd5650e70239397",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 1156,
+       :end-line 25,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 21,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "4b5d7cfc416bfd7fe0c70e0c64cf8f3d9dcc816641d6276ed9df990a38df52c9",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 1905,
+        :end-line 37,
+        :start-byte 802,
+        :text
+        "- The runtime manifest must declare agent id, model providers, prompt templates,\n  tool contracts, memory providers, output schemas, policy graph, budget, replay\n  mode, and human-review requirements.\n- Model calls require `:ai/model-call` effect, provider capability, model\n  identity, prompt provenance, output schema or validation policy, budget, and\n  replay/audit record.\n- Tool calls require schema, effects, capabilities, side-effect class, timeout,\n  retry behavior, human-review policy, taint policy, and secret policy.\n- Model output, retrieved documents, tool output, and memory values are tainted\n  until validated for a specific sink.\n- Secrets must not enter prompts, model calls, tool calls, logs, memory, or\n  traces unless policy explicitly grants and redacts them.\n- Write, destructive, shell, filesystem, network, deployment, package mutation,\n  and secret-bearing tools require explicit human-review policy.\n- Replay-required workflow segments must use recorded model/tool outputs rather\n  than issuing live calls.\n- Generated Gravity code must pass compiler checks before execution."},
+       :start-byte 1077,
+       :text
+       "  identity, prompt provenance, output schema or validation policy, budget, and\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 60,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "180e9787f917f122bb57d943aac496405619c5e5a961db4a7025069da057e812",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 2657,
+       :end-line 60,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 52,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "89deb91073f7c3f8cacbe3d1ce69f8de82f4a0e7abf68e0211a9363bf6b22ab1",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 2707,
+        :end-line 62,
+        :start-byte 2385,
+        :text
+        "- AI runtime manifest.\n- Agent runtime state record.\n- Model call ledger.\n- Prompt provenance and digest record.\n- Tool invocation log.\n- Structured output validation report.\n- Memory access and retention record.\n- Policy and human-review decision record.\n- Budget trace.\n- Replay barrier record.\n- AI runtime diagnostics."},
+       :start-byte 2641,
+       :text "- Budget trace.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 71,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "e30b8862d705c893edc574a18c6b0af141510a9eff8a2ff79ab7726e8767c1a7",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 2914,
+       :end-line 71,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 66,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "55c7888ee7664715f26a73634df013defc8d8f76036b116aff5a22bb49a6dd73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3241,
+        :end-line 78,
+        :start-byte 2730,
+        :text
+        "```clojure\n{:artifact :gravity/ai-runtime\n :family :ai\n :agent :support-agent\n :services #{:ai/model-call :ai/tool-call :ai/memory :ai/policy\n             :ai/human-review :ai/budget}\n :requires #{:tool-capabilities :output-schemas :prompt-hashes\n             :replay-policy :secret-policy}\n :records #{:ai/model-call-ledger :ai/tool-log :ai/human-review-record\n            :ai/budget-trace}\n :rejects #{:ai/model-call-without-capability :tool-effect-exceeds-grant\n            :live-call-in-replay-segment}}\n```"},
+       :start-byte 2872,
+       :text "             :ai/human-review :ai/budget}\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 75,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "8892b81a79c18177050cf51142c31bdfbc120133b86c2ca5beffa847a82be24f",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 3122,
+       :end-line 75,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 66,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "55c7888ee7664715f26a73634df013defc8d8f76036b116aff5a22bb49a6dd73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3241,
+        :end-line 78,
+        :start-byte 2730,
+        :text
+        "```clojure\n{:artifact :gravity/ai-runtime\n :family :ai\n :agent :support-agent\n :services #{:ai/model-call :ai/tool-call :ai/memory :ai/policy\n             :ai/human-review :ai/budget}\n :requires #{:tool-capabilities :output-schemas :prompt-hashes\n             :replay-policy :secret-policy}\n :records #{:ai/model-call-ledger :ai/tool-log :ai/human-review-record\n            :ai/budget-trace}\n :rejects #{:ai/model-call-without-capability :tool-effect-exceeds-grant\n            :live-call-in-replay-segment}}\n```"},
+       :start-byte 3092,
+       :text "            :ai/budget-trace}\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 95,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b1e35c526aab85dc4ef23a23306b1cc0856b8ecba8ac708b2a6a18ff2f8ed1c9",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 3578,
+       :end-line 95,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 87,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "3cafefb64b1abfc24de2ec0ed24ee9e0015c794c3ff3831a6c69ef567df3646f",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 3655,
+        :end-line 98,
+        :start-byte 3378,
+        :text
+        "- provider and model identity,\n- prompt template id,\n- message role and provenance,\n- prompt/message digests,\n- parameter settings,\n- input taint,\n- output schema,\n- validation result,\n- budget cost,\n- replay/audit mode,\n- policy decisions,\n- source and generated-origin links."},
+       :start-byte 3563,
+       :text "- budget cost,\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 123,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "43abe8bd23df4b2d4abe5923de0c8a842ced732ec7bfec857f49eddc917c6dae",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 4690,
+       :end-line 123,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 123,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "d7413864e50d5c6f3cf1439f4d33aa09d25727554d3e4f4b897fc4e4827d1a73",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 4968,
+        :end-line 128,
+        :start-byte 4668,
+        :text
+        "## Replay and Budgets\n\nReplay records include model output, tool input/output, retrieval results,\nmemory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\nevents. In replay mode, the runtime returns recorded outputs or rejects the\nexecution if the record is missing."},
+       :start-byte 4668,
+       :text "## Replay and Budgets\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 126,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "b03557f0ddfb78088baf0fc4d95200cd384cf82f798efa32a8a560c9e939463d",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 4857,
+       :end-line 126,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 125,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "cf5945be0341fbcbcc84a2a336b056b489215e36a995822393705d0f95537c00",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 4968,
+        :end-line 128,
+        :start-byte 4691,
+        :text
+        "Replay records include model output, tool input/output, retrieval results,\nmemory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\nevents. In replay mode, the runtime returns recorded outputs or rejects the\nexecution if the record is missing."},
+       :start-byte 4766,
+       :text
+       "memory reads/writes, human-review decisions, policy decisions, errors, retries, and budget\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 130,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "7f397eb610ca30c4f2e8b215b1b9bdf16f95baa93c9f8993fb597959ccbaafa9",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5055,
+       :end-line 130,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 130,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "a167ba92fc2f048b42b774ccd5df2a504bd57c5015eed278b2411be2a8d00658",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5062,
+        :end-line 131,
+        :start-byte 4970,
+        :text
+        "Budgets track model calls, tokens, tool calls, time, cost, retries, and human-review\nlimits."},
+       :start-byte 4970,
+       :text
+       "Budgets track model calls, tokens, tool calls, time, cost, retries, and human-review\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 138,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "675f0bb501c353f4606bfbf273ad6b350fa5731a93067603b32474af204cfd75",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5236,
+       :end-line 138,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 137,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "e6b027a5ed2be7560c1f221472a18b982175e42879bdaa7f86308819fc236619",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5953,
+        :end-line 150,
+        :start-byte 5126,
+        :text
+        "- `R8-MODEL` for model calls without provider, effect, capability, output\n  schema, budget, or replay policy.\n- `R8-PROMPT` for prompt provenance or role-policy violations.\n- `R8-TOOL` for tool calls without schema, capability, human-review, timeout, or\n  retry policy.\n- `R8-TAINT` for unvalidated model, tool, retrieval, or memory output reaching a\n  trusted sink.\n- `R8-SECRET` for secret exposure risk.\n- `R8-MEMORY` for invalid memory retention, trust, privacy, or deletion policy.\n- `R8-HUMAN-REVIEW` for missing or insufficient `:ai/human-review`.\n- `R8-REPLAY` for live nondeterministic calls in replay-required segments.\n- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n- `R8-GENERATED` for generated code execution before compiler validation.\n- `R8-MANIFEST` for incomplete AI runtime artifacts."},
+       :start-byte 5200,
+       :text "  schema, budget, or replay policy.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 148,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "18644c443afeecd49bdb0520999e59c28c4028620249ad73e1a3bab56880ad0c",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 5827,
+       :end-line 148,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 137,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "e6b027a5ed2be7560c1f221472a18b982175e42879bdaa7f86308819fc236619",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 5953,
+        :end-line 150,
+        :start-byte 5126,
+        :text
+        "- `R8-MODEL` for model calls without provider, effect, capability, output\n  schema, budget, or replay policy.\n- `R8-PROMPT` for prompt provenance or role-policy violations.\n- `R8-TOOL` for tool calls without schema, capability, human-review, timeout, or\n  retry policy.\n- `R8-TAINT` for unvalidated model, tool, retrieval, or memory output reaching a\n  trusted sink.\n- `R8-SECRET` for secret exposure risk.\n- `R8-MEMORY` for invalid memory retention, trust, privacy, or deletion policy.\n- `R8-HUMAN-REVIEW` for missing or insufficient `:ai/human-review`.\n- `R8-REPLAY` for live nondeterministic calls in replay-required segments.\n- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n- `R8-GENERATED` for generated code execution before compiler validation.\n- `R8-MANIFEST` for incomplete AI runtime artifacts."},
+       :start-byte 5756,
+       :text
+       "- `R8-BUDGET` for cost, token, time, retry, or call budget violations.\n"}
+      {:path
+       "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+       :start-line 177,
+       :file-sha256
+       "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+       :raw-sha256
+       "261cf9a33899282f495ec6686896d5ed01b0b96c027d73d395a2077a810764c8",
+       :disposition :mixed-source-qualified-by-user-policy,
+       :facet-id nil,
+       :source-occurrence-id nil,
+       :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+       :end-byte 6867,
+       :end-line 177,
+       :context
+       {:path
+        "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+        :start-line 172,
+        :file-sha256
+        "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b",
+        :raw-sha256
+        "8f992090d6472ed0ddd57684fade35b9e60251ef9e55c172ced138435bfd07b6",
+        :source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+        :end-byte 6966,
+        :end-line 179,
+        :start-byte 6570,
+        :text
+        "- model call ledgers with prompt provenance and output validation,\n- tool invocation logs with schema, capability, human-review, and taint records,\n- memory/retrieval policy enforcement,\n- secret redaction and denial fixtures,\n- replay records for model/tool nondeterminism,\n- budget enforcement,\n- generated-code compiler validation gates,\n- distributed workflow integration for durable agents.\n"},
+       :start-byte 6845,
+       :text "- budget enforcement,\n"}],
+     :adoption :canonical-owner-only,
+     :disposition :finite-source-adjudication-proposed,
+     :status :open,
+     :no-new-task true,
+     :semantic-source-id nil,
+     :historical-proposal-sha256
+     "3db8c486e049cfa7ad142869a3c81829e7f706273e189a81ff75b9e7db2eadfe",
+     :historical-reuse
+     "Reuse the existing AI external-spend criterion and Runtime policy boundary. This decision is part of the 530 partition overlapping historical joins, not a new implementation outcome or completion.",
+     :completion-credit :none,
+     :unresolved-facet-metadata
+     {:state :not-supplied-by-assigned-decision,
+      :invented-identifiers [],
+      :whole-attached-facet-entailment :not-established},
+     :dependencies
+     ["Schema validators and typed request/response artifacts"
+      "Workflow failure/retry/idempotency and recorded-output contract"
+      "typed/effect/profile legality"
+      "Runtime/Auth scoped grants and service hooks"
+      "actual provider identity, spending/account policy and permitted audit records"],
+     :historical-join-delta 0,
+     :source-contracts ["accounting-policy" "P10" "R8"],
+     :implementation-acceptance :unassessed},
+    :task-source-commit "88c3c80e1e9691b02d56a3f3a7133162e13b69f3",
+    :implementation-acceptance :unassessed}}
+  {:id "decision/conditional-platform-architecture",
+   :before
+   {:required-output
+    "Complete the four existing Platform Product architecture decision tasks before claiming the selected conditional product implementation; no target or product is chosen by this baseline.",
+    :consumer
+    {:role :selected-conditional-product-implementation-and-acceptance,
+     :task-ids
+     ["platform-product/implement-hardware"
+      "platform-product/implement-firmware"
+      "platform-product/implement-os"
+      "platform-product/implement-drivers"
+      "platform-product/implement-applications"
+      "platform-product/integrate-execution"
+      "platform-product/distribute-product"],
+     :gate
+     "All four reviewed decision records define the selected product before selected conditional implementation is claimed. Existing partial architecture work remains Open; no chosen target, SKU, physical deliverable or implementation credit follows from this allocation.",
+     :refusals
+     ["Missing or unapproved architecture record cannot close the selected product claim."
+      "Unsupported/incompatible hardware, compiler examples substituted for application inventory, missing isolation/boot failure criteria, and missing/unavailable required physical prerequisites cannot satisfy their actual criterion."
+      "Target conformance, a compiler or host adapter alone cannot close the full product."]},
+    :private-proposal-source-review
+    {:sha256
+     "6c72f59a6e858f18691fefd5f4a8be04601f1540bd840aaa656c94287e766b37",
+     :scope :frozen-metadata-field-allocation-proposal-only},
+    :full-attached-facet-entailment :not-conferred,
+    :scope :source-qualified-conditional-architecture-allocation,
+    :allocation-review :pending-independent-current-composition-review,
+    :decision-status :open,
+    :source-adjudication
+    {:kind :explicit-governing-extension-source-disposition,
+     :source-contracts ["platform-product"],
+     :source-facet-ids nil,
+     :unresolved-facet-metadata-ids [],
+     :facet-index-status :not-declared-by-this-special-decision,
+     :qualification
+     "Preserve the nil facet list. Exact original/current source contexts supply the architecture predicate; no synthetic facet/occurrence ID or all-240 facet closure is invented.",
+     :source-context-witnesses
+     [{:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 5733,
+        :end-byte 6252,
+        :raw-sha256
+        "38dca80a0c5cca407e366cdd6ce27c446b89e4b35186bd7b460ba1fe37f8d5b7",
+        :raw
+        "Declared product outcome: the adopted Uniform-authored hardware/firmware/OS/\ndriver/application stack boots and runs its declared application workloads with\nchecked isolation, authority, failures and source-to-delivery provenance. This\noutcome cannot be accepted until the following decision records define the\nactual product and are approved; it is not currently a finite implemented SKU.\nThe current finite architecture tranche closes on those records, not on a\nclaim that architecture itself is the shipped product.\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 46003,
+        :end-byte 46522,
+        :raw-sha256
+        "38dca80a0c5cca407e366cdd6ce27c446b89e4b35186bd7b460ba1fe37f8d5b7",
+        :raw
+        "Declared product outcome: the adopted Uniform-authored hardware/firmware/OS/\ndriver/application stack boots and runs its declared application workloads with\nchecked isolation, authority, failures and source-to-delivery provenance. This\noutcome cannot be accepted until the following decision records define the\nactual product and are approved; it is not currently a finite implemented SKU.\nThe current finite architecture tranche closes on those records, not on a\nclaim that architecture itself is the shipped product.\n"}}
+      {:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 6253,
+        :end-byte 7495,
+        :raw-sha256
+        "e2f2f9af3a9c6c36f1ec6c63c0dc2282e9971e7cee19293ce5adafd54b2b039b",
+        :raw
+        "| Decision record (open) | Recommendation for review | Accountable role and required output |\n| --- | --- | --- |\n| ISA and hardware implementation | Evaluate a documented existing ISA for a simulation/reference platform before committing to custom silicon; keep custom hardware ambition explicit | Hardware architect: selected ISA or justified alternative, device model, simulator and acceptance workloads |\n| Kernel architecture and OS services | Compare isolation, driver placement and boot requirements before choosing monolithic, microkernel or another model; do not let host adapters decide | OS architect: adopted kernel model, boot chain, memory/scheduling/IPC/service contracts and failure cases |\n| Application surface | Name end-user application workloads, UI/input/storage/network requirements and acceptance fixtures separately from compiler examples | Product owner: adopted application inventory and executable success/failure criteria for each |\n| Physical product boundary | Separate simulation/FPGA/reference hardware from fabricated silicon; explicitly record whether fabrication is in this release | Hardware/product owner: physical deliverable, board/device interfaces, bring-up evidence and external dependency owners |\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 46523,
+        :end-byte 47765,
+        :raw-sha256
+        "e2f2f9af3a9c6c36f1ec6c63c0dc2282e9971e7cee19293ce5adafd54b2b039b",
+        :raw
+        "| Decision record (open) | Recommendation for review | Accountable role and required output |\n| --- | --- | --- |\n| ISA and hardware implementation | Evaluate a documented existing ISA for a simulation/reference platform before committing to custom silicon; keep custom hardware ambition explicit | Hardware architect: selected ISA or justified alternative, device model, simulator and acceptance workloads |\n| Kernel architecture and OS services | Compare isolation, driver placement and boot requirements before choosing monolithic, microkernel or another model; do not let host adapters decide | OS architect: adopted kernel model, boot chain, memory/scheduling/IPC/service contracts and failure cases |\n| Application surface | Name end-user application workloads, UI/input/storage/network requirements and acceptance fixtures separately from compiler examples | Product owner: adopted application inventory and executable success/failure criteria for each |\n| Physical product boundary | Separate simulation/FPGA/reference hardware from fabricated silicon; explicitly record whether fabrication is in this release | Hardware/product owner: physical deliverable, board/device interfaces, bring-up evidence and external dependency owners |\n"}}
+      {:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 7496,
+        :end-byte 8159,
+        :raw-sha256
+        "1edcc988964a873160ef3dcaf26cc329a4a55c2c595e58285b31acb2de562566",
+        :raw
+        "After these records are adopted, remaining product tasks are: implement and\nverify the selected hardware design; implement boot firmware; implement the\nselected OS services and isolation; implement device drivers; implement the\nadopted applications; integrate boot-to-application execution and failure tests;\nproduce the reproducible product distribution and physical bring-up evidence\nwhere required. Each task is open. The adopted records must turn these task\noutputs into concrete interfaces and yes/no fixtures before implementation\ncompletion can be claimed; until then this is explicitly an architecture\ntranche, not a falsely closed full-platform roadmap.\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 47766,
+        :end-byte 48429,
+        :raw-sha256
+        "1edcc988964a873160ef3dcaf26cc329a4a55c2c595e58285b31acb2de562566",
+        :raw
+        "After these records are adopted, remaining product tasks are: implement and\nverify the selected hardware design; implement boot firmware; implement the\nselected OS services and isolation; implement device drivers; implement the\nadopted applications; integrate boot-to-application execution and failure tests;\nproduce the reproducible product distribution and physical bring-up evidence\nwhere required. Each task is open. The adopted records must turn these task\noutputs into concrete interfaces and yes/no fixtures before implementation\ncompletion can be claimed; until then this is explicitly an architecture\ntranche, not a falsely closed full-platform roadmap.\n"}}]},
+    :semantic-source-id nil,
+    :independent-review :pending,
+    :task-links
+    [{:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-hardware-contract",
+      :required-output
+      "Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "b675b06fbaa8436d2354d05c9f79e418d02e5bd617870b44198083c5138a7c08",
+       :raw
+       "Closing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49163,
+       :start-byte 48961},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "5f7f318da51d158ac18981c26543470bd051745d7dd8ba53312bc79909e2221c",
+       :raw
+       "- [ ] `platform-product/adopt-hardware-contract` Adopt the product hardware contract\n\nStatus: Open\n\nClosing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration\n\nDependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49291,
+       :start-byte 48861},
+      :accountable-role :hardware-architect,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "df5d728099a20f964d1b7d5c29f46a546d403efc7d24120c6221d049e1f6b984",
+       :raw
+       "Dependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49290,
+       :start-byte 49165},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-kernel-contract",
+      :required-output
+      "Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "5246eafe321a5c3752481394783725b1f5dc643e2e222571a980ed043552f954",
+       :raw
+       "Closing evidence: Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49590,
+       :start-byte 49401},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "703a3b4256d5257bb833867e70726899842bb6d1874d943259e2bfd4c18b6789",
+       :raw
+       "- [ ] `platform-product/adopt-kernel-contract` Adopt the product kernel and service contracts\n\nStatus: Open\n\nClosing evidence: Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot\n\nDependencies: The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49716,
+       :start-byte 49292},
+      :accountable-role :os-architect,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "8edbf5a6c24da92ef3bedc2b22702bdcb5db78589eb3cd90ee2c2449b0a63d0b",
+       :raw
+       "Dependencies: The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49715,
+       :start-byte 49592},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-application-contract",
+      :required-output
+      "Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "74bb2cebd9fa71e083aa494ce9a152671f454fcc241dcb36b31013a2243e5c15",
+       :raw
+       "Closing evidence: Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50028,
+       :start-byte 49824},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "fe1b24bfb5f2581ab6ea7f240d09d7e27acfcad0a979306847b677f4a72925cb",
+       :raw
+       "- [ ] `platform-product/adopt-application-contract` Adopt the product application inventory\n\nStatus: Open\n\nClosing evidence: Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory\n\nDependencies: The existing application surface decision record; accountable product owner remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50139,
+       :start-byte 49717},
+      :accountable-role :product-owner,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "0b3cb1a06fb202d7ec865311e5d7edf6816eed1cfa66a0bf61493e781d886635",
+       :raw
+       "Dependencies: The existing application surface decision record; accountable product owner remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50138,
+       :start-byte 50030},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing application surface decision record; accountable product owner remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-physical-boundary",
+      :required-output
+      "Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "277429a19de882a0dbc2b352eacd14354fd37ad1fd697da8cf09b43f42ce8c55",
+       :raw
+       "Closing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51062,
+       :start-byte 50249},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "9996b6a146cc7ea588611269cc902110c61f5ae89584fa740bacece8656227a1",
+       :raw
+       "- [ ] `platform-product/adopt-physical-boundary` Adopt the product physical delivery boundary\n\nStatus: Open\n\nClosing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.\n\nDependencies: The existing physical product boundary decision record; accountable hardware/product owner remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51188,
+       :start-byte 50140},
+      :accountable-role :hardware-product-owner,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "6a0d346122915a0770e9f9c8af3238b5c2759f573d70e8f4ede026604b899458",
+       :raw
+       "Dependencies: The existing physical product boundary decision record; accountable hardware/product owner remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51187,
+       :start-byte 51064},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing physical product boundary decision record; accountable hardware/product owner remains unassigned"}],
+    :completion-credit :none,
+    :dependencies
+    {:producer-criteria
+     ["platform-product/adopt-hardware-contract"
+      "platform-product/adopt-kernel-contract"
+      "platform-product/adopt-application-contract"
+      "platform-product/adopt-physical-boundary"],
+     :architecture-choices :open,
+     :physical-prerequisites :conditional-on-adopted-boundary,
+     :unrelated-compiler-runtime-library-work
+     :may-proceed-in-parallel},
+    :task-source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+    :implementation-acceptance :unassessed},
+   :after
+   {:required-output
+    "Complete the four existing Platform Product architecture decision tasks before claiming the selected conditional product implementation; no target or product is chosen by this baseline.",
+    :consumer
+    {:role :selected-conditional-product-implementation-and-acceptance,
+     :task-ids
+     ["platform-product/implement-hardware"
+      "platform-product/implement-firmware"
+      "platform-product/implement-os"
+      "platform-product/implement-drivers"
+      "platform-product/implement-applications"
+      "platform-product/integrate-execution"
+      "platform-product/distribute-product"],
+     :gate
+     "All four reviewed decision records define the selected product before selected conditional implementation is claimed. Existing partial architecture work remains Open; no chosen target, SKU, physical deliverable or implementation credit follows from this allocation.",
+     :refusals
+     ["Missing or unapproved architecture record cannot close the selected product claim."
+      "Unsupported/incompatible hardware, compiler examples substituted for application inventory, missing isolation/boot failure criteria, and missing/unavailable required physical prerequisites cannot satisfy their actual criterion."
+      "Target conformance, a compiler or host adapter alone cannot close the full product."]},
+    :private-proposal-source-review
+    {:sha256
+     "6c72f59a6e858f18691fefd5f4a8be04601f1540bd840aaa656c94287e766b37",
+     :scope :frozen-metadata-field-allocation-proposal-only},
+    :full-attached-facet-entailment :not-conferred,
+    :scope :source-qualified-conditional-architecture-allocation,
+    :allocation-review
+    :independent-finite-source-review-accepted-current-join-verified,
+    :decision-status :open,
+    :qualified-review-adoption
+    {:path
+     "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+     :sha256
+     "e8353689c5241fc8256b3b34ddf215b952d1b937ab3d962bcde9fc9a4cd53d51",
+     :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+     :scope :exact-two-current-source-composition-joins,
+     :independent-receipt-sha256
+     "b394fb0eeadd8f9d65f4676ee2a5523c07d5b8c25d2b508589fb737137728223"},
+    :source-adjudication
+    {:kind :explicit-governing-extension-source-disposition,
+     :source-contracts ["platform-product"],
+     :source-facet-ids nil,
+     :unresolved-facet-metadata-ids [],
+     :facet-index-status :not-declared-by-this-special-decision,
+     :qualification
+     "Preserve the nil facet list. Exact original/current source contexts supply the architecture predicate; no synthetic facet/occurrence ID or all-240 facet closure is invented.",
+     :source-context-witnesses
+     [{:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 5733,
+        :end-byte 6252,
+        :raw-sha256
+        "38dca80a0c5cca407e366cdd6ce27c446b89e4b35186bd7b460ba1fe37f8d5b7",
+        :raw
+        "Declared product outcome: the adopted Uniform-authored hardware/firmware/OS/\ndriver/application stack boots and runs its declared application workloads with\nchecked isolation, authority, failures and source-to-delivery provenance. This\noutcome cannot be accepted until the following decision records define the\nactual product and are approved; it is not currently a finite implemented SKU.\nThe current finite architecture tranche closes on those records, not on a\nclaim that architecture itself is the shipped product.\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 46003,
+        :end-byte 46522,
+        :raw-sha256
+        "38dca80a0c5cca407e366cdd6ce27c446b89e4b35186bd7b460ba1fe37f8d5b7",
+        :raw
+        "Declared product outcome: the adopted Uniform-authored hardware/firmware/OS/\ndriver/application stack boots and runs its declared application workloads with\nchecked isolation, authority, failures and source-to-delivery provenance. This\noutcome cannot be accepted until the following decision records define the\nactual product and are approved; it is not currently a finite implemented SKU.\nThe current finite architecture tranche closes on those records, not on a\nclaim that architecture itself is the shipped product.\n"}}
+      {:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 6253,
+        :end-byte 7495,
+        :raw-sha256
+        "e2f2f9af3a9c6c36f1ec6c63c0dc2282e9971e7cee19293ce5adafd54b2b039b",
+        :raw
+        "| Decision record (open) | Recommendation for review | Accountable role and required output |\n| --- | --- | --- |\n| ISA and hardware implementation | Evaluate a documented existing ISA for a simulation/reference platform before committing to custom silicon; keep custom hardware ambition explicit | Hardware architect: selected ISA or justified alternative, device model, simulator and acceptance workloads |\n| Kernel architecture and OS services | Compare isolation, driver placement and boot requirements before choosing monolithic, microkernel or another model; do not let host adapters decide | OS architect: adopted kernel model, boot chain, memory/scheduling/IPC/service contracts and failure cases |\n| Application surface | Name end-user application workloads, UI/input/storage/network requirements and acceptance fixtures separately from compiler examples | Product owner: adopted application inventory and executable success/failure criteria for each |\n| Physical product boundary | Separate simulation/FPGA/reference hardware from fabricated silicon; explicitly record whether fabrication is in this release | Hardware/product owner: physical deliverable, board/device interfaces, bring-up evidence and external dependency owners |\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 46523,
+        :end-byte 47765,
+        :raw-sha256
+        "e2f2f9af3a9c6c36f1ec6c63c0dc2282e9971e7cee19293ce5adafd54b2b039b",
+        :raw
+        "| Decision record (open) | Recommendation for review | Accountable role and required output |\n| --- | --- | --- |\n| ISA and hardware implementation | Evaluate a documented existing ISA for a simulation/reference platform before committing to custom silicon; keep custom hardware ambition explicit | Hardware architect: selected ISA or justified alternative, device model, simulator and acceptance workloads |\n| Kernel architecture and OS services | Compare isolation, driver placement and boot requirements before choosing monolithic, microkernel or another model; do not let host adapters decide | OS architect: adopted kernel model, boot chain, memory/scheduling/IPC/service contracts and failure cases |\n| Application surface | Name end-user application workloads, UI/input/storage/network requirements and acceptance fixtures separately from compiler examples | Product owner: adopted application inventory and executable success/failure criteria for each |\n| Physical product boundary | Separate simulation/FPGA/reference hardware from fabricated silicon; explicitly record whether fabrication is in this release | Hardware/product owner: physical deliverable, board/device interfaces, bring-up evidence and external dependency owners |\n"}}
+      {:original
+       {:path "docs/component-roadmaps/platform.md",
+        :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+        :file-sha256
+        "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+        :start-byte 7496,
+        :end-byte 8159,
+        :raw-sha256
+        "1edcc988964a873160ef3dcaf26cc329a4a55c2c595e58285b31acb2de562566",
+        :raw
+        "After these records are adopted, remaining product tasks are: implement and\nverify the selected hardware design; implement boot firmware; implement the\nselected OS services and isolation; implement device drivers; implement the\nadopted applications; integrate boot-to-application execution and failure tests;\nproduce the reproducible product distribution and physical bring-up evidence\nwhere required. Each task is open. The adopted records must turn these task\noutputs into concrete interfaces and yes/no fixtures before implementation\ncompletion can be claimed; until then this is explicitly an architecture\ntranche, not a falsely closed full-platform roadmap.\n"},
+       :current
+       {:path "specs/platform-workflow/tasks.md",
+        :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+        :file-sha256
+        "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+        :marker "platform-product-scope",
+        :start-byte 47766,
+        :end-byte 48429,
+        :raw-sha256
+        "1edcc988964a873160ef3dcaf26cc329a4a55c2c595e58285b31acb2de562566",
+        :raw
+        "After these records are adopted, remaining product tasks are: implement and\nverify the selected hardware design; implement boot firmware; implement the\nselected OS services and isolation; implement device drivers; implement the\nadopted applications; integrate boot-to-application execution and failure tests;\nproduce the reproducible product distribution and physical bring-up evidence\nwhere required. Each task is open. The adopted records must turn these task\noutputs into concrete interfaces and yes/no fixtures before implementation\ncompletion can be claimed; until then this is explicitly an architecture\ntranche, not a falsely closed full-platform roadmap.\n"}}]},
+    :semantic-source-id nil,
+    :independent-review :pending,
+    :task-links
+    [{:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-hardware-contract",
+      :required-output
+      "Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "b675b06fbaa8436d2354d05c9f79e418d02e5bd617870b44198083c5138a7c08",
+       :raw
+       "Closing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49163,
+       :start-byte 48961},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "5f7f318da51d158ac18981c26543470bd051745d7dd8ba53312bc79909e2221c",
+       :raw
+       "- [ ] `platform-product/adopt-hardware-contract` Adopt the product hardware contract\n\nStatus: Open\n\nClosing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration\n\nDependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49291,
+       :start-byte 48861},
+      :accountable-role :hardware-architect,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-hardware-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "df5d728099a20f964d1b7d5c29f46a546d403efc7d24120c6221d049e1f6b984",
+       :raw
+       "Dependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49290,
+       :start-byte 49165},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-kernel-contract",
+      :required-output
+      "Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "5246eafe321a5c3752481394783725b1f5dc643e2e222571a980ed043552f954",
+       :raw
+       "Closing evidence: Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49590,
+       :start-byte 49401},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "703a3b4256d5257bb833867e70726899842bb6d1874d943259e2bfd4c18b6789",
+       :raw
+       "- [ ] `platform-product/adopt-kernel-contract` Adopt the product kernel and service contracts\n\nStatus: Open\n\nClosing evidence: Reviewed kernel model and boot chain, memory, scheduling, IPC, service and driver-placement interfaces, with executable success and failure criteria for isolation and boot\n\nDependencies: The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49716,
+       :start-byte 49292},
+      :accountable-role :os-architect,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-kernel-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "8edbf5a6c24da92ef3bedc2b22702bdcb5db78589eb3cd90ee2c2449b0a63d0b",
+       :raw
+       "Dependencies: The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 49715,
+       :start-byte 49592},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing kernel architecture and OS services decision record; accountable OS architect remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-application-contract",
+      :required-output
+      "Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "74bb2cebd9fa71e083aa494ce9a152671f454fcc241dcb36b31013a2243e5c15",
+       :raw
+       "Closing evidence: Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50028,
+       :start-byte 49824},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "fe1b24bfb5f2581ab6ea7f240d09d7e27acfcad0a979306847b677f4a72925cb",
+       :raw
+       "- [ ] `platform-product/adopt-application-contract` Adopt the product application inventory\n\nStatus: Open\n\nClosing evidence: Named end-user workloads with UI, input, storage and network requirements and executable success/failure fixtures for each; compiler examples alone do not close the application inventory\n\nDependencies: The existing application surface decision record; accountable product owner remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50139,
+       :start-byte 49717},
+      :accountable-role :product-owner,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-application-contract",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "0b3cb1a06fb202d7ec865311e5d7edf6816eed1cfa66a0bf61493e781d886635",
+       :raw
+       "Dependencies: The existing application surface decision record; accountable product owner remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 50138,
+       :start-byte 50030},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing application surface decision record; accountable product owner remains unassigned"}
+     {:role :architecture-decision-producer,
+      :path "specs/platform-workflow/tasks.md",
+      :task-id "platform-product/adopt-physical-boundary",
+      :required-output
+      "Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+      :criterion-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "277429a19de882a0dbc2b352eacd14354fd37ad1fd697da8cf09b43f42ce8c55",
+       :raw
+       "Closing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51062,
+       :start-byte 50249},
+      :task-context
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "9996b6a146cc7ea588611269cc902110c61f5ae89584fa740bacece8656227a1",
+       :raw
+       "- [ ] `platform-product/adopt-physical-boundary` Adopt the product physical delivery boundary\n\nStatus: Open\n\nClosing evidence: Reviewed simulation, FPGA, reference-hardware or fabricated-silicon deliverable, explicit fabrication-in-release decision, board/device interfaces, bring-up evidence requirements and external dependency owners For every external prerequisite required by the adopted boundary, record the accountable owner, version, license, provenance and availability: HDL synthesis, simulation, place-and-route, FPGA/programming, foundry/fabrication, board manufacture, firmware signing and physical device access as applicable. Identify unrequired prerequisites explicitly; retain unavailable required prerequisites as open dependencies. Reject missing required records or a delivery claim whose required prerequisite is unavailable. No purchase, fabrication or service operation is authorized by this record.\n\nDependencies: The existing physical product boundary decision record; accountable hardware/product owner remains unassigned\n",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51188,
+       :start-byte 50140},
+      :accountable-role :hardware-product-owner,
+      :dependency-witness
+      {:path "specs/platform-workflow/tasks.md",
+       :task-id "platform-product/adopt-physical-boundary",
+       :file-sha256
+       "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+       :raw-sha256
+       "6a0d346122915a0770e9f9c8af3238b5c2759f573d70e8f4ede026604b899458",
+       :raw
+       "Dependencies: The existing physical product boundary decision record; accountable hardware/product owner remains unassigned",
+       :marker "platform-product-implementation-tasks",
+       :source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+       :end-byte 51187,
+       :start-byte 51064},
+      :status :open,
+      :person-assignment :unassigned,
+      :dependencies
+      "The existing physical product boundary decision record; accountable hardware/product owner remains unassigned"}],
+    :completion-credit :none,
+    :dependencies
+    {:producer-criteria
+     ["platform-product/adopt-hardware-contract"
+      "platform-product/adopt-kernel-contract"
+      "platform-product/adopt-application-contract"
+      "platform-product/adopt-physical-boundary"],
+     :architecture-choices :open,
+     :physical-prerequisites :conditional-on-adopted-boundary,
+     :unrelated-compiler-runtime-library-work
+     :may-proceed-in-parallel},
+    :task-source-commit "b19b62d1baf6142f0f701b79cf760895f97711aa",
+    :implementation-acceptance :unassessed}}],
+ :historical-adoptions-preserved 561,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
+  :sha256
+  "e8353689c5241fc8256b3b34ddf215b952d1b937ab3d962bcde9fc9a4cd53d51",
+  :source-commit "00b355c662aebd41ff920cd0143bf2bc7d277799",
+  :scope :exact-two-current-source-composition-joins}}

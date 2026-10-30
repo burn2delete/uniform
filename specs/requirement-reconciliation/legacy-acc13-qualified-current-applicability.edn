@@ -1,0 +1,71 @@
+{:scope-disposition
+ {:ACC-denominator-delta 0,
+  :retired-tasks [],
+  :granularity-envelope-review :separate-phase13,
+  :new-tasks [],
+  :implementation-credit :none,
+  :final-195-denominator-acceptance :not-conferred,
+  :new-completion-credit 0,
+  :qualification
+  :no-additional-registry-entry-under-declared-crosscutting-interface-relation,
+  :whole-task-equivalence :not-established,
+  :canonical-adoption :pending},
+ :receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-dad4-7de1-b68d-3e567c8976a3/legacy-acc13-review-17b4ee47/receipt.edn",
+  :sha256
+  "59be0fb9c23e547143fdd90738289b152d96f8a50d0fa583eaa8074981e45963",
+  :verdict :qualified-source-scope-pass,
+  :controls {:test 6, :pass 266, :fail 0, :error 0, :type :summary},
+  :negative-controls 48},
+ :reviewed-source "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+ :excluded-later-work
+ [:C5-predicates
+  :finite386-facet-dispositions
+  :granularity13-source-adoption-scope-accepted-only-by-separate-receipt
+  :whole-facet-entailment
+  :final-count
+  :implementation],
+ :allowed-source-disposition-metadata-delta
+ [:current-criterion-bindings :granularity13-qualified-source-review],
+ :unchanged
+ {:bootstrap-source-files true,
+  :all833-decision-records true,
+  :closing-criteria 13,
+  :entire-scope-artifact true,
+  :component-interfaces 66,
+  :policy-clauses 8,
+  :ACC-ledger-and-evidence true,
+  :Accepted-Reader-records 3,
+  :overlap-relations 7,
+  :registry-identities-and-states 195},
+ :implementation-credit :none,
+ :source-commit "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :historical-bindings
+ {:IDs 561,
+  :current-spans 4819,
+  :exact-after-later-C-file-span-pin-inversion true,
+  :reversed-pins 2},
+ :reviewer-exclusions
+ {:thread "01a18529-dad4-7de1-b68d-3e567c8976a3",
+  :authored-ACC13-implementation-criteria false,
+  :proposal-author :phase10,
+  :stdlib-body-semantic-reacceptance :excluded,
+  :stdlib-reference-scope :byte-and-binding-conservation-only},
+ :kind :qualified-legacy-acc13-current-source-applicability,
+ :limits
+ [:exact-frozen-head-only
+  :not-current-later-head-acceptance
+  :not-ACC-implementation-closure
+  :not-independent-stdlib-predicate-reacceptance
+  :not-original-historical-runtime-result-reproduction
+  :not-full-facet-entailment
+  :not-final-whole-project-count
+  :not-canonical-adoption],
+ :scope-artifact
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+  :sha256
+  "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
+ :canonical-adoption
+ :eligible-only-for-qualified-crosscutting-ACC-source-scope-and-overlap-relations}

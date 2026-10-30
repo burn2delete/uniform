@@ -1,0 +1,100 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+  :sha256
+  "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+  :sha256
+  "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7"},
+ :historical-file-pin-changes 2,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :c8-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:computation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 1395,
+   :end-byte 2864,
+   :raw-sha256
+   "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+  :propagation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 3226,
+   :end-byte 4445,
+   :raw-sha256
+   "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+  :legality
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 4827,
+   :end-byte 6319,
+   :raw-sha256
+   "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+  :replay
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 7368,
+   :end-byte 8501,
+   :raw-sha256
+   "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+  :handoff
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 9543,
+   :end-byte 10929,
+   :raw-sha256
+   "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/c8-owner-source-refinement.edn",
+  :sha256
+  "319ba5a26f543effe3eb9c35620b4cc377a5ddb8d3e2d78db9d326a4a0099de4"},
+ :full-file-inverse :exact-declared-insertion-removal}

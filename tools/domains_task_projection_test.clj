@@ -7,7 +7,7 @@
 
 (deftest literal-projects-and-complete-blocks
   (let [rows (domains-task-projection/records tasks)]
-    (is (= 7 (count rows)))
+    (is (= 23 (count rows)))
     (is (= domains-task-projection/outcome-order (mapv :id rows)))
     (is (every? #(= "Open" (:status %)) rows))
     (is (domains-task-projection/check-projection tasks roadmap))
@@ -20,6 +20,21 @@
     (doseq [row (take 2 rows)]
       (is (str/includes? (:projection row) "\n\nYes/no acceptance:")))))
 
+(deftest reviewed-integration-records-preserve-original-routing
+  (let [rows (domains-task-projection/records tasks)
+        original ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]
+        added ["automation" "blockchain" "crypto" "formal" "native" "services" "simulation" "storage" "visual"]]
+    (is (= original (mapv :id (filter #(contains? (set original) (:id %)) rows))))
+    (is (= added (mapv :id (filter #(contains? (set added) (:id %)) rows))))
+    (doseq [{:keys [id projection]} (filter #(contains? (set added) (:id %)) rows)]
+      (is (str/includes? projection "Accepted fixture:"))
+      (is (str/includes? projection "Negative fixture:"))
+      (is (str/includes? projection "Required evidence:"))
+      (is (str/includes? projection "Dependencies consume"))
+      (is (str/includes? projection "implementation acceptance unassessed"))
+      (is (rejects? #(domains-task-projection/records
+                      (str/replace tasks (str "`" id "`") "`unknown`")))))))
+
 (deftest explicit-status-keeps-aggregate-open
   (let [changed (str/replace-first tasks "Status: Open" "Status: Partial; source evidence")
         projected (domains-task-projection/project changed roadmap)]
@@ -29,7 +44,7 @@
     (is (str/includes? projected "The aggregate outcome is open")))
   (let [accepted (-> tasks (str/replace-first "- [ ]" "- [x]")
                      (str/replace-first "Status: Open" "Status: Accepted; [review](https://example.com/review)"))]
-    (is (= 7 (count (domains-task-projection/records accepted))))
+    (is (= 23 (count (domains-task-projection/records accepted))))
     (is (str/includes? (domains-task-projection/project accepted roadmap)
                       "The aggregate outcome is open"))))
 
@@ -58,7 +73,7 @@
                   "Partial; [receipt](https://example.com/review?value=$1)"]]
     (let [changed (str/replace-first tasks "Status: Open" (str "Status: " status))
           projected (domains-task-projection/project changed roadmap)]
-      (is (= 7 (count (domains-task-projection/records changed))))
+      (is (= 23 (count (domains-task-projection/records changed))))
       (is (str/includes? projected (str "implementation status: " status)))
       (is (= projected (domains-task-projection/project changed projected))))))
 
@@ -127,6 +142,20 @@
           (is (= before (snapshot root)))))
       (is (= "Outside write boundary" (slurp sentinel)))
       (finally (doseq [f (reverse (file-seq temp))] (io/delete-file f))))))
+
+(deftest sibling-producer-checker-and-migration-boundaries
+  (let [rows (into {} (map (juxt :id identity) (domains-task-projection/records tasks)))
+        siblings (filter #(str/includes? % "/") domains-task-projection/outcome-order)]
+    (is (= 7 (count siblings)))
+    (doseq [id siblings]
+      (is (= "Open" (:status (rows id))))
+      (is (str/includes? (:projection (rows id)) "Implementation acceptance remains unassessed")))
+    (is (str/includes? (:projection (rows "math/independent-proof-and-certificate-checking")) "Independently check MATH5 approximation certificates"))
+    (is (str/includes? (:projection (rows "math/certified-implementation-synthesis")) "producer success cannot certify itself"))
+    (is (str/includes? (:projection (rows "schema/compatibility-and-migration")) "schema/migration-plan-admission-and-validation/decision-interface"))
+    (is (str/includes? (:projection (rows "schema/checked-consumer-projection")) "Migration statements in these contracts consume checked"))
+    (is (rejects? #(domains-task-projection/records
+                    (str/replace tasks "`math/independent-proof-and-certificate-checking`" "`math/unknown-checker`"))))))
 
 (let [result (run-tests)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

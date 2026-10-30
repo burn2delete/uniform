@@ -1,0 +1,616 @@
+{:counts
+ {:facets 14,
+  :removed-project-accounting-predicates 8,
+  :retained-external-policy-fragments 3,
+  :efir-consumer-fragments 3,
+  :new-task-units 0,
+  :new-decision-ids 0},
+ :policy-criteria
+ [{:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :file-sha256
+   "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+   :raw-sha256
+   "3d0a73d3c7a41166e31433f504db35465335301be6672336303d7b69f78e4736",
+   :criterion-id "accounting-artificial-refusal-removal",
+   :exact-criterion-text
+   "### accounting-artificial-refusal-removal\n\nTask: ACC-12\n\nSource requirement: policy/accounting/remove-artificial-refusals\n\nAcceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.\n\nNegative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.\n\nOutputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.\n\nDependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.",
+   :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+   :end-byte 8548,
+   :start-byte 7214}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :file-sha256
+   "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+   :raw-sha256
+   "a13ffadb0b6856dc7cbef98b403bd2db66754bef4d4d222b7def66671d713a38",
+   :criterion-id "accounting-semantic-validation-preservation",
+   :exact-criterion-text
+   "### accounting-semantic-validation-preservation\n\nTask: ACC-12\n\nSource requirement: policy/accounting/preserve-semantic-validation\n\nAcceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.\n\nNegative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.\n\nOutputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.\n\nDependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.",
+   :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+   :end-byte 10034,
+   :start-byte 8550}
+  {:path "specs/accounting-removal/tasks.md",
+   :task-id "ACC-12",
+   :file-sha256
+   "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+   :raw-sha256
+   "13bde64526d74388e663de5d9e23e460acb21008c67e002cbd2e4afc2a68fc94",
+   :criterion-id "accounting-host-external-boundaries",
+   :exact-criterion-text
+   "### accounting-host-external-boundaries\n\nTask: ACC-12\n\nSource requirement: policy/accounting/host-external-boundary-separation\n\nAcceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.\n\nNegative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.\n\nOutputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.\n\nDependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.",
+   :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+   :end-byte 11391,
+   :start-byte 10036}],
+ :criterion-joins
+ {"interface/language/effects/interpret-tool-call"
+  {:decision-id "interface/language/effects/interpret-tool-call",
+   :record-sha256
+   "13a507baae71ceaba7d1013270a88c3cc7b737c4effad336c8a5da308d4054d2",
+   :status :open,
+   :criteria
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :start-byte 40141,
+      :end-byte 41279,
+      :raw-sha256
+      "dc3a0a78e2f2748c80f5d85eb5e61f274c959415645baf5b2ffe557e29df0913"},
+     :original-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+      :file-sha256
+      "507d80a34a2d99d749c07a36a6069e5ee8d02e4a323446b6fd5ce1ad20053a50",
+      :raw-sha256
+      "dc3a0a78e2f2748c80f5d85eb5e61f274c959415645baf5b2ffe557e29df0913",
+      :start-byte-in-previous-source 40141,
+      :end-byte-in-previous-source 41279},
+     :exact-criterion-text
+     "Source obligation `language/effects/interpret-tool-call`: Interpret a tool call against its declared schema, tool identity, human-review and authority policy, returning a typed result without ambient tool privilege. Accept: Interpret ai/tool-call through the declared tool identity and input/output schema, effects, capability and policy-required human review; validate and return a typed result with original effect/handler identity. Preserve actual external provider/account policy without introducing project work quotas. Reject: Reject schema/type mismatch, unknown tool, missing grant/review or ambient tool authority; a handler declaration cannot create authority. Required outputs: Typed tool-handler artifacts, schema validation, grant/review decisions, result/replay records and accepted/rejected fixtures. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."}]},
+  "interface/language/errors/emit-ai-policy-failure"
+  {:decision-id "interface/language/errors/emit-ai-policy-failure",
+   :record-sha256
+   "ecf824434c75eba31b8e44744fbd2bf5658b904fae2483df2d16c866f66bf32a",
+   :status :open,
+   :criteria
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+      :file-sha256
+      "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+      :start-byte 42648,
+      :end-byte 43773,
+      :raw-sha256
+      "c24c16aa1f9535e5a464ef3bed5c2abf251f0c9a0daad7886601171099fd343a"},
+     :original-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+      :file-sha256
+      "507d80a34a2d99d749c07a36a6069e5ee8d02e4a323446b6fd5ce1ad20053a50",
+      :raw-sha256
+      "c24c16aa1f9535e5a464ef3bed5c2abf251f0c9a0daad7886601171099fd343a",
+      :start-byte-in-previous-source 42648,
+      :end-byte-in-previous-source 43773},
+     :exact-criterion-text
+     "Source obligation `language/errors/emit-ai-policy-failure`: Emit structured audit/policy evidence for AI/model/tool/schema/defense/review failure instead of losing it in exception text. Accept: Emit structured policy/audit artifacts for model-provider failure, tool failure, schema validation, policy denial, prompt-defense trigger and human-review denial, preserving source spans and generated-origin chains. Actual external account/billing errors may remain explicit; removed project quotas are not restored. Reject: Reject free-text-only or missing AI/tool failure evidence, omitted policy/schema/review identity and lost source/generated origins; report L9-AI-ERROR. Required outputs: Typed AI/tool failure record, policy/audit/replay links, validation/denial fixtures and source-bound diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open."}]},
+  "interface/math/efir-verification"
+  {:decision-id "interface/math/efir-verification",
+   :record-sha256
+   "57a7f7aa054b6c7a76281d649fc58d40696cbc914e087d678cc4e7daa1bff8bc",
+   :status :open,
+   :criteria
+   [{:task-id "math",
+     :witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "math",
+      :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+      :file-sha256
+      "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+      :start-byte 21759,
+      :end-byte 23469,
+      :raw-sha256
+      "a881a4ac4dc22bced722f184cb820ee2adbb5d4b97ceb9a998bc59284230c8c9"},
+     :original-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :task-id "math",
+      :granularity-routing-review
+      :pending-independent-current-repartition-review,
+      :file-sha256
+      "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+      :start-byte-in-previous-source 21759,
+      :raw-sha256
+      "a881a4ac4dc22bced722f184cb820ee2adbb5d4b97ceb9a998bc59284230c8c9",
+      :marker "domains-implementation-tasks",
+      :source-commit "90392ba9eb4b43443941065593950af0188d9354",
+      :split-boundary-whitespace true,
+      :routing-kind :unchanged-predicate-bytes,
+      :end-byte-in-previous-source 23469},
+     :exact-criterion-text
+     "Criterion `math/efir-verification` (MATH3; Open).\nImplement: Accept a well-formed/current EFIR graph or reject missing semantic/source/anchor/proof facts before verified consumption.\nBoundary: Node shapes, domain/codomain/mode/precision/branch requirements, source/generated origin and typed-core/MIR anchors; invalid graphs do not become executable backend inputs.\nDone when: Validate node/index/arity shape, domain, codomain, numeric mode, precision, required branch policy, source/generated origins, typed-core/MIR anchor and transformation/approximation obligations.\nNegative fixtures: Reject missing or stale facts, unresolved links, unproved equality and bare EFIR offered as executable selected backend code.\nOutputs: EFIR verifier report with node/source/semantic-anchor/proof diagnostics.\nDependencies: math/efir-domain-inference, math/efir-precision-attachment. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.\nDiagnostics: MATH3-SOURCE is an example; require the applicable owning code and its context for each negative case.\nRequired future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion."}]}},
+ :checks {:test 2, :pass 26, :fail 0, :error 0, :type :summary},
+ :independent-acceptance :pending-current-facet-review,
+ :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+ :user-authority :AGENTS-project-accounting-removal,
+ :kind :finite-current-policy-and-efir-facet-joins,
+ :facets
+ [{:hierarchical-context
+   [{:level 1,
+     :title "MATH3 - Elementary Function IR - EFIR Specification",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :criterion-join "interface/math/efir-verification",
+   :policy-criteria [],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Backend consumption requires the selected implementation tied to exact EFIR semantics and its required target/provider/proof facts. Bare EFIR is rejected as executable input.",
+   :source-witness
+   {:path
+    "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "4694bd43ac3a18543427349bb32522646308bd5a44a0bfd05fe9271cfc77ffca",
+    :start-byte 1332,
+    :end-byte 1389,
+    :raw-sha256
+    "af0958dec85e7a2aa09669e58ec8bc3cd062b649f55721c9cd1f196d36eb32d5"},
+   :disposition
+   :bare-efir-backend-refusal-bound-to-current-selected-implementation-criterion,
+   :source-text
+   "- Backends must not consume bare EFIR as executable code;",
+   :source-occurrence-id
+   "MATH3/source/de055c8a6523ac6b664a76fdb62f2c363170c09b36b0a2eaaf8d2a95827c308b",
+   :id
+   "MATH3/partition-facet/968844e4bd056adebe829cc927466892ce42d93180b34032244c4ba022cc2fba",
+   :document-id "MATH3",
+   :previous-disposition :concrete-refusal-in-math-efir-verification,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1,
+     :title "MATH3 - Elementary Function IR - EFIR Specification",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :criterion-join "interface/math/efir-verification",
+   :policy-criteria [],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Backend consumption requires the selected implementation tied to exact EFIR semantics and its required target/provider/proof facts. Bare EFIR is rejected as executable input.",
+   :source-witness
+   {:path
+    "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "4694bd43ac3a18543427349bb32522646308bd5a44a0bfd05fe9271cfc77ffca",
+    :start-byte 1389,
+    :end-byte 1412,
+    :raw-sha256
+    "d3b6ff6db705846412488a144f5dc69613cef3eba5425ca9dddd4ccd1761d953"},
+   :disposition
+   :bare-efir-backend-refusal-bound-to-current-selected-implementation-criterion,
+   :source-text " they consume selected\n",
+   :source-occurrence-id
+   "MATH3/source/de055c8a6523ac6b664a76fdb62f2c363170c09b36b0a2eaaf8d2a95827c308b",
+   :id
+   "MATH3/partition-facet/09540e4e07277bc7c1bae964f1826fc6b2737f520b70daf68405f98d8dd62793",
+   :document-id "MATH3",
+   :previous-disposition :concrete-refusal-in-math-efir-verification,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1,
+     :title "MATH3 - Elementary Function IR - EFIR Specification",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :criterion-join "interface/math/efir-verification",
+   :policy-criteria [],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Backend consumption requires the selected implementation tied to exact EFIR semantics and its required target/provider/proof facts. Bare EFIR is rejected as executable input.",
+   :source-witness
+   {:path
+    "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "4694bd43ac3a18543427349bb32522646308bd5a44a0bfd05fe9271cfc77ffca",
+    :start-byte 1412,
+    :end-byte 1444,
+    :raw-sha256
+    "6ca9602edcb83dc55fc20d3bfa53f7defc992a1ae386bd6489b4b85eeaba90ae"},
+   :disposition
+   :bare-efir-backend-refusal-bound-to-current-selected-implementation-criterion,
+   :source-text "  implementations tied to EFIR.\n",
+   :source-occurrence-id
+   "MATH3/source/de055c8a6523ac6b664a76fdb62f2c363170c09b36b0a2eaaf8d2a95827c308b",
+   :id
+   "MATH3/partition-facet/0b3a39657598a9ba3df24327aa66052a97ee55c90f5b8aabec6c2b4e9e642b38",
+   :document-id "MATH3",
+   :previous-disposition :concrete-refusal-in-math-efir-verification,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L4 - Macro System Specification", :line 1}
+    {:level 2, :title "Expansion Rules", :line 82}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Preserve actual macro cycle/phase/form validation, generated origins, semantic legality and stable diagnostics; remove configured depth/size-only admission and its quota diagnostic.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9",
+    :start-byte 2754,
+    :end-byte 2820,
+    :raw-sha256
+    "687b4ef98cad676293ee3133bc153383006c39782662ed47e2edcc5c0f0f4687"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   " or until the compiler reaches a configured recursion/depth limit.",
+   :source-occurrence-id
+   "L4/source/a140e6aba1fd38c9d8f4f4ad9e03a56a78dc9835952bca4c1eb1cd395f1ee6cd",
+   :id "facet/language/840ec7232c44e15db7e6b4b8",
+   :document-id "L4",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L4 - Macro System Specification", :line 1}
+    {:level 2, :title "Requirements", :line 170}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Preserve actual macro cycle/phase/form validation, generated origins, semantic legality and stable diagnostics; remove configured depth/size-only admission and its quota diagnostic.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9",
+    :start-byte 5909,
+    :end-byte 5986,
+    :raw-sha256
+    "c9f84ad3c00c0c2be9aa54f7c1734f216d914015152cdbee282694d0f19a50dc"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   "- Macro recursion and expansion size limits must produce stable diagnostics.\n",
+   :source-occurrence-id
+   "L4/source/4ab946e54ad1e11a6591e7099d86c91494317d8335ce38fea6d30916ae41593d",
+   :id "facet/language/f4c46ab57706eeb771eeec35",
+   :document-id "L4",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L4 - Macro System Specification", :line 1}
+    {:level 2, :title "Diagnostics", :line 213}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Preserve actual macro cycle/phase/form validation, generated origins, semantic legality and stable diagnostics; remove configured depth/size-only admission and its quota diagnostic.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9",
+    :start-byte 7210,
+    :end-byte 7277,
+    :raw-sha256
+    "573c98342f76eed1a8990cc558f015485d86780ef3f8e54db9a4a3cceb17f300"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   "- `L4-EXPANSION-DEPTH`: macro expansion exceeded configured depth.\n",
+   :source-occurrence-id
+   "L4/source/88586f66d54ee816bfa98f4d58e708eb80ad63663030abe1d63030f460c62d29",
+   :id "facet/language/1bc2e3aefe4345c6715e4b09",
+   :document-id "L4",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L5 - Type System Specification", :line 1}
+    {:level 2, :title "Typing Rules", :line 75}
+    {:level 3,
+     :title "Private Call-Entry Key-Domain Facts",
+     :line 149}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Remove work allowances only. Preserve complete nested/native/type/domain/parity/every-member validation, authentic checked extents, identity/refinement behavior and tamper detection.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/015-l5-type-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c",
+    :start-byte 8000,
+    :end-byte 8030,
+    :raw-sha256
+    "e6e0ec2b14e939997497b28f30289a2b740f96e6137735af6645b6b97f6222f0"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text "bounded validation obligations",
+   :source-occurrence-id
+   "L5/source/90c2d0dff0cbdbde7520d45a82d7a0f1908b137fa2f37306fca5ad7f278f6db2",
+   :id "facet/language/2f7785e71f8f37247d6d7bf0",
+   :document-id "L5",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L5 - Type System Specification", :line 1}
+    {:level 2, :title "Typing Rules", :line 75}
+    {:level 3,
+     :title "Independently Established List Branch Joins",
+     :line 210}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Remove work allowances only. Preserve complete nested/native/type/domain/parity/every-member validation, authentic checked extents, identity/refinement behavior and tamper detection.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/015-l5-type-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c",
+    :start-byte 10668,
+    :end-byte 10696,
+    :raw-sha256
+    "5a7ea658a4ed279e252c1c46bed421f44a1e2ee27cca6e14e0f24b285359ba71"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text "bounded type-validation work",
+   :source-occurrence-id
+   "L5/source/5673d2e109c14ace2e722371486403a39f49528c5da2232f396ffa399c0e0682",
+   :id "facet/language/76884d682e962539286c6bf3",
+   :document-id "L5",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L6 - Effect System Specification", :line 1}
+    {:level 2, :title "Typed Effect Handlers", :line 140}],
+   :criterion-join "interface/language/effects/interpret-tool-call",
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Typed tool interpretation preserves tool identity, schema, effect and handler identity, grants, human review, typed result/replay and actual external provider/account policy. No project work quota or ambient authority is introduced.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5",
+    :start-byte 7340,
+    :end-byte 7353,
+    :raw-sha256
+    "952c5cbac998e81b83f68f2683afcdbb4e3276824e8f4b8d95ca70cf9e81dce8"},
+   :disposition
+   :external-provider-account-policy-retained-project-allowances-removed,
+   :source-text "budget policy",
+   :source-occurrence-id
+   "L6/source/6c51ab08e16c5beff81fcf4684b19e8562017e93e93e8cc1835707b7705f2697",
+   :id "facet/language/be2c3f6e01803bec7d557b47",
+   :document-id "L6",
+   :previous-disposition
+   :mixed-policy-predicate-needs-external-billing-versus-project-accounting-disposition,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L6 - Effect System Specification", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 334}],
+   :criterion-join "interface/language/effects/interpret-tool-call",
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Typed tool interpretation preserves tool identity, schema, effect and handler identity, grants, human review, typed result/replay and actual external provider/account policy. No project work quota or ambient authority is introduced.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5",
+    :start-byte 17924,
+    :end-byte 17937,
+    :raw-sha256
+    "952c5cbac998e81b83f68f2683afcdbb4e3276824e8f4b8d95ca70cf9e81dce8"},
+   :disposition
+   :external-provider-account-policy-retained-project-allowances-removed,
+   :source-text "budget policy",
+   :source-occurrence-id
+   "L6/source/5b3a0d9e35f20ff37473136c22be75b15346d0c292f2336d21ee962a0359ffee",
+   :id "facet/language/7e362f8e0eb63c9112a24416",
+   :document-id "L6",
+   :previous-disposition
+   :mixed-policy-predicate-needs-external-billing-versus-project-accounting-disposition,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1, :title "L9 - Error Handling Specification", :line 1}
+    {:level 2, :title "Workflow and AI Errors", :line 114}],
+   :criterion-join "interface/language/errors/emit-ai-policy-failure",
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Typed AI errors retain model/tool/schema/policy/defense/review subjects, source/generated origins and audit/replay artifacts. Actual external billing/account failures remain explicit; project quota exhaustion is removed.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/019-l9-error-handling-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "0f154c2a10c21458e123b868d3225ec29f56dbf072097ad7824fe48c82c805f5",
+    :start-byte 3876,
+    :end-byte 3893,
+    :raw-sha256
+    "f1756fd6813d2894bb55fbcaf0da557d8a503f8bbf1977206aca104caf1b11f7"},
+   :disposition
+   :external-provider-account-policy-retained-project-allowances-removed,
+   :source-text "budget exhaustion",
+   :source-occurrence-id
+   "L9/source/a4d63697735c977311b32b54f4bef90b9ead0ec26248abf8ac389c08aa1d4cc4",
+   :id "facet/language/3a5ab0764911369296c8e4dc",
+   :document-id "L9",
+   :previous-disposition
+   :mixed-policy-predicate-needs-external-billing-versus-project-accounting-disposition,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1,
+     :title "L12 - Compile-Time Evaluation Specification",
+     :line 1}
+    {:level 2, :title "Pure Constant Evaluation", :line 154}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Remove configured fuel-only eligibility and exhaustion refusal. Preserve independently meaningful compile-time type/effect/phase/value representability, actual termination/cycle semantics, provenance, explicit evaluation outcomes and actual host restrictions.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333",
+    :start-byte 7426,
+    :end-byte 7621,
+    :raw-sha256
+    "1a1a6685bc127243c6acbc26ddf7083422984dd350374866609d0baffb8241f5"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   "If pure evaluation cannot prove termination within the compiler's configured\nfuel limit, the compiler must emit a deterministic diagnostic rather than\nsilently falling back to runtime evaluation.",
+   :source-occurrence-id
+   "L12/source/c59b07b36035ace78bd949ec63ec9b3d2a0a79ab07ce277289edfb181ab455fe",
+   :id "facet/language/e77c8d985b2d6064cb578fea",
+   :document-id "L12",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1,
+     :title "L12 - Compile-Time Evaluation Specification",
+     :line 1}
+    {:level 2, :title "Compile-Time Function Eligibility", :line 294}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Remove configured fuel-only eligibility and exhaustion refusal. Preserve independently meaningful compile-time type/effect/phase/value representability, actual termination/cycle semantics, provenance, explicit evaluation outcomes and actual host restrictions.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333",
+    :start-byte 13369,
+    :end-byte 13443,
+    :raw-sha256
+    "7f57291746b77c5cb6bf684ad22e41cde055965a2f759c30bd16d81da45ed0d4"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   "- It terminates within configured fuel or has an accepted totality proof.\n",
+   :source-occurrence-id
+   "L12/source/8114aed0b704b8e4e42c9761b1bbecfe1f1023396e4309dd9927f5012b9baf3d",
+   :id "facet/language/109aab1b6ed8dae737e34453",
+   :document-id "L12",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}
+  {:hierarchical-context
+   [{:level 1,
+     :title "L12 - Compile-Time Evaluation Specification",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 361}],
+   :criterion-join nil,
+   :policy-criteria
+   ["accounting-artificial-refusal-removal"
+    "accounting-semantic-validation-preservation"
+    "accounting-host-external-boundaries"],
+   :independent-facet-review :pending,
+   :implementation-credit :none,
+   :retained-obligations
+   "Remove configured fuel-only eligibility and exhaustion refusal. Preserve independently meaningful compile-time type/effect/phase/value representability, actual termination/cycle semantics, provenance, explicit evaluation outcomes and actual host restrictions.",
+   :source-witness
+   {:path
+    "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+    :source-commit "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+    :file-sha256
+    "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333",
+    :start-byte 16829,
+    :end-byte 16899,
+    :raw-sha256
+    "aed87f86c0132b0f5a1afff7f3c70c0df55ac2a2f16009b9c243f620c835539f"},
+   :disposition
+   :project-accounting-only-predicate-superseded-by-user-authority,
+   :source-text
+   "- `L12-FUEL` when compile-time evaluation exceeds deterministic fuel.\n",
+   :source-occurrence-id
+   "L12/source/7ba5a696383c9158f355e282b98abfe66876f68fdb52b43ef74d268b904c43d1",
+   :id "facet/language/cf2eaa7275d5cf2ab11e36bd",
+   :document-id "L12",
+   :previous-disposition :removed-project-accounting-predicate,
+   :whole-enclosing-occurrence-proof :not-conferred}],
+ :qualification
+ "Exact fragment scope only. Three mixed budget phrases retain actual external provider/account or billing behavior through two separate existing Runtime criteria; they do not restore compiler allowances. Eight project-accounting-only predicates are superseded by current user authority while every independent semantic rule and actual host boundary remains. Three EFIR fragments jointly retain backend refusal/selected-implementation consumption through the existing Math criterion. All criterion and original source witnesses authenticate against their frozen source and current bytes. This does not prove entire enclosing paragraphs, actual runtime/provider/backend execution, new predicate acceptance or implementation completion. All stable decision and task states remain unchanged.",
+ :input
+ {:path "/tmp/acc11-final-facet-review/facet-matrix.edn",
+  :sha256
+  "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"}}

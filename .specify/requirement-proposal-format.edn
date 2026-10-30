@@ -1,0 +1,54 @@
+{:kind :gravity/noncanonical-requirement-proposal-format
+ :version 1
+ :authority :discovery-and-semantic-proposal-only
+ :source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
+ :source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+ :source-manifest {:path "contracts/requirement-reconciliation.edn"
+                   :ref "c0dc5790197a1bbd3a8aa285e5458c272d877220"}
+ :source-occurrence-api {:path "tools/requirement_reconciliation.clj"
+                         :function "requirement-reconciliation/source-occurrences"
+                         :ref "c0dc5790197a1bbd3a8aa285e5458c272d877220"}
+ :reference-slice {:ref "c0dc5790197a1bbd3a8aa285e5458c272d877220"
+                   :requirement-ids ["source/reading/canonical-source-kinds"
+                                     "source/provenance/original-path"
+                                     "source/identity/declared-root-relative-path"]
+                   :qualification "Local split and historical entailment reviewed. Cross-family equivalence and current implementation acceptance remain unreviewed."}
+ :taxonomy ["Count independently observable behavior or artifact-production obligation with explicit context and boundary."
+            "Required record fields, diagnostic shape and conformance cases are acceptance facets unless they independently define observable behavior."
+            "Propose aliases for repeated invariants; retain context-specific refinements and distinct behaviors. Central equivalence review decides joins."
+            "No sentence, paragraph, schema-field, task, phase or package count is a requirement denominator."
+            "Do not silently discard unresolved source, future in-scope requirements, retired implementation evidence or missing task interfaces."]
+ :residual-categories {:scope-identity "Undecided outcome ownership or scope alternative; blocks denominator readiness."
+                       :nonoverlap "Undecided duplicate/distinct relationship; blocks denominator readiness."
+                       :acceptance-qualification "Known outcome with missing interface, implementation or evidence detail; retains denominator membership and blocks applicable acceptance credit."
+                       :default "An untyped unresolved facet remains a scope blocker. Every typed residual requires an exact facet, known unit owner and explicit qualification-reason. No bulk reclassification."}
+ :proposal-record
+ {:source-documents [{:id "Original inventory ID" :path "Exact inventory path" :sha256 "Pinned raw UTF-8 file SHA256"}]
+  :units [{:proposed-id "Stable semantic candidate, not occurrence hash"
+           :obligation "Observable behavior including precondition/context"
+           :acceptance-facets [{:id "Stable facet key" :source-occurrence-id "Exact API occurrence ID"
+                                :start-byte "Inclusive UTF-8 raw source offset"
+                                :end-byte "Exclusive UTF-8 raw source offset"
+                                :start-line "One-based source line" :end-line "Inclusive source line"
+                                :raw-sha256 "SHA256 of exact raw byte slice"
+                                :qualification "Exact exception, rejection or contextual condition"}]
+           :task-references [{:path "Existing canonical task source" :sha256 "Actual applying-source hash"
+                              :marker "Existing implementation marker" :id "Existing literal stable ID"}]
+           :task-gaps ["Explicit missing marker/ID/owner or acceptance scope; do not invent ledger IDs"]
+           :equivalence-proposals [{:target "Candidate/canonical behavior" :kind "alias/refinement/distinct"
+                                    :rationale "Source-grounded boundary"}]
+           :historical-support [{:receipt-path "Existing evidence path" :sha256 "Raw receipt hash"
+                                 :verification-date "Original date" :source-commit "Original applying source"
+                                 :scope "Actual proven slice" :current-applicability :unassessed}]
+           :atomicity :proposed :nonoverlap :unreviewed :current-acceptance :unassessed}]
+  :source-dispositions [{:occurrence-id "Every actual source occurrence, preserving repeats"
+                         :kind "layout/requirement/refinement/nonnormative/unresolved"
+                         :unit-ids [] :facet-ids [] :rationale "Source-specific semantic disposition"
+                         :unresolved-facets [{:start-byte "Exact unresolved span start" :end-byte "Exact unresolved span end"
+                                              :question "Actual unresolved semantics, not unattempted easy work"}]}]
+  :scope-decisions ["Proposals only, with exact source spans and authority; preserve ambiguous mixed clauses"]
+  :validation {:source-conservation "All pinned bytes/occurrences/facets checked, with no invented source IDs"
+               :semantic-qualification "Manual full-family review; identify any automated routing and unresolved entailment"
+               :authority "No canonical writes, implementation acceptance, denominator or rate"}}
+ :delivery "One immutable complete bounded-family artifact plus hash/receipt and unresolved list; no per-paragraph coordination. Canonical writer and independent reviewer adjudicate batches."
+ :accounting "Preserve actual external product/provider spend, machine limits and semantic bounds. Project/compiler work-accounting removal never blanket-supersedes a mixed paragraph."}

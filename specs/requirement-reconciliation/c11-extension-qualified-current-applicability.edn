@@ -1,0 +1,143 @@
+{:extension-receipt
+ {:path
+  "specs/requirement-reconciliation/extension392-independent-byte-review.edn",
+  :sha256
+  "cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98",
+  :reviewed-source "4486ad9e3eda0ec648696edc407a8b57f5c864d1",
+  :scope :historical-extension-byte-provenance-only},
+ :counts
+ {:reviewed-original-source-facets 572,
+  :semantic-conjunction-facets 507,
+  :retained-context-facets 65,
+  :pending-finite-proposal-facets 768},
+ :implementation-credit :none,
+ :conservation
+ {:decisions 833,
+  :owning-witnesses 931,
+  :historical-IDs 561,
+  :historical-spans 4819,
+  :records-and-authorities :unchanged,
+  :active-binding
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+   :sha256
+   "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+  :task-criteria-and-statuses :unchanged-by-adoption},
+ :checks {:test 2, :pass 24, :fail 0, :error 0, :type :summary},
+ :C11
+ {:trace
+  {:path
+   "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn",
+   :sha256
+   "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243"},
+  :current-criteria
+  {:construction
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 879,
+    :end-byte 2853,
+    :raw-sha256
+    "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+   :facts
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 3174,
+    :end-byte 4585,
+    :raw-sha256
+    "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+   :ordering
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 4586,
+    :end-byte 5319,
+    :raw-sha256
+    "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+   :verifier
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 5693,
+    :end-byte 6801,
+    :raw-sha256
+    "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+   :serialization
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 7121,
+    :end-byte 8121,
+    :raw-sha256
+    "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+   :consumption
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 8526,
+    :end-byte 9964,
+    :raw-sha256
+    "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+  :source-and-predicate-raw-bytes :unchanged,
+  :source-facets 148,
+  :semantic-facets 131,
+  :context-facets 17,
+  :retained-foundation-residuals 70,
+  :file-pin-changes 0},
+ :final-denominator :not-accepted,
+ :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+ :extension
+ {:historical-spans 392,
+  :current-spans 545,
+  :retained-link-checks :original-subject-not-renewed,
+  :descriptors 5,
+  :occurrences 151,
+  :current-additions-and-full-entailment :not-accepted,
+  :trace-metadata-differences
+  [:current-byte-link-checks
+   :retained-byte-link-checks
+   :current-applicability-source
+   :predecessor-trace],
+  :binding
+  {:path
+   "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+   :sha256
+   "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623"},
+  :operation-authority :not-conferred,
+  :binding-artifact :byte-identical,
+  :historical-facets 392},
+ :C11-receipt
+ {:path
+  "specs/requirement-reconciliation/c11-independent-source-review.edn",
+  :sha256
+  "622d42263745b4dac6545ca26eb50f11e711da5d0af53d0cf468305cd8087d5a",
+  :reviewed-source "de0c5c94392b398c6e8ff128b0010d454dd739e2",
+  :scope :C11-enumerated-conjunctions-and-contexts-only},
+ :kind :C11-and-extension-byte-qualified-current-applicability,
+ :checker-sha256
+ "fc71e4e56272e721775d0c34a6683755a55dc58cc7d2004093cba139a897772b"}

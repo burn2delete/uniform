@@ -1,13 +1,13 @@
 (load-file "tools/release_task_projection.clj")
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
-         '[clojure.java.io :as io])
+         '[clojure.java.io :as io] '[clojure.java.shell :as shell])
 (def tasks (slurp release-task-projection/task-path))
 (def roadmap (slurp release-task-projection/roadmap-path))
 (defn rejects? [f] (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
 
 (deftest canonical-records-and-generated-boundaries
   (let [rows (release-task-projection/records tasks)]
-    (is (= 5 (count rows)))
+    (is (= 18 (count rows)))
     (is (= release-task-projection/semantic-ids (set (map :id rows))))
     (is (every? #(= "Open" (:status %)) rows))
     (is (release-task-projection/check-projection tasks roadmap))
@@ -23,7 +23,7 @@
              (part (task-projection/region projected "release-task-projection"))))))
   (let [accepted (-> tasks (str/replace-first "- [ ]" "- [x]")
                      (str/replace-first "Status: Open" "Status: Accepted; [receipt](https://example.com/review)"))]
-    (is (= 5 (count (release-task-projection/records accepted))))
+    (is (= 18 (count (release-task-projection/records accepted))))
     (is (not (str/includes? (release-task-projection/project accepted roadmap) "Task (all open)")))))
 
 (deftest identity-and-structure-rejections
@@ -44,7 +44,7 @@
 
 (deftest rebuild-executor-remains-in-existing-third-record
   (let [rows (release-task-projection/records tasks) row (nth rows 2)]
-    (is (= 5 (count rows)))
+    (is (= 18 (count rows)))
     (is (= "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" (:id row)))
     (is (= "Open" (:status row)))
     (doseq [required ["prior Gravity compiler process" "complete declared next-stage" "accepted and rejected compiler inputs"
@@ -55,11 +55,21 @@
 (deftest governance-consumers-reference-existing-open-record
   (let [rows (release-task-projection/records tasks)
         row (first rows)
-        plan (slurp "specs/release-workflow/plan.md")]
-    (is (= 5 (count rows)))
+        plan (slurp "specs/release-workflow/plan.md")
+        historical (shell/sh "git" "show"
+                            "f1cb35013c9a132cda4557f7806616b19af0f3ed:specs/release-workflow/tasks.md")
+        _ (is (zero? (:exit historical)))
+        pinned-row (with-redefs [release-task-projection/semantic-ids (set (map :id (take 5 rows)))]
+                     (first (release-task-projection/records (:out historical))))]
+    (is (= 18 (count rows)))
     (is (= "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance" (:id row)))
     (is (= "Open" (:status row)))
-    (is (= "Component outcome receipts, positive/negative programs and explicit unsupported surface" (:acceptance row)))
+    (is (= (dissoc pinned-row :acceptance) (dissoc row :acceptance)))
+    (is (str/starts-with? (:acceptance row) (:acceptance pinned-row)))
+    (doseq [required ["all 240 original contracts" "missing producer/checker/consumer interface"
+                      "an accountability link does not establish an implementation interface"
+                      "bind actual component evidence" "does not block ordinary semantic development"]]
+      (is (str/includes? (:acceptance row) required)))
     (is (str/includes? plan (:id row)))
     (doseq [required ["Ownerless changes" "Missing required sections" "Accidental experimental use"
                       "removal before the approved window" "on/off fixtures" "expiry, rollback"

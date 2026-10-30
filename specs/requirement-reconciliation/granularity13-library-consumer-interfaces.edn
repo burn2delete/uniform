@@ -1,0 +1,353 @@
+{:new-task-ids 0,
+ :consumer-criterion-groups 11,
+ :new-source-facet-ids 0,
+ :source-contract-rendering :newlines-to-spaces-only,
+ :implementation-credit :none,
+ :granularity-review :pending-independent-review,
+ :source-commit "14e12d958464c3864d23f6aef7f6ffbf1bf79676",
+ :existing-decision-aliases 20,
+ :domain-runtime-producer-links :preserved,
+ :source-criterion-reviews
+ :not-extended-to-public-api-implementation-or-new-routing,
+ :source-qualification
+ :STD12-and-STD13-aliases-of-existing-semantic-decisions-not-new-behavior-ids,
+ :kind :granularity13-existing-decision-public-api-consumer-bindings,
+ :groups
+ [{:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/behavior/a1/generated-source-reentry"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a1/generated-source-reentry: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: Criterion `behavior/a1/generated-source-reentry` (Open; implementation unassessed). Input: source-bound behavior/a1/generated-source-reentry request and its declared profile/target/policy facts. Accept: Re-enter generated source through the ordinary reader, macro, type, effect, profile and safety pipeline before use. Reject: Reject generated source used before reader, macro, type, effect, profile and safety validation, including a model-produced artifact admitted through a provider-only path. Required output: Checked generated-source stage manifest with reader/macro/type/effect/profile/safety verdicts, preserved origins and source-mapped diagnostics. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 301693,
+      :end-byte 302530,
+      :raw-sha256
+      "99ba7b0205895d1b2a370980e5bd3cebd60347c1a9db21360716302c85653085"},
+     :raw
+     "Criterion `behavior/a1/generated-source-reentry` (Open; implementation unassessed). Input: source-bound behavior/a1/generated-source-reentry request and its declared profile/target/policy facts. Accept: Re-enter generated source through the ordinary reader, macro, type, effect, profile and safety pipeline before use. Reject: Reject generated source used before reader, macro, type, effect, profile and safety validation, including a model-produced artifact admitted through a provider-only path. Required output: Checked generated-source stage manifest with reader/macro/type/effect/profile/safety verdicts, preserved origins and source-mapped diagnostics. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion.",
+     :single-line
+     "Criterion `behavior/a1/generated-source-reentry` (Open; implementation unassessed). Input: source-bound behavior/a1/generated-source-reentry request and its declared profile/target/policy facts. Accept: Re-enter generated source through the ordinary reader, macro, type, effect, profile and safety pipeline before use. Reject: Reject generated source used before reader, macro, type, effect, profile and safety validation, including a model-produced artifact admitted through a provider-only path. Required output: Checked generated-source stage manifest with reader/macro/type/effect/profile/safety verdicts, preserved origins and source-mapped diagnostics. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/behavior/a1/profile-admission"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a1/profile-admission: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: Criterion `behavior/a1/profile-admission` (Open; implementation unassessed). Input: source-bound behavior/a1/profile-admission request and its declared profile/target/policy facts. Accept: Reject AI constructs outside :ai, :distributed, :hosted or an explicitly legal bridged profile. Reject: Reject an AI construct in an unbridged profile outside :ai, :distributed or :hosted; a backend or runtime adapter cannot legalize it. Required output: Compile-time AI profile legality report naming the selected profile and explicit bridge, with accepted and rejected expanded-form fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 302532,
+      :end-byte 303294,
+      :raw-sha256
+      "9d01e2faf494c7bb123ce6789e5806211cdcff6fa6b2601a53163bef4cb66436"},
+     :raw
+     "Criterion `behavior/a1/profile-admission` (Open; implementation unassessed). Input: source-bound behavior/a1/profile-admission request and its declared profile/target/policy facts. Accept: Reject AI constructs outside :ai, :distributed, :hosted or an explicitly legal bridged profile. Reject: Reject an AI construct in an unbridged profile outside :ai, :distributed or :hosted; a backend or runtime adapter cannot legalize it. Required output: Compile-time AI profile legality report naming the selected profile and explicit bridge, with accepted and rejected expanded-form fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion.",
+     :single-line
+     "Criterion `behavior/a1/profile-admission` (Open; implementation unassessed). Input: source-bound behavior/a1/profile-admission request and its declared profile/target/policy facts. Accept: Reject AI constructs outside :ai, :distributed, :hosted or an explicitly legal bridged profile. Reject: Reject an AI construct in an unbridged profile outside :ai, :distributed or :hosted; a backend or runtime adapter cannot legalize it. Required output: Compile-time AI profile legality report naming the selected profile and explicit bridge, with accepted and rejected expanded-form fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/behavior/a3/prompt-authority-rendering"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a3/prompt-authority-rendering: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: A3: emit typed prompt schemas, tool visibility, authority/taint maps, render hashes and compatibility policy. Validate format/schema, canonicalization, per-field taint and intended use before typed output admission. Reject arbitrary model-selected schemas, illegal partial outputs, undeclared tools and breaking output changes mislabeled compatible. Refusals follow a typed branch; repair policy and attempts are recorded. Secret-to-provider flow requires explicit policy; no-store responses retain only permitted hashes and facts. The inherited prompt-authority bridge retains approved sanitizer OR approved delimiter policy without promoting data to instruction authority or clearing source/taint, grant, secret or review obligations. SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 159182,
+      :end-byte 159918,
+      :raw-sha256
+      "d19bc316f83d72143e667badacc6368bd643578081eafde2ecca143803d3b7ed"},
+     :raw
+     "A3: emit typed prompt schemas, tool visibility, authority/taint maps, render\nhashes and compatibility policy. Validate format/schema, canonicalization,\nper-field taint and intended use before typed output admission. Reject arbitrary\nmodel-selected schemas, illegal partial outputs, undeclared tools and breaking\noutput changes mislabeled compatible. Refusals follow a typed branch; repair\npolicy and attempts are recorded. Secret-to-provider flow requires explicit\npolicy; no-store responses retain only permitted hashes and facts.\nThe inherited prompt-authority bridge retains approved sanitizer OR approved\ndelimiter policy without promoting data to instruction authority or clearing\nsource/taint, grant, secret or review obligations.",
+     :single-line
+     "A3: emit typed prompt schemas, tool visibility, authority/taint maps, render hashes and compatibility policy. Validate format/schema, canonicalization, per-field taint and intended use before typed output admission. Reject arbitrary model-selected schemas, illegal partial outputs, undeclared tools and breaking output changes mislabeled compatible. Refusals follow a typed branch; repair policy and attempts are recorded. Secret-to-provider flow requires explicit policy; no-store responses retain only permitted hashes and facts. The inherited prompt-authority bridge retains approved sanitizer OR approved delimiter policy without promoting data to instruction authority or clearing source/taint, grant, secret or review obligations."}
+    {:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 164946,
+      :end-byte 165793,
+      :raw-sha256
+      "9e7194181c861e80c9eea47cb620a78dc18c43f83ec2e728086da8ba332a554e"},
+     :raw
+     "SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions.",
+     :single-line
+     "SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/runtime/ai-memory-policy"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/runtime/ai-memory-policy: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: At the selected AI memory/retrieval provider enforce source/trust/tenant namespace, schema and sink-taint policy, privacy, retention, deletion and embedding/provider identity. Emit memory read/write/retrieval/deletion decisions and replay identity; accept validated authorized access, reject cross-namespace/ungranted writes, expired retention, forbidden secret storage and unvalidated retrieved content at trusted sinks. Provider billing/account constraints remain external; project accounting cannot become an admission condition. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "21b7070328589f5d8ecc7fd732e470f3e7257135",
+      :file-sha256
+      "ec6ed48c0757b4c4daea0e63b2557fd0dab787f69fa261c113b241ba0c678d14",
+      :start-byte 46309,
+      :end-byte 46841,
+      :raw-sha256
+      "a1033461b31d09e19a7c8ab34eb2fdece260cbd6ef06cdda3310219e697e6563"},
+     :raw
+     "At the selected AI memory/retrieval provider enforce source/trust/tenant namespace, schema and sink-taint policy, privacy, retention, deletion and embedding/provider identity. Emit memory read/write/retrieval/deletion decisions and replay identity; accept validated authorized access, reject cross-namespace/ungranted writes, expired retention, forbidden secret storage and unvalidated retrieved content at trusted sinks. Provider billing/account constraints remain external; project accounting cannot become an admission condition.",
+     :single-line
+     "At the selected AI memory/retrieval provider enforce source/trust/tenant namespace, schema and sink-taint policy, privacy, retention, deletion and embedding/provider identity. Emit memory read/write/retrieval/deletion decisions and replay identity; accept validated authorized access, reject cross-namespace/ungranted writes, expired retention, forbidden secret storage and unvalidated retrieved content at trusted sinks. Provider billing/account constraints remain external; project accounting cannot become an admission condition."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/runtime/tool-provider-execution"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/runtime/tool-provider-execution: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: Invoke the declared tool/provider with input/output schemas and validation, effect/side-effect class, caller grant intersected with the tool's own contract, timeout/retry/error mapping and required review/secret/taint policy. Emit actual invocation and policy/review decision records with replay identity; reject ungranted or out-of-contract effects, missing required review, invalid/tainted sink values, secret-policy violations and live calls in recorded-output segments. Prompt text, retrieved data and review records cannot create capability authority; preserve explicitly permitted alternatives for audit-only/interactive contexts. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "21b7070328589f5d8ecc7fd732e470f3e7257135",
+      :file-sha256
+      "ec6ed48c0757b4c4daea0e63b2557fd0dab787f69fa261c113b241ba0c678d14",
+      :start-byte 49564,
+      :end-byte 50200,
+      :raw-sha256
+      "ea9d5462eab753e19819dbab306619e59e05812a104ac7ed58b6fd0788728660"},
+     :raw
+     "Invoke the declared tool/provider with input/output schemas and validation, effect/side-effect class, caller grant intersected with the tool's own contract, timeout/retry/error mapping and required review/secret/taint policy. Emit actual invocation and policy/review decision records with replay identity; reject ungranted or out-of-contract effects, missing required review, invalid/tainted sink values, secret-policy violations and live calls in recorded-output segments. Prompt text, retrieved data and review records cannot create capability authority; preserve explicitly permitted alternatives for audit-only/interactive contexts.",
+     :single-line
+     "Invoke the declared tool/provider with input/output schemas and validation, effect/side-effect class, caller grant intersected with the tool's own contract, timeout/retry/error mapping and required review/secret/taint policy. Emit actual invocation and policy/review decision records with replay identity; reject ungranted or out-of-contract effects, missing required review, invalid/tainted sink values, secret-policy violations and live calls in recorded-output segments. Prompt text, retrieved data and review records cannot create capability authority; preserve explicitly permitted alternatives for audit-only/interactive contexts."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids
+   ["interface/behavior/a1/human-review-gate"
+    "interface/behavior/a1/tool-authority"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a1/human-review-gate, interface/behavior/a1/tool-authority: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: Source acceptance for A1-A11 remains open. A1: lower all declared AI forms through syntax, typed core and legal profiles into linked manifests, preserving source/macro origins, every AI effect, explicit replay modes and runtime audit records. Reject ambient credentials, hidden adapter effects, missing model or schema identities, generated source bypassing the normal compiler pipeline, and privileged deployments without review policy or required evaluation evidence. A4-A5: emit tool and agent manifests with complete dependencies and separate memory read/write modes. Tool declaration, agent toolset, package/deployment grant, scoped runtime handle and policy must all agree. Plans and model text grant no authority. Validate tool and agent results, expose implementation effects, normalize foreign errors, redact logs and model-facing descriptions, and record agent identity on every invocation event. Privileged tools require review policy; non-idempotent retries/replay require declared idempotency or compensation. Generated agent source re-enters compiler validation. A10: compile typed review declarations with action, actor/role, displayed evidence and evidence hash, payload hash, timestamp, expiry, revocation, denial/timeout, replay and emergency rules. Block required actions until matching valid review; reject absent records, wrong roles, changed payloads, expiry or revocation. Display enough typed evidence for the decision, follow denial as a workflow outcome, and reuse recorded decisions only under the declared replay policy. Audit requests and lifecycle transitions with redaction and permitted hashes. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 157926,
+      :end-byte 158395,
+      :raw-sha256
+      "328521ccba0ed29ab11be7becd18d4db2b8eb585b87314d1a75b0a2356eb2c55"},
+     :raw
+     "Source acceptance for A1-A11 remains open. A1: lower all declared AI forms\nthrough syntax, typed core and legal profiles into linked manifests, preserving\nsource/macro origins, every AI effect, explicit replay modes and runtime audit\nrecords. Reject ambient credentials, hidden adapter effects, missing model or\nschema identities, generated source bypassing the normal compiler pipeline,\nand privileged deployments without review policy or required evaluation evidence.",
+     :single-line
+     "Source acceptance for A1-A11 remains open. A1: lower all declared AI forms through syntax, typed core and legal profiles into linked manifests, preserving source/macro origins, every AI effect, explicit replay modes and runtime audit records. Reject ambient credentials, hidden adapter effects, missing model or schema identities, generated source bypassing the normal compiler pipeline, and privileged deployments without review policy or required evaluation evidence."}
+    {:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 159920,
+      :end-byte 160526,
+      :raw-sha256
+      "61364a1c03b3fecd5611b38a022a2ad7b036f55493c223ecc0aa5c62a8e8eee1"},
+     :raw
+     "A4-A5: emit tool and agent manifests with complete dependencies and separate\nmemory read/write modes. Tool declaration, agent toolset, package/deployment\ngrant, scoped runtime handle and policy must all agree. Plans and model text\ngrant no authority. Validate tool and agent results, expose implementation\neffects, normalize foreign errors, redact logs and model-facing descriptions,\nand record agent identity on every invocation event. Privileged tools require\nreview policy; non-idempotent retries/replay require declared idempotency or\ncompensation. Generated agent source re-enters compiler validation.",
+     :single-line
+     "A4-A5: emit tool and agent manifests with complete dependencies and separate memory read/write modes. Tool declaration, agent toolset, package/deployment grant, scoped runtime handle and policy must all agree. Plans and model text grant no authority. Validate tool and agent results, expose implementation effects, normalize foreign errors, redact logs and model-facing descriptions, and record agent identity on every invocation event. Privileged tools require review policy; non-idempotent retries/replay require declared idempotency or compensation. Generated agent source re-enters compiler validation."}
+    {:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 162907,
+      :end-byte 163456,
+      :raw-sha256
+      "12da8147f759addea44770af8f16b6903552065ea0aba039025a288d0431388f"},
+     :raw
+     "A10: compile typed review declarations with action, actor/role, displayed evidence\nand evidence hash, payload hash, timestamp, expiry, revocation, denial/timeout,\nreplay and emergency rules. Block required actions until matching valid review;\nreject absent records, wrong roles, changed payloads, expiry or revocation.\nDisplay enough typed evidence for the decision, follow denial as a workflow\noutcome, and reuse recorded decisions only under the declared replay policy.\nAudit requests and lifecycle transitions with redaction and permitted hashes.",
+     :single-line
+     "A10: compile typed review declarations with action, actor/role, displayed evidence and evidence hash, payload hash, timestamp, expiry, revocation, denial/timeout, replay and emergency rules. Block required actions until matching valid review; reject absent records, wrong roles, changed payloads, expiry or revocation. Display enough typed evidence for the decision, follow denial as a workflow outcome, and reuse recorded decisions only under the declared replay policy. Audit requests and lifecycle transitions with redaction and permitted hashes."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids
+   ["interface/behavior/a7/retrieval-replay-identity"
+    "interface/behavior/a7/retrieval-taint"
+    "interface/behavior/a7/tenant-sharing-admission"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a7/retrieval-replay-identity, interface/behavior/a7/retrieval-taint, interface/behavior/a7/tenant-sharing-admission: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: A7: emit memory item/metadata schemas, provenance, partitions, retention, redaction, indexing, embedding and replay policies. Enforce separate scoped read/write and embedding capabilities. Reject invalid writes, unauthorized protected-data embedding/persistence, implicit cross-tenant sharing, retrieved instruction authority, incompatible index reuse and fresh retrieval where a recorded result is required. Record query/result ids, scores, embedding identity and old/new embedding lineage. Deletion/redaction must remove stale retrievable entries and update indexes and ledgers. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 161077,
+      :end-byte 161657,
+      :raw-sha256
+      "56441070aa86ea8504a598b2db64435ca4d5060e0782813157b946d22caa7ab2"},
+     :raw
+     "A7: emit memory item/metadata schemas, provenance, partitions, retention,\nredaction, indexing, embedding and replay policies. Enforce separate scoped\nread/write and embedding capabilities. Reject invalid writes, unauthorized\nprotected-data embedding/persistence, implicit cross-tenant sharing, retrieved\ninstruction authority, incompatible index reuse and fresh retrieval where a\nrecorded result is required. Record query/result ids, scores, embedding identity\nand old/new embedding lineage. Deletion/redaction must remove stale retrievable\nentries and update indexes and ledgers.",
+     :single-line
+     "A7: emit memory item/metadata schemas, provenance, partitions, retention, redaction, indexing, embedding and replay policies. Enforce separate scoped read/write and embedding capabilities. Reject invalid writes, unauthorized protected-data embedding/persistence, implicit cross-tenant sharing, retrieved instruction authority, incompatible index reuse and fresh retrieval where a recorded result is required. Record query/result ids, scores, embedding identity and old/new embedding lineage. Deletion/redaction must remove stale retrievable entries and update indexes and ledgers."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids
+   ["interface/behavior/a9/eval-gate"
+    "interface/behavior/a9/eval-subject-binding"
+    "interface/behavior/a9/metric-decision"],
+   :source-module "STD13",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a9/eval-gate, interface/behavior/a9/eval-subject-binding, interface/behavior/a9/metric-decision: Invoke the actual STD13 public API against declared Domain/Runtime providers under this retained semantic contract: A9: produce versioned dataset/schema/provenance/split artifacts and eval reports bound to every behavior-changing subject/model/prompt/tool/memory/policy/runtime identity. Record changed artifacts, metric direction/threshold/aggregation and confidence/sample or variance rules, seeds/traces, redacted samples or hashes, probe results and release decisions. Required safety probes cover injection, tool misuse, denial, schema failure, refusal and protected-data leakage. Reject absent/stale/incompatible release evidence, name-similarity fallback, missing probes or thresholds and unauthorized live-provider evaluation; preserve real credentials, provider spend/account policy and report-signing requirements. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 162197,
+      :end-byte 162905,
+      :raw-sha256
+      "3b5340622691b8421030eea8f02d952082fba498262f49c975201ace0c252592"},
+     :raw
+     "A9: produce versioned dataset/schema/provenance/split artifacts and eval reports\nbound to every behavior-changing subject/model/prompt/tool/memory/policy/runtime\nidentity. Record changed artifacts, metric direction/threshold/aggregation and\nconfidence/sample or variance rules, seeds/traces, redacted samples or hashes,\nprobe results and release decisions. Required safety probes cover injection,\ntool misuse, denial, schema failure, refusal and protected-data leakage. Reject\nabsent/stale/incompatible release evidence, name-similarity fallback, missing\nprobes or thresholds and unauthorized live-provider evaluation; preserve real\ncredentials, provider spend/account policy and report-signing requirements.",
+     :single-line
+     "A9: produce versioned dataset/schema/provenance/split artifacts and eval reports bound to every behavior-changing subject/model/prompt/tool/memory/policy/runtime identity. Record changed artifacts, metric direction/threshold/aggregation and confidence/sample or variance rules, seeds/traces, redacted samples or hashes, probe results and release decisions. Required safety probes cover injection, tool misuse, denial, schema failure, refusal and protected-data leakage. Reject absent/stale/incompatible release evidence, name-similarity fallback, missing probes or thresholds and unauthorized live-provider evaluation; preserve real credentials, provider spend/account policy and report-signing requirements."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/runtime/durable-effect-replay"],
+   :source-module "STD12",
+   :criterion-text
+   "Library consumer criteria interface/runtime/durable-effect-replay: Invoke the actual STD12 public API against declared Domain/Runtime providers under this retained semantic contract: Execute durable steps against versioned recorded inputs/outputs with workflow/step/event/effect/provider identity, idempotency and declared completion/transaction boundaries. Recorded-output segments consume matching records without reissuing external actions, rejecting missing/mismatched/order-inconsistent records; preserve retries, cancellation and compensation policy. R6 graph-declared replay-safe repetitions may execute only where no R7/R8 recorded-output obligation applies and authority still holds. Emit restart/replay equality and actual no-duplicate-effect traces; a replay-safe label cannot override required recorded behavior. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "21b7070328589f5d8ecc7fd732e470f3e7257135",
+      :file-sha256
+      "ec6ed48c0757b4c4daea0e63b2557fd0dab787f69fa261c113b241ba0c678d14",
+      :start-byte 46902,
+      :end-byte 47543,
+      :raw-sha256
+      "6d5b6f553f343d6d7903649b3c363899f405575d005c75f70679ad498c151270"},
+     :raw
+     "Execute durable steps against versioned recorded inputs/outputs with workflow/step/event/effect/provider identity, idempotency and declared completion/transaction boundaries. Recorded-output segments consume matching records without reissuing external actions, rejecting missing/mismatched/order-inconsistent records; preserve retries, cancellation and compensation policy. R6 graph-declared replay-safe repetitions may execute only where no R7/R8 recorded-output obligation applies and authority still holds. Emit restart/replay equality and actual no-duplicate-effect traces; a replay-safe label cannot override required recorded behavior.",
+     :single-line
+     "Execute durable steps against versioned recorded inputs/outputs with workflow/step/event/effect/provider identity, idempotency and declared completion/transaction boundaries. Recorded-output segments consume matching records without reissuing external actions, rejecting missing/mismatched/order-inconsistent records; preserve retries, cancellation and compensation policy. R6 graph-declared replay-safe repetitions may execute only where no R7/R8 recorded-output obligation applies and authority still holds. Emit restart/replay equality and actual no-duplicate-effect traces; a replay-safe label cannot override required recorded behavior."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids ["interface/runtime/replay-compatible-upgrade"],
+   :source-module "STD12",
+   :criterion-text
+   "Library consumer criteria interface/runtime/replay-compatible-upgrade: Invoke the actual STD12 public API against declared Domain/Runtime providers under this retained semantic contract: For a code/topology/schema or workflow-version upgrade, compare existing event histories, persisted state, actor snapshots and message versions against the new declared compatibility/migration/replay policy. Emit migration and replay evidence that existing histories remain usable; reject incompatible upgrades without such policy/evidence, schemaless state/messages and implicit rewriting of recorded external outcomes. Preserve idempotency, retry/cancellation/compensation and authority semantics across the admitted upgrade. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/runtime-workflow/tasks.md",
+      :marker "runtime-implementation-tasks",
+      :task-id
+      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+      :source-commit "21b7070328589f5d8ecc7fd732e470f3e7257135",
+      :file-sha256
+      "ec6ed48c0757b4c4daea0e63b2557fd0dab787f69fa261c113b241ba0c678d14",
+      :start-byte 48974,
+      :end-byte 49501,
+      :raw-sha256
+      "b48146240bb9b0d310d56394765743928d342af56337edd4cc5e8131a0f98d2a"},
+     :raw
+     "For a code/topology/schema or workflow-version upgrade, compare existing event histories, persisted state, actor snapshots and message versions against the new declared compatibility/migration/replay policy. Emit migration and replay evidence that existing histories remain usable; reject incompatible upgrades without such policy/evidence, schemaless state/messages and implicit rewriting of recorded external outcomes. Preserve idempotency, retry/cancellation/compensation and authority semantics across the admitted upgrade.",
+     :single-line
+     "For a code/topology/schema or workflow-version upgrade, compare existing event histories, persisted state, actor snapshots and message versions against the new declared compatibility/migration/replay policy. Emit migration and replay evidence that existing histories remain usable; reject incompatible upgrades without such policy/evidence, schemaless state/messages and implicit rewriting of recorded external outcomes. Preserve idempotency, retry/cancellation/compensation and authority semantics across the admitted upgrade."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}
+  {:task-id
+   "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters",
+   :path "specs/stdlib-workflow/tasks.md",
+   :record-ids
+   ["interface/behavior/a6/typed-compensation"
+    "interface/behavior/a6/workflow-graph-artifact"
+    "interface/behavior/a6/workflow-replay-mode"
+    "interface/behavior/a6/workflow-side-effect-repetition"
+    "interface/behavior/a6/workflow-state-evolution"],
+   :source-module "STD12",
+   :criterion-text
+   "Library consumer criteria interface/behavior/a6/typed-compensation, interface/behavior/a6/workflow-graph-artifact, interface/behavior/a6/workflow-replay-mode, interface/behavior/a6/workflow-side-effect-repetition, interface/behavior/a6/workflow-state-evolution: Invoke the actual STD12 public API against declared Domain/Runtime providers under this retained semantic contract: A6: consume the Workflow task's typed graph, state/event-log schemas, durable transitions and replay records. Preserve node effects, capabilities, idempotency, review payload binding, retry/compensation and lowering metadata. Validate branch inputs and typed/effect-checked compensation. Record or forbid model, tool, memory, random, clock and external IO nondeterminism; reject unsafe repeated side effects, changed review payloads and incompatible graph/state/log evolution without migration. Replay fixtures reuse the actual recorded decisions. The semantic producer retains its compilation, policy and provider responsibilities. This library leaf must expose the same accepted/refused predicate through its own callable boundary, retaining actual call/results, typed failures, schema/effect/grant/replay/origin identities as applicable. Reject a bypassed or weakened check, a mismatched provider result, or an export/manifest name used instead of actual API invocation. This is consumer acceptance, not new evidence that the underlying service or API is implemented.",
+   :original-contracts
+   [{:source-witness
+     {:path "specs/domains-workflow/tasks.md",
+      :marker "domains-implementation-tasks",
+      :task-id "ai",
+      :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+      :file-sha256
+      "f30cd63947e59a64a29243a4d74d4da0ff6e16e4f10ba17371b83470a428fe0e",
+      :start-byte 160528,
+      :end-byte 161075,
+      :raw-sha256
+      "eaa0e1feaf457dfa452498723f83367a2b58087f046c7e0119a560e6bd0f6e7e"},
+     :raw
+     "A6: consume the Workflow task's typed graph, state/event-log schemas, durable\ntransitions and replay records. Preserve node effects, capabilities, idempotency,\nreview payload binding, retry/compensation and lowering metadata. Validate\nbranch inputs and typed/effect-checked compensation. Record or forbid model,\ntool, memory, random, clock and external IO nondeterminism; reject unsafe repeated\nside effects, changed review payloads and incompatible graph/state/log evolution\nwithout migration. Replay fixtures reuse the actual recorded decisions.",
+     :single-line
+     "A6: consume the Workflow task's typed graph, state/event-log schemas, durable transitions and replay records. Preserve node effects, capabilities, idempotency, review payload binding, retry/compensation and lowering metadata. Validate branch inputs and typed/effect-checked compensation. Record or forbid model, tool, memory, random, clock and external IO nondeterminism; reject unsafe repeated side effects, changed review payloads and incompatible graph/state/log evolution without migration. Replay fixtures reuse the actual recorded decisions."}],
+   :rendering
+   :newlines-to-spaces-only-in-retained-contract-no-word-or-authority-change}],
+ :new-decision-ids 0}

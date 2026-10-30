@@ -1,0 +1,88 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+  :sha256
+  "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+  :sha256
+  "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25"},
+ :historical-file-pin-changes 1,
+ :active-bootstrap-witness-pin-changes 1,
+ :kind :c15-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:record-stream
+  {:path "specs/diag-workflow/tasks.md",
+   :marker "diag-implementation-tasks",
+   :task-id
+   "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+   :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+   :file-sha256
+   "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+   :start-byte 3340,
+   :end-byte 5321,
+   :raw-sha256
+   "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"},
+  :foundation
+  {:path "specs/diag-workflow/tasks.md",
+   :marker "diag-implementation-tasks",
+   :task-id
+   "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+   :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+   :file-sha256
+   "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+   :start-byte 5322,
+   :end-byte 6700,
+   :raw-sha256
+   "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"},
+  :views
+  {:path "specs/diag-workflow/tasks.md",
+   :marker "diag-implementation-tasks",
+   :task-id
+   "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+   :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+   :file-sha256
+   "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+   :start-byte 8463,
+   :end-byte 9504,
+   :raw-sha256
+   "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"},
+  :redaction
+  {:path "specs/diag-workflow/tasks.md",
+   :marker "diag-implementation-tasks",
+   :task-id
+   "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+   :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+   :file-sha256
+   "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+   :start-byte 9505,
+   :end-byte 10813,
+   :raw-sha256
+   "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/c15-owner-source-refinement.edn",
+  :sha256
+  "9745afbaad308cdd66578adee7cc1d6910e0aac9d6a39fc0588cf807abfeb82d"},
+ :full-file-inverse :exact-declared-insertion-removal}

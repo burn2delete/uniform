@@ -1,0 +1,104 @@
+{:independent-C11-review :pending,
+ :source-refinement
+ {:path
+  "specs/requirement-reconciliation/c11-owner-source-refinement.edn",
+  :sha256
+  "c2dd3c07bf633a9e105249399b21fa0718672e1b6f7b0b9dd921c3b2d4e1c5db"},
+ :existing-decision-criteria
+ {:path
+  "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+  :sha256
+  "588f40a4c58a0fd0a9876d63f7e603f317eeab7ac2244600e803230c13afae16",
+  :ids 833,
+  :spans 931,
+  :file-and-raw-bytes :unchanged},
+ :implementation-credit :none,
+ :checks {:test 1, :pass 7, :fail 0, :error 0, :type :summary},
+ :new-task-units 0,
+ :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+ :existing-historical-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+  :sha256
+  "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+  :ids 561,
+  :spans 4819,
+  :file-and-raw-bytes :unchanged},
+ :kind :C11-current-witness-applicability,
+ :current-additional-span-count 12,
+ :new-criterion-witnesses
+ {:construction
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 879,
+   :end-byte 2853,
+   :raw-sha256
+   "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+  :facts
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 3174,
+   :end-byte 4585,
+   :raw-sha256
+   "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+  :ordering
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 4586,
+   :end-byte 5319,
+   :raw-sha256
+   "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+  :verifier
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 5693,
+   :end-byte 6801,
+   :raw-sha256
+   "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+  :serialization
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 7121,
+   :end-byte 8121,
+   :raw-sha256
+   "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+  :consumption
+  {:path "specs/mir-workflow/tasks.md",
+   :marker "mir-implementation-tasks",
+   :task-id
+   "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+   :source-commit "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
+   :file-sha256
+   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+   :start-byte 8526,
+   :end-byte 9964,
+   :raw-sha256
+   "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}},
+ :qualification
+ "No previously bound current criterion span names the changed MIR source file. All historical/current/additional witnesses therefore remain exactly current without copying or expanding their snapshots. Six new MIR criteria have separate exact owning-task spans. This establishes source applicability, not execution, whole-facet entailment or independent acceptance.",
+ :new-decision-ids 0}

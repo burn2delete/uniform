@@ -1,0 +1,3997 @@
+{:counts
+ {:C6-facets 103,
+  :C6-occurrences 46,
+  :semantic-conjunction-cases 31,
+  :context-occurrences 15,
+  :original-owner-joins 5},
+ :occurrence-cases
+ {"C6/source/c5cdb712c71f2b9aa97fe714c0024e8eb4afb6a9caa4eb7fc363c8a62d33ad0b"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :predicate
+   "Some explicitly documented domain forms do not immediately become ordinary core expressions."},
+  "C6/source/b04d153f874f43c2aa9f8cd831a38f85e54a3b6a18c56cd3660ec0496d687936"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :domains],
+   :predicate
+   "Keep syntactically declared seed facts but leave later inferred type/effect/ownership/safety facts for real consumers rather than fabricating them."},
+  "C6/source/cf18025a47d65c09764e4754a2b2d0da15fcbd079a6f1d76dc483eb53e09865c"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :predicate
+   "Emit order for the complete following surface/control cases."},
+  "C6/source/9a9821600c3a6f5c77dc72881f8f78ebaef8e875ff2a077df70f4cbf161e16b4"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/5cca953e5552a08648e706c7ec496b74c0b42f1affac9f15c6e711f44d6e97a6"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :desugaring :verification],
+   :predicate
+   "Effects/capabilities/profile/unsafe metadata cannot be erased by lowering."},
+  "C6/source/543da11f9d85db10b69db4b5f8f65071e32a48ee590c9aa1440c37ffef50b08d"
+  {:index 43,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/ff5be0db139b1efcb1192c75b4f521a817df861cdb0a67a46926f3642e110cd9"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms],
+   :predicate "Textual rewriting is rejected as semantic lowering."},
+  "C6/source/2a28e66b202745058364a340a686ed9134f5851d076f48edb51327363ced939f"
+  {:index 25,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/e403c73262ccf516ceb6b598c13a14a7203d229de38b7902d6d589a2a6298f1d"
+  {:index 37,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/a20703585a955b795c6bd151a9c64b748b8ad77d263a6a0937c2aafa3eeee53a"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Conformance requires real outcomes for the complete following matrix."},
+  "C6/source/de73e21e4c57b984b4f1181f67ac27bc08063b16b8bba701cc3edd61f712527c"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/42fc94e0ffd13710421df873846d3f15b5bc7444b6ce205bda001e567745b7a3"
+  {:index 18,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :predicate
+   "Representative lowering rules preserve the complete following semantic distinctions."},
+  "C6/source/88256d83c058459d2772cc31c4f543f30c760b18c539db0c91289b3497660973"
+  {:index 42,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :predicate
+   "Backend-specific core nodes require documented domain boundaries."},
+  "C6/source/dbfd8c7aa6e348b0a0f9e24aca907039b7b5e9c3783906e672f97c069d0be3d5"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/9c6d8368e8862a9e70bb55d323704ae1e02035706122a0f578f42a1ceb8daf55"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/7b88029161ca69656dd9b98ce9be320b1acfd65f5b7dfffb8f0994518a84f3fb"
+  {:index 17,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173"
+  {:index 45,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."},
+  "C6/source/3ae94f6eff249fcb81f2e10488a2e3137c6d64d701b792c4d6c4b324313ec818"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :predicate
+   "Only later optimization with actual effect checking and proof can reorder pure expressions while preserving diagnostics/semantics."},
+  "C6/source/bbabf4325456339a0af63f2390870d04b96bd5ccab2d07e057042c7e8ab961d8"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :predicate "Introduced forms without causal provenance refuse."},
+  "C6/source/729011f2914f9723fa16f2aee5b9b0e673ed6d1b40384ec2bb8d6c97831f012e"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/0b70951887fdd7ac450a97d109cafd2615b61edca0782583d1fbdf79c5aaa1a0"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains :verification],
+   :predicate
+   "Every domain transition binds source, owner, checker, source/later typed-core-or-MIR anchor, profile, target, effects, capabilities and fallback."},
+  "C6/source/05e2ef74e954bb001b9d9e6df5fa862565ac2761e257a1864d04ee5d6c426bb7"
+  {:index 33,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."},
+  "C6/source/c775e387ec3be3bfe7f3821672b2c7de6475f225a069e0eb7ee7488cb25e3e82"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Verifier failure stops Types, not merely a status change."},
+  "C6/source/8cffeed50922817d17bf3949068f972619c4dfe8167a7dce10b985e76210a60b"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "The actual core verifier enforces the complete following conjunction."},
+  "C6/source/9b1a57ed2d69e6dedb228147e6ca08c903b6e353c469bd40034b11e992a2c700"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :predicate
+   "Surface syntax cannot silently bypass core or documented domain boundaries."},
+  "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."},
+  "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."},
+  "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."},
+  "C6/source/0d07c93a90379a58db49b25b3f25575589bc932794a2da0cb75dceb264f01acd"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :predicate
+   "Expanded/resolved surface conveniences, macros, facets, declarations and sugar lower to core, declared primitives or documented domain boundaries."},
+  "C6/source/f59db6c084c484c4327fa4eab78787632d2f87619ce40890016dec35f4f7143d"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."},
+  "C6/source/28098fb31b7cb58b93002dec7dd9d07a03b2302dcd400d0e1f339e56c6ad888c"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring :verification],
+   :predicate
+   "Version rules and invalidate affected typed core/MIR/diagnostics/conformance fixtures with identified rechecks."},
+  "C6/source/c9401f824a6a76c68d7035b2dc9a58ac6836dd0615f2fd7ed9d1af2c6c29ecd5"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate "Preserve the C6 diagnostic family and meanings."},
+  "C6/source/d609c7c1bb3a9e0e9b1d205e8d22e2a1d2c30228b74e82e90e9b1d4eb063259f"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :predicate
+   "Preserve actual order/source/origins/metadata/namespace/profile and downstream type/effect/safety/MIR/diagnostic seed facts."},
+  "C6/source/c2810603ac5b5ad89c6d2f90e46d96749e2ab9db33a3350d723e74ee430961e3"
+  {:index 36,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Diagnostics retain syntax, available node, span, generated chain, rule, profile, target and remediation."},
+  "C6/source/fce2093d123c753ef5f0abe26f02972a42b233d2d15cb86409737d42784c647c"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring :verification],
+   :predicate
+   "Handwritten/generated diagnostics distinguish source, macro producer and introduced primitive through actual causal origins."},
+  "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."},
+  "C6/source/005293a44ca7f5d21a31cab9367a150df382c355902aff0343abefdbe52bd755"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/77740c2fb43a0f589e14dc77a3ea44d73638bf2d097f69aa0873982cc8c3aeed"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :verification],
+   :predicate
+   "Core-node artifact binds actual node/form/children, syntax/span/origin, scope/profile/metadata, resolver facts and generated status. Native/if example values confer no default legality or inferred analysis."},
+  "C6/source/328a9531910f92fcee7b31dd7023f932c42b53a08196b8c47c2da75e1c83f484"
+  {:index 29,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/5ea11f044fd49e57d6b5bf9c8811c6ae67c63c1754dfd3f2a4c65a5e2e1fb072"
+  {:index 14,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."},
+  "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."},
+  "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."},
+  "C6/source/cc9414763dee1afec28fe1ab8223d60882aa1736df0cbbb959ed1e1c863c0e12"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :predicate
+   "Trace records actual surface identity/kind, core root/introduced forms, preserved metadata, per-introduction reason/from-syntax causal links, order and diagnostics. Example when record is illustrative."},
+  "C6/source/584b7b5833bf3d4b003e3be1254d3a73f3ce9190eac336afb64b0fa5cf71fc9f"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}},
+ :dependency-joins
+ [{:source "C3/C4/C5 and L2/L7/L9",
+   :input
+   "Authentic expanded/resolved syntax, origins, namespace and declared core/match/error semantics",
+   :consumers [:forms :bindings :desugaring]}
+  {:source "C12 and owning domain contracts",
+   :input
+   "Declared checker/owner/anchor/profile-target/effect/capability/fallback interfaces only; no restricted operation or domain conformance execution",
+   :consumers [:domains]}
+  {:source
+   "Types/Effects/ownership/safety/MIR/diagnostics/conformance",
+   :input
+   "Actual verified core, seed facts, causal maps/order and versioned invalidation; no invented analysis outcome",
+   :consumers [:verification]}],
+ :authority :owner-proposal-pending-independent-current-source-review,
+ :criteria
+ {:forms
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 1341,
+   :end-byte 2856,
+   :raw-sha256
+   "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+  :bindings
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 3222,
+   :end-byte 4507,
+   :raw-sha256
+   "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+  :desugaring
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 4856,
+   :end-byte 6296,
+   :raw-sha256
+   "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+  :verification
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 6631,
+   :end-byte 7995,
+   :raw-sha256
+   "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+  :domains
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 8910,
+   :end-byte 10523,
+   :raw-sha256
+   "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}},
+ :owner-joins
+ {"compiler/c6/core-verification"
+  {:criterion-keys [:verification :bindings :domains],
+   :implementation-credit :none,
+   :original-obligation
+   "Verify all node/child/binding/origin/evaluation/profile/domain references and reject residual surface forms before type checking.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c6/core-verification",
+   :criterion-witnesses
+   [{:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 3222,
+     :end-byte 4507,
+     :raw-sha256
+     "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 8910,
+     :end-byte 10523,
+     :raw-sha256
+     "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}],
+   :qualification
+   "Exact current Core conjunctions locate original C6/L2 owner candidates. The trace covers C6 only; full L2/C1 and domain contracts remain distinct. No whole-owner, compiler/domain execution, implementation or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 6631,
+    :end-byte 7995,
+    :raw-sha256
+    "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c6/desugaring-origins"
+  {:criterion-keys [:desugaring :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Emit source-to-core/desugaring records linking introduced nodes to source or macro origins so errors identify their responsible producer.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c6/desugaring-origins",
+   :criterion-witnesses
+   [{:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 4856,
+     :end-byte 6296,
+     :raw-sha256
+     "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}],
+   :qualification
+   "Exact current Core conjunctions locate original C6/L2 owner candidates. The trace covers C6 only; full L2/C1 and domain contracts remain distinct. No whole-owner, compiler/domain execution, implementation or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 4856,
+    :end-byte 6296,
+    :raw-sha256
+    "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c6/domain-boundary"
+  {:criterion-keys [:domains :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Record domain transitions with owner/checker/anchor/profile/target/effect/capability/fallback and links back to source and typed core or MIR.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c6/domain-boundary",
+   :criterion-witnesses
+   [{:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 8910,
+     :end-byte 10523,
+     :raw-sha256
+     "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}],
+   :qualification
+   "Exact current Core conjunctions locate original C6/L2 owner candidates. The trace covers C6 only; full L2/C1 and domain contracts remain distinct. No whole-owner, compiler/domain execution, implementation or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 8910,
+    :end-byte 10523,
+    :raw-sha256
+    "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/core/normalize-to-declared-core"
+  {:criterion-keys [:forms :desugaring :verification :domains],
+   :implementation-credit :none,
+   :original-obligation
+   "Normalize each surface form to a recognized core form, declared primitive or declared domain boundary; reject a lowering gap.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/core/normalize-to-declared-core",
+   :criterion-witnesses
+   [{:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 1341,
+     :end-byte 2856,
+     :raw-sha256
+     "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 4856,
+     :end-byte 6296,
+     :raw-sha256
+     "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 8910,
+     :end-byte 10523,
+     :raw-sha256
+     "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}],
+   :qualification
+   "Exact current Core conjunctions locate original C6/L2 owner candidates. The trace covers C6 only; full L2/C1 and domain contracts remain distinct. No whole-owner, compiler/domain execution, implementation or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 1341,
+    :end-byte 2856,
+    :raw-sha256
+    "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/core/preserve-observable-evaluation-order"
+  {:criterion-keys [:forms :desugaring :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Preserve the specified evaluation order; reorder only with valid purity/effect evidence and preserved diagnostics.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/core/preserve-observable-evaluation-order",
+   :criterion-witnesses
+   [{:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 1341,
+     :end-byte 2856,
+     :raw-sha256
+     "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 4856,
+     :end-byte 6296,
+     :raw-sha256
+     "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"}
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}],
+   :qualification
+   "Exact current Core conjunctions locate original C6/L2 owner candidates. The trace covers C6 only; full L2/C1 and domain contracts remain distinct. No whole-owner, compiler/domain execution, implementation or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 1341,
+    :end-byte 2856,
+    :raw-sha256
+    "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending}},
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :checks {:test 2, :pass 13, :fail 0, :error 0, :type :summary},
+ :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+ :kind :complete-C6-current-Core-source-facet-trace,
+ :facets
+ [{:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 0,
+   :raw-sha256
+   "3e4de2ffbaab0431d953f64cc904334f87cfcdc7abe0c1c82914c95deb8e35b7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 0,
+    :end-byte 36,
+    :raw-sha256
+    "3e4de2ffbaab0431d953f64cc904334f87cfcdc7abe0c1c82914c95deb8e35b7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "# C6 - AST and Core Lowering Design\n",
+   :source-occurrence-id
+   "C6/source/f59db6c084c484c4327fa4eab78787632d2f87619ce40890016dec35f4f7143d",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/0-36/3e4de2ffbaab0431",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 1,
+   :raw-sha256
+   "6574c3e2b716c76787b8a97a0a91070a0e6bc722e4379559cb82c254b335ec58",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 37,
+    :end-byte 313,
+    :raw-sha256
+    "6574c3e2b716c76787b8a97a0a91070a0e6bc722e4379559cb82c254b335ec58"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Sequence: 85\nPhase: 6 - Compiler Architecture\nStatus: Manual Draft 2\nSource basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 define EFIR/EML and certified elementary math, pages 89-113 define safety, and pages 114-130 define the final document sequence.\n",
+   :source-occurrence-id
+   "C6/source/729011f2914f9723fa16f2aee5b9b0e673ed6d1b40384ec2bb8d6c97831f012e",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/37-313/6574c3e2b716c767",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 2,
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 314,
+    :end-byte 325,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Purpose\n",
+   :source-occurrence-id
+   "C6/source/dbfd8c7aa6e348b0a0f9e24aca907039b7b5e9c3783906e672f97c069d0be3d5",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/314-325/994413297a3e95a9",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :index 3,
+   :raw-sha256
+   "773943b4cdaa37d9fa835fea4656c20d5cffbe8558a52d753a40d6c710450471",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 326,
+    :end-byte 579,
+    :raw-sha256
+    "773943b4cdaa37d9fa835fea4656c20d5cffbe8558a52d753a40d6c710450471"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Core lowering converts expanded, resolved syntax into Gravity's small core AST.\nSurface conveniences, macro output, facet syntax, declarations, and sugar either\nlower to core forms, produce declared primitives, or cross a documented domain\nIR boundary.\n",
+   :source-occurrence-id
+   "C6/source/0d07c93a90379a58db49b25b3f25575589bc932794a2da0cb75dceb264f01acd",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/326-579",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Expanded/resolved surface conveniences, macros, facets, declarations and sugar lower to core, declared primitives or documented domain boundaries."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 4,
+   :raw-sha256
+   "a2822b6d935d94278e01fad05c9e0ea754bfe56cbdee5cb12eeffbdd8e71b54a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 580,
+    :end-byte 771,
+    :raw-sha256
+    "a2822b6d935d94278e01fad05c9e0ea754bfe56cbdee5cb12eeffbdd8e71b54a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Lowering preserves evaluation order, source provenance, generated origins,\nmetadata, namespace context, profile context, and facts needed by type, effect,\nsafety, MIR, and diagnostic stages.\n",
+   :source-occurrence-id
+   "C6/source/d609c7c1bb3a9e0e9b1d205e8d22e2a1d2c30228b74e82e90e9b1d4eb063259f",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/580-771",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve actual order/source/origins/metadata/namespace/profile and downstream type/effect/safety/MIR/diagnostic seed facts."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 5,
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 772,
+    :end-byte 788,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Requirements\n",
+   :source-occurrence-id
+   "C6/source/9c6d8368e8862a9e70bb55d323704ae1e02035706122a0f578f42a1ceb8daf55",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/772-788/d8416f1863ce5290",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "aa1b69f134b6ad73c8f2144fe2f9bf8589fbab36f48ff25e57c6b16929a984a0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 789,
+    :end-byte 910,
+    :raw-sha256
+    "aa1b69f134b6ad73c8f2144fe2f9bf8589fbab36f48ff25e57c6b16929a984a0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Every executable surface form must lower to an `L2` core form, declared\n  primitive, or documented domain IR boundary.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/789-910",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "fd836e24838e896d17a9ef7aea9e77712078efc70f87e95447e3decb3252608c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 910,
+    :end-byte 1092,
+    :raw-sha256
+    "fd836e24838e896d17a9ef7aea9e77712078efc70f87e95447e3decb3252608c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Core forms are `quote`, `if`, `do`, `let`, `fn`, `loop`, `recur`, `def`,\n  `var`, `set!`, `try`, `throw`, and `match`, plus literal/data constructors\n  owned by the core language.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/910-1092",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "2a662d4066a35b58d349074ae29b71cc9dc4f874cbb552f52e6ce51c76aa64eb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1092,
+    :end-byte 1166,
+    :raw-sha256
+    "2a662d4066a35b58d349074ae29b71cc9dc4f874cbb552f52e6ce51c76aa64eb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Lowering must preserve left-to-right evaluation where `L2` requires it.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/1092-1166",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "4732037aa11f4fdc33c848c282fd9c45be5661bd4c828cc9556f00f3dc504a93",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1166,
+    :end-byte 1271,
+    :raw-sha256
+    "4732037aa11f4fdc33c848c282fd9c45be5661bd4c828cc9556f00f3dc504a93"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Introduced core forms must have generated-origin links to the source or macro\n  form that caused them.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["compiler/c6/desugaring-origins"],
+   :id "C6/facet/1166-1271",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "c048d215065aa2caccfb2bdb9931e7f6c09c34e9f287815c8cba89ea1c467334",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1271,
+    :end-byte 1425,
+    :raw-sha256
+    "c048d215065aa2caccfb2bdb9931e7f6c09c34e9f287815c8cba89ea1c467334"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Lowering must not erase declared effects, capabilities, unsafe metadata,\n  profile clauses, allocation behavior, ownership hints, or proof obligations.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["compiler/c1/preserve-evidence"],
+   :id "C6/facet/1271-1425",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "d3f466802f08bc0e202d22b1bdac420355f589a45bf6c919b2651c436c8031b4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1425,
+    :end-byte 1543,
+    :raw-sha256
+    "d3f466802f08bc0e202d22b1bdac420355f589a45bf6c919b2651c436c8031b4"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- A lowering that enters a domain IR must emit a semantic anchor back to source\n  syntax and later typed core or MIR.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/1425-1543",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 6,
+   :raw-sha256
+   "4cf3f9fd2cab8ca70559a90921201efbee331145706bd6511cfa1e280e90c7fa",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1543,
+    :end-byte 1603,
+    :raw-sha256
+    "4cf3f9fd2cab8ca70559a90921201efbee331145706bd6511cfa1e280e90c7fa"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Core AST artifacts must be verified before type checking.\n",
+   :source-occurrence-id
+   "C6/source/a79472ed6583048f202d7a3b15b696f2937ab4e30c872285706b67467e9738cd",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/1543-1603",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All seven requirements survive together: declared form family, L2 order, causal origins, full declaration/unsafe/allocation/ownership/proof preservation, domain anchors and verifier-before-Types gate."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 7,
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1604,
+    :end-byte 1620,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Dependencies\n",
+   :source-occurrence-id
+   "C6/source/de73e21e4c57b984b4f1181f67ac27bc08063b16b8bba701cc3edd61f712527c",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/1604-1620/21d1931a332d9b7f",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "6ec39c28761aa330c7cee3add8310ac6f5687ff1b44d001656fca09a9b2968b3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1621,
+    :end-byte 1673,
+    :raw-sha256
+    "6ec39c28761aa330c7cee3add8310ac6f5687ff1b44d001656fca09a9b2968b3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `L2` defines core forms and evaluation semantics.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1621-1673",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "43d5991bbcf64175f3e6e531c9291613369edd35608182a605b86f55bb8fe6be",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1673,
+    :end-byte 1737,
+    :raw-sha256
+    "43d5991bbcf64175f3e6e531c9291613369edd35608182a605b86f55bb8fe6be"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `L7` defines `match` semantics and decision-tree obligations.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1673-1737",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "5df2707f3a8a1f6e8982e8bda89223749448c668b242c01cf63e72b215950c43",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1737,
+    :end-byte 1794,
+    :raw-sha256
+    "5df2707f3a8a1f6e8982e8bda89223749448c668b242c01cf63e72b215950c43"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `L9` defines `try`, `throw`, panic, and error effects.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1737-1794",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "a9bf45490a15f0e2c3de50da69b9a7594272b14cb7afcdce8896c00479f12388",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1794,
+    :end-byte 1845,
+    :raw-sha256
+    "a9bf45490a15f0e2c3de50da69b9a7594272b14cb7afcdce8896c00479f12388"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C3` provides syntax object origin and metadata.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1794-1845",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "622b5b5727dbce9b6bf0116dc6013bbb4e4d193b1f4cd0b62bdca3aa988efdad",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1845,
+    :end-byte 1878,
+    :raw-sha256
+    "622b5b5727dbce9b6bf0116dc6013bbb4e4d193b1f4cd0b62bdca3aa988efdad"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C4` produces expanded syntax.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1845-1878",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "4cf84a99e84e6339af1ef6ef749e42bfafe68c7cebda09182385dc9a8a621a8f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1878,
+    :end-byte 1937,
+    :raw-sha256
+    "4cf84a99e84e6339af1ef6ef749e42bfafe68c7cebda09182385dc9a8a621a8f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C5` provides resolved bindings and namespace artifacts.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1878-1937",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "e2a23b41c94b46ff69fca068fa911a05bdc09064e8852c3464395e1c2fae3cae",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 1937,
+    :end-byte 2036,
+    :raw-sha256
+    "e2a23b41c94b46ff69fca068fa911a05bdc09064e8852c3464395e1c2fae3cae"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C7`, `C8`, `C9`, and `C10` consume core AST for type, effect, ownership, and\n  safety analysis.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/1937-2036",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 8,
+   :raw-sha256
+   "c04ec475df9bf7420f9c38bb6c0a876eb23029355227a2f9a98a1308c9c3b190",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2036,
+    :end-byte 2074,
+    :raw-sha256
+    "c04ec475df9bf7420f9c38bb6c0a876eb23029355227a2f9a98a1308c9c3b190"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C12` defines domain IR boundaries.\n",
+   :source-occurrence-id
+   "C6/source/442e0f671c9b12802e335ee1b261b5ec3f2b21c230b0a1dd2298c0989557252e",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2036-2074",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual L2/L7/L9 semantics, C3 origins, C4 expanded syntax, C5 bindings, C7-C10 consumers and C12 boundary contracts retain distinct producer/checker roles."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 9,
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2075,
+    :end-byte 2100,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Outputs and Artifacts\n",
+   :source-occurrence-id
+   "C6/source/005293a44ca7f5d21a31cab9367a150df382c355902aff0343abefdbe52bd755",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/2075-2100/f4280a4d61a89adc",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "1af4833ad3518c4da87f1982eb83f43817e724f3d4ee05c2138f59728aee335a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2101,
+    :end-byte 2120,
+    :raw-sha256
+    "1af4833ad3518c4da87f1982eb83f43817e724f3d4ee05c2138f59728aee335a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Core AST module.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2101-2120",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "4d9d7f5b14fdbd242fab163b9af119990573f2f3f73c2e17d45cd5412981c29e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2120,
+    :end-byte 2143,
+    :raw-sha256
+    "4d9d7f5b14fdbd242fab163b9af119990573f2f3f73c2e17d45cd5412981c29e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Surface-to-core map.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2120-2143",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "9c78fdd728d5202d14a0b2fa235469c5c7d7a519d4897992bab87cea9fd0c798",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2143,
+    :end-byte 2163,
+    :raw-sha256
+    "9c78fdd728d5202d14a0b2fa235469c5c7d7a519d4897992bab87cea9fd0c798"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Desugaring trace.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2143-2163",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "9bf63b735fa9c0dc2625f45a10be87650ce13b4d3e382751ed535594d9b4cb51",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2163,
+    :end-byte 2190,
+    :raw-sha256
+    "9bf63b735fa9c0dc2625f45a10be87650ce13b4d3e382751ed535594d9b4cb51"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Evaluation-order record.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2163-2190",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "9cdb76f13eb9b6f27d74bcbb60c7c73eb657c087a51da7e65b3928faf9eb6343",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2190,
+    :end-byte 2217,
+    :raw-sha256
+    "9cdb76f13eb9b6f27d74bcbb60c7c73eb657c087a51da7e65b3928faf9eb6343"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Domain-boundary records.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2190-2217",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "44127eadebcfc7090848d69cd450e0bd4016160c0dd4e684eecc046288d75690",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2217,
+    :end-byte 2241,
+    :raw-sha256
+    "44127eadebcfc7090848d69cd450e0bd4016160c0dd4e684eecc046288d75690"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Core verifier report.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2217-2241",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 47}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 10,
+   :raw-sha256
+   "2a3beaf60bc05ef72870a0ce3edabc1de9d945b967c6f85845aad1b938f6b9dd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2241,
+    :end-byte 2270,
+    :raw-sha256
+    "2a3beaf60bc05ef72870a0ce3edabc1de9d945b967c6f85845aad1b938f6b9dd"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Core lowering diagnostics.\n",
+   :source-occurrence-id
+   "C6/source/cb902c5e1590290012fdd354ddc15ad9993873d7f3ea994e7d84b23a11ca7c99",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/2241-2270",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit all seven actual Core module/map/trace/order/boundary/verifier/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Node Shape", :line 57}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 11,
+   :raw-sha256
+   "b4d6099ec719d8dd4a0a377dff82edc6810657ff91d0b433b7fa64e98689578d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2271,
+    :end-byte 2290,
+    :raw-sha256
+    "b4d6099ec719d8dd4a0a377dff82edc6810657ff91d0b433b7fa64e98689578d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Core Node Shape\n",
+   :source-occurrence-id
+   "C6/source/584b7b5833bf3d4b003e3be1254d3a73f3ce9190eac336afb64b0fa5cf71fc9f",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/2271-2290/b4d6099ec719d8dd",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Node Shape", :line 57}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :verification],
+   :index 12,
+   :raw-sha256
+   "4f1e4f0adad40c42ca529eac26377e5cc954e2479d10290b407c053987b1721f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2291,
+    :end-byte 2683,
+    :raw-sha256
+    "4f1e4f0adad40c42ca529eac26377e5cc954e2479d10290b407c053987b1721f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/core-node\n :node-id core-node-hash\n :form :if\n :children {:condition cond-node\n            :then then-node\n            :else else-node}\n :source {:syntax-id syntax-id\n          :span source-span\n          :origin-chain origin-chain}\n :binding-context scope-id\n :profile :native\n :metadata {}\n :facts {:resolved-bindings binding-map-hash}\n :generated? true}\n```\n",
+   :source-occurrence-id
+   "C6/source/77740c2fb43a0f589e14dc77a3ea44d73638bf2d097f69aa0873982cc8c3aeed",
+   :owner-requirement-ids ["compiler/c1/preserve-evidence"],
+   :id "C6/facet/2291-2683",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Core-node artifact binds actual node/form/children, syntax/span/origin, scope/profile/metadata, resolver facts and generated status. Native/if example values confer no default legality or inferred analysis."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Node Shape", :line 57}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :domains],
+   :index 13,
+   :raw-sha256
+   "5ffdcdd18b967e3ad97a6295eb074bbbcf37f5c3d34e357ca44e50d40ff7e326",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2684,
+    :end-byte 2873,
+    :raw-sha256
+    "5ffdcdd18b967e3ad97a6295eb074bbbcf37f5c3d34e357ca44e50d40ff7e326"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Typed, effect, ownership, and safety facts are attached by later stages. Core\nlowering preserves seed facts and leaves later facts empty unless the source form\ndeclares them syntactically.\n",
+   :source-occurrence-id
+   "C6/source/b04d153f874f43c2aa9f8cd831a38f85e54a3b6a18c56cd3660ec0496d687936",
+   :owner-requirement-ids ["compiler/c1/preserve-evidence"],
+   :id "C6/facet/2684-2873",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Keep syntactically declared seed facts but leave later inferred type/effect/ownership/safety facts for real consumers rather than fabricating them."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Desugaring Trace", :line 80}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 14,
+   :raw-sha256
+   "567211ff4e0fe3e5f5dd4f4905e6c8a2eec8e35263f62f3f6b8f9928ad4b6b2f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2874,
+    :end-byte 2894,
+    :raw-sha256
+    "567211ff4e0fe3e5f5dd4f4905e6c8a2eec8e35263f62f3f6b8f9928ad4b6b2f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Desugaring Trace\n",
+   :source-occurrence-id
+   "C6/source/5ea11f044fd49e57d6b5bf9c8811c6ae67c63c1754dfd3f2a4c65a5e2e1fb072",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/2874-2894/567211ff4e0fe3e5",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Desugaring Trace", :line 80}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :index 15,
+   :raw-sha256
+   "f02d7ac0896936f37faf620e188a5849bc1779e1e6d52f1955dff1f2f9716e77",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 2895,
+    :end-byte 3270,
+    :raw-sha256
+    "f02d7ac0896936f37faf620e188a5849bc1779e1e6d52f1955dff1f2f9716e77"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:surface-syntax syntax-id\n :surface-kind :when\n :core-root core-node-id\n :introduced-forms [:if :do :quote]\n :preserved #{:source-spans :metadata :profile :capabilities}\n :introduced-origin [{:core-node core-node-id\n                      :reason :surface-desugar\n                      :from syntax-id}]\n :evaluation-order [:condition :body]\n :diagnostics []}\n```\n",
+   :source-occurrence-id
+   "C6/source/cc9414763dee1afec28fe1ab8223d60882aa1736df0cbbb959ed1e1c863c0e12",
+   :owner-requirement-ids ["compiler/c6/desugaring-origins"],
+   :id "C6/facet/2895-3270",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Trace records actual surface identity/kind, core root/introduced forms, preserved metadata, per-introduction reason/from-syntax causal links, order and diagnostics. Example when record is illustrative."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Desugaring Trace", :line 80}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring :verification],
+   :index 16,
+   :raw-sha256
+   "ededbd64f14b31796b9ebb2a4ec2c3e07a2e839061b929b4f78b6a15ccc1ac51",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3271,
+    :end-byte 3461,
+    :raw-sha256
+    "ededbd64f14b31796b9ebb2a4ec2c3e07a2e839061b929b4f78b6a15ccc1ac51"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Trace records are required for diagnostics and for macro-expanded code. A user\nshould be able to see whether an error belongs to their source, macro output, or\nan introduced core primitive.\n",
+   :source-occurrence-id
+   "C6/source/fce2093d123c753ef5f0abe26f02972a42b233d2d15cb86409737d42784c647c",
+   :owner-requirement-ids ["compiler/c6/desugaring-origins"],
+   :id "C6/facet/3271-3461",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Handwritten/generated diagnostics distinguish source, macro producer and introduced primitive through actual causal origins."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 17,
+   :raw-sha256
+   "00f3d687e82fc2dddececc77db32aaddd6cc8fc980cb0aa93462b1975210e0fe",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3462,
+    :end-byte 3480,
+    :raw-sha256
+    "00f3d687e82fc2dddececc77db32aaddd6cc8fc980cb0aa93462b1975210e0fe"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Lowering Rules\n",
+   :source-occurrence-id
+   "C6/source/7b88029161ca69656dd9b98ce9be320b1acfd65f5b7dfffb8f0994518a84f3fb",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/3462-3480/00f3d687e82fc2dd",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :index 18,
+   :raw-sha256
+   "c4f844a622cfd478264f7e2f74af2d1361f7375504549b849d67927142015aa0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3481,
+    :end-byte 3503,
+    :raw-sha256
+    "c4f844a622cfd478264f7e2f74af2d1361f7375504549b849d67927142015aa0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Representative rules:\n",
+   :source-occurrence-id
+   "C6/source/42fc94e0ffd13710421df873846d3f15b5bc7444b6ce205bda001e567745b7a3",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3481-3503",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Representative lowering rules preserve the complete following semantic distinctions."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "e7634d8647a0ce7160fae3531f83a3a3971274abd264cd022362d5013f5a182c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3504,
+    :end-byte 3615,
+    :raw-sha256
+    "e7634d8647a0ce7160fae3531f83a3a3971274abd264cd022362d5013f5a182c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `defn` lowers to `def` of an `fn` value with declared type, effects,\n  metadata, and export facts preserved.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3504-3615",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "42f59692a5be546c2fe2c8452ee35abc35a9bc8a0bc481e84dfa0ed9993c68b0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3615,
+    :end-byte 3663,
+    :raw-sha256
+    "42f59692a5be546c2fe2c8452ee35abc35a9bc8a0bc481e84dfa0ed9993c68b0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `when` lowers to `if` with `nil` else branch.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3615-3663",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "d35face7b3e2766d710447ee8e9e7fc39db1eb94874c6527fc35788e9bd5bc13",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3663,
+    :end-byte 3723,
+    :raw-sha256
+    "d35face7b3e2766d710447ee8e9e7fc39db1eb94874c6527fc35788e9bd5bc13"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `cond` lowers to nested `if` forms preserving test order.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3663-3723",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "c7e3f4d3743ec9e17b5cd338b8f0475f6bff88428a3074e7d7f2d58e47aecb8e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3723,
+    :end-byte 3836,
+    :raw-sha256
+    "c7e3f4d3743ec9e17b5cd338b8f0475f6bff88428a3074e7d7f2d58e47aecb8e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `case` lowers to `match` or a profile-specific decision primitive only after\n  equivalence facts are recorded.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3723-3836",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "4f56a753d231c3fb07f449df9b939a0151ed225e40104358e481cc20f4f6772c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3836,
+    :end-byte 3933,
+    :raw-sha256
+    "4f56a753d231c3fb07f449df9b939a0151ed225e40104358e481cc20f4f6772c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `with-open` lowers to `try` plus resource cleanup with ownership and effect\n  facts preserved.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3836-3933",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "173fafca5594df772c768c0df8d653fb4c9309b5fe55b13c4be709e9519d877d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 3933,
+    :end-byte 4021,
+    :raw-sha256
+    "173fafca5594df772c768c0df8d653fb4c9309b5fe55b13c4be709e9519d877d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `Result` and `Option` helpers lower to constructors plus `match` where\n  appropriate.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/3933-4021",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :bindings :desugaring :domains],
+   :index 19,
+   :raw-sha256
+   "1f432c6d8813146137063587afa465aa73009eac836992eb5d7b9231b91a7eae",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4021,
+    :end-byte 4096,
+    :raw-sha256
+    "1f432c6d8813146137063587afa465aa73009eac836992eb5d7b9231b91a7eae"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Facet forms lower either to core forms or to a declared domain boundary.\n",
+   :source-occurrence-id
+   "C6/source/1305fe9483565df46cbd5d66153168db34decd4a754bbab9bc149cbae41c5066",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/4021-4096",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain defn declaration/export facts, when nil else, cond test order, case equivalence before decision primitive, with-open cleanup ownership/effects, Result/Option constructors-match and facet core/boundary alternatives."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Lowering Rules", :line 99}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring :verification],
+   :index 20,
+   :raw-sha256
+   "ab3128da224137afce8854c5c2ba91e314b73291b1b02a38694cdc6978b4f0a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4097,
+    :end-byte 4242,
+    :raw-sha256
+    "ab3128da224137afce8854c5c2ba91e314b73291b1b02a38694cdc6978b4f0a2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Rules are versioned. Changing a lowering rule invalidates downstream typed core,\nMIR, diagnostics, and conformance fixtures for affected syntax.\n",
+   :source-occurrence-id
+   "C6/source/28098fb31b7cb58b93002dec7dd9d07a03b2302dcd400d0e1f339e56c6ad888c",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/4097-4242",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Version rules and invalidate affected typed core/MIR/diagnostics/conformance fixtures with identified rechecks."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 21,
+   :raw-sha256
+   "2a5b4b2d5c3d1318b0ef101c06cedb2fe50d2303b0c4d66df883b6f79b1753c9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4243,
+    :end-byte 4263,
+    :raw-sha256
+    "2a5b4b2d5c3d1318b0ef101c06cedb2fe50d2303b0c4d66df883b6f79b1753c9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Evaluation Order\n",
+   :source-occurrence-id
+   "C6/source/9a9821600c3a6f5c77dc72881f8f78ebaef8e875ff2a077df70f4cbf161e16b4",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/4243-4263/2a5b4b2d5c3d1318",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 22,
+   :raw-sha256
+   "0d56fa465c8683f47bfdadf3e9a46d5eeffeeae637a8dc808c8b5ad409fa3a0e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4264,
+    :end-byte 4318,
+    :raw-sha256
+    "0d56fa465c8683f47bfdadf3e9a46d5eeffeeae637a8dc808c8b5ad409fa3a0e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The lowering pass emits evaluation-order records for:\n",
+   :source-occurrence-id
+   "C6/source/cf18025a47d65c09764e4754a2b2d0da15fcbd079a6f1d76dc483eb53e09865c",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4264-4318",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit order for the complete following surface/control cases."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "ae8ad0249cbc6d5eda5a8152d274428f1a98e6db127b32626cd5dabdc65b88ea",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4319,
+    :end-byte 4341,
+    :raw-sha256
+    "ae8ad0249cbc6d5eda5a8152d274428f1a98e6db127b32626cd5dabdc65b88ea"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- function arguments,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4319-4341",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "3153103f9eff061403684860285f3c4010e7d3538a7162d09fed813a3f4a00cd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4341,
+    :end-byte 4365,
+    :raw-sha256
+    "3153103f9eff061403684860285f3c4010e7d3538a7162d09fed813a3f4a00cd"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- binding initializers,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4341-4365",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "f500a0c2c656a0a333b2e252150c833723de5b7eb2efb15b22b1cc1c6990b26e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4365,
+    :end-byte 4380,
+    :raw-sha256
+    "f500a0c2c656a0a333b2e252150c833723de5b7eb2efb15b22b1cc1c6990b26e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `do` bodies,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4365-4380",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "2430bb8e3fce96be33d3d4b86972e250b9efcb9ce422ef0479cbb7299230e7a6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4380,
+    :end-byte 4396,
+    :raw-sha256
+    "2430bb8e3fce96be33d3d4b86972e250b9efcb9ce422ef0479cbb7299230e7a6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- conditionals,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4380-4396",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "759b513436d4cf1c0a9da27304e997321651d81137963b9a85814f474ddf3956",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4396,
+    :end-byte 4437,
+    :raw-sha256
+    "759b513436d4cf1c0a9da27304e997321651d81137963b9a85814f474ddf3956"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- match scrutinee, guards, and branches,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4396-4437",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "1daf12a10d0431371ac3188a13ce316eeaaa8519ea10228f0ed5b7cba0638851",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4437,
+    :end-byte 4457,
+    :raw-sha256
+    "1daf12a10d0431371ac3188a13ce316eeaaa8519ea10228f0ed5b7cba0638851"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- resource cleanup,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4437-4457",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "e374c5d48965ec15fcebd8a198bd30474d8b2047749a88eaf587df7f0352a36a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4457,
+    :end-byte 4475,
+    :raw-sha256
+    "e374c5d48965ec15fcebd8a198bd30474d8b2047749a88eaf587df7f0352a36a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- error handlers,\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4457-4475",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring],
+   :index 23,
+   :raw-sha256
+   "3adc392e36609ed556a7b9aa0e7fe08be64d20b1e9c1cf2c06759f2eaa77cc0f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4475,
+    :end-byte 4510,
+    :raw-sha256
+    "3adc392e36609ed556a7b9aa0e7fe08be64d20b1e9c1cf2c06759f2eaa77cc0f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- effectful macro-generated forms.\n",
+   :source-occurrence-id
+   "C6/source/92436ed4dc124a3d1867bdc00d4472520e7c958ec007f5a68da70d1afb36d80f",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4475-4510",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Arguments, initializers, do/conditional/match order, cleanup, handlers and effectful generated forms retain required evaluation semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Evaluation Order", :line 118}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :index 24,
+   :raw-sha256
+   "42725e07d53d4e61e03c2258f4b4794975058d6678d74b88a4ab37e43745f91e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4511,
+    :end-byte 4640,
+    :raw-sha256
+    "42725e07d53d4e61e03c2258f4b4794975058d6678d74b88a4ab37e43745f91e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Optimizers may later reorder pure expressions only after effect checking and\nproof that diagnostics and semantics are preserved.\n",
+   :source-occurrence-id
+   "C6/source/3ae94f6eff249fcb81f2e10488a2e3137c6d64d701b792c4d6c4b324313ec818",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/4511-4640",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Only later optimization with actual effect checking and proof can reorder pure expressions while preserving diagnostics/semantics."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 25,
+   :raw-sha256
+   "f7a9025dba96762bc330401f2c0849f1b8c787970772c049f086662325f79778",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4641,
+    :end-byte 4665,
+    :raw-sha256
+    "f7a9025dba96762bc330401f2c0849f1b8c787970772c049f086662325f79778"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Domain IR Boundaries\n",
+   :source-occurrence-id
+   "C6/source/2a28e66b202745058364a340a686ed9134f5851d076f48edb51327363ced939f",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/4641-4665/f7a9025dba96762b",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 26,
+   :raw-sha256
+   "b278747d4336471e47d6c1ec89ccfe9913aa29fbec88dfa0fd68b7c67611cbb8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4666,
+    :end-byte 4739,
+    :raw-sha256
+    "b278747d4336471e47d6c1ec89ccfe9913aa29fbec88dfa0fd68b7c67611cbb8"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Some source forms do not lower immediately to ordinary core expressions:\n",
+   :source-occurrence-id
+   "C6/source/c5cdb712c71f2b9aa97fe714c0024e8eb4afb6a9caa4eb7fc363c8a62d33ad0b",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4666-4739",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Some explicitly documented domain forms do not immediately become ordinary core expressions."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 27,
+   :raw-sha256
+   "93a456cdf89ec7c46b9ab037bf142fbc351f6ec3afadd9e50973c3dd63ff905e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4740,
+    :end-byte 4790,
+    :raw-sha256
+    "93a456cdf89ec7c46b9ab037bf142fbc351f6ec3afadd9e50973c3dd63ff905e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- elementary math subgraphs may later enter EFIR,\n",
+   :source-occurrence-id
+   "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4740-4790",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 27,
+   :raw-sha256
+   "72281401b0458596efd8aaa5aade492c722f99c25758858333936917fd62b123",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4790,
+    :end-byte 4821,
+    :raw-sha256
+    "72281401b0458596efd8aaa5aade492c722f99c25758858333936917fd62b123"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- schemas may enter schema IR,\n",
+   :source-occurrence-id
+   "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4790-4821",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 27,
+   :raw-sha256
+   "42733af1897b31b2c538b56c5ace25c527b6cf35d6896ed9ce2b53f99ea02e45",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4821,
+    :end-byte 4862,
+    :raw-sha256
+    "42733af1897b31b2c538b56c5ace25c527b6cf35d6896ed9ce2b53f99ea02e45"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- workflows may enter workflow graph IR,\n",
+   :source-occurrence-id
+   "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4821-4862",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 27,
+   :raw-sha256
+   "8defe83056873f6ef942846470ba2da5fdcb784f6f831f1131b2fa7c82efaf49",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4862,
+    :end-byte 4911,
+    :raw-sha256
+    "8defe83056873f6ef942846470ba2da5fdcb784f6f831f1131b2fa7c82efaf49"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- hardware forms may enter HDL state-machine IR,\n",
+   :source-occurrence-id
+   "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4862-4911",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains],
+   :index 27,
+   :raw-sha256
+   "08736de4b0f2832b6d5d20275f5261da26f6382da129b053ea6ad09bab08e822",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4911,
+    :end-byte 4948,
+    :raw-sha256
+    "08736de4b0f2832b6d5d20275f5261da26f6382da129b053ea6ad09bab08e822"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- AI agents may enter agent/tool IR.\n",
+   :source-occurrence-id
+   "C6/source/73b21318d0b80ede3ef930082180dac7154ce72122a3cb5b129bc18c77b73c60",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4911-4948",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Math/EFIR, schemas/schema IR, workflows/graph IR, hardware/HDL state-machine IR and AI/agent-tool IR retain anchored boundaries rather than hidden semantic bypasses."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Domain IR Boundaries", :line 134}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:domains :verification],
+   :index 28,
+   :raw-sha256
+   "2c48fa571afb573a083ed12f08434f47d6e5687f92d783e7a9cfdc08d8bded44",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 4949,
+    :end-byte 5107,
+    :raw-sha256
+    "2c48fa571afb573a083ed12f08434f47d6e5687f92d783e7a9cfdc08d8bded44"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The boundary record includes source syntax, owner document, required checker,\nsemantic anchor, profile, target, effects, capabilities, and fallback behavior.\n",
+   :source-occurrence-id
+   "C6/source/0b70951887fdd7ac450a97d109cafd2615b61edca0782583d1fbdf79c5aaa1a0",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/4949-5107",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every domain transition binds source, owner, checker, source/later typed-core-or-MIR anchor, profile, target, effects, capabilities and fallback."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 29,
+   :raw-sha256
+   "4de19205305da9b9bc6e905b5ef308a6fa32372eadd576225e00259f18dd40d2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5108,
+    :end-byte 5129,
+    :raw-sha256
+    "4de19205305da9b9bc6e905b5ef308a6fa32372eadd576225e00259f18dd40d2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Core Verification\n",
+   :source-occurrence-id
+   "C6/source/328a9531910f92fcee7b31dd7023f932c42b53a08196b8c47c2da75e1c83f484",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/5108-5129/4de19205305da9b9",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :index 30,
+   :raw-sha256
+   "9aa368d3f974097cd9c635c30945c7f998178a7447c5bae3dc6087459c18e975",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5130,
+    :end-byte 5156,
+    :raw-sha256
+    "9aa368d3f974097cd9c635c30945c7f998178a7447c5bae3dc6087459c18e975"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "The core verifier checks:\n",
+   :source-occurrence-id
+   "C6/source/8cffeed50922817d17bf3949068f972619c4dfe8167a7dce10b985e76210a60b",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5130-5156",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The actual core verifier enforces the complete following conjunction."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "5f9ab5d6bcff18c6a8ededd863c23acb55596d4bb7a35a62a8c7aa1fbe08227e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5157,
+    :end-byte 5193,
+    :raw-sha256
+    "5f9ab5d6bcff18c6a8ededd863c23acb55596d4bb7a35a62a8c7aa1fbe08227e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- every node has a valid form kind,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5157-5193",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "c1bd957b34ed360c7eaa281a60e0ddb236face9f600986cad1993e27c3a6492e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5193,
+    :end-byte 5225,
+    :raw-sha256
+    "c1bd957b34ed360c7eaa281a60e0ddb236face9f600986cad1993e27c3a6492e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- every child reference exists,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5193-5225",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "c309b053f6fe73a40e2b08b07d32d9e12d281fc75082cb6aae4b967bea9d2f8b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5225,
+    :end-byte 5267,
+    :raw-sha256
+    "c309b053f6fe73a40e2b08b07d32d9e12d281fc75082cb6aae4b967bea9d2f8b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- source and generated origins are valid,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5225-5267",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "d596e6212a6863f562a1a530445dc89f28e59f9aefe8df8ca07e4d8e718f3fcf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5267,
+    :end-byte 5315,
+    :raw-sha256
+    "d596e6212a6863f562a1a530445dc89f28e59f9aefe8df8ca07e4d8e718f3fcf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- binding references point to resolver outputs,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5267-5315",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "3e2429bd05e7e4991320cebe0a46b502ce87748957ce2822f3f642493e6b99bb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5315,
+    :end-byte 5382,
+    :raw-sha256
+    "3e2429bd05e7e4991320cebe0a46b502ce87748957ce2822f3f642493e6b99bb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- evaluation-order metadata is present for effect-sensitive forms,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5315-5382",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "c20128aacae0d64177573bcc65a76be5edfe578cce1161a72f33c682fe0a2dba",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5382,
+    :end-byte 5439,
+    :raw-sha256
+    "c20128aacae0d64177573bcc65a76be5edfe578cce1161a72f33c682fe0a2dba"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- profile and target annotations are structurally valid,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5382-5439",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "8dd31085f10ecf356a1da132a78aa4e1bf78979e60e35b593c0c99cb3f46c215",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5439,
+    :end-byte 5500,
+    :raw-sha256
+    "8dd31085f10ecf356a1da132a78aa4e1bf78979e60e35b593c0c99cb3f46c215"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- domain boundary records have an owner and semantic anchor,\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5439-5500",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :verification :domains],
+   :index 31,
+   :raw-sha256
+   "fac7a04702e9f00d2dd0688e0c61aa2768ce1a195f2e02953b5bfd6d9a1b4bcf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5500,
+    :end-byte 5569,
+    :raw-sha256
+    "fac7a04702e9f00d2dd0688e0c61aa2768ce1a195f2e02953b5bfd6d9a1b4bcf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- no surface-only form remains unless accepted as a domain boundary.\n",
+   :source-occurrence-id
+   "C6/source/1ec5d44d0078a4f296a8c80bf75dbf42f15415c86bbfeba137e69aa8b0ccb46c",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5500-5569",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verify all valid kinds/children/origins/resolver references/order/profile-target annotations/domain owner-anchor and no unadmitted surface-only forms."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Core Verification", :line 147}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :index 32,
+   :raw-sha256
+   "e08adc10e432980562b0e8396e67c4f4d2ab1db16db80f52ab9a1c4545b28a0a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5570,
+    :end-byte 5608,
+    :raw-sha256
+    "e08adc10e432980562b0e8396e67c4f4d2ab1db16db80f52ab9a1c4545b28a0a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Verifier failures stop type checking.\n",
+   :source-occurrence-id
+   "C6/source/c775e387ec3be3bfe7f3821672b2c7de6475f225a069e0eb7ee7488cb25e3e82",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/5570-5608",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Verifier failure stops Types, not merely a status change."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 33,
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5609,
+    :end-byte 5624,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Diagnostics\n",
+   :source-occurrence-id
+   "C6/source/05e2ef74e954bb001b9d9e6df5fa862565ac2761e257a1864d04ee5d6c426bb7",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/5609-5624/84b964dab09b580d",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :index 34,
+   :raw-sha256
+   "87024d79d29e338e82d13c0056f1174501352d6861ac0d1d7863475b8ce274b1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5625,
+    :end-byte 5673,
+    :raw-sha256
+    "87024d79d29e338e82d13c0056f1174501352d6861ac0d1d7863475b8ce274b1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Core lowering diagnostics use `C6` identifiers:\n",
+   :source-occurrence-id
+   "C6/source/c9401f824a6a76c68d7035b2dc9a58ac6836dd0615f2fd7ed9d1af2c6c29ecd5",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5625-5673",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate "Preserve the C6 diagnostic family and meanings."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "0130d8bf00087d792a15bdecb59bdecdb822b3582ae82dcdde279b1c48027fdc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5674,
+    :end-byte 5731,
+    :raw-sha256
+    "0130d8bf00087d792a15bdecb59bdecdb822b3582ae82dcdde279b1c48027fdc"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-LOWERING-GAP` for surface forms that cannot lower.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5674-5731",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "b4406c817c68b3280cf196481288d8b0cfa122411a3df6fd9443fef7628946a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5731,
+    :end-byte 5775,
+    :raw-sha256
+    "b4406c817c68b3280cf196481288d8b0cfa122411a3df6fd9443fef7628946a2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C6-CORE-SHAPE` for malformed core nodes.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5731-5775",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "48b04bd41ca72cc7d747f67c43c854791d6d63482610c36c1774d8455dda681e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5775,
+    :end-byte 5840,
+    :raw-sha256
+    "48b04bd41ca72cc7d747f67c43c854791d6d63482610c36c1774d8455dda681e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-EVAL-ORDER` for missing or changed evaluation-order facts.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5775-5840",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "c2647036d5a2e1bb4b880ed0eb44813e2fb687cb0d47baea74901cc712cdeab6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5840,
+    :end-byte 5897,
+    :raw-sha256
+    "c2647036d5a2e1bb4b880ed0eb44813e2fb687cb0d47baea74901cc712cdeab6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-ORIGIN` for introduced forms without origin links.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5840-5897",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "c463c5c30968ebc0610d5233457fda0aa54b0254875e96dc44b2a17db4714019",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5897,
+    :end-byte 5960,
+    :raw-sha256
+    "c463c5c30968ebc0610d5233457fda0aa54b0254875e96dc44b2a17db4714019"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-EFFECT-DROP` for lost effect or capability declarations.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5897-5960",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "8442d69b33100780adacbc59a6cceccccb7604072b6cbfafdff579e80b33e59b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 5960,
+    :end-byte 6021,
+    :raw-sha256
+    "8442d69b33100780adacbc59a6cceccccb7604072b6cbfafdff579e80b33e59b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-UNSAFE-DROP` for unsafe metadata lost during lowering.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/5960-6021",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "0e74b7dfa9ae34144bd41b1fdd39a1da0f3c537b2a824b617e63744137e5f885",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6021,
+    :end-byte 6086,
+    :raw-sha256
+    "0e74b7dfa9ae34144bd41b1fdd39a1da0f3c537b2a824b617e63744137e5f885"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C6-DOMAIN-BOUNDARY` for malformed domain IR boundary records.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/6021-6086",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :desugaring :verification :domains],
+   :index 35,
+   :raw-sha256
+   "eaeb26c0412a9b82768ece7f62c7e6702d0b8ba8c26560a94978e8be1863c229",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6086,
+    :end-byte 6128,
+    :raw-sha256
+    "eaeb26c0412a9b82768ece7f62c7e6702d0b8ba8c26560a94978e8be1863c229"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C6-VERIFY` for core verifier failures.\n",
+   :source-occurrence-id
+   "C6/source/a384ab694bd14f54a2aefbd0babdfaa3121c11b546c68d75ecc42630f0a48ace",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/6086-6128",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight lowering-gap/shape/order/origin/effect-drop/unsafe-drop/domain/verifier diagnostic meanings retain actual refusal fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 162}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :index 36,
+   :raw-sha256
+   "f354d39fdfb65520f9a0481bd1a7f6eac024d8d3571ba146b49ed91a51f6a9a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6129,
+    :end-byte 6280,
+    :raw-sha256
+    "f354d39fdfb65520f9a0481bd1a7f6eac024d8d3571ba146b49ed91a51f6a9a2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Diagnostics must include syntax id, core node id when available, source span,\ngenerated-origin chain, lowering rule, profile, target, and remediation.\n",
+   :source-occurrence-id
+   "C6/source/c2810603ac5b5ad89c6d2f90e46d96749e2ab9db33a3350d723e74ee430961e3",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/6129-6280",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Diagnostics retain syntax, available node, span, generated chain, rule, profile, target and remediation."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 37,
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6281,
+    :end-byte 6301,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Rejected Designs\n",
+   :source-occurrence-id
+   "C6/source/e403c73262ccf516ceb6b598c13a14a7203d229de38b7902d6d589a2a6298f1d",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/6281-6301/81a99744c82b0f20",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms],
+   :index 38,
+   :raw-sha256
+   "b7df784ee2fe5a78840acaf8723513d059c29e259aa279d36a80a41188b55b52",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6302,
+    :end-byte 6347,
+    :raw-sha256
+    "b7df784ee2fe5a78840acaf8723513d059c29e259aa279d36a80a41188b55b52"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Gravity rejects lowering by textual rewrite.\n",
+   :source-occurrence-id
+   "C6/source/ff5be0db139b1efcb1192c75b4f521a817df861cdb0a67a46926f3642e110cd9",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/6302-6347",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate "Textual rewriting is rejected as semantic lowering."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :index 39,
+   :raw-sha256
+   "dbf7d98a9297869ce264205e3349168ce89e22973abbc92b7fbc686bbf01cce8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6348,
+    :end-byte 6429,
+    :raw-sha256
+    "dbf7d98a9297869ce264205e3349168ce89e22973abbc92b7fbc686bbf01cce8"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects surface forms that silently bypass core or a declared domain IR.\n",
+   :source-occurrence-id
+   "C6/source/9b1a57ed2d69e6dedb228147e6ca08c903b6e353c469bd40034b11e992a2c700",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/6348-6429",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Surface syntax cannot silently bypass core or documented domain boundaries."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:desugaring],
+   :index 40,
+   :raw-sha256
+   "9ac8080f6d33a782170f8964ca608fcabacc216f121fc57c65ea37de03ebca6b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6430,
+    :end-byte 6495,
+    :raw-sha256
+    "9ac8080f6d33a782170f8964ca608fcabacc216f121fc57c65ea37de03ebca6b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects introduced core forms without source provenance.\n",
+   :source-occurrence-id
+   "C6/source/bbabf4325456339a0af63f2390870d04b96bd5ccab2d07e057042c7e8ab961d8",
+   :owner-requirement-ids ["compiler/c6/desugaring-origins"],
+   :id "C6/facet/6430-6495",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate "Introduced forms without causal provenance refuse."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:bindings :desugaring :verification],
+   :index 41,
+   :raw-sha256
+   "1f278c938fed7cc0617db7c0634653432f8f46370f2d7ed1d72e0fdb73dde4cf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6496,
+    :end-byte 6591,
+    :raw-sha256
+    "1f278c938fed7cc0617db7c0634653432f8f46370f2d7ed1d72e0fdb73dde4cf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects lowering that erases effects, capabilities, profile facts, or\nunsafe metadata.\n",
+   :source-occurrence-id
+   "C6/source/5cca953e5552a08648e706c7ec496b74c0b42f1affac9f15c6e711f44d6e97a6",
+   :owner-requirement-ids ["compiler/c1/preserve-evidence"],
+   :id "C6/facet/6496-6591",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Effects/capabilities/profile/unsafe metadata cannot be erased by lowering."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 178}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:forms :domains],
+   :index 42,
+   :raw-sha256
+   "e3f7aec5b5cab970184217b60c82d328b6c48a45aa30187d226a6be868b7a945",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6592,
+    :end-byte 6674,
+    :raw-sha256
+    "e3f7aec5b5cab970184217b60c82d328b6c48a45aa30187d226a6be868b7a945"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects backend-specific core nodes outside documented domain\nboundaries.\n",
+   :source-occurrence-id
+   "C6/source/88256d83c058459d2772cc31c4f543f30c760b18c539db0c91289b3497660973",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/domain-boundary"],
+   :id "C6/facet/6592-6674",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Backend-specific core nodes require documented domain boundaries."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 43,
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6675,
+    :end-byte 6699,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Conformance Criteria\n",
+   :source-occurrence-id
+   "C6/source/543da11f9d85db10b69db4b5f8f65071e32a48ee590c9aa1440c37ffef50b08d",
+   :owner-requirement-ids [],
+   :id "C6/normalized-facet/6675-6699/4cea7efb2bd3a140",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original source heading/sequence/phase/draft/attribution as context, without implementation credit."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :index 44,
+   :raw-sha256
+   "bf2fec860d5061e42476e867ce391c8422f2db3a8c3d9cb230963da33b58d80c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6700,
+    :end-byte 6755,
+    :raw-sha256
+    "bf2fec860d5061e42476e867ce391c8422f2db3a8c3d9cb230963da33b58d80c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "A conforming lowering implementation must demonstrate:\n",
+   :source-occurrence-id
+   "C6/source/a20703585a955b795c6bd151a9c64b748b8ad77d263a6a0937c2aafa3eeee53a",
+   :owner-requirement-ids
+   ["language/core/normalize-to-declared-core"
+    "compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/preserve-observable-evaluation-order"
+    "compiler/c1/preserve-evidence"],
+   :id "C6/facet/6700-6755",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conformance requires real outcomes for the complete following matrix."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "6f478853aa7d1315909b4b80def894cfaefd75832feb885457fb640646f44b75",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6756,
+    :end-byte 6800,
+    :raw-sha256
+    "6f478853aa7d1315909b4b80def894cfaefd75832feb885457fb640646f44b75"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- lowering for every standard surface form,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/6756-6800",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "9d3659db980dac8d0cfbdec754f03ebf4272d94d59128a8405c1b00dbc01903d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6800,
+    :end-byte 6865,
+    :raw-sha256
+    "9d3659db980dac8d0cfbdec754f03ebf4272d94d59128a8405c1b00dbc01903d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- source-to-core maps for handwritten and macro-generated forms,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["compiler/c6/desugaring-origins"],
+   :id "C6/facet/6800-6865",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "21dcd118ba7befa0c8bd2f51ff442355d7dd599bfe3fe08cb650be902dc82d5b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6865,
+    :end-byte 6921,
+    :raw-sha256
+    "21dcd118ba7befa0c8bd2f51ff442355d7dd599bfe3fe08cb650be902dc82d5b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- evaluation-order preservation for effectful examples,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids
+   ["language/core/preserve-observable-evaluation-order"],
+   :id "C6/facet/6865-6921",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "c1eaba1b669ac75ff7f0f9b6da7b4292ffd6d04b7c55a835607cbabfd4f7cfbb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6921,
+    :end-byte 6992,
+    :raw-sha256
+    "c1eaba1b669ac75ff7f0f9b6da7b4292ffd6d04b7c55a835607cbabfd4f7cfbb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `match`, `try`, `throw`, `loop`, and `recur` core node verification,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["compiler/c6/core-verification"],
+   :id "C6/facet/6921-6992",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "859449157276c03794d2a61d4ed3f48173ff90fa4a74c980f805c10da6fcbe23",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 6992,
+    :end-byte 7030,
+    :raw-sha256
+    "859449157276c03794d2a61d4ed3f48173ff90fa4a74c980f805c10da6fcbe23"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- rejection of unknown surface forms,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/6992-7030",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "78bbe69c42c4e06a061322a4ff89b3ccaf917095ff106368d1dc9a680d4df531",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 7030,
+    :end-byte 7085,
+    :raw-sha256
+    "78bbe69c42c4e06a061322a4ff89b3ccaf917095ff106368d1dc9a680d4df531"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- domain boundary artifacts for representative facets,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["compiler/c6/domain-boundary"],
+   :id "C6/facet/7030-7085",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "6899d45dc1f8522d555ac77c9cceb3178d01f047214f2cf0444303e14efd467a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 7085,
+    :end-byte 7137,
+    :raw-sha256
+    "6899d45dc1f8522d555ac77c9cceb3178d01f047214f2cf0444303e14efd467a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- diagnostics for lost metadata and malformed core,\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids
+   ["compiler/c6/core-verification" "compiler/c1/preserve-evidence"],
+   :id "C6/facet/7085-7137",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C6 - AST and Core Lowering Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 192}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:forms :bindings :desugaring :verification :domains],
+   :index 45,
+   :raw-sha256
+   "b8b025b6167b8cb966dacf2aabfde1afa3451d52d4606fb686bac53e1f2eaffb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+    :start-byte 7137,
+    :end-byte 7177,
+    :raw-sha256
+    "b8b025b6167b8cb966dacf2aabfde1afa3451d52d4606fb686bac53e1f2eaffb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- versioned lowering rule invalidation.\n",
+   :source-occurrence-id
+   "C6/source/c5289bb6ac3a64cc20dee40e870143df73df0d60329f3e4f92b24a6f0f2bd173",
+   :owner-requirement-ids ["language/core/normalize-to-declared-core"],
+   :id "C6/facet/7137-7177",
+   :document-id "C6",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every standard surface, handwritten/macro map, effect order, match/error/loop verifier, unknown form, representative domain, lost metadata and rule invalidation fixture has actual acceptance/refusal artifacts; no execution is performed by this trace."}],
+ :qualification
+ "All C6 facets and occurrence conjunctions have exact current criterion candidates or retained context, not independent entailment acceptance. Three C6-specific and two L2 core owner joins gain candidates; existing C1 evidence-owner candidate retains its broader scope without full C1 acceptance. Full L2/L7/L9/C12 and domain implementations, original Reader-to-Core finite evidence and earlier source reviews are not extended. No compiler/domain checker/runtime/probe execution, migration/release or final-count credit follows.",
+ :input
+ {:facet-matrix
+  {:sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"},
+  :current-criteria
+  {:path
+   "specs/requirement-reconciliation/all833-core-owner-current-criterion-conservation.edn",
+   :sha256
+   "ff3c272da71f0f226903ab1833841004956d6daa1b5b9bb3c286b1c2996c5683"},
+  :current-bindings
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+   :sha256
+   "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16"}},
+ :new-decision-ids 0}

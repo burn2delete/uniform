@@ -1,0 +1,2564 @@
+{:all-original-documents-unchanged 240,
+ :assigned-ids
+ ["interface/behavior/pkg10/release-provenance-artifact"
+  "interface/behavior/pkg12/canonical-signing"
+  "interface/behavior/pkg12/provenance-subject-binding"
+  "interface/behavior/pkg12/revoked-signing-admission"
+  "interface/behavior/pkg12/verification-report"
+  "interface/behavior/pkg12/verify-before-consumption"
+  "interface/behavior/pkg7/deterministic-build-environment"
+  "interface/bootstrap/authoritative-admission"
+  "interface/bootstrap/compiler-lineage-query"
+  "interface/bootstrap/module-interface"
+  "interface/bootstrap/native-carrier-header"
+  "interface/bootstrap/native-reference-identity"
+  "interface/bootstrap/native-symbol-units"
+  "interface/bootstrap/pass-determinism"
+  "interface/bootstrap/seed-subset"
+  "interface/bootstrap/stage-equivalence"
+  "interface/bootstrap/stage-evidence/compatibility-matrix"
+  "interface/bootstrap/stage-evidence/stage-manifest"
+  "interface/compiler/c15/diagnostic-identity"
+  "interface/compiler/c15/structured-diagnostic"
+  "interface/governance/compatibility-assessment"
+  "interface/governance/unsafe-audit-decision"
+  "interface/safety/safe1/unsafe-boundaries"
+  "interface/safety/safe6/audit-production"
+  "interface/safety/safe6/safe-wrappers"],
+ :later-field-appends-inverted 0,
+ :independent-receipt-sha256
+ "df871924b21a5b6be51534132de1d7482c9684688987e3f9ba2943a07ab837ed",
+ :task-plan-paths
+ ["specs/compiler-api-workflow/tasks.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/reader-workflow/tasks.md"
+  "specs/reader-workflow/plan.md"
+  "specs/syntax-workflow/tasks.md"
+  "specs/syntax-workflow/plan.md"
+  "specs/expand-workflow/tasks.md"
+  "specs/expand-workflow/plan.md"
+  "specs/resolve-workflow/tasks.md"
+  "specs/resolve-workflow/plan.md"
+  "specs/core-workflow/tasks.md"
+  "specs/core-workflow/plan.md"
+  "specs/types-workflow/tasks.md"
+  "specs/types-workflow/plan.md"
+  "specs/effects-workflow/tasks.md"
+  "specs/effects-workflow/plan.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/legality-workflow/plan.md"
+  "specs/auth-workflow/tasks.md"
+  "specs/auth-workflow/plan.md"
+  "specs/mir-workflow/tasks.md"
+  "specs/mir-workflow/plan.md"
+  "specs/opt-workflow/tasks.md"
+  "specs/opt-workflow/plan.md"
+  "specs/lower-workflow/tasks.md"
+  "specs/lower-workflow/plan.md"
+  "specs/emit-workflow/tasks.md"
+  "specs/emit-workflow/plan.md"
+  "specs/backends-workflow/tasks.md"
+  "specs/backends-workflow/plan.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/runtime-workflow/plan.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/stdlib-workflow/plan.md"
+  "specs/build-workflow/tasks.md"
+  "specs/build-workflow/plan.md"
+  "specs/cli-workflow/tasks.md"
+  "specs/cli-workflow/plan.md"
+  "specs/tools-workflow/tasks.md"
+  "specs/tools-workflow/plan.md"
+  "specs/diag-workflow/tasks.md"
+  "specs/diag-workflow/plan.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/domains-workflow/plan.md"
+  "specs/platform-workflow/tasks.md"
+  "specs/platform-workflow/plan.md"
+  "specs/release-workflow/tasks.md"
+  "specs/release-workflow/plan.md"
+  "specs/evolution-workflow/tasks.md"
+  "specs/evolution-workflow/plan.md"],
+ :bindings
+ [{:id "interface/behavior/pkg10/release-provenance-artifact",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 30342,
+       :end-byte 31058,
+       :raw-sha256
+       "447e4ede91b2714ea24ef157426f720413839fd58a97a9b83f86d14581192a88"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg12/canonical-signing",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 47768,
+       :end-byte 48737,
+       :raw-sha256
+       "c568117a7d2906e2d3cde159838179f8bea92f9040ba6f0c509bc860aa003716"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "0cd4795cccd64f87e03135ff242a0d66632bab6b11fff565ec7c05fc82b0ffe3",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 3363,
+      :start-byte 668}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg12/provenance-subject-binding",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 33222,
+       :end-byte 33730,
+       :raw-sha256
+       "50fc2afb5bdce6bffd2e7b654f8997d3dd66785ff88090feea67fc356e25ee5f"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg12/revoked-signing-admission",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 33731,
+       :end-byte 34136,
+       :raw-sha256
+       "2938e336d3c6c3e0ee03bc7f305897ba92b31d6ae61f34f9c692ce487aabf104"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg12/verification-report",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 34594,
+       :end-byte 35093,
+       :raw-sha256
+       "be3bc83f53b1335eb41ec45753571f150b567f4532f959085bfef087501d1b1b"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg12/verify-before-consumption",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 35094,
+       :end-byte 35611,
+       :raw-sha256
+       "60589f0f7b7ac90bd1a18e263516625aea11c5237889b5c262fc0ef018f949c3"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "5f599ceebd80158fd7a135c882cb9d44723ac3cbfe374711662df75eacf85641",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48737,
+      :start-byte 27239}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/behavior/pkg7/deterministic-build-environment",
+   :task-links
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/build-workflow/tasks.md",
+       :marker "build-implementation-tasks",
+       :task-id
+       "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+       :start-byte 54267,
+       :end-byte 54881,
+       :raw-sha256
+       "eea319d6094d7342f9adb1ff01f3d2ed89fd5a72c152d4be1e8b2447c1a8419b"}],
+     :task-context
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/authoritative-admission",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :role :intermediate-authoritative-admission-consumer,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 15306,
+       :end-byte 16133,
+       :raw-sha256
+       "b4dd9bba67babd9720a53f5714f6649fcb23015fbb3a9029d13d9c4e8cd4426c"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 20312,
+      :start-byte 13959}}],
+   :dependency-interfaces
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "ae62e84bdff9602626ab15cbc1103cc987b5956d13cc40d91ddb730cd8dfaa32",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 29652,
+      :start-byte 27769}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/compiler-lineage-query",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 25536,
+       :end-byte 26452,
+       :raw-sha256
+       "3510cb61f98a36056c31389d96c9542a5d2cee23777e506fb3cba502303f6457"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "5e9169fcfb0da933b187ed5112848aa831b041ab49aaa841dc736b08a2de36b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 27767,
+      :start-byte 23186}}],
+   :dependency-interfaces
+   [{:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/module-interface",
+   :task-links
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 11110,
+       :end-byte 12133,
+       :raw-sha256
+       "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"}],
+     :task-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/native-carrier-header",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 83797,
+       :end-byte 86815,
+       :raw-sha256
+       "457ac369093277876351203e59e9f088505c181abfc271c605a4133ce11546d5"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 90277,
+      :start-byte 83251}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual unsafe-island, safe-wrapper, audit-production and safety classification records, distinct from governance approval",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/native-reference-identity",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 86816,
+       :end-byte 87779,
+       :raw-sha256
+       "01b57d87fbb4689d16c56eef12775fd3766d4192dbaf7911bbcdb197ef8ce080"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 90277,
+      :start-byte 83251}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual unsafe-island, safe-wrapper, audit-production and safety classification records, distinct from governance approval",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/native-symbol-units",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 87780,
+       :end-byte 88981,
+       :raw-sha256
+       "494bdba70982163c3ad45d18e3cf860b69003801d0e8257204f41e08ddee2f8d"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 90277,
+      :start-byte 83251}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual unsafe-island, safe-wrapper, audit-production and safety classification records, distinct from governance approval",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/pass-determinism",
+   :task-links
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 12135,
+       :end-byte 13003,
+       :raw-sha256
+       "c9df053a4b186a254e08716dac093814d2b6413c1a257df75e7ba06026c5ce23"}],
+     :task-context
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/seed-subset",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 88982,
+       :end-byte 90277,
+       :raw-sha256
+       "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 90277,
+      :start-byte 83251}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/stage-equivalence",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :role :stage-evidence-producer-and-comparison-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 18826,
+       :end-byte 20312,
+       :raw-sha256
+       "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 20312,
+      :start-byte 13959}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/stage-evidence/compatibility-matrix",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :role :stage-evidence-producer-and-comparison-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 14401,
+       :end-byte 15305,
+       :raw-sha256
+       "97f0a494d4170c05c72dd15d140f8259e876f29019501efcca5ed45c0749126b"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 20312,
+      :start-byte 13959}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/bootstrap/stage-evidence/stage-manifest",
+   :task-links
+   [{:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :role :stage-evidence-producer-and-comparison-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 14401,
+       :end-byte 15305,
+       :raw-sha256
+       "97f0a494d4170c05c72dd15d140f8259e876f29019501efcca5ed45c0749126b"}],
+     :task-context
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "e0c4a600c811b96b0c0530fc96481f671f224ec8a1d8eb61e1df14075717d9fd",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 20312,
+      :start-byte 13959}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/build-workflow/tasks.md",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Locked source/compiler/environment/target recipe and actual canonical rebuild comparison",
+     :current-source
+     {:path "specs/build-workflow/tasks.md",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+      :raw-sha256
+      "2ee4b42cf9ff8462dc171c880d95fd353b70682e078570686ff1764c58a69909",
+      :marker "build-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 57077,
+      :start-byte 48739}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/compiler/c15/diagnostic-identity",
+   :task-links
+   [{:path "specs/diag-workflow/tasks.md",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+       :start-byte 2447,
+       :end-byte 3486,
+       :raw-sha256
+       "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}],
+     :task-context
+     {:path "specs/diag-workflow/tasks.md",
+      :task-id
+      "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+      :file-sha256
+      "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+      :raw-sha256
+      "9f5812cf2a3a19da225c1300ead3e38d8d7c12b052c5634d6d731311d2c3187d",
+      :marker "diag-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 3486,
+      :start-byte 2076}}],
+   :dependency-interfaces
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/syntax-workflow/tasks.md",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual source-span variants, syntax identity and available source provenance",
+     :current-source
+     {:path "specs/syntax-workflow/tasks.md",
+      :task-id
+      "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :marker "syntax-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 1385,
+      :start-byte 1014}}
+    {:path "specs/expand-workflow/tasks.md",
+     :task-id
+     "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Generated source/producer/origin chains and normal-pipeline reentry results",
+     :current-source
+     {:path "specs/expand-workflow/tasks.md",
+      :task-id
+      "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
+      :file-sha256
+      "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+      :raw-sha256
+      "e390c021c0158119b8b177ce4de6631385fbc6a81b38a3fea41b74f2437e7360",
+      :marker "expand-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 24677,
+      :start-byte 14830}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/compiler/c15/structured-diagnostic",
+   :task-links
+   [{:path "specs/diag-workflow/tasks.md",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+       :start-byte 942,
+       :end-byte 2074,
+       :raw-sha256
+       "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}],
+     :task-context
+     {:path "specs/diag-workflow/tasks.md",
+      :task-id
+      "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+      :file-sha256
+      "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+      :raw-sha256
+      "0ea68c141bcacf301b15a2d14ab009b115a73aa411fa348340241bcb6ce8f213",
+      :marker "diag-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 2074,
+      :start-byte 508}}],
+   :dependency-interfaces
+   [{:path "specs/diag-workflow/tasks.md",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/diag-workflow/tasks.md",
+      :task-id
+      "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+      :file-sha256
+      "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+      :raw-sha256
+      "9f5812cf2a3a19da225c1300ead3e38d8d7c12b052c5634d6d731311d2c3187d",
+      :marker "diag-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 3486,
+      :start-byte 2076}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/syntax-workflow/tasks.md",
+     :task-id
+     "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual source-span variants, syntax identity and available source provenance",
+     :current-source
+     {:path "specs/syntax-workflow/tasks.md",
+      :task-id
+      "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax",
+      :file-sha256
+      "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+      :raw-sha256
+      "da0415a84ca94f34c434e229412b76200ee0190b44fb4aa47188d9110302de2f",
+      :marker "syntax-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 1385,
+      :start-byte 1014}}
+    {:path "specs/expand-workflow/tasks.md",
+     :task-id
+     "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Generated source/producer/origin chains and normal-pipeline reentry results",
+     :current-source
+     {:path "specs/expand-workflow/tasks.md",
+      :task-id
+      "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs",
+      :file-sha256
+      "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+      :raw-sha256
+      "e390c021c0158119b8b177ce4de6631385fbc6a81b38a3fea41b74f2437e7360",
+      :marker "expand-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 24677,
+      :start-byte 14830}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/compatibility-assessment",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/change-review",
+     :role :scoped-governance-record-and-decision-producer,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 13898,
+       :end-byte 15198,
+       :raw-sha256
+       "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/change-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "00373c8c91bba47df2fb6c90feb7cd247858013b7d558b93b3e2589289c9a4a4",
+      :marker "evolution-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 19506,
+      :start-byte 705}}],
+   :dependency-interfaces
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "ba3f1a61479481a43e2a2110625d2a9e265c8a9a5066292940be01a3ea0e6e6a",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 62111,
+      :start-byte 55124}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual compiler stage input/output, declared compiler-artifact plan and module invocation records",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "d42cdf2da9e2d587214c14f6f605b06b01ed53020bf4e2292107c8c68fa5d980",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 16612,
+      :start-byte 743}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/governance/unsafe-audit-decision",
+   :task-links
+   [{:path "specs/evolution-workflow/tasks.md",
+     :task-id "evolution/security-review",
+     :role :scoped-governance-record-and-decision-producer,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/security-review",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 43683,
+       :end-byte 44902,
+       :raw-sha256
+       "749d884e53fa69895106ff29e753377434b301bc699ef657ff358796b9ae73fa"}],
+     :task-context
+     {:path "specs/evolution-workflow/tasks.md",
+      :task-id "evolution/security-review",
+      :file-sha256
+      "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+      :raw-sha256
+      "6598bddd1305967e6e472cb149993d199e913fd6455c534d384ccac3f31abdc8",
+      :marker "evolution-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 48791,
+      :start-byte 42474}}],
+   :dependency-interfaces
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "f195b152dc3ada63df9e0fe1cea02aaa583fde1da234898d89fbe41825a09c3d",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 55122,
+      :start-byte 43559}}
+    {:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "ba3f1a61479481a43e2a2110625d2a9e265c8a9a5066292940be01a3ea0e6e6a",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 62111,
+      :start-byte 55124}}
+    {:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "0cd4795cccd64f87e03135ff242a0d66632bab6b11fff565ec7c05fc82b0ffe3",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 3363,
+      :start-byte 668}}
+    {:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual unsafe-island, safe-wrapper, audit-production and safety classification records, distinct from governance approval",
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pass-evidence",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Subject-bound actual conformance, preservation, audit and equivalence evidence with failed/unavailable status retained",
+     :current-source
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pass-evidence",
+      :file-sha256
+      "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+      :raw-sha256
+      "e48ad47775000dfbe6728bcb9b7cee040bdd40ed9ce8b635f3b9b452e106cb9a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 37489,
+      :start-byte 25490}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/safety/safe1/unsafe-boundaries",
+   :task-links
+   [{:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :compile-time-safety-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/legality-workflow/tasks.md",
+       :marker "legality-implementation-tasks",
+       :task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+       :start-byte 127406,
+       :end-byte 128404,
+       :raw-sha256
+       "c5f32ccb1e64fe9cc196cf2adb9a93b33ad5f77f2e5692722435d13934a28157"}],
+     :task-context
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}],
+   :dependency-interfaces
+   [{:path "specs/types-workflow/tasks.md",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual typed-core, ownership/lifetime and cleanup invariants",
+     :current-source
+     {:path "specs/types-workflow/tasks.md",
+      :task-id
+      "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :marker "types-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 6365,
+      :start-byte 6002}}
+    {:path "specs/effects-workflow/tasks.md",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual propagated effects and required capability facts under the selected profile",
+     :current-source
+     {:path "specs/effects-workflow/tasks.md",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :marker "effects-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4225,
+      :start-byte 3186}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/safety/safe6/audit-production",
+   :task-links
+   [{:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :compile-time-safety-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/legality-workflow/tasks.md",
+       :marker "legality-implementation-tasks",
+       :task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+       :start-byte 128405,
+       :end-byte 129393,
+       :raw-sha256
+       "c814461c78d4334b1e63bc6428808e959a8bd577b4d97ce82b0c2506c5ab3bb9"}],
+     :task-context
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}],
+   :dependency-interfaces
+   [{:path "specs/types-workflow/tasks.md",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual typed-core, ownership/lifetime and cleanup invariants",
+     :current-source
+     {:path "specs/types-workflow/tasks.md",
+      :task-id
+      "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :marker "types-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 6365,
+      :start-byte 6002}}
+    {:path "specs/effects-workflow/tasks.md",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual propagated effects and required capability facts under the selected profile",
+     :current-source
+     {:path "specs/effects-workflow/tasks.md",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :marker "effects-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4225,
+      :start-byte 3186}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}
+  {:id "interface/safety/safe6/safe-wrappers",
+   :task-links
+   [{:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :role :compile-time-safety-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/legality-workflow/tasks.md",
+       :marker "legality-implementation-tasks",
+       :task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+       :file-sha256
+       "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+       :start-byte 129394,
+       :end-byte 130385,
+       :raw-sha256
+       "ea5d1a64140238aa4b0eb36dd5692f6084cfa8aaf8e7c297e4570ad63c812029"}],
+     :task-context
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "61a29809da458404f1b49df2f77672d939a6b11896df4fae4ce05cb11e769322",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 130385,
+      :start-byte 69681}}],
+   :dependency-interfaces
+   [{:path "specs/legality-workflow/tasks.md",
+     :task-id
+     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/legality-workflow/tasks.md",
+      :task-id
+      "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+      :file-sha256
+      "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+      :raw-sha256
+      "ac0abd2a0abd9617b42a77a1a0073e6e94e9f8b2d319a1877e71688c5ca3b8bc",
+      :marker "legality-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 69679,
+      :start-byte 11547}}
+    {:path "specs/stdlib-workflow/tasks.md",
+     :task-id
+     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+     :role :declared-supporting-interface-or-conditional-consumer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/stdlib-workflow/tasks.md",
+      :task-id
+      "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+      :file-sha256
+      "3b28780bcf76f0f21f3d4d77833f8623ddad442ab010866cf53e07e5e92ebbe2",
+      :raw-sha256
+      "0cd4795cccd64f87e03135ff242a0d66632bab6b11fff565ec7c05fc82b0ffe3",
+      :marker "stdlib-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 3363,
+      :start-byte 668}}
+    {:path "specs/types-workflow/tasks.md",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual typed-core, ownership/lifetime and cleanup invariants",
+     :current-source
+     {:path "specs/types-workflow/tasks.md",
+      :task-id
+      "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+      :file-sha256
+      "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+      :raw-sha256
+      "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+      :marker "types-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 6365,
+      :start-byte 6002}}
+    {:path "specs/effects-workflow/tasks.md",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :role :consumed-actual-interface,
+     :task-completion-prerequisite false,
+     :required-output
+     "Actual propagated effects and required capability facts under the selected profile",
+     :current-source
+     {:path "specs/effects-workflow/tasks.md",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :file-sha256
+      "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+      :raw-sha256
+      "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+      :marker "effects-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open; partial source evidence above is not closure",
+      :end-byte 4225,
+      :start-byte 3186}}
+    {:path "specs/release-workflow/tasks.md",
+     :task-id
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :role :downstream-release-consumer-not-implementation-producer,
+     :task-completion-prerequisite false,
+     :required-output nil,
+     :current-source
+     {:path "specs/release-workflow/tasks.md",
+      :task-id
+      "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+      :file-sha256
+      "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+      :raw-sha256
+      "b7cef5f9e19fcb2daf06a7fe451580588b94a3832c758780fb8c64de64e403b6",
+      :marker "release-implementation-tasks",
+      :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+      :status "Open",
+      :end-byte 13957,
+      :start-byte 758}}]}],
+ :new-tasks 0,
+ :later-granularity13-repartition :not-reviewed,
+ :independent-receipt
+ {:tree "4b6970abb8d7c91d335e83573ed6dc33a09740d9",
+  :nonclaims
+  [:implementation-acceptance
+   :runtime-acceptance
+   :full-shared-facet-entailment
+   :whole-project-count-acceptance
+   :canonical-adoption
+   :later-head-applicability
+   :review-of-own-schema25-predicates],
+  :execution
+  {:checker-development
+   "Draft syntax/arity errors and overbroad whole-envelope/baseline byte-equality assumptions were corrected. The actual predecessor envelope is preserved; task identities/statuses/provisional progress are preserved while source witnesses and census metadata are updated. Final checker exits zero; draft failures are not candidate findings.",
+   :mode :clojure-edn-text-hash-only,
+   :compiler-producer-runtime-broker-target-probes :not-run,
+   :checker-assertions 8545,
+   :shared-checkout-writes false,
+   :bootstrap-namespace-loaded false,
+   :new-agents false,
+   :genuine-kernels :not-run,
+   :checker-sha256
+   "84d466196b031e269c49de57dbd61d31ce3351b8133ef2a6eaeaa70ea0666bd1",
+   :denied-operation-retries false},
+  :negative-controls
+  [{:refused true,
+    :check
+    [:record-guard
+     "interface/behavior/pkg10/release-provenance-artifact"],
+    :case :stale-record}
+   {:refused true, :check :raw, :case :forged-source}
+   {:refused true,
+    :check [:span "specs/build-workflow/tasks.md"],
+    :case :forged-task}
+   {:refused true, :check :before-field-hash, :case :stale-field}
+   {:refused true,
+    :check :required-lineage-query-refusal,
+    :case :coherently-missing-required-auditor-query}
+   {:refused true,
+    :check :required-lineage-query-refusal,
+    :case :coherently-rehashed-actual-task-missing-BOOT8-query}],
+  :candidate "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+  :reviewer-thread "01a18529-4c4f-79b1-94b3-d1132f06ed53",
+  :blocking-findings [],
+  :adoption :canonical-owner-only-with-current-head-verification,
+  :intake
+  {:canonical-thread "01a18424-d867-7c12-8a04-07484900100c",
+   :helper-thread "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+   :latest-read-before-reservation true,
+   :pending-bootstrap25 true,
+   :competing-reservation-or-denial-found false,
+   :reservation-delivered true,
+   :authorship
+   {:own-family :schema25,
+    :own-source "cb7671e95976add7b47ee4dcd84caeee18423eff",
+    :ids-disjoint true,
+    :nine-acceptance-predicates-disjoint true,
+    :enclosing-contexts :conservation-only-no-self-review}},
+  :result :pass-in-exact-source-data-scope,
+  :kind :independent-bootstrap25-current-composition-source-review,
+  :coherent-control
+  {:authority-path
+   "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+   :authority-file-sha256
+   "769fc29e7c1872f4b9634f0b542f2d6da6174b77fd84c8240f6a0eb9aa2a40d5",
+   :required-source-clause
+   "Reject auditor query failures for compiler lineage.",
+   :actual-task-rewritten true,
+   :private-task-file "coherently-weakened-task.txt",
+   :recomputed-task-sha256
+   "b4909f334e24e015165a0e0055b3ec42d6fbffadc179c63699788fcccb25985d",
+   :hash-integrity-passed true,
+   :semantic-oracle-refused true},
+  :verified
+  {:new-task-identities 0,
+   :current-links 833,
+   :field-appends 8,
+   :historical-review-envelopes-preserved 561,
+   :historical-predicate-hashes-preserved 561,
+   :new-current-allocations 25,
+   :decision-identities 25,
+   :distinct-original-facets 888,
+   :distinct-task-fields 6,
+   :distinct-interface-tasks 15,
+   :source-memberships 973,
+   :declared-dependency-interfaces 56,
+   :bound-interface-occurrences-including-consumers 81,
+   :open-decisions 833,
+   :context-inversion-references 21,
+   :task-progress
+   {:open 177,
+    :accepted-complete-in-declared-task-scope 3,
+    :remaining 179,
+    :unweighted-ratio {:numerator 3, :denominator 182},
+    :partial 1,
+    :total 182,
+    :status-unassessed 1,
+    :recorded-blocked 0,
+    :qualification
+    "Provisional scoped task states only, not a whole-project ratio. Task granularity and complete source-to-task entailment remain unassessed. Scoped accepted tasks do not close components, normative documents, requirements, milestones or release. Unrecorded dependency blocking and whole-requirement evidence remain unassessed."},
+   :accepted-task-scopes-provisional 3,
+   :prior-current-allocations-exactly-preserved 808,
+   :qualified-current-source-reviews-preserved 474,
+   :criterion-origin-counts {:reused 17, :new 8},
+   :source-byte-validation
+   :all-declared-files-spans-raw-bytes-hashes-and-ids-checked,
+   :task-routes
+   :all25-actual-criteria-contained-in-pinned-current-task-contexts,
+   :accepted-historical-mappings-preserved 561,
+   :task-identities-and-statuses-preserved 182,
+   :dependencies
+   :actual-outputs-and-conditional-consumers-not-whole-task-completion,
+   :field-reconstruction
+   :exact-full-files-from-guarded-sequential-appends},
+  :semantic-review
+  {:all25 true,
+   :rows-file "rows.edn",
+   :rows-sha256
+   "13f4a01578e7603e891a87a97cf0b0f51e9025b6193cd94894c51fc807bc9c8b",
+   :observations
+   ["Artifact producers, module execution, native ABI behavior, diagnostic production, unsafe record production, specialist audit, comparison and intermediate admission have distinct declared roles; publishing manifests is not evidence production."
+    "Stage claims retain supported-subset scope, owned/deferred gaps and conditional performance bounds. Ordinary development is not gated by authoritative migration or release."
+    "Native carrier, reference identity and Symbol unit criteria retain exact-class, no-callback/non-forcing, unsupported/unknown metrics, sticky-denial and export/TCB limitations; no DATA legality, provenance or admission follows."
+    "Signing, provenance, revocation and verification preserve exact subjects, canonical bytes, conditional policy and historical-rebuild exception, failed-check reporting and verify-before-use."
+    "C15 phase-unavailable metadata remains explicit nil; identity resolution and safe publication require distinct evidence. SAFE1/SAFE6 records, safe-wrapper invariants and GOV9 review/revalidation remain distinct."
+    "Original family private PASS is historical scope only; it does not accept this composition or its new predicates."]},
+  :artifacts
+  {"specs/requirement-reconciliation/bootstrap25-current-composition.edn"
+   "b0477962a72f09918b3fcd940aab43a12d8f1572893b120cccc72d013129a2d2",
+   "specs/requirement-reconciliation/bootstrap25-context-refinement.edn"
+   "c22fdc66c3869e87d63419999c60205730bd418ba47608bdfb3c50570927e189",
+   "specs/requirement-reconciliation/current-decision-allocation-bootstrap25.edn"
+   "57dfaa954540900e583af727f0d561aeb83a1c03067742afff8ff923cd964024",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn"
+   "23defa1f5b730126d5b6d39cb5743a6e21819c7b0af707b01b90ed3a49e1e88b"}},
+ :implementation-credit :none,
+ :full-attached-facet-entailment :not-conferred,
+ :scope :only25-reviewed-predicates,
+ :source-memberships 973,
+ :decision-records :all25-unchanged,
+ :source-commit "60aa422f8f50ab7450ea16fea91a7ebe8b9b0f1b",
+ :reviewed-composition
+ {:path
+  "specs/requirement-reconciliation/bootstrap25-current-composition.edn",
+  :sha256
+  "b0477962a72f09918b3fcd940aab43a12d8f1572893b120cccc72d013129a2d2"},
+ :kind :exact-bootstrap25-current-source-review-applicability,
+ :all-task-plan-bytes :identical-to-frozen-review,
+ :governance14-semantics :not-reviewed,
+ :current-criteria 25,
+ :reviewer-schema25-contexts
+ :conservation-only-no-new-independent-schema-semantic-acceptance}

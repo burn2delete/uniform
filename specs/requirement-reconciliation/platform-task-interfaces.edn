@@ -1,0 +1,227 @@
+{:source-bindings
+ [{:task-id "platform-product/adopt-hardware-contract",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 4172,
+    :end-byte 4466,
+    :start-line 79,
+    :end-line 79,
+    :sha256
+    "be25106045e55054c2a1c4b87ce8becefc8f1f6efb898f0d971a132ee39b793a"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/adopt-hardware-contract",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/adopt-kernel-contract",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 4467,
+    :end-byte 4764,
+    :start-line 80,
+    :end-line 80,
+    :sha256
+    "0c6d1611081c9e77f36fba1cd847ab9f787e02a9c9181c1e45e075ab23fc0456"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/adopt-kernel-contract",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/adopt-application-contract",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 4765,
+    :end-byte 5019,
+    :start-line 81,
+    :end-line 81,
+    :sha256
+    "ffe4e164089b1f8d45dd767548a52a5a76800dbff58fa9ef3ce1fb213143082e"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/adopt-application-contract",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/adopt-physical-boundary",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5020,
+    :end-byte 5299,
+    :start-line 82,
+    :end-line 82,
+    :sha256
+    "e7d708ab43a69060d0fe694236366136462d456641668bd0fb88bf1a518c43a8"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/adopt-physical-boundary",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/implement-hardware",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5363,
+    :end-byte 5412,
+    :start-line 84,
+    :end-line 85,
+    :sha256
+    "d891fc72d042a60a156d21d304a06dc78b339534df8a134e6db9a32c12539a94"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/implement-hardware",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/implement-firmware",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5414,
+    :end-byte 5437,
+    :start-line 85,
+    :end-line 85,
+    :sha256
+    "ab79bc83c1755f43432203b4f15714c6bf59a16e208dfde43cc951a1722fe7db"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/implement-firmware",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/implement-os",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5439,
+    :end-byte 5487,
+    :start-line 85,
+    :end-line 86,
+    :sha256
+    "819542322d061bafd851104a051168547284f010d1bc2fb8eec9f092e33ebfa3"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/implement-os",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/implement-drivers",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5489,
+    :end-byte 5513,
+    :start-line 86,
+    :end-line 86,
+    :sha256
+    "8114500ce7f51d72cd13bfc8a984065cb0ad1432d500f548dac2d73ab9708a14"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/implement-drivers",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/implement-applications",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5515,
+    :end-byte 5549,
+    :start-line 86,
+    :end-line 87,
+    :sha256
+    "819e2967a2bc61f4ddcff475d29156140672a4602125f80f091bf827af6664f7"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/implement-applications",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/integrate-execution",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5551,
+    :end-byte 5608,
+    :start-line 87,
+    :end-line 87,
+    :sha256
+    "747cdc5d261a5cc848802f01b405c1f0982f09b23b1621abc401d89eea02312b"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/integrate-execution",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}
+  {:task-id "platform-product/distribute-product",
+   :source
+   {:path "specs/platform-workflow/tasks.md",
+    :start-byte 5610,
+    :end-byte 5701,
+    :start-line 88,
+    :end-line 89,
+    :sha256
+    "b2bbb9571b4a8924720210fd8e351367c1d610bdb12acc504f600aaf67001448"},
+   :task-reference
+   {:path "specs/platform-workflow/tasks.md",
+    :marker "platform-product-implementation-tasks",
+    :id "platform-product/distribute-product",
+    :sha256
+    "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82",
+    :source-commit "99de41da4e1f9d22a9112238b52877b825cbfd4f"},
+   :status :open,
+   :implementation-acceptance :unassessed}],
+ :schema-version 1,
+ :conservation
+ {:old-file-recovered-by-removing-interface-insertion true,
+  :original-target-records 4,
+  :architecture-decisions 4,
+  :conditional-product-outputs 7,
+  :old-scope-and-history :byte-identical,
+  :all-new-interfaces :open},
+ :source
+ {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+  :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+  :path "specs/platform-workflow/tasks.md",
+  :sha256
+  "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f",
+  :marker "platform-product-scope"},
+ :scope :existing-platform-product-extension,
+ :task-source
+ {:commit "99de41da4e1f9d22a9112238b52877b825cbfd4f",
+  :path "specs/platform-workflow/tasks.md",
+  :sha256
+  "1ab42548a7eb02b9839dd9a69b760736372db66656ca735ce75afc11a7c72b82"},
+ :kind :platform-product-task-interface-reconciliation,
+ :independent-review :pending,
+ :qualification
+ "Known conditional product outputs remain in scope while architecture dependencies are open. This interface addition adopts no target, architecture, application inventory or physical deliverable and authorizes no external action. Final all-project task scope/count requires independent review of the complete reconciliation.",
+ :scope-relation
+ :distinct-from-four-language-target-conformance-projects,
+ :implementation-acceptance :unassessed}
