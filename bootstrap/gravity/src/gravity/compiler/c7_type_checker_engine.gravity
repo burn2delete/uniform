@@ -24244,6 +24244,37 @@
           {:status :rejected :reason :alias-seed-relation-source-mismatch :constraint constraint})
         {:status :rejected :reason :unknown-alias-seed-producer :constraint constraint}))))
 
+(defn alias-closed-reference-source? [premise]
+  ; A fresh census has one initializer per binding. Its closed reference walk
+  ; has no independent value-origin edge. External parameter/call/import facts
+  ; remain owned by their actual consumers, not extra initializers of this SCC.
+  (let [members (get premise :members) edges (get premise :edges)]
+    (if (if (vector? members) (if (vector? edges)
+          (if (> (count members) 0) (= (count members) (count edges) (count (set members))) false) false) false)
+      (loop [index 0]
+        (if (= index (count members)) true
+          (let [binding (get members index) edge (get edges index)
+                dependency (get members (if (= (+ index 1) (count members)) 0 (+ index 1)))
+                record (get edge :equation-record) reference (get edge :reference-node)
+                definition (get edge :definition-node) visible (get record :visible-prior-binding-ids)]
+            (if (if (map? record) (map? reference) false)
+            (if (sh08-ft-all-true?
+                  [(= false (= binding nil))
+                   (= false (= (get reference :node-id) nil))
+                   (= binding (get edge :binding-id) (get record :binding-id))
+                   (= dependency (get edge :dependency-binding-id) (get (get reference :attributes) :binding-id))
+                   (= (get record :initializer-node-id) (get reference :node-id))
+                   (= :reference (get reference :core-form)) (= [] (get reference :children))
+                   (if (contains? record :visible-prior-binding-ids)
+                     (if (vector? visible) (contains? (set visible) dependency) false) true)
+                   (if (contains? record :definition-core-node-id)
+                     (sh08-ft-all-true?
+                       [(= (get record :definition-core-node-id) (get definition :node-id))
+                        (= :def (get definition :core-form))
+                        (= [(get reference :node-id)] (get definition :children))
+                        (= [binding] (get definition :resolved-binding-ids))]) true)])
+              (recur (+ index 1)) false) false)))) false)))
+
 (defn check-alias-conjunction [premise]
   ; Source-joined scalar parameter and catch restrictions share the existing
   ; scalar mismatch rule. Map/List/function/proof compatibility needs its source-bound
@@ -24280,7 +24311,9 @@
        :checks checks :scalar-conflict mismatch
        :unsupported-obligations-retained? unsupported?}
       :grounding :not-established :normalization :unresolved
-      :normalization-reason :independent-source-grounding-required)))
+      :normalization-reason (if (alias-closed-reference-source? premise)
+                              :closed-reference-initializers-have-no-independent-value-origin
+                              :independent-source-grounding-required))))
 
 (defn check-retained-alias-conjunctions [result components seed-producers observations]
   ; Ignore any cached candidate premise. The factory supplies freshly matched

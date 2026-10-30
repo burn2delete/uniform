@@ -962,3 +962,82 @@
                  (assoc cycle :parameter-binding-ids [root-id])
                  (assoc-in cycle [:lexical-bindings 0 :initializer-node-id] :missing)]]
       (is (= :invalid-source-census (:status (closed-alias-grounding-model bad)))))))
+
+(defn closed-source-contract-fixture [dependencies]
+  (let [data (actual-alias-grounding-data dependencies)
+        nodes (into {} (map (juxt :node-id identity) (:nodes data)))]
+    {:members (mapv :binding-id (:lexical-bindings data))
+     :edges (mapv (fn [record]
+                    (let [reference (get nodes (:initializer-node-id record))]
+                      {:binding-id (:binding-id record) :dependency-binding-id (get-in reference [:attributes :binding-id])
+                       :equation-record record :reference-node reference :definition-node nil})) (:lexical-bindings data))}))
+
+(defn closed-source-contract-oracle
+  "Relational DATA contract. It classifies exact source equations only and
+  supplies no type, binding substitution, authentication or convergence claim."
+  [{:keys [members edges] :as premise}]
+  (let [pairs (map vector members (concat (rest members) [(first members)]))
+        joins (for [[[binding dependency] edge] (map vector pairs edges)
+                    :let [record (:equation-record edge) node (:reference-node edge) definition (:definition-node edge)]
+                    :when (and (map? record) (map? node) (some? binding) (some? (:node-id node))
+                               (= binding (:binding-id edge) (:binding-id record))
+                               (= dependency (:dependency-binding-id edge) (get-in node [:attributes :binding-id]))
+                               (= (:initializer-node-id record) (:node-id node))
+                               (= :reference (:core-form node)) (= [] (:children node))
+                               (or (not (contains? record :visible-prior-binding-ids))
+                                   (and (vector? (:visible-prior-binding-ids record))
+                                        (some #{dependency} (:visible-prior-binding-ids record))))
+                               (or (not (contains? record :definition-core-node-id))
+                                   (= [(:definition-core-node-id record) :def [(:node-id node)] [binding]]
+                                      [(:node-id definition) (:core-form definition) (:children definition) (:resolved-binding-ids definition)])))]
+                [binding dependency])
+        closed? (and (vector? members) (vector? edges) (seq members)
+                     (= (count members) (count (set members)) (count edges) (count joins)))]
+    {:normalization :unresolved :grounding :not-established :premise premise
+     :normalization-reason (if closed? :closed-reference-initializers-have-no-independent-value-origin
+                              :independent-source-grounding-required)}))
+
+(deftest external-origin-contract-does-not-rebind-closed-alias-initializers
+  (let [cycle (closed-source-contract-fixture [1 0])
+        classify (fn [data closed?]
+                   (let [r (closed-source-contract-oracle data)]
+                     (is (= data (:premise r)))
+                     (is (= :unresolved (:normalization r)))
+                     (is (= :not-established (:grounding r)))
+                     (is (= (if closed? :closed-reference-initializers-have-no-independent-value-origin
+                                :independent-source-grounding-required) (:normalization-reason r)))))]
+    (classify cycle true)
+    (classify (closed-source-contract-fixture [0]) true)
+    ;; Exact matched definitions are still reference equations, not a second
+    ;; origin supplied by their names or signature observations.
+    (let [definition {:node-id :definition :core-form :def :children [:initializer-0] :resolved-binding-ids [:binding-0]}
+          defined (-> cycle (assoc-in [:edges 0 :equation-record :definition-core-node-id] :definition)
+                      (assoc-in [:edges 0 :definition-node] definition))]
+      (classify defined true)
+      (classify (assoc-in defined [:edges 0 :definition-node :resolved-binding-ids] [:rebound]) false))
+    ;; Preserve independent origin coordinates as DATA outside the SCC. None
+    ;; rewrites a reference edge or authorizes an initializer for its member.
+    (doseq [origin [{:producer :parameter-call-entry :binding-id :parameter :function-syntax-id :function
+                    :call-core-node-id :entry :argument-node-id :argument :parameter-index 0}
+                   {:producer :handler-binding :binding-id :catch :owner-core-node-id :try :handler-core-node-id :handler}
+                   {:producer :imported-function :binding-id :import :definition-binding-id :producer-definition
+                    :producer-sh06-artifact-id :producer-sh06 :producer-sh07-artifact-id :producer-sh07}
+                   {:producer :local-call-result :binding-id :value :call-core-node-id :call :callee-function-syntax-id :callee}
+                   {:producer :recursive-or-higher-order-premise :binding-id :function :proof-source :authenticated-proof}]]
+      (classify (assoc cycle :external-origin-data origin :provisional-observations {:binding-0 :gravity.type/i8 :binding-1 :gravity.type/string}) true))
+    (doseq [changed [(assoc-in cycle [:edges 0 :reference-node :attributes :binding-id] :external)
+                     (assoc-in cycle [:edges 0 :equation-record :initializer-node-id] :stale)
+                     (assoc-in cycle [:edges 0 :equation-record :binding-id] :rebound)
+                     (assoc-in cycle [:edges 0 :reference-node :core-form] :call)
+                     (assoc-in cycle [:edges 0 :reference-node :children] [:opaque])
+                     (assoc-in cycle [:edges 0 :equation-record :visible-prior-binding-ids] [])
+                     (assoc cycle :members [:binding-0 :binding-0])
+                     (update cycle :edges conj (first (:edges cycle)))]]
+      (classify changed false))
+    ;; Independently grounded acyclic data is outside this source-contract
+    ;; cut. Existing inference keeps its own literal/parameter/callee consumers.
+    (classify (closed-source-contract-fixture [1 :literal]) false)
+    (classify (assoc (closed-source-contract-fixture [1 :literal]) :external-origin-data {:binding-id :binding-1 :producer :literal}) false)
+    (classify (assoc cycle :source-seed-conjunction [{:binding-id :binding-0 :type :gravity.type/i8}
+                                                   {:binding-id :binding-1 :type :gravity.type/string}]
+                          :normalization :caller-approved :grounding :caller-approved) true)))

@@ -667,3 +667,37 @@
                   :gravity.type/map :gravity.type/list {:kind :gravity.type/vector :member-types []}]]
       (is (= :unsupported
              (:status (invoke 'alias-seed-constraint-check [(occurs-model/atomic-handler-constraint type \0)])))))))
+
+(deftest closed-source-origin-contract-keeps-normalization-and-priorities-unresolved
+  (let [cycle (occurs-model/closed-source-contract-fixture [1 0])
+        scalar [(scalar-alias-declaration :x 'I8 :gravity.type/i8)
+                (scalar-alias-declaration :y 'String :gravity.type/string)]
+        invalid (assoc (occurs-model/alias-handler-source-fixture) :type :gravity.type/string)
+        cases [[[] :unconstrained "C7-ANNOTATION"]
+               [scalar :conflicting-scalar-declarations "C7-TYPE-MISMATCH"]
+               [(conj scalar invalid) :invalid-source-premise "C7-VERIFY"]]
+        observations {:binding-0 :gravity.type/i8 :binding-1 :gravity.type/string}]
+    (is (true? (invoke 'alias-closed-reference-source? [cycle])))
+    (is (false? (invoke 'alias-closed-reference-source? [(occurs-model/closed-source-contract-fixture [1 :literal])])))
+    (doseq [[constraints status rule] cases]
+      (let [premise (assoc cycle :source-seed-conjunction constraints :provisional-observations observations)
+            checked (invoke 'check-alias-conjunction [premise])
+            result (invoke 'apply-alias-conjunction-diagnostic
+                           [{:convergence-status :nonconverged :diagnostics [] :binding-types observations} [checked]])]
+        (is (= status (get-in checked [:compatibility-decision :status])))
+        (is (= rule (get-in result [:diagnostics 0 :rule])))
+        (is (= :closed-reference-initializers-have-no-independent-value-origin (:normalization-reason checked)))
+        (is (= :not-established (:grounding checked))) (is (= :unresolved (:normalization checked)))
+        (is (= constraints (mapv :constraint (get-in checked [:compatibility-decision :checks]))))
+        (is (= observations (:provisional-observations checked) (:binding-types result)))
+        (doseq [prior [{:convergence-status :resource-limit :diagnostics [] :binding-types observations}
+                      {:convergence-status :nonconverged :diagnostics [{:reason :function-result-type-mismatch}] :binding-types observations}
+                      {:convergence-status :nonconverged :diagnostics [{:reason :typed-handler-source-join}] :binding-types observations}]]
+          (is (= prior (invoke 'apply-alias-conjunction-diagnostic [prior [checked]]))))))
+    (doseq [forged [(assoc-in cycle [:edges 0 :reference-node :attributes :binding-id] :rebound)
+                    (assoc-in cycle [:edges 0 :equation-record :initializer-node-id] :stale)
+                    (assoc-in cycle [:edges 0 :reference-node :core-form] :call)
+                    (update cycle :edges conj (first (:edges cycle)))]]
+      (is (false? (invoke 'alias-closed-reference-source? [forged])))
+      (is (= :independent-source-grounding-required
+             (:normalization-reason (invoke 'check-alias-conjunction [(assoc forged :source-seed-conjunction [])])))))))
