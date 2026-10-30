@@ -143,6 +143,9 @@ registered-literal projection and authenticated reader views into the stage.
 The [assembly extraction](syntax-assembly-evidence.md) moves semantic bindings,
 stream replay/serialization, generated syntax and envelope assembly while
 retaining explicit seed descriptor and native-index operations.
+The [descriptor/index extraction](syntax-descriptors-evidence.md) moves those
+algorithms into the stage while retaining explicit seed lifetime and root
+configuration. Earlier C3 helpers and bootstrap definitions remain open.
 `gravity.diagnostics` and the existing narrow helper namespaces remain partial
 extractions. Other destination interfaces in the table remain proposed;
 existing Gravity modules, hosted facades and tests retain their current status.
