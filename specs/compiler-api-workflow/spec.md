@@ -60,3 +60,28 @@ Plugin isolation and version-compatibility policy remain decisions of the compil
 ## Implementation naming review
 
 The semantic key `compiler-api` names this package. Planning IDs appear only in contract references. No implementation namespaces are added or renamed; meaningful protocol and diagnostic IDs remain unchanged. Follow [semantic naming](../../.specify/semantic-names.md).
+
+## Finite plugin and domain source composition
+
+This later increment extracts the reviewed C17/C12 consumer and prerequisite
+producer criteria, initially over main `70dcb2220701529dbb02bd2317a822eb3ac72fed`.
+The current declared base is `787637b9ae780a7cfef7ca5763611882a8f2b629`.
+The [composition record](domain-contract-source-composition.edn) binds both
+archived exact source review receipts and six exact current criterion spans. Four
+prior main outcomes and their Open statuses remain, and the existing canonical
+domain-IR outcome becomes the fifth local record. No global task denominator
+is adopted. The four source files are copied exactly from their declared
+reviewed-source context; normative language documents and compiler/runtime code
+remain unchanged.
+
+The isolated main composition is a new candidate requiring independent affected
+composition review. Earlier source acceptance is conditional evidence for these
+exact predicates, not acceptance of this new main tree, whole dependencies,
+all of C1/C18, or implementation support. The small SH update preserves prior
+source-version history and numeric routing associations, adds the literal domain
+key and current source pins, and keeps every whole-criterion assessment
+unassessed. The retained Pass Evidence criterion names one source-context file;
+its [scoped excerpt](../requirement-reconciliation/domain-gap-completion.edn)
+contains only that criterion's original record and ten source-facet witnesses,
+with captured before/after fields explicitly historical. The global database,
+other 69 records and their acceptance are not imported.
