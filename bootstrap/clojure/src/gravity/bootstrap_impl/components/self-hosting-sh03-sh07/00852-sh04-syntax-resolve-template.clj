@@ -1,75 +1,13 @@
-
-
-(defn sh04-syntax-resolve-template!
-  [source-path binding raw reader-binding reader-source-revision]
-  (sh04-syntax-raise-result! source-path raw)
-  (let [requests (:digest-requests raw)
-        request-count (count requests)
-        _ (when-not (and (= :gravity/sh04-syntax-template-result
-                            (:artifact raw))
-                         (= 1 (:schema-version raw))
-                         (= 2 request-count)
-                         (= false
-                            (get-in raw
-                                    [:containment
-                                     :downstream-artifacts-forbidden])))
-            (sh04-syntax-boundary-fail!
-             "C3-SHAPE" source-path :exact-syntax-template-result raw {}))
-        verification
-        (sh04-syntax-execute!
-         source-path binding 'c3-syntax-verify-template
-         [(:syntax-template raw) requests])
-        _ (when-not (and (= :gravity/sh04-syntax-verification-report
-                            (:artifact verification))
-                         (= :passed (:status verification))
-                         (= false
-                            (get-in verification
-                                    [:containment
-                                     :downstream-artifacts-forbidden])))
-            (sh04-syntax-boundary-fail!
-             "C3-ID" source-path :fresh-gravity-syntax-template-replay
-             verification {}))
-        digests
-        (reduce
-         (fn [resolved request]
-           (let [ordinal (:ordinal request)
-                 resolved-preimage
-                 (sh04-syntax-resolve-request-preimage!
-                  source-path request resolved)]
-             (when-not (= ordinal (count resolved))
-               (sh04-syntax-boundary-fail!
-                "C3-ID" source-path :ordered-syntax-digest-requests
-                request {:resolved-count (count resolved)}))
-             (conj resolved
-                   (p15-s23-c6c10-canonical-digest
-                    source-path resolved-preimage))))
-         [] requests)
-        syntax
-        (sh04-syntax-resolve-object-template!
-         source-path (:syntax-template raw) digests)
-        resolved-verification
-        (sh04-syntax-execute!
-         source-path binding 'c3-syntax-verify-resolved
-         [syntax requests digests reader-binding reader-source-revision])
-        _ (when-not (and (= :gravity/sh04-resolved-syntax-verification-report
-                            (:artifact resolved-verification))
-                         (= :passed (:status resolved-verification))
-                         (= (:semantic-binding-id reader-binding)
-                            (first digests))
-                         (= (:syntax-id syntax) (second digests))
-                         (= false
-                            (get-in resolved-verification
-                                    [:containment
-                                     :downstream-artifacts-forbidden])))
-            (sh04-syntax-boundary-fail!
-             "C3-ID" source-path :fresh-resolved-syntax-verification
-             resolved-verification {}))]
-    {:raw-result raw
-     :verification-report verification
-     :resolved-verification-report resolved-verification
-     :resolved-digests digests
-     :syntax syntax
-     :serialization-id (:syntax-id syntax)}))
+(defn
+ sh04-syntax-resolve-template!
+ [source-path binding raw reader-binding reader-source-revision]
+ (gravity.syntax/resolve-template!
+  source-path
+  binding
+  raw
+  reader-binding
+  reader-source-revision
+  (syntax-stage-runtime-operations)))
 
 (defn sh04-syntax-logical-stem
   [source-path source-unit]
