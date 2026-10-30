@@ -1,6 +1,4 @@
 {:counts {:facets 392, :occurrences 151},
- :current-byte-link-checks
- {:test 2, :pass 11, :fail 0, :error 0, :type :summary},
  :retained-input
  {:path "/tmp/acc11-final-facet-review/extension-trace.edn",
   :sha256
@@ -735,6 +733,11 @@
  "Retained extension source coordinates and raw hashes are separate from the verified original240 corpus. No current extension byte-span or full-predicate acceptance is inferred.",
  :full-current-extension-entailment :pending,
  :original-240-membership false,
+ :retained-byte-link-checks
+ {:subject-source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+  :checks {:test 2, :pass 11, :fail 0, :error 0, :type :summary},
+  :scope
+  :earlier-extension-link-conservation-not-a-new-current-owner-conservation-run},
  :current-byte-bindings
  {:path
   "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
@@ -7123,8 +7126,4 @@
    :unit-ids ["policy/accounting/host-external-boundary-separation"],
    :start-byte 3009}],
  :current-applicability-source
- "95a3fa4cda23e0919a63fffba851e23381286c10",
- :predecessor-trace
- {:source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
-  :sha256
-  "1473db36ed54fd29b48e3f690e4e7ffeda3c3f7024b948269a2f2c99a59379f1"}}
+ "5bd25d55ac17fd46898dd9a50314784bf446f555"}

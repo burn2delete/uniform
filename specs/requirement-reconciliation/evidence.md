@@ -2445,3 +2445,22 @@ populations, explicit residual separation, missing-member and tampered-source
 controls. Diagnostics projection tests pass 4 / 65. Complete source entailment,
 independent current/final-count acceptance and coordinator integration remain
 required. No compiler/runtime/broker/controller or diagnostic execution occurred.
+
+The census generated from `b31f62163e283310c3dc1ac4c1c3a2882246c625`
+and stored at `5bd25d55ac17fd46898dd9a50314784bf446f555` remains 195
+total, 3 Accepted, 190 Open, 1 Partial and 1 unassessed: 192 remaining and
+provisional scoped unweighted ratio 3/195. SH tests pass 12 / 529, census tests
+5 / 18, boundary 6 / 11 and changed-SH lint has zero findings.
+
+The complete inventory at source
+`5bd25d55ac17fd46898dd9a50314784bf446f555` has 936 original-owner
+criterion candidates, 249 task-reference-only joins and three retained retired
+owners with pending successor acceptance. It retains all 240/9,945/28,785
+original populations, the retired-owner/D2 refinements and checked extension
+byte bindings. Earlier extension link-check results remain explicitly tied to
+their earlier subject rather than being presented as fresh owner-conservation
+checks after these five joins. Facet dispositions are 819 pending owner
+proposals, 5,561 retained formatting/hierarchy contexts, 21,341 pending predicate
+conjunctions, 704 pending dependency joins and 360 pending owner/metadata
+adjudications. Population checks pass 2 / 16. All source, task and independent
+acceptance qualifications remain in force; no completion credit is added.
