@@ -47,7 +47,18 @@ changed semantic diagnostics and a substituted validator. These are inert
 source checks; no Gravity helper, Bootstrap, compiler, native provider or
 runtime executes.
 
-Independent review, canonical adoption and whole-scope completion remain
-separate. Outer caller accounting remains unresolved and unendorsed. No
+Independent receipt
+`cb49b6a6622840d3e3b9f94722d2f4af3042f44b6edd0d788b52348bbd6e14b5`
+accepts rejecting restoration of the enumerated accounting and retired API
+only: 165 source/data checks and fourteen independent corruption refusals.
+`vector-first-classification-consumption.edn` rehashes the receipt/checker,
+frozen tree and inputs, reconstructs the complete function and verifies the
+sole caller's retained argument projection, direct dependencies and policy
+pins against unchanged current main. No reviewer checker rerun is claimed.
+The original proposal remains historical input. The separate finite-List `vec`
+metadata correspondence remains held and is outside this decision.
+
+Canonical adoption and whole-scope completion remain separate. Outer caller
+accounting remains unresolved and unendorsed. No
 arithmetic/object identity, exception, termination, native, runtime, complete
 Vector-first support or whole PR569/ACC01/PR502 acceptance is claimed.

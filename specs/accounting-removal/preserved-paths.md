@@ -1,5 +1,24 @@
 # PR502 preserved path reconciliation
 
+## Finite Vector-rest metadata preservation draft
+
+PR639 at `3fd50a27141560b480406c882778e6efae44b4b4`, tree
+`000e7dc4bda6dc0b9ea2a79340501406ffa7faa3`, preserves the historical C7
+`vec`-of-`rest` type metadata expression on main `b1d590cc`. It changes exactly
+one production expression and adds two evidence records. Every other source
+and test byte is conserved. The complete header matches history with only
+its two independently rejected accounting subtrees removed. See
+`vector-rest-metadata-draft-publication.edn` and the draft's census/document.
+
+This is an accountable finite implementation draft, not a cleared equivalence
+hold. The independent finite-List `vec` correspondence remains HELD. Source
+review and CI are pending; genuine controls and main integration are UNRUN.
+No fixture-only acceptance is extended to changed production. Local source
+equations, eight unchanged fixture pins, five corruption refusals, boundary
+6/11, docs 240/19, roadmap and whitespace pass. Standalone source lint exactly
+matches the nonclean parent (180 errors/115 warnings), new EDN zero. No runtime,
+storage, native, allocation or whole PR502 completion claim follows.
+
 ## Vector-first inferred-call proposal
 
 `vector-first-inferred-call-disposition.edn` and its companion Markdown bind
@@ -13,8 +32,15 @@ The whole caller and payment-expression evaluation are not claimed equivalent.
 
 The unchanged two-helper C7 normal-return envelope is rechecked as evidence,
 not automatically extended caller acceptance. Four direct dependencies are
-pinned; eight effective source mutations refuse altered obligations.
-Independent classification is pending. No production changes or genuine
+pinned; eight effective author source mutations refuse altered obligations.
+Independent receipt
+`cb49b6a6622840d3e3b9f94722d2f4af3042f44b6edd0d788b52348bbd6e14b5`
+accepts rejecting restoration of precisely those accounting/API remnants,
+after 165 source/data checks and fourteen independent corruption refusals.
+`vector-first-classification-consumption.edn` verifies receipt/checker, frozen
+tree/inputs, full function equation, sole caller projection and dependency/policy
+pins at unchanged main. No reviewer checker rerun or held metadata acceptance
+is inferred. Original proposal status stays historical. No production changes or genuine
 execution occur. Outer accounting and the full original disposition remain
 incomplete, with PR502 open and stable ACC IDs unchanged.
 
