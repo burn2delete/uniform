@@ -18,9 +18,18 @@ Gravity lint retains the exact parent findings (Effects 76 errors/44 warnings;
 lowering 85 errors/34 warnings); new EDN has zero findings. This is an unchanged
 finding comparison, not clean lint or semantic execution.
 
-The existing coordinator acknowledged the frozen source-review intake once;
-review assignment, independent acceptance and CI are pending. See
-`list-join-width-composition-publication.edn`. Parent acceptance and main
+The coordinator routed the frozen source review to the prior PR637 reviewer.
+Independent receipt
+`aa6c2503c1d7cc23154d0354e8c4630a2cd4baf3fc896b08e8828cce940a48c7`
+passes the exact two-edit source composition with no blocking findings.
+Consumption rehashes its checker and three artifacts, complete tree, source
+file equations, definition/caller identities and policy pins. The sealed
+9,421 checks and 31 corruption refusals are credited; the final handoff's
+9,422 count is preserved separately. No checker rerun is claimed. Exact-head
+CI run 41008893293 completes seven successes and two configured skips.
+See `list-join-width-composition-review-consumption.edn` and
+`list-join-width-composition-ci.json`; the earlier publication record retains
+its historical pending observation. Parent acceptance and main
 integration remain separate. Genuine compiler/Effects/lowering/runtime is
 UNRUN; outer accounting remains unresolved. PR502 remains open and the
 29-path/530-unit/316-production-unit disposition remains incomplete.
