@@ -3082,3 +3082,65 @@ tracing, all833/all561 conservation and refreshed inventory publication remain
 work to execute. Independent source/composition and final-count acceptance and
 coordinator integration also remain pending. This proposal adds no task unit,
 decision ID, qualified facet disposition or implementation credit.
+
+## Current complete C7/L5 Types criteria and source trace
+
+The guarded Types proposal was applied at
+`2be988a65b3bbaf3ae71c2b9328eca652fd11987`. Full occurrence reading then found
+missing explicit annotation/nil-join details; current task source
+`505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea` adds common `:-` annotations,
+F32/F64 numeric/profile context, the repeated nil-or-T join alternatives and
+explicit supersession of historical accounting fragments. The original draft
+remains unchanged as proposal history; the applied refinement records the
+correction and exact final task/roadmap hashes. All five Types tasks remain
+Open, with stable IDs and prior acceptance bodies as exact prefixes.
+
+The complete Types trace retains all 121 C7 and 137 L5 facets, 150 occurrences,
+108 manual semantic conjunction cases and 42 context occurrences. Twenty exact
+original-owner conjunctions are proposed, including eighteen former task-only
+references and two existing candidates whose previous scopes remain intact.
+Types outputs include independently derived constraints, local entry/branch/
+loop premises, signatures, instantiations, tentative dispatch, Dynamic/cast
+boundaries, schema/resource/layout links and current verifier/consumer records.
+Actual parameter/body/branch/initializer/re-entry types remain distinct from
+boundary compatibility, expected declarations and inferred invariants. Types
+records preserve effect/capability/profile/ownership/safety prerequisites and
+do not make downstream legality or target lowering claims.
+
+Two exact L5 accounting fragments remain superseded history under the user
+instruction, with no criterion keys or current work allowance. The separate
+closed nil-or-T representation remains a type-semantic requirement, not an
+accounting bound. All 258 source witnesses authenticate against unchanged
+normative bytes. Trace controls pass 2 tests/17 assertions, including population,
+owner, no-drop, tamper, accounting-history and no-review-inheritance checks.
+The 833 decision records remain exact and Open; all 931 owning witnesses
+reconstruct against current task files. The new historical snapshot preserves
+all 561 IDs and 4,819 spans, with zero historical or active-bootstrap file-pin
+changes; current decision spans refresh as required. Earlier MIR/Lower/Effects/
+Opt/Resolve supplemental criteria separately authenticate unchanged.
+
+The finite index contains 1,772 distinct proposed IDs: 1,521 + 258 - seven
+shared IDs. There are 21 metadata overlap IDs and 1,209 pending proposals.
+All 572 qualified original-source dispositions retain their earlier scopes;
+none of the new C7/L5 conjunctions inherits independent review. The first
+metadata overlap check rejected a comparison between a historical nested
+source-witness hash and a current top-level hash. Inspection confirmed equal
+actual raw hashes. The check was corrected to read either recorded hash
+location, matching the existing inventory normalizer; no old artifact or held
+Policy14/Metadata372 scope was modified or accepted. The rejected check wrote
+no metadata. A read-only accounting inspection first used a nonexistent
+inventory source-text field and was corrected to the authenticated matrix;
+it made no canonical writes.
+
+Resolve's earlier publication and frozen verification package retain their
+recorded scopes. The C7/L5 source trace, witness conservation and projections
+are source/data evidence only. No type helper/compiler/runtime/provider,
+broker/controller, target probe or denied action ran. Complete independent
+source entailment/composition, final granularity/count acceptance and coordinator
+integration remain pending; no implementation or release credit follows.
+
+The first SH comparison test was mistakenly started alongside its generated-file
+writer and failed one serialized-view equality assertion (12 tests/541
+assertions, one failure). The writer subsequently completed successfully. The
+comparison and SH tests are rerun sequentially after terminal writer completion;
+the earlier failure remains history and is not independent acceptance evidence.

@@ -13002,6 +13002,126 @@
    :new-decision-ids 0,
    :applicability
    "specs/requirement-reconciliation/c8-owner-current-witness-applicability.edn"},
+  :types-owner-current-source
+  {:reviewed-original-source-facets 572,
+   :new-Types-criterion-witnesses
+   {:constraints
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+    :abstractions
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 10811,
+     :end-byte 12861,
+     :raw-sha256
+     "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+    :boundaries
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+    :artifacts
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+    :verification
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}},
+   :C7-source-facets 121,
+   :L5-source-facets 137,
+   :qualified-source-dispositions :unchanged,
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/types-complete-current-facet-trace.edn",
+    :sha256
+    "43248784058a7268d785dba722aad172675b96fe96c55cf7355cf88fb96264e8"},
+   :implementation-credit :none,
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :current-bindings
+   {:path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
+    :sha256
+    "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945"},
+   :status :pending-independent-source-facet-review,
+   :historical-Types-file-pin-refreshes 0,
+   :earlier-qualified-source-reviews
+   :retain-captured-subjects-scopes-and-exclusions,
+   :source-occurrences 150,
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-types-owner-current-criterion-conservation.edn",
+   :context-occurrences 42,
+   :qualification
+   "Twenty original Types owners have current conjunction candidates: eighteen former task-reference-only joins and two existing candidates extended without changing old scopes. All833 and all561 current bytes authenticate, as do earlier supplemental criteria. Two accounting fragments remain superseded history; no quota is restored. Earlier qualified reviews accept no new C7/L5 clause. No type helper/compiler/runtime/probe, implementation, release or final-count credit follows.",
+   :composition
+   "specs/requirement-reconciliation/types-owner-source-refinement.edn",
+   :active-current-basis
+   :Types-refreshed-historical-and-decision-spans,
+   :semantic-conjunction-cases 108,
+   :superseded-accounting-fragments 2,
+   :historical-predicate-raw-bodies :unchanged,
+   :original-owner-joins
+   ["language/types/check-dynamic-boundary"
+    "language/types/version-type-form"
+    "language/types/infer-list-projection-type"
+    "language/types/join-independent-nil-branches"
+    "language/types/derive-schema-type"
+    "language/types/check-core-typing"
+    "compiler/c7/function-types"
+    "language/types/check-memory-sensitive-type-use"
+    "compiler/c7/typed-core-gate"
+    "language/types/emit-typed-core-interface"
+    "compiler/c7/generic-dispatch"
+    "language/types/derive-private-map-member"
+    "language/types/join-independent-list-branches"
+    "language/types/derive-private-keyword-map-domain"
+    "language/types/derive-grounded-symbol-set-loop"
+    "language/types/check-bare-list-parameter"
+    "compiler/c7/casts-boundaries"
+    "language/types/check-explicit-conversion"
+    "language/types/check-homogeneous-list-boundary"
+    "language/types/check-bare-map-parameter"],
+   :new-decision-ids 0,
+   :applicability
+   "specs/requirement-reconciliation/types-owner-current-witness-applicability.edn"},
   :pkg5-source-review
   {:reviewed-commit "023a28488f8f161c68cbe57aa29fa48247197d62",
    :reviewed-tree "e8b660791bdaf3e865528f943725b5d1dd307b41",
@@ -15153,7 +15273,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "6f6d0a1c30d8395b485e7711c3f1a0659a346eaeed6bf23a35cc0709c21e9ec2"},
+  "b2a4445bfe2cf9b8ff4093451050c8e8e9da775c75fb6a71356d338ff836c89e"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -19236,101 +19356,101 @@
   "types"
   [{:path "specs/types-workflow/tasks.md",
     :file-sha256
-    "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/types-workflow/tasks.md",
      :start-byte 1017,
-     :end-byte 1948,
+     :end-byte 8134,
      :start-line 20,
      :end-line 24,
      :sha256
-     "40d03681cddfa455afbcfd548ecadd958add4b64e579bf80d30d6e176b1c419a",
+     "9faf6a14b0df123be14c336310350e924ef02c1f1be9187fb54ecc8431e3b49f",
      :raw
-     "- [ ] `types/current-evidence-and-remaining-work/types1-solve-core-constraints` types/1: Solve core constraints\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement literal, binding, function/application, branch, collection and error-result constraints with actionable mismatch diagnostics. Decision criterion interface/language/types/derive-private-keyword-map-domain: Derive the whole Keyword key domain of an immutable bare Map parameter only from a complete finite census of private normal entries; preserve the existing homogeneous Keyword List result for keys. Reject: Reject partial/open/public/mutable or otherwise invalid census assumptions, non-Keyword entries and widening inferred keys from mere observed subsets. Required outputs: Private-entry census and key-domain inference evidence, homogeneous List type result and incomplete/invalid-census refusal fixtures."},
+     "- [ ] `types/current-evidence-and-remaining-work/types1-solve-core-constraints` types/1: Solve core constraints\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement literal, binding, function/application, branch, collection and error-result constraints with actionable mismatch diagnostics. Decision criterion interface/language/types/derive-private-keyword-map-domain: Derive the whole Keyword key domain of an immutable bare Map parameter only from a complete finite census of private normal entries; preserve the existing homogeneous Keyword List result for keys. Reject: Reject partial/open/public/mutable or otherwise invalid census assumptions, non-Keyword entries and widening inferred keys from mere observed subsets. Required outputs: Private-entry census and key-domain inference evidence, homogeneous List type result and incomplete/invalid-census refusal fixtures. C7/L5 core-inference and local-evidence criterion (Open): Consume actual resolved C5 bindings and C6 core/evaluation-order records after expansion/resolution. Give every core expression an inferred type, checked declared type, explicitly profile-accepted Dynamic boundary or rejected typing diagnostic; inference is local, deterministic and evidence-producing, never an unconditional solved/Dynamic label. Derive types from actual literals, declarations, bindings, parameters, patterns, constructors and expected-type checking without inventing missing premises. Represent bottom/never, nil/unit, Boolean, numeric families, symbols/keywords, text/views, persistent collections, tuples, structs/records, enums/unions, functions/protocols, generic/existential/effect, memory/resource/initialization/taint, compile-time/const-generic, schema, meta syntax/IR and artifact-reference families in a stable artifact schema; do not invent advanced annotation syntax from examples. Constraint records cover equality, subtype, protocol implementation, generic bounds, numeric family/width, region/lifetime, ownership/borrow, linear consumption, initialization, schema refinement and thrown-error propagation, each with source node, producer rule, dependencies, solution and invalidation. Bare List/Map parameters forget only parameter refinements: retain independently established actual argument types/provenance and per-parameter boundary compatibility, including mixed List/Map/scalar calls; reject unrelated families, implicit Dynamic, invented key/member/extent facts, changed return/recur rules and erased schema/ownership/linearity/regions/effects/profile obligations. For a homogeneous (List T) parameter or return, resolve List and atomic T in type positions, check all independently established positional members or a matching homogeneous carrier, permit empty Lists and nonreturning bodies under their existing rules, and establish body types before checking declared returns. Reject normally returning bare/unknown/mismatched member types and expected-return-driven inference. Preserve (List T) through rest; first of empty remains nil, and excluding nil requires nonemptiness for this exact value and control-flow path, invalidated by relevant rebinding/mutation or taking a tail. Canonical if List joins retain both actual branch types and a join-specific compatibility premise: independently matching homogeneous/positional carriers require at least one independent T witness; empty positional supplies none, homogeneous supplies its declared T even if empty, two exact empty branches remain exact, and existing exact/Never rules take precedence. Canonical if nil-bearing joins require independently established nil and one exact non-nil atomic T, retaining a closed nil-or-T artifact through inferred local returns/calls and actual value equality. Unknown/conflicting alternatives reject; nil is not an Option wrapper or host null, nil-or-Bool is not established Bool for an L7 guard, and declared non-nil returns cannot discard nil. Neither join rule expands match/try/loop/recur joins or introduces general union/coercion/subtyping. Private immutable bare-Map member inference requires actual closed visibility/exports and every resolved use, entry and parameter re-entry, at least one independent normal witness and the same literal key with compatible selected type at every normal entry, preserving each argument source/shape/selection coordinates. Whole-key-domain inference for keys is separate: every normal entry must establish a complete finite Keyword-key Map and validate all stored values, including ignored values; different shapes/value types and an empty normal Map are legal. A Never argument in any coordinate makes the entire call non-invoking; unknown/circular/unaccounted or all-non-invoking evidence proves neither rule. Escapes, public/external entries, mutation and recursive parameter transfers need complete separate evidence; nested-loop transfers are not function-parameter re-entry. Retain entry-specific evidence without a common constructor/deep shape, reconstruct it at every consuming compiler stage, and invalidate on function/parameter/keys use, callers/uses/visibility/exports, arguments/types/compatibility/bindings/mutation/transfers. The parameter stays bare Map; keys yields the existing homogeneous Keyword List including empty, with no key identity/presence/extent/cardinality/nonempty/flow/specialization inference. Ground a Symbol-Set loop invariant only from independently empty persistent-Set initialization, complete original-target re-entry coverage, at least one independent normally invoking Symbol-Set witness and every other normal entry empty or that same carrier. Derive grounding without assuming the invariant; any Never operand makes that whole transfer non-invoking. Retain initializer and every actual re-entry type with source-bound compatibility, separating cold grounding from later invariant-dependent reads; initializer and invariant types are not falsely equal. Empty-only/self-preserving loops retain exact types. Reject unknown/circular/conflicting/non-invoking grounding, lost targets/entries, wrong-value nonemptiness and hidden parameter/branch-rule extension. Required outputs: actual type environment and constraint ledger, independently derived branch/entry/grounding evidence, stable solutions/diagnostics, accepted/refused literal/call/function/collection/branch/match/error and all named boundary/entry/loop fixtures. Existing L2 target/arity/tailness/evaluation and other type/effect/ownership/profile obligations remain; supported atomic and grounding derivations are stated explicitly, with no work/cost allowance introduced. Common annotations use :-; F32/F64 and fixed/machine-size integer representations retain numeric-mode/profile legality rather than host defaults. Joining an already established nil-or-T type with nil, T or the identical nil-or-T retains the same two alternatives under the existing exact/Never precedence. Historical L5 bounded-validation/work fragments are superseded project accounting predicates; they remain recorded source history and add no current allowance or quota."},
     :owner-source "docs/component-roadmaps/types.md",
     :component "types",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
     :id
     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
     :checked false}
    {:path "specs/types-workflow/tasks.md",
     :file-sha256
-    "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/types-workflow/tasks.md",
-     :start-byte 1950,
-     :end-byte 4624,
+     :start-byte 8136,
+     :end-byte 12861,
      :start-line 26,
      :end-line 30,
      :sha256
-     "d6aea30f88e6bda08edfcefabd5d215444491717e96172d1b94f2f980782302b",
+     "15e80165d34717979a263dc36d1a6afae10672751e0f4c19d9fc41c68c39538b",
      :raw
-     "- [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Validate generics, protocols/dispatch, records and schema-derived types against their declarations and resolved identities. Criterion `types/schema-static-projection/decision-interface` (Open): Input: The exact S1 expanded typed/versioned schema manifest and its source identity/refinement/constraint facts. Outputs: Static type projection artifact with schema identity; Accepted and rejected source-to-type parity fixtures. Accept: Generate static records/unions/optional/reference/recursive/refined types from the expanded schema, preserve resolved names, schema identity and constraints, and compare declared and generated type legality against the same manifest. Record target representation limitations explicitly. Refuse: Type projection from a mismatched/stale schema identity; Dropped nullability/refinement/variant constraint or unrepresentable schema family without explicit policy/rejection; Schema normalization or validator generation substituted for the static type artifact. Dependencies consume actual artifacts: Schema task supplies the expanded manifest; Types resolved declarations/constraints supply legality; downstream validators and bindings consume the projected type facts. Diagnostics: S1-PROJECTION and applicable Types mismatch diagnostics retain schema/version/span/target and remediation. These are required future products/results; no execution or implementation acceptance is claimed. Decision criterion interface/language/errors/represent-typed-outcome: Represent Option absence, Result recoverable error, denial, panic, replay and policy failure as their declared distinct typed contracts, retaining applicable origins and audit policy. Reject: Reject conflating capability denial with nil/absence, replay failure with a local exception or AI failure with an unrecorded free-text error. Required outputs: Typed outcome/interface schema and exhaustiveness cases, source/audit records and cross-kind rejection fixtures. Decision criterion interface/language/protocol/select-checked-dispatch: Resolve a declared profile/target-legal implementation set and dispatch mode with typed method/effect contracts; retain host-boundary metadata when delegated. Reject: Reject missing/ambiguous dispatch, ungranted reflection/open-world assumptions and method/type/effect/profile mismatches. Required outputs: Protocol/implementation/dispatch and target metadata, legal selection and missing/ambiguous/host-boundary refusal fixtures."},
+     "- [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Validate generics, protocols/dispatch, records and schema-derived types against their declarations and resolved identities. Criterion `types/schema-static-projection/decision-interface` (Open): Input: The exact S1 expanded typed/versioned schema manifest and its source identity/refinement/constraint facts. Outputs: Static type projection artifact with schema identity; Accepted and rejected source-to-type parity fixtures. Accept: Generate static records/unions/optional/reference/recursive/refined types from the expanded schema, preserve resolved names, schema identity and constraints, and compare declared and generated type legality against the same manifest. Record target representation limitations explicitly. Refuse: Type projection from a mismatched/stale schema identity; Dropped nullability/refinement/variant constraint or unrepresentable schema family without explicit policy/rejection; Schema normalization or validator generation substituted for the static type artifact. Dependencies consume actual artifacts: Schema task supplies the expanded manifest; Types resolved declarations/constraints supply legality; downstream validators and bindings consume the projected type facts. Diagnostics: S1-PROJECTION and applicable Types mismatch diagnostics retain schema/version/span/target and remediation. These are required future products/results; no execution or implementation acceptance is claimed. Decision criterion interface/language/errors/represent-typed-outcome: Represent Option absence, Result recoverable error, denial, panic, replay and policy failure as their declared distinct typed contracts, retaining applicable origins and audit policy. Reject: Reject conflating capability denial with nil/absence, replay failure with a local exception or AI failure with an unrecorded free-text error. Required outputs: Typed outcome/interface schema and exhaustiveness cases, source/audit records and cross-kind rejection fixtures. Decision criterion interface/language/protocol/select-checked-dispatch: Resolve a declared profile/target-legal implementation set and dispatch mode with typed method/effect contracts; retain host-boundary metadata when delegated. Reject: Reject missing/ambiguous dispatch, ungranted reflection/open-world assumptions and method/type/effect/profile mismatches. Required outputs: Protocol/implementation/dispatch and target metadata, legal selection and missing/ambiguous/host-boundary refusal fixtures. C7/L5 declared-abstraction and function-contract criterion (Open): Emit function signatures with actual parameter/return types, latent effects, relevant capability requirements, ownership/borrow and profile restrictions and thrown-error effects. Record actual generic instantiations and protocol method/type facts for MIR/Lower; direct, dictionary, vtable, hosted-dynamic and rejected dispatch choices remain tentative until profile validation and effect checking accept required runtime behavior. Reject failed generic bounds, absent/ambiguous protocol implementations, erased latent/thrown effects, missing ownership/profile facts and dispatch claimed legal merely from a type. Retain ownership/resource type facts for Owned, Borrow, BorrowMut, Region, Ptr, RawPtr, MMIO, Uninit, Init and Linear with actual L10/SAFE2/SAFE3/C9/C10 consumers. Reject uninitialized reads, safe raw-pointer dereference, illegal linear duplication/drop, escaping borrows and MMIO use without profile/capability support; type facts do not replace deeper lifetime, ownership or safety checking. Preserve expanded source-schema identity and validation boundaries for generated types and validators: nullability, optionality, defaults, bounds, refinements, taint and all applicable source constraints survive generated GraphQL/OpenAPI/database/binary-ABI/config/artifact/AI-output contracts and remain linked to the source schema. A generated contract is not accepted because its shape resembles the schema. Required outputs: versioned function signature/generic-instantiation/protocol-dispatch tables, schema type/layout links, memory/resource facts, accepted/refused records/unions/protocols/generics/schema/ownership/linear fixtures and actual downstream handoff records. S1/schema generation supplies its authentic manifest, declared/resolved identities supply constraints, and Effects/Auth/profile/ownership/safety own their independent legality outcomes. Preserve the existing schema static-projection, typed-error, protocol and private-key-domain criteria unchanged."},
     :owner-source "docs/component-roadmaps/types.md",
     :component "types",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
     :id
     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
     :checked false}
    {:path "specs/types-workflow/tasks.md",
     :file-sha256
-    "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/types-workflow/tasks.md",
-     :start-byte 4626,
-     :end-byte 5625,
+     :start-byte 12863,
+     :end-byte 16132,
      :start-line 32,
      :end-line 36,
      :sha256
-     "123b46476a14e071e59e3a1f1cc6cb38e5047bedeedc5a1cb145e4ca1b853658",
+     "de592b918d1bc437611590f900d7121d220972b6a6bd189c3f8e1a31f78865d5",
      :raw
-     "- [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Require checked casts and representability/numeric conversions where specified; reject implicit unsafe narrowing and unsupported profile-dependent dynamic behavior. Decision criterion interface/language/interop/convert-declared-foreign-value: Perform the explicitly directional Gravity/foreign type conversion under declared ownership/nullability/encoding/layout semantics; loss is explicit and failure returns Result or the declared boundary error. Reject: Reject hidden lossy conversion, invalid null-to-non-null mapping and foreign values admitted without required type/lifetime facts; declared Option absence remains legal. Required outputs: Directional type map and conversion/round-trip results, declared loss/failure records and invalid-value/ownership refusals."},
+     "- [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Require checked casts and representability/numeric conversions where specified; reject implicit unsafe narrowing and unsupported profile-dependent dynamic behavior. Decision criterion interface/language/interop/convert-declared-foreign-value: Perform the explicitly directional Gravity/foreign type conversion under declared ownership/nullability/encoding/layout semantics; loss is explicit and failure returns Result or the declared boundary error. Reject: Reject hidden lossy conversion, invalid null-to-non-null mapping and foreign values admitted without required type/lifetime facts; declared Option absence remains legal. Required outputs: Directional type map and conversion/round-trip results, declared loss/failure records and invalid-value/ownership refusals. C7/L5 explicit-dynamic and conversion criterion (Open): Dynamic values/operations have explicit source-bound records with input/result type, kind, profile, required runtime checks, effects, relevant capabilities and diagnostics, retained through Effects, MIR, runtime metadata and diagnostics. Cover dynamic dispatch, field lookup, casts, type inspection and host reflection; hosted/REPL acceptance is explicit, constrained profiles reject forbidden behavior or demand their required facts and annotations. Core types exclude host object identity; native boundaries require layout/ownership/FFI/resources, systems profiles require actual size/layout/initialization/allocation/MMIO/interrupt/raw-memory facts, GPU boundaries require their profile's size/layout/allocation facts, AI surfaces require typed prompt/tool/memory/output/policy schemas, and formal code rejects unmodeled dynamic behavior/partiality and needs proof-friendly types. A type or target does not grant effects/capabilities or relax profile legality. Subtyping/coercion must be explicit or profile-defined; no silently inserted systems numeric widening, pointer/host casts or schema coercions. Classify exact widening, checked narrowing, explicit rounding, saturating, wrapping, schema-validation, host-nullable-to-Option/Result, FFI-representation and unsafe-reinterpretation conversions. Casts, narrowing/nullability/FFI/raw-pointer/host boundaries are checked or explicitly unsafe; reinterpretation requires an unsafe island and audit metadata. Type checking emits records; safety analysis assigns required proof/check/rejection/unsafe audit, preserving the four D8 outcomes. Required outputs: dynamic-boundary and cast/conversion artifacts, actual profile/annotation/representability and boundary reports, positive hosted checked cases and negative forbidden Dynamic, hidden narrowing, unchecked cast, host-null-to-non-null, missing lifetime/ownership/encoding/layout or untracked unsafe cases. Explicit loss/failure stays Result or declared boundary error and Option absence remains distinct. Reject missing checks/metadata, fabricated grants and reliance on host behavior as Gravity type semantics; retain actual C7/L5 diagnostics for annotation, dynamic, cast, nullability and layout failures."},
     :owner-source "docs/component-roadmaps/types.md",
     :component "types",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
     :id
     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
     :checked false}
    {:path "specs/types-workflow/tasks.md",
     :file-sha256
-    "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/types-workflow/tasks.md",
-     :start-byte 5627,
-     :end-byte 6000,
+     :start-byte 16134,
+     :end-byte 18455,
      :start-line 38,
      :end-line 42,
      :sha256
-     "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
+     "d170ea30d8a3f575935ef6351940367a97ae88d6720c7e31405681510ec7658b",
      :raw
-     "- [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Serialize type solutions and layout requirements with source/profile/ownership/effect references; invalidate on changed nodes, bindings or contracts."},
+     "- [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Serialize type solutions and layout requirements with source/profile/ownership/effect references; invalidate on changed nodes, bindings or contracts. C7/L5 current typed-artifact and invalidation criterion (Open): Serialize actual typed core, type environment, constraint ledger, function signature table, generic instantiations, protocol dispatch types, dynamic-boundary and cast/conversion records, layout/schema links, ownership/resource facts and type diagnostics/conformance fixtures. Bind the module to its actual core-input hash; nodes, locals and functions retain their real identities, type/mutability/ownership, latent/thrown effects, capabilities and current constraint/boundary/cast references. The sample artifact's filesystem effect, FileError, module/type/hash values illustrate fields and do not supply facts or grants. Preserve source node/syntax/span/generated-origin chains, resolved binding, profile/target, schema/version and all relevant declared/actual type, effect, ownership/resource and representation evidence. Constraints retain producer rule, dependencies, solution and invalidation; changed nodes, source, resolved declarations/bindings, callers/entries/uses/visibility/exports/argument or transfer premises, schema constraints, profile/target or downstream contracts invalidate affected solutions/boundaries/layout/dispatch and consuming artifacts, rather than silently reusing a solved flag. Required outputs: stable serialized schemas and provenance, current/invalidated fact maps naming actual consumers/rechecks, round-trip and changed-input refusal fixtures. New type forms require artifact-schema updates and fixtures before stable-document use; type changes identify affected Effects, memory safety, profiles, MIR, backends, schemas, AI, stdlib and conformance consumers. This is contract change control, not an extra ordinary-edit permission gate. Reject stale/mismatched/missing source or schema identities, erased actual argument/body types or compatibility premises, dropped origins/latent effects and unsupported type forms concealed by generic metadata."},
     :owner-source "docs/component-roadmaps/types.md",
     :component "types",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
     :id
     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
     :checked false}
    {:path "specs/types-workflow/tasks.md",
     :file-sha256
-    "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/types-workflow/tasks.md",
-     :start-byte 6002,
-     :end-byte 6365,
+     :start-byte 18457,
+     :end-byte 21061,
      :start-line 44,
      :end-line 48,
      :sha256
-     "ae2fbe455c8ac95cf95506cf319f3fff3ea011b9a4cc82ce0813ffb2d16acc49",
+     "ed3e52421540f428a6de8e3f0d52461e3ce776a322a2d089c93ad56c7ec49308",
      :raw
-     "- [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed Effects and MIR prerequisites from actual solutions, with accepted inferred/declared cases and rejected unsatisfied, stale and illegal-conversion cases."},
+     "- [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed Effects and MIR prerequisites from actual solutions, with accepted inferred/declared cases and rejected unsatisfied, stale and illegal-conversion cases. C7/L5 typed-core verifier and consumer criterion (Open): Verify after actual expansion/name resolution/Core production and before Effects can claim legality that each node has exactly one current type or diagnostic, all constraints are solved or rejected, function latent effects are present, all nontrivial conversions have cast records, Dynamic boundaries are profile-marked, schema-derived types reference source schemas, required layout facts exist and source/generated origins survive. Malformed typed-core artifacts refuse with C7-VERIFY and prevent downstream legality claims. Typed core feeds actual Effects and ownership/safety/profile/capability validation; it is not target-lowering authority until those required checks pass. MIR/lowering fixtures must preserve the checked type facts and generic/dispatch/schema/boundary contracts; actual later checks consume current artifacts, not fabricated summaries or completed-component prerequisites. Required outputs: positive typed-core emission for literals, calls, functions, records, unions, matches, protocols, generics, dynamic/schema/ownership/linear surfaces; deterministic constraint/annotation diagnostics; accepted/rejected boundary, cast/unsafe, layout/schema, stale-artifact and verifier-tamper fixtures; actual producer/verifier/consumer records and source/generated-origin diagnostic goldens. Preserve all ten C7 meanings (TYPE-MISMATCH, ANNOTATION, DYNAMIC, CAST, NULLABILITY, GENERIC, PROTOCOL, LAYOUT, SCHEMA, VERIFY) and all eight L5 meanings (TYPE-MISMATCH, ANNOTATION-REQUIRED, DYNAMIC-FORBIDDEN, CAST-UNSAFE, UNINIT-READ, LINEAR-DUP, SCHEMA-WEAKEN, LATENT-EFFECT-MISSING). C7 diagnostics retain core node, syntax ID, source span, expected/actual types, active profile, target, relevant binding, generated-origin chain and remediation. These clauses require future real results and artifacts; source propositions, structural checks and existing partial Dynamic inference do not prove type-system/component, compiler-stage, migration, release or final-count completion. Earlier independent reviews retain exact subjects/scopes and do not accept these new appends; no compiler/helper/runtime/provider/broker/controller/probe execution is authorized or reported here."},
     :owner-source "docs/component-roadmaps/types.md",
     :component "types",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
     :id
     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
     :checked false}]},
@@ -19484,7 +19604,7 @@
   "docs/component-roadmaps/tools.md"
   "3fdd5d3e2656106dfc8e670966fc446ba3ee674933bbd8e87fc1acc43a8be834",
   "docs/component-roadmaps/types.md"
-  "0fac194404a9dad8dcf9a1ab87a9e743e3fe8f8ec3416dffa1906fea72e2928a",
+  "223168d9890262cbf7d545696beb73b617154638d4e7eea19b5865429df10a28",
   "docs/document-inventory.json"
   "2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc",
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -19564,7 +19684,7 @@
   "specs/tools-workflow/tasks.md"
   "77dd584e29543ddc7efa33fc4c29ca3a1829f038e02738e723a551e24edf8f5c",
   "specs/types-workflow/tasks.md"
-  "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738"},
+  "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e"},
  :applying-source-pins
  {"docs/phase-02-safety/039-safe10-capability-security-model.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
@@ -19651,7 +19771,7 @@
   "docs/component-roadmaps/effects.md"
   "94dfa9c535268276765b76366c5c60687fa3807a",
   "specs/types-workflow/tasks.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
   "specs/legality-workflow/plan.md"
   "5405d8bf9ac08c7e2486a34def974d9d57d76e36",
   "specs/domains-workflow/tasks.md"
@@ -19673,7 +19793,7 @@
   "docs/component-roadmaps/release.md"
   "df11890b21f71d3f246cc47e9f63d866239a0d68",
   "docs/component-roadmaps/types.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
   "specs/lower-workflow/tasks.md"
   "e94de7388589c8251f40fbb1da4a6af6da6f5918",
   "docs/component-roadmaps/resolve.md"
