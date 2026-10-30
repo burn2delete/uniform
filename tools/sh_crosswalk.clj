@@ -2516,6 +2516,99 @@
   :end-byte 60337,
   :raw-sha256
   "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}}
+    :compiler-source-reviews-qualified-adoption
+    {:older-qualified-source-reviews
+ :exact-subjects-scopes-exclusions-retained,
+ :counts
+ {:new-reviewed-facets 676,
+  :all-reviewed-source-facets 1248,
+  :semantic-conjunction-facets 1072,
+  :retained-context-facets 174,
+  :superseded-history-facets 2,
+  :finite-proposal-ids 1987,
+  :pending-finite-proposal-ids 748,
+  :reviewed-outside-finite-index 9},
+ :decision-source-review-adoptions-530 :unchanged,
+ :Resolve
+ {:facets 195,
+  :semantic 161,
+  :context 34,
+  :scope :C5-L3-only,
+  :frozen-execution-package :unchanged-finite-history},
+ :task-count-delta 0,
+ :Types
+ {:facets 258,
+  :semantic 211,
+  :context 45,
+  :superseded-history 2,
+  :scope :C7-L5-only,
+  :accounting-fragments :not-live-criteria},
+ :coherent-clause-refusals
+ {:path
+  "specs/requirement-reconciliation/compiler-source-reviews-current-refusal-controls.edn",
+  :sha256
+  "bea7ea3feeec44d8065ca680ec278e16cfb3ff627846d5872e04042acfe46dce",
+  :cases 20,
+  :checks {:test 2, :pass 45, :fail 0, :error 0, :type :summary}},
+ :implementation-credit :none,
+ :held-context-overlaps :conservation-only-no-held-scope-clearance,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/compiler-source-reviews-qualified-adoption.edn",
+  :sha256
+  "47934bbd68b15a8759118fcbbc9c3068f9529e29e2fc498425bd2fd2f6f4841b"},
+ :final-denominator :not-accepted,
+ :artifact-source-commit "8834ac0e33f37faebc9bcc983e247d4dc9491501",
+ :status :qualified-four-compiler-source-reviews-adopted,
+ :subject-source-commit "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+ :extensions :unchanged-byte-only-authority,
+ :receipts
+ {:C13
+  {:path
+   "specs/requirement-reconciliation/c13-independent-source-review.edn",
+   :sha256
+   "e3e67d592ccca8c66cb702900a77c5bec069ebc6c1b796c915b3d4e7a0bda39d",
+   :reviewed-source "b9e72428c873e0b5badaca6852b5348b479f20ee",
+   :reviewed-tree "181a972c990a589c84a6146b82a21993846d705e"},
+  :Core
+  {:path
+   "specs/requirement-reconciliation/core-independent-source-review.edn",
+   :sha256
+   "753c9e39798bd5df14a1c6e0d39db986aee3c5c710a086375d85438d5d2f8d55",
+   :reviewed-source "103fba824db72589e6afbfc7a5d3573ce3af2d27",
+   :reviewed-tree "3ff8fea6661f140648712b0322d3ecc1f8122a15"},
+  :Resolve
+  {:path
+   "specs/requirement-reconciliation/resolve-independent-source-review.edn",
+   :sha256
+   "a1e921d1b62a2a51d231c5e10dc0d7b4d26e5a4463a0c0745d24db9ca63e6d5f",
+   :reviewed-source "00f34a448efb6cc26f028dbe709596d839448d27",
+   :reviewed-tree "70fa58384b6e9a11cbb5de4913a83eb7be011028"},
+  :Types
+  {:path
+   "specs/requirement-reconciliation/types-independent-source-review.edn",
+   :sha256
+   "f754c97aaea679fd2bf162ecbbb33d706ec2a753ed9341b93dd64de70dad35dc",
+   :reviewed-source "b8108264f9770e1543942f7f524b58868e553fef",
+   :reviewed-tree "310c265fd5e2d97c0a12285d91ef074995756763"}},
+ :whole-current-head :not-accepted,
+ :Core
+ {:facets 103,
+  :semantic 88,
+  :context 15,
+  :scope :C6-only,
+  :full-L2-C1-domain :not-accepted},
+ :qualification
+ "Four exact independently sealed source reviews apply to unchanged current owning predicates and source traces. Type producer context preserves the old Core prefix without accepting its later expansion; that expansion has separate C6 authority only. Two accounting fragments remain superseded history without live criteria. Earlier reports retain captured subjects. No implementation, complete-current-composition, full dependency/held scope, operational, migration, release, final-count or integration acceptance follows.",
+ :C13 {:facets 120, :semantic 105, :context 15, :scope :C13-only},
+ :C16 :not-accepted,
+ :new-decision-ids 0,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/compiler-source-reviews-current-applicability.edn",
+  :sha256
+  "8ef7ce86d59b7f16d9a2e814bb7ea24c14edc19aab7a0812f9532b6850a860d3"},
+ :whole-owner-and-unselected-enclosing-predicates :not-conferred}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

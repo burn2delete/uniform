@@ -97,29 +97,35 @@ The [complete C13 source trace](c13-complete-current-facet-trace.edn) joins all
 120 C13 facets and 47 occurrences to the five existing Opt tasks. Four original
 owners gain exact candidates for reproducibility, legal variant choice, actual
 post-pass verification and explanatory decisions. Earlier performance source
-reviews retain their scopes; these additions await independent acceptance.
+reviews retain their scopes; these additions have qualified source-only adoption.
 The [complete Resolve trace](resolve-complete-current-facet-trace.edn) joins
 all 112 C5 and 83 L3 facets to the five existing Resolve tasks. Six original
 owners gain exact candidates for binding order, explicit imports, visibility,
 initialization, definition entries and reproducible interfaces. The separate
 frozen Resolve verification package and all earlier source-review scopes remain
-unchanged; the new C5/L3 conjunctions await independent acceptance.
+unchanged; the C5/L3 conjunctions have qualified source-only adoption.
 The [Types source proposal](types-owner-source-proposal.edn) preserves the
 guarded original draft. The [applied refinement](types-owner-source-refinement.edn)
 and [complete C7/L5 trace](types-complete-current-facet-trace.edn) bind the five
 existing Types tasks to 258 original facets and twenty owner conjunctions.
 Eighteen task-reference-only owners gain candidates; two prior candidates retain
 their scopes. Two accounting-only fragments remain superseded source history.
-Independent entailment and final counting remain pending.
+The C7/L5 conjunctions have qualified source-only adoption; final counting remains pending.
 The [complete C6 Core trace](core-complete-current-facet-trace.edn) binds all
 103 C6 facets to current construction, binding, desugaring, verifier and domain
 criteria. Three C6 and two L2 owner operations gain candidates; full L2/C1 and
-domain contracts, earlier finite evidence and independent acceptance stay
-separate.
+domain contracts and earlier finite evidence stay separate from the qualified
+C6 source-only adoption.
 The [complete C16 incremental trace](incremental-complete-current-facet-trace.edn)
 conjoins existing cache and rebuild criteria with explicit graph/key/entry and
 diagnostic records for all 114 C16 facets. Its six owners were already candidates;
 the trace changes no task population, implementation or independent acceptance.
+The [four-review adoption](compiler-source-reviews-qualified-adoption.edn)
+records C13, Resolve, Core and Types receipt scopes after exact current
+applicability and coherent clause-removal controls. It separates semantic
+conjunctions, retained contexts and two superseded accounting fragments.
+Complete current-composition review, C16 source acceptance and final counting
+remain pending; no earlier or later scope is accepted by inheritance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

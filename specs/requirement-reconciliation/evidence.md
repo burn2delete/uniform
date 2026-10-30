@@ -3353,3 +3353,73 @@ later Types/Core/incremental and whole-current-composition acceptance are exclud
 Neither delivered receipt changes this checkpoint's qualified counts or pending
 C13/Resolve dispositions. Existing reviewer goals remain closed and no checker
 is rerun or review duplicated.
+
+## Four compiler source reviews: current applicability and qualified adoption
+
+At current source `e32ada7ee3e588454e2fd323f34c26144e1e70d5`, all four delivered
+raw receipts match their reported SHA256 identities. Their exact frozen source
+traces, reviewed task/roadmap inverses, source/matrix facets, occurrence and owner
+roles, normative dependency bytes and sealed support artifacts authenticate.
+The reviewer checkers and their reproduction commands were read as inert data,
+never evaluated. Receipt intake and current applicability are committed at
+`8834ac0e33f37faebc9bcc983e247d4dc9491501`.
+
+- C13: frozen `b9e72428c873e0b5badaca6852b5348b479f20ee`, receipt
+  `e3e67d592ccca8c66cb702900a77c5bec069ebc6c1b796c915b3d4e7a0bda39d`;
+  105 semantic/fifteen context facets, 47 occurrences, 32 conjunctions/four
+  owner joins. Reported sealed source/data counts remain 154,512/228 refusals.
+- Resolve: frozen `00f34a448efb6cc26f028dbe709596d839448d27`, receipt
+  `a1e921d1b62a2a51d231c5e10dc0d7b4d26e5a4463a0c0745d24db9ca63e6d5f`;
+  161 semantic/34 context facets across 107 occurrences, 76 conjunctions/six
+  owners. The receipt's 31 context occurrences are not a facet count. Its
+  27 refusals and frozen execution-package exclusions remain exact.
+- Core: frozen `103fba824db72589e6afbfc7a5d3573ce3af2d27`, receipt
+  `753c9e39798bd5df14a1c6e0d39db986aee3c5c710a086375d85438d5d2f8d55`;
+  88 semantic/fifteen context facets, 46 occurrences, 31 conjunctions/five
+  owners. Reported sealed counts remain 204,591/244 refusals; full L2/L7/L9/
+  C12/domain/C1 and later-current-head acceptance are excluded.
+- Types: frozen `b8108264f9770e1543942f7f524b58868e553fef`, receipt
+  `f754c97aaea679fd2bf162ecbbb33d706ec2a753ed9341b93dd64de70dad35dc`;
+  211 semantic/45 context/two superseded accounting-history facets across
+  150 occurrences, 108 conjunctions/twenty owners. Its 42 context occurrences
+  are not a facet count. The sealed 68 sentence-removal controls and other
+  role/pin/source/membership/scope refusals remain attributed to the reviewer.
+
+Local applicability passes 2 tests/68 assertions, authenticating all 676 newly
+reviewed IDs, unchanged raw owning predicates and file pins, exact receipt
+membership and all 240 original documents against each frozen subject. All 833
+Open decision records, 931 current owning spans, 561 historical authorities and
+4,819 spans remain exact. Types' earlier Core producer context remains an exact
+substring in the same current task record after its later expansion. That fact
+accepts only the old context; the later Core clauses have separate C6 authority.
+Changed-file envelopes or a global snapshot cannot confer additional acceptance.
+
+A separate local control report passes 2 tests/45 assertions. Twenty complete
+first-sentence removals rebuild full synthetic task-file hashes, raw hashes and
+UTF8 ranges; their envelopes validate, but the missing reviewed predicates
+refuse. Other applicability controls reject missing facets, authentic wrong-role
+witnesses, forged pins and implementation/whole-head/count/held-scope promotion.
+Two Types accounting fragments have empty criterion-key sets and remain history,
+not live obligations or replacement quotas. Initial scratch delimiter errors
+were caught by read-all-before-eval; the intake initially used an abbreviated
+Core verdict name and was corrected to the exact sealed keyword. Neither failure
+wrote canonical adoption artifacts. All raw receipts are committed unchanged.
+
+The cumulative qualified population becomes 1,248 original-source dispositions:
+1,072 semantic conjunction facets, 174 retained contexts and two separately typed
+superseded history fragments. Nine reviewed retirement facets remain outside the
+finite index; the 1,987-ID index has 748 pending proposals. Overlap IDs remain
+single identities with no duplicate credit or held-scope clearance. All earlier
+receipt subjects/scopes/exclusions, original 430/131 historical populations and
+530 decision-source adoptions remain conserved. No task/source criteria, statuses,
+implementation acceptance, provisional 3/195 census or final denominator changes.
+C16, full dependency documents, whole owners/unselected enclosing predicates,
+current-composition acceptance and coordinator integration remain pending.
+
+Frozen Git tree identities were independently read back as C13
+`181a972c990a589c84a6146b82a21993846d705e`, Resolve
+`70fa58384b6e9a11cbb5de4913a83eb7be011028`, Core
+`3ff8fea6661f140648712b0322d3ecc1f8122a15` and Types
+`310c265fd5e2d97c0a12285d91ef074995756763`, matching the sealed receipts.
+The new current-source qualification is additive; older adoption reports keep
+their captured pending/excluded statements as history rather than being rewritten.
