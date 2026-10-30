@@ -987,11 +987,16 @@ three fixture/invocation definitions and the uninvoked runtime-projection
 helper are pinned. Boundary 6/11, docs, roadmap, whitespace and pinned lint
 pass (zero errors, identical 76-warning multisets; new EDN zero findings).
 Later exact-head CI run `40978066790` completed seven successes/two skips;
-see `list-construction-lowering-controls-ci.edn`. Independent source review
-is active. These observations supersede only their earlier pending states.
+see `list-construction-lowering-controls-ci.edn`. Independent SOURCE/DATA PASS
+for exact `db8aaac9851ba287cf189c186703a4f85730903e`, tree
+`b218b0cb3d6cfb90d1acabc155d7af123bfc8e12`, is consumed in
+`list-construction-lowering-review-consumption.edn`, receipt
+`f02c3eaba37b74131d927e7f8f6a8bd9d514b474bedf6a5c59788abcd9c1ea6e`:
+19,235 source/DATA checks and 15 inert corruption refusals, no blocking
+findings. These observations supersede only their earlier pending states.
 This explicitly requires the unaccepted PR623 width removal; no production is
-copied to main and no parent receipt is extended. Independent review, CI,
-parent/composition acceptance and integration remain pending. Genuine kernel
+copied to main and no parent receipt is extended. Parent/current-main
+composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
