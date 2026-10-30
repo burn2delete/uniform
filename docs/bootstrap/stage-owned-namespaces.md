@@ -59,9 +59,9 @@ Every row owns its rule decisions and preserves upstream diagnostic identity.
 Test namespace names are assigned destinations; existing tests remain valid
 owners until moved with their implementation.
 
-| Namespace | Governing contracts; boundary | Public API and artifact input -> output | Diagnostic ownership | Assigned tests: positive / negative |
+| Namespace | Governing contracts; intended boundary | Intended public API and artifact input -> output | Planned diagnostic ownership | Assigned tests: positive / negative |
 | --- | --- | --- | --- | --- |
-| `gravity.reader` | L1, C2; decoding, tokens, forms and source records | `read-source-artifact`, `verify`; bytes + encoding + explicit project/options -> source unit, tokens, forms, reader hashes | L1/C2 lexical, encoding, delimiter, extension and hash rules | `gravity.reader.artifact-test`: actual syntax artifact / malformed delimiter, namespace shape, identity drift |
+| `gravity.reader` | L1, C2; decoding, tokens, forms and source records | `read-source-artifact`, `verify`; bytes + encoding + explicit project/options -> source unit, tokens, forms, reader hashes | Planned: L1/C2 lexical, encoding, delimiter, extension and hash rules. Current assembly propagates owner decisions and owns no diagnostic rules. | `gravity.reader.artifact-test`: actual syntax artifact / malformed delimiter, namespace shape, identity drift |
 | `gravity.syntax` | C3; immutable syntax, spans, origins, hygiene | `build`, `verify`; reader seeds + namespace context -> syntax stream, origin graph, metadata ledger | C3 missing spans, identity, hygiene and origin joins | `gravity.syntax-test`: retained generated origin / forged syntax or reader association |
 | `gravity.macro` | L4, L12, L16, C4; compile-time expansion | `expand`, `verify`; syntax + macro registry + build grants -> expanded syntax, trace, generated origins | C4 expansion, capture and build-authority violations | `gravity.macro-test`: hygienic expansion / undeclared build effect or illegal generated code |
 | `gravity.resolution` | L3, C5; bindings, imports, namespace graph | `resolve-names`, `verify`; expanded syntax + dependency exports -> resolved bindings and graph | C5 unresolved/ambiguous/private bindings and import rules | `gravity.resolution-test`: qualified binding / ambiguous or forged binding |
