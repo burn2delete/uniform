@@ -55,6 +55,14 @@
                       java.nio.file.StandardOpenOption/WRITE java.nio.file.LinkOption/NOFOLLOW_LINKS])))
       (when inherited (inherited result)))))
 
+(defn result-delivery-sink
+  "Construct the existing one-shot normal completion writer in the child JVM.
+  Reuses the closed delivery validator, supplied capture allowance and original
+  IO/error behavior. Calls inherited only after the CREATE_NEW write succeeds.
+  Owns neither the output directory nor semantic/custody admission."
+  [delivery inherited]
+  (machine-result-file-sink delivery inherited))
+
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
     :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
@@ -610,7 +618,7 @@
 (defn run-cli! [args]
   (let [options (parse-args args)
         sink (if-let [delivery (:machine-result options)]
-               (machine-result-file-sink delivery *machine-result-sink*)
+               (result-delivery-sink delivery *machine-result-sink*)
                *machine-result-sink*)]
     (when (and (contains? options :machine-result)
                (or (nil? (:machine-result options)) (:help? options) (:catalog? options) (:list? options)))
