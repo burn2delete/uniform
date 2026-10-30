@@ -13200,6 +13200,108 @@
    :decision-records-unchanged 833,
    :applicability
    "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn"},
+  :core-owner-current-source
+  {:reviewed-original-source-facets 572,
+   :qualified-source-dispositions :unchanged,
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
+    :sha256
+    "b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58"},
+   :implementation-credit :none,
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :current-bindings
+   {:path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+    :sha256
+    "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16"},
+   :status :pending-independent-source-facet-review,
+   :earlier-qualified-source-reviews
+   :retain-captured-subjects-scopes-and-exclusions,
+   :source-occurrences 46,
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-core-owner-current-criterion-conservation.edn",
+   :context-occurrences 15,
+   :historical-Core-file-pin-refreshes 0,
+   :qualification
+   "Five original owners gain exact current Core conjunction candidates: three C6 and two L2 operations. All833/all561 and earlier supplemental bodies authenticate. C6 source is complete as proposed candidates; full L2/C1/domain predicates and earlier finite evidence are not extended. Earlier qualified reviews accept no new C6 clause. No compiler/domain checker/runtime/probe, implementation, release or final-count credit follows.",
+   :composition
+   "specs/requirement-reconciliation/core-owner-source-refinement.edn",
+   :active-current-basis :Core-refreshed-historical-and-decision-spans,
+   :semantic-conjunction-cases 31,
+   :historical-predicate-raw-bodies :unchanged,
+   :original-owner-joins
+   ["compiler/c6/core-verification"
+    "compiler/c6/desugaring-origins"
+    "compiler/c6/domain-boundary"
+    "language/core/normalize-to-declared-core"
+    "language/core/preserve-observable-evaluation-order"],
+   :new-decision-ids 0,
+   :new-Core-criterion-witnesses
+   {:forms
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 1341,
+     :end-byte 2856,
+     :raw-sha256
+     "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+    :bindings
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 3222,
+     :end-byte 4507,
+     :raw-sha256
+     "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+    :desugaring
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 4856,
+     :end-byte 6296,
+     :raw-sha256
+     "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+    :verification
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 6631,
+     :end-byte 7995,
+     :raw-sha256
+     "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+    :domains
+    {:path "specs/core-workflow/tasks.md",
+     :marker "core-implementation-tasks",
+     :task-id
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :file-sha256
+     "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+     :start-byte 8910,
+     :end-byte 10523,
+     :raw-sha256
+     "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}},
+   :C6-source-facets 103,
+   :applicability
+   "specs/requirement-reconciliation/core-owner-current-witness-applicability.edn"},
   :c11-extension-qualified-review-adoption
   {:extension-receipt
    {:path
@@ -15273,7 +15375,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "b2a4445bfe2cf9b8ff4093451050c8e8e9da775c75fb6a71356d338ff836c89e"},
+  "d67fa3e77be8434df51b165d7966903d479ed28c680df85fd11231d412e3366d"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16497,101 +16599,101 @@
   "core"
   [{:path "specs/core-workflow/tasks.md",
     :file-sha256
-    "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/core-workflow/tasks.md",
      :start-byte 1010,
-     :end-byte 1340,
+     :end-byte 2856,
      :start-line 20,
      :end-line 24,
      :sha256
-     "1039f707b4d8e9831a1dcde2c433a2612914a43ccebffbee9f8852385ac5825d",
+     "49ba0bab23c581a756770b52197d86886d5efa3692c10294638c8419be8f6ff4",
      :raw
-     "- [ ] `core/current-evidence-and-remaining-work/core1-lower-core-forms` core/1: Lower core forms\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and match with specified evaluation order and shape validation."},
+     "- [ ] `core/current-evidence-and-remaining-work/core1-lower-core-forms` core/1: Lower core forms\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and match with specified evaluation order and shape validation. C6 core-construction criterion (Open): Consume actual expanded/resolved syntax, including surface conveniences, macro output, facets and declarations, under the canonical Syntax/Expand/Resolve handoff. Every executable surface form lowers to L2 quote, if, do, let, fn, loop, recur, def, var, set!, try, throw or match, a core-owned literal/data constructor, an explicitly declared primitive or a documented domain boundary. Emit actual node/module identities, form and child references, syntax/span/origin source, binding context, profile/target context, metadata, resolved-binding seed facts and generated status. A sample native/if/empty-metadata record is illustrative, not a default profile or complete legality proof. Preserve left-to-right evaluation where L2 requires it and emit order records for function arguments, binding initializers, do bodies, conditionals, match scrutinee/guards/branches, cleanup, handlers and effectful generated forms. Pure-expression reordering belongs to later optimization only after effect checking and proof of preserved semantics and diagnostics. Required outputs: serializable core module/node graph, surface-to-core map and evaluation-order records, accepted handwritten/generated core/control/error fixtures and refused unknown/surface-only/backend-specific form, malformed child/shape and changed-order cases. Reject textual rewrite as lowering and hidden bypass of core or an explicit domain boundary; preserve C6-LOWERING-GAP/CORE-SHAPE/EVAL-ORDER diagnostic meanings."},
     :owner-source "docs/component-roadmaps/core.md",
     :component "core",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
     :id
     "core/current-evidence-and-remaining-work/core1-lower-core-forms",
     :checked false}
    {:path "specs/core-workflow/tasks.md",
     :file-sha256
-    "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/core-workflow/tasks.md",
-     :start-byte 1342,
-     :end-byte 1705,
+     :start-byte 2858,
+     :end-byte 4507,
      :start-line 26,
      :end-line 30,
      :sha256
-     "d450fdf5a94f69b7a57ac915743fe801251794738bd009cfed1b3e15acc0b390",
+     "e663a17de0e466d13720fc8e42e3a8b5110ceb0fe011c8d0972c3f2540d2deb7",
      :raw
-     "- [ ] `core/current-evidence-and-remaining-work/core2-preserve-binding-structure` core/2: Preserve binding structure\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Represent lexical identity, closure captures, recursion and mutation explicitly; attach resolved references before downstream typed-core acceptance."},
+     "- [ ] `core/current-evidence-and-remaining-work/core2-preserve-binding-structure` core/2: Preserve binding structure\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Represent lexical identity, closure captures, recursion and mutation explicitly; attach resolved references before downstream typed-core acceptance. C6 binding and seed-fact criterion (Open): Keep actual namespace/lexical scope, resolver output identities, closure capture, recursion and explicit mutation relationships on the core graph. Resolved binding references point to the actual C5 artifact; a pending marker or fabricated binding-map hash is not a resolved reference and cannot enter type-checking acceptance. Preserve source and generated syntax context, profile clauses, declared type/effect/capability facts, unsafe metadata, allocation behavior, ownership hints and proof obligations. Type, effect, ownership and safety analysis attach later inferred/checked facts; leave them empty at construction unless syntactically declared seed facts exist, rather than inventing downstream results. Required outputs: current scope/binding/capture/recur/mutation and declaration links, preserved seed-fact records and accepted/refused identity and metadata fixtures. Reject unresolved/stale/cross-module substituted resolver links, fabricated downstream legality and dropped effects/capabilities/profile/unsafe/allocation/ownership/proof declarations, retaining actual source/generated origins and producer identities. This defines an input/output contract, not a requirement to complete a downstream component before ordinary work."},
     :owner-source "docs/component-roadmaps/core.md",
     :component "core",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
     :id
     "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
     :checked false}
    {:path "specs/core-workflow/tasks.md",
     :file-sha256
-    "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/core-workflow/tasks.md",
-     :start-byte 1707,
-     :end-byte 2053,
+     :start-byte 4509,
+     :end-byte 6296,
      :start-line 32,
      :end-line 36,
      :sha256
-     "15db35b4ebd301fb0a4fe0914bffee71f5fcce4de905de289c90ec700c7d594e",
+     "7caba79498a6d87ef6f3ffcf393977a9bdcc57d8dda4b2b23651c6d5794a9293",
      :raw
-     "- [ ] `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss` core/3: Desugar without semantic loss\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Lower surface conveniences while recording source/generated origins, effects, capabilities, metadata and unsafe declarations."},
+     "- [ ] `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss` core/3: Desugar without semantic loss\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Lower surface conveniences while recording source/generated origins, effects, capabilities, metadata and unsafe declarations. C6 desugaring and causal-origin criterion compiler/c6/desugaring-origins (Open): Emit versioned surface-to-core maps and desugaring traces for every lowered surface or macro-generated form, retaining surface syntax ID/kind, core root, introduced forms, preserved metadata set, each introduced core-node/reason/from-syntax link, evaluation order and diagnostics. An error must distinguish handwritten source, macro output and introduced primitives through the actual causal origin chain. Preserve defn as def of fn with declared type/effects/metadata/exports, when as if with nil else, cond test order, case as match or a profile-specific decision primitive only with recorded equivalence facts, with-open as try plus cleanup retaining ownership/effects, appropriate Result/Option constructor-and-match lowering, and facets as core or explicit domain boundaries. Rules are versioned; changed rules invalidate affected typed core, MIR, diagnostics and conformance fixtures with actual downstream rechecks identified. Required outputs: actual source/desugaring/origin and invalidation artifacts, accepted handwritten/macro expansions and refused missing/noncausal/stale origins, changed test/cleanup order, absent case-equivalence, lost metadata and stale-rule reuse fixtures. Reject introduced core without provenance and preserve C6-ORIGIN/EFFECT-DROP/UNSAFE-DROP meanings; trace examples confer no completed macro or cleanup implementation."},
     :owner-source "docs/component-roadmaps/core.md",
     :component "core",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
     :id
     "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
     :checked false}
    {:path "specs/core-workflow/tasks.md",
     :file-sha256
-    "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/core-workflow/tasks.md",
-     :start-byte 2055,
-     :end-byte 2387,
+     :start-byte 6298,
+     :end-byte 7995,
      :start-line 38,
      :end-line 42,
      :sha256
-     "4c716e64d835666a615b99a1f3b0de13be3d991f2baeb99a15a5baa88241b21f",
+     "9031203c96e3822db277a91deb79517ed0253e48c92da3c3120301e14c54111c",
      :raw
-     "- [ ] `core/current-evidence-and-remaining-work/core4-verify-and-serialize` core/4: Verify and serialize\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject malformed node graphs, illegal control positions, unresolved required bindings and lost origins; round-trip valid modules."},
+     "- [ ] `core/current-evidence-and-remaining-work/core4-verify-and-serialize` core/4: Verify and serialize\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject malformed node graphs, illegal control positions, unresolved required bindings and lost origins; round-trip valid modules. C6 complete core-verifier criterion compiler/c6/core-verification (Open): Before type checking, verify every valid form kind, existing child reference, source/generated origin, binding reference to actual resolver output, effect-sensitive evaluation-order record, structurally valid profile and target annotation, domain owner and semantic anchor, and absence of residual surface-only forms unless explicitly admitted as documented boundaries. Verifier failure stops Types; shape checks or a status label alone cannot grant that gate. Serialize and round-trip actual core modules with all retained declarations, origins/order/binding facts and boundary records. Required outputs: core verifier report, accepted serialized handwritten/generated modules and positive control/error nodes including match, try, throw, loop and recur; negative missing child/binding/origin/order/profile/target/owner/anchor, residual surface form and stale/substituted module fixtures. Preserve all eight C6 diagnostic meanings (LOWERING-GAP, CORE-SHAPE, EVAL-ORDER, ORIGIN, EFFECT-DROP, UNSAFE-DROP, DOMAIN-BOUNDARY, VERIFY), including syntax ID, available core node ID, source span, generated-origin chain, lowering rule, profile, target and remediation. Stable diagnostic goldens and tamper refusals are required real conformance outputs, not evidence supplied by this source append."},
     :owner-source "docs/component-roadmaps/core.md",
     :component "core",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
     :id
     "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
     :checked false}
    {:path "specs/core-workflow/tasks.md",
     :file-sha256
-    "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/core-workflow/tasks.md",
-     :start-byte 2389,
-     :end-byte 3301,
+     :start-byte 7997,
+     :end-byte 10523,
      :start-line 44,
      :end-line 48,
      :sha256
-     "fb3cd983adce03bab8a30dedc413ee176aa9a23401a12bf544b43975c2a135bf",
+     "0efc46354b438cbb254300e4ccc91506111b8599c69ee3bdc9a5b2daff10fd53",
      :raw
-     "- [ ] `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses` core/5: Integrate semantic analyses\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Use the same core interface for handwritten/generated input and feed Types/Effects with accepted control-flow programs and rejected malformed/illegal core fixtures. Decision criterion interface/language/core/enforce-profile-semantics: Apply common core semantics under the one active profile; run post-expansion legality and keep admitted host behaviors normalized at declared boundaries. Reject: Reject backend-specific source legality, hidden host/runtime dependencies, illegal effects/grants/memory/unsafe facilities and macro-generated violations. Required outputs: Checked core/profile facts, common-semantic parity and profile-specific admission/refusal diagnostics with generated origins."},
+     "- [ ] `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses` core/5: Integrate semantic analyses\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Use the same core interface for handwritten/generated input and feed Types/Effects with accepted control-flow programs and rejected malformed/illegal core fixtures. Decision criterion interface/language/core/enforce-profile-semantics: Apply common core semantics under the one active profile; run post-expansion legality and keep admitted host behaviors normalized at declared boundaries. Reject: Reject backend-specific source legality, hidden host/runtime dependencies, illegal effects/grants/memory/unsafe facilities and macro-generated violations. Required outputs: Checked core/profile facts, common-semantic parity and profile-specific admission/refusal diagnostics with generated origins. C6 domain and actual-consumer criterion compiler/c6/domain-boundary (Open): An explicit domain transition records actual source syntax, owner document, required checker, semantic anchor to source and later typed core or MIR, profile, target, effects, capabilities and fallback behavior. Elementary math may later enter EFIR, schemas schema IR, workflows workflow graph IR, hardware HDL state-machine IR and AI agents agent/tool IR; none is an implicit bypass or independent source language. Reject missing/stale owner, checker, anchor, policy fields or fallback, unsupported backend-specific core and a target/runtime availability claim substituted for profile/effect/authority legality. Required outputs: actual domain-boundary artifacts for representative facets, checker/anchor/fallback acceptance/refusal fixtures and C6-DOMAIN-BOUNDARY diagnostics. Connect authentic C3 origins/metadata, C4 expansion, C5 resolved namespaces/bindings and L2/L7/L9/C12 contracts to Core and actual Types/Effects/ownership/safety/MIR/diagnostic consumers. Preserve the common handwritten/generated core interface and declared semantic facts, with actual same-legality, effect-order, metadata and versioned invalidation results. Full L2/L7/L9/C12/domain/EFIR/workflow/HDL/AI implementations and existing finite Reader-to-Core evidence are not expanded or accepted here. All five tasks stay Open; earlier review scopes and D1/C1/C6 ordering questions remain separate. No compiler, domain checker, broker/controller, runtime/provider or target-probe execution, implementation, migration, release or final-count acceptance follows."},
     :owner-source "docs/component-roadmaps/core.md",
     :component "core",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
     :id
     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
     :checked false}],
@@ -19566,7 +19668,7 @@
   "docs/component-roadmaps/compiler-api.md"
   "5bff40e4acd8092429267f65aabef69bef5d49d89077bca8dbf5bc12c8520662",
   "docs/component-roadmaps/core.md"
-  "23c65eed5c3b8e2e384067e5eea9eb21b68015b18bb0f39f8636374802370209",
+  "69e9b598bedde1cab34eb87fad188faa54c35225eb665ba2aa08ac730a4db72f",
   "docs/component-roadmaps/diag.md"
   "620ef05cffef78bf878642410a5dd1e8d7dbd61522482d207d6f87f05218f0e5",
   "docs/component-roadmaps/domains.md"
@@ -19646,7 +19748,7 @@
   "specs/compiler-api-workflow/tasks.md"
   "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
   "specs/core-workflow/tasks.md"
-  "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+  "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
   "specs/diag-workflow/tasks.md"
   "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
   "specs/domains-workflow/tasks.md"
@@ -19711,7 +19813,7 @@
   "specs/reader-workflow/tasks.md"
   "2e0292c61603aad200df397e397e94e3c7d24818",
   "specs/core-workflow/tasks.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "a330051b3c0062cff2fb91df5bd6ff6252676c08",
   "specs/mir-workflow/tasks.md"
   "bcb98c1c377cbdc79ed1e23a6814727a8f16254e",
   "docs/component-roadmaps/reader.md"
@@ -19735,7 +19837,7 @@
   "specs/compiler-api-workflow/tasks.md"
   "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
   "docs/component-roadmaps/core.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "a330051b3c0062cff2fb91df5bd6ff6252676c08",
   "specs/auth-workflow/tasks.md"
   "bc485c7e4b0197873f6a3104021764711215b3b1",
   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"

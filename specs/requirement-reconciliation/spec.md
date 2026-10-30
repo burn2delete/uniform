@@ -111,6 +111,11 @@ existing Types tasks to 258 original facets and twenty owner conjunctions.
 Eighteen task-reference-only owners gain candidates; two prior candidates retain
 their scopes. Two accounting-only fragments remain superseded source history.
 Independent entailment and final counting remain pending.
+The [complete C6 Core trace](core-complete-current-facet-trace.edn) binds all
+103 C6 facets to current construction, binding, desugaring, verifier and domain
+criteria. Three C6 and two L2 owner operations gain candidates; full L2/C1 and
+domain contracts, earlier finite evidence and independent acceptance stay
+separate.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

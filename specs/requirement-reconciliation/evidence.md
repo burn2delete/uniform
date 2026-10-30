@@ -3175,3 +3175,45 @@ The current inventory identifies a concrete next Core source gap:
 Core tasks 3, 4 and 5. Their actual producer, complete verifier conjunction and
 explicit domain-boundary contracts require source-to-criterion reconciliation;
 this observation changes no Core criterion or restricted operation authority.
+
+## Complete C6 Core source and five original owner joins
+
+Current task source `a330051b3c0062cff2fb91df5bd6ff6252676c08` appends five
+C6 criteria to the five existing Open Core tasks. Exact prior acceptance bodies,
+IDs/statuses, generated table regions and historical migration records remain
+preserved. The guarded application removes its exact insertions back to captured
+`b8108264f9770e1543942f7f524b58868e553fef` bytes. Core projection tests pass
+4 tests/42 assertions. The source criteria retain actual expanded/resolved inputs,
+core form/node/binding facts, all declared metadata, left-to-right and explicit
+control/cleanup order, causal desugaring traces, versioned rule invalidation,
+complete core verification before Types and documented domain boundaries.
+
+The complete trace authenticates all 103 C6 facets across 46 occurrences, with
+31 manual semantic conjunction cases and fifteen retained context occurrences.
+All seven C6 requirements, seven output families, representative rules, eight
+order cases, five domain families, eight verifier checks and eight diagnostic
+meanings retain their complete conjunction and source context. Diagnostic records
+preserve syntax/node/span/origin/rule/profile/target/remediation. Empty later
+analysis fields are not fabricated type/effect/ownership/safety outcomes. Domain
+records require actual owner/checker/anchor/profile/target/effect/capability/
+fallback interfaces; they confer no authority to execute a restricted checker.
+
+Inspection found two L2-owned operations attached to C6 in addition to the three
+previously identified C6-specific joins. All five gain current candidates:
+`compiler/c6/desugaring-origins`, `compiler/c6/core-verification`,
+`compiler/c6/domain-boundary`, `language/core/normalize-to-declared-core` and
+`language/core/preserve-observable-evaluation-order`. The broader existing C1
+preserve-evidence candidate retains its earlier scope. Full L2/L7/L9/C12/domain
+conformance, D1/C1/C6 ordering and the earlier finite Reader-to-Core evidence are
+not accepted or expanded by this C6-only trace.
+
+Trace controls pass 2 tests/13 assertions: complete facet/occurrence/owner
+populations, all current criteria, all833/931 and all561/4819 populations,
+no-drop controls, tampered span rejection and no review inheritance. The new
+historical snapshot changes zero historical or active-bootstrap file pins;
+current decision spans reconstruct against the expanded Core task file. Earlier
+MIR/Lower/Effects/Opt/Resolve/Types supplemental bodies authenticate unchanged.
+All 833 decision records and their Open statuses remain exact. Existing source
+reviews retain captured subjects/scopes and implementation acceptance is unchanged.
+No compiler, domain checker, runtime/provider, broker/controller or target probe
+ran, and no restricted action was retried.
