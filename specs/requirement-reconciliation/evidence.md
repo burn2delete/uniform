@@ -2522,3 +2522,22 @@ compiler/MIR verifier, runtime, broker/controller/probe or diagnostic execution
 occurred. D1/C1/C6 ordering questions outside these input/consumer boundaries
 remain open. Full entailment, independent source/final-count acceptance and
 coordinator integration remain required.
+
+The MIR census is generated from
+`981aeb8c5f30758cf2aa507105ead6c47038e931` and stored at
+`11915eb991228625ac55f7b592d39d2b460eadcb`. It remains 195 total,
+3 Accepted, 190 Open, 1 Partial and 1 unassessed, with 192 remaining and
+provisional scoped unweighted ratio 3/195. SH tests pass 12 / 541, census
+5 / 18, boundary 6 / 11 and changed-SH lint has zero findings. MIR's two
+source pins are now explicit; no stable task routing key or task count changes.
+
+The complete inventory at source
+`11915eb991228625ac55f7b592d39d2b460eadcb` retains all 240 documents,
+9,945 occurrences and 28,785 facets, with 942 original-owner criterion
+candidates, 243 task-reference-only joins and three retained retired owners
+awaiting independent successor acceptance. Facet states are 966 pending owner
+proposals, 5,545 retained formatting/hierarchy contexts, 21,210 pending exact
+predicate conjunctions, 704 pending dependency joins and 360 pending
+owner/metadata adjudications. Earlier C15/D2/retirement joins and all five
+checked extension descriptor states remain intact. Population checks pass
+2 / 16; the original facet counts and all acceptance qualifications survive.
