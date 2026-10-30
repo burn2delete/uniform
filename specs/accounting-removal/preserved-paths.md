@@ -26,10 +26,17 @@ two original Effects/lowering List-construction source builders at current
 main `c486a4d7`. Both complete historical bodies and argument lists remain
 reader-identical inside exact native-map/accepted-cell guards with two nil
 failure routes. Full function/body/file, original-membership and guard pins
-are recorded; fourteen effective source mutations refuse weakened obligations.
-Independent conditional source classification is pending. The earlier
-predicate acceptance supplies only unchanged guard source pins, not these
-new unit decisions. C7's differently changed builder is excluded. Native
+are recorded; fourteen effective author source mutations refuse weakened obligations.
+Independent receipt
+`fd2d64dbfc35138e6da7048abae4585b39f2e34e1d2b6eb9f32d9763e1ea1547`
+passes conditional complete-body source incorporation: 5,052 sealed checks
+and 44 independent corruption refusals. `construction-guard-review-consumption.edn`
+verifies checker/five artifacts, frozen tree/inputs, both complete source
+equations, arguments, native guards, exact accepted cells, nil failures and
+policy pins without a foreign checker rerun. Prior predicate acceptance
+supplies only unchanged guard source pins; no prior decision/count is inherited.
+The old 1023 bound inside the historical bodies remains explicitly unendorsed.
+C7's differently changed builder is excluded from this decision. Native
 prelude effects, callbacks, exceptions, transitive/runtime behavior and other
 guard bounds/uses remain unproved or unendorsed. No whole support or original
 scope completion is claimed, and no source helper is executed.
