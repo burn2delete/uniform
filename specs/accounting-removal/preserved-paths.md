@@ -1,5 +1,24 @@
 # PR502 preserved path reconciliation
 
+## Vector-empty and vector-rest header proposal
+
+`vector-header-source-disposition.edn` and its companion Markdown bind all six
+original C7/Effects/lowering header units at main `b1d590cc`. Seventeen exact
+subtree replacements reconstruct every complete current definition with
+unchanged arguments and retained source. Sixteen are LC validator accounting
+remnants. One C7 Vector-rest result metadata expression, `vec` of `rest` versus
+`subvec`, is separately enumerated and requires its own conditional source
+decision. No whole-header equivalence follows from accounting classification.
+
+Six actual helper return envelopes, native-view and Vector-kind support pins,
+whole-file hashes, original-unit memberships and governing policy contracts
+are recorded. Twenty-four header source mutations and twenty-four helper
+return mutations refuse weakened inputs. Independent classification of this
+new packet remains pending; previous C7 caller decisions are not extended.
+Genuine execution is UNRUN. Outer budgets, charges and refusals remain visible
+and unendorsed. The original inventory, stable ACC IDs and PR502 open status
+are unchanged; no whole-scope completion is claimed.
+
 ## List join width and restored consumer composition
 
 PR638, frozen `5d2984976ed6070471fa9ddec3b03bc2479945b6`, tree
