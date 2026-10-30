@@ -939,6 +939,25 @@ source checks pass. Independent review and CI remain pending; all four genuine
 kernels remain UNRUN. Existing outer budget APIs remain separate unresolved
 work; this is no runtime/whole-path/ACC01/PR502 acceptance.
 
+### Current quoted-data fixture composition
+
+PR634 is normally reconciled with accepted reader-contract main
+`c0053c47a171fb58d627ee4ef6d406ab86f752ab` at
+`a37b1b80115dfd7afb762da65523855d3ec6a313`, tree
+`74bac5000d6042e5b3330e28aee15f4fcae48b38`. Parents are original reviewed
+`f540ca1b` and that main. The complete 10,082-entry tree is exactly all 10,080
+current-main entries with the one reviewed test replacement and two reviewed
+record additions. All three reviewed files are byte-identical to f540ca1b;
+every production file and all five PR626 additions survive. Current-base SH08
+test bytes still match the original extraction base; historical record hashes
+retain their original scope. See `quote-fixture-clean-composition.edn`.
+Clean named-branch inspect passes every exact-identity condition. Boundary 6/11,
+docs, roadmap, whitespace and pinned lint pass (zero errors, identical complete
+71-warning multisets, no new findings/configuration changes). Original SOURCE
+PASS and CI7/2 are not extended automatically to this successor. Current-head
+CI and affected-composition acceptance remain pending; integration-mode and
+main merge remain UNRUN, as do both genuine kernels.
+
 ### Exact quoted-data fixture restoration
 
 Main-based [PR634](https://github.com/burn2delete/uniform/pull/634) at
