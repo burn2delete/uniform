@@ -1,0 +1,98 @@
+{:task "reader/finite-remaining-work/extension-policy-closure"
+ :status :prepared-unrun-operation-specific-eligibility-pending
+ :accepted-production-source "e5bec50873d201906656bbb0c2bf11076118ba90"
+ :accepted-production-tree "4412f7ee818da21d1610f69c5825ed45f0ce5add"
+ :composition-review {:receipt "/tmp/reader-composition-independent-e5.edn"
+                      :sha256 "d34098666097cee73f143f50e78351e2f9be6b56752250ec4539de0e79f4fde5"
+                      :scope :source-and-modeled-only}
+ :selector gravity.reader.pure-integration-test/normal-pure-current-source
+ :test-source "bootstrap/clojure/test/gravity/reader/pure_integration_test.clj"
+ :test-source-sha256 "63b79e9216b9c80f71ae8112949fff32ce551579f4432c83d9e2d54b7f4bf776"
+ :selected-reader "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+ :selected-reader-sha256 "a4617e1a36c6a73e20b741db3b01394e6a391fc741a7e99a15eb091338f77041"
+ :runtime-configuration-reference
+ {:project-deps-sha256 "dd3c7a170b1fb7f24cf877701231795b7480ba23210c7d57814e3aa2a453a48c"
+  :expected-clojure "1.12.5" :expected-java "26.0.1"
+  :previous-runtime-context "/tmp/reader-pure-leaf-real-29e.oOkDwz/context.edn"
+  :previous-runtime-context-sha256 "8021b1949b3a13704841c0ca8152be129922cf54674fc57525d1b2058c095ec6"
+  :reuse-scope :runtime-hash-reference-only-not-Bootstrap-initializer-or-execution-eligibility}
+ :normal-call {:function gravity.bootstrap/c2-reader-products :arity 5
+               :arguments [:absolute-fixture-path :utf8-source-text :explicit-pure-options
+                           :explicit-project-context :absolute-selected-reader-path]
+               :raw-producer sh03-read-source-unit
+               :raw-verifier sh03-verify-reader-result
+               :pure-verifier gravity.reader.dispatch/verify-pure-result!}
+ :policy {:selection :existing-reader-options-extension-policy-hash
+          :expected-hash "sha256:14688533f0d95fd32a06c0972bd006acb929938ca1a002d4d2c90c0e205c5c7c"
+          :hash-expression (gravity.reader.dispatch/pure-policy-id)
+          :base-options gravity.bootstrap/standard-reader-options
+          :handler gravity.reader/read-text :ambient-authority :denied}
+ :source-identity {:project-root :explicit-canonical-cwd
+                   :project-root-id :existing-reader-project-root-id-of-explicit-root
+                   :logical-path :fixture-relative-path
+                   :bytes-hash :sha256-of-original-utf8
+                   :expected-unit :fresh-existing-c2-source-unit-record
+                   :implementation :actual-resolved-plan-source-and-semantic-identities}
+ :fixture-root "bootstrap/clojure/fixtures/reader-extension-binding/"
+ :fixtures [{:stem "normal-pure" :extensions [".qst" ".gravity"]
+             :sha256 "4d39a2b42a897124502cb40233181de54b27680443c3dbb0f184ee1d42c81e72"
+             :expected :accepted-raw-replay-plus-real-pure-result-fresh-comparison}
+            {:stem "normal-unknown" :extensions [".qst" ".gravity"]
+             :sha256 "580e5cfd643b454a7b23f998cfed718426822460a195181a649eccd1702c4839"
+             :expected :C2-EXTENSION-before-host-adaptation}
+            {:stem "normal-effect" :extensions [".qst" ".gravity"]
+             :sha256 "0fdef49d0930c7553f78e1c4eb4861327961e0a1782932a0b9068fc5d7e26a51"
+             :expected :C2-EXTENSION-before-host-adaptation-no-provider-bound}]
+ :normal-constructor-population {:positive 2 :negative 4 :total 6}
+ :controls {:binding-tamper [:policy :source-content :implementation :input-datum]
+            :fresh-comparison-tamper [:returned-seed :invocation-handler :result-hash]
+            :downstream :actual-companion-refused-by-artifact-view-no-sealed-C2-construction
+            :raw-dispatch-result-mocking false :provider-binding false
+            :private-precomputed-consumer false :actual-C2-artifact-target false}
+ :child-command-definition
+ {:cwd "/Users/matt/.codex/worktrees/reader-pure-integration-definition/uniform"
+  :argv ["/opt/homebrew/bin/clojure" "-J-Xmx2048m" "-M:dev-test"
+         "--namespace" "gravity.reader.pure-integration-test"
+         "--exact" "gravity.reader.pure-integration-test/normal-pure-current-source"
+         "--timing-receipt" "/tmp/reader-pure-normal-e5-timing.edn"]
+  :meaning :selected-child-runner-input-not-authorized-launch-command
+  :configuration {:heap-mib 2048 :heap-status :proposal-not-resource-admission
+                  :runner gravity.development-test-runner
+                  :selected-test-count 1 :do-not-use-list true
+                  :timing-receipt :non-authoritative-existing-runner-telemetry}}
+ :eligibility
+ {:target-invocation-now :not-permitted-by-current-preparation-instruction
+  :actual-platform-denial :none-encountered
+  :source-interface :existing-constructor-verifier-and-runner-selector-available
+  :first-runtime-phase :namespace-load-requires-gravity.bootstrap
+  :next-runtime-phase {:function gravity.bootstrap/sh03-reader-current-binding!
+                       :arity 2 :calls gravity.bootstrap/sh03-reader-build-plan!}
+  :reader-execution-phase {:function gravity.bootstrap/sh03-reader-execute-plan!
+                           :calls gravity.bootstrap/p15-s23-stage2-runtime-execute-function}
+  :method-assessment :pending-for-this-selected-genuine-normal-operation
+  :existing-route-source {:broker gravity.self-hosting.sh01-host-resource-broker/with-lease
+                          :supervisor gravity.self-hosting.sh01-parallel-test-runner/run-namespace-process
+                          :status :reference-only-not-borrowed-controller-or-lease}
+  :decision-owner "OWN 01a18b65-1eb2-7148-b56e-62c29f42d022 routes applicable execution assessment"
+  :resource-method-owner "Existing Accounting resource pipelines; no duplicate implementation or worker"
+  :precise-next-decision :resolve-shared-runtime-hold-scope-and-applicable-existing-method-before-Bootstrap-load
+  :not-required [:new-positional-api :new-auth-protocol :whole-Build :final-selfhosting
+                 :new-controller :strict-all-OS-descendant-proof-as-invented-source-prerequisite]}
+ :held-operation-comparison
+ {:request-sha256 "b24f9a5e4ac61f2e863d1c154448e1596343eb9a23e526eb3beb3dedaec61e55"
+  :source "a9d43c5b3e4b19c0a7e2630ddc242d77c6e33532"
+  :selector gravity.reader.genuine-dispatch-request/genuine-standard-dispatch-and-returned-products
+  :target gravity.bootstrap/compiler-c2-reader-source-artifact
+  :handlers [gravity.reader.standard/read-inst gravity.reader.standard/read-uuid]
+  :private-consumer gravity.bootstrap/sh03-reader-precomputed-products-verify!
+  :same-semantic-target false
+  :shared-participants [:gravity.bootstrap :current-Reader-plan-construction
+                        :normal-Reader-producer-verifier :stage2-generic-runner :Clojure-JVM]
+  :consumes-held-request-controller-or-authorization false
+  :shared-runtime-eligibility :unresolved-not-inferred-from-new-name
+  :old-hold :unchanged-no-retry-substitute-or-completion-credit}
+ :execution {:normal-reader :unrun :Bootstrap :not-loaded :fixtures :not-parsed
+             :real-pure-leaf-rerun false :provider :unrun :lease :none :probe :none
+             :publication :none :review-assignment :none}
+ :remaining [:genuine-normal-integration :effectful-admission :sealed-custom-product-admission
+             :whole-Reader-outcome]}
