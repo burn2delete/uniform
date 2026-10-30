@@ -58,8 +58,18 @@ source observation, not a transitive call-graph or runtime proof.
 
 `quoted-data-frozen-ci.json` records the already completed exact-head routine
 CI run 40927469385: seven successes and two configured skips. No job is rerun.
-Independent source/adaptation acceptance still needs coordinator routing and
-duplicate/intake checks. No reviewer is assigned by this author. The accepted
+Independent source/adaptation/test receipt
+`178e7bd4b2d17bc21e237af9cc9d68676bdc47fe00cd770a9baebf8e63e49f6e`
+now passes the exact frozen PR591 scope with no blocking findings. Consumption
+rehashes the checker and six artifacts, full five-path tree and source inputs,
+seventeen historical/adapted definitions, three test bodies, eight dependencies
+and governing pins. Only the sealed 7,698 checks and 57 independent corruption
+refusals are credited; the final handoff's 7,699 is preserved separately.
+No reviewer checker rerun is claimed. See
+`quoted-data-source-review-consumption.edn`. Lint equality is qualified by
+filename-root and location normalization: zero errors and 73 warnings; raw
+location-bearing records differ, and the original failed two-path capture
+remains history. The earlier intake's pending status is historical. The
 PR634 fixture-only review does not cover PR591's changed production source.
 Genuine quote/native/source-authentication/compiler/runtime controls remain
 UNRUN. Current-main composition, shared carrier removal, public verifier arenas
