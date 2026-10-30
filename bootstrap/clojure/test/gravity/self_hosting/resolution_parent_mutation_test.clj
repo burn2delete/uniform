@@ -702,3 +702,107 @@
 
 (deftest actual-macro-trace-same-printer-second-event-throws-after-original-print
   (check-trace-second-event! :printer))
+
+;; SOURCE PREPARATION ONLY. This is a deliberately changed carrier after the
+;; original full-trace equality, not a nested child in the authentic producer.
+(defn- canonical-refusal-trace-parent [parent]
+  (let [trace (:macro-expansion-trace parent)
+        step (first trace)
+        backing (object-array (mapcat identity step))
+        position (first (keep #(when (= :input-syntax-id (aget backing %)) (inc %))
+                              (range 0 (alength backing) 2)))
+        before (when position (aget backing position))
+        forbidden (with-meta {:changed-carrier :rv1} {:canonical-refusal true})
+        aliased (clojure.lang.PersistentArrayMap. backing)
+        result (assoc parent :macro-expansion-trace (assoc trace 0 aliased))]
+    (when-not (and position (string? before) (= parent result)
+                   (identical? clojure.lang.PersistentArrayMap (class forbidden)))
+      (throw (ex-info "Canonical-refusal fixture must start with the authentic scalar"
+                      {:field :input-syntax-id})))
+    {:parent result :before before :forbidden forbidden
+     :mutate! #(aset backing position forbidden)
+     :restore! #(aset backing position before)
+     :restored? #(= step aliased)}))
+
+(deftest actual-macro-trace-canonical-metadata-refusal-at-second-id
+  (reset! observations {:phase :constructing-fresh-canonical-refusal-parent})
+  (let [{:keys [source reader invocation parent]} (fresh-fragment-parent)
+        alias (canonical-refusal-trace-parent parent)
+        parent (:parent alias)
+        stored-id (:macro-expansion-trace-id parent)
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
+        before-roots (into {} (for [name ['sh05-macro-trace-id 'sh06-resolution-verify-sh05
+                                          'sh06-resolution-run-request!]
+                                   :let [var (implementation name)]] [var @var]))]
+    (try
+      (let [positive (observe-trace-construction source parent invocation nil construct)
+            entered (filter #(= :trace-id-enter (:event %)) (:events positive))]
+        (reset! observations {:phase :positive-canonical-refusal-reachability
+                              :events (:events positive)})
+        (when-let [error (:error positive)] (throw error))
+        (when-not (and (= :complete (get-in positive [:value :capability-based-proof :status]))
+                       (= [1 2] (mapv :ordinal entered))
+                       (= [0 1] (mapv :resolve-returns entered)))
+          (throw (ex-info "Authentic positive did not reach the selected trace pair"
+                          {:id "RV1-TRACE-REACHABILITY"})))
+        (let [public (b/sh06-resolution-artifact-verification
+                       (:value positive) :gravity.bootstrap/legacy invocation)]
+          (when-not (= :passed (:status public))
+            (throw (ex-info "Fresh public canonical-refusal positive failed"
+                            {:phase :independent-positive :failed-checks (:failed-checks public)})))
+          (let [changed (try
+                          (observe-trace-construction source parent invocation (:mutate! alias) construct)
+                          (finally ((:restore! alias))))
+                events (:events changed)
+                entered (filter #(= :trace-id-enter (:event %)) events)
+                returned (filter #(= :trace-id-return (:event %)) events)
+                thrown (filter #(= :trace-id-throw (:event %)) events)
+                macro-thrown (filter #(= :macro-throw (:event %)) events)
+                original-error (:error (first thrown))
+                data (ex-data original-error)
+                result {:phase :canonical-refusal-control-complete
+                        :positive-events (:events positive) :public-positive-report public
+                        :changed-events events :changed-error (:error changed)
+                        :original-canonical-error original-error
+                        :reached-second-id? (= [1 2] (mapv :ordinal entered))
+                        :earlier-gate-refusal? (not (:mutated? changed))
+                        :changed-field :input-syntax-id :before (:before alias)
+                        :forbidden-class (.getName (class (:forbidden alias)))
+                        :forbidden-metadata (meta (:forbidden alias))
+                        :deliberate-changed-carrier? true :authentic-nested-child? false
+                        :alias-restored? ((:restored? alias))
+                        :no-canonical-result-substitution? true :whole-rv1-closed? false}]
+            (reset! observations result)
+            (is (:reached-second-id? result))
+            (is (= [0 1] (mapv :resolve-returns entered)))
+            (is (false? (:earlier-gate-refusal? result)))
+            (is (= [:trace-id-enter :trace-id-return :trace-id-enter
+                    :trace-field-mutated :trace-id-throw :macro-throw]
+                   (mapv :event (filter #(#{:trace-id-enter :trace-id-return :trace-field-mutated
+                                           :trace-id-throw :macro-throw} (:event %)) events))))
+            (is (= [1] (mapv :ordinal returned)))
+            (is (= stored-id (:result (first returned))))
+            (is (= 1 (count thrown) (count macro-thrown)))
+            (is (= 2 (:ordinal (first thrown))))
+            (is (identical? original-error (:error (first macro-thrown))))
+            (is (= "C6-VERIFY" (:id data)))
+            (is (= :metadata-free-canonical-value (:missing-fact data)))
+            (is (= source (get-in data [:source-span :source])))
+            (is (= "clojure.lang.PersistentArrayMap" (get-in data [:subject :value-kind])))
+            ;; Preserve the existing C5 containment diagnostic, rather than
+            ;; replacing it with the inner canonical Throwable.
+            (is (= "C5-UNRESOLVED" (:id (ex-data (:error changed)))))
+            (is (not (identical? original-error (:error changed))))
+            (is (nil? (:value changed)))
+            (is (= stored-id (:macro-expansion-trace-id parent)))
+            (is (= :passed (get-in (first (filter #(= :macro-return (:event %)) events))
+                                  [:report :status])))
+            (is (every? :same-parent? (filter #(= :macro-enter (:event %)) events)))
+            (is (every? #(and (:invocation-current? %) (:proof-transaction-absent? %)
+                             (:observed-roots-stable? %)) entered))
+            (is (:alias-restored? result)))))
+      (finally
+        ((:restore! alias))
+        (is ((:restored? alias)))
+        (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
