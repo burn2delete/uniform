@@ -58,6 +58,12 @@ binding, invocation order and interruption. The cleanup unit isolates checked-co
 prelude snapshots and exercises production lifetime unwinding; it performs no
 checked-core admission.
 
+CI run 41144468276 passed reader 16/209 and syntax 61/615, then hit the
+combined bootstrap job's 15-minute deadline during macro regression. The
+unchanged macro selection now runs in its own required matrix mode. Command
+arguments, heaps, per-selection deadlines and the job deadline are preserved;
+the cancelled run remains a nonpass.
+
 This extraction grants no release, migration, self-hosting, seed-retirement or
 performance authority. Legacy macro engine organization and remaining macro
 accounting removal stay open until their own implementation and evidence land.
