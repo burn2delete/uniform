@@ -55,6 +55,29 @@
                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact)
                   (:gravity-syntax-boundary artifact) (invocation) (reader-operations)))))))
 
+(deftest genuine-source-file-retains-metadata-hygiene-origins-and-unicode
+  (let [path (source-path ".gravity")
+        text (slurp path)
+        artifact (syntax/build (request path text) (build-operations))
+        stream (:syntax-object-stream artifact)
+        generated (first (filter #(= :generated-form (get-in % [:form :kind])) stream))]
+    (is (= text (slurp (source-path ".qst"))))
+    (is (= :passed (get-in artifact [:syntax-verification-report :status])))
+    (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (= 5 (count stream)))
+    (is (some #(= "Metadata survives C3 construction." (get-in % [:metadata :doc])) stream))
+    (is (seq (get-in generated [:hygiene :marks])))
+    (is (seq (get-in generated [:hygiene :captures])))
+    (is (seq (or (get-in generated [:origin 0 :input-syntax-ids])
+                 (get-in generated [:origin 0 :inputs]))))
+    (is (seq (get-in artifact [:fact-ledger :attached])))
+    (is (seq (get-in artifact [:fact-ledger :invalidated])))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text))
+           (get-in artifact [:c2-reader-artifact :source-unit-record :bytes-hash])))
+    (is (.contains (pr-str stream) "\u03bb"))
+    (is (.contains (pr-str stream) "\ud83d\ude00"))
+    (is (= (:artifact-id artifact) (bootstrap/c3-artifact-id artifact)))))
+
 (deftest real-lexical-and-syntax-errors-preserve-diagnostic-ownership
   (doseq [extension [".gravity" ".qst"]]
     (let [path (source-path extension)

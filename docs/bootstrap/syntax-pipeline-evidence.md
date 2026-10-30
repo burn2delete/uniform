@@ -38,6 +38,12 @@ recompute verification. They reject actual lexical and C3 shape fixtures and
 substituted syntax, reader revision, source hash, envelope ownership and
 serialization. Caller-supplied reader/candidate combinations stop before
 producer execution. Captured callable Vars retain late interposition.
+The actual source fixture also executes with its namespace, nested forms,
+reader abbreviations, source metadata, generated hygiene/capture records and
+Unicode text. Its exact UTF-8 content hash, origin inputs, attached/invalidated
+facts and recomputed artifact identity survive the stage boundary. The paired
+QST fixture has identical source bytes; both source extensions additionally
+execute the small genuine construction and tamper fixture population above.
 
 The old compatibility fixture reproduced four failures and one arity error
 when the three original bootstrap definitions were re-evaluated from base
@@ -51,8 +57,9 @@ Executed development checks:
 
 | Command | Result |
 | --- | --- |
-| `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --fail-fast` | 5 tests, 61 assertions; passed |
+| `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --fail-fast` | Five small-product tests passed with 61 assertions; the added full-source case is checked in the combined CI command below |
 | `clojure -J-Xmx2g -M:dev-test --namespace gravity.bootstrap-compatibility.c3-test --fail-fast` | 9 tests, 99 assertions; passed |
+| `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --namespace gravity.bootstrap-compatibility.c3-test --fail-fast` | 15 tests, 174 assertions; passed, including six stage tests with 75 assertions |
 | `clojure -J-Xmx512m -M:dev-test --namespace gravity.c3-syntax-verification-test --namespace gravity.c3-syntax-construction-test --namespace gravity.c3-artifact-identity-test` | 12 tests, 163 assertions; passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 18 tests, 762 assertions; passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
@@ -60,6 +67,10 @@ Executed development checks:
 | `clojure -J-Xmx512m -M tools/ci/run_test.clj` | 11 tests, 101 assertions; passed with CI-pinned clj-kondo |
 | `clojure -J-Xmx512m -M tools/sh_crosswalk_test.clj` | 13 tests, 171 assertions; passed |
 | `clojure -J-Xmx512m -M tools/acceptance_dependencies_test.clj` | 14 tests, 402 assertions; passed |
+| `clojure -J-Xmx512m -M tools/validate_gravity_docs.clj` | 240 documents, 19 phase indexes; passed |
+| `clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj` | Passed |
+| `clojure -J-Xmx512m -M tools/validate_workstream_governance.clj` | Passed; existing dispositions unchanged |
+| Changed-file lint and `git diff --check` | Passed; no new lint findings |
 
 The existing production-helper records join the new namespace to its actual
 bootstrap constructor, syntax owner and standalone tests. Primary component
