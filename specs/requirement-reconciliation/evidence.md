@@ -3566,3 +3566,44 @@ unresolved pipeline ordering, current-composition review, final denominator
 acceptance and coordinator integration remain separate. No plugin, callback,
 sandbox, domain checker, compiler, runtime/provider, probe or held operation
 was executed by this refinement.
+
+C17 publication uses metadata/census source
+`2f37a72dafc7fc7f3f2abc09581915efb8042762` and complete inventory source
+`c21cab926933da13962326ed592fff0946e9e870`. Inventory SHA256 is
+`9618694a5625251cc9ead0563565e1d56cd7a366f4646efc3c09fc5f8d0fd577`.
+Trace SHA256 is
+`084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57`;
+current witness snapshot SHA256 is
+`4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c`.
+The finite proposal index is 2,094 distinct IDs with 24 overlap IDs and 741
+pending proposals; one C17 provenance context overlaps an existing pending
+identity and receives no duplicate credit. Qualified dispositions remain 1,362:
+1,171 semantic, 189 contexts and two superseded history fragments. Nine reviewed
+retirement facets remain outside the finite index. Other dispositions are
+5,390 format/hierarchy contexts, 20,235 pending complete predicates, 700 pending
+dependency joins and 357 pending owner/metadata adjudications.
+
+The first inventory build stopped before publication on a captured BOOT15 file
+pin made stale by the Plugin Host addition. Frozen receipts remain unchanged.
+The separate captured-review byte-continuity record authenticates 65 frozen
+criterion witnesses against their original commits and locates identical,
+unique current raw predicates. Two file pins change, both in Compiler API;
+their predicate bodies remain exact. Its SHA256 is
+`aea28fd58a94e2f494b9fbee87a7c9378393cf5ccd8089e9335a257706cf43f5`.
+This supplies byte continuity only and renews no semantic review subject or
+whole-current-head acceptance. Scratch template assertion counts were corrected
+before any inventory write. The census command first rejected the symbolic
+HEAD argument; the required full immutable source identity was then supplied.
+
+Final checks pass: complete inventory 13 tests/71 assertions and serialized
+readback; source trace 3/37; SH 12/541; census 5/18; language boundary 6/11;
+both document validators; generated SH/census checks; changed SH lint with zero
+findings; whitespace. Readback verifies all qualified facet ID partitions, five
+review-group references, eleven source refinements, current witness pointers,
+all 108 C17 proposals, unchanged owner states and the five unchanged extension
+byte-applicability descriptor states. Owner states remain 984 candidates, 201
+task-reference-only joins and three retirement proposals. The provisional task
+census remains three Accepted, 190 Open, one Partial and one unassessed, with
+192 remaining out of 195 (3/195). Independent C17 source review, complete
+current-composition/final-count acceptance and coordinator integration remain
+pending; this publication sends no cross-chat message or review assignment.
