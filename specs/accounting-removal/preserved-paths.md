@@ -1,5 +1,27 @@
 # PR502 preserved path reconciliation
 
+## Private source-product frozen review intake
+
+PR593 remains frozen at `c8f16877f822959b7a024aed6efefad511bfb868`, tree
+`4dea01d8d3073b57a1dfd026068ffe71bd9080f2`, on exact PR591
+`1c0d699f06372fe3c52fa003f53aa38ffd40d07c`. The new
+`source-products-frozen-review-intake.edn` verifies the complete eight-path
+tree and all source/test input hashes. All 45 added source definitions match
+history: 39 GIS3, five native comparison helpers and one parameter-choice
+helper. Fifteen external dependencies match history and parent; every parent
+production and test definition is conserved. Twelve added test/helper forms
+match their recorded fixture-directory and unused-binding adaptations. Four
+fixture copies match historical bytes. These are inert source checks.
+
+`source-products-frozen-ci.json` records the existing exact-head CI with seven
+successes and two configured skips; no job is rerun. PR591's exact source
+review is consumed as bounded parent evidence, not inherited acceptance of
+PR593. This new source/adaptation review remains pending coordinator routing
+and duplicate/intake checks; no reviewer is assigned by the author. Genuine
+GIS3/native/source authentication/compiler/runtime acceptance and current-main
+composition remain UNRUN. `:numeric-proof-established false` and public
+C7/B47/verifier nonclaims remain explicit. No whole PR502 closure follows.
+
 ## Finite Vector-rest metadata preservation draft
 
 PR639 at `3fd50a27141560b480406c882778e6efae44b4b4`, tree
@@ -12,7 +34,9 @@ its two independently rejected accounting subtrees removed. See
 
 This is an accountable finite implementation draft, not a cleared equivalence
 hold. The independent finite-List `vec` correspondence remains HELD. Source
-review and CI are pending; genuine controls and main integration are UNRUN.
+review is pending. Exact-head routine CI completes seven successes and two
+configured skips, recorded in `vector-rest-metadata-draft-ci.json`; no job is
+rerun. Genuine controls and main integration remain UNRUN.
 No fixture-only acceptance is extended to changed production. Local source
 equations, eight unchanged fixture pins, five corruption refusals, boundary
 6/11, docs 240/19, roadmap and whitespace pass. Standalone source lint exactly

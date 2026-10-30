@@ -1,0 +1,159 @@
+{:GIS3-definitions 39,
+ :added-test-helper-count 12,
+ :public-C7-and-B47-routing :not-established,
+ :direct-external-dependencies
+ [{:name sh08-ft-all-true?,
+   :form-sha256
+   "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+   :parent-and-historical-identical true}
+  {:name sh08-ft-call-edge-valid?,
+   :form-sha256
+   "569d1c426bfeee18ebca34567d19e2dc9c07cd837af2f5099d4bbdce8604761e",
+   :parent-and-historical-identical true}
+  {:name sh08-ft-call-valid?,
+   :form-sha256
+   "e134b0aef4f52596b5260cc585d5e3bc3e8182b5006376e5c35812d1a34f5854",
+   :parent-and-historical-identical true}
+  {:name sh08-ft-caller-edge-valid?,
+   :form-sha256
+   "4e8a043c615e51841c4ae7e119f29ab4701f088df5600db38b506a5358d88640",
+   :parent-and-historical-identical true}
+  {:name sh08-ft-known?,
+   :form-sha256
+   "1a29e93808b52608400110375f22939cb3068b20f0c46953a2a45a73b0167528",
+   :parent-and-historical-identical true}
+  {:name sh08-ix-literal?,
+   :form-sha256
+   "55514d929ff9d916cd133dbedf9c013aa766b177a85e4afeaf9b5e349dc3c9d9",
+   :parent-and-historical-identical true}
+  {:name sh08-ma-form-source,
+   :form-sha256
+   "dbad3483351682d1059815ecfb87ab690274cad40ae62450153fe536f6bc8f26",
+   :parent-and-historical-identical true}
+  {:name sh08-pc-id?,
+   :form-sha256
+   "a2015a52ca2a543ce0fdee1c8d3bf6a388215b49e035031b0ff9d8e104a2b4d7",
+   :parent-and-historical-identical true}
+  {:name sh08-pe-select,
+   :form-sha256
+   "dc61a6806e1606c5145f6463e761674ca43f594d8f120d583d3f695167771e27",
+   :parent-and-historical-identical true}
+  {:name sh08-primitive-type-from-literal-kind,
+   :form-sha256
+   "314ea7a18714ff172c4535724a8d0752f5462682464d6f2bc5ecd934841d729a",
+   :parent-and-historical-identical true}
+  {:name sh08-sse-ids?,
+   :form-sha256
+   "6b03ead3eeadda7f172c364dbe2b5fee437eea4df97225c6d977dc6c0a379719",
+   :parent-and-historical-identical true}
+  {:name sh08-vf-ancestor?,
+   :form-sha256
+   "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27",
+   :parent-and-historical-identical true}
+  {:name sh08-vf-data-failure,
+   :form-sha256
+   "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a",
+   :parent-and-historical-identical true}
+  {:name sh08-vf-header-failure,
+   :form-sha256
+   "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70",
+   :parent-and-historical-identical true}
+  {:name sh08-vf-original-data,
+   :form-sha256
+   "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+   :parent-and-historical-identical true}],
+ :parent-source-review
+ {:receipt-sha256
+  "178e7bd4b2d17bc21e237af9cc9d68676bdc47fe00cd770a9baebf8e63e49f6e",
+  :scope :exact-PR591-source-adaptation-tests-only,
+  :sealed-checks 7698,
+  :final-handoff-checks 7699,
+  :credited :sealed-only,
+  :inheritance :not-extended},
+ :tree "4dea01d8d3073b57a1dfd026068ffe71bd9080f2",
+ :nonclaims
+ [:no-transitive-callgraph-closure
+  :no-parent-stack-acceptance
+  :no-public-verifier-acceptance
+  :no-native-comparison-execution
+  :no-certified-numeric-result
+  :no-whole-ACC01-PR502-closure],
+ :candidate "c8f16877f822959b7a024aed6efefad511bfb868",
+ :complete-tree-mode-blob-equation :pass,
+ :source-checker-sha256
+ "9503f060eaf50849566d697cff5add9358b8444595a5be1fdd88204d0440b933",
+ :parameter-choice-definition 1,
+ :test-adaptations
+ [:accepted-to-preserved-fixture-directory
+  :one-unused-forms-destructuring-removed-input-retained],
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "43fec6998510d94ec3686f77b9cf4358234be9e59660b40c5cbe86958e9bcc7e",
+   :candidate-sha256
+   "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "e3592dcde07b806f1bc76caf253d60bba11c3f62beb5c9359a3a877787201854",
+   :candidate-sha256
+   "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5"}],
+ :native-comparison-definitions 5,
+ :all-parent-production-definitions :unchanged,
+ :fixtures
+ [{:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-minimum.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.gravity",
+   :sha256
+   "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-minimum.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.qst",
+   :sha256
+   "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.gravity",
+   :sha256
+   "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.qst",
+   :sha256
+   "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec",
+   :executed false}],
+ :original-inventory :unchanged,
+ :independent-source-review
+ :pending-coordinator-intake-no-author-assignment,
+ :kind :source-products-frozen-source-review-intake,
+ :historical-definition-count 45,
+ :changed-paths
+ ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "specs/accounting-removal/source-products-census.edn"
+  "specs/accounting-removal/source-products.md"
+  "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.gravity"
+  "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.qst"
+  "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.gravity"
+  "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.qst"],
+ :genuine-GIS3-native-comparison-source-authentication-compiler-runtime
+ :UNRUN,
+ :current-main-composition-and-integration :UNRUN,
+ :numeric-proof-established false,
+ :base "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+ :pr 593,
+ :all-parent-test-definitions :unchanged,
+ :source-checker-preserved-locally true,
+ :owner :ACC-01,
+ :census
+ {:path "specs/accounting-removal/source-products-census.edn",
+  :sha256
+  "17eb61e4efe54e6d43a3ef43377352f4b56cc9da509a76f361345f1c18e4a28d"}}
