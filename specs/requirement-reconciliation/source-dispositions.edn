@@ -436237,6 +436237,15 @@
    "a8fd4dd9123a764137dab609c1389ffed717a2035a3843b51771114ba8a403fc",
    :review-sha256
    "11410e1bf915276ec07b8f7cf73b41f882b302c4893278d70234b553ba46d1cc"}],
+ :existing-c5-qualified-source-review
+ {:path
+  "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+  :sha256
+  "4437ed34ea75fabcf2812e83b83951c308899d4317e2b99730a381e272d8b2ed",
+  :status
+  :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+  :scope
+  :five-existing-C-backend-obligation-criteria-and-conserved-current-witnesses-only},
  :current-criterion-bindings
  {:path
   "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
@@ -436247,7 +436256,18 @@
   {:composition
    "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
    :count 5,
-   :review :pending-independent-source-review},
+   :review
+   :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+   :review-adoption
+   {:path
+    "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+    :sha256
+    "4437ed34ea75fabcf2812e83b83951c308899d4317e2b99730a381e272d8b2ed"},
+   :predecessor
+   {:composition
+    "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
+    :count 5,
+    :review :pending-independent-source-review}},
   :canonical-adoption-proof
   {:path
    "specs/requirement-reconciliation/build68-historical-current-applicability.edn",

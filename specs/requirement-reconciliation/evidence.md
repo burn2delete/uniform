@@ -1766,6 +1766,37 @@ and a coherently rehashed status mismatch all refuse. These synthetic fixtures
 exercise metadata validation only; they confer no review authority. SH 12/529,
 census 5/18, boundary 6/11, generated SH check and changed-tool lint also pass.
 
+## Qualified independent five-C-obligation source adoption
+
+The sealed receipt for `a993e1e062fa1086ae49d7b55136e41c9cced27e`, tree
+`c9c57411d9b931707228e751ab18ffcbe178c3d1`, has SHA256
+`53c6de61dd359f1071a2b0e7152f7b3cb574f20be6833463e2bcc60d7e19db51`.
+Its PASS reports 7,551 source/data checks and 98 distinct refusal controls.
+The receipt and all five reproduction-file hashes are verified. The review
+assesses the five original C obligations against B2 and their actual artifact,
+positive/refusal and producer/consumer roles. It excludes exhaustive B2 facet
+entailment, implementation, runtime, ACC scope, the 386 facet records and final
+counting. Tooling65 semantics receive conservation only.
+
+`existing-c5-qualified-current-applicability.edn` joins that result to
+`0395302fb87b108eb5a0cf8a20f3aaaef56da713`. All four reviewed artifacts,
+50 registry task/roadmap files, three relevant projectors and 240 original
+documents are unchanged. The five stable IDs also authenticate against the
+immutable original B2 inventory at `145442c5`, not only a private catalog.
+All 833 decision records and the entire current binding pointer are conserved.
+The current 561 binding vector equals the reviewed C-source vector exactly;
+all 4,819 current spans, 931 existing criterion witnesses and five new C
+criterion witnesses authenticate against their current owning files.
+
+`existing-c5-qualified-source-review-adoption.edn` is the qualified authority
+for those five existing C backend criteria. Only their review classification
+and adoption metadata change. Binding artifact/hash, all 833 records, the 530
+decision-predicate reviews and prior granularity/ACC adoptions remain exact.
+Earlier pending labels retain their step-specific derivation meaning. All
+fifteen backend tasks remain Open, with no new task, decision or implementation
+credit. Complete B2 and global facet entailment, final counting and coordinator
+integration remain open.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten

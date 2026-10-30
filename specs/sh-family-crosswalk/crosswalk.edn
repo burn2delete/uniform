@@ -13926,6 +13926,23 @@
    :applicability
    "specs/requirement-reconciliation/policy-product2-qualified-current-applicability.edn",
    :reviewed-records 2},
+  :existing-c5-qualified-source-review-adoption
+  {:reviewed-source "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+   :all833-decision-records :unchanged,
+   :current-spans 4819,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :adoption
+   "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+   :source-commit "0395302fb87b108eb5a0cf8a20f3aaaef56da713",
+   :historical-bindings 561,
+   :full-B2-facet-entailment :not-conferred,
+   :status
+   :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+   :existing-original-C-obligations 5,
+   :applicability
+   "specs/requirement-reconciliation/existing-c5-qualified-current-applicability.edn",
+   :current-owning-witnesses 5},
   :status :pending-source-version-review,
   :governance14-qualified-current-review-adoption
   {:receipt

@@ -1377,6 +1377,23 @@
   "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
  :applicability
  "specs/requirement-reconciliation/legacy-acc13-qualified-current-applicability.edn"}
+    :existing-c5-qualified-source-review-adoption
+    {:reviewed-source "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+ :source-commit "0395302fb87b108eb5a0cf8a20f3aaaef56da713",
+ :historical-bindings 561,
+ :full-B2-facet-entailment :not-conferred,
+ :status
+ :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+ :existing-original-C-obligations 5,
+ :applicability
+ "specs/requirement-reconciliation/existing-c5-qualified-current-applicability.edn",
+ :current-owning-witnesses 5}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

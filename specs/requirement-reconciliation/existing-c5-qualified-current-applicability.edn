@@ -1,0 +1,119 @@
+{:receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-b6ff-77a3-b5de-835ef9d4b5ab/c5-review-a993e1e0/receipt.edn",
+  :sha256
+  "53c6de61dd359f1071a2b0e7152f7b3cb574f20be6833463e2bcc60d7e19db51",
+  :scope :existing-C5-source-criteria-and-current-witnesses-only,
+  :checks 7551,
+  :refusal-controls 98},
+ :reviewed-source "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :all833-decision-records :unchanged,
+ :registry-source-files-status :all-byte-identical,
+ :current561-binding-pointer :unchanged,
+ :registry-source-files 50,
+ :implementation-credit :none,
+ :original-documents 240,
+ :source-commit "0395302fb87b108eb5a0cf8a20f3aaaef56da713",
+ :historical-bindings
+ {:IDs 561,
+  :current-spans 4819,
+  :reviewed-binding-vector :exactly-unchanged},
+ :full-B2-facet-entailment :not-conferred,
+ :authorship
+ {:Tooling65 :conservation-only-semantic-self-acceptance-excluded,
+  :C5-author :canonical},
+ :kind :existing-C5-qualified-current-source-applicability,
+ :current-criterion-spans 931,
+ :original-ID-provenance
+ {:commit "145442c5434cad807870505fb75d523a0ef22998",
+  :path "specs/requirement-reconciliation/source-dispositions.edn",
+  :sha256
+  "ca3d33afa9c1e93f5b4bd987b5f047ffb051e9966a3bc99f2ebcdf0a14abba20",
+  :original-document "B2",
+  :semantic-source-IDs
+  ["backend/c/abi-layout"
+   "backend/c/helper-selection"
+   "backend/c/memory-lowering"
+   "backend/c/numeric-lowering"
+   "backend/c/source-emission"],
+  :supporting-task-IDs ["backend-c"]},
+ :later-ACC-adoption
+ :separate-qualified-authority-not-accepted-by-this-review,
+ :limits
+ [:legacy-ACC-scope
+  :386-facet-dispositions
+  :final195-denominator
+  :implementation-runtime-acceptance
+  :whole-project-or-facet-entailment],
+ :reviewed-artifacts
+ {"specs/requirement-reconciliation/all833-existing-c5-current-criterion-conservation.edn"
+  "9e3a3b0f9c9d5d4a644088fd6089bb45a3859e316eccf5221598c09c59a8f7c0",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn"
+  "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+  "specs/requirement-reconciliation/existing-c5-current-witness-applicability.edn"
+  "89416c2a90d5e8921b93aa03e7cfa50bea405424f7df41ee4aded8e42d5ac6a2",
+  "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn"
+  "a68a4ce431fa25dc45e37cb93e916f66a68fd23837d714fc5a5417015c1d13dd"},
+ :C-criteria
+ [{:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :raw-sha256
+   "1bfd2021ce6cc41e3932e73656766bca34b8d815b35d94e1ff82c966af0d8b83",
+   :marker "backends-implementation-tasks",
+   :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+   :end-byte 5389,
+   :original-obligation-id "backend/c/source-emission",
+   :start-byte 3776}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :raw-sha256
+   "b37d8757c57a82ba724e609a956a6b734a4874a0208ca11e6353345bcd7e48c4",
+   :marker "backends-implementation-tasks",
+   :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+   :end-byte 6699,
+   :original-obligation-id "backend/c/abi-layout",
+   :start-byte 5391}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :raw-sha256
+   "009b1133a852a34bca99b17f844dbe273beef88b52624c8ca538ec419d18cf3d",
+   :marker "backends-implementation-tasks",
+   :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+   :end-byte 8235,
+   :original-obligation-id "backend/c/memory-lowering",
+   :start-byte 6701}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :raw-sha256
+   "eb28703be0685594599143656f32a0bcc92e3fe8956dafc7043f94c072a5b2f1",
+   :marker "backends-implementation-tasks",
+   :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+   :end-byte 9721,
+   :original-obligation-id "backend/c/numeric-lowering",
+   :start-byte 8237}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :raw-sha256
+   "6f1b616966c35d4397b892a770186d756c5a33f697b52a9eb3a285224a83f703",
+   :marker "backends-implementation-tasks",
+   :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+   :end-byte 11137,
+   :original-obligation-id "backend/c/helper-selection",
+   :start-byte 9723}],
+ :census
+ {:total 195,
+  :accepted 3,
+  :authority :provisional-scoped-status-only,
+  :final-denominator :not-accepted},
+ :canonical-adoption
+ :eligible-only-for-the-five-enumerated-C-source-criteria-and-conserved-current-witnesses}
