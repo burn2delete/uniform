@@ -3919,10 +3919,24 @@ or integration credit.
 
 [Draft PR 646](https://github.com/burn2delete/uniform/pull/646) publishes the
 unchanged frozen candidate. Its configured
-[CI run](https://github.com/burn2delete/uniform/actions/runs/41043448936) is in
-progress at the exact candidate head; no manual workflow was dispatched.
-Admission and integration remain separate gates. No outbound cross-chat message,
-held-action retry, shared checkout reset or main integration was performed.
+[CI run](https://github.com/burn2delete/uniform/actions/runs/41043448936) completed
+successfully at the exact candidate head: seven jobs passed, two were skipped
+as configured, and none failed. The [captured result](finite-compiler-domain-PR646-CI.json)
+binds each job URL. No manual workflow was dispatched. Fresh main/head/tree and
+duplicate-PR checks retain the same tuple; GitHub reports CLEAN/MERGEABLE with no
+reviews or unresolved threads. The final [integration preflight](finite-compiler-domain-PR646-preflight.json)
+passes all identity, cleanliness, ancestry and named-branch conditions with no
+diagnostics; the candidate is not tree-equivalent to main.
+
+The remaining action is coordinator-owned integration. AGENTS.md states that
+"the coordinator alone routes independent acceptance and integrates main".
+The source receipt and read-only preflight do not confer admission or coordinator
+authority on this reconciliation writer. No matching finite candidate admission
+record was found in the lifecycle ledger; no lifecycle record or acceptance was
+self-created. The PR remains draft and unmerged for that decision. This is not
+an ALL-240 completion prerequisite or a source-publication prohibition, and no
+action-specific denial occurred for PR 646. No outbound cross-chat message,
+held-action retry or shared checkout reset was performed.
 C18 remains scratch-only under the current source-closure priority. The ALL-240
 baseline remains in progress with 1,585 qualified source dispositions, 632 pending
 finite proposals and the unchanged provisional 3/195 census; this finite handoff

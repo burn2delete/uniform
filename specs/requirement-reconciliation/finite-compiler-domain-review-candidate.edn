@@ -1,6 +1,7 @@
 {:canonical-handoff-status
- :independent-source-composition-pass-draft-PR-CI-pending,
- :preflight-scope :inspect-only-no-integration-eligibility,
+ :source-review-and-configured-CI-pass-awaiting-coordinator-integration,
+ :preflight-scope
+ :exact-integration-identities-pass-no-admission-grant,
  :candidate
  {:commit "7459bc9405467c56ef07b5dfc37f04ee26014289",
   :tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
@@ -10,7 +11,7 @@
  :global-count-adoption :none,
  :review-routing :coordinator-only,
  :clean-worktree true,
- :new-exact-head-CI-after-review :required,
+ :new-exact-head-CI-after-review :passed,
  :source-review-integration-authority :not-conferred,
  :implementation-credit :none,
  :mode-blob-manifest
@@ -37,7 +38,12 @@
   :records 1,
   :source-facets 10,
   :authority :source-context-not-external-semantic-acceptance},
- :main-integration :not-performed,
+ :main-integration
+ {:performed false,
+  :boundary :coordinator-only,
+  :source "AGENTS.md:126",
+  :ledger-admission :not-self-conferred,
+  :actual-action-denial :none},
  :source-reference-closure
  :local-archived-receipts-reviewed-task-bytes-and-one-selected-producer-context,
  :outbound-message :none,
@@ -143,6 +149,14 @@
    "100644 blob d09832915ba0b9b3fd939945807bc816418d5b1f\ttools/sh_crosswalk.clj",
    :sha256
    "955f2cd4e10892e7414dc8baf1bfb4212f9cd708dc786785c3e403c794b195ad"}],
+ :integration-preflight
+ {:path
+  "specs/requirement-reconciliation/finite-compiler-domain-PR646-preflight.json",
+  :sha256
+  "e74dc5c89599de52bcbe05eff021aaa7b685eafe5db072a8addfa69e6dab2b91",
+  :all-preconditions-pass true,
+  :diagnostics [],
+  :authority :read-only-not-admission},
  :composition
  {:path
   "specs/compiler-api-workflow/domain-contract-source-composition.edn",
@@ -161,11 +175,18 @@
   :integration-eligibility :not-conferred},
  :new-PR-or-workflow
  {:PR "https://github.com/burn2delete/uniform/pull/646",
-  :draft true,
-  :head "7459bc9405467c56ef07b5dfc37f04ee26014289",
+  :CI-jobs {:success 7, :skipped 2, :failed 0},
+  :mergeability :clean-mergeable-no-unresolved-threads,
+  :observation
+  {:path
+   "specs/requirement-reconciliation/finite-compiler-domain-PR646-CI.json",
+   :sha256
+   "f97eda8924a6b49f9efd3d4948ae5ced6a110c62ce546e7161773b3e2b5b2106"},
   :configured-CI-run
   "https://github.com/burn2delete/uniform/actions/runs/41043448936",
-  :status :in-progress,
+  :head "7459bc9405467c56ef07b5dfc37f04ee26014289",
+  :draft true,
+  :status :configured-CI-success,
   :manual-dispatch :none},
  :worktree
  "/Users/matt/.codex/worktrees/compiler-domain-contracts/uniform",
