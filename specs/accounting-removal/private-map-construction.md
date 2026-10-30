@@ -72,3 +72,7 @@ actual compiler/native/runtime composition and main integration remain open.
 The original genuine-selector goal stays BLOCKED. NEW ACC09 v4 delivery, PR531
 merge and all denied/unknown operations remain held and are not retried or
 routed through another mode.
+
+The later [physical-input supplement](private-map-physical.md) owns physical
+allowance/report removal and its required first-consumer interface changes.
+It does not expand this historical construction review's authority.

@@ -10097,18 +10097,13 @@
               (if (keyword? (first fields)) (recur (rest fields)) false)))
         (= expected (set (keys value))) false) false) false))
 
-(defn sh08-pmk-physical [core nodes bindings forms budget]
+(defn sh08-pmk-physical [core nodes bindings forms]
   ; Only the source fields traversed by the existing private-entry census.
-  ; Reserve global visits first, then every variable ID field before traversal.
+  ; Validate container shapes before traversing their IDs and metadata.
   (let [families [(get core :nodes) (get core :definitions) (get core :function-records)
                   (get core :reference-uses) (get (get core :preserved-resolution) :resolution-table)
                   (get core :calls) (get core :call-edges) (get core :var-references) (get core :mutations)
-                  (get core :recur-targets) (get core :recur-transfers) (get core :recursion-components)]
-        base (+ 128 (* 8 (+ (if (map? nodes) (count nodes) 0) (if (map? bindings) (count bindings) 0) (if (map? forms) (count forms) 0)))
-                    (* 8 (+ (if (vector? (get (get core :module) :effects)) (count (get (get core :module) :effects)) 0)
-                            (if (vector? (get (get core :module) :capabilities)) (count (get (get core :module) :capabilities)) 0)))
-                    (* 8 (loop [rows families n 0] (if (= 0 (count rows)) n (recur (rest rows) (+ n (if (vector? (first rows)) (count (first rows)) 0)))))))]
-    (if (> base budget) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+                  (get core :recur-targets) (get core :recur-transfers) (get core :recursion-components)]]
       (if (if (if (map? nodes) (if (map? bindings) (map? forms) false) false)
             (if (if (symbol? (get (get core :module) :namespace))
                   (if (vector? (get (get core :module) :exports))
@@ -10121,40 +10116,36 @@
                                     (if (keyword? (first values)) (recur (rest values)) false)))
                               (recur (rest groups)) false))) false) false) false) false)
               (loop [rows families] (if (= 0 (count rows)) true (if (vector? (first rows)) (recur (rest rows)) false))) false) false)
-        (let [width (loop [groups [[(get core :nodes) [:children :resolved-binding-ids]]
+        (let [id-fields-valid? (loop [groups [[(get core :nodes) [:children :resolved-binding-ids]]
                                   [(get core :function-records) [:parameter-binding-ids]]
                                   [(get core :calls) [:argument-node-ids :ordered-evaluation-node-ids]]
                                   [(get core :call-edges) [:argument-core-node-ids :ordered-evaluation-node-ids]]
                                   [(get core :recur-targets) [:binding-ids]]
-                                  [(get core :recursion-components) [:function-syntax-ids]]]
-                          n 0]
-                      (if (= 0 (count groups)) n
-                        (let [group (first groups) measured
-                              (loop [rows (get group 0) size 0]
-                                (if (= 0 (count rows)) size
+                                  [(get core :recursion-components) [:function-syntax-ids]]]]
+                      (if (= 0 (count groups)) true
+                        (let [group (first groups) valid?
+                              (loop [rows (get group 0)]
+                                (if (= 0 (count rows)) true
                                   (if (map? (first rows))
-                                    (let [next (loop [fields (get group 1) out size]
-                                                 (if (= 0 (count fields)) out
+                                    (let [next (loop [fields (get group 1)]
+                                                 (if (= 0 (count fields)) true
                                                    (let [value (get (first rows) (first fields))]
-                                                     (if (= nil value) (recur (rest fields) out)
-                                                       (if (vector? value) (recur (rest fields) (+ out (count value))) nil)))))]
-                                      (if (integer? next) (recur (rest rows) next) nil)) nil)))]
-                          (if (integer? measured) (recur (rest groups) (+ n measured)) nil))))
-              nested-width (loop [rows (get core :nodes) n 0]
-                             (if (= 0 (count rows)) n
+                                                     (if (= nil value) (recur (rest fields))
+                                                       (if (vector? value) (recur (rest fields)) false)))))]
+                                      (if next (recur (rest rows)) false)) false)))]
+                          (if valid? (recur (rest groups)) false))))
+              node-metadata-valid? (loop [rows (get core :nodes)]
+                             (if (= 0 (count rows)) true
                                (let [row (first rows) evaluation (get row :evaluation) source (get row :source) attributes (get row :attributes)]
                                  (if (if (map? evaluation) (if (map? source) (if (map? attributes) (vector? (get evaluation :order)) false) false) false)
-                                   (recur (rest rows) (+ n (count (get evaluation :order)))) nil))))
-              form-width (loop [ids (keys forms) n 0]
-                           (if (= 0 (count ids)) n
+                                   (recur (rest rows)) false))))
+              form-fields-valid? (loop [ids (keys forms)]
+                           (if (= 0 (count ids)) true
                              (if (sh08-sse-ids? [(first ids)] 1)
                                (let [row (get forms (first ids)) children (get row :child-form-ids)]
                                  (if (if (map? row) (vector? children) false)
-                                   (recur (rest ids) (+ n (count children))) nil)) nil)))
-              work (+ base (* 4 (+ (if (integer? width) width 0) (if (integer? nested-width) nested-width 0)
-                                     (if (integer? form-width) form-width 0))))]
-          (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-            (if (if (if (integer? width) (if (integer? nested-width) (integer? form-width) false) false)
+                                   (recur (rest ids)) false)) false)))]
+            (if (if (if id-fields-valid? (if node-metadata-valid? form-fields-valid? false) false)
                   (loop [groups [[(get core :nodes) [:node-id] [] [:children :resolved-binding-ids]]
                                 [(get core :definitions) [:binding-id :core-node-id :value-node-id] [:syntax-id] []]
                                 [(get core :function-records) [:function-syntax-id :function-core-node-id] [:body-core-node-id :definition-binding-id :definition-core-node-id :function-form-id] []]
@@ -10217,11 +10208,11 @@
                 (if (loop [exports (get (get core :module) :exports)]
                       (if (= 0 (count exports)) true
                         (if (symbol? (first exports)) (recur (rest exports)) false)))
-                  {:status :accepted :work-count work}
-                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
-                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
-              {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
-        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base}))))
+                  {:status :accepted}
+                  {:status :rejected :reason :private-map-keys-source-mismatch})
+                {:status :rejected :reason :private-map-keys-source-mismatch})
+              {:status :rejected :reason :private-map-keys-source-mismatch}))
+        {:status :rejected :reason :private-map-keys-source-mismatch})))
 
 (defn sh08-pmk-source [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
@@ -10465,11 +10456,11 @@
     (if (keyword? value) (= :gravity.type/unknown value) false)))
 
 (defn sh08-pmk-proof [header core node nodes bindings types forms budget]
-  (let [physical (sh08-pmk-physical core nodes bindings forms budget) first-work (get physical :work-count)]
+  (let [physical (sh08-pmk-physical core nodes bindings forms)]
     (if (= :accepted (get physical :status))
       (let [receiver (get nodes (first (get (get header :source-call) :argument-node-ids)))
-            reserved (sh08-pe-reserve core receiver nodes bindings (- budget first-work))
-            work (+ first-work (get reserved :work-count))]
+            reserved (sh08-pe-reserve core receiver nodes bindings budget)
+            work (get reserved :work-count)]
         (if (= :accepted (get reserved :status))
           (let [census (sh08-pe-census header core nodes bindings forms)]
             (if (map? census)
@@ -10564,7 +10555,7 @@
       (let [initial 3]
         (if (> initial limit) {:status :rejected :reason :private-map-keys-work-limit :work-count initial}
           (let [proof (sh08-pmk-proof (get source :descriptor) core node nodes bindings types forms (- limit initial))
-                work (+ initial (get proof :work-count))]
+                work (if (contains? proof :work-count) (+ initial (get proof :work-count)) initial)]
             (if (= :accepted (get proof :status))
               {:status :accepted :work-count work
                :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
