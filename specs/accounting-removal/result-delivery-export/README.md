@@ -1,5 +1,9 @@
 # Public normal completion sink; selected route lower-port boundary
 
+Historical partial95b2e980 scope. Its source/evidence remains preserved at that
+commit. The continuation and implemented route are documented in
+[selected-owner-route](../selected-owner-route/README.md).
+
 This partial source candidate starts from exact accepted common252a2e8f, tree
 8951512aa5cc84fc3da868d180b8c4d7f923d2ed. RV caller packet71f4065c/tree
 d6b36e57cf2029de6b59e749ca04dc13275cdcbc, artifact SHA256

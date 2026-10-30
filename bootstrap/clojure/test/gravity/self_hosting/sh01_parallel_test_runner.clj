@@ -2182,27 +2182,31 @@
             :stdout-limit-chars (:char-limit stdout)
             :stderr-limit-chars (:char-limit stderr)})))
 
+(defn- validate-development-result!
+  [source vars qualified namespace]
+  (let [{:keys [source-commit source-tree configuration-sha256 limit-bytes]} source]
+    (when-not (and (= #{:source-commit :source-tree :configuration-sha256 :limit-bytes}
+                      (set (keys source)))
+                   (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [source-commit source-tree])
+                   (string? configuration-sha256) (re-matches #"[0-9a-f]{64}" configuration-sha256)
+                   (integer? limit-bytes) (pos? limit-bytes) (< limit-bytes Integer/MAX_VALUE)
+                   (vector? vars) (seq vars)
+                   (every? #(and (string? %) (not (str/blank? %))) vars)
+                   (= (count qualified) (count (set qualified)))
+                   (every? #(and (str/starts-with? % (str namespace "/"))
+                                  (not (str/blank? (subs % (inc (count namespace)))))) qualified))
+      (throw (ex-info "Development result requires exact selection and source/configuration binding"
+                      {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))))
+
 (defn- prepare-development-result
   [job options]
-  (when-let [{:keys [source-commit source-tree configuration-sha256 limit-bytes] :as source}
+  (when-let [{:keys [limit-bytes] :as source}
              (:development-result options)]
     (let [namespace (str (:namespace job))
           vars (:exact-test-vars options)
           qualified (when (and (vector? vars) (every? string? vars))
                       (mapv #(if (str/includes? % "/") % (str namespace "/" %)) vars))]
-      (when-not (and (= #{:source-commit :source-tree :configuration-sha256 :limit-bytes}
-                        (set (keys source)))
-                     (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %))
-                             [source-commit source-tree])
-                     (string? configuration-sha256) (re-matches #"[0-9a-f]{64}" configuration-sha256)
-                     (integer? limit-bytes) (pos? limit-bytes) (< limit-bytes Integer/MAX_VALUE)
-                     (vector? vars) (seq vars)
-                     (every? #(and (string? %) (not (str/blank? %))) vars)
-                     (= (count qualified) (count (set qualified)))
-                     (every? #(and (str/starts-with? % (str namespace "/"))
-                                    (not (str/blank? (subs % (inc (count namespace)))))) qualified))
-        (throw (ex-info "Development result requires exact selection and source/configuration binding"
-                        {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))
+      (validate-development-result! source vars qualified namespace)
       (let [directory (java.nio.file.Files/createTempDirectory
                        "gravity-development-result-"
                        (make-array java.nio.file.attribute.FileAttribute 0))]
@@ -2339,6 +2343,13 @@
                                (= :quarantined state) :unresolved
                                (and (= :passed (:status result)) (zero? (:exit-code result))) :passed
                                :else :failed)}
+        report (if-let [owned (:owned-resources observation)]
+                 (-> report
+                     (assoc :schema :gravity/development-parent-report-v2)
+                     (assoc-in [:resource :owned-resource]
+                               {:state (:state owned) :release-attempted? (:release-attempted? owned)
+                                :receipt (:receipt owned) :error (error-view (:error owned))}))
+                 report)
         text (str (pr-str report) "\n")
         _ (when-not (= report (edn/read-string text))
             (throw (ex-info "Final parent report is not round-trip EDN"
@@ -2378,7 +2389,7 @@
       (throw primary))
     (:result observation)))
 
-(defn run-namespace-process
+(defn- run-namespace-process-owned
   "Runs one namespace in a fresh process.
 
   `:process-launcher` receives `[command working-directory]`.  For fast unit
@@ -2393,9 +2404,10 @@
   completion processing, before broker disposition. Its return is ignored; its
   failure propagates through normal disposition. It supplies no guards/custody."
   ([job]
-   (run-namespace-process job {}))
+   (run-namespace-process-owned job {} nil))
   ([job options]
-   (require-supported-namespace! (:namespace job))
+   (run-namespace-process-owned job options nil))
+  ([job options guards]
    (when (and (contains? options :inside-lease-report!)
               (not (and (ifn? (:inside-lease-report! options))
                          (map? (:resource-broker options))
@@ -2468,9 +2480,18 @@
                            (finally
                              (when (.isInterrupted (Thread/currentThread))
                                (vswap! report-facts assoc :interrupted? true))))))
+                     operation)
+         operation (if guards
+                     (fn [] ((:acquire! guards)) (operation))
                      operation)]
      (try
-      (if resource-owned?
+      (if guards
+        (let [publication (atom nil) request-id (str (java.util.UUID/randomUUID))
+              result (broker/with-lease
+                      (:resource-broker options) (:resource-class job) operation (:finalize! guards)
+                      #(reset! publication (publish-parent-report! job options request-id %)))]
+          (assoc result :parent-report @publication))
+       (if resource-owned?
        (if (or (:parent-report options) (:inside-lease-report! options))
          (let [publication (atom nil)
                request-id (str (java.util.UUID/randomUUID))
@@ -2480,10 +2501,134 @@
                            (reset! publication (publish-parent-report! job options request-id %))))]
            (if (:parent-report options) (assoc result :parent-report @publication) result))
          (broker/with-lease (:resource-broker options) (:resource-class job) operation))
-       (operation))
+       (operation)))
       (finally
         (when (and report-facts (:interrupted? @report-facts))
           (.interrupt (Thread/currentThread))))))))
+
+(defn run-namespace-process
+  "Run the ordinary namespace path, preserving the owner's unsupported guard."
+  ([job] (run-namespace-process job {}))
+  ([job options]
+   (require-supported-namespace! (:namespace job))
+   (run-namespace-process-owned job options)))
+
+(def ^:private resolution-parent-namespace 'gravity.self-hosting.resolution-parent-mutation-test)
+(def ^:private resolution-parent-selector "actual-macro-trace-input-syntax-id-mutation-at-second-id")
+(def ^:private resolution-canonical-lock "/private/tmp/gravity-sh07-heavy.lock")
+
+(defn- resolution-common-broker-root
+  [working-directory]
+  ;; Read Git worktree metadata, never start an unowned Git helper.
+  (let [cwd (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
+        entry (.resolve cwd ".git")
+        nofollow (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        read-path (fn [path]
+                    (when-not (java.nio.file.Files/isRegularFile path nofollow)
+                      (throw (ex-info "Expected regular Git metadata" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+                    (str/trim (java.nio.file.Files/readString path StandardCharsets/UTF_8)))
+        gitdir (if (java.nio.file.Files/isDirectory entry nofollow) entry
+                   (let [text (read-path entry) match (re-matches #"gitdir: ([^\r\n]+)" text)]
+                     (when-not match
+                       (throw (ex-info "Invalid worktree Git metadata" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+                     (.normalize (.resolve cwd (second match)))))
+        common-entry (.resolve gitdir "commondir")
+        common (if (java.nio.file.Files/exists common-entry nofollow)
+                 (.normalize (.resolve gitdir (read-path common-entry))) gitdir)]
+    (str (.resolve common "gravity-development-loop-v1/broker"))))
+
+(defn- acquire-resolution-lock!
+  [custody]
+  (let [path (.toPath (io/file resolution-canonical-lock))
+        channel (java.nio.channels.FileChannel/open
+                 path
+                 (into-array java.nio.file.OpenOption
+                             [java.nio.file.StandardOpenOption/CREATE java.nio.file.StandardOpenOption/WRITE
+                              java.nio.file.LinkOption/NOFOLLOW_LINKS])
+                 (into-array java.nio.file.attribute.FileAttribute
+                             [(java.nio.file.attribute.PosixFilePermissions/asFileAttribute
+                               (java.nio.file.attribute.PosixFilePermissions/fromString "rw-------"))]))]
+    (swap! custody assoc :channel channel :lock-acquired? :unknown)
+    (let [lock (.tryLock ^java.nio.channels.FileChannel channel)]
+      (swap! custody assoc :lock lock :lock-acquired? (boolean lock))
+      (when-not lock
+        (throw (ex-info "Canonical heavy lock is busy" {:id "SH01-RESOLUTION-CANONICAL-BUSY"}))))))
+
+(defn- finalize-resolution-lock!
+  [custody {:keys [terminal]}]
+  (let [{:keys [channel lock lock-acquired?]} @custody
+        result (cond
+                 (nil? channel)
+                 {:state :not-acquired :release-attempted? false :error nil}
+
+                 (or (= :unknown lock-acquired?) (not (true? (:complete? terminal))))
+                 {:state :quarantined :release-attempted? false :error nil}
+
+                 :else
+                 (try
+                   (when lock
+                     (swap! custody assoc :release-attempted? true)
+                     (.release ^java.nio.channels.FileLock lock)
+                     (swap! custody assoc :lock-released? (not (.isValid ^java.nio.channels.FileLock lock)))
+                     (when-not (:lock-released? @custody)
+                       (throw (ex-info "Canonical lock remains held" {:id "SH01-RESOLUTION-CANONICAL-RELEASE"}))))
+                   (swap! custody assoc :close-attempted? true)
+                   (.close ^java.nio.channels.FileChannel channel)
+                   (swap! custody assoc :channel-closed? (not (.isOpen ^java.nio.channels.FileChannel channel)))
+                   (when-not (:channel-closed? @custody)
+                     (throw (ex-info "Canonical channel remains open" {:id "SH01-RESOLUTION-CANONICAL-RELEASE"})))
+                   {:state (if lock :released :not-acquired)
+                    :release-attempted? (boolean (:release-attempted? @custody)) :error nil}
+                   (catch Throwable error
+                     {:state :release-failed :release-attempted? (boolean (:release-attempted? @custody))
+                      :error error})))]
+    (swap! custody assoc :disposition result)
+    (assoc result :custody custody
+                 :receipt (assoc (select-keys @custody [:lock-acquired? :release-attempted? :lock-released?
+                                                       :close-attempted? :channel-closed?])
+                                 :canonical-path resolution-canonical-lock))))
+
+(defn run-resolution-parent-mutation-process
+  "Dedicated cooperative owner route for the one trace input-syntax control.
+  Always C-exclusive then library-owned canonical L; ordinary routing is unchanged.
+  This source path supplies no genuine/runtime or held-operation admission."
+  [selected-operation options]
+  (let [expected {:id :RV1-trace-input-syntax-second-id
+                  :selector (symbol (str resolution-parent-namespace "/" resolution-parent-selector))
+                  :reuse-held-operation false :genuine-execution false}
+        allowed #{:resource-broker :command :exact-test-vars :child-fail-fast? :working-directory
+                  :development-result :inside-lease-report! :parent-report :timeout-ms
+                  :max-capture-bytes :max-capture-chars :capture-wait-ms}
+        source (:development-result options)
+        cwd (:working-directory options)]
+    (when-not (and (= expected selected-operation) (map? options)
+                   (every? allowed (keys options))
+                   (= [resolution-parent-selector] (:exact-test-vars options))
+                   (false? (:child-fail-fast? options))
+                   (vector? (:command options)) (seq (:command options))
+                   (every? #(and (string? %) (not (str/blank? %))) (:command options))
+                   (.isAbsolute (io/file (first (:command options))))
+                   (string? cwd) (.isAbsolute (io/file cwd))
+                   (map? (:resource-broker options)) (map? source)
+                   (ifn? (:inside-lease-report! options))
+                   (map? (:parent-report options))
+                   (every? #(and (integer? (get options %)) (pos? (get options %))
+                                  (<= (get options %) Long/MAX_VALUE))
+                           [:timeout-ms :max-capture-bytes :max-capture-chars :capture-wait-ms]))
+      (throw (ex-info "Invalid exact resolution owner request" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+    (validate-development-result! source (:exact-test-vars options)
+                                 [(str resolution-parent-namespace "/" resolution-parent-selector)]
+                                 (str resolution-parent-namespace))
+    (when-not (= (resolution-common-broker-root cwd)
+                 (some-> (get-in options [:resource-broker :coordination-root]) io/file .toPath .toAbsolutePath .normalize str))
+      (throw (ex-info "Resolution owner requires the shared Git-common broker root"
+                      {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+    (let [custody (atom {:channel nil :lock nil :lock-acquired? false
+                        :release-attempted? false :close-attempted? false})]
+      (run-namespace-process-owned
+       {:namespace resolution-parent-namespace :resource-class :exclusive} options
+       {:acquire! #(acquire-resolution-lock! custody)
+        :finalize! #(finalize-resolution-lock! custody %)}))))
 
 (defn- parse-positive-option
   [arguments index option]

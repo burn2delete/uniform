@@ -1185,4 +1185,71 @@
          observer-error (try (observe! observation) nil (catch Throwable error error))
          errors (vec (distinct (remove nil? [(:error operation) (:error disposition) observer-error])))]
      (throw-disposition-errors! errors observation)
-     (:value operation))))
+     (:value operation)))
+  ([options resource-class thunk finalize-owned-resources! observe!]
+   (when-not (and (ifn? finalize-owned-resources!) (ifn? observe!))
+     (fail! "SH01-BROKER-OWNED-RESOURCE" "Resource finalizer and observer must be callable" {}))
+   (let [processes (atom [])
+         interrupted? (volatile! false)
+         remember-interrupt! #(when (.isInterrupted (Thread/currentThread)) (vreset! interrupted? true))
+         lease-result (try {:lease (acquire! options resource-class)} (catch Throwable error {:error error}))
+         lease (:lease lease-result)
+         operation (if lease
+                     (binding [*process-custody* processes]
+                       (try {:returned? true :value (thunk) :error nil}
+                            (catch Throwable error {:returned? false :value nil :error error})))
+                     {:returned? false :value nil :error (:error lease-result)})
+         _ (remember-interrupt!)
+         terminal (when lease
+                    (try {:complete? (every? terminal-process-custody? @processes)}
+                         (catch Throwable error {:error error})))
+         resources (if lease
+                     (try
+                       (let [value (finalize-owned-resources!
+                                    {:lease lease :processes processes :operation operation :terminal terminal})]
+                         (when-not (and (map? value)
+                                        (contains? #{:not-acquired :released :quarantined :release-failed} (:state value))
+                                        (boolean? (:release-attempted? value))
+                                        (contains? value :custody)
+                                        (or (nil? (:error value)) (instance? Throwable (:error value)))
+                                        (case (:state value)
+                                          :released (and (true? (:release-attempted? value)) (nil? (:error value)))
+                                          :not-acquired (nil? (:error value))
+                                          :release-failed (instance? Throwable (:error value))
+                                          :quarantined true false))
+                           (fail! "SH01-BROKER-OWNED-RESOURCE" "Invalid owned resource disposition" {:value value}))
+                         value)
+                       (catch Throwable error
+                         {:state :quarantined :release-attempted? :unknown :error error
+                          :custody finalize-owned-resources! :receipt nil}))
+                     {:state :not-acquired :release-attempted? false :error nil :custody nil :receipt nil})
+         _ (remember-interrupt!)
+         reusable? (and (:complete? terminal) (nil? (:error resources))
+                        (contains? #{:not-acquired :released} (:state resources)))
+         disposition
+         (cond
+           (nil? lease) {:state :acquire-failed :release-attempted? false :receipt nil
+                         :error (:error lease-result) :parent-exit-custody :not-established}
+           reusable? (try
+                       {:state :released :release-attempted? true :receipt (release! lease)
+                        :error nil :parent-exit-custody :not-required-for-this-released-lease}
+                       (catch Throwable error
+                         {:state :release-failed :release-attempted? true :receipt nil
+                          :error error :parent-exit-custody :unsupported-in-JVM-only}))
+           :else {:state :quarantined :release-attempted? false :receipt nil
+                  :error (or (:error terminal) (:error resources)) :parent-exit-custody :unsupported-in-JVM-only})
+         _ (remember-interrupt!)
+         observation {:resource-class resource-class :lease lease :processes processes
+                      :operation operation :terminal terminal :owned-resources resources :disposition disposition}
+         _ (when (and lease (not= :released (:state disposition)))
+             (swap! quarantined-leases assoc (:released? lease)
+                    {:lease lease :processes processes :owned-resources resources
+                     :finalize-owned-resources! finalize-owned-resources! :observation observation}))
+         observer-error (try (observe! observation) nil (catch Throwable error error))
+         errors (vec (distinct (remove nil? [(:error operation) (:error terminal) (:error resources)
+                                             (:error disposition) observer-error])))]
+     (try
+       (throw-disposition-errors! errors observation)
+       (:value operation)
+       (finally
+         (when @interrupted? (.interrupt (Thread/currentThread))))))))
