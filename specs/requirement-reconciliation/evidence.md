@@ -2724,3 +2724,23 @@ coordinator integration remain pending.
 The finite facet proposal index contains 1,331 distinct original IDs and nine
 metadata overlaps: 1,212 + 120 - one shared C13 context facet. Repetition
 retains its source identity and does not create another task or credit unit.
+
+Metadata/census source `6ef0bc6902774bb9e855cf1d15474fa6a1226464`
+passes SH 12 tests / 541 assertions, census 5 / 18, boundary 6 / 11,
+changed-SH lint with zero findings, both document validators and generated
+Opt/SH/census checks. The scoped census remains 195 total, 3 Accepted,
+190 Open, 1 Partial, 1 unassessed and 192 remaining, with provisional ratio
+3/195.
+
+Complete inventory source `a160db54d4c39bc6d5d4ab97680897779eae3d68`
+retains all 240 original documents, 9,945 occurrences and 28,785 facets. It
+records 955 original owners with criterion candidates, 230 task-reference-only
+joins and three retained retired owners with pending successor acceptance.
+Facet states are 1,331 pending owner proposals, 5,501 formatting/hierarchy
+contexts, 20,889 pending exact predicate conjunctions, 704 pending dependency
+joins and 360 pending owner/metadata adjudications. Population checks pass
+2 / 16. Serialized readback verifies these populations, all six current
+refinement references, the retained retirement proposal reference, the active
+C13 binding path and all five extension descriptor states. Earlier review
+subjects and source/implementation acceptance scopes remain explicit; this
+checkpoint confers no new independent acceptance or final denominator.
