@@ -2312,3 +2312,25 @@ Domains projection tests pass 8 / 275. No compiler/runtime/broker/controller
 or fixture execution occurred. Full facet entailment, independent current
 source/final-count acceptance and coordinator integration remain required;
 the provisional task census receives no new completion credit.
+
+The census generated from `1731fa651eaff8a2971c45a9af7158ddf658d36e`
+and stored at `aba162836fe4b1d68851357cd064bfecb2e2469b` remains 195
+total: 3 Accepted, 190 Open, 1 Partial and 1 unassessed, with 192 remaining
+and provisional scoped unweighted ratio 3/195. SH tests pass 12 / 529,
+census tests 5 / 18 and the language boundary 6 / 11; both document validators,
+generated projections/census and pinned changed-SH lint pass. Earlier qualified
+source reviews retain their recorded scope and do not accept this addition.
+
+The complete inventory at source
+`aba162836fe4b1d68851357cd064bfecb2e2469b` conserves all 240 documents,
+9,945 occurrences and 28,785 facets, retains the three retired-owner successor
+proposals and adds the current D2 refinement reference to the workflow/AI
+owner. The immutable earlier gap record is not rewritten. Facet states are
+674 pending owner proposals, 5,576 retained formatting/hierarchy contexts,
+21,471 pending predicate conjunctions, 704 pending dependency joins and 360
+pending owner/metadata adjudications. The original-owner index remains 931
+criterion candidates, 254 task-reference-only joins and three retained
+retirements with pending independent successor acceptance. The explicit
+extension trace remains separate and its two changed descriptors still require
+rebinding. Inventory population checks pass 2 / 16; no full entailment or final
+count acceptance is inferred.
