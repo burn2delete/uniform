@@ -1,0 +1,111 @@
+{:path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :independent-exact-source-review :pending,
+ :nonclaims
+ [:no-equivalence-hold-cleared
+  :no-new-Gravity-vec-contract
+  :no-host-behavior-as-normative
+  :no-fixture-review-inheritance
+  :no-runtime-allocation-storage-or-native-proof
+  :no-whole-ACC01-PR502-closure],
+ :parent-file-sha256
+ "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+ :all-other-production-definitions :unchanged,
+ :accepted-accounting-receipt-sha256
+ "73205201ca01ef77a5dca10811b015fff2857fc590a6d9f5b80771dd862dbbd4",
+ :inert-source-controls
+ [{:case :revert-preservation, :refused-full-file-equation true}
+  {:case :lose-empty-case, :refused-full-file-equation true}
+  {:case :lose-first-element-removal, :refused-full-file-equation true}
+  {:case :wrong-zero-case, :refused-full-file-equation true}
+  {:case :substitute-type-vector, :refused-full-file-equation true}],
+ :support-pins
+ [{:name sh08-lc-validate-types,
+   :form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59"}
+  {:name sh08-lc-native-view?,
+   :form-sha256
+   "ba60d895455ca8d1c14ab46eaf0816f852f21fce5566ea70012ff6b17035829a"}
+  {:name sh08-vrest-type?,
+   :form-sha256
+   "9936cf3cfab9584dc26d919f0755da78d2ea39e9838c9916929179e882432d3d"}],
+ :remaining-historical-differences
+ ({:at [3 2 2 3 2 2 3 1 3],
+   :historical (+ reserved 0),
+   :main reserved,
+   :classification :zero-charge}
+  {:at [3 2 2 3 2 2 3 2 2 :reason],
+   :historical
+   (if
+    (= :work-limit (get validation :reason))
+    :vector-rest-work-limit
+    :vector-rest-finite-positional-vector-type-required),
+   :main :vector-rest-finite-positional-vector-type-required,
+   :classification :retired-validator-reason}),
+ :function sh08-vrest-header,
+ :metadata-correspondence-with-parent :HELD-unchanged,
+ :current-main-integration :UNRUN,
+ :genuine-compiler-effects-lowering-runtime :UNRUN,
+ :unchanged-fixtures
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :unchanged-complete-file-sha256
+   "5209e1ce7a0f900bcb38f4f3da0f6318d0ec312077818c7ed45864cc9de3f8b0",
+   :functions
+   [{:name sh08-vector-rest-development-kernel,
+     :form-sha256
+     "be322f0f1ef1b398314b8e8c9d05e651e739d2b86cd1988e453f7c4e6bef5fea"}
+    {:name sh08-vector-rest-cold-and-budget-development-kernel,
+     :form-sha256
+     "94a3dccc11ee646df6f944938dfbc2ad91193cf001c6108ec945f239ba6bff7f"}
+    {:name sh08-vector-rest-current-source-composition,
+     :form-sha256
+     "44e4fe09d9274b40ba33b348405f4005bda47c23504a68b130398647c36553a7"}
+    {:name sh08-vector-rest-physical-preflight-development-kernel,
+     :form-sha256
+     "2693fc4ae507973bc2c91d9b2622a6c65fa96db4c460f1baeb6ba32f11446459"}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :unchanged-complete-file-sha256
+   "7b0797fcb989c3bdbe73433a4e1339336e5f6663f7f0849e44fce29ca85a2b94",
+   :functions
+   [{:name body-vector-rest-development-kernel,
+     :form-sha256
+     "59ba06f5a3a988289d4a4a7da048592b4d3c1732f1b319555fe9be9c26aecba9"}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :unchanged-complete-file-sha256
+   "35efc4f0352d24edae9c5c197859dfe7ac6ea0415c331e68716f908f073774fc",
+   :functions
+   [{:name
+     current-gravity-vector-rest-fixtures-file-parity-development-kernel,
+     :form-sha256
+     "e173ffc668dfe81e326a0a2284e59db458c3ebe1d1862c419074318af3a576c1"}
+    {:name current-gravity-vector-rest-lowering-development-kernel,
+     :form-sha256
+     "1d2b86ec74facdd303734fae53e4040b6bd9d0dba95e0f2f6b32cef604cbfbb1"}
+    {:name current-gravity-vector-rest-runtime-development-kernel,
+     :form-sha256
+     "ff8b8681d9a9061cba4a4bef6fee0775b5d6ed6bf79f0a24f057cb6858db7f1a"}]}],
+ :source-preservation :historical-expression-exact,
+ :original-inventory :unchanged,
+ :candidate-file-sha256
+ "ef6c0de907cb08e88206822f697cb80c7c44b375af7dab9f48ed700338c9e385",
+ :complete-file-equation
+ {:before "(if (= length 0) [] (subvec elements 1 length))",
+  :after "(if (= length 0) [] (vec (rest elements)))",
+  :occurrences 1},
+ :kind :vector-rest-historical-metadata-expression-preservation,
+ :candidate-form-sha256
+ "f870664ba61b440656ea0266e80226925df1e059f153f116897c4410b4978e4f",
+ :generator
+ {:path "/tmp/acc01-vector-rest-preservation.clj",
+  :sha256
+  "737d8b714f541b42ae6fb968612968c6125d1a9b03efb548c1dc747d30119b8d"},
+ :base "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :outer-accounting :unresolved-unendorsed,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :historical-form-sha256
+ "845deaf0b8b2d038ebb3b84301623c1c66ac0436f11e795ace39028e01621915",
+ :unchanged-definition-count 1086}
