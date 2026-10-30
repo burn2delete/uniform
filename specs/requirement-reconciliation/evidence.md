@@ -3983,12 +3983,68 @@ the new commit and retains the prior fingerprint. SH tests then pass 12/541 and
 the generated check passes, preserving Reader/Build history and all 180
 unassessed whole-criterion states. No old review was renewed.
 
-The next technical dependency is to refresh current 833-decision/561-historical
-witness pins and authenticated supplemental spans, compose C18 into the finite
-proposal index with exact deduplication, and qualify the current applicability
-of the unchanged earlier reviewed predicate bodies. Those old snapshots retain
-their captured subjects; they do not accept C18. The new trace is explicitly
-outside the current proposal index until that transaction completes. All C18
-independent acceptance remains pending; qualified source counts, decision/status
-populations, legacy ACC joins and the final denominator remain unchanged and
-unfinished. No PR 645 payload or denied operation is imported or retried.
+At source checkpoint `e043420b8db65f14e93558f72bbf80eaa7eb6903`, the trace
+was deliberately outside the proposal index while its witness/index dependency
+remained incomplete. The scoped transaction below closes that data dependency;
+the unchanged raw trace retains its captured pre-transaction status. Earlier
+snapshots keep their captured subjects and accept no C18 clause. Independent C18
+acceptance, legacy ACC joins, whole-current composition and final denominator
+work remain unfinished. No PR 645 payload or denied operation is imported or
+retried.
+
+## C18 affected witness and index transaction
+
+Bookkeeping commit `472f7caf49e5048bfbd2df288660654bd21870c5`, tree
+`058117ec7e016b3e8bb5c96ee84be0b8c7a92f12`, applies one six-file transaction
+over exact input `e043420b8db65f14e93558f72bbf80eaa7eb6903`. The task source
+remains commit `984f1e74f98905f53b4b20c63b8f76d2a948dae3`; no task or normative
+source byte changes in this bookkeeping step. The
+[transaction manifest](c18-bookkeeping-transaction.edn) binds every input and
+output hash, including complete output-set and stale-input guards. All outputs
+were staged and checked before the canonical write; readback matches the checked
+bytes. This is source/data consistency evidence, not an operating-system crash
+atomicity or compiler proof claim.
+
+The [current historical witnesses](current-criterion-bindings-561-c18-owner.edn)
+retain all 561 memberships, roles, statuses and 4,819 raw spans. Forty affected
+Compiler API historical span maps and six supplemental witnesses refresh their
+file/offset pins without altering predicates. The
+[decision conservation](all833-c18-owner-current-criterion-conservation.edn)
+retains all 833 Open decision records, roles and 931 owning witnesses. The
+[applicability record](c18-owner-current-witness-applicability.edn) binds these
+before/after artifacts, source, trace and unchanged backend prerequisite. The
+[whole-predicate continuity](c18-captured-review-byte-continuity.edn) authenticates
+all 71 captured predicates with eight affected containing-file joins. It renews
+no old review and accepts no C18 clause.
+
+Exact facet deduplication finds one existing C18 metadata context in the
+101-facet trace. The index therefore adds 100 distinct proposals: 2,208 becomes
+2,308 and 632 pending becomes 732. There are now 26 overlap identities, with
+reviewed-in-index count 1,576 and nine reviewed dispositions outside the index.
+Qualified source dispositions remain exactly 1,585: 1,363 semantic, 220 context
+and two superseded history fragments. All 240 documents, 9,945 occurrences,
+28,785 facets and 1,188 owner memberships survive. Owner resolution states stay
+984 criterion candidates, 201 task-reference-only and three retirement proposals;
+the seven C18 joins remain explicitly proposed. The backend producer is the same
+authentic whole task span, including independent metadata checks, nondeterminism
+replay, negative evidence and unavailable-target qualifications; no backend runs.
+
+The separately implemented [mechanical controls](c18-bookkeeping-source-controls.edn)
+pass two tests/16 assertions and refuse all 15 coherently rehashed mutations:
+forged pins, deleted memberships, substituted roles/statuses, missing transaction
+outputs, duplicate traces, omitted overlap identity, count promotion, substituted
+backend prerequisite, partial whole predicate, deleted conjunction member and
+author-assigned acceptance. These are author-side data controls, not independent
+review. Both projections, both document validators and boundary 6/11 pass. The
+inventory keeps its prior owner-map ordering to avoid unrelated serialization
+churn.
+
+The current census rebuilt at the committed bookkeeping subject preserves exact
+task identities/statuses: provisionally 195 tasks, three Accepted, 190 Open, one
+Partial, one unassessed and 192 remaining; ratio 3/195 is still not a final
+denominator. [One finite review input record](c18-affected-review-inputs.edn)
+binds the exact source/trace/dependency/bookkeeping subject and exclusions for
+coordinator routing. The complete clean candidate commit/tree is supplied by its
+external frozen intake envelope after checkpoint publication. No author-assigned
+reviewer, new worker, old-review reopening, new finite main-integration subject,
+implementation adoption or held-action clearance follows. ALL240 remains open.

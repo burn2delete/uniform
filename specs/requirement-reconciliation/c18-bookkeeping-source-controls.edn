@@ -1,0 +1,70 @@
+{:kind :separately-implemented-mechanical-source-controls,
+ :base "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+ :checker-sha256
+ "e187a4c0ea52753e03ce082e018bdf1e100cb33827e5d1f6aaa2fe507c3f84e7",
+ :manifest-sha256
+ "c17b4c9f5107e38d335aeb91a2629d2c6914fc71d2be54b5a980f53614e8a474",
+ :checks {:test 2, :pass 16, :fail 0, :error 0, :type :summary},
+ :controls
+ [{:control :forged-current-file-pin,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (= (:file-sha256 w) (digest text))"}
+  {:control :historical-membership-deletion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :decision-membership-deletion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :decision-role-substitution,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :historical-status-substitution,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :partial-atomic-output-set,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :duplicate-proposal-trace,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :overlap-id-deletion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :distinct-count-promotion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :review-count-inheritance,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :backend-prerequisite-substitution,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :whole-predicate-replaced-by-valid-subspan,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :C18-owner-conjunction-member-deletion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :author-assigned-acceptance,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}
+  {:control :implementation-task-count-promotion,
+   :coherent-output-and-reference-rehash true,
+   :refused true,
+   :diagnostic "Assert failed: (apply = values)"}],
+ :review-authority :none,
+ :independent-acceptance :pending}

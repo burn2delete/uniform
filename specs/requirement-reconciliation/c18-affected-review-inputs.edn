@@ -1,0 +1,196 @@
+{:prior-whole-predicate-continuity
+ {:path
+  "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
+  :sha256
+  "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+  :joins 71,
+  :affected-joins 8,
+  :authority :bytes-only-not-review-renewal},
+ :mechanical-controls
+ {:path
+  "specs/requirement-reconciliation/c18-bookkeeping-source-controls.edn",
+  :sha256
+  "52b4a7b46aaefdb4e54470d3034eef4eade8bcbaa486437b5d21a0f3177ee938",
+  :checks {:test 2, :pass 16, :fail 0, :error 0, :type :summary},
+  :negative-controls 15,
+  :authority :none},
+ :decisions
+ {:before
+  {:path
+   "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+   :sha256
+   "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn",
+   :sha256
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f"},
+  :ids 833,
+  :witnesses 931,
+  :decision-records-sha256
+  "240f72987f896fbbf0183fc89ea63ee9d320f54d2766ff70048268f21fd1c1d0",
+  :memberships-roles-statuses :unchanged},
+ :proposed-counts
+ {:proposal-index 2308,
+  :pending 732,
+  :overlap-ids 26,
+  :distinct-added 100,
+  :new-source-trace-facets 101,
+  :new-review-acceptance 0},
+ :holds
+ {:PR645-integration :denied-no-substitute-import-or-alternate-actor,
+  :prior-36-config-OWN-7b-643-642-531-genuine-unknown :unchanged},
+ :candidate-tuple-location
+ :external-frozen-review-intake-after-canonical-checkpoint,
+ :preserved-counts
+ {:historical-spans 4819,
+  :owners 1188,
+  :semantic 1363,
+  :owner-states
+  {:criterion-candidates 984,
+   :task-reference-only 201,
+   :retirement-proposals 3},
+  :qualified-source-dispositions 1585,
+  :decisions-Open 833,
+  :historical-ids 561,
+  :decision-witnesses 931,
+  :occurrences 9945,
+  :provisional-task-census
+  {:tasks 195,
+   :progress
+   {:open 190,
+    :accepted-complete-in-declared-task-scope 3,
+    :remaining 192,
+    :unweighted-ratio {:numerator 3, :denominator 195},
+    :partial 1,
+    :total 195,
+    :status-unassessed 1,
+    :recorded-blocked 0,
+    :qualification
+    "Provisional scoped task states only, not a whole-project ratio. Task granularity and complete source-to-task entailment remain unassessed. Scoped accepted tasks do not close components, normative documents, requirements, milestones or release. Unrecorded dependency blocking and whole-requirement evidence remain unassessed."},
+   :identity-status-sha256
+   "1a0726676ae36e242a81264393bed30e36580ad3629868fa1c9307fc89d81d8f",
+   :scope :unchanged-provisional-not-final-denominator},
+  :documents 240,
+  :superseded-history 2,
+  :context 220,
+  :facets 28785},
+ :trace
+ {:path
+  "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+  :captured-index-status :not-yet-applied,
+  :occurrences 45,
+  :raw-trace :unchanged,
+  :context-occurrences 15,
+  :facets 101,
+  :sha256
+  "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+  :semantic-conjunction-cases 30,
+  :current-index-status :composed-pending-independent-review},
+ :review-scope
+ [:C18-whole-source-predicate-and-atomic-conjunction-entailment
+  :seven-proposed-owner-joins
+  :affected-owning-witness-pin-refresh
+  :prior-whole-predicate-byte-continuity
+  :exact-index-overlap-deduplication
+  :coherent-negative-controls
+  :complete-transaction-readback],
+ :backend-prerequisite
+ {:witness
+  {:path "specs/backends-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "backend-conformance",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :start-byte 39998,
+   :end-byte 40994,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf",
+   :marker "backends-implementation-tasks"},
+  :raw :unchanged,
+  :execution :none,
+  :whole-backend-acceptance :none},
+ :exclusions
+ [:whole833-or561-semantic-re-review
+  :old-review-renewal
+  :whole-current-ALL240-composition
+  :legacy-ACC-join-closure
+  :final-task-granularity-and-denominator
+  :compiler-checker-proof-backend-runtime-provider-execution
+  :implementation-release-self-hosting-seed-retirement
+  :new-finite-main-integration-subject
+  :held-action-clearance],
+ :implementation-credit :none,
+ :governing-document
+ {:path
+  "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+  :sha256
+  "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f"},
+ :transaction
+ {:path
+  "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn",
+  :sha256
+  "c17b4c9f5107e38d335aeb91a2629d2c6914fc71d2be54b5a980f53614e8a474",
+  :outputs
+  {"specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+   {:sha256
+    "e8f420884aef6090e4548bf5060207c66015e03dfa25a72d72dfb058cbcf8ea7",
+    :before-sha256
+    "188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee"},
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn"
+   {:sha256
+    "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f",
+    :before-sha256 nil},
+   "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn"
+   {:sha256
+    "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+    :before-sha256 nil},
+   "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn"
+   {:sha256
+    "cae59716657d1d3cdc58e3db8318b8479865167c1db141c1df2c62b967dd834e",
+    :before-sha256 nil},
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn"
+   {:sha256
+    "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d",
+    :before-sha256 nil},
+   "specs/requirement-reconciliation/source-dispositions.edn"
+   {:sha256
+    "8eee897e42e400adebcfdb4ce7b0e28f3ca3c89c575705ed186c2c6671fb79bb",
+    :before-sha256
+    "e060045db14f3dd0bafd0a5e831f9c75643b13e3601445c67b0af63899d9e7de"}}},
+ :bookkeeping-input-base "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+ :route :coordinator-only,
+ :new-task-units 0,
+ :final-denominator :not-accepted,
+ :author :sole-canonical-reconciliation-writer,
+ :bookkeeping-checkpoint "472f7caf49e5048bfbd2df288660654bd21870c5",
+ :source-change-base "f232769efd6cd38c9751c437bb0acbd82494657e",
+ :task-source
+ {:commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+  :path "specs/compiler-api-workflow/tasks.md",
+  :sha256
+  "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+  :five-outcome-ids-and-Open-statuses :preserved},
+ :kind :finite-C18-source-and-affected-bookkeeping-review-inputs,
+ :predecessor-published-counts
+ {:proposal-index 2208, :pending 632, :overlap-ids 25},
+ :independent-review :pending,
+ :qualification
+ "Exactly one affected independent review is requested through the coordinator. No reviewer is assigned by the author. Mechanical checker results are source/data self-audit evidence, not independent acceptance. Routine canonical checkpoint publication is separate from publishing a new finite integration candidate.",
+ :new-decision-ids 0,
+ :historical
+ {:before
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   :sha256
+   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
+   :sha256
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d"},
+  :ids 561,
+  :spans 4819,
+  :affected-span-maps 40,
+  :supplemental-affected-span-maps 6,
+  :memberships-roles-statuses :unchanged}}

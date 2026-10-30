@@ -1,0 +1,181 @@
+{:decisions
+ {:before
+  {:path
+   "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+   :sha256
+   "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn",
+   :sha256
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f"},
+  :ids 833,
+  :witnesses 931,
+  :decision-records-sha256
+  "240f72987f896fbbf0183fc89ea63ee9d320f54d2766ff70048268f21fd1c1d0",
+  :memberships-roles-statuses :unchanged},
+ :index
+ {:reviewed-source-dispositions 1585,
+  :new-trace-facets 101,
+  :overlap-ids ["C18/normalized-facet/61-337/0f787736e8ee018d"],
+  :distinct-added 100,
+  :before-distinct 2208,
+  :overlap-review-inheritance :none,
+  :after-pending 732,
+  :after-distinct 2308,
+  :before-pending 632},
+ :holds :unchanged,
+ :publication
+ :canonical-checkpoint-only-no-new-finite-integration-subject,
+ :history
+ {:before
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   :sha256
+   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
+   :sha256
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d"},
+  :ids 561,
+  :spans 4819,
+  :affected-span-maps 40,
+  :supplemental-affected-span-maps 6,
+  :memberships-roles-statuses :unchanged},
+ :implementation-credit :none,
+ :source-facets 101,
+ :inputs
+ {"specs/release-workflow/tasks.md"
+  "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+  "specs/stdlib-workflow/tasks.md"
+  "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+  "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn"
+  "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199",
+  "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn"
+  "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5",
+  "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn"
+  "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff",
+  "specs/opt-workflow/tasks.md"
+  "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+  "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+  "188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee",
+  "specs/diag-workflow/tasks.md"
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn"
+  "4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034",
+  "specs/core-workflow/tasks.md"
+  "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+  "specs/mir-workflow/tasks.md"
+  "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+  "specs/expand-workflow/tasks.md"
+  "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+  "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn"
+  "cd8e2618e3fa6922d0562f4a91ea47db1b7bf31db61c769ffba49ab598201de6",
+  "specs/effects-workflow/tasks.md"
+  "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+  "specs/build-workflow/tasks.md"
+  "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+  "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn"
+  "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+  "specs/requirement-reconciliation/c13-complete-current-facet-trace.edn"
+  "84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99",
+  "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn"
+  "1a565f25e4596f1981ef8118cb3bc1668609d6f060cba5a6ae01ddae456fbf0e",
+  "specs/compiler-api-workflow/tasks.md"
+  "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+  "specs/requirement-reconciliation/types-complete-current-facet-trace.edn"
+  "43248784058a7268d785dba722aad172675b96fe96c55cf7355cf88fb96264e8",
+  "specs/auth-workflow/tasks.md"
+  "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+  "specs/runtime-workflow/tasks.md"
+  "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+  "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn"
+  "b4e2491c179e0dd79c3118ee714b4bf36178026f72301843e5b4f6fb84861665",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn"
+  "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122",
+  "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn"
+  "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1",
+  "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn"
+  "8c875e5cc3c04d2690f2b23d166a6ae1bda410773028970d8b01aaf6279194f1",
+  "specs/accounting-removal/tasks.md"
+  "cd04aa238b8cda76acc13e750a447727f26e547b18e3efb05b3138a90bd2494c",
+  "specs/tools-workflow/tasks.md"
+  "77dd584e29543ddc7efa33fc4c29ca3a1829f038e02738e723a551e24edf8f5c",
+  "specs/resolve-workflow/tasks.md"
+  "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+  "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn"
+  "1f01e802c48d8b477b35cf8c962360eca8d11174120f0e085c2cea25db91e678",
+  "specs/legality-workflow/tasks.md"
+  "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+  "specs/syntax-workflow/tasks.md"
+  "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+  "specs/types-workflow/tasks.md"
+  "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn"
+  "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+  "specs/domains-workflow/tasks.md"
+  "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+  "specs/requirement-reconciliation/c11-complete-current-facet-trace.edn"
+  "6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243",
+  "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn"
+  "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57",
+  "specs/requirement-reconciliation/source-dispositions.edn"
+  "e060045db14f3dd0bafd0a5e831f9c75643b13e3601445c67b0af63899d9e7de",
+  "specs/requirement-reconciliation/c12-reviewed-captured-review-byte-continuity.edn"
+  "6841ddfd99c0559dcfc225bc8c35027ada816e4f8dab4e1eae82503fe3e19a51",
+  "specs/platform-workflow/tasks.md"
+  "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+  "specs/backends-workflow/tasks.md"
+  "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+  "specs/evolution-workflow/tasks.md"
+  "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+  "specs/lower-workflow/tasks.md"
+  "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+  "specs/requirement-reconciliation/core-complete-current-facet-trace.edn"
+  "b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58",
+  "specs/requirement-reconciliation/b2-complete-current-facet-trace.edn"
+  "413ded6594b56fdd7e36544951e3e9648c73c7a0d679451925e9acb91e2dbaba",
+  "specs/cli-workflow/tasks.md"
+  "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
+  "specs/requirement-reconciliation/c18-owner-source-refinement.edn"
+  "f684ad4ecd3e9879dbae9cb267902b7b7cfa7f51296f5743f5aab59ac939bd35"},
+ :kind :C18-scoped-bookkeeping-staged-transaction,
+ :outputs
+ {"specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+  {:sha256
+   "e8f420884aef6090e4548bf5060207c66015e03dfa25a72d72dfb058cbcf8ea7",
+   :before-sha256
+   "188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee"},
+  "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn"
+  {:sha256
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f",
+   :before-sha256 nil},
+  "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn"
+  {:sha256
+   "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+   :before-sha256 nil},
+  "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn"
+  {:sha256
+   "cae59716657d1d3cdc58e3db8318b8479865167c1db141c1df2c62b967dd834e",
+   :before-sha256 nil},
+  "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn"
+  {:sha256
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d",
+   :before-sha256 nil},
+  "specs/requirement-reconciliation/source-dispositions.edn"
+  {:sha256
+   "8eee897e42e400adebcfdb4ce7b0e28f3ca3c89c575705ed186c2c6671fb79bb",
+   :before-sha256
+   "e060045db14f3dd0bafd0a5e831f9c75643b13e3601445c67b0af63899d9e7de"}},
+ :independent-review :pending,
+ :prior-predicate-continuity
+ {:path
+  "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
+  :sha256
+  "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+  :joins 71,
+  :affected-joins 8,
+  :authority :bytes-only-not-review-renewal},
+ :base "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+ :task-source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3"}
