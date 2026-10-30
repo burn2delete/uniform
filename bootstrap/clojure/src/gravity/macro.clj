@@ -208,27 +208,26 @@
    p15-s23-stage2-compiler-artifact-source-path
    (.valAt
     ^clojure.lang.ILookup operations
-    :p15-s23-stage2-compiler-artifact-source-path)]
-  (let
-   [anchor
-    (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
-    start
-    (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-   (or
-    (loop
-     [directory start]
-     (when
-      directory
-      (let
-       [candidate
-        (java.io.File.
-         directory
-         (input :sh05-macro-source-relative-path))]
-       (if
-        (.isFile candidate)
-        (.getPath candidate)
-        (recur (.getParentFile directory))))))
-    (input :sh05-macro-source-relative-path)))))
+    :p15-s23-stage2-compiler-artifact-source-path)
+   anchor
+   (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
+   start
+   (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+  (or
+   (loop
+    [directory start]
+    (when
+     directory
+     (let
+      [candidate
+       (java.io.File.
+        directory
+        (input :sh05-macro-source-relative-path))]
+      (if
+       (.isFile candidate)
+       (.getPath candidate)
+       (recur (.getParentFile directory))))))
+   (input :sh05-macro-source-relative-path))))
 
 (defn
  read-pinned-plan-source!
@@ -244,77 +243,76 @@
     ^clojure.lang.ILookup operations
     :sh05-macro-resolve-source-path)
    sha256-bytes-hex
-   (.valAt ^clojure.lang.ILookup operations :sha256-bytes-hex)]
-  (let
-   [source-path
-    (sh05-macro-resolve-source-path)
-    nio-path
-    (.toPath (java.io.File. source-path))
-    nofollow
-    (into-array
-     java.nio.file.LinkOption
-     [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-    attributes
-    (try
-     (java.nio.file.Files/readAttributes
-      nio-path
-      java.nio.file.attribute.BasicFileAttributes
-      nofollow)
-     (catch
-      Exception
-      error
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       request-source
-       :pinned-macro-source-readable
-       source-path
-       {:cause-message (.getMessage error)})))
-    _
-    (when-not
-     (and
-      attributes
-      (.isRegularFile attributes)
-      (=
-       (long (input :sh05-macro-expected-source-byte-count))
-       (.size attributes)))
+   (.valAt ^clojure.lang.ILookup operations :sha256-bytes-hex)
+   source-path
+   (sh05-macro-resolve-source-path)
+   nio-path
+   (.toPath (java.io.File. source-path))
+   nofollow
+   (into-array
+    java.nio.file.LinkOption
+    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+   attributes
+   (try
+    (java.nio.file.Files/readAttributes
+     nio-path
+     java.nio.file.attribute.BasicFileAttributes
+     nofollow)
+    (catch
+     Exception
+     error
      (sh05-macro-boundary-fail!
       "C4-TRACE"
       request-source
-      :exact-pinned-macro-source
+      :pinned-macro-source-readable
       source-path
-      {:expected-byte-count
-       (input :sh05-macro-expected-source-byte-count),
-       :observed-byte-count (when attributes (.size attributes))}))
-    bytes
-    (try
-     (java.nio.file.Files/readAllBytes nio-path)
-     (catch
-      Exception
-      error
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       request-source
-       :pinned-macro-source-bytes
-       source-path
-       {:cause-message (.getMessage error)})))
-    content-hash
-    (str "sha256:" (sha256-bytes-hex bytes))]
+      {:cause-message (.getMessage error)})))
+   _
    (when-not
     (and
-     (= (input :sh05-macro-expected-source-byte-count) (alength bytes))
-     (= (input :sh05-macro-expected-source-content-hash) content-hash))
+     attributes
+     (.isRegularFile attributes)
+     (=
+      (long (input :sh05-macro-expected-source-byte-count))
+      (.size attributes)))
     (sh05-macro-boundary-fail!
      "C4-TRACE"
      request-source
-     :pinned-macro-source-identity
+     :exact-pinned-macro-source
      source-path
-     {:observed-content-hash content-hash,
-      :observed-byte-count (alength bytes)}))
-   {:source-path source-path,
-    :source-text
-    (String. bytes java.nio.charset.StandardCharsets/UTF_8),
-    :source-byte-count (alength bytes),
-    :source-content-hash content-hash})))
+     {:expected-byte-count
+      (input :sh05-macro-expected-source-byte-count),
+      :observed-byte-count (when attributes (.size attributes))}))
+   bytes
+   (try
+    (java.nio.file.Files/readAllBytes nio-path)
+    (catch
+     Exception
+     error
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      request-source
+      :pinned-macro-source-bytes
+      source-path
+      {:cause-message (.getMessage error)})))
+   content-hash
+   (str "sha256:" (sha256-bytes-hex bytes))]
+  (when-not
+   (and
+    (= (input :sh05-macro-expected-source-byte-count) (alength bytes))
+    (= (input :sh05-macro-expected-source-content-hash) content-hash))
+   (sh05-macro-boundary-fail!
+    "C4-TRACE"
+    request-source
+    :pinned-macro-source-identity
+    source-path
+    {:observed-content-hash content-hash,
+     :observed-byte-count (alength bytes)}))
+  {:source-path source-path,
+   :source-text
+   (String. bytes java.nio.charset.StandardCharsets/UTF_8),
+   :source-byte-count (alength bytes),
+   :source-content-hash content-hash}))
 
 (defn
  compute-plan-identities
@@ -328,36 +326,35 @@
    p15-s23-stage2-compiler-artifact-semantic-input
    (.valAt
     ^clojure.lang.ILookup operations
-    :p15-s23-stage2-compiler-artifact-semantic-input)]
-  (let
-   [functions
-    (:functions plan)
+    :p15-s23-stage2-compiler-artifact-semantic-input)
+   functions
+   (:functions plan)
+   shapes
+   (into
+    (sorted-map)
+    (map
+     (fn
+      [[name function]]
+      [name (select-keys function [:arity :params])]))
+    functions)]
+  {:plan-semantic-hash
+   (p15-s23-c11-mir-digest
+    (p15-s23-stage2-compiler-artifact-semantic-input plan)),
+   :functions-semantic-hash (p15-s23-c11-mir-digest functions),
+   :function-count (count functions),
+   :function-names-hash
+   (p15-s23-c11-mir-digest (vec (keys functions))),
+   :function-shapes-hash (p15-s23-c11-mir-digest shapes),
+   :public-function-hashes
+   (into
+    (sorted-map)
+    (map
+     (fn [name] [name (p15-s23-c11-mir-digest (get functions name))]))
+    (keys (input :sh05-macro-public-function-hashes))),
+   :public-function-shapes
+   (select-keys
     shapes
-    (into
-     (sorted-map)
-     (map
-      (fn
-       [[name function]]
-       [name (select-keys function [:arity :params])]))
-     functions)]
-   {:plan-semantic-hash
-    (p15-s23-c11-mir-digest
-     (p15-s23-stage2-compiler-artifact-semantic-input plan)),
-    :functions-semantic-hash (p15-s23-c11-mir-digest functions),
-    :function-count (count functions),
-    :function-names-hash
-    (p15-s23-c11-mir-digest (vec (keys functions))),
-    :function-shapes-hash (p15-s23-c11-mir-digest shapes),
-    :public-function-hashes
-    (into
-     (sorted-map)
-     (map
-      (fn [name] [name (p15-s23-c11-mir-digest (get functions name))]))
-     (keys (input :sh05-macro-public-function-hashes))),
-    :public-function-shapes
-    (select-keys
-     shapes
-     (keys (input :sh05-macro-public-function-shapes)))})))
+    (keys (input :sh05-macro-public-function-shapes)))}))
 
 (defn
  plan-identities
@@ -369,14 +366,13 @@
    sh05-macro-compute-plan-identities
    (.valAt
     ^clojure.lang.ILookup operations
-    :sh05-macro-compute-plan-identities)]
-  (let
-   [[pinned-plan pinned-identities]
-    @(input :sh05-macro-pinned-plan-identities)]
-   (if
-    (and pinned-plan (identical? pinned-plan plan))
-    pinned-identities
-    (sh05-macro-compute-plan-identities plan)))))
+    :sh05-macro-compute-plan-identities)
+   [pinned-plan pinned-identities]
+   @(input :sh05-macro-pinned-plan-identities)]
+  (if
+   (and pinned-plan (identical? pinned-plan plan))
+   pinned-identities
+   (sh05-macro-compute-plan-identities plan))))
 
 (defn
  build-plan-binding!
@@ -406,88 +402,86 @@
     ^clojure.lang.ILookup operations
     :sh05-macro-read-pinned-source!)
    sha256-hex
-   (.valAt ^clojure.lang.ILookup operations :sha256-hex)]
-  (let
-   [source
-    (sh05-macro-read-pinned-source! request-source)
-    emitter
-    (:emitter
-     (c-backend-stage2-plan-emitter-source-rule!
-      (:source-path source)
-      :jvm))
-    raw-plan
-    (p15-s23-stage2-compiler-artifact-plan
-     emitter
+   (.valAt ^clojure.lang.ILookup operations :sha256-hex)
+   source
+   (sh05-macro-read-pinned-source! request-source)
+   emitter
+   (:emitter
+    (c-backend-stage2-plan-emitter-source-rule!
      (:source-path source)
-     (:source-text source))
+     :jvm))
+   raw-plan
+   (p15-s23-stage2-compiler-artifact-plan
+    emitter
+    (:source-path source)
+    (:source-text source))
+   identities
+   (sh05-macro-compute-plan-identities raw-plan)]
+  (when-not
+   (and
+    (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+    (true? (:compiler-artifact-plan? raw-plan))
+    (= 'gravity.macro (get-in raw-plan [:module :module]))
+    (= :meta (get-in raw-plan [:module :profile]))
+    (= :jvm (get-in raw-plan [:module :target]))
+    (= #{} (get-in raw-plan [:module :effects]))
+    (= #{} (get-in raw-plan [:module :capabilities]))
+    (= :safe (get-in raw-plan [:module :safety]))
+    (=
+     (input :sh05-macro-expected-plan-semantic-hash)
+     (:plan-semantic-hash identities))
+    (=
+     (input :sh05-macro-expected-functions-semantic-hash)
+     (:functions-semantic-hash identities))
+    (=
+     (input :sh05-macro-expected-function-count)
+     (:function-count identities))
+    (=
+     (input :sh05-macro-expected-function-names-hash)
+     (:function-names-hash identities))
+    (=
+     (input :sh05-macro-expected-function-shapes-hash)
+     (:function-shapes-hash identities))
+    (=
+     (input :sh05-macro-public-function-hashes)
+     (:public-function-hashes identities))
+    (=
+     (input :sh05-macro-public-function-shapes)
+     (:public-function-shapes identities)))
+   (sh05-macro-boundary-fail!
+    "C4-TRACE"
+    request-source
+    :pinned-macro-plan-and-functions
     identities
-    (sh05-macro-compute-plan-identities raw-plan)]
-   (when-not
-    (and
-     (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
-     (true? (:compiler-artifact-plan? raw-plan))
-     (= 'gravity.macro (get-in raw-plan [:module :module]))
-     (= :meta (get-in raw-plan [:module :profile]))
-     (= :jvm (get-in raw-plan [:module :target]))
-     (= #{} (get-in raw-plan [:module :effects]))
-     (= #{} (get-in raw-plan [:module :capabilities]))
-     (= :safe (get-in raw-plan [:module :safety]))
-     (=
-      (input :sh05-macro-expected-plan-semantic-hash)
-      (:plan-semantic-hash identities))
-     (=
-      (input :sh05-macro-expected-functions-semantic-hash)
-      (:functions-semantic-hash identities))
-     (=
-      (input :sh05-macro-expected-function-count)
-      (:function-count identities))
-     (=
-      (input :sh05-macro-expected-function-names-hash)
-      (:function-names-hash identities))
-     (=
-      (input :sh05-macro-expected-function-shapes-hash)
-      (:function-shapes-hash identities))
-     (=
-      (input :sh05-macro-public-function-hashes)
-      (:public-function-hashes identities))
-     (=
-      (input :sh05-macro-public-function-shapes)
-      (:public-function-shapes identities)))
-    (sh05-macro-boundary-fail!
-     "C4-TRACE"
-     request-source
-     :pinned-macro-plan-and-functions
-     identities
-     {}))
-   (let
-    [authenticated-plan-base
-     (assoc-in
-      (dissoc raw-plan :plan-id)
-      [:source :byte-count]
-      (:source-byte-count source))
-     plan
-     (assoc
-      authenticated-plan-base
-      :plan-id
-      (str
-       "sha256:"
-       (sha256-hex
-        (pr-str
-         (c-backend-canonical-value authenticated-plan-base)))))]
-    (reset!
-     (input :sh05-macro-pinned-plan-identities)
-     [plan identities])
-    (merge
-     source
-     identities
-     {:artifact :gravity/sh05-pinned-macro-plan-binding,
-      :status :complete,
-      :semantic-authority :gravity-source,
-      :compiled-by :clojure-stage0-seed,
-      :executed-by :clojure-stage2-generic-rule-runner,
-      :generic-bridge-residual? true,
-      :self-hosted? false,
-      :plan plan})))))
+    {}))
+  (let
+   [authenticated-plan-base
+    (assoc-in
+     (dissoc raw-plan :plan-id)
+     [:source :byte-count]
+     (:source-byte-count source))
+    plan
+    (assoc
+     authenticated-plan-base
+     :plan-id
+     (str
+      "sha256:"
+      (sha256-hex
+       (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
+   (reset!
+    (input :sh05-macro-pinned-plan-identities)
+    [plan identities])
+   (merge
+    source
+    identities
+    {:artifact :gravity/sh05-pinned-macro-plan-binding,
+     :status :complete,
+     :semantic-authority :gravity-source,
+     :compiled-by :clojure-stage0-seed,
+     :executed-by :clojure-stage2-generic-rule-runner,
+     :generic-bridge-residual? true,
+     :self-hosted? false,
+     :plan plan}))))
 
 (defn
  current-plan-binding!
@@ -505,36 +499,35 @@
    sh05-macro-read-pinned-source!
    (.valAt
     ^clojure.lang.ILookup operations
-    :sh05-macro-read-pinned-source!)]
-  (let
-   [fresh
-    (sh05-macro-read-pinned-source! request-source)
+    :sh05-macro-read-pinned-source!)
+   fresh
+   (sh05-macro-read-pinned-source! request-source)
+   binding
+   @(input :sh05-macro-cached-binding)
+   identities
+   (sh05-macro-plan-identities (:plan binding))]
+  (when-not
+   (and
+    (= (:source-byte-count fresh) (:source-byte-count binding))
+    (= (:source-content-hash fresh) (:source-content-hash binding))
+    (=
+     (select-keys
+      binding
+      [:plan-semantic-hash
+       :functions-semantic-hash
+       :function-count
+       :function-names-hash
+       :function-shapes-hash
+       :public-function-hashes
+       :public-function-shapes])
+     identities))
+   (sh05-macro-boundary-fail!
+    "C4-TRACE"
+    request-source
+    :fresh-macro-source-and-plan-binding
     binding
-    @(input :sh05-macro-cached-binding)
-    identities
-    (sh05-macro-plan-identities (:plan binding))]
-   (when-not
-    (and
-     (= (:source-byte-count fresh) (:source-byte-count binding))
-     (= (:source-content-hash fresh) (:source-content-hash binding))
-     (=
-      (select-keys
-       binding
-       [:plan-semantic-hash
-        :functions-semantic-hash
-        :function-count
-        :function-names-hash
-        :function-shapes-hash
-        :public-function-hashes
-        :public-function-shapes])
-      identities))
-    (sh05-macro-boundary-fail!
-     "C4-TRACE"
-     request-source
-     :fresh-macro-source-and-plan-binding
-     binding
-     {}))
-   binding)))
+    {}))
+  binding))
 
 (defn
  execute-plan!
@@ -617,60 +610,57 @@
  [source-path request resolved-digests operations]
  (let
   [sh05-macro-boundary-fail!
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh05-macro-boundary-fail!)]
-  (let
-   [ordinal
-    (:ordinal request)
+   (.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
+   ordinal
+   (:ordinal request)
+   purpose
+   (:purpose request)
+   preimage
+   (:preimage request)]
+  (case
+   purpose
+   :sh05-expanded-syntax-id
+   (do
+    (when-not
+     (and (= 0 ordinal) (empty? resolved-digests))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      source-path
+      :exact-expanded-syntax-request
+      request
+      {:resolved-digest-count (count resolved-digests)}))
+    preimage)
+   :sh05-expansion-provenance-binding-id
+   (do
+    (when-not
+     (and
+      (= 1 ordinal)
+      (= 1 (count resolved-digests))
+      (= {:digest-ref 0} (:semantic-artifact-id preimage)))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      source-path
+      :declared-provenance-artifact-reference
+      (:semantic-artifact-id preimage)
+      {:resolved-digest-count (count resolved-digests)}))
+    (assoc preimage :semantic-artifact-id (first resolved-digests)))
+   :sh05-macro-diagnostic-id
+   (do
+    (when-not
+     (and (= 0 ordinal) (empty? resolved-digests))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      source-path
+      :exact-macro-diagnostic-request
+      request
+      {:resolved-digest-count (count resolved-digests)}))
+    preimage)
+   (sh05-macro-boundary-fail!
+    "C4-TRACE"
+    source-path
+    :known-macro-digest-request-purpose
     purpose
-    (:purpose request)
-    preimage
-    (:preimage request)]
-   (case
-    purpose
-    :sh05-expanded-syntax-id
-    (do
-     (when-not
-      (and (= 0 ordinal) (empty? resolved-digests))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       source-path
-       :exact-expanded-syntax-request
-       request
-       {:resolved-digest-count (count resolved-digests)}))
-     preimage)
-    :sh05-expansion-provenance-binding-id
-    (do
-     (when-not
-      (and
-       (= 1 ordinal)
-       (= 1 (count resolved-digests))
-       (= {:digest-ref 0} (:semantic-artifact-id preimage)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       source-path
-       :declared-provenance-artifact-reference
-       (:semantic-artifact-id preimage)
-       {:resolved-digest-count (count resolved-digests)}))
-     (assoc preimage :semantic-artifact-id (first resolved-digests)))
-    :sh05-macro-diagnostic-id
-    (do
-     (when-not
-      (and (= 0 ordinal) (empty? resolved-digests))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       source-path
-       :exact-macro-diagnostic-request
-       request
-       {:resolved-digest-count (count resolved-digests)}))
-     preimage)
-    (sh05-macro-boundary-fail!
-     "C4-TRACE"
-     source-path
-     :known-macro-digest-request-purpose
-     purpose
-     {:ordinal ordinal})))))
+    {:ordinal ordinal}))))
 
 (defn
  resolve-digests!
@@ -717,42 +707,41 @@
    sh05-macro-boundary-fail!
    (.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
    source-span
-   (.valAt ^clojure.lang.ILookup operations :source-span)]
-  (let
-   [diagnostic
-    (let
-     [template (first (:diagnostics raw))]
-     (when-not
-      (and
-       (= 1 (count resolved-digests))
-       (= {:digest-ref 0} (:diagnostic-id-request template)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       source-path
-       :declared-diagnostic-id-reference
-       (:diagnostic-id-request template)
-       {:resolved-digest-count (count resolved-digests)}))
-     (assoc template :diagnostic-id-request (first resolved-digests)))
-    rule
-    (:rule diagnostic)]
-   (c4-macro-fail!
-    rule
-    source-path
-    {:source-span (source-span source-path 0),
-     :macro (:macro-name diagnostic),
-     :macro-version (:macro-version diagnostic),
-     :profile (:profile diagnostic),
-     :target (:target diagnostic),
-     :build-effects (:build-effects diagnostic),
-     :capabilities (:capabilities diagnostic),
-     :hygiene (:hygiene-context diagnostic)}
-    {:severity (:severity diagnostic),
-     :diagnostic-family :c4-macro-expansion,
-     :stage :macro-expansion,
-     :facts (:facts diagnostic),
-     :remediation (:remediation diagnostic),
-     :gravity-diagnostic diagnostic,
-     :diagnostic-id (get diagnostic :diagnostic-id-request)}))))
+   (.valAt ^clojure.lang.ILookup operations :source-span)
+   diagnostic
+   (let
+    [template (first (:diagnostics raw))]
+    (when-not
+     (and
+      (= 1 (count resolved-digests))
+      (= {:digest-ref 0} (:diagnostic-id-request template)))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      source-path
+      :declared-diagnostic-id-reference
+      (:diagnostic-id-request template)
+      {:resolved-digest-count (count resolved-digests)}))
+    (assoc template :diagnostic-id-request (first resolved-digests)))
+   rule
+   (:rule diagnostic)]
+  (c4-macro-fail!
+   rule
+   source-path
+   {:source-span (source-span source-path 0),
+    :macro (:macro-name diagnostic),
+    :macro-version (:macro-version diagnostic),
+    :profile (:profile diagnostic),
+    :target (:target diagnostic),
+    :build-effects (:build-effects diagnostic),
+    :capabilities (:capabilities diagnostic),
+    :hygiene (:hygiene-context diagnostic)}
+   {:severity (:severity diagnostic),
+    :diagnostic-family :c4-macro-expansion,
+    :stage :macro-expansion,
+    :facts (:facts diagnostic),
+    :remediation (:remediation diagnostic),
+    :gravity-diagnostic diagnostic,
+    :diagnostic-id (get diagnostic :diagnostic-id-request)})))
 
 (defn
  contain-operation!
@@ -811,50 +800,46 @@
  [source-path expansion-template resolved-digests operations]
  (let
   [sh05-macro-boundary-fail!
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh05-macro-boundary-fail!)]
-  (let
-   [output-reference
-    {:digest-ref 0}
-    provenance-reference
-    {:digest-ref 1}
-    output-reference-slots
-    [[:artifact-id]
-     [:output-syntax-id]
-     [:macro-expansion-trace 0 :output-syntax-ids 0]
-     [:metadata-ledger 0 :output-syntax-id]
-     [:generated-origin-source-map 0 :output-syntax-id]]]
-   (when-not
-    (and
-     (= 2 (count resolved-digests))
-     (every?
-      (fn*
-       [p1__45134#]
-       (= output-reference (get-in expansion-template p1__45134#)))
-      output-reference-slots)
-     (=
-      provenance-reference
-      (:provenance-binding-id expansion-template)))
-    (sh05-macro-boundary-fail!
-     "C4-TRACE"
-     source-path
-     :declared-macro-output-reference-slots
-     {:output-references
-      (mapv
-       (fn* [p1__45135#] (get-in expansion-template p1__45135#))
-       output-reference-slots),
-      :provenance-reference
-      (:provenance-binding-id expansion-template)}
-     {:resolved-digest-count (count resolved-digests)}))
-   (->
-    (reduce
-     (fn
-      [template slot]
-      (assoc-in template slot (first resolved-digests)))
-     expansion-template
+   (.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
+   output-reference
+   {:digest-ref 0}
+   provenance-reference
+   {:digest-ref 1}
+   output-reference-slots
+   [[:artifact-id]
+    [:output-syntax-id]
+    [:macro-expansion-trace 0 :output-syntax-ids 0]
+    [:metadata-ledger 0 :output-syntax-id]
+    [:generated-origin-source-map 0 :output-syntax-id]]]
+  (when-not
+   (and
+    (= 2 (count resolved-digests))
+    (every?
+     (fn*
+      [p1__45134#]
+      (= output-reference (get-in expansion-template p1__45134#)))
      output-reference-slots)
-    (assoc :provenance-binding-id (second resolved-digests))))))
+    (=
+     provenance-reference
+     (:provenance-binding-id expansion-template)))
+   (sh05-macro-boundary-fail!
+    "C4-TRACE"
+    source-path
+    :declared-macro-output-reference-slots
+    {:output-references
+     (mapv
+      (fn* [p1__45135#] (get-in expansion-template p1__45135#))
+      output-reference-slots),
+     :provenance-reference (:provenance-binding-id expansion-template)}
+    {:resolved-digest-count (count resolved-digests)}))
+  (->
+   (reduce
+    (fn
+     [template slot]
+     (assoc-in template slot (first resolved-digests)))
+    expansion-template
+    output-reference-slots)
+   (assoc :provenance-binding-id (second resolved-digests)))))
 
 (defn
  expand
@@ -879,80 +864,79 @@
    sh05-resolve-expansion-template!
    (.valAt
     ^clojure.lang.ILookup operations
-    :sh05-resolve-expansion-template!)]
-  (let
-   [raw
-    (sh05-macro-execute!
-     source-path
-     binding
-     'sh05-expand-macro-template
-     [request])
-    digest-requests
-    (:digest-requests raw)
-    resolved-digests
-    (sh05-contain-coordinator-operation!
-     source-path
-     :bounded-ordered-macro-digest-resolution
-     (fn*
-      []
-      (sh05-macro-resolve-digests! source-path digest-requests)))]
-   (if
-    (= :rejected (:status raw))
-    (sh05-contain-coordinator-operation!
-     source-path
-     :structured-macro-rejection-packaging
-     (fn*
-      []
-      (sh05-macro-raise-rejection! source-path raw resolved-digests)))
-    (let
-     [template-verification
-      (sh05-macro-execute!
-       source-path
-       binding
-       'sh05-verify-macro-template
-       [(:expansion-template raw) digest-requests])
-      resolved-expansion
-      (sh05-contain-coordinator-operation!
-       source-path
-       :bounded-macro-reference-resolution
-       (fn*
-        []
-        (sh05-resolve-expansion-template!
-         source-path
-         (:expansion-template raw)
-         resolved-digests)))
+    :sh05-resolve-expansion-template!)
+   raw
+   (sh05-macro-execute!
+    source-path
+    binding
+    'sh05-expand-macro-template
+    [request])
+   digest-requests
+   (:digest-requests raw)
+   resolved-digests
+   (sh05-contain-coordinator-operation!
+    source-path
+    :bounded-ordered-macro-digest-resolution
+    (fn*
+     []
+     (sh05-macro-resolve-digests! source-path digest-requests)))]
+  (if
+   (= :rejected (:status raw))
+   (sh05-contain-coordinator-operation!
+    source-path
+    :structured-macro-rejection-packaging
+    (fn*
+     []
+     (sh05-macro-raise-rejection! source-path raw resolved-digests)))
+   (let
+    [template-verification
+     (sh05-macro-execute!
+      source-path
+      binding
+      'sh05-verify-macro-template
+      [(:expansion-template raw) digest-requests])
+     resolved-expansion
+     (sh05-contain-coordinator-operation!
+      source-path
+      :bounded-macro-reference-resolution
+      (fn*
+       []
+       (sh05-resolve-expansion-template!
+        source-path
+        (:expansion-template raw)
+        resolved-digests)))
+     resolved-verification
+     (sh05-macro-execute!
+      source-path
+      binding
+      'sh05-verify-macro-resolved
+      [resolved-expansion digest-requests resolved-digests])]
+    (when-not
+     (and
+      (= :passed (:status template-verification))
+      (= :passed (:status resolved-verification)))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      source-path
+      :fresh-gravity-macro-verification
+      {:template template-verification,
+       :resolved resolved-verification}
+      {}))
+    {:raw-template-result
+     (select-keys
+      raw
+      [:artifact :schema-version :status :expansion-template]),
+     :digest-requests digest-requests,
+     :resolved-digests resolved-digests,
+     :resolved-expansion resolved-expansion,
+     :template-verification
+     (select-keys
+      template-verification
+      [:artifact :schema-version :status :rule]),
+     :resolved-verification
+     (select-keys
       resolved-verification
-      (sh05-macro-execute!
-       source-path
-       binding
-       'sh05-verify-macro-resolved
-       [resolved-expansion digest-requests resolved-digests])]
-     (when-not
-      (and
-       (= :passed (:status template-verification))
-       (= :passed (:status resolved-verification)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       source-path
-       :fresh-gravity-macro-verification
-       {:template template-verification,
-        :resolved resolved-verification}
-       {}))
-     {:raw-template-result
-      (select-keys
-       raw
-       [:artifact :schema-version :status :expansion-template]),
-      :digest-requests digest-requests,
-      :resolved-digests resolved-digests,
-      :resolved-expansion resolved-expansion,
-      :template-verification
-      (select-keys
-       template-verification
-       [:artifact :schema-version :status :rule]),
-      :resolved-verification
-      (select-keys
-       resolved-verification
-       [:artifact :schema-version :status :rule])})))))
+      [:artifact :schema-version :status :rule])}))))
 
 (doseq
  [operation

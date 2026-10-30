@@ -105,6 +105,10 @@
         data (ex-data (caught #(macro/execute-plan! "source.gravity" {:plan {}} 'entry [] changed)))]
     (is (= "C4-RETURN" (:id data)))
     (is (= "TEST-INJECTED" (get-in data [:facts :contained-diagnostic])))
+    (is (= {:retained :semantic-value}
+           (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                         (fn [& _] (with-meta {:retained :semantic-value} {:host-only true}))]
+             (bootstrap/sh05-macro-execute! "source.gravity" {:plan {}} 'entry []))))
     (let [interrupt (InterruptedException. "test")
           observed (try
                      (macro/execute-plan! "source.gravity" {:plan {}} 'entry []
