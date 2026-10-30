@@ -35,4 +35,7 @@
   ([source-path artifact] (c3-syntax-validate! source-path artifact nil))
   ([source-path artifact invocation]
   (c3-syntax-verification-call
-   invocation c3-syntax-verification/c3-syntax-validate! source-path artifact)))
+   invocation
+   (fn [path product]
+     (gravity.syntax/verify path product (c3-syntax-verification-ops invocation)))
+   source-path artifact)))
