@@ -1,0 +1,32 @@
+{:schema :parameter-source-composition/reader-R1-v1
+ :parent "3896fbf249b7100b190699436b9105841577d7ce"
+ :parent-tree "a0628efa0f5ffbe6b6c6dd95337cfc020a948664"
+ :parent-disposition :changes-requested-source-tooling
+ :independent-CR-receipt-sha256 "fe23b0981999b2fe2d824e86d4a1a79c2698b3341834692f912ac6d683a5b6fd"
+ :finding :P2-keyword-EOF-collision-hides-following-source
+ :behavior-repair
+ {:before "The namespace-qualified keyword used as EOF could also occur in source. 3896 made :source-forms/eof collide; the original helper already collided with :list-parameter-source-forms/eof. Both could hide later valid or malformed source."
+  :after "Allocate one fresh Object per forms call and recognize it only by identical?. All keyword values remain data; trailing forms are read and malformed tails still refuse."
+  :scope :source-data-reader-tooling-not-Gravity-language-change
+  :namespace-only-conservation-claim false
+  :source-span-and-named-lookup-behavior :preserved}
+ :new-controls
+ {:file "source_forms_test.clj" :tests 6 :assertions 2721 :failures 0 :errors 0
+  :sentinel-looking-values 13 :both-namespace-qualified-EOF-keywords true
+  :following-valid-forms :preserved :following-malformed-tails :refused
+  :normal-EOF :accepted :read-eval :strictly-disabled :production-reader-parities 3
+  :reference :core-Clojure-reader-with-independent-fresh-Object-sentinel
+  :full-composition-checker-executed false :Gravity-or-model-evaluation false}
+ :lint {:policy :unchanged-CI-kondo :errors 0 :warnings 0}
+ :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+ :conservation [:all-6834-bootstrap-mode-blobs :authentic-test-bytes :all-22-PMK-model-definition-bytes
+                :all-41-production-definitions :all-46-source-equations
+                :composition-checker-bytes :named-reader-function
+                :original-handoff-negative-controls-and-source-result-artifacts]
+ :historical-records {:ci-successor.edn :exact-3896-history-not-current-reader-behavior
+                      :original-7b-handoff :unchanged-not-refreshed
+                      :prior-review-and-control-counts :not-rerun-or-recredited
+                      :PR650-original-run-41117268208 :static-NONPASS-unchanged}
+ :acceptance {:self-accepted false :affected-independent-review :required
+              :changed-head-publication :not-attempted :CI-rerun :not-attempted
+              :genuine-runtime :UNRUN :integration false :original-binding-goal :blocked-unchanged}}
