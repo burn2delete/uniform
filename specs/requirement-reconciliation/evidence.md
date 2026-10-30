@@ -3004,3 +3004,27 @@ earlier scopes. The new C5/L3 set is disjoint from those accepted review IDs;
 overlap with a held metadata/provenance proposal grants no review or operational
 clearance. Six task-reference-only owner joins become exact criterion candidates;
 implementation and final granularity remain unaccepted.
+
+Resolve publication readback uses metadata/census source
+`7f975e6373efe34e613eb24525cbf49a9caf2089` and complete inventory source
+`274ae961b5582a07d55eed345c493c4b380770b1`. Inventory SHA256 is
+`6ddb29ab7fc6be3a26b25f7854d13ce52395375565c069b8365f2ec55d2d93ab`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 original owner
+identities remain conserved. Owner states are 961 exact criterion candidates,
+224 task-reference-only joins and three retained retirement proposals. Facet
+states are 507 qualified semantic conjunctions, 65 qualified contexts, 958
+pending proposals, 5,472 formatting/hierarchy contexts, 20,723 pending complete
+predicate conjunctions, 702 pending dependency joins and 358 pending owner or
+metadata adjudications. The provisional task census remains 195 total: three
+Accepted, 190 Open, one Partial, one unassessed and 192 remaining (3/195).
+
+Focused checks pass: source trace 2 tests/15 assertions; Resolve projection
+4/41; inventory 6/39; SH 12/541; census 5/18; boundary 6/11; both document
+validators; generated SH and census comparisons; changed SH lint with zero
+findings; whitespace. Serialized readback separately verifies all 195 C5/L3
+facets remain pending, the 572 qualified review IDs remain exact, all seven
+source refinements are present and extension provenance retains five descriptor
+states with byte-only authority. The first scratch readback used an obsolete
+retirement-state label and failed that assertion; it was corrected to the
+existing three-proposal state without changing the inventory. No independent
+acceptance, implementation, release or final whole-project denominator follows.
