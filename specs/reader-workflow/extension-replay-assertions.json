@@ -1,0 +1,35 @@
+{
+  "task": "reader/finite-remaining-work/extension-policy-closure",
+  "base": "e46fa2e15d5df4860c246f2d8f71a44a2c8d97d4",
+  "status": "unrun-assertion-definitions",
+  "runtime_schema": false,
+  "inherited_definitions": "specs/reader-workflow/extension-binding-fixtures.json",
+  "fixture_root": "bootstrap/clojure/fixtures/reader-extension-binding/",
+  "carrier_decision": "Existing reader-policy data argument; optional extension-policy selection requires producer/verifier schema implementation. Legacy standard policy stays exact.",
+  "replay_decision": "Pure deterministic reconstruction allowed by intended contract. Effectful original and fresh invocations both refuse before provider execution until trusted recorded-result producer/consumer exists.",
+  "required_result_joins": ["policy-identity", "implementation-identity", "source-content", "form-id", "payload-form-id", "span", "input-seed", "returned-seed", "invocation-identity"],
+  "cases": [
+    {"id": "pure-original", "sources": ["pure.qst", "pure.gravity"], "mode": "original", "intended": "accept only after actual selected pure seed result is verified", "provider_calls": 0},
+    {"id": "pure-fresh", "sources": ["pure.qst", "pure.gravity"], "mode": "fresh-verification", "intended": "reconstruct from original bytes and selected implementation; compare all result joins; no inherited acceptance", "provider_calls": 0},
+    {"id": "granted-original-unadmitted", "sources": ["granted.qst", "granted.gravity"], "mode": "original", "intended": "refuse missing recorded-result producer/consumer before first effect", "handler_calls": 0, "provider_calls": 0, "granted_acceptance": false},
+    {"id": "granted-fresh-unadmitted", "sources": ["granted.qst", "granted.gravity"], "mode": "fresh-verification", "intended": "refuse missing recorded-result replay; original grant does not authorize fresh effect", "handler_calls": 0, "provider_calls": 0, "granted_acceptance": false},
+    {"id": "mixed-unknown", "sources": ["mixed-unknown.qst", "mixed-unknown.gravity"], "mode": "whole-population-preflight", "intended": "unknown tag after pure tag refuses before any handler", "handler_calls": 0, "provider_calls": 0},
+    {"id": "mixed-effect", "sources": ["mixed-effect.qst", "mixed-effect.gravity"], "mode": "whole-population-preflight", "intended": "effectful tag after pure tag refuses missing replay before any handler", "handler_calls": 0, "provider_calls": 0}
+  ],
+  "pre_effect_mutations": [
+    {"id": "cross-source", "change": "substitute source-content or source-id from another valid source"},
+    {"id": "stale-policy", "change": "substitute registry selection while retaining prior policy identity"},
+    {"id": "stale-implementation", "change": "substitute Reader implementation source while retaining prior result evidence"},
+    {"id": "stale-handler", "change": "substitute selected private handler while retaining original invocation"},
+    {"id": "stale-grant", "change": "reuse another invocation lifetime, principal or input grant"},
+    {"id": "ambient-provider", "change": "supply provider without an owned declared binding and replay contract"},
+    {"id": "caller-purity", "change": "claim effectful handler is pure in caller metadata"},
+    {"id": "receipt-as-authority", "change": "supply hashes or recorded-result data without owning producer/verifier"},
+    {"id": "unknown", "change": "use inherited unknown tag case"},
+    {"id": "disallowed", "change": "use inherited disallowed registered tag case"},
+    {"id": "undeclared-effect", "change": "use inherited resource with empty policy effects case"}
+  ],
+  "mutation_assertion": {"outcome": "refuse", "handler_calls": 0, "provider_calls": 0, "scope": "Preflight supplied identity, policy, permission and replay evidence before new execution."},
+  "fresh_result_mutations": ["returned-seed", "payload-form"],
+  "fresh_result_assertion": {"outcome": "reject verified result mismatch", "provider_calls": 0, "pure_reconstruction": "may run; no zero-handler claim"}
+}
