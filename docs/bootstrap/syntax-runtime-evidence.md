@@ -50,9 +50,55 @@ The existing `:bounded-syntax-result-carrier` diagnostic field is retained for
 compatibility and does not certify a depth, width or node budget. This boundary
 also adds no compiler time, memory or instruction allowance.
 
-Development verification and independent acceptance are pending in this draft.
-The recorded complete C3 artifact and pinned binding will be compared across
-the extraction, along with genuine positive execution and negative fixtures.
+The complete genuine C3 artifact and pinned binding compare equal across the
+extraction. The C3 product also equals the artifact recorded before the preceding
+integrated pipeline slice, with identity
+`sha256:c1e2b235f9efb1087cb1c8ddf2df2f53873853f0cd419b3034d466d11b643859`.
+The actual syntax source compiles to its pinned 102-function plan. A genuine
+generated template replays and resolves with the same reader binding, revision,
+syntax identity and serialization identity. The paired source extensions,
+full Unicode/metadata fixture, existing shape refusals and downstream tamper
+checks continue to pass.
+
+Direct runtime tests reject actual wrong-length and same-length changed source
+bytes, altered cached source/plan identities, removed plan functions, malformed
+digest dependencies/order/identity slots, substituted reader binding/revision,
+foreign carriers and host metadata. Execution tests verify the existing host
+failure classes and interruption propagation; operations captured before
+redefinition still invoke the owning Var. Ordinary source maps containing
+`:digest-ref` remain data. Cold stage loading does not load bootstrap.
+
+Re-evaluating the three original runtime adapters from base
+`6c7df70327e8ccfe138bd21ffa0db89a11cee99e` in a fresh JVM reproduced an older
+SH-04 test's stale three-argument worker callback error. Its callbacks now match
+the existing four-argument worker. Positive tests use explicit current-source
+context and retain `:development-unadmitted` provenance. The two-argument
+standalone entry still performs fresh validation and refuses the currently
+changed SH-02 snapshot under frozen default admission; the fixture now checks
+that refusal rather than expecting acceptance. No production arity, source
+pin or admission rule was relaxed.
+
+Executed development checks:
+
+| Check | Result |
+| --- | --- |
+| Full genuine artifact and plan binding comparison | Equal across extraction |
+| `gravity.syntax.pipeline-test` and `gravity.bootstrap-compatibility.c3-test` | 22 tests, 257 assertions; passed |
+| `gravity.self-hosting.sh04-fresh-c2-construction-test` | 5 tests, 30 assertions; passed |
+| C3 construction, verification and artifact identity helper suites | 12 tests, 163 assertions; passed |
+| Ownership, catalog and language-boundary suites | 50 tests, 1025 assertions; passed |
+| CI command harness | 11 tests, 101 assertions; passed |
+| Documentation, roadmap and workstream governance validators | Passed; 240 documents, 19 indexes, 185 existing dispositions |
+| Changed-file lint and whitespace checks | Passed with no new warnings or errors |
+
+The existing CI syntax regression command now includes the fresh-C2 suite.
+Its 2 GiB host heap and process timeout are host safeguards, not compiler
+admission allowances. Source ownership and component inventories are unchanged;
+the existing syntax owner and tests continue to cover these bodies. No frozen
+migration or source-version reporting fingerprint was renewed.
+
+Independent exact-source acceptance and remote integration checks are tracked
+on the pull request before merge.
 
 This increment does not complete the entire syntax migration. SH-04 reader
 binding, registered-literal projection, envelope binding, rich-object/stream
