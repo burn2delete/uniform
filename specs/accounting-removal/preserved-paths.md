@@ -995,6 +995,36 @@ parent/composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Current recursive-type control composition
+
+PR622 is reconciled normally at
+`a51a03473c068568b71ca78f75cecd6cdbe8aacb`, tree
+`7c4c2733de6675701e2bd19b59b5dc10f7e9d82c`, base accepted main
+`8300c415628d2110cd703824a059e06476f4e1e0`. Parents are original reviewed
+`47a0f756` and that main. The explicit append-conflict resolution retains the
+complete current-main SH08 test file with only the reviewed Symbol depth-192
+positive-sequence edit, then appends the exact original reviewed List kernel
+suffix. The census and Markdown remain byte-identical to the original review.
+The full 10,091-entry tree preserves every other base blob/mode identity and
+adds only those two records. Production remains unchanged.
+
+All nine selected C7 definitions freshly match their reviewed source pins.
+Current whole C7/test files differ from the original census hashes, which
+retain historical scope. Five historical helper differences, four historically
+absent helpers and the current downward/historical upward Symbol-constructor
+difference remain unproven. Auxiliary serialized-test hashes remain unendorsed.
+All prior depth-127/129, wide-1025 and late-invalid-1024 controls survive; the
+original List width-4097, late-invalid-4096, depth-192, cycle/opaque and zero-
+callback checks are source definitions, not execution results.
+
+See `recursive-type-clean-composition.edn`. Clean named inspect, boundary
+6/11, docs, roadmap, whitespace and lint zero-errors/71-warnings pass. The
+existing reviewer has received the exact changed-base source-composition
+request and its new review turn is confirmed active. Current CI and affected
+independent acceptance remain pending; final integration-mode preflight,
+merge and genuine kernels remain UNRUN. PR623 and the ACC-06 capture path
+remain untouched; no whole-path, ACC01 or PR502 completion follows.
+
 ### Verified finite Record and Union control integration
 
 PR620 is squash-integrated at
