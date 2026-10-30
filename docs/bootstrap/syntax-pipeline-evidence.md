@@ -89,8 +89,10 @@ rewritten by this reporting update.
 ## Remaining work and nonclaims
 
 This is an incremental stage extraction, not completion of every syntax
-implementation boundary. Existing syntax helper namespaces and SH04 Gravity
-plan execution, digest/envelope binding and host adaptation remain. Their
+implementation boundary. At this increment, existing syntax helper namespaces
+and SH04 Gravity plan execution, digest/envelope binding and host adaptation
+remained. The [runtime successor](syntax-runtime-evidence.md) moves plan
+execution and digest resolution into the stage. The other
 remaining bootstrap-owned implementation must be accounted for before the
 namespace migration can be called complete. The reader and diagnostic slices
 also remain partial; other destinations in the namespace map remain open.
