@@ -6,7 +6,7 @@
  {:commit "7459bc9405467c56ef07b5dfc37f04ee26014289",
   :tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
   :branch "codex/compiler-domain-contracts"},
- :C18-source-work :scratch-only-no-canonical-amendment,
+ :C18-source-work :canonical-source-amendment-independent-review-pending,
  :whole-ALL240-baseline :still-in-progress,
  :global-count-adoption :none,
  :review-routing :coordinator-only,

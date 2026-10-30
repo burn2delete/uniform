@@ -3945,7 +3945,48 @@ The newly reported auto-review denial of PR 645 integration remains an exact
 held action: no substitute integration, cherry-pick/import or alternate actor.
 All prior exact holds remain unchanged. No outbound cross-chat message,
 held-action retry or shared checkout reset was performed.
-C18 remains scratch-only under the current source-closure priority. The ALL-240
-baseline remains in progress with 1,585 qualified source dispositions, 632 pending
-finite proposals and the unchanged provisional 3/195 census; this finite handoff
-adopts no global denominator.
+The ALL-240 baseline remains in progress with 1,585 qualified source dispositions,
+632 pending indexed finite proposals and the unchanged provisional 3/195 census;
+this finite handoff adopts no global denominator.
+
+## C18 concrete verification source amendment
+
+Source commit `984f1e74f98905f53b4b20c63b8f76d2a948dae3` adds the C18
+criterion to the existing Pass Evidence outcome and regenerates its roadmap
+projection. The [source transaction](c18-owner-source-refinement.edn) records
+the exact insertion and full-file inverse. All five outcome IDs, statuses,
+tables and prior predicate bodies survive unchanged. This source change spells
+out the four risk meanings, ten minimum-versus-stronger matrix rows, actual
+risk/validation/trust record fields, release and experimental gates, conditional
+counterexample capture, all nine diagnostic meanings and conformance products.
+It executes no compiler, checker, proof replay, plugin or backend.
+
+The [complete C18 trace proposal](c18-complete-current-facet-trace.edn), SHA256
+`a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d`,
+binds all 101 original facets and 45 occurrences to exact source/criterion spans:
+30 semantic conjunction cases and 15 retained context occurrences. Six original
+owners were already candidates. The seventh owner, backend conformance execution,
+gets a proposed exact join to its unchanged real-output, independent metadata,
+replay, negative-evidence and unavailable-target interface. It remains a pending
+join, without whole-backend acceptance or a new implementation task.
+
+Three source-control tests pass 79 assertions, including 32 required-clause
+removals with coherent new hashes, forged witness refusal and omitted facet/owner
+controls. These controls check source text and provenance, not compiler semantics.
+Projection tests pass 5/77; boundary tests pass 6/11; both document validators
+pass. The initial SH guard correctly refused the changed source fingerprint
+(12 tests, 382 assertions, six source-version errors). An explicit pending
+successor now pins only the two changed Compiler API source/projection files to
+the new commit and retains the prior fingerprint. SH tests then pass 12/541 and
+the generated check passes, preserving Reader/Build history and all 180
+unassessed whole-criterion states. No old review was renewed.
+
+The next technical dependency is to refresh current 833-decision/561-historical
+witness pins and authenticated supplemental spans, compose C18 into the finite
+proposal index with exact deduplication, and qualify the current applicability
+of the unchanged earlier reviewed predicate bodies. Those old snapshots retain
+their captured subjects; they do not accept C18. The new trace is explicitly
+outside the current proposal index until that transaction completes. All C18
+independent acceptance remains pending; qualified source counts, decision/status
+populations, legacy ACC joins and the final denominator remain unchanged and
+unfinished. No PR 645 payload or denied operation is imported or retried.

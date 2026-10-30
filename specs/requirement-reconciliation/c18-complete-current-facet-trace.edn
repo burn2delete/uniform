@@ -1,0 +1,4264 @@
+{:control-scope
+ :source-clause-and-provenance-only-not-compiler-verification,
+ :counts
+ {:C18-facets 101,
+  :C18-occurrences 45,
+  :semantic-conjunction-cases 30,
+  :context-occurrences 15,
+  :existing-owner-candidates 6,
+  :task-reference-only-proposed-joins 1},
+ :occurrence-cases
+ {"C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0"
+  {:index 36,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7"
+  {:index 29,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Capture failure counterexamples when possible; record actual unavailability without fabrication."},
+  "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Preserve the following four distinct risk meanings."},
+  "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f"
+  {:index 28,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject hidden experimental passes in release artifacts."},
+  "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Reject plugin passes omitted from trust reports."},
+  "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Promote reproducible counterexamples into regression fixtures."},
+  "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Trust reports bind compiler/pass/risk/evidence, per-profile requirements/blocked passes and affected-profile known experimental gaps, including plugins and artifact kinds."},
+  "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1"
+  {:index 42,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."},
+  "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :predicate
+   "Reject prose-only lowerer conformance; use actual independent semantic and metadata/refusal products with replay and explicit unavailable cases."},
+  "C18/source/e8689cffb4e864c902517166eb724d6852fd972cd4ebb587491da66cab1e6bd3"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9"
+  {:index 17,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."},
+  "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."},
+  "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Diagnostics carry pass/version/risk/required and available evidence/profiles/targets/source or artifact/remediation."},
+  "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Reject a failed transformation and retain its prior valid artifact."},
+  "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf"
+  {:index 18,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain the complete following translation-validation artifact shape with actual checked subjects/results rather than sample labels."},
+  "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Ship experiments only behind explicit feature/profile gates with artifact markings."},
+  "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Full mechanization is not an initial prerequisite; explicit checked evidence, diagnostics and trust reports remain required."},
+  "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."},
+  "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8"
+  {:index 25,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Preserve the full following release-gate conjunction."},
+  "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce"
+  {:index 24,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3"
+  {:index 15,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."},
+  "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52"
+  {:index 32,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Require the following actual positive/refused conformance demonstrations, not merely declared artifact fields."},
+  "C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Earn auditable trust across every named compiler stage through actual risk/profile-appropriate evidence."},
+  "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Bind actual pass/risk/reasons/profiles/minimum evidence/release gate; the bounds-check-elide example confers no universal pass/default/profile grant."},
+  "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject check elision without translation validation or proof."},
+  "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject unverifiable optimization as a release-quality claim."},
+  "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Bind pass/input/output/changed functions, observable result/effects/safety properties, method, proof/counterexample references and result; sample method/pass/accepted fields prove no checking."},
+  "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."},
+  "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Emit trust reports with release builds and bootstrap stages."},
+  "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."},
+  "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689"
+  {:index 14,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering."},
+  "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain the C18 diagnostic family and following nine distinct meanings."},
+  "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."},
+  "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}},
+ :dependency-joins
+ [{:source "D9/C1-C17/SAFE15/PERF10/testing/bootstrap",
+   :consumers [:existing :records],
+   :authority
+   :actual-producer-outputs-required-not-whole-component-acceptance}
+  {:source "backend/conformance-execution-pack",
+   :consumers [:backend :records],
+   :authority
+   :unchanged-actual-output-metadata-replay-refusal-interface-no-backend-execution}],
+ :authority :owner-proposal-pending-independent-current-source-review,
+ :criteria
+ {:existing
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "pass-evidence",
+   :file-sha256
+   "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+   :start-byte 29748,
+   :end-byte 41650,
+   :raw-sha256
+   "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+  :records
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "pass-evidence",
+   :file-sha256
+   "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+   :start-byte 41652,
+   :end-byte 47467,
+   :raw-sha256
+   "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"},
+  :backend
+  {:path "specs/backends-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "backend-conformance",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :start-byte 39998,
+   :end-byte 40994,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"}},
+ :owner-joins
+ {"backend/conformance-execution-pack"
+  {:id "backend/conformance-execution-pack",
+   :original-obligation
+   "Execute or semantically compare real backend outputs, validate expected diagnostics and metadata, replay nondeterminism and emit exact-source conformance packs.",
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending,
+   :criterion-keys [:records :backend],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}
+    {:path "specs/backends-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "backend-conformance",
+     :file-sha256
+     "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+     :start-byte 39998,
+     :end-byte 40994,
+     :raw-sha256
+     "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/counterexample-regression"
+  {:id "compiler/c18/counterexample-regression",
+   :original-obligation
+   "Capture available failure input/output/property/diagnostic/minimized reproducer/pass/version artifacts and promote them to regression fixtures.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/pass-risk-evidence"
+  {:id "compiler/c18/pass-risk-evidence",
+   :original-obligation
+   "Classify every pass by actual risk/profile impact and require governing minimum evidence, keeping matrix minimums distinct from stronger optional proof.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/release-evidence-gate"
+  {:id "compiler/c18/release-evidence-gate",
+   :original-obligation
+   "Block affected release artifacts on verification failure or missing/stale/critical/high-risk evidence; ship experimental passes only behind explicit recorded feature/profile gates.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/transformation-validation"
+  {:id "compiler/c18/transformation-validation",
+   :original-obligation
+   "Bind behavior-changing MIR transformations to equivalence evidence/validation queries for changed functions; reject failed transformations and retain prior artifacts.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/trust-report"
+  {:id "compiler/c18/trust-report",
+   :original-obligation
+   "Emit release/bootstrap trust reports mapping profiles/targets/passes/artifact kinds to evidence, known gaps and explicit experimental gates, including plugins.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none},
+  "compiler/c18/verification-provenance"
+  {:id "compiler/c18/verification-provenance",
+   :original-obligation
+   "Preserve source/generated diagnostic origins through compiler verification, including failure/counterexample provenance.",
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :status :owner-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none}},
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :checks {:test 3, :pass 79, :fail 0, :error 0, :type :summary},
+ :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+ :kind :complete-C18-current-source-facet-proposal,
+ :current-all833-all561-rebinding :pending,
+ :independent-review :pending,
+ :facets
+ [{:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 0,
+   :raw-sha256
+   "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 0,
+    :end-byte 60,
+    :raw-sha256
+    "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "# C18 - Compiler Verification and Pass-Correctness Strategy\n",
+   :source-occurrence-id
+   "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/0-60/a7aa22e5e2f9b23b",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 1,
+   :raw-sha256
+   "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 61,
+    :end-byte 337,
+    :raw-sha256
+    "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Sequence: 97\nPhase: 6 - Compiler Architecture\nStatus: Manual Draft 2\nSource basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 define EFIR/EML and certified elementary math, pages 89-113 define safety, and pages 114-130 define the final document sequence.\n",
+   :source-occurrence-id
+   "C18/source/e8689cffb4e864c902517166eb724d6852fd972cd4ebb587491da66cab1e6bd3",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/61-337/0f787736e8ee018d",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 2,
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 338,
+    :end-byte 349,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Purpose\n",
+   :source-occurrence-id
+   "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/338-349/994413297a3e95a9",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 3,
+   :raw-sha256
+   "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 350,
+    :end-byte 633,
+    :raw-sha256
+    "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Compiler verification defines how Gravity earns trust in its reader, macro\nexpander, analyzer, type and effect checkers, safety pipeline, MIR, optimizers,\ndomain IRs, plugins, and target lowerers. It assigns evidence requirements to\ncompiler stages based on risk and profile impact.\n",
+   :source-occurrence-id
+   "C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/350-633",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Earn auditable trust across every named compiler stage through actual risk/profile-appropriate evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 4,
+   :raw-sha256
+   "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 634,
+    :end-byte 820,
+    :raw-sha256
+    "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The compiler does not need every pass mechanized from day one. It does need\nexplicit evidence, diagnostics, and trust reports that make pass correctness\nauditable and improve over time.\n",
+   :source-occurrence-id
+   "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/634-820",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Full mechanization is not an initial prerequisite; explicit checked evidence, diagnostics and trust reports remain required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 5,
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 821,
+    :end-byte 837,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Requirements\n",
+   :source-occurrence-id
+   "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/821-837/d8416f1863ce5290",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 838,
+    :end-byte 913,
+    :raw-sha256
+    "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Every compiler pass must have an evidence class appropriate to its risk.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/838-913",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 913,
+    :end-byte 915,
+    :raw-sha256
+    "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- ",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/913-915/e86dd77a7ee765ea",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 915,
+    :end-byte 1071,
+    :raw-sha256
+    "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "High-risk passes must use mechanized proof, translation validation, checked\n  certificates, differential testing, property testing, or conformance fixtures.",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/915-1071/663b4124138e481a",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1071,
+    :end-byte 1072,
+    :raw-sha256
+    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/1071-1072/01ba4719c80b6fe9",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1072,
+    :end-byte 1218,
+    :raw-sha256
+    "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- MIR-to-MIR optimizations that change behavior-relevant structure must emit\n  equivalence evidence or validation queries for affected functions.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/1072-1218",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1218,
+    :end-byte 1332,
+    :raw-sha256
+    "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Target lowerers must compare source/core/MIR intent against emitted artifact\n  behavior for supported profiles.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["backend/conformance-execution-pack"],
+   :id "C18/facet/1218-1332",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1332,
+    :end-byte 1411,
+    :raw-sha256
+    "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Compiler verification must preserve source and generated-origin diagnostics.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/verification-provenance"],
+   :id "C18/facet/1332-1411",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1411,
+    :end-byte 1521,
+    :raw-sha256
+    "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Trust reports must identify which profiles, targets, passes, and artifact\n  kinds depend on which evidence.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/trust-report"],
+   :id "C18/facet/1411-1521",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 6,
+   :raw-sha256
+   "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1521,
+    :end-byte 1591,
+    :raw-sha256
+    "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Failed verification blocks release artifacts for affected profiles.\n",
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/1521-1591",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 7,
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1592,
+    :end-byte 1608,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Dependencies\n",
+   :source-occurrence-id
+   "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/1592-1608/21d1931a332d9b7f",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1609,
+    :end-byte 1655,
+    :raw-sha256
+    "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `D9` defines proof and evidence categories.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/1609-1655",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1655,
+    :end-byte 1756,
+    :raw-sha256
+    "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C1` through `C17` define compiler stages, artifacts, diagnostics, plugins,\n  and target lowering.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/1655-1756",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1756,
+    :end-byte 1811,
+    :raw-sha256
+    "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `SAFE15` defines proof and certificate trust policy.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/1756-1811",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1811,
+    :end-byte 1868,
+    :raw-sha256
+    "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `PERF10` defines proof requirements for check elision.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/1811-1868",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1868,
+    :end-byte 2000,
+    :raw-sha256
+    "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Phase 14 testing documents define language, compiler, backend, formal, fuzz,\n  differential, performance, and self-hosting tests.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/1868-2000",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Dependencies", :line 33}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 8,
+   :raw-sha256
+   "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2000,
+    :end-byte 2068,
+    :raw-sha256
+    "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Phase 15 defines bootstrap comparison and staged trust reduction.\n",
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2000-2068",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 9,
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2069,
+    :end-byte 2094,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Outputs and Artifacts\n",
+   :source-occurrence-id
+   "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/2069-2094/f4280a4d61a89adc",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2095,
+    :end-byte 2125,
+    :raw-sha256
+    "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Compiler verification plan.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2095-2125",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2125,
+    :end-byte 2153,
+    :raw-sha256
+    "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Pass risk classification.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2125-2153",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2153,
+    :end-byte 2178,
+    :raw-sha256
+    "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Pass evidence records.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2153-2178",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2178,
+    :end-byte 2209,
+    :raw-sha256
+    "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Translation validation logs.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2178-2209",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2209,
+    :end-byte 2244,
+    :raw-sha256
+    "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Proof or certificate references.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2209-2244",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2244,
+    :end-byte 2289,
+    :raw-sha256
+    "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Differential and property fixture results.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2244-2289",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2289,
+    :end-byte 2314,
+    :raw-sha256
+    "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Compiler trust report.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2289-2314",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2314,
+    :end-byte 2337,
+    :raw-sha256
+    "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Release gate report.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2314-2337",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 10,
+   :raw-sha256
+   "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2337,
+    :end-byte 2365,
+    :raw-sha256
+    "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Verification diagnostics.\n",
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/2337-2365",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 11,
+   :raw-sha256
+   "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2366,
+    :end-byte 2394,
+    :raw-sha256
+    "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Pass Risk Classification\n",
+   :source-occurrence-id
+   "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/2366-2394/851471ef9a7b9759",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 12,
+   :raw-sha256
+   "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2395,
+    :end-byte 2683,
+    :raw-sha256
+    "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/pass-risk\n :pass :bounds-check-elide\n :risk :high\n :reason #{:removes-runtime-checks :depends-on-proof}\n :affected-profiles #{:native :kernel :firmware :gpu}\n :minimum-evidence #{:translation-validation :proof-dominance-check}\n :release-gate :required}\n```\n",
+   :source-occurrence-id
+   "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2395-2683",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Bind actual pass/risk/reasons/profiles/minimum evidence/release gate; the bounds-check-elide example confers no universal pass/default/profile grant."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 13,
+   :raw-sha256
+   "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2684,
+    :end-byte 2697,
+    :raw-sha256
+    "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Risk levels:\n",
+   :source-occurrence-id
+   "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2684-2697",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate "Preserve the following four distinct risk meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 14,
+   :raw-sha256
+   "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2698,
+    :end-byte 2770,
+    :raw-sha256
+    "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `:low`: formatting, reporting, or metadata-only with verifier checks.\n",
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2698-2770",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 14,
+   :raw-sha256
+   "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2770,
+    :end-byte 2845,
+    :raw-sha256
+    "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `:medium`: changes IR shape but not semantics under verifier guarantees.\n",
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2770-2845",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 14,
+   :raw-sha256
+   "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2845,
+    :end-byte 2945,
+    :raw-sha256
+    "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `:high`: changes optimization, checks, effects, ownership, target metadata, or\n  safety outcomes.\n",
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2845-2945",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Pass Risk Classification", :line 56}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 14,
+   :raw-sha256
+   "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2945,
+    :end-byte 3070,
+    :raw-sha256
+    "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `:critical`: part of trusted semantic base, safety gate, proof checker, or\n  target lowering for safety-critical profiles.\n",
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/2945-3070",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 15,
+   :raw-sha256
+   "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3071,
+    :end-byte 3094,
+    :raw-sha256
+    "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Verification Matrix\n",
+   :source-occurrence-id
+   "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/3071-3094/49b5f22dab3a4397",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 16,
+   :raw-sha256
+   "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3095,
+    :end-byte 3799,
+    :raw-sha256
+    "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "| Pass class | Minimum evidence | Stronger evidence |\n| --- | --- | --- |\n| Reader and syntax | Golden fixtures, round-trip tests, fuzzing | Parser proof or independent reader differential |\n| Macro expansion | Hygiene fixtures, generated-origin tests, build-effect tests | Expansion preservation proof |\n| Name resolution | Golden binding graphs, shadowing negatives | Resolver model proof |\n| Type/effect checking | Positive and negative fixtures, property tests | Mechanized core typing/effect rules |\n| Ownership and safety | Vulnerability fixtures, proof/certificate checks | Proof-carrying analysis |\n| MIR construction | MIR verifier and core-to-MIR golden tests | Core-to-MIR translation proof |\n",
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/3095-3799/773b4b10e83ded0c",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 16,
+   :raw-sha256
+   "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3799,
+    :end-byte 3889,
+    :raw-sha256
+    "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "| MIR optimization | Translation validation per changed function | Mechanized pass proof |",
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/3799-3889/5f57cfafd2ecd1ab",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 16,
+   :raw-sha256
+   "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3889,
+    :end-byte 3890,
+    :raw-sha256
+    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "\n",
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/3889-3890/01ba4719c80b6fe9",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 16,
+   :raw-sha256
+   "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3890,
+    :end-byte 3994,
+    :raw-sha256
+    "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "| Domain IR optimization | Domain verifier plus proof/certificate replay | Mechanized domain semantics |",
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/3890-3994/f308e6824560cdf8",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Verification Matrix", :line 77}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 16,
+   :raw-sha256
+   "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3994,
+    :end-byte 4183,
+    :raw-sha256
+    "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "\n| Target lowering | Differential execution and backend conformance | Verified backend subset |\n| Plugins | Sandbox tests, contract verifier, fixture suite | Signed proof-carrying plugin |\n",
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/normalized-facet/3994-4183/334868eccc4eee20",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Translation Validation", :line 92}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 17,
+   :raw-sha256
+   "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4184,
+    :end-byte 4210,
+    :raw-sha256
+    "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Translation Validation\n",
+   :source-occurrence-id
+   "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/4184-4210/840052cc622639be",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Translation Validation", :line 92}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 18,
+   :raw-sha256
+   "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4211,
+    :end-byte 4255,
+    :raw-sha256
+    "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "A translation-validation artifact contains:\n",
+   :source-occurrence-id
+   "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/4211-4255",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain the complete following translation-validation artifact shape with actual checked subjects/results rather than sample labels."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Translation Validation", :line 92}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 19,
+   :raw-sha256
+   "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4256,
+    :end-byte 4595,
+    :raw-sha256
+    "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/translation-validation\n :pass :loop-invariant-code-motion\n :input input-mir-hash\n :output output-mir-hash\n :changed-functions [fn-id]\n :properties #{:same-observable-result :same-effects :same-safety-outcomes}\n :method :symbolic-plus-fixtures\n :proofs [proof-id]\n :counterexamples []\n :result :accepted}\n```\n",
+   :source-occurrence-id
+   "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/4256-4595",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Bind pass/input/output/changed functions, observable result/effects/safety properties, method, proof/counterexample references and result; sample method/pass/accepted fields prove no checking."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Translation Validation", :line 92}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 20,
+   :raw-sha256
+   "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4596,
+    :end-byte 4673,
+    :raw-sha256
+    "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Validation failures reject the transformation and retain the prior artifact.\n",
+   :source-occurrence-id
+   "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/4596-4673",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Reject a failed transformation and retain its prior valid artifact."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Trust Report", :line 111}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 21,
+   :raw-sha256
+   "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4674,
+    :end-byte 4690,
+    :raw-sha256
+    "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Trust Report\n",
+   :source-occurrence-id
+   "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/4674-4690/374e079fd179d589",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Trust Report", :line 111}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 22,
+   :raw-sha256
+   "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4691,
+    :end-byte 5122,
+    :raw-sha256
+    "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/compiler-trust-report\n :compiler compiler-id\n :passes [{:pass :reader :risk :critical :evidence [:fuzz :golden]}\n          {:pass :bounds-check-elide :risk :high :evidence [:translation-validation]}]\n :profiles {:kernel {:required-evidence :high\n                     :blocked-passes []}}\n :known-gaps [{:pass :gpu-lowering\n               :profiles #{:gpu}\n               :status :experimental}]}\n```\n",
+   :source-occurrence-id
+   "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc",
+   :owner-requirement-ids ["compiler/c18/trust-report"],
+   :id "C18/facet/4691-5122",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Trust reports bind compiler/pass/risk/evidence, per-profile requirements/blocked passes and affected-profile known experimental gaps, including plugins and artifact kinds."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Trust Report", :line 111}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 23,
+   :raw-sha256
+   "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5123,
+    :end-byte 5193,
+    :raw-sha256
+    "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The trust report is emitted with release builds and bootstrap stages.\n",
+   :source-occurrence-id
+   "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118",
+   :owner-requirement-ids ["compiler/c18/trust-report"],
+   :id "C18/facet/5123-5193",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Emit trust reports with release builds and bootstrap stages."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 24,
+   :raw-sha256
+   "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5194,
+    :end-byte 5211,
+    :raw-sha256
+    "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Release Gates\n",
+   :source-occurrence-id
+   "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/5194-5211/125eac385d6703f3",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 25,
+   :raw-sha256
+   "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5212,
+    :end-byte 5235,
+    :raw-sha256
+    "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Release gates require:\n",
+   :source-occurrence-id
+   "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5212-5235",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate "Preserve the full following release-gate conjunction."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5236,
+    :end-byte 5280,
+    :raw-sha256
+    "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- verifier pass for every emitted artifact,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5236-5280",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5280,
+    :end-byte 5324,
+    :raw-sha256
+    "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- no active critical verification failures,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5280-5324",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5324,
+    :end-byte 5359,
+    :raw-sha256
+    "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- high-risk pass evidence present,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5324-5359",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5359,
+    :end-byte 5412,
+    :raw-sha256
+    "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- target-lowering conformance for selected backends,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5359-5412",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5412,
+    :end-byte 5459,
+    :raw-sha256
+    "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- stale proof and stale certificate rejection,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5412-5459",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5459,
+    :end-byte 5511,
+    :raw-sha256
+    "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- diagnostic golden fixtures for expected failures,\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5459-5511",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 26,
+   :raw-sha256
+   "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5511,
+    :end-byte 5579,
+    :raw-sha256
+    "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- self-hosting comparison when the compiler is part of the release.\n",
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5511-5579",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Release Gates", :line 127}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 27,
+   :raw-sha256
+   "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5580,
+    :end-byte 5694,
+    :raw-sha256
+    "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Experimental passes can be shipped only behind explicit feature or profile\ngates and must be marked in artifacts.\n",
+   :source-occurrence-id
+   "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/5580-5694",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Ship experiments only behind explicit feature/profile gates with artifact markings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 28,
+   :raw-sha256
+   "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5695,
+    :end-byte 5714,
+    :raw-sha256
+    "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Counterexamples\n",
+   :source-occurrence-id
+   "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/5695-5714/5db068f08d3513c0",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 29,
+   :raw-sha256
+   "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5715,
+    :end-byte 5792,
+    :raw-sha256
+    "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Verification failures should produce counterexample artifacts when possible:\n",
+   :source-occurrence-id
+   "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5715-5792",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Capture failure counterexamples when possible; record actual unavailability without fabrication."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5793,
+    :end-byte 5811,
+    :raw-sha256
+    "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- source fixture,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5793-5811",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5811,
+    :end-byte 5829,
+    :raw-sha256
+    "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- input artifact,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5811-5829",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5829,
+    :end-byte 5848,
+    :raw-sha256
+    "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- output artifact,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5829-5848",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5848,
+    :end-byte 5869,
+    :raw-sha256
+    "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- violated property,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5848-5869",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5869,
+    :end-byte 5890,
+    :raw-sha256
+    "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- diagnostic stream,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5869-5890",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5890,
+    :end-byte 5914,
+    :raw-sha256
+    "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- minimized reproducer,\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5890-5914",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 30,
+   :raw-sha256
+   "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5914,
+    :end-byte 5943,
+    :raw-sha256
+    "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- affected pass and version.\n",
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5914-5943",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Counterexamples", :line 142}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :index 31,
+   :raw-sha256
+   "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5944,
+    :end-byte 5988,
+    :raw-sha256
+    "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Counterexamples become regression fixtures.\n",
+   :source-occurrence-id
+   "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/5944-5988",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Promote reproducible counterexamples into regression fixtures."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 32,
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5989,
+    :end-byte 6004,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Diagnostics\n",
+   :source-occurrence-id
+   "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/5989-6004/84b964dab09b580d",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 33,
+   :raw-sha256
+   "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6005,
+    :end-byte 6062,
+    :raw-sha256
+    "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Compiler verification diagnostics use `C18` identifiers:\n",
+   :source-occurrence-id
+   "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6005-6062",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain the C18 diagnostic family and following nine distinct meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6063,
+    :end-byte 6130,
+    :raw-sha256
+    "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-RISK` for missing or inconsistent pass risk classification.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6063-6130",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6130,
+    :end-byte 6178,
+    :raw-sha256
+    "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C18-EVIDENCE` for missing required evidence.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6130-6178",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6178,
+    :end-byte 6233,
+    :raw-sha256
+    "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-VALIDATION` for translation validation failure.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6178-6233",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6233,
+    :end-byte 6282,
+    :raw-sha256
+    "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C18-PROOF` for rejected proof or certificate.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6233-6282",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6282,
+    :end-byte 6342,
+    :raw-sha256
+    "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-TRUST-REPORT` for incomplete compiler trust reports.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6282-6342",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6342,
+    :end-byte 6405,
+    :raw-sha256
+    "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-RELEASE-GATE` for release blocked by verification gaps.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6342-6405",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6405,
+    :end-byte 6468,
+    :raw-sha256
+    "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-COUNTEREXAMPLE` for generated counterexample artifacts.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6405-6468",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6468,
+    :end-byte 6517,
+    :raw-sha256
+    "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C18-PLUGIN` for plugin evidence below policy.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6468-6517",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 34,
+   :raw-sha256
+   "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6517,
+    :end-byte 6571,
+    :raw-sha256
+    "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C18-BACKEND` for target-lowering conformance gaps.\n",
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6517-6571",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Diagnostics", :line 156}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 35,
+   :raw-sha256
+   "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6572,
+    :end-byte 6737,
+    :raw-sha256
+    "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Diagnostics must include pass id, version, risk class, required evidence,\navailable evidence, affected profiles and targets, source or artifact id, and\nremediation.\n",
+   :source-occurrence-id
+   "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/6572-6737",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Diagnostics carry pass/version/risk/required and available evidence/profiles/targets/source or artifact/remediation."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 36,
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6738,
+    :end-byte 6758,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Rejected Designs\n",
+   :source-occurrence-id
+   "C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/6738-6758/81a99744c82b0f20",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 37,
+   :raw-sha256
+   "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6759,
+    :end-byte 6829,
+    :raw-sha256
+    "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects unverifiable optimization as a release-quality claim.\n",
+   :source-occurrence-id
+   "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/6759-6829",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Reject unverifiable optimization as a release-quality claim."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 38,
+   :raw-sha256
+   "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6830,
+    :end-byte 6908,
+    :raw-sha256
+    "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects check-eliding passes without translation validation or proof.\n",
+   :source-occurrence-id
+   "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/6830-6908",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Reject check elision without translation validation or proof."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :index 39,
+   :raw-sha256
+   "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6909,
+    :end-byte 6988,
+    :raw-sha256
+    "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects target lowerers whose conformance is only documented in prose.\n",
+   :source-occurrence-id
+   "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396",
+   :owner-requirement-ids ["backend/conformance-execution-pack"],
+   :id "C18/facet/6909-6988",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Reject prose-only lowerer conformance; use actual independent semantic and metadata/refusal products with replay and explicit unavailable cases."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 40,
+   :raw-sha256
+   "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6989,
+    :end-byte 7045,
+    :raw-sha256
+    "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects plugin passes outside the trust report.\n",
+   :source-occurrence-id
+   "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b",
+   :owner-requirement-ids ["compiler/c18/trust-report"],
+   :id "C18/facet/6989-7045",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate "Reject plugin passes omitted from trust reports."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Rejected Designs", :line 174}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 41,
+   :raw-sha256
+   "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7046,
+    :end-byte 7122,
+    :raw-sha256
+    "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects release artifacts with hidden experimental compiler passes.\n",
+   :source-occurrence-id
+   "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/7046-7122",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Reject hidden experimental passes in release artifacts."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 42,
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7123,
+    :end-byte 7147,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Conformance Criteria\n",
+   :source-occurrence-id
+   "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1",
+   :owner-requirement-ids [],
+   :id "C18/normalized-facet/7123-7147/4cea7efb2bd3a140",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :index 43,
+   :raw-sha256
+   "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7148,
+    :end-byte 7210,
+    :raw-sha256
+    "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "A conforming compiler verification strategy must demonstrate:\n",
+   :source-occurrence-id
+   "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347",
+   :owner-requirement-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :id "C18/facet/7148-7210",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Require the following actual positive/refused conformance demonstrations, not merely declared artifact fields."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7211,
+    :end-byte 7263,
+    :raw-sha256
+    "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- pass risk classification for every compiler pass,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/7211-7263",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7263,
+    :end-byte 7308,
+    :raw-sha256
+    "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- verifier reports for every stage artifact,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
+   :id "C18/facet/7263-7308",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7308,
+    :end-byte 7364,
+    :raw-sha256
+    "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- translation validation for MIR optimization examples,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/7308-7364",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7364,
+    :end-byte 7420,
+    :raw-sha256
+    "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- proof or certificate replay for safety-check elision,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/transformation-validation"],
+   :id "C18/facet/7364-7420",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7420,
+    :end-byte 7504,
+    :raw-sha256
+    "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- differential and property tests for representative front-end and backend\n  paths,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["backend/conformance-execution-pack"],
+   :id "C18/facet/7420-7504",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7504,
+    :end-byte 7529,
+    :raw-sha256
+    "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- trust report emission,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/trust-report"],
+   :id "C18/facet/7504-7529",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7529,
+    :end-byte 7575,
+    :raw-sha256
+    "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- release gate failures for missing evidence,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
+   :id "C18/facet/7529-7575",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7575,
+    :end-byte 7633,
+    :raw-sha256
+    "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- counterexample capture and regression fixture creation,\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids ["compiler/c18/counterexample-regression"],
+   :id "C18/facet/7575-7633",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}
+  {:hierarchical-context
+   [{:level 1,
+     :title
+     "C18 - Compiler Verification and Pass-Correctness Strategy",
+     :line 1}
+    {:level 2, :title "Conformance Criteria", :line 186}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :index 44,
+   :raw-sha256
+   "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7633,
+    :end-byte 7689,
+    :raw-sha256
+    "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- explicit experimental gating for incomplete evidence.\n",
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :owner-requirement-ids
+   ["compiler/c18/release-evidence-gate" "compiler/c18/trust-report"],
+   :id "C18/facet/7633-7689",
+   :document-id "C18",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates."}],
+ :qualification
+ "Complete C18 source proposal only. Six original owners were candidates; one unchanged backend producer gets an exact proposed witness without global join promotion. Prior C17/C12 predicate bytes survive, while their containing-file/current witness refresh and full current composition remain separate. No compiler, pass/checker, proof replay, backend/target/runtime/provider, held operation, implementation, release, self-hosting, global denominator or integration credit.",
+ :input
+ {:matrix-sha256
+  "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7",
+  :source-refinement
+  {:path
+   "specs/requirement-reconciliation/c18-owner-source-refinement.edn",
+   :sha256
+   "f684ad4ecd3e9879dbae9cb267902b7b7cfa7f51296f5743f5aab59ac939bd35"}},
+ :global-inventory-adoption :not-yet-applied,
+ :new-decision-ids 0,
+ :coherent-clause-removal-controls
+ [{:removed "Risk records bind actual pass identity",
+   :coherent-new-raw-sha256
+   "373b7a18a5027df531f7ac8af8cadb065e2fcbdd9efa7871a3c211abdadefd57",
+   :refused true}
+  {:removed
+   "low formatting/reporting/metadata-only with verifier checks",
+   :coherent-new-raw-sha256
+   "45d468e5ecde038560c897222906acd8e4aae5205952c15cb6ff02a9015372b6",
+   :refused true}
+  {:removed "medium IR-shape changes without semantic change",
+   :coherent-new-raw-sha256
+   "b2759e57c42f2a92e3f2f247b227d7223c58f80be12ee768131eddab3b3aac21",
+   :refused true}
+  {:removed
+   "high optimization/check/effect/ownership/target-metadata/safety",
+   :coherent-new-raw-sha256
+   "02dc7ecbc03cf8cfb3118e5a74d4db041072620a5971045114189b3c1e109b69",
+   :refused true}
+  {:removed "critical trusted semantic base",
+   :coherent-new-raw-sha256
+   "52b738739c5cb856b2b2afaefef192c1f9dba51f37ad95e7484979f51cda5119",
+   :refused true}
+  {:removed "reader/syntax requires golden/round-trip/fuzz tests",
+   :coherent-new-raw-sha256
+   "59339d0714a2d31844de631f7008aecc8f8ef80fbb064333c89a65e2c39d06b3",
+   :refused true}
+  {:removed
+   "expansion requires hygiene/generated-origin/build-effect fixtures",
+   :coherent-new-raw-sha256
+   "561e9c4c93ba1262f9df1eacb0fedf8b6b9ef3edc7d764c3716cb29c89f1315d",
+   :refused true}
+  {:removed
+   "resolution requires golden binding graphs/shadowing negatives",
+   :coherent-new-raw-sha256
+   "ba9036157dd161de84121611e331e77e6da771c0755712b97c136a39409abf6d",
+   :refused true}
+  {:removed
+   "type/effect checking requires positive/negative/property tests",
+   :coherent-new-raw-sha256
+   "1354f8954d7157576a7c0b920be1662f8e1c858691a84427139ff98168034022",
+   :refused true}
+  {:removed
+   "ownership/safety requires vulnerability fixtures and proof/certificate checks",
+   :coherent-new-raw-sha256
+   "c4b654e05accc035ba5568c2856456b8a7f0cd9edc32d9d6cad926189678b1a3",
+   :refused true}
+  {:removed
+   "MIR construction requires its verifier and Core-to-MIR goldens",
+   :coherent-new-raw-sha256
+   "02bb9223fcdb33f172b7b2110b50070a5a08ce7df0b5ef2f7868957d759fe262",
+   :refused true}
+  {:removed
+   "MIR optimization requires translation validation per changed function",
+   :coherent-new-raw-sha256
+   "74c865ef4d1a75aea7ca6899ca4dfafe361226c650c6ab8fcbeec17d91c00770",
+   :refused true}
+  {:removed
+   "domain optimization requires the domain verifier plus proof/certificate replay",
+   :coherent-new-raw-sha256
+   "05160a01a50e0475a2081f8d45908588249783cb23dc9599d9c8c12eaacc224f",
+   :refused true}
+  {:removed
+   "target lowering requires differential execution and backend conformance",
+   :coherent-new-raw-sha256
+   "5db2a14d5e54f03b943c76b11fb3c65bf089d74f479fc0c052135928d4bd5180",
+   :refused true}
+  {:removed
+   "plugins require sandbox tests, contract verifier and fixture suite",
+   :coherent-new-raw-sha256
+   "60837521bb64ffbbc087b8d3d0907c27cca1ef3f575456645925fc19b2be74ba",
+   :refused true}
+  {:removed
+   "minimum evidence distinct from optional stronger evidence",
+   :coherent-new-raw-sha256
+   "1555695014a77e0688b136608afa3910ad39b878067984cb3109444428df78ab",
+   :refused true}
+  {:removed "accepted/rejected result",
+   :coherent-new-raw-sha256
+   "0350c48a5de7efe7eb06b5bb1373d905ebb793f3dd69c103801d6132b347f54c",
+   :refused true}
+  {:removed "retains the prior valid artifact",
+   :coherent-new-raw-sha256
+   "fa81a2bd6c32845af058d922c65db3d8c0b4581c638f6aa76cb5c5505581f805",
+   :refused true}
+  {:removed "emitted with release builds and bootstrap stages",
+   :coherent-new-raw-sha256
+   "422c23d16eeb259319d19cb3dc7a6bc2b6d51c9b078b8de017ade49e7fbcdf79",
+   :refused true}
+  {:removed "diagnostic goldens for expected failures",
+   :coherent-new-raw-sha256
+   "176216f919fa656bf8c8d684566199b17dc988c58d0156fc36e236de9d9ce07b",
+   :refused true}
+  {:removed
+   "self-hosting comparison when the compiler is part of release",
+   :coherent-new-raw-sha256
+   "9aa45adb42d3a4d8c0cebdee548b06cab9ab604c8af371b37b0b2fd0b06ba021",
+   :refused true}
+  {:removed "when possible",
+   :coherent-new-raw-sha256
+   "c2d06606c629e51b2d66e526f72962a3b904eab1b8855bab56e084acc8a4c304",
+   :refused true}
+  {:removed "C18-RISK missing/inconsistent classification",
+   :coherent-new-raw-sha256
+   "ca8fe818c2a11ae9ce65fff1a3cbe1784d74dabf5e488683d89af850f21d0c45",
+   :refused true}
+  {:removed "C18-EVIDENCE missing evidence",
+   :coherent-new-raw-sha256
+   "eeed5e6f10a4198bbdf12b5e022d9bd967c94f67b2dab1b3bba770805d960533",
+   :refused true}
+  {:removed "C18-VALIDATION failed translation validation",
+   :coherent-new-raw-sha256
+   "c5fae1da1e3903bddde2e2497352c955cb2d013c0f94c195273c38ba6f7026f6",
+   :refused true}
+  {:removed "C18-PROOF rejected proof/certificate",
+   :coherent-new-raw-sha256
+   "6d00e12cfbc21271d7ed83f6c319eb66fbb68d61c7c2443760cab215d7a973e1",
+   :refused true}
+  {:removed "C18-TRUST-REPORT incomplete trust report",
+   :coherent-new-raw-sha256
+   "f38939412123e68b02cf6aefc8343b3445de13ab0ea4a19207ab04c2ddaa205d",
+   :refused true}
+  {:removed "C18-RELEASE-GATE verification gap",
+   :coherent-new-raw-sha256
+   "6b93e0180c23438930d5398cb7f052b3d67ac42f8aa7c69534bf1cff0b880feb",
+   :refused true}
+  {:removed "C18-COUNTEREXAMPLE generated failure artifact",
+   :coherent-new-raw-sha256
+   "a4fda0cd47f0d0101327b41e46326c73899ace182920a7df7764de28dc39d580",
+   :refused true}
+  {:removed "C18-PLUGIN insufficient plugin evidence",
+   :coherent-new-raw-sha256
+   "9c1ddc721caa7ee9e3087cfacd28c06def9295d96b5b64df32a83507b0e08240",
+   :refused true}
+  {:removed "C18-BACKEND missing lowerer conformance",
+   :coherent-new-raw-sha256
+   "3d8b58d7217db32f4558052171812c3d04bd0defffe04a5a34040ab6d374347b",
+   :refused true}
+  {:removed
+   "pass/version/risk/required and available evidence/affected profiles and targets/source or artifact identity/remediation",
+   :coherent-new-raw-sha256
+   "4596db0c4b54fd8a9fc68bdd4369ebb5c72f3f2bf81610d33d992dc8ec2589ba",
+   :refused true}]}
