@@ -6,14 +6,15 @@
 
 (def task-path "specs/compiler-api-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/compiler-api.md")
-(def outcome-order ["pipeline" "plugins" "pass-evidence" "development-boundaries"])
+(def outcome-order ["pipeline" "plugins" "pass-evidence" "domain-ir-boundaries" "development-boundaries"])
 (def outcome-headings
   {"pipeline" "Built-in compiler pipeline outcome"
    "plugins" "Plugin Host: finite remaining tasks"
    "pass-evidence" "Pass Evidence: finite remaining tasks"
+   "domain-ir-boundaries" "Domain IR registration and transition boundaries"
    "development-boundaries" "Compiler development ownership and verification boundaries"})
 (def record-pattern
-  #"(?s)^- \[([ x])\] `(pipeline|plugins|pass-evidence|development-boundaries)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Owner role: .+)$")
+  #"(?s)^- \[([ x])\] `(pipeline|plugins|pass-evidence|domain-ir-boundaries|development-boundaries)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Owner role: .+)$")
 (defn fail [message] (task-projection/fail message))
 (defn records [text]
   (let [rows (task-projection/records
