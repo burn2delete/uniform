@@ -1142,6 +1142,8 @@
      (:exact-test-vars options)
      (into (mapcat (fn [name] ["--exact" name]) (:exact-test-vars options)))
      (:child-fail-fast? options) (conj "--fail-fast")
+     (:development-result-delivery options)
+     (into ["--machine-result" (pr-str (:development-result-delivery options))])
      (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))]))))
 
@@ -2163,6 +2165,108 @@
             :stdout-limit-chars (:char-limit stdout)
             :stderr-limit-chars (:char-limit stderr)})))
 
+(defn- prepare-development-result
+  [job options]
+  (when-let [{:keys [source-commit source-tree configuration-sha256 limit-bytes] :as source}
+             (:development-result options)]
+    (let [namespace (str (:namespace job))
+          vars (:exact-test-vars options)
+          qualified (when (and (vector? vars) (every? string? vars))
+                      (mapv #(if (str/includes? % "/") % (str namespace "/" %)) vars))]
+      (when-not (and (= #{:source-commit :source-tree :configuration-sha256 :limit-bytes}
+                        (set (keys source)))
+                     (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %))
+                             [source-commit source-tree])
+                     (string? configuration-sha256) (re-matches #"[0-9a-f]{64}" configuration-sha256)
+                     (integer? limit-bytes) (pos? limit-bytes) (< limit-bytes Integer/MAX_VALUE)
+                     (vector? vars) (seq vars)
+                     (every? #(and (string? %) (not (str/blank? %))) vars)
+                     (= (count qualified) (count (set qualified)))
+                     (every? #(and (str/starts-with? % (str namespace "/"))
+                                    (not (str/blank? (subs % (inc (count namespace)))))) qualified))
+        (throw (ex-info "Development result requires exact selection and source/configuration binding"
+                        {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))
+      (let [directory (java.nio.file.Files/createTempDirectory
+                       "gravity-development-result-"
+                       (make-array java.nio.file.attribute.FileAttribute 0))]
+        {:file (str (.resolve directory "result.edn")) :limit-bytes limit-bytes
+         :request {:id (str (java.util.UUID/randomUUID))
+                   :source (dissoc source :limit-bytes)
+                   :selection {:namespaces [namespace] :test-vars (vec (sort qualified))
+                               :fail-fast? (boolean (:child-fail-fast? options))}}}))))
+
+(defn- read-development-result
+  [delivery process-result]
+  (let [fail! (fn [field & [record cause]]
+                (throw (ex-info "Development completion delivery failed validation"
+                                {:id "SH01-DEVELOPMENT-RESULT" :field field
+                                 :delivery delivery :record record :process-result process-result}
+                                cause)))]
+    (try
+      (let [limit (:limit-bytes delivery)
+            bytes (with-open [input (java.nio.file.Files/newInputStream
+                                    (.toPath (io/file (:file delivery)))
+                                    (into-array java.nio.file.OpenOption
+                                                [java.nio.file.StandardOpenOption/READ
+                                                 java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+                    (let [bytes (.readNBytes input (int limit))]
+                      (when-not (= -1 (.read input)) (fail! :limit))
+                      bytes))
+            decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                      (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+            text (str (.decode decoder (java.nio.ByteBuffer/wrap bytes)))
+            record (with-open [reader (java.io.PushbackReader. (java.io.StringReader. text))]
+                     (let [eof (Object.)
+                           record (edn/read {:eof eof} reader)]
+                       (when (or (identical? eof record)
+                                 (not (identical? eof (edn/read {:eof eof} reader))))
+                         (fail! :one-record record))
+                       record))
+            result (:result record)
+            summary (:summary result)
+            full? (= (get-in delivery [:request :selection :test-vars] [])
+                     (get-in result [:selection :test-vars]))
+            passed? (and (integer? (:fail summary)) (integer? (:error summary))
+                         (zero? (:fail summary)) (zero? (:error summary)))
+            expected-exit (if passed? 0 1)]
+        (when-not (and (= #{:schema :request :result} (set (keys record)))
+                       (= :gravity/development-test-result-delivery-v1 (:schema record))
+                       (= (:request delivery) (:request record)))
+          (fail! :request record))
+        (when-not (and (= #{:schema :authority :authoritative? :selection :summary :outcome :exit-code}
+                         (set (keys result)))
+                       (= :gravity/development-test-result-v1 (:schema result))
+                       (= :non-authoritative (:authority result)) (false? (:authoritative? result))
+                       (= (:selection (:request delivery)) (:selection result)) full?
+                       (= #{:test :pass :fail :error} (set (keys summary)))
+                       (every? #(and (integer? %) (<= 0 %)) (vals summary))
+                       (= (:test summary) (count (get-in delivery [:request :selection :test-vars])))
+                       (= (if passed? :passed :failed) (:outcome result))
+                       (= expected-exit (:exit-code result)))
+          (fail! :completion record))
+        (when-not (and (= expected-exit (:exit-code process-result))
+                       (= (:outcome result) (:status process-result))
+                       (true? (:root-exited? process-result))
+                       (false? (:cleanup-root-alive? process-result))
+                       (true? (:tracked-owned-processes-terminal? process-result))
+                       (false? (:capture-failed? process-result))
+                       (false? (:output-truncated? process-result))
+                       (every? (fn [stream]
+                                 (and (= :complete (get process-result (keyword (str stream "-capture-status"))))
+                                      (nil? (get process-result (keyword (str stream "-capture-error"))))
+                                      (false? (get process-result (keyword (str stream "-capture-forced-close?"))))))
+                               ["stdout" "stderr"]))
+          (fail! :process-capture record))
+        result)
+      (catch clojure.lang.ExceptionInfo error
+        (if (= "SH01-DEVELOPMENT-RESULT" (:id (ex-data error))) (throw error)
+            (fail! :read nil error)))
+      (catch Throwable error
+        (rethrow-fatal! error)
+        (restore-interrupt! error)
+        (fail! :read nil error)))))
+
 (defn run-namespace-process
   "Runs one namespace in a fresh process.
 
@@ -2178,6 +2282,10 @@
    (run-namespace-process job {}))
   ([job options]
    (require-supported-namespace! (:namespace job))
+   (when (or (and (contains? options :development-result) (not (map? (:development-result options))))
+             (contains? options :development-result-delivery))
+     (throw (ex-info "Development result delivery is parent-owned"
+                     {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))
    (let [resource-owned? (contains? options :resource-broker)
          _ (when (and resource-owned?
                       (not (and (map? (:resource-broker options))
@@ -2188,7 +2296,9 @@
          operation
          (fn []
            (let [started (System/nanoTime)
-                 command (namespace-command (:namespace job) options)
+                 delivery (prepare-development-result job options)
+                 command (namespace-command (:namespace job)
+                                            (cond-> options delivery (assoc :development-result-delivery delivery)))
                  working-directory (or (:working-directory options) @root)
                  launcher (or (:process-launcher options) start-process)
                  launched (launcher command working-directory)
@@ -2197,7 +2307,7 @@
                  result
                  (if (instance? Process launched)
                    (process-result launched options)
-                   (if resource-owned?
+                   (if (or resource-owned? delivery)
                      (throw (ex-info "Resource-owned child requires an actual Process"
                                      {:id "SH01-PARALLEL-RESOURCE-CALLER"}))
                      (if (map? launched)
@@ -2205,7 +2315,13 @@
                        {:status :failed
                         :exit-code 1
                         :stderr (str "Process launcher returned unsupported value: "
-                                     (pr-str (type launched)))})))]
+                                     (pr-str (type launched)))})))
+                 result (if delivery
+                            (assoc result :development-result (read-development-result delivery result)
+                                          :development-result-request (:request delivery)
+                                          :development-result-file (:file delivery)
+                                          :development-result-binding-status :supplied-data-matched)
+                            result)]
              (normalize-result
               job
               (assoc result :command command :child-jvm-launched? true)
