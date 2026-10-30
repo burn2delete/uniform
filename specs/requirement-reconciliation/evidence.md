@@ -2382,3 +2382,13 @@ facet, current decision, historical criterion binding, task state or completion
 count changes. Full current-extension entailment, independent acceptance,
 complete original-facet entailment, final counting and coordinator integration
 remain required.
+
+The extension trace and complete original inventory link the byte-check artifact
+at source `95a3fa4cda23e0919a63fffba851e23381286c10`. Both changed
+descriptor states now say their historical spans are rebound with explicit
+current replacements; independent current-source entailment remains pending for
+all five descriptors. Link checks pass 2 tests / 11 assertions, conserving the
+392/151 historical extension populations and all original source, owner,
+criterion and facet records, and proving original/extension ID disjointness.
+The original facet-proposal count remains 674. No implementation, scoped task
+ratio or final-count credit follows from these byte checks.

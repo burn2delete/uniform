@@ -32821,9 +32821,11 @@
    :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending
    3}},
  :predecessor-inventory
- {:source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+ {:source-commit "aba162836fe4b1d68851357cd064bfecb2e2469b",
   :sha256
-  "ca0dc76bb02da29ceddfd6e845e439abb2a89248fa43478ac1aa2d40cae3a249"},
+  "774d5e8fd1579b4b790f2102956335dd5a848fd863e8ef5c921a28424c7d5d75"},
+ :extension-current-byte-link-checks
+ {:test 2, :pass 11, :fail 0, :error 0, :type :summary},
  :authority :read-only-source-trace-not-task-or-entailment-acceptance,
  :implementation-credit :none,
  :occurrences
@@ -191639,7 +191641,7 @@
    :not-inferred-from-candidate-or-partial-facet-witness}],
  :checks {:test 2, :pass 16, :fail 0, :error 0, :type :summary},
  :final-task-or-requirement-denominator :not-conferred,
- :source-commit "aba162836fe4b1d68851357cd064bfecb2e2469b",
+ :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
  :documents
  [{:id "D0",
    :sequence 1N,
@@ -193077,7 +193079,16 @@
   "specs/requirement-reconciliation/explicit-extension-source-trace.edn",
   :facets 392,
   :occurrences 151,
-  :original240-membership :excluded},
+  :original240-membership :excluded,
+  :current-byte-bindings
+  {:path
+   "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+   :sha256
+   "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+   :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+   :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+   :authority :owner-byte-check-independent-entailment-pending},
+  :full-current-source-entailment :pending},
  :current-source-refinements
  {:D2-triage
   {:path
@@ -850233,7 +850244,15 @@
   :original-catalogue
   {:path "/tmp/acc11-final-facet-review/criterion-catalog.edn",
    :sha256
-   "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f"}},
+   "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f"},
+  :extension-current-byte-bindings
+  {:path
+   "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+   :sha256
+   "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+   :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+   :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+   :authority :owner-byte-check-independent-entailment-pending}},
  :current-criteria
  {:decisions
   {:path

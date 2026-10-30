@@ -1,4 +1,6 @@
 {:counts {:facets 392, :occurrences 151},
+ :current-byte-link-checks
+ {:test 2, :pass 11, :fail 0, :error 0, :type :summary},
  :retained-input
  {:path "/tmp/acc11-final-facet-review/extension-trace.edn",
   :sha256
@@ -731,57 +733,121 @@
    :facet-ids ["facet/extension/029361f9a7cdc799a77b5079"]}],
  :scope
  "Retained extension source coordinates and raw hashes are separate from the verified original240 corpus. No current extension byte-span or full-predicate acceptance is inferred.",
+ :full-current-extension-entailment :pending,
  :original-240-membership false,
+ :current-byte-bindings
+ {:path
+  "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+  :sha256
+  "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+  :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+  :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+  :authority :owner-byte-check-independent-entailment-pending},
  :source-descriptors
- [{:id "release-extension",
-   :path
+ [{:path
    "docs/phase-18-binary-distribution-and-seedless-release/README.md",
+   :current-byte-applicability :source-file-hash-identical,
+   :current-span-or-entailment-acceptance :not-conferred,
+   :id "release-extension",
+   :current-byte-bindings
+   {:path
+    "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+    :sha256
+    "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+    :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+    :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+    :authority :owner-byte-check-independent-entailment-pending},
    :sha256
    "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5",
-   :relation :declared-project-extension,
    :current-sha256
    "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5",
-   :current-byte-applicability :source-file-hash-identical,
-   :current-span-or-entailment-acceptance :not-conferred}
-  {:id "release-tasks",
-   :path
+   :relation :declared-project-extension,
+   :independent-current-source-entailment :pending,
+   :current-span-binding
+   :all-historical-facets-have-explicit-current-witnesses}
+  {:path
    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+   :current-byte-applicability :source-file-hash-identical,
+   :current-span-or-entailment-acceptance :not-conferred,
+   :id "release-tasks",
+   :current-byte-bindings
+   {:path
+    "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+    :sha256
+    "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+    :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+    :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+    :authority :owner-byte-check-independent-entailment-pending},
    :sha256
+   "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+   :current-sha256
    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
    :relation :existing-task-view,
-   :current-sha256
-   "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
-   :current-byte-applicability :source-file-hash-identical,
-   :current-span-or-entailment-acceptance :not-conferred}
-  {:id "platform-product",
-   :path "docs/component-roadmaps/platform.md",
+   :independent-current-source-entailment :pending,
+   :current-span-binding
+   :all-historical-facets-have-explicit-current-witnesses}
+  {:path "docs/component-roadmaps/platform.md",
+   :current-byte-applicability
+   :changed-historical-facet-spans-rebound-with-explicit-current-replacements,
+   :current-span-or-entailment-acceptance :not-conferred,
+   :id "platform-product",
+   :current-byte-bindings
+   {:path
+    "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+    :sha256
+    "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+    :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+    :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+    :authority :owner-byte-check-independent-entailment-pending},
    :sha256
    "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
-   :relation :declared-project-extension,
    :current-sha256
    "9d4efe1bb5348949dde850880154cf31d06dbc81cb4b659144e771efce2a54d5",
+   :relation :declared-project-extension,
+   :independent-current-source-entailment :pending,
+   :current-span-binding
+   :all-historical-facets-have-explicit-current-witnesses}
+  {:path "AGENTS.md",
    :current-byte-applicability
-   :changed-requires-explicit-source-rebinding,
-   :current-span-or-entailment-acceptance :not-conferred}
-  {:id "accounting-policy",
-   :path "AGENTS.md",
+   :changed-historical-facet-spans-rebound-with-explicit-current-replacements,
+   :current-span-or-entailment-acceptance :not-conferred,
+   :id "accounting-policy",
+   :current-byte-bindings
+   {:path
+    "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+    :sha256
+    "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+    :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+    :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+    :authority :owner-byte-check-independent-entailment-pending},
    :sha256
    "52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac",
-   :relation :current-user-policy,
    :current-sha256
    "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
-   :current-byte-applicability
-   :changed-requires-explicit-source-rebinding,
-   :current-span-or-entailment-acceptance :not-conferred}
-  {:id "accounting-removal",
-   :path "specs/accounting-removal/spec.md",
+   :relation :current-user-policy,
+   :independent-current-source-entailment :pending,
+   :current-span-binding
+   :all-historical-facets-have-explicit-current-witnesses}
+  {:path "specs/accounting-removal/spec.md",
+   :current-byte-applicability :source-file-hash-identical,
+   :current-span-or-entailment-acceptance :not-conferred,
+   :id "accounting-removal",
+   :current-byte-bindings
+   {:path
+    "specs/requirement-reconciliation/explicit-extension-current-byte-bindings.edn",
+    :sha256
+    "50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623",
+    :source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+    :subject-source-commit "ab9782c592b262aba422f29261e35fd361b52454",
+    :authority :owner-byte-check-independent-entailment-pending},
    :sha256
    "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321",
-   :relation :existing-policy-implementation-scope,
    :current-sha256
    "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321",
-   :current-byte-applicability :source-file-hash-identical,
-   :current-span-or-entailment-acceptance :not-conferred}],
+   :relation :existing-policy-implementation-scope,
+   :independent-current-source-entailment :pending,
+   :current-span-binding
+   :all-historical-facets-have-explicit-current-witnesses}],
  :facets
  [{:start-line 1,
    :raw-sha256
@@ -7057,4 +7123,8 @@
    :unit-ids ["policy/accounting/host-external-boundary-separation"],
    :start-byte 3009}],
  :current-applicability-source
- "aba162836fe4b1d68851357cd064bfecb2e2469b"}
+ "95a3fa4cda23e0919a63fffba851e23381286c10",
+ :predecessor-trace
+ {:source-commit "95a3fa4cda23e0919a63fffba851e23381286c10",
+  :sha256
+  "1473db36ed54fd29b48e3f690e4e7ffeda3c3f7024b948269a2f2c99a59379f1"}}
