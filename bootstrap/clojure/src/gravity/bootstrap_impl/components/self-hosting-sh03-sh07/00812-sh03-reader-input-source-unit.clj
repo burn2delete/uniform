@@ -36,11 +36,14 @@
 (defn sh03-reader-input-policy
   [reader-options]
   (reader-validate-options! reader-options)
-  {:artifact :gravity/sh03-reader-policy
-   :schema-version 1
-   :retain-trivia (true? (:retain-comments reader-options))
-   :enabled-reader-tags
-   (mapv sh03-reader-tag-codepoints (:registered-tags standard-reader-policy))})
+  (let [pure? (reader-dispatch/pure-options? reader-options)]
+    (cond-> {:artifact :gravity/sh03-reader-policy
+             :schema-version 1
+             :retain-trivia (true? (:retain-comments reader-options))
+             :enabled-reader-tags
+             (mapv sh03-reader-tag-codepoints
+                   (cond-> (:registered-tags standard-reader-policy) pure? (conj 'text)))}
+      pure? (assoc :extension-policy :gravity/pure-text-reader))))
 
 (defn sh03-reader-require-result-carrier!
   [source-path carrier value]

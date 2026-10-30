@@ -249,3 +249,153 @@
                                               :input-hash input-hash :value (:value result)}))]
       {:value (get-in result [:value :datum])
        :observation observation})))
+
+(def ^:private pure-reader-policy
+  ;; An opt-in, implementation-owned registration; never caller-supplied code.
+  {:policy :gravity/pure-text-reader :version 1
+   :registered-tags ['inst 'uuid 'text] :ambient-authority :denied
+   :text-handler 'gravity.reader/read-text})
+
+(defn pure-policy-id [] (canonical-hash pure-reader-policy))
+
+(defn pure-options?
+  "Select the fixed pure registration by its existing extension-policy identity."
+  [options]
+  (native-map! options clojure.lang.Keyword)
+  (= (pure-policy-id) (:extension-policy options)))
+
+(defn pure-source? [source-unit]
+  (native-map! source-unit clojure.lang.Keyword)
+  (pure-options? (:reader-options source-unit)))
+
+(defn validate-pure-tags!
+  "Preflight the entire population. Effectful normal dispatch is unadmitted."
+  [source-unit tags]
+  (native-map! source-unit clojure.lang.Keyword)
+  (let [identity (:identity-inputs source-unit)
+        options (:reader-options source-unit)
+        policy-id (pure-policy-id)]
+    (native-map! identity clojure.lang.Keyword)
+    (native-map! options clojure.lang.Keyword)
+    (native-map! (:reader-options identity) clojure.lang.Keyword)
+    (doseq [value [(:extension-policy source-unit) (:extension-policy options)
+                   (:extension-policy identity)
+                   (get-in identity [:reader-options :extension-policy])]]
+      (when-not (and (= String (class value)) (= policy-id value))
+        (reject! :policy-hash)))
+    (doseq [value [(:source-id source-unit) (:bytes-hash source-unit)]]
+      (when-not (and (= String (class value))
+                     (re-matches #"sha256:[0-9a-f]{64}" value))
+        (reject! :source-identity)))
+    (doseq [tag tags]
+      (when-not (and (= clojure.lang.Symbol (class tag)) (nil? (meta tag)))
+        (reject! :tag))
+      (when (= 'resource tag) (reject! :effectful-normal-unadmitted))
+      (when-not (contains? #{'inst 'uuid 'text} tag) (reject! :unknown-tag))
+      (let [name ({'inst 'gravity.reader.standard/read-inst
+                   'uuid 'gravity.reader.standard/read-uuid
+                   'text 'gravity.reader/read-text} tag)
+            implementation (get handlers name)]
+        (when-not (and implementation (empty? (:effects implementation))
+                       (empty? (:capabilities implementation)))
+          (reject! :effectful-normal-unadmitted))))
+    {:id policy-id :profile :meta
+     :registry {'inst {:handler 'gravity.reader.standard/read-inst
+                       :build-effects #{} :capabilities #{} :profiles #{:meta}}
+                'uuid {:handler 'gravity.reader.standard/read-uuid
+                       :build-effects #{} :capabilities #{} :profiles #{:meta}}
+                'text {:handler 'gravity.reader/read-text
+                       :build-effects #{} :capabilities #{} :profiles #{:meta}}}
+     :enabled-tags #{'inst 'uuid 'text} :build-effects #{} :capabilities #{}}))
+
+(defn- pure-result
+  [source-unit tag form payload implementation]
+  (let [policy (validate-pure-tags! source-unit [tag])]
+    (exact! implementation
+            #{:source-content-hash :plan-semantic-hash :functions-semantic-hash})
+    (doseq [value (vals implementation)]
+      (when-not (and (= String (class value))
+                     (re-matches #"sha256:[0-9a-f]{64}" value))
+        (reject! :implementation-identity)))
+    (native-map! form clojure.lang.Keyword)
+    (text! (:form-id form))
+    (text! payload)
+    (span! (:span form))
+    (let [children (:children form)]
+      (when-not (and (= clojure.lang.PersistentVector (class children))
+                     (nil? (meta children)) (= 1 (count children)))
+        (reject! :payload-form))
+      (text! (first children)))
+    (let [seed {:source-id (:source-id source-unit) :form-id (:form-id form)
+                :span (:span form) :datum payload}
+          selection (get (:registry policy) tag)
+          handler (get handlers (:handler selection))
+          ;; Purity is read from the private implementation, not the policy.
+          _ (when-not (and handler (empty? (:effects handler))
+                           (empty? (:capabilities handler)))
+              (reject! :effectful-normal-unadmitted))
+          input {:policy-id (:id policy) :implementation implementation
+                 :handler (:handler selection) :source-content-hash (:bytes-hash source-unit)
+                 :tag tag :payload-form-id (first (:children form)) :seed seed}
+          input-hash (canonical-hash
+                      (assoc input :domain :gravity/reader-extension-input-v1))
+          result (dispatch policy tag seed nil)]
+      {:artifact :gravity/reader-pure-extension-result
+       :input input :input-hash input-hash :returned-seed (:value result)
+       :invocation (:invocation result)
+       :result-hash (canonical-hash
+                     {:domain :gravity/reader-extension-result-v1
+                      :input-hash input-hash :value (:value result)})})))
+
+(defn- native-result! [value]
+  ;; Equality must never dispatch protocols on caller-supplied carriers.
+  (let [kind (class value)]
+    (cond
+      (#{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap} kind)
+      (do (native-map! value clojure.lang.Keyword)
+          (doseq [item (vals value)] (native-result! item)))
+      (#{clojure.lang.PersistentVector clojure.lang.PersistentHashSet} kind)
+      (do (when (some? (meta value)) (reject! :native-result))
+          (doseq [item value] (native-result! item)))
+      (#{clojure.lang.Keyword clojure.lang.Symbol} kind)
+      (when (some? (meta value)) (reject! :native-result))
+      (= String kind) (text! value)
+      (or (nil? value)
+          (#{Boolean Long Integer clojure.lang.BigInt java.math.BigInteger
+             java.util.Date java.util.UUID} kind)) nil
+      :else (reject! :native-result)))
+  value)
+
+(defn verify-pure-result!
+  "Reconstruct from the verified original graph's form/payload and compare.
+  Internal normal-adapter verifier, not an authentication API for caller data."
+  [source-unit tag form payload implementation result]
+  (native-result! result)
+  (exact! result #{:artifact :input :input-hash :returned-seed :invocation :result-hash})
+  ;; Reject policy/source/implementation substitution before reconstruction.
+  (let [policy (validate-pure-tags! source-unit [tag])
+        input (:input result)]
+    (exact! input #{:policy-id :implementation :handler :source-content-hash
+                    :tag :payload-form-id :seed})
+    (exact! (:seed input) #{:source-id :form-id :span :datum})
+    (when-not (and (= (pure-policy-id) (:policy-id input))
+                   (= implementation (:implementation input))
+                   (= (:bytes-hash source-unit) (:source-content-hash input))
+                   (= tag (:tag input))
+                   (= (first (:children form)) (:payload-form-id input))
+                   (= (get-in policy [:registry tag :handler]) (:handler input))
+                   (= {:source-id (:source-id source-unit) :form-id (:form-id form)
+                       :span (:span form) :datum payload} (:seed input)))
+      (reject! :pure-result-binding)))
+  (let [fresh (pure-result source-unit tag form payload implementation)]
+    (when-not (= fresh result) (reject! :pure-result-reconstruction))
+    fresh))
+
+(defn dispatch-pure-tag
+  "Produce and freshly verify a pure result after normal raw Reader checks.
+  The implementation identity is supplied only by the normal resolved plan."
+  [source-unit tag form payload implementation]
+  (let [result (pure-result source-unit tag form payload implementation)
+        verified (verify-pure-result! source-unit tag form payload implementation result)]
+    {:value (get-in verified [:returned-seed :datum])
+     :pure-result verified}))
