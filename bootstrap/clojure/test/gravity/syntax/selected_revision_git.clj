@@ -14,6 +14,26 @@
     (io/copy stream out :encoding encoding)
     (.toString out)))
 
+(defn- remaining-ms [ports]
+  (when-let [remaining (:remaining-ms ports)]
+    (let [value (remaining)]
+      (h/ensure! (and (integer? value) (<= 1 value Long/MAX_VALUE)) :selected-Git-whole-deadline)
+      (long value))))
+
+(defn- wait-exit [ports ^Process process]
+  (if-let [remaining (remaining-ms ports)]
+    (if (.waitFor process remaining java.util.concurrent.TimeUnit/MILLISECONDS)
+      (.exitValue process)
+      (throw (ex-info "Selected Git exceeded the shared deadline" {:reason :selected-Git-whole-deadline})))
+    (.waitFor process)))
+
+(defn- captured [ports task]
+  (if-let [remaining (remaining-ms ports)]
+    (let [value (deref task remaining ::timeout)]
+      (h/ensure! (not= ::timeout value) :selected-Git-whole-deadline)
+      value)
+    @task))
+
 (defn- interrupted-error? [error]
   (loop [e error]
     (cond (nil? e) false (instance? InterruptedException e) true
@@ -47,6 +67,7 @@
   strict-UTF8 capture is unsuitable for these Git protocol strings."
   [ports binding records argv]
   ((:verify-git! ports) binding)
+  (remaining-ms ports)
   (let [process ((:launch ports) argv (:cwd binding))
         record (atom {:argv argv :cwd (:cwd binding) :process process
                       :root-wait-exited? :unknown :descendant-coverage :unknown})]
@@ -66,9 +87,11 @@
                     stderr (.getErrorStream ^Process process)]
           (let [out (future (stream-text stdout "UTF-8"))
                 err (future (stream-text stderr (.name (Charset/defaultCharset))))
-                exit (.waitFor ^Process process)
+                _ (swap! record assoc :stdout-task out :stderr-task err)
+                exit (wait-exit ports process)
                 _ (swap! record assoc :exit exit :root-wait-exited? true)
-                result {:exit exit :out @out :err @err}]
+                result {:exit exit :out (captured ports out) :err (captured ports err)}
+                _ (swap! record assoc :capture-complete? true)]
             result))
         (catch Throwable error
           (reset! primary error)
@@ -103,7 +126,7 @@
   ;; these serializable observations. Unknown coverage is never promoted.
   (mapv (fn [record]
           (let [r @record]
-            (cond-> (select-keys r [:argv :cwd :exit :root-wait-exited? :finalization :descendant-coverage :terminal])
+            (cond-> (select-keys r [:argv :cwd :exit :root-wait-exited? :capture-complete? :finalization :descendant-coverage :terminal])
               (:error r) (assoc :error-class (.getName (class (:error r))))
               (:retain-error r) (assoc :retain-error-class (.getName (class (:retain-error r))))
               (:identity-error r) (assoc :identity-error-class (.getName (class (:identity-error r))))

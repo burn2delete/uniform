@@ -226,7 +226,7 @@
 (defn prepare!
   "Freeze files and a controller request only. Does not resolve runtime ports,
   select a profiler/session, acquire a guard, or start any process."
-  [{:keys [root source directory java-home jars coordination-root git-identity]}]
+  [{:keys [root source directory java-home jars coordination-root git-identity guard-participants]}]
   (let [prepared (h/prepare-inputs! root source)
         root (:root prepared)
         java-home (.getCanonicalPath (io/file java-home))
@@ -250,7 +250,7 @@
                  :stdout (path "stdout.log") :stderr (path "stderr.log")
                  :whole-watchdog (path "whole-watchdog.edn") :git-observations (path "git-observations.edn")}
         guard {:coordination-root coordination-root :resource-class :exclusive
-               :participants ["direct-C3-controller/normal-start-process"]
+               :participants (or guard-participants ["direct-C3-controller/normal-start-process"])
                :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"
                :lock-mode :immediate-try-lock :acquire-order [:C :L] :release-order [:L :C]}
         guard-input (create-edn! (path "guard.edn") guard)

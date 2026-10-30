@@ -395,3 +395,65 @@ The compiler-free affected panel passes 25 tests / 343 assertions; the new
 absolute-invocation test contributes 38 assertions. The boundary gate passes
 6 tests / 11 assertions. These controls use inert fixture files and fake Process
 ports; no actual runner, selected target, owner, broker or C3 execution occurs.
+
+### Git-common C3 parent proposal
+
+The coordinator's current proposed C3 decision selects one exclusive C at
+`/Users/matt/code/burn2delete/uniform/.git/gravity-development-loop-v1/broker`,
+followed by the non-broker immediate canonical L at
+`/private/tmp/gravity-sh07-heavy.lock`. This changes the proposed C3 domain from
+the historical private-tmp requests. Equal policy bytes do not merge those
+domains. The proposal does not inherit OWN, RV or H-domain participation.
+
+`gravity.syntax.selected-revision-parent` supplies the C3-only source sequence
+and a separate parent packet. It pins direct-parent, child, owned Git bookend,
+incremental CLI/wiring and broker sources. Default-root incremental callers are
+source-compatible cooperating callers, not a claim about live invocations.
+Unselected H-only profilers, UEP, warm sessions and other explicit root overrides
+are excluded. The child and bookends acquire no nested broker lease.
+
+The parent arms its deadline interrupt, acquires C and immediately tries L on
+the same thread, then rechecks inputs and launches the exact child argv through
+the normal public API. It keeps the actual Process before retaining its raw
+token, passes that token to wait/capture and uses the same cached finalizer.
+L releases before C, with no repeated release attempt. Unknown launch,
+retention, capture, creation coverage or terminal state preserves raw state,
+guards and watchdog for the caller rather than reporting clean release.
+Ordinary errors remain original objects, fatal errors propagate, and
+interruption is restored at the sequence boundary. Serializable observations
+exclude process/token/lock/task values and retain global coverage as unknown.
+
+One monotonic 300,000 ms parent deadline supplies current remaining time to
+broker admission, child wait/capture and parent Git bookends. Child wait is at
+most 120,000 ms and admission at most 60,000 ms, each clipped to remaining time
+minus a proposed 12,000 ms cleanup reserve. The reserve covers the earlier
+11,800 ms nominal normal cleanup/capture envelope with 200 ms nominal slack;
+it is not a measured runtime-fit guarantee. Timer scheduling uses remaining
+time after executor setup. Expiry and cancellation share one synchronized state
+transition, so cancelled work cannot later interrupt the acquiring thread.
+
+The optional Git remaining-time callback bounds native wait and complete-stream
+future waits against this same deadline. Without that callback, legacy semantics
+remain unchanged. Protocol strings remain complete rather than truncated;
+timeouts refuse and retain raw process/capture-task records. Parent supervision
+bounds the child lifetime through its clipped normal wait; it does not compare
+independent JVM nanoTime origins or silently change the frozen child argv.
+
+The normal port loader checks participant/broker bytes, 2 GiB parent heap and
+public broker signatures, and consumes the already-pinned normal runner API.
+It supplies only a daemon scheduled parent interrupt. JVM startup, blocking
+native calls, stream close and shutdown are not made hard-bounded by that
+interrupt. A supported external supervision/platform binding remains missing.
+The normal creation-set callback explicitly returns unknown/incomplete, so it
+cannot authorize guard release. Parent startup/publication bindings, effective
+configuration/native helper closure and actual cooperating-caller coverage still
+require review. The new parent packet remains unlaunchable; it is source/profile
+preparation before genuine platform assessment.
+
+Compiler-free controls cover order, identical raw tokens, cached cleanup,
+remaining-time recomputation after startup, C/L refusals, launch/retain failures,
+unknown bookend capture, ordinary/interrupted/fatal cleanup, failed releases,
+late completion, timer cancellation races and raw-value-free observation views.
+The affected panel passes 33 tests / 945 assertions. No normal ports, timer,
+canonical lock, broker lease, selected target, owner or C3 child were opened by
+these controls. All four historical requests remain immutable.

@@ -14,8 +14,10 @@
       (getOutputStream [] stdin)
       (getInputStream [] (ByteArrayInputStream. out))
       (getErrorStream [] (ByteArrayInputStream. err))
-      (waitFor [] (swap! events conj :wait)
-        (if wait-error (throw wait-error) exit))
+      (waitFor
+        ([] (swap! events conj :wait) (if wait-error (throw wait-error) exit))
+        ([timeout unit] (swap! events conj [:timed-wait timeout unit])
+         (if wait-error (throw wait-error) true)))
       (exitValue [] exit) (isAlive [] false) (destroy [] nil))))
 
 (defn- legacy-sh [launch]
@@ -215,6 +217,26 @@
       (is (nil? (find-ns 'gravity.bootstrap)))
       (is (nil? (find-ns 'gravity.self-hosting.sh01-parallel-test-runner)))
       (finally (doseq [f (reverse (file-seq directory))] (.delete ^java.io.File f))))))
+
+(deftest shared-Git-deadline-preserves-complete-protocol-and-refuses-expired-launch
+  (let [root "/fixture" binding {:root root :cwd root} events (atom []) records (atom [])
+        process (fake-process (.getBytes " identity\n" "UTF-8") (byte-array 0) 0 events nil)
+        ports (assoc (controls process events (Object.) nil) :remaining-ms (constantly 5000))]
+    (is (= "identity" (git/git! ports binding records root "rev-parse" "HEAD")))
+    (is (true? (:capture-complete? @(first @records))))
+    (is (instance? clojure.lang.IPending (:stdout-task @(first @records))))
+    (is (not (contains? (first (git/observation-view records)) :stdout-task))))
+  (let [events (atom []) ports {:verify-git! (fn [_] nil)
+                                :remaining-ms (constantly 0)
+                                :launch (fn [& _] (swap! events conj :launch))}]
+    (is (= :selected-Git-whole-deadline
+           (try (git/git! ports {:root "/fixture" :cwd "/fixture"} (atom [])
+                          "/fixture" "rev-parse" "HEAD") nil
+                (catch clojure.lang.ExceptionInfo e (:reason (ex-data e))))))
+    (is (empty? @events)))
+  (is (= :selected-Git-whole-deadline
+         (try (#'git/captured {:remaining-ms (constantly 1)} (promise)) nil
+              (catch clojure.lang.ExceptionInfo e (:reason (ex-data e)))))))
 
 (deftest explicit-absolute-executable-binding-avoids-path-selection
   (let [directory (.getCanonicalFile (.toFile (java.nio.file.Files/createTempDirectory
