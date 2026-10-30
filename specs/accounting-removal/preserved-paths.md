@@ -1,5 +1,53 @@
 # PR502 preserved path reconciliation
 
+## Separate verifier census serialization draft
+
+[PR642](https://github.com/burn2delete/uniform/pull/642) is frozen at
+`4025a1c95e3283b54ae967347249b8d64a7519b9`, tree
+`8cba400d6be4551cd2ec6a2b6befd27e0f66e925`, directly on frozen PR599.
+Its three evidence paths change exactly one original census fragment from
+apostrophe quote shorthand to `(quote forged.module)` and add a correction
+record/explanation. The complete corrected EDN value equals the original
+Clojure-reader value and all eight unchanged actual test mutation forms.
+The correction record also roundtrips through EDN and core readers. Nine
+effective reader/source corruptions refuse mismatches and reader evaluation.
+All other census bytes and all source/tests/fixtures remain parent-identical;
+the clean full-tree overlay, evidence lint and whitespace checks pass.
+
+The original census, generator provenance, qualified receipt and serialization
+caveat stay bound to their historical bytes. Affected evidence/source review
+is pending Accounting/Reconciliation routing. No retroactive caveat clearance,
+parent repair, new production correspondence, current-main/public-verifier or
+genuine/integration acceptance follows. Full ACC-01/PR502 remains open.
+
+## Consumed verifier and semantic-comparison successor reviews
+
+`mixed-ledger-semantic-review-consumption.edn` consumes PR641 receipt
+`4da663f5237a96695bc03e7c160e6ebf05cff4ee6be4388b0c39ea4cb654f771`:
+11,754 source checks and 60 coherently rehashed corruption refusals, qualified
+SOURCE/test-form PASS. Its six comparisons address the P2 nonpayment semantic
+obligation for this successor only. The original PR598 receipt/finding remains
+history; historical payment-assertion equivalence, genuine results and PR599
+parent repair are not inferred. Only top-level work-count is projected out;
+all other parent test and production bytes are conserved.
+
+`verifier-fixtures-review-consumption.edn` consumes PR599 receipt
+`c6504417ad646c89e261e7871d26cd012b47a5783b088cf6eafe2a3662161f23`:
+903 source/data checks and 92 coherently rehashed refusals, qualified exact
+SOURCE/test/adaptation PASS. It preserves twenty-eight historical matches and
+two actual non-equivalent accounting-read/imported-carrier-reason forms, the
+reviewed parent qualification and all source/test/fixture obligations.
+The census's apostrophe quote shorthand is an informational source excerpt;
+its EDN reader value differs from the actual Clojure quote form. The actual
+test source was independently pinned and is unchanged. That caveat is retained
+for a separate evidence-serialization successor, not silently cleared.
+
+Both receipts, checker/artifact hashes, exact trees, source inputs and full
+test equations were verified without foreign checker or target execution.
+Assessed main is historical provenance only; current-main and public-verifier
+acceptance, genuine execution and integration remain UNRUN. Full 29/530/316
+ACC-01/PR502 disposition remains incomplete and the native root goal blocked.
+
 ## Separate mixed-ledger semantic comparison draft
 
 [PR641](https://github.com/burn2delete/uniform/pull/641) is frozen at
