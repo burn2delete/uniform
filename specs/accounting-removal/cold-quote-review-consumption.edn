@@ -1,0 +1,87 @@
+{:findings [],
+ :changed-composition-review :pending,
+ :nonclaims
+ [:whole-accounting-completion
+  :parent616-acceptance
+  :parent615-acceptance
+  :parent569-acceptance
+  :PR502-closure
+  :source-authentication
+  :native-runtime-support
+  :fresh-main-composition
+  :integration-or-merge
+  :release-or-self-hosting],
+ :candidate "3a1a553dbb1b3eb0ae472f5bf806171c02a71109",
+ :executed-evidence
+ {:whitespace :pass,
+  :canonical-reader-gensym-handling
+  :explicit-added-form-hash-normalization,
+  :production-residue
+  {:command :immutable-git-grep, :exit 1, :matches 0},
+  :controls {:test 3, :pass 88, :fail 0, :error 0, :type :summary},
+  :fake-control-mode-cut-source-missing-unknown :all-reject,
+  :bootstrap-loaded false,
+  :quote-work-input-invariance [nil 0 1 97],
+  :fake-control-positive :passes,
+  :source-reader-eval false,
+  :fake-control-obsolete-0-1-nil :rejects,
+  :test-preservation :exact-original-byte-prefix},
+ :genuine-owner-helper-kernels :UNRUN,
+ :current-main-extraction :not-created,
+ :verified-file-hashes
+ {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "9fa5b2598e50036623a2c879d9f61337d3d57784247fd67c910e40f640ad3e47",
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "4b86b518d90227dd24c20abd013d8b78a2b8bc6f4a5678327976a67b10cdc444",
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  "9e2a8288303896f5a7bac6af387181894b50f5919bd3f00550742c2f0b8e0ff7",
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  "b4c28524a0d780b04c63372a3e10c3df2508a95f8d6703d1e0b310a04fbccb2d",
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "f957e3b088efeae70eb4285a34e7e41fd0299608b152e0b4769ce25be72eacb4",
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+  "specs/accounting-removal/cold-quote-metadata-census.edn"
+  "4505275afdd7e6050c89754bcb10f6991a787276f27d4b4e8df115c5e1e9e64d",
+  "specs/accounting-removal/cold-quote-metadata.md"
+  "1d3bbf5e919423bda3493de7f9e2eb0c06df1a3b81ee0cc75c4864b0782a7fc0"},
+ :scope-limits
+ "PASS accepts this exact three-definition retirement and its source/data controls only. Remaining nonquote accounting stays open. Genuine helper and source-derived private/indexed-self integration remain UNRUN. Future main extraction must have its own exact identity, affected checks, independent applicability and integration gates. No earlier denial was retried.",
+ :main-integration :pending,
+ :author "01a183dd-7208-7d33-a336-7483fd90e358",
+ :consumption
+ {:receipt-hash-and-all-eight-Git-file-pins :verified,
+  :candidate-tree :verified,
+  :no-reviewer-or-owner-message-sent true,
+  :new-execution false},
+ :kind :verified-cold-quote-source-review-consumption,
+ :receipt-sha256
+ "9892645f1804e7d9d9012dc5f69d90b693ca0aa0e5e8fea6759187b2acd16ec7",
+ :source-assessment
+ ["C7 sh08-is-cold-evidence removes only the orphan quote-work-count map entry and is exactly equal to its historical PR502 form. No other producer field or argument changes."
+  "Effects and emitter each remove only the retired schema key, retired nonnegative numeric operand, quote-only bound and quote charge. Their remaining complete bodies agree under the three explicit helper-name aliases, without claiming helper semantic equivalence."
+  "Closed metadata schemas reject obsolete quote-work-count at 0, 1 and nil. Mode, exact cut, source argument call IDs and required semantic-key checks remain. All other accounting expressions and native/type/source guards remain unchanged and are not endorsed as final policy."
+  "Unmetered quote-product definitions remain byte/form-pinned and have no work-count output. No retired field reference remains in tracked Gravity or host production source."
+  "Existing test bytes are exact prefixes of the successor. Added forms name actual C7, Effects and lowering validators and the eight requested invalid cases. Normalized helper DATA is not authenticated Core or private-inference evidence."],
+ :reviewed-scope
+ {:changed-production-definitions 3,
+  :unchanged-other-top-level-production-forms 2646,
+  :all-other-production-paths :unchanged,
+  :caller-forms-and-arities :unchanged,
+  :owner-kernel-definitions 3,
+  :test-fixture-helper-definitions 2,
+  :invalid-metadata-cases 8},
+ :evidence-scope
+ :inert-source-forms-and-non-authoritative-DATA-model-only,
+ :verdict :pass-exact-source-slice,
+ :generator
+ {:language :clojure,
+  :sha256
+  "1c0fcf92f3b2f68a91af2bf436bf261ae70e1c985aa133bea130463e26f14845",
+  :preserved-locally true},
+ :reviewer "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+ :base-tree "e21649ac124613802ad024edce7df203176f32e8",
+ :base "2f2f8f701f19660dad89e98f351693669a97980b",
+ :pr 618,
+ :owner :ACC-01,
+ :candidate-tree "c8600e2c52f4ba47f1366fae4035248d23365623"}

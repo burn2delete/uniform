@@ -1,0 +1,311 @@
+{:source-corruption-controls
+ [{:unit [defn sh08-lc-source],
+   :case :native-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lc-source],
+   :case :cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lc-source],
+   :case :status-only,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lc-source],
+   :case :lost-body,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lc-source],
+   :case :accepted-failure,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lc-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :native-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :status-only,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :lost-body,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :accepted-failure,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :lost-head-proof-route,
+   :refused-complete-source-equation true}
+  {:unit [defn sh08-lq-source],
+   :case :unchecked-head-proof-status,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :native-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :status-only,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :lost-body,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :accepted-failure,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :lost-head-proof-route,
+   :refused-complete-source-equation true}
+  {:unit [defn body-lq-source],
+   :case :unchecked-head-proof-status,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :native-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :cell-bypass,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :status-only,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :lost-body,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :accepted-failure,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :changed-arguments,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :lost-head-proof-route,
+   :refused-complete-source-equation true}
+  {:unit [defn p15-s23-lq-source],
+   :case :unchecked-head-proof-status,
+   :refused-complete-source-equation true}],
+ :nonclaims
+ [:no-unconditional-function-or-input-contract-equivalence
+  :no-head-proof-validity-from-wrapper
+  :no-native-prelude-effect-callback-exception-termination-or-transitive-proof
+  :no-other-native-guard-uses-or-bounds-approval
+  :no-wide-cross-stage-or-runtime-support
+  :no-PR623-636-adoption-or-integration
+  :no-whole-PR569-ACC01-PR502-closure],
+ :execution
+ {:read-eval false,
+  :Gravity-helper-Bootstrap-native-compiler-runtime :UNRUN},
+ :retained-accounting
+ :open-unendorsed-including-conditions-inside-historical-bodies,
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assumptions
+ [:pinned-unrebound-source-and-native-guard-bindings
+  :L2-control-semantics],
+ :rows
+ [{:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :native-guard-pin
+   {:name sh08-lc-native-map?,
+    :form-sha256
+    "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+    :same-as-prior-source-pin true,
+    :execution :UNRUN},
+   :current-form-sha256
+   "730d6db2542cbc947207b6306c0a388f5fbe1ca0a7413f3a6d2d714619d1e665",
+   :source-ref "c5e9fccdad293b34c290859cc3e4716870241dd6",
+   :historical-file-sha256
+   "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+   :failure-branches [nil nil],
+   :unit [defn sh08-lc-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :historical-body-sha256
+   "c802b23b244987168e2f1ea1e263c8091b876f1466382d7010e03ef7a602ef2a",
+   :source-tree "7b506c824110d5f88fc228bdf9b4c5999b35b3a7",
+   :route :PR623-draft,
+   :head-proof-payload :not-an-allowed-extra-field,
+   :current-body-path [3 2 2],
+   :source-file-sha256
+   "2bccc04debd00b13d4cc4fd472f3923440fac378c6f30503b24f289209b05774",
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :kind :construction,
+   :validation-cell-guard (= {:status :accepted} validation),
+   :complete-body :reader-identical,
+   :historical-form-sha256
+   "07d5d63f136c1d9f72f6f03eb3299441690324cd85972f398bb672aa42cb7f68"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :native-guard-pin
+   {:name sh08-lc-native-map?,
+    :form-sha256
+    "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+    :same-as-prior-source-pin true,
+    :execution :UNRUN},
+   :current-form-sha256
+   "f69e0a50fcf44cdbe34d8afade49ee646239f9502b1109f5fa7552f3a2226e12",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :historical-file-sha256
+   "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+   :failure-branches [nil nil],
+   :unit [defn sh08-lq-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :historical-body-sha256
+   "468a0c5d46c90c9da9b6bbac7aab654eff00a65189889a0bd6e8945bd850c18a",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :route :current-main,
+   :head-proof-payload :not-certified-by-wrapper,
+   :current-body-path [3 2 2],
+   :source-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :kind :query,
+   :validation-cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :complete-body :reader-identical,
+   :historical-form-sha256
+   "9ce10c9518b5a13725b22a1d8c675bad87fcabdf2dcd879ac3ce1d6a16bce726"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :native-guard-pin
+   {:name body-lc-native-map?,
+    :form-sha256
+    "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+    :same-as-prior-source-pin true,
+    :execution :UNRUN},
+   :current-form-sha256
+   "ecfdcc003f320100c0ee48d255f054138d2dbba1e9dc2902af0c743cdfe09ec7",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :historical-file-sha256
+   "b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802",
+   :failure-branches [nil nil],
+   :unit [defn body-lq-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :historical-body-sha256
+   "5d617a0841495d7bb99f8f57bd41aa50f9811cc9a8e3429603c9795da1911ce9",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :route :current-main,
+   :head-proof-payload :not-certified-by-wrapper,
+   :current-body-path [3 2 2],
+   :source-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :kind :query,
+   :validation-cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :complete-body :reader-identical,
+   :historical-form-sha256
+   "a66b028468430879300ea7f44d861b55aa8ccdd6cf5e7cf8adc42d2ac8de4384"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :native-guard-pin
+   {:name p15-s23-lc-native-map?,
+    :form-sha256
+    "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+    :same-as-prior-source-pin true,
+    :execution :UNRUN},
+   :current-form-sha256
+   "d77e0ac059e4138069b7f7b4fb327fbec72fbf69276ecf348e835adff89ebbea",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :historical-file-sha256
+   "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea",
+   :failure-branches [nil nil],
+   :unit [defn p15-s23-lq-source],
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :historical-body-sha256
+   "31fe0608869fa5331d8d4b4141d0d06ca336c141f81e152b1d069a2554480e3b",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :route :current-main,
+   :head-proof-payload :not-certified-by-wrapper,
+   :current-body-path [3 2 2],
+   :source-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :proposed-disposition
+   :conditional-complete-historical-body-incorporation,
+   :kind :query,
+   :validation-cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :complete-body :reader-identical,
+   :historical-form-sha256
+   "307abaf2c70338b5f1a7569d90ad7ed8fa47918b5230b36e984326477649eeb5"}],
+ :original-inventory :unchanged,
+ :independent-classification :pending,
+ :assessed-main "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :kind :collection-builder-conditional-source-incorporation-proposal,
+ :C7-construction-route
+ {:pr 623,
+  :head "c5e9fccdad293b34c290859cc3e4716870241dd6",
+  :observation :historical-body-behind-guards-in-existing-draft,
+  :remaining-main-difference (<= (count args) 1023),
+  :new-source-port :not-needed,
+  :scope :body-source-only,
+  :PR623-636-acceptance-inheritance :none},
+ :prior-guard-evidence
+ {:packet-path
+  "specs/accounting-removal/predicate-guarded-incorporation.edn",
+  :packet-sha256
+  "2a1ec7d3b3d5f068a0cca4bd27b8416c2680fdbd3bda7c1a66e41a1b54bd4dc5",
+  :source-pins-only true,
+  :predicate-decisions :not-extended},
+ :generator
+ {:path "/tmp/acc01-collection-guards-proposal.clj",
+  :sha256
+  "f350dc3867486b33ba6cde4cfb6dedff2887d162d303c8a056ac03db0789ee5a"},
+ :original-inventory-sha256
+ "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+ :production-change :none,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

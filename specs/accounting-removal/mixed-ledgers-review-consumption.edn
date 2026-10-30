@@ -1,0 +1,245 @@
+{:reviewer-checker-rerun :not-performed,
+ :findings
+ [{:lost-assertion-coverage
+   {:full-result-comparison-instances 6, :families 2},
+   :retained-accounting :unendorsed,
+   :evidence
+   "Per family, one assertion expanded over row and fact censuses and one compile assertion compared entire result maps at an exact admitted allowance. Those compare semantic products as well as work telemetry. The replacement retains only :complete status; preserved positives still assert exact selected rows/facts and lowered value at65536, but do not assert whole-result invariance at a second admitted allowance.",
+   :paths
+   ["bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj"],
+   :runtime-bug :not-established,
+   :summary
+   "The retired allowance-bound full-result equality assertions are not solely payment arithmetic.",
+   :genuine-test-execution :UNRUN,
+   :priority 2,
+   :id :PR598-TEST-RETIREMENT-01,
+   :kind :test-coverage-qualification,
+   :requested-disposition
+   "Explicitly narrow the test-retirement claim and retain this lost coverage qualification, or preserve the nonpayment semantic projection with a separately authorized inert/genuine test adaptation. Do not report full semantic assertion equivalence from the status-only replacement."}],
+ :source-conservation
+ {:overlay-paths 5,
+  :full-ordered-emitter-form-stream true,
+  :inverse-edits
+  [:optional-producer-default
+   :owned-family-classification
+   :native-record-predicate],
+  :full-historical-positive-bodies-and-helpers :preserved,
+  :original-negative-order-and-multiplicity :preserved,
+  :canonical-equality-reconstruction-and-coverage :preserved,
+  :native-header-before-enumeration :source-order-only},
+ :conclusion
+ "Qualified SOURCE conservation PASS with P2 test-coverage finding. Six retired complete-result comparison instances include nonpayment semantic coverage; full semantic assertion equivalence is not established. No runtime regression inferred; retained accounting is unendorsed.",
+ :tree "5b895b67131de6d209b50585551840fd3954011f",
+ :counts {:checks 29124, :corruptions-refused 25},
+ :consumer-verification
+ :frozen-intake-source-equations-tree-file-pins-six-artifacts-and-finding,
+ :full-assertion-equivalence :NOT-established,
+ :consumer-source-sha256
+ "960dd0c199c88e4f40d41d4ea4cf8aa4b5984fb1c5e1d8580cbbddba5a36a222",
+ :genuine-execution :UNRUN,
+ :candidate "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
+ :execution-limits
+ {:public-verifier :UNRUN,
+  :providers :UNRUN,
+  :Bootstrap :UNRUN,
+  :metadata-callback-runtime :UNRUN,
+  :publication :none,
+  :read-eval false,
+  :integration :UNRUN,
+  :source-auth-runtime :UNRUN,
+  :compiler :UNRUN,
+  :C7 :UNRUN,
+  :APPROVE :none,
+  :pure-reader-and-AST-checks :executed,
+  :CI-reruns :none,
+  :lowering :UNRUN,
+  :current-main-composition :UNRUN,
+  :native-header-runtime :UNRUN,
+  :original-writers-and-imported-prefixes :not-executed},
+ :accounting-removal-accepted false,
+ :retired-assertion-dispositions
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj",
+   :family "lset",
+   :historical-test
+   mixed-ledger-preserves-exact-payment-and-local-limit,
+   :retired-source-expressions 6,
+   :language-runtime-regression :not-inferred,
+   :successor-test mixed-ledger-remains-complete-with-ordinary-entries,
+   :lost-full-result-comparison-instances 3,
+   :retained-source-expressions 1,
+   :assertions
+   [{:index 0,
+     :form
+     (is
+      (=
+       4
+       (-
+        (:work-count row-result)
+        (:work-count
+         (row-census context [lset-row] descriptor 65536))))),
+     :disposition :retired-row-payment-delta,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 1,
+     :form
+     (is
+      (=
+       3
+       (-
+        (:work-count fact-result)
+        (:work-count
+         (fact-census context [lset-fact] descriptor 65536))))),
+     :disposition :retired-fact-payment-delta,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 2,
+     :form
+     (is
+      (=
+       result
+       (function context entries descriptor (:work-count result)))),
+     :disposition :retired-full-result-equality-at-exact-allowance,
+     :semantic-subconjunction
+     :full-result-semantic-product-invariance-under-admitted-allowance-change,
+     :coverage-qualification :not-preserved-by-status-only-successor}
+    {:index 3,
+     :form
+     (is
+      (=
+       :list-set-conversion-work-limit
+       (:reason
+        (function
+         context
+         entries
+         descriptor
+         (dec (:work-count result)))))),
+     :disposition :retired-one-short-family-refusal,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 4,
+     :form (is (= :complete (:status result))),
+     :disposition :retained-complete-status,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 5,
+     :form
+     (is (= result (compile-node candidate (:work-count result)))),
+     :disposition
+     :retired-full-compiled-result-equality-at-exact-allowance,
+     :semantic-subconjunction
+     :full-result-semantic-product-invariance-under-admitted-allowance-change,
+     :coverage-qualification :not-preserved-by-status-only-successor}
+    {:index 6,
+     :form
+     (is
+      (=
+       :typed-lowering-work-limit
+       (get-in
+        (compile-node candidate (dec (:work-count result)))
+        [:facts :reason]))),
+     :disposition :retired-one-short-typed-refusal,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj",
+   :family "mkeys",
+   :historical-test
+   mixed-ledger-preserves-exact-payment-and-local-limit,
+   :retired-source-expressions 6,
+   :language-runtime-regression :not-inferred,
+   :successor-test mixed-ledger-remains-complete-with-ordinary-entries,
+   :lost-full-result-comparison-instances 3,
+   :retained-source-expressions 1,
+   :assertions
+   [{:index 0,
+     :form
+     (is
+      (=
+       4
+       (-
+        (:work-count row-result)
+        (:work-count
+         (row-census context [mkeys-row] descriptor 65536))))),
+     :disposition :retired-row-payment-delta,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 1,
+     :form
+     (is
+      (=
+       3
+       (-
+        (:work-count fact-result)
+        (:work-count
+         (fact-census context [mkeys-fact] descriptor 65536))))),
+     :disposition :retired-fact-payment-delta,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 2,
+     :form
+     (is
+      (=
+       result
+       (function context entries descriptor (:work-count result)))),
+     :disposition :retired-full-result-equality-at-exact-allowance,
+     :semantic-subconjunction
+     :full-result-semantic-product-invariance-under-admitted-allowance-change,
+     :coverage-qualification :not-preserved-by-status-only-successor}
+    {:index 3,
+     :form
+     (is
+      (=
+       :map-keys-work-limit
+       (:reason
+        (function
+         context
+         entries
+         descriptor
+         (dec (:work-count result)))))),
+     :disposition :retired-one-short-family-refusal,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 4,
+     :form (is (= :complete (:status result))),
+     :disposition :retained-complete-status,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}
+    {:index 5,
+     :form
+     (is (= result (compile-node candidate (:work-count result)))),
+     :disposition
+     :retired-full-compiled-result-equality-at-exact-allowance,
+     :semantic-subconjunction
+     :full-result-semantic-product-invariance-under-admitted-allowance-change,
+     :coverage-qualification :not-preserved-by-status-only-successor}
+    {:index 6,
+     :form
+     (is
+      (=
+       :typed-lowering-work-limit
+       (get-in
+        (compile-node candidate (dec (:work-count result)))
+        [:facts :reason]))),
+     :disposition :retired-one-short-typed-refusal,
+     :semantic-subconjunction nil,
+     :coverage-qualification nil}]}],
+ :kind :mixed-ledgers-qualified-source-review-consumption,
+ :receipt-sha256
+ "f058ec3cfbd19bfb439f6ae3ae8d557c453e99bf4d0377e371b56d092bcdb274",
+ :parent-acceptance-inherited false,
+ :base "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :parent-stack-acceptance :none,
+ :CI-observation
+ {:run 40933015895,
+  :passed 7,
+  :skipped 2,
+  :credit :observation-only,
+  :rerun false},
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :finding-resolution :separate-successor-required,
+ :owner :ACC-01,
+ :decision
+ :qualified-source-conservation-PASS-with-test-coverage-finding,
+ :whole-ACC01-PR502 :incomplete}

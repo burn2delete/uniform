@@ -1,0 +1,1868 @@
+{:source-equation
+ (defn
+  NAME
+  ARGS
+  (if
+   (NATIVE-MAP? validation)
+   (if (= {:status :accepted} validation) HISTORICAL-BODY nil)
+   nil)),
+ :nonclaims
+ [:unconditional-behavioral-equivalence
+  :historical-validation-input-contract-equivalence
+  :native-callback-or-exception-equivalence
+  :termination
+  :mutable-var-behavior
+  :transitive-dependency-or-runtime-proof
+  :other-native-helper-uses-or-bounds-approval
+  :whole-predicate-family-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:Gravity :UNRUN,
+  :Bootstrap-loaded false,
+  :native-guard :UNRUN,
+  :genuine-owner-controls :UNRUN},
+ :method
+ {:read-eval false,
+  :source-representation :complete-Clojure-reader-pr-str,
+  :numbers-symbols-arguments-schema-values-and-guard-terms
+  :not-normalized,
+  :comments :file-byte-pins-only,
+  :raw-body-byte-equivalence :not-claimed,
+  :no-source-or-Bootstrap-definition-evaluated true},
+ :source-files
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :historical-file-sha256
+   "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :native-guard
+   {:name sh08-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     sh08-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-file-sha256
+   "b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :native-guard
+   {:name body-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     body-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-file-sha256
+   "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :native-guard
+   {:name p15-s23-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     p15-s23-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}],
+ :governing-source-pins
+ [{:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assumptions
+ [:pinned-source :unrebound-callee-bindings :L2-if-and-call-semantics],
+ :rows
+ [{:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "ba5f6da9f4c889e6a2cc8393a8044814eb4c24a2bfd6885a1d6b9b4e8daf95df",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-mapp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "99ab2b9b996ea08e31a133a51c592cbea22a9eb1da1288ac6875d413713e3f9a",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "b56d01ceda7fbe0870db4cce1de815d69dbf7bcf783b4718e8a3b39b43fe8301"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "4d60aed9fd3e3a220703ce4ff9c3d8b9d164234ab3130e5be6cf509b76a3a903",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-setp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c6262a0e2604bb359b7fdb4addff8811b1703b2514ee19c88c757c13d1c31145",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "08ee2e349652c6f99e8fc0bbad69af23a36e1b3a4b613cf304532e0f75948d48"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "8a210b5e6a45b8f005591260ea1a56c175962e7b7811b65c871ab52ca6a8a26a",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-listp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "2f8cfe24b57188e1d1277b274419675abb6281741b6c3b2eae6990ecf842a417",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "ba2e7fb4deac4ec32ae4f8a13f6e0edff7deeac92212c69e5ca413e63c64d0b5"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "9d67716d20b658344c5dc3b7afe760c96b04642013356207cf983f5dbcfee858",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-symp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c02954e19d75a069bb2a16052cd2ff2b8b788411391de1e0716188494fc17b34",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "75422f1433a93ae31f3714b6efbd96317f79219caef1c329dd668a5a983312de"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "ceaa6d822281bd1ab89841c674d73ca5b6bf247c1ec1385f5308163d43c79c35",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-boolp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "544355bdc62872bd60ecf23f911b9326f6c9b27b3ab397dde0a073587fc37862",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "4684b7cccc4791edfc8b9346ac44a33d610bee992c625ac0527a00787a5a8684"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "03b22fe43512f17f9841838e6711c49f113c1912de60cda3a26081ac32bb067a",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-chp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "22bb1648e081b0bd4ab2cfaf4f427ea0424f48e7b27e091fdba290162eae1281",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "66acd08bc222e0bfab95e3254641db0e4593a6b38acdb3072bfd99aa1dff1871"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "5aa6653350eb5088cf6ba75157f7eaf7e02b4d795235129c2e504e180d7feeaf",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-nilp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "d57fde9027d1620d9431a3ba4ff39d804f911703834e63dfebbc6067c5f01e7e",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "77f4c74c17f22fd7e18e753937bdb56f5b4602b3d75777f202d1002708596c8e"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "83c60273257ac1c974af17ee60434bb23b4b707b55ec621577237e10e57ef604",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-kp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "a6a56eb96ef61e12e06f6ccd914b02e25ccbfe153bc104c3717784298f774fdb",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "acffbee1ced8a4078d9a88096d84228db5616a7e49fcd4076e7f4770d7646a49"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "5494791b678fc125858a68e17d498b2406b5bf62d0f31fbcb2bf195b8df8070b",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-strp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "d715395c55562a68d0d2a61e9dc8d509aaad315f54a6ca722dd2e000b82f997b",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "dfbe46aa59ffdacd97bb92ae6ac8b937d441746284d3697c9e66719fc7cb5dde"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "81f84b7fd30dff48a12efe6bb0dc4027b9c93ae40a5de692ba4e2e8fb5243db8",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-ip-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "52901784cbf2de3193f605dc650a8fa61f07faed3ce72a1b7dfc48d4dc2fe206",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "ca1e4583affa10c813faef8f6c0167c1fd1e991954cf413747ec6ba6647201d4"}
+  {:outer-native-guard sh08-lc-native-map?,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-form-sha256
+   "10cd874137094677e48e2824700b4f7bb4e64ba1ffd072c60e574aeb93f03f38",
+   :guard-failure-branches [nil nil],
+   :unit [defn sh08-vp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "9602a4b0f2bad7bef08dd3372f9ffdae643cae412d501b03f820cf7817b1f1cc",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "5bc93eb79caccf13f3f8007776adb96fdb95acd5afe44a767062d8729bc61ec9"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "7eaa6f336604d2c1d5ee77db3d8e6d8c2016e9733db6688d0ba03c7fd32e985e",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-mapp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c5e71a6a1d5c907f5ffdc78c549de7d2b7c97bf3a304ffdbebb45db526a95844",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "e4340625f73df67537a729e72902af032dcc15fc139faebf7ac4353eec0ad611"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "74156103ea64b851e5b239cd6c31f967a7445b00472c478bf2fd12bf28691e5c",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-setp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c31ee81695fbca22be03634291c6167105262565c17b860a40962d8b03a04fe2",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "c130d40c5881f63ebbc263ba65e83f848bc6dec08d9bcfba690a16b753f39b4d"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "a61b7bf01d78890141078630198d958fed6f178f5229c55bea90ae26c5885dd8",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-listp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "ccdf0beb6627bc47b5b4e2d2b0f3e219e28d4b1be75d80e43f8fb757bfa3f939",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "7d046a8c4c41e16c571f3df052c911a2fd235de076a9fda0c4a7a48f5073530f"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "0a6ea3c3798ae80bc7e51115f745003508e9ee724f6e02fb2867ccef65def387",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-symp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "448b363deeaa5dd138d7960d9baeb5cbd1455534f5788e11b77809c6731ed20b",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "381b811a90475f450d202367fd9d698ead90977e8d7e5ad31c6f2ac252c1ab96"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "807698a0a5a1a7faebc3aeec0f9fc4951195876b68b3a5acbd0dd477a0f10491",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-boolp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "e80e83bae769300c2af123708a58b3ce2209fe1809284541467fd267c54567f2",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "30942f8ab47e2c5dc37f7e0e96de958d5be52d0e370c6466f8587b45bd00df26"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "2fba5d729ffdcbb943920872bbb064a3b1c8563fcb8473919ca4702e3cd5fdf9",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-chp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "0f0af70225dcbcc53a2368ccb27690f1dc5732c2af51ba61d26054f5ee0685f4",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "a2cd0a47932b81e701fb236f19b4434dc77d340ea4c11cef207663e3eb90af0f"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "d9e6fbf82daee9ca9e69c6220b15870af6fa0136a9efcc94369c74d33302232e",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-nilp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c773d93cba9da3f877fc43146ccfd4d2fde19e20af34b635e5e9bbe0d4217c5e",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "efcc3f688e190397472838b503607b0aa69ef9e93842d9e06e1fbbfe84a16827"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "7481f2f3df3c69492aa7cac0731e12815713cba40a83657e3a4994524c8a5770",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-kp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "e0e9b91a69da7ccf91a90ef3453395e1131ad3f069788caaa132d8756fe62709",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "828a4bb6278af5ca74007d2fffd6a760d95fd7aed1acea291ec6cdb43b3b9123"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "751f8724058e797cdcd8c8cd15f84fa1b213fd067887ddd730fbc60bd589a8c4",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-strp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "20f16bb9fc4430ac6ce59cac3f50ca3f23db976d3c50ca13b3544857f8cfbf21",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "24ec03b7aefe28dc4b9ea669f91cf5817a51d6fec37d2e4d65ec64573c4e3741"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "abb904994e291ad42f6309834d14af68fce06fdd4960260fbbdc4e1bce9e0936",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-ip-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "9a17dfba4cf2d88ff6b7335c3f6f9c9fb55f70bfca321a56ac775523d2087878",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "3d38569d81ce06729cd1b0f949ad5f0855a38fb3ea51d19af3da3b68b70f21bf"}
+  {:outer-native-guard body-lc-native-map?,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "d03dd5a90a01f07be56b25938d69892155c64b1265dc797486c73f4bcddbd7e8",
+   :guard-failure-branches [nil nil],
+   :unit [defn body-vp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "776b651ec2b3867420d9263b3a0837a3420bcb1c33f44736b21ce1715edca4d3",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "068c349203909b324a8bd161df133b3d3f5be57a61378afff5d79a165019be85"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "87d4ff26ce6ae6b75423e7a4ce81a85f6bd73fcdf6c18d6c0a0eef9a151c1d16",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-mapp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "10e84459655edb1a3295538dbe7000ed5d63c9d2cc7a0858187c11352f005cb7",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "f27079cf50c7dc84a15495bcac7860f36f3207a54e412eaeb7d4ae3955fc57f5"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "65f2157a460e25fbf85d6998288dbc5998118c27a8128d29ce8b62d4d7062253",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-setp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "ff2b992922d8ef3108b029ab4e76cbcdd034e79bbb8a9a2797976d8e6ff3709a",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "8e9c925b84336f6b6848b1fb5367382a30214694f2d762537a5495e270042eb9"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "6294af3b25673a69790231e3186493afeb6ffa3feb8ea8e1a1a1dd1b1cb52422",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-listp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "447b2b877cb75b7a7c23e8bb2c09db180eb1d96bebd758cf75305162fb25bb91",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "f94f8d2248d719886f5053e8d084fc47eb0ad589196cf5618f2e0ee10b58b14f"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "7e93fa3176645e80f28b4acdcf2c7818af3c317383b5ea9687f68323f3d9fc6d",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-symp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "646870a3b1cbe2314491bbc590212c6b806d28c8060194a6066242355e140a80",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "3bbfcc4cbb4c0a01e0c6c24f85e282fd1de1db1c251dfb30b565c83024550556"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "7eb9c7afce59bcc597400dbafaf7f7cebcd46d177bf5ab129ab39ec553404205",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-boolp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "c54f3eea731acc9b74bd729367669565341766b1184bf36d8e5092873b59c465",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "cc8a2bbf5861d83819e4b0b6ff357ace0db2f76ad5b735409e3c382be97b754b"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "32f189a2de43e11d156746250bc9d890de40dda5d9e01ea6b50d4298cd73fd13",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-chp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "2fc410957a6c32f31d0c931d6140c9ac8e53cb3ba285e36fd82ae0f52de64eab",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "a9c3c863a55816d84aa78276990163bfb8b305280f12da94acdcc8f72b6c3881"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "6f39f8fb219077f2ca5df245d6b52772d0aa2254c13df4bd336dff7588efb169",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-nilp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "8b26a4fac938e856d72d947225427096a1f76ca16062f1bf9fa01e77180ab1f9",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "3cc8d6e63e7042dea5d93f7d6984b441306add6e3874e88d889feae44b4d8aef"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "6e21dd0313a77c6fa286478222810300383ff7bdf66067e57a84b0886506da68",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-kp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "d465e603de7ba82aaa500281c1658448257fd37b8d06886863ee00eb44c2339c",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "d130443701de60e6e7a60d051cd08dc06f0045d63493803b970826cc92844cff"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "dcc51f0d8fa87dce1e82256153138f661b503937003cb515d967aaace8945c07",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-strp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "e2dce1ccc11202a13556a479cb7bce832aefc1436a84b1b6df4b321e398229ca",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "83daf6170a498c90ece5b3e2cd1a1cec14b573f2090a805cb903083a118792a1"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "db3a91bce7b4d43eecc1c07b9287bd0b1c809d7958231278b9c5ff73f262985b",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-ip-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "75a7646440e8d6ed2d3195f26d4f6f6a32a851f7bb05ff89006ea7c9546029eb",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "4b6b03092a165e807b270f88b1f389d148132cc1855bd8770843458e295c6750"}
+  {:outer-native-guard p15-s23-lc-native-map?,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "3c7cb982c291a8867ddc03712624f7a384cc24cf8fc600e9d21a67c00da2842e",
+   :guard-failure-branches [nil nil],
+   :unit [defn p15-s23-vp-source],
+   :independent-decision :pending,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :whole-function-identity false,
+   :historical-body-sha256
+   "164fda4299048a8a354e7ff7f15d34d63d46e8288979da991aa52b079de288f6",
+   :exact-validation-cell-guard (= {:status :accepted} validation),
+   :current-historical-body-path [3 2 2],
+   :proposed-disposition :retain-current-guarded-incorporation,
+   :authored-change :modified,
+   :complete-historical-body-present true,
+   :historical-form-sha256
+   "7b677ac40e52e3124922f13cafd7b776882ab5425adb57f71929147552f899a1"}],
+ :main-tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+ :negative-source-controls
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-mapp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-setp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-listp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-symp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-boolp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-chp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-nilp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-kp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-strp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-ip-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :unit [defn sh08-vp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-mapp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-setp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-listp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-symp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-boolp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-chp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-nilp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-kp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-strp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-ip-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :unit [defn body-vp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-mapp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-setp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-listp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-symp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-boolp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-chp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-nilp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-kp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-strp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-ip-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :lost-native-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :lost-exact-cell-guard,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :admitted-retired-work-field,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :lost-historical-body,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :changed-inner-result-policy,
+   :source-mutant-refused true}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :unit [defn p15-s23-vp-source],
+   :case :changed-inner-integer-representation,
+   :source-mutant-refused true}],
+ :original-inventory
+ {:path "specs/accounting-removal/preserved-source-inventory.edn",
+  :sha256
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+  :changed false,
+  :total-original-production-units 316},
+ :independent-classification :pending,
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :predicate-historical-body-guarded-incorporation-proposal,
+ :changed-interface
+ {:validation-cell :native-map-and-exact-status-only-accepted-cell,
+  :historical-accepted-cell-with-extra-fields
+  :not-preserved-as-an-input-contract,
+  :all-other-function-arguments-and-entire-historical-body
+  :reader-identical},
+ :generator
+ {:language :clojure,
+  :sha256
+  "b99a191989977b1e63b95d2b817b6f8ce032af5c4e3eb4afeb61931b5f72831a",
+  :preserved-locally true},
+ :proposal
+ :retain-current-native-and-exact-cell-guards-and-classify-original-inner-source-as-incorporated,
+ :main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :selection
+ {:historical-test-path
+  "bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj",
+  :family-form-sha256
+  "e0c44a1fe91e03ed61d423ed6258ea7ca7c7694fcd955752291cfe25c03966d4",
+  :families
+  [["map" "mapp"]
+   ["set" "setp"]
+   ["list" "listp"]
+   ["symbol" "symp"]
+   ["boolean" "boolp"]
+   ["character" "chp"]
+   ["nil" "nilp"]
+   ["keyword" "kp"]
+   ["string" "strp"]
+   ["integer" "ip"]
+   ["vector" "vp"]],
+  :scope
+  :exact-source-builder-for-each-original-family-in-three-owners,
+  :unit-count 33},
+ :completion-credit false,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

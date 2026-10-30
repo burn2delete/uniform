@@ -1,0 +1,147 @@
+{:findings [],
+ :nonclaims
+ [:historical-helper-equivalence
+  :runtime-reachability-or-transitive-semantic-proof
+  :genuine-Record-Union-execution
+  :authenticated-source-admission
+  :executable-record-union-support
+  :whole-ACC01-or-accounting-removal
+  :parent569-denied-review-clearance
+  :PR502-closure
+  :release
+  :self-hosting
+  :merge-or-integration-acceptance
+  :GitHub-APPROVE],
+ :candidate "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+ :historical-copied-span-pins
+ [{:name record-union-descriptor-rows-have-no-count-quota,
+   :raw-span-sha256
+   "5e1dd27e8ce47128ec56106dcafb51a080a9c92473735c643d417e7907156efc"}
+  {:name union-branch-definitions-have-no-count-quota,
+   :raw-span-sha256
+   "241fdc205a7da69cfc54dc744313511cc1a1c295d3384c82b76246b0411f2aa7"}],
+ :scope
+ {:two-full-original-kernel-bodies-and-comments :byte-identical,
+  :record-union-descriptor-row-count 65,
+  :union-branch-definition-count 65,
+  :all-prior-test-bytes :preserved,
+  :all-preexisting-git-blobs-and-modes-except-appended-test :preserved,
+  :production :unchanged,
+  :dependency-census :31-syntactic-C7-definitions,
+  :historical-helper-differences 6},
+ :source-inspection
+ {:supported-type
+  "Current sh08-ru-supported-type? adds an explicit keyword? guard before supported-type membership; the historical form lacks it.",
+  :descriptor-control
+  "The preserved descriptor DATA includes all65 field schemas/values and variant/match branches, final member access, four row-validator loop negatives at index64 (duplicate, bad ID, unexpected field and list), and ten family mutations with the original failure reasons.",
+  :dispatch
+  "Both restored forms retain invoke-c7. Its unchanged prior definition dispatches the compiler artifact plan through the Gravity runtime entry point; no new host substitute was added. That entry point was inspected as source only and was not called.",
+  :union-branch-control
+  "The preserved Core DATA includes all65 symbol names and exact resolved order, last branch result64, empty/list/duplicate/keyword name rejection, malformed match shapes, absent/duplicate definitions and malformed final node coverage.",
+  :four-row-validators
+  "Current helpers perform uniqueness only at successful completion of field validation loops. Historical helpers performed uniqueness before the loops. Neither form was executed or certified equivalent.",
+  :dependency-pins
+  "All31 current and historical serialized C7 definition hashes, explicit difference flags and current syntactic call-target lists reproduce independently; the exact closure is computed from the eight invoked roots. This does not prove runtime reachability or transitive semantic behavior.",
+  :behavioral-limits
+  "These are normalized descriptor/Core DATA controls. Source correspondence and routine CI cannot establish authenticated admission, executable Record/Union behavior, full accounting removal or original PR502 closure.",
+  :value-type
+  "Current sh08-ru-value-type reverses the nil comparison order and uses boolean? where history used membership in #{true false}. This is recorded as a source difference without a behavioral-equivalence claim.",
+  :test-form-identity
+  "Complete test forms including their comments are independently bound by the exact original raw spans and appended-file equation. The census's two reader-serialized :complete-form-sha256 fields are not used as independent evidence; reading anonymous function forms generates process-dependent symbol names. No verdict relies on those auxiliary serialization hashes."},
+ :current-main-integration :pending,
+ :author "01a183dd-7208-7d33-a336-7483fd90e358",
+ :consumption
+ {:receipt-tree-four-file-and-two-span-hashes :verified,
+  :deterministic-C7-pins 31,
+  :auxiliary-test-form-hashes-used-as-independent-evidence false,
+  :new-execution false,
+  :no-reviewer-or-owner-message-sent true},
+ :kind :verified-record-union-source-review-consumption,
+ :receipt-sha256
+ "4abe17689fec09ca290dba77a1bea2d111c6428275d7808d8e536bf215913c40",
+ :verdict :scoped-source-pass,
+ :source-checks
+ {:executable-record-union :open,
+  :c7-production-bytes-unchanged true,
+  :tree "09f8eff9ff27422df1a321001b76d7f8f90fa287",
+  :negative-controls
+  [{:refused true,
+    :check :comment-byte-conservation,
+    :case :mutated-comment}
+   {:refused true,
+    :check :full-original-control,
+    :case :dropped-last-row-coverage}
+   {:refused true,
+    :check :production-pin,
+    :case :forged-production-pin}
+   {:refused true, :check :closure-complete, :case :omitted-dependency}
+   {:refused true,
+    :check :historical-current-forms-differ,
+    :case :false-equivalence}
+   {:case :reader-eval-payload,
+    :refused true,
+    :check :reader-eval-disabled}],
+  :candidate "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+  :behavioral-equivalence :unassessed,
+  :reader-eval false,
+  :all-prior-test-bytes-preserved true,
+  :Bootstrap-loaded false,
+  :restored-controls
+  [{:name record-union-descriptor-rows-have-no-count-quota,
+    :raw-span-sha256
+    "5e1dd27e8ce47128ec56106dcafb51a080a9c92473735c643d417e7907156efc"}
+   {:name union-branch-definitions-have-no-count-quota,
+    :raw-span-sha256
+    "241fdc205a7da69cfc54dc744313511cc1a1c295d3384c82b76246b0411f2aa7"}],
+  :only-three-changed-paths true,
+  :genuine-kernels :UNRUN,
+  :verdict :source-checks-pass,
+  :syntactic-dependency-count 31,
+  :base "e047157d711652a5624012f0da7d6911ce086718",
+  :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+  :authenticated-admission :open,
+  :all-prior-git-objects-and-modes-conserved 10068,
+  :different-helper-forms 6,
+  :two-original-control-bodies-comments-byte-identical true},
+ :generator
+ {:language :clojure,
+  :sha256
+  "df91e8f41b7d235b4fb772db3a52b98923c1d02d86f7bd8cf3fdf45f8884d851",
+  :preserved-locally true},
+ :qualification
+ {:independently-accepted
+  :raw-copied-spans-appended-file-equation-and-31-deterministic-C7-pins,
+  :not-independently-endorsed
+  :two-auxiliary-reader-serialized-complete-test-form-hashes,
+  :reason :generated-anonymous-reader-symbols,
+  :genuine-kernels :UNRUN},
+ :reviewer "01a18529-4c4f-79b1-94b3-d1132f06ed53",
+ :required-next-owner-evidence
+ [:authenticated-admission
+  :executable-Record-Union
+  :authorized-genuine-kernel-execution
+  :separate-current-main-composition-and-preflight],
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :immutable-inputs
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :commit "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+   :sha256
+   "df377565ef47460364b3997d5d0ef8df710d31d228c42283150da9c3fb0ff74b"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :commit "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "specs/accounting-removal/record-union-controls-census.edn",
+   :commit "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+   :sha256
+   "0c7d5b1b95d34e597d92a06a69b5c66c2dd3c07045411038b3036fbe18833066"}
+  {:path "specs/accounting-removal/record-union-controls.md",
+   :commit "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+   :sha256
+   "43d3518576cb023bee16d49e26d54eeb68b00b42ef9bbbec48abe36749f72f06"}],
+ :pr 620,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :candidate-tree "09f8eff9ff27422df1a321001b76d7f8f90fa287"}

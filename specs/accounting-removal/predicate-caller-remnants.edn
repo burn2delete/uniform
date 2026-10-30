@@ -1,0 +1,1113 @@
+{:path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :nonclaims
+ [:old-four-caller-acceptance-extends-to-new22
+  :arithmetic-or-number-object-identity-equivalence
+  :termination-exception-native-or-transitive-proof
+  :outer-accounting-width-or-budget-retention-approval
+  :genuine-owner-acceptance
+  :whole-predicate-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:read-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-or-helper-execution :UNRUN},
+ :validation-binding
+ {:one-direct-call-per-caller sh08-lc-validate-types,
+  :argument-count 1,
+  :no-local-shadow-or-set!-or-nested-fn true},
+ :historical-file-sha256
+ "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+ :current-file-sha256
+ "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+ :validator-envelope-evidence
+ {:independent-receipt-sha256
+  "5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c",
+  :inherited-proof-limits
+  [:normal-return-overapproximation-not-exact-reachability
+   :pinned-unrebound-bindings
+   :loop-values-unknown
+   :conditions-unrefined
+   :no-arithmetic-or-number-object-identity-equivalence
+   :no-termination-exception-native-or-transitive-proof
+   :no-production-change
+   :no-outer-quota-width-carrier-retention-approval
+   :no-genuine-owner-execution
+   :no-compiler-Bootstrap-native-helper-kernel-target-runtime-or-probe
+   :no-whole-ACC01-or-PR502-closure
+   :no-approve],
+  :normal-reasons-exclude-work-limit true,
+  :source-envelope-sha256
+  "084a90ba845d88bf4ffa909a5483fde14f919de6a53d3d25d79f6c660680de5a",
+  :reused-scope
+  :unchanged-two-helper-source-envelope-only-not-new-caller-decisions,
+  :current-complete-C7-equals-assessed-file true,
+  :root-work-count-absent true,
+  :helper-pins
+  [{:name sh08-lc-native-arguments,
+    :arguments [arguments],
+    :form-sha256
+    "1ddac242e4421de063f8d0fd49770660be95b40017ae8617eb2d6608e7624654",
+    :reason-envelope #{:cyclic-arguments :unsupported-arguments}}
+   {:name sh08-lc-validate-types,
+    :arguments [arguments],
+    :form-sha256
+    "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+    :reason-envelope
+    #{:malformed-type
+      :cyclic-arguments
+      :nested-never
+      :cyclic-type
+      :unsupported-arguments
+      :unsupported-type}}],
+  :assessed-source "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+  :original-accepted-scope
+  :four-pinned-C7-callers-eight-listed-subtrees-two-helper-normal-return-envelope},
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :rows
+ [{:role "derive",
+   :current-form-sha256
+   "c2a16dd916eefea9a0747978927d902a7f3749b59702f85ab2aa0505fc7d7024",
+   :family "map",
+   :unit [defn sh08-mapp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :map-predicate-work-limit
+      :map-predicate-operand-type-required),
+     :main :map-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "f8c33297669c456c87be5fbed43c2fdfff9752327e88f08cb94b4e6c57dc4351"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "814d4bd80dc27e96aad885a05bebf96fc9fbccfb4c0fe693b266b9cf4bb61180",
+   :family "map",
+   :unit [defn sh08-mapp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :map-predicate-work-limit
+      :map-predicate-operand-type-required),
+     :main :map-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "5dfac41e6fcd0cb035683a432b40c18012caf1bbbb6a44f125ed2987fddb3a09"}
+  {:role "derive",
+   :current-form-sha256
+   "6554aefc2dd6eaa4b66a1b248f3afdcf8c87baa6a6e331f33d76f4bc133800e5",
+   :family "set",
+   :unit [defn sh08-setp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :set-predicate-work-limit
+      :set-predicate-operand-type-required),
+     :main :set-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "d22275f478351b0bafdc5499e35c36a6ed2ac4d2b09dcf8ffa62ec9e73966d7a"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "6a0f6772618f66ac01219b0f55695d2fd771c9ff59cbe47f01bb3820506062ce",
+   :family "set",
+   :unit [defn sh08-setp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :set-predicate-work-limit
+      :set-predicate-operand-type-required),
+     :main :set-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "a3017c1170a5e74b507d3cd7b382bccfe139fecaa9e9152e4ff3edf52ae06170"}
+  {:role "derive",
+   :current-form-sha256
+   "dd532ec506b347c9b7f417b5a72010c4980975ab645c6ff7d613e73193383118",
+   :family "list",
+   :unit [defn sh08-listp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :list-predicate-work-limit
+      :list-predicate-operand-type-required),
+     :main :list-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "4092f702fe8a24c1db4fffb7630606d9c579de6e38cfeacc5f3bf17cd87f02f3"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "1d90aec83c38b8e267a68de2bae5fe893288cb51bea50f14464f813ab3076ba4",
+   :family "list",
+   :unit [defn sh08-listp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :list-predicate-work-limit
+      :list-predicate-operand-type-required),
+     :main :list-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "bbe738718b994883eb662e8ff33df53293a689fcec1953df22f200c8817d8652"}
+  {:role "derive",
+   :current-form-sha256
+   "83bdf98a1705feef8de8d287511c0e76043e7708745199635eed2968da5e5680",
+   :family "symbol",
+   :unit [defn sh08-symp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :symbol-predicate-work-limit
+      :symbol-predicate-operand-type-required),
+     :main :symbol-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "865c290bbe6cec2d2eb80c225ca9701d7ffbccd2c45132a4eeec4067a1298a88"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "f3f4457faf38e8f442c719633cb2ce925193e1ccb842ca6eccf2d4f0c3455b6d",
+   :family "symbol",
+   :unit [defn sh08-symp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :symbol-predicate-work-limit
+      :symbol-predicate-operand-type-required),
+     :main :symbol-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "88d63ea7efc192f22d025d42a89c40d7a94d599c843a116e79640402de1551b9"}
+  {:role "derive",
+   :current-form-sha256
+   "08c4f64c3a17bf6a23891eabe39d7f787bc739845baec5e1f1e157b3729c6fc3",
+   :family "boolean",
+   :unit [defn sh08-boolp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :boolean-predicate-work-limit
+      :boolean-predicate-operand-type-required),
+     :main :boolean-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "162f8b5cdeb81bd1dc8759407a1839e0aba9e7771f150c484bfe83ae1598efe7"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "eddb6872ceaf8d3a024bd84cd7bc7d8500e97a0d85043efc9441a4e47122ab5b",
+   :family "boolean",
+   :unit [defn sh08-boolp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :boolean-predicate-work-limit
+      :boolean-predicate-operand-type-required),
+     :main :boolean-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "201142841430174a6db1bd99047ae79d643631909f071136f436b289493f5640"}
+  {:role "derive",
+   :current-form-sha256
+   "da21ab6e6a22899284019b3d27b002f54be9314dbd36ac8a33d115c2f0229f84",
+   :family "character",
+   :unit [defn sh08-chp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :character-predicate-work-limit
+      :character-predicate-operand-type-required),
+     :main :character-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "acf2d051deef0ad3a4107b9ea5efc787252703d6b677aa754e5ab007ade3bf50"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "c3140197c72d3a4f4fe77716aa400c14c974c53219c0a4592cf20af64f15aace",
+   :family "character",
+   :unit [defn sh08-chp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :character-predicate-work-limit
+      :character-predicate-operand-type-required),
+     :main :character-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "3d539aef7b301e431cae3aa4c93c08c32053426c1497928e691d458cb7a0c12e"}
+  {:role "derive",
+   :current-form-sha256
+   "7a6e72891bdfac1d3fb2ab41b3c79b47c7976dfc0450a64d0f0591463b7d038d",
+   :family "nil",
+   :unit [defn sh08-nilp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 2 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :nil-predicate-work-limit
+      :nil-predicate-operand-type-required),
+     :main :nil-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "f78650618443a4ce2ea1208f69393b52254196e4d1729bf23efac83c41f28ddf"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "509d1ed7670c22a9491651db777c806659ccd57abea8ed5eb99194846846e3e3",
+   :family "nil",
+   :unit [defn sh08-nilp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :nil-predicate-work-limit
+      :nil-predicate-operand-type-required),
+     :main :nil-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "210384777b72678225646d7c298395c04b51439006fdf84e6bc229eccb7d3bc3"}
+  {:role "derive",
+   :current-form-sha256
+   "6fda37b594b4401cca1ac9dc2a4387864b370fbc7e17169c71026f4eb45bf74e",
+   :family "keyword",
+   :unit [defn sh08-kp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :keyword-predicate-work-limit
+      :keyword-predicate-operand-type-required),
+     :main :keyword-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "55573f333d43fca7e94a2c2213079361c9840f2bcc1d9a70267eb751baecde87"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "a39fb7d0db8392eaf6bc41d1267a55c1d52072a2a18a52aa5a6375374d325264",
+   :family "keyword",
+   :unit [defn sh08-kp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :keyword-predicate-work-limit
+      :keyword-predicate-operand-type-required),
+     :main :keyword-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "11a13e98690cb45436cd2a1996dcd4f696c3d05d40c56b4e2b8a86c620275f1d"}
+  {:role "derive",
+   :current-form-sha256
+   "a40e50be829e3f0d646a72a66565556599bac17ae977237205290343521479cc",
+   :family "string",
+   :unit [defn sh08-strp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :string-predicate-work-limit
+      :string-predicate-operand-type-required),
+     :main :string-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "a4c390a5b1975c60df9fd5cf535cddc7631bf3f032281424d093433b0eebfbfb"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "d1a5ec475a09a1a058e289dccfe420ea0462001fbbe23c140477a51489884976",
+   :family "string",
+   :unit [defn sh08-strp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :string-predicate-work-limit
+      :string-predicate-operand-type-required),
+     :main :string-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "a0ef5702ae9cfdb0b54e0312dcc990b8c75c5e1772f01add92c9a56ecd5d9091"}
+  {:role "derive",
+   :current-form-sha256
+   "4825914307246cbf775727d4763c0745043a9e0b279096d64ddaa45ee9a4b230",
+   :family "integer",
+   :unit [defn sh08-ip-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :integer-predicate-work-limit
+      :integer-predicate-operand-type-required),
+     :main :integer-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "fe45e9aeae5beffcb5ce30431c6b1fd415fbe4f8e902ae86ba8c8543f6782c14"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "e8071823a49d799016505c61d3d3c64ac623a536fe298efb79957b07543a4114",
+   :family "integer",
+   :unit [defn sh08-ip-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :integer-predicate-work-limit
+      :integer-predicate-operand-type-required),
+     :main :integer-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "080fd7e723f1ccb5389a43eb9f0b8e6ee3f2388c15607e75170ce9f660be8492"}
+  {:role "derive",
+   :current-form-sha256
+   "c9610f66c81efb445498c55e00beecf99a22798ce2fd4c1120b0d32bf88cab47",
+   :family "vector",
+   :unit [defn sh08-vp-derive],
+   :arguments [core node call edge nodes bindings types forms budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 3 1 5],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 3 2 2 1 1],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      "C7-GENERIC"
+      "C7-TYPE-MISMATCH"),
+     :main "C7-TYPE-MISMATCH",
+     :classification :retired-rule-branch}
+    {:at [3 2 3 3 2 2 1 2],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-predicate-work-limit
+      :vector-predicate-operand-type-required),
+     :main :vector-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "60e4b115500a1f158dc0cbbb24ac1133b76a5b92341b8499079158589586c3e1"}
+  {:role "inferred-call",
+   :current-form-sha256
+   "5af143f98daf7a3fdd195a936bef7b572144dc90f487a3696894e3ed363a3f87",
+   :family "vector",
+   :unit [defn sh08-vp-inferred-call],
+   :arguments [core node call edge nodes bindings types budget],
+   :all-other-source-and-arguments :reader-identical,
+   :complete-differences
+   [{:at [3 2 3 2 1 3],
+     :historical (+ base 0),
+     :main base,
+     :classification :zero-charge}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-predicate-work-limit
+      :vector-predicate-operand-type-required),
+     :main :vector-predicate-operand-type-required,
+     :classification :retired-reason-branch}],
+   :independent-classification :pending,
+   :proposed-disposition
+   :reject-restoration-of-listed-accounting-remnants,
+   :authored-change :modified,
+   :historical-form-sha256
+   "15531b81a85a5d43684cfaabfedc6226c66729b2d454aff0baa6a979006b389d"}],
+ :main-tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+ :negative-source-controls
+ [{:unit [defn sh08-mapp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :restored-one-accounting-remnant,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :changed-retained-arity,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :changed-source-builder,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :changed-semantic-diagnostic,
+   :source-mutant-refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :changed-retained-integer,
+   :source-mutant-refused true}],
+ :original-inventory
+ {:sha256
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+  :unchanged true,
+  :total-original-production-units 316},
+ :independent-classification :pending,
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :predicate-caller-accounting-remnant-source-proposal,
+ :generator
+ {:language :clojure,
+  :sha256
+  "2a369f2b1bdaeee6ea46f61b5ef248863e8f8de3bf47372a8cf5dfe9cd23d38e",
+  :preserved-locally true},
+ :production-change :none,
+ :proposal
+ :reject-restoration-of-exact55-accounting-remnants-and-retain-every-other-complete-caller-form,
+ :main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :selection
+ {:family-path
+  "bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj",
+  :family-form-sha256
+  "e0c44a1fe91e03ed61d423ed6258ea7ca7c7694fcd955752291cfe25c03966d4",
+  :families
+  [["map" "mapp"]
+   ["set" "setp"]
+   ["list" "listp"]
+   ["symbol" "symp"]
+   ["boolean" "boolp"]
+   ["character" "chp"]
+   ["nil" "nilp"]
+   ["keyword" "kp"]
+   ["string" "strp"]
+   ["integer" "ip"]
+   ["vector" "vp"]],
+  :roles ["derive" "inferred-call"],
+  :units 22,
+  :listed-subtree-differences 55},
+ :completion-credit false,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

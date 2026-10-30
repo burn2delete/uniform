@@ -1,0 +1,31 @@
+{:kind :reader-contract-composed-public-CI
+ :owner :ACC-01
+ :pr 626
+ :candidate "b78b221a17684e02415a9317f2b605e78e59ef24"
+ :candidate-tree "c21fbaf86832bd9fa4e3f2ad1f94c50021457c71"
+ :base "2654d155322f7863dd087065f19000b43c877cbe"
+ :run 40975598723
+ :checks [{:name "experimental-prerelease" :conclusion :skipped}
+          {:name "source-Core-readiness" :id 123802723195 :conclusion :skipped}
+          {:name "darwin-unsupported-host" :id 123802721459 :conclusion :success}
+          {:name "fresh-leaf-regressions / darwin" :id 123802721418 :conclusion :success}
+          {:name "projections" :id 123802721395 :conclusion :success}
+          {:name "bootstrap" :id 123802721374 :conclusion :success}
+          {:name "static" :id 123802721350 :conclusion :success}
+          {:name "fresh-leaf-regressions / portable" :id 123802721298 :conclusion :success}
+          {:name "experimental-source-snapshot" :id 123802721060 :conclusion :success}]
+ :all-completed true
+ :successes 7
+ :configured-skips 2
+ :source-observation "reader-contract-clean-composition.edn"
+ :independent-current-composition-review :pending
+ :integration-mode-preflight :UNRUN
+ :main-merge :UNRUN
+ :genuine-owner-controls :UNRUN
+ :historical-original-query {:test 7 :pass 257 :fail 5 :error 0 :status :NONPASS}
+ :prior-static-failure :preserved
+ :new-remote-operation :read-only-check-diagnostics
+ :rerun-or-policy-change false
+ :nonclaims [:genuine-owner-acceptance :independent-source-review
+             :whole-accounting-removal :ACC01-closure :PR502-closure
+             :integration :release :self-hosting]}

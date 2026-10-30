@@ -1,0 +1,76 @@
+{:integration-mode-preflight :UNRUN,
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-kernels :UNRUN},
+ :candidate "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+ :PR623-and-ACC06-capture :untouched,
+ :generator-sha256
+ "88bb56f839eeb1b3b8971a06b6c1314b4cefded2b65ff68d42e7ae02c52c093f",
+ :auxiliary-test-form-serialization-hashes :not-independent-evidence,
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :entry "100644 blob fc773a82456cbaef7228cc86f7c7fe4e9ee7ae54",
+   :sha256
+   "5209e1ce7a0f900bcb38f4f3da0f6318d0ec312077818c7ed45864cc9de3f8b0"}
+  {:path "specs/accounting-removal/recursive-type-controls-census.edn",
+   :entry "100644 blob a472d90092703354b2a833d990416da51f8c29bb",
+   :sha256
+   "13e8e7f5a937e0567125021eaea0b2a0d0754391727390f735afc29ababa6755"}
+  {:path "specs/accounting-removal/recursive-type-controls.md",
+   :entry "100644 blob d44d00dc3d60113e75ba9a40b53460390f4c3705",
+   :sha256
+   "e6749bb10704e06123d3015ea113a177daf0e7f4fd098a15523c6d2434949781"}],
+ :prior-review
+ {:candidate "47a0f75617aff8da5136e084b837b4f853190433",
+  :receipt-sha256
+  "6acc15a62eea2cbf0837bc8309c5935e2671ca1fa7482df81a2e8da93e82cfbd",
+  :verdict :scoped-source-pass,
+  :current-head-acceptance :not-inherited},
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :whole-file-pin-scope :historical-only,
+  :semantic-or-transitive-equivalence :unproven,
+  :current-whole-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :all-current-main-production :unchanged,
+  :historical-differences 5,
+  :all-nine-immediate-definition-pins :freshly-verified,
+  :historically-absent-helpers 4,
+  :original-whole-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :resolution
+ {:kind :explicit-append-conflict-resolution,
+  :original-base "e047157d711652a5624012f0da7d6911ce086718",
+  :suffix-sha256
+  "31417693bb9bf07c87b3ef94d43ae5382b829eaa8d7a2c37b1a761c699d796fc",
+  :single-reviewed-carrier-edit
+  {:before "[value [(nest 127 carrier) (nest 129 carrier) wide]]",
+   :after
+   "[value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]"},
+  :complete-current-main-test-prefix
+  :preserved-except-single-reviewed-carrier-edit,
+  :complete-reviewed-List-kernel-suffix :byte-identical,
+  :original-comments-and-semantic-controls :preserved,
+  :census-and-markdown :byte-identical-to-original-reviewed-candidate},
+ :whole-tree
+ {:base-entries 10089,
+  :candidate-entries 10091,
+  :every-other-base-blob-and-mode :unchanged,
+  :one-current-test-file-plus-exact-reviewed-single-edit-and-original-suffix-and-two-original-record-additions
+  true},
+ :main-merge :UNRUN,
+ :kind :recursive-type-clean-current-main-composition,
+ :parents
+ ["47a0f75617aff8da5136e084b837b4f853190433"
+  "8300c415628d2110cd703824a059e06476f4e1e0"],
+ :base "8300c415628d2110cd703824a059e06476f4e1e0",
+ :historical-Symbol-constructor-difference
+ :current-down-counter-versus-historical-up-counter-not-certified-equivalent,
+ :current-composition-independent-review :pending,
+ :pr 622,
+ :current-head-CI :pending,
+ :owner :ACC-01,
+ :candidate-tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c"}

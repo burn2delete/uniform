@@ -1,0 +1,116 @@
+{:path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :caller
+ {:name sh08-ft-call-constraints-with-context,
+  :arguments
+  [calls edges nodes type-table binding-types function-types context],
+  :historical-sha256
+  "df89d9f6c7e2f04bf53e4395d4affac16c54dffe13710fe89ea115a6b7071efb",
+  :current-sha256
+  "0e3b7281b4b642070c0f693e80a4370d811e6a9fac2fc259d612e6f9146cd795",
+  :whole-caller-equivalence :not-claimed},
+ :known-callee
+ {:name sh08-ft-known?,
+  :complete-form
+  (defn
+   sh08-ft-known?
+   [value]
+   (if (sh08-ft-unknown? value) false (sh08-ni-valid-view? value))),
+  :historical-and-current-forms-identical true,
+  :sha256
+  "1a29e93808b52608400110375f22939cb3068b20f0c46953a2a45a73b0167528",
+  :transitive-callee-behavior :unproven},
+ :nonclaims
+ [:whole-caller-equivalence
+  :runtime-reachability
+  :transitive-semantic-proof
+  :mutable-var-behavior
+  :call-frame-resource-or-exception-equivalence
+  :outer-accounting-approval
+  :accepted-incorporation
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:read-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-executed false,
+  :genuine-owner-or-runtime :UNRUN},
+ :witness
+ {:historical-chosen-let-path [3 2 3 3 3 3 3 3 2 3 3 3 3 2 2 1 1 2 3],
+  :current-chosen-let-path [3 2 3 3 3 3 3 2 3 3 3 3 2 2 1 1 2 3],
+  :historical-call (sh08-ft-ordinary-parameter-choice prior argument),
+  :current-expression
+  (if
+   (if
+    (= argument :gravity.type/never)
+    false
+    (sh08-ft-known? argument))
+   (if (sh08-ft-known? prior) prior argument)
+   prior),
+  :binding-initializers
+  {parameter (first ps),
+   argument (first as),
+   prior
+   (get result (get parameter :binding-id) :gravity.type/unknown)}},
+ :lexical-source-check
+ {:known-name-not-in-parameters-let-or-loop-binders true,
+  :nested-fn-or-letfn :absent,
+  :original-call-arguments :same-local-symbols,
+  :selected-local-initializers :identical},
+ :source-files
+ {:historical-sha256
+  "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+  :current-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64"},
+ :governing-source-pins
+ [{:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assumptions
+ [:pinned-source-and-bindings :L2-lexical-let-and-call-semantics],
+ :original-unit [defn sh08-ft-ordinary-parameter-choice],
+ :main-tree "d9a23f1c7944288f2756baa073fbc44ca7226496",
+ :negative-source-controls
+ [{:case :swapped-helper-parameters, :source-mutant-refused true}
+  {:case :swapped-call-arguments, :source-mutant-refused true}
+  {:case :missing-inline-expression, :source-mutant-refused true}
+  {:case :wrong-never-branch, :source-mutant-refused true}
+  {:case :wrong-prior-initializer, :source-mutant-refused true}
+  {:case :wrong-argument-initializer, :source-mutant-refused true}
+  {:case :changed-known-definition, :source-mutant-refused true}
+  {:case :shadowed-known-helper, :source-mutant-refused true}],
+ :original-inventory :unchanged,
+ :independent-classification :pending,
+ :proposed-disposition
+ :historical-helper-body-incorporated-as-exact-current-inline-expression,
+ :kind :parameter-choice-current-inline-source-correspondence,
+ :generator
+ {:language :clojure,
+  :sha256
+  "9f97b13e11e69e650f7c534a848034024e307988557a8fc79137e80c66aab29d",
+  :preserved-locally true},
+ :helper
+ {:historical-complete-form
+  (defn
+   sh08-ft-ordinary-parameter-choice
+   [prior argument]
+   (if
+    (if
+     (= argument :gravity.type/never)
+     false
+     (sh08-ft-known? argument))
+    (if (sh08-ft-known? prior) prior argument)
+    prior)),
+  :historical-sha256
+  "4e462874f75a666e43e13579742fd8f765ecdea6714b9d6d18789cd81bba3ff1",
+  :current-definition :absent},
+ :main "8300c415628d2110cd703824a059e06476f4e1e0",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

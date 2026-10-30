@@ -1,0 +1,152 @@
+{:unchanged-direct-callers-and-dependencies :verified,
+ :workspace
+ {:managed-attachment "01a189d9-a6d5-7e42-aa9f-87acadf6845b",
+  :branch "codex/acc01-cold-integration-20261029",
+  :clean true,
+  :original-root-and-cache :preserved,
+  :extra-checkout-created false},
+ :nonclaims
+ [:future-composition-acceptance
+  :quote-products-unmetered
+  :whole-quote-accounting-removal
+  :authenticated-source
+  :genuine-compiler-Effects-runtime-acceptance
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :independent-current-composition :pending,
+ :full-tree-entry-count 10073,
+ :candidate "d4a82e686a3680db07f909b0969cd5a073734749",
+ :raw-merge-tree-identity :verified,
+ :tests
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :appended-form-names
+   [cold-metadata-input
+    cold-metadata-invalid-inputs
+    cold-quote-metadata-production-development-kernel],
+   :appended-bytes-sha256
+   "2c33e8671af8ad20e01c5cdfd253d55bad5b872657c36420c43834e7c9ac1aa2",
+   :all-current-main-test-bytes :conserved,
+   :genuine-tests :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :appended-form-names
+   [cold-quote-metadata-effects-development-kernel],
+   :appended-bytes-sha256
+   "dd7a1eb50d86d79f4197b922bc16bf92592b044c72539710404dc125b0d3e395",
+   :all-current-main-test-bytes :conserved,
+   :genuine-tests :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :appended-form-names
+   [cold-quote-metadata-lowering-development-kernel],
+   :appended-bytes-sha256
+   "10a75bfbaf22938abc464c8b8247223af0a84c96907cebddbd6f7aaf9c7ab0a1",
+   :all-current-main-test-bytes :conserved,
+   :genuine-tests :UNRUN}],
+ :generator-sha256
+ "e883595ec23261e3c7b902715aaaff982dd1e92d57a6f421310b2e185014f1a9",
+ :inspect
+ {:mode :inspect,
+  :read-only true,
+  :preconditions
+  {:base-resolved true,
+   :candidate-identities-match true,
+   :clean-worktree true,
+   :named-branch true,
+   :reconciliation-allowed true,
+   :all-pass true},
+  :observed-identities
+  {:expected-base "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+   :expected-commit "d4a82e686a3680db07f909b0969cd5a073734749",
+   :expected-tree "d3d8c59a651ade262403eca2369de12c3d3848cb"},
+  :reconciliation
+  {:relation "descendant",
+   :base-is-ancestor true,
+   :candidate-is-ancestor false,
+   :tree-equivalent false,
+   :recommendation "integrate_candidate"}},
+ :original-census-count-scope
+ :unchanged-other-definitions-at-original-base,
+ :local-generator-pins
+ {:reconciliation
+  "e883595ec23261e3c7b902715aaaff982dd1e92d57a6f421310b2e185014f1a9",
+  :inspect
+  "37f3ddea49702b08fdadc5f0e3682930fc4d231dda7d9ed5218f1c2aa7a46045",
+  :publication
+  "8dc9fae70189d91891f13ec3b9dd2753af3a94bc0e7492eb82840a522e179d6c"},
+ :Bootstrap-loaded false,
+ :retired-field-production-references 0,
+ :whole-tree-current-main-overlay-equal true,
+ :prior-review
+ {:candidate "46e8f15a2295b0fba52e9c94fb8aa9ea825259fe",
+  :receipt-sha256
+  "a939654e46b3d1b1b16b4294c5b4d67d65606827cf748568899c8a29e790ba3d",
+  :future-composition-pass :not-inherited},
+ :production
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :function sh08-is-cold-evidence,
+   :main-sha256
+   "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+   :candidate-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :reviewed-before-and-after-spans :byte-identical,
+   :total-definitions 1087,
+   :unchanged-definitions 1086,
+   :all-other-current-main-bytes :conserved}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :function body-is-cold-metadata-valid?,
+   :main-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :candidate-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :reviewed-before-and-after-spans :byte-identical,
+   :total-definitions 813,
+   :unchanged-definitions 812,
+   :all-other-current-main-bytes :conserved}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :function p15-s23-is-cold-metadata-valid?,
+   :main-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :candidate-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :reviewed-before-and-after-spans :byte-identical,
+   :total-definitions 697,
+   :unchanged-definitions 696,
+   :all-other-current-main-bytes :conserved}],
+ :main-integration :pending-coordinator,
+ :CI :pending,
+ :quote-valid-data-helper :still-absent,
+ :kind :verified-clean-cold-quote-reconciliation,
+ :parents
+ ["46e8f15a2295b0fba52e9c94fb8aa9ea825259fe"
+  "a6f5b2f99e0076e2a790a9f99494c0312c896af1"],
+ :source-checks :pass,
+ :genuine-tests :UNRUN,
+ :changed-paths
+ ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  "specs/accounting-removal/cold-quote-main-census.edn"
+  "specs/accounting-removal/cold-quote-main.md"],
+ :quote-products :remain-metered-and-unchanged,
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :governance {:records 185, :result :pass},
+  :whitespace :pass,
+  :Clojure-test-bytes :identical-to-reviewed-candidate,
+  :genuine-tests :UNRUN},
+ :base "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+ :accepted-loop-retirement :preserved,
+ :pr 628,
+ :integration-mode :UNRUN,
+ :owner :ACC-01,
+ :candidate-tree "d3d8c59a651ade262403eca2369de12c3d3848cb"}

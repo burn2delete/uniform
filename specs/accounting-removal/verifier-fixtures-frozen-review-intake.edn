@@ -1,0 +1,393 @@
+{:ordinary-complete-test :historical-exact,
+ :genuine-source-Core-C7-public-verifier-companion-semantics-runtime
+ :UNRUN,
+ :complete-result-comparisons
+ :preserved-in-both-construction-tests-and-fresh-verifier,
+ :tree "b2fd8edc5444f46c588a5db66e6881b72b3f1e33",
+ :nonclaims
+ [:no-parent-stack-acceptance
+  :no-whole-constructor-equivalence
+  :no-native-callback-cycle-safety
+  :no-retained-accounting-endorsement
+  :no-companion-semantic-execution
+  :no-source-authentication
+  :no-release-self-hosting
+  :no-whole-ACC01-PR502-closure],
+ :candidate "b786b464a67e33af2b75bfcf90a87619b71774c3",
+ :source-checker-sha256
+ "d67741d93b450da1ab2287274bf5f513278a484d492adca20de2c4cf99317c38",
+ :source-checker-history
+ [:initial-missing-quoted-definition-delimiter-corrected-before-artifact-write
+  :inventory-doseq-delimiter-corrected-before-updated-artifact-write],
+ :parent-test-bytes :exact-prefix-unchanged,
+ :helper-adaptation
+ [:preserved-directory
+  :default-original-basename
+  :explicit-two-argument-arity],
+ :fixture-cases 2,
+ :four-added-definitions
+ #{ordinary-function-construction-preserves-semantic-results
+   function-verifier-source-reconstruction-and-tampering
+   qualified-map-get-construction-preserves-semantic-results
+   verifier-current-core-products},
+ :unchanged-shared-helper-pins
+ [{:name fixture-path,
+   :parent-and-candidate-form-sha256
+   "714973966985c07c2adab7f728c33921038727bead3ae5cc124617716878c9df"}
+  {:name function-work-policy-current-resolution,
+   :parent-and-candidate-form-sha256
+   "9c9e8d22d098a7c8354516e502a58ba677af3105b22320360c0af8da9bcfe584"}
+  {:name function-work-policy-current-source,
+   :parent-and-candidate-form-sha256
+   "7c778d3704c8ed03abe7f86889125fd9f3614f24fc83e96e74a4e32199790f42"}
+  {:name invoke-c7,
+   :parent-and-candidate-form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17"}],
+ :fresh-verifier-control :complete-literal-source-equation,
+ :qualified-substitutions
+ {ordinary-function-construction-preserves-semantic-results
+  qualified-map-get-construction-preserves-semantic-results,
+  (verifier-current-core-products stage)
+  (verifier-current-core-products
+   "function-verifier-qualified-map-get"
+   stage),
+  tone shade,
+  :cool :shade},
+ :complete-seven-path-mode-blob-overlay
+ [{:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-work-ledger.gravity",
+   :entry "100644 blob 9abc2eea40964b7cdbe83d2ea5bd4ab19e2b9c04",
+   :sha256
+   "b4a7f92c80f2c0ab755cbedcf7a3f71ed8926bfbb2032f520fbbda7e85df6a33"}
+  {:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-work-ledger.qst",
+   :entry "100644 blob 9abc2eea40964b7cdbe83d2ea5bd4ab19e2b9c04",
+   :sha256
+   "b4a7f92c80f2c0ab755cbedcf7a3f71ed8926bfbb2032f520fbbda7e85df6a33"}
+  {:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-qualified-map-get.gravity",
+   :entry "100644 blob fccd0505a11a7b5dd4eff7276c0e314206efd035",
+   :sha256
+   "78485b120a675672be4b3828fa455fadabdbaf532fd1e0c86a723efa790fe8e5"}
+  {:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-qualified-map-get.qst",
+   :entry "100644 blob fccd0505a11a7b5dd4eff7276c0e314206efd035",
+   :sha256
+   "78485b120a675672be4b3828fa455fadabdbaf532fd1e0c86a723efa790fe8e5"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :entry "100644 blob e996525c6d3b4f69b57f372cba408b44a3be4897",
+   :sha256
+   "93155220901390db8102f99813fdc69c1c94360d852ba68602a13876dbe7bb09"}
+  {:path "specs/accounting-removal/verifier-fixtures-census.edn",
+   :entry "100644 blob a9e373ef082b1685666de99433de48ac30b7f540",
+   :sha256
+   "7f8cedf94cac59b5858fc236fa7562ba2bc62c39aed60c0a850b075e9dcdf471"}
+  {:path "specs/accounting-removal/verifier-fixtures.md",
+   :entry "100644 blob f48dd5f83a6663900ff126378575525c5a878a1d",
+   :sha256
+   "18a8a6b0981978226f962994e38af595ca82f6f586cc6e2f8b17cc66d0d1aae7"}],
+ :test-assertion-pins
+ [{:name ordinary-function-construction-preserves-semantic-results,
+   :syntactic-assertions 13,
+   :ordered-assertion-sha256
+   "f14d49c5cfda81959612ed7d0b781c061dcded7d2eb7a6b0fb13a1c5165674c7",
+   :complete-form-sha256
+   "5d10626f516d6099c48490766f81862620f1fec0563b5e44f3e879ac6fd92227"}
+  {:name qualified-map-get-construction-preserves-semantic-results,
+   :syntactic-assertions 13,
+   :ordered-assertion-sha256
+   "31ffcdfc128c43773945656e068aaa8d31f49131f676c9babc2efd38b85c64c7",
+   :complete-form-sha256
+   "677f41135075c1939df4f67063ddff85904ab3d70d2f7093db19426c9fd18d0f"}
+  {:name function-verifier-source-reconstruction-and-tampering,
+   :syntactic-assertions 9,
+   :ordered-assertion-sha256
+   "d52b8aa728d6cd26becd4d1a4265de3fb7f98e023bbb6dbeeadabc86b2088342",
+   :complete-form-sha256
+   "0f796bd9f91593831d0b013278937da07097f3ea0d9a85bf15a7dd85c4b6262c"}],
+ :native-root-goal :blocked-unchanged,
+ :parent-PR598-review
+ :pending-qualified-sealed-result-no-inherited-acceptance,
+ :parent-PR598-known-question
+ :six-retired-complete-result-comparisons-require-independent-disposition,
+ :fixtures
+ [{:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-work-ledger.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-work-ledger.gravity",
+   :sha256
+   "b4a7f92c80f2c0ab755cbedcf7a3f71ed8926bfbb2032f520fbbda7e85df6a33",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-work-ledger.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-work-ledger.qst",
+   :sha256
+   "b4a7f92c80f2c0ab755cbedcf7a3f71ed8926bfbb2032f520fbbda7e85df6a33",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-qualified-map-get.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-qualified-map-get.gravity",
+   :sha256
+   "78485b120a675672be4b3828fa455fadabdbaf532fd1e0c86a723efa790fe8e5",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-verifier-qualified-map-get.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/function-verifier-qualified-map-get.qst",
+   :sha256
+   "78485b120a675672be4b3828fa455fadabdbaf532fd1e0c86a723efa790fe8e5",
+   :executed false}],
+ :original-inventory
+ {:path "specs/accounting-removal/preserved-source-inventory.edn",
+  :sha256
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+  :four-original-fixture-paths-verified true,
+  :snapshot :unchanged-no-completion-recount},
+ :production-source-correspondences
+ [{:name sh08-ft-function-type-core-artifact,
+   :historical-sha256
+   "bdea2fa07debe7e05d2e1539e1e1574037476306084591f56c6713e059037c31",
+   :existing-main-and-candidate-sha256
+   "bdea2fa07debe7e05d2e1539e1e1574037476306084591f56c6713e059037c31",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-ft-function-type-core-artifact-with-imports,
+   :historical-sha256
+   "751b31cdacfc4a38c36fe14228471ef08ddfaebd3dc9d21b77052b16927b76fd",
+   :existing-main-and-candidate-sha256
+   "751b31cdacfc4a38c36fe14228471ef08ddfaebd3dc9d21b77052b16927b76fd",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name
+   sh08-ft-function-type-core-artifact-with-imports-and-allowance,
+   :historical-sha256
+   "11ee166beb5910fd7c34551cbb83e7f78dec647a81a9c4e4b57f4f735c0a2c36",
+   :existing-main-and-candidate-sha256
+   "c3a3a1759d5b19ff40e8c7b1f191c44451de09873e528457ad0d86935f70b072",
+   :complete-form-identical false,
+   :explicit-differences-preserved
+   {(get handler-products :ordinary-work-count 0)
+    (get handler-products :work-count 0),
+    (get direct-throws :ordinary-work-count 0)
+    (get direct-throws :work-count 0)}}
+  {:name sh08-ft-function-type-core-artifact-with-origins,
+   :historical-sha256
+   "f4eb8b9d901cd23726068d241ce29e9933e7865d2043035cb308b45848b1f1c0",
+   :existing-main-and-candidate-sha256
+   "f4eb8b9d901cd23726068d241ce29e9933e7865d2043035cb308b45848b1f1c0",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-function-type-core-artifact,
+   :historical-sha256
+   "888f29ed1ea063b1818a986c5790aa34670b8681b5d6a9ec2e3caf106fb15051",
+   :existing-main-and-candidate-sha256
+   "888f29ed1ea063b1818a986c5790aa34670b8681b5d6a9ec2e3caf106fb15051",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-function-type-core-artifact-with-allowance,
+   :historical-sha256
+   "19a2f8b289ce474d4dbe7690b852ed3cf1d42fea6d02b314e40cabc27f042b5f",
+   :existing-main-and-candidate-sha256
+   "5611719b80559bdec44afe55f2e771f03f80db176bd00039f6a312c0eaaae2a6",
+   :complete-form-identical false,
+   :explicit-differences-preserved
+   {:imported-type-result-carrier-invalid
+    :imported-type-result-carrier-limit}}
+  {:name sh08-function-type-core-artifact-with-work-policy,
+   :historical-sha256
+   "38a6b86313418ff230c293b7d8382f47ca5ed225731222c0214414b229d421fb",
+   :existing-main-and-candidate-sha256
+   "38a6b86313418ff230c293b7d8382f47ca5ed225731222c0214414b229d421fb",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-binding?,
+   :historical-sha256
+   "2043b76579aaf5c30473f6c215d17a903bbeda600120beb69b34f4b83513570a",
+   :existing-main-and-candidate-sha256
+   "2043b76579aaf5c30473f6c215d17a903bbeda600120beb69b34f4b83513570a",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-call-fact,
+   :historical-sha256
+   "4b9b3ddcf694734b4561800b0b7a8060e08590657d06701682d13f7f344c9a1c",
+   :existing-main-and-candidate-sha256
+   "4b9b3ddcf694734b4561800b0b7a8060e08590657d06701682d13f7f344c9a1c",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-constraint,
+   :historical-sha256
+   "4135dde21976b28bae5f0bcf34d69ed6249b0bb315282e0e9a0f0fdc3c900072",
+   :existing-main-and-candidate-sha256
+   "4135dde21976b28bae5f0bcf34d69ed6249b0bb315282e0e9a0f0fdc3c900072",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-derive,
+   :historical-sha256
+   "dbfa681e4695d84815299a4d2d42fb852fc667c850fd157fdebe4a346686f4e0",
+   :existing-main-and-candidate-sha256
+   "dbfa681e4695d84815299a4d2d42fb852fc667c850fd157fdebe4a346686f4e0",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-finish,
+   :historical-sha256
+   "572821520f6d107eaee818439cd922858b17b04e36bc70f086b320c2b9d923ba",
+   :existing-main-and-candidate-sha256
+   "572821520f6d107eaee818439cd922858b17b04e36bc70f086b320c2b9d923ba",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-inferred-call-valid?,
+   :historical-sha256
+   "c6d793f7a1588df316cf765e13cc0e34617190dc9c96a51e8619ba0dfba8209c",
+   :existing-main-and-candidate-sha256
+   "c6d793f7a1588df316cf765e13cc0e34617190dc9c96a51e8619ba0dfba8209c",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-inferred-work,
+   :historical-sha256
+   "ab844685aadab4bf85ffc96731473cddf6594f75d0fb4532479af528db8ab937",
+   :existing-main-and-candidate-sha256
+   "ab844685aadab4bf85ffc96731473cddf6594f75d0fb4532479af528db8ab937",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-map-valid?,
+   :historical-sha256
+   "bff4d1c5dc686bc52f05e36ed379d9e011f1ec1b9f8858744789452663ab6fce",
+   :existing-main-and-candidate-sha256
+   "bff4d1c5dc686bc52f05e36ed379d9e011f1ec1b9f8858744789452663ab6fce",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-member-count,
+   :historical-sha256
+   "7c1fd78c9c55fa6773223af79eac2d849a36ad4bf40536fd5ba3b4ab9563bad3",
+   :existing-main-and-candidate-sha256
+   "7c1fd78c9c55fa6773223af79eac2d849a36ad4bf40536fd5ba3b4ab9563bad3",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-node?,
+   :historical-sha256
+   "70e11bdda1a093486bc16d262ab1a0400f17b21dd902e582e98792864cecb384",
+   :existing-main-and-candidate-sha256
+   "70e11bdda1a093486bc16d262ab1a0400f17b21dd902e582e98792864cecb384",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-normal-known?,
+   :historical-sha256
+   "b0b55d6e61b777b3d970f8920d92934e79877fc2f2c499e578354ee5bc29c0ed",
+   :existing-main-and-candidate-sha256
+   "b0b55d6e61b777b3d970f8920d92934e79877fc2f2c499e578354ee5bc29c0ed",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-operands?,
+   :historical-sha256
+   "235c18575e0f4d95a3bbc01db89c3b9d2e8548e14b51c38de867fb0d4b9601be",
+   :existing-main-and-candidate-sha256
+   "235c18575e0f4d95a3bbc01db89c3b9d2e8548e14b51c38de867fb0d4b9601be",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-derive,
+   :historical-sha256
+   "39965cd5c9c7e77f8f98769958489d9be6c6ade923a8c2ce9435ae423b00a0f9",
+   :existing-main-and-candidate-sha256
+   "39965cd5c9c7e77f8f98769958489d9be6c6ade923a8c2ce9435ae423b00a0f9",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-finish,
+   :historical-sha256
+   "f7b0a261e7108a3c191b5991e340f4b2af5b3e69fa1ce2a091d54d46bf165216",
+   :existing-main-and-candidate-sha256
+   "f7b0a261e7108a3c191b5991e340f4b2af5b3e69fa1ce2a091d54d46bf165216",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-finite-derive,
+   :historical-sha256
+   "f827850dc1a2b775fc82413a1184736dbfa76a8ee4a5583720f110750604cd5a",
+   :existing-main-and-candidate-sha256
+   "f827850dc1a2b775fc82413a1184736dbfa76a8ee4a5583720f110750604cd5a",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-forms?,
+   :historical-sha256
+   "b610f50e478479d1ad1b4dcb7b96a4be8625c99e37c1097568ba49c48c97273b",
+   :existing-main-and-candidate-sha256
+   "b610f50e478479d1ad1b4dcb7b96a4be8625c99e37c1097568ba49c48c97273b",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-header,
+   :historical-sha256
+   "2e45adf9351d4b8ecc0d0f00a058f8408810ab060a7a6abced3de4e33557b4dc",
+   :existing-main-and-candidate-sha256
+   "2e45adf9351d4b8ecc0d0f00a058f8408810ab060a7a6abced3de4e33557b4dc",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-operands?,
+   :historical-sha256
+   "ac09e852e2f2926c7499122b80f95408839b3a716cf824f72570a770934cf18b",
+   :existing-main-and-candidate-sha256
+   "ac09e852e2f2926c7499122b80f95408839b3a716cf824f72570a770934cf18b",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-present-selection,
+   :historical-sha256
+   "59d57c18ec4e449120c87fc133b315860cc1001a24aeb842d6701166a8e57eac",
+   :existing-main-and-candidate-sha256
+   "59d57c18ec4e449120c87fc133b315860cc1001a24aeb842d6701166a8e57eac",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-source,
+   :historical-sha256
+   "755e57fd1891e8eaa0c931c247f1cad99427a7b518155b8cecca990802c57b3f",
+   :existing-main-and-candidate-sha256
+   "755e57fd1891e8eaa0c931c247f1cad99427a7b518155b8cecca990802c57b3f",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-mg-step,
+   :historical-sha256
+   "1f00b18cfa6dadbd055490da43f6a3add8587d38c1683c2e784ba08246630ee4",
+   :existing-main-and-candidate-sha256
+   "1f00b18cfa6dadbd055490da43f6a3add8587d38c1683c2e784ba08246630ee4",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-verify-function-type-result,
+   :historical-sha256
+   "b31f361cf13a9c78fec1b2d740436ca3dd79072ad768e4e15fcf8e8eb2415571",
+   :existing-main-and-candidate-sha256
+   "b31f361cf13a9c78fec1b2d740436ca3dd79072ad768e4e15fcf8e8eb2415571",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}
+  {:name sh08-verify-function-type-result-with-work-policy,
+   :historical-sha256
+   "5e260c159e14884f7c588e74d7c532f07ebdcdbc20672223c122ef3af372b5d9",
+   :existing-main-and-candidate-sha256
+   "5e260c159e14884f7c588e74d7c532f07ebdcdbc20672223c122ef3af372b5d9",
+   :complete-form-identical true,
+   :explicit-differences-preserved nil}],
+ :all-parent-test-forms :unchanged,
+ :independent-source-review
+ :pending-Accounting-Reconciliation-routing-no-author-assignment,
+ :assessed-main "e3d990e9c6594f140a85397fd8e16a80078a4f10",
+ :kind :verifier-fixtures-frozen-source-review-intake,
+ :production-bytes :unchanged-from-parent,
+ :current-main-composition-and-integration :UNRUN,
+ :base "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :pr 599,
+ :source-checker-preserved-locally true,
+ :mutations-per-fixture 8,
+ :existing-CI
+ {:path "specs/accounting-removal/verifier-fixtures-frozen-ci.json",
+  :sha256
+  "c9be8473c997d3fc66ac44c744c6525a47ec6f10841188b01e232448895d280d",
+  :head "b786b464a67e33af2b75bfcf90a87619b71774c3",
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :rerun false,
+  :genuine-selector-acceptance :not-inferred},
+ :owner :ACC-01,
+ :census
+ {:path "specs/accounting-removal/verifier-fixtures-census.edn",
+  :sha256
+  "7f8cedf94cac59b5858fc236fa7562ba2bc62c39aed60c0a850b075e9dcdf471"}}

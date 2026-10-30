@@ -1,0 +1,127 @@
+{:reviewer-checker-rerun :not-needed-no-reproduction-claim,
+ :tree "5326bdea3b7598afef7ec19daec420bef6e38afd",
+ :nonclaims
+ [:whole-caller-equivalence
+  :dynamic-var-or-transitive-behavior
+  :call-frame-resource-or-exception-equivalence
+  :runtime-reachability-or-acceptance
+  :outer-accounting-approval
+  :whole-ACC01-or-PR502-closure
+  :no-production-or-shared-write
+  :no-target-helper-compiler-Bootstrap-native-runtime-probe-or-APPROVE
+  :no-B33-review
+  :no-old-e7-DSE-review-retry-or-reroute],
+ :execution
+ {:inert-Clojure-source-checks :passed,
+  :target-or-helper-execution :UNRUN,
+  :Bootstrap-loaded false},
+ :consumer-verification
+ :receipt-tree-inputs-whole-assessed-source-and-exact-chosen-let-equation,
+ :consumer-source-sha256
+ "bb660a518cd8fa24deab77520436d6b98ba1f3d7302870e5da579577db1ca241",
+ :genuine-execution :UNRUN,
+ :negative-controls
+ [{:case :swapped-helper-parameters, :refused true}
+  {:case :swapped-call-arguments, :refused true}
+  {:case :missing-inline-body, :refused true}
+  {:case :wrong-never-branch, :refused true}
+  {:case :wrong-prior-initializer, :refused true}
+  {:case :wrong-argument-initializer, :refused true}
+  {:case :changed-known-callee, :refused true}
+  {:case :shadowed-known, :refused true}
+  {:case :shadowed-original-helper, :refused true}
+  {:case :coherent-body-corruption, :refused true}
+  {:case :coherent-initializer-corruption, :refused true}
+  {:case :changed-parameter-initializer, :refused true}],
+ :witness
+ {:historical-chosen-let-path [3 2 3 3 3 3 3 3 2 3 3 3 3 2 2 1 1 2 3],
+  :current-chosen-let-path [3 2 3 3 3 3 3 2 3 3 3 3 2 2 1 1 2 3],
+  :historical-call (sh08-ft-ordinary-parameter-choice prior argument),
+  :current-expression
+  (if
+   (if
+    (= argument :gravity.type/never)
+    false
+    (sh08-ft-known? argument))
+   (if (sh08-ft-known? prior) prior argument)
+   prior),
+  :binding-initializers
+  {parameter (first ps),
+   argument (first as),
+   prior
+   (get result (get parameter :binding-id) :gravity.type/unknown)}},
+ :parent "487192ef059f4c1efe8bd61ceb5f76d4d93e5a6e",
+ :candidate "2577f25317a5d66f6d8624f0d6efeb99d6cb862f",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :callee
+ {:name sh08-ft-known?,
+  :complete-form
+  (defn
+   sh08-ft-known?
+   [value]
+   (if (sh08-ft-unknown? value) false (sh08-ni-valid-view? value))),
+  :historical-and-current-forms-identical true,
+  :sha256
+  "1a29e93808b52608400110375f22939cb3068b20f0c46953a2a45a73b0167528",
+  :transitive-callee-behavior :unproven},
+ :source-distinction
+ {:packet-and-assessed-C7-files :different,
+  :selected-forms :identical,
+  :whole-file-equivalence :not-claimed},
+ :reproduction
+ {:path "/tmp/parameter-choice-independent-review.clj",
+  :sha256
+  "77c912b4ae2e4db31d004211eac49b83b90ac54fd7306db583db12d523e4fbb3"},
+ :assumptions
+ [:pinned-source-and-bindings :L2-lexical-let-and-call-semantics],
+ :delivery :private-receipt-for-supported-helper-readback,
+ :original-unit [defn sh08-ft-ordinary-parameter-choice],
+ :scope
+ :one-historical-helper-exact-current-chosen-initializer-and-lexical-source-context,
+ :disposition :accept-exact-conditional-source-incorporation,
+ :classification
+ "The one historical helper body is incorporated exactly into the pinned chosen initializer with the same prior/argument value bindings and unchanged unshadowed named callee. Accept this conditional source disposition only under pinned source/bindings and L2 lexical let/call semantics; it does not prove equivalence of the full callers or dynamic call-frame behavior.",
+ :assessed-main "8300c415628d2110cd703824a059e06476f4e1e0",
+ :kind :parameter-choice-independent-classification-consumption,
+ :receipt-sha256
+ "0b3f3b28b4626f63a501c7b5961201016fca79998632c743e7273bac4c61986f",
+ :positive-checks 1334,
+ :source-checks 1508,
+ :whole-PR569-acceptance :not-conferred,
+ :author-checker
+ {:path "/tmp/acc01-parameter-choice-inline.clj",
+  :sha256
+  "9f97b13e11e69e650f7c534a848034024e307988557a8fc79137e80c66aab29d",
+  :mode :inspected-and-hashed-not-executed,
+  :authored-eight-controls
+  :independently-reproduced-plus-four-controls,
+  :original-writer-executed false},
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :whole-C7-equals-assessed-source true,
+  :selected-source-forms :unchanged},
+ :input-hashes
+ {"specs/accounting-removal/parameter-choice-inline-correspondence.edn"
+  "63902f17d947609ae3e40ecad024ed34cd97a804fca05d2debd9d24c98d5b37e",
+  "specs/accounting-removal/preserved-paths.md"
+  "849514f98c36ad86fa6a2888d8a968dc4b5b8d2d6ed1d42f9a5a350ebc1088e0",
+  :historical-C7
+  "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+  :assessed-C7
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :packet-C7
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :verified
+ {:selected-caller-and-known-form :also-identical-in-evidence-packet,
+  :original-helper-name-shadowing :absent,
+  :parent-production-and-inventory :unchanged,
+  :other-chosen-let-source :identical,
+  :parameter-order [prior argument],
+  :callee-local-shadowing :absent,
+  :complete-helper-body :identical,
+  :known-callee-source :historical-and-current-identical,
+  :nested-fn-letfn :absent,
+  :selected-local-initializers :all-three-identical,
+  :map-and-evidence-only true}}

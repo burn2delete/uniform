@@ -1,0 +1,92 @@
+{:reviewed-candidate "8330e46870de055f3ad4c864921dc83b999d4a06",
+ :reviewed-tree "6606e4cdd541156117589399ff5d9fb861ff8529",
+ :nonclaims
+ [:fresh-composed-independent-acceptance
+  :integration-preflight-pass
+  :integration
+  :whole-loop-accounting-removal
+  :whole-callgraph-proof
+  :PR569-or-PR502-acceptance
+  :release
+  :self-hosting],
+ :reviewed-base "40ecbb97ede5e93c3202c894c4a7ec5e64cdd5bd",
+ :integration :pending-coordinator,
+ :proposed-composition
+ {:tree "f26f96d713d8964246ca7809aee8dd573f4d8ca3",
+  :intervening-main-paths
+  ["bootstrap/clojure/test/gravity/build/producer_git_observation.clj"
+   "bootstrap/clojure/test/gravity/build/producer_git_observation_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj"
+   "contracts/stage0-incremental-test-dependencies.edn"
+   "docs/verification-reuse.md"],
+  :branch-moved false,
+  :commit-created false,
+  :method :git-merge-tree-write-tree,
+  :conflicts false,
+  :intervening-main-overlap false,
+  :independent-composed-acceptance :pending,
+  :all-other-main-tree-paths-unchanged true,
+  :changed-paths
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "specs/accounting-removal/loop-accounting-main-census.edn"
+   "specs/accounting-removal/loop-accounting-main.md"],
+  :candidate-evidence-bytes-unchanged true},
+ :source
+ {:reviewed-base-and-current-main-identical true,
+  :path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :reviewed-and-proposed-composition-identical true,
+  :loop-family-forms-conserved 30,
+  :reference-scope
+  ["bootstrap" "tools" ".github" ".agents" ".specify" "deps.edn"],
+  :current-main-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :current-main-name-matches 3,
+  :proposed-composition-sha256
+  "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+  :reviewed-candidate-sha256
+  "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+  :proposed-composition-name-matches 0,
+  :namespace-and-exports-conserved true,
+  :all-remaining-definitions-conserved 1087},
+ :consumed-review-receipt-sha256
+ "457ed321acbc06f14651c7bb872a6fe995b0ba7524be8324aae0a3a52e79807f",
+ :current-main-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :preflight
+ {:preconditions
+  {:base-resolved true,
+   :candidate-identities-match true,
+   :clean-worktree false,
+   :named-branch true,
+   :reconciliation-allowed false,
+   :all-pass false},
+  :reconciliation
+  {:relation "divergent",
+   :base-is-ancestor false,
+   :candidate-is-ancestor false,
+   :tree-equivalent false,
+   :recommendation "resolve_divergence_before_integration"},
+  :mode :inspect,
+  :no-cleanup-retry-or-exclusion true,
+  :result :not-integration-eligible,
+  :untracked-relative-paths
+  ["tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh01-stage2-runtime-iteration-test.transit.json"
+   "tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh09-body-effect-test.transit.json"
+   "tools/ci/kondo/.cache/v1/lock"],
+  :tracked-changes [],
+  :read-only true,
+  :integration-mode :UNRUN},
+ :current-main "e047157d711652a5624012f0da7d6911ce086718",
+ :kind :loop-main-source-applicability-and-inspect-preflight,
+ :generator
+ {:language :clojure,
+  :sha256
+  "fc8f348ff9e7e7ec8fd48e858eb03595a45ac58b23697b3a4624ccf50d834bc7",
+  :preserved-locally true},
+ :validation
+ {:source-checks :passed,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :compiler-runtime-execution :UNRUN},
+ :owner :ACC-01}

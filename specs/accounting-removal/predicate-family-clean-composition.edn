@@ -1,0 +1,188 @@
+{:integration-mode-preflight :UNRUN,
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-owner-tests :UNRUN},
+ :candidate "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+ :historical-records :whole-file-pins-retain-original-base-meaning,
+ :generator-sha256
+ "c296372a3dbdd27b96e605b1f2481c54d88ba85e94443a8b13baf62311a47a59",
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj",
+   :entry "100644 blob ac00e1b8a2969a24fb7f8b70c9ae7019027f9b17",
+   :sha256
+   "d5ce6ff87e096469dbcf7b3f48a8b217765cded6dcd50ea76ac4c873fe19d5e5"}
+  {:path
+   "specs/accounting-removal/predicate-family-controls-census.edn",
+   :entry "100644 blob 35b8f47d2ee1473acb2cb3fa56d5f70a5ed1e1be",
+   :sha256
+   "545e7208137721650916c1dcec0fe5a54ca43a01581a60a87283ff74caf004af"}
+  {:path "specs/accounting-removal/predicate-family-controls.md",
+   :entry "100644 blob c9973e8bb357eb42d8c02027ab5be626cf3cf709",
+   :sha256
+   "ac12730e08fcfda901c04988a79d4c7383397e68080952fe588b702eb61c4238"}],
+ :prior-review
+ {:candidate "50c7e58c5fb41a3001bf423b39f6e5157e030566",
+  :receipt-sha256
+  "38f50b1539b4d64ce89a613bded7aa5783c69611f89cf63dba0f15b66aaa054f",
+  :source-DATA-checks 17224,
+  :corruption-refusals 37,
+  :current-head-acceptance :not-inherited},
+ :production
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :original-reviewed-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :current-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :whole-file-pin-scope :original-base-historical,
+   :selected-forms :unchanged}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :original-reviewed-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :current-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :whole-file-pin-scope :original-base-historical,
+   :selected-forms :unchanged}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :original-reviewed-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :current-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :whole-file-pin-scope :original-base-historical,
+   :selected-forms :unchanged}],
+ :inspect-preconditions
+ {"all-pass" true,
+  "base-resolved" true,
+  "candidate-identities-match" true,
+  "clean-worktree" true,
+  "named-branch" true,
+  "reconciliation-allowed" true},
+ :all-three-reviewed-file-bytes :identical,
+ :whole-tree
+ {:base-entries 10084,
+  :candidate-entries 10087,
+  :exact-reviewed-three-additions true,
+  :all-base-path-blob-mode-identities :unchanged},
+ :main-merge :UNRUN,
+ :all-accepted-main-entries :conserved,
+ :kind :predicate-controls-clean-current-main-composition,
+ :parents
+ ["50c7e58c5fb41a3001bf423b39f6e5157e030566"
+  "e4d98947201a9473d8bca5777c1f59f5e3426bfd"],
+ :all-114-owner-and-22-upstream-pins :freshly-verified,
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :whitespace :pass,
+  :lint
+  {:files 2,
+   :errors 0,
+   :warnings 0,
+   :info 0,
+   :cache false,
+   :configuration-change false,
+   :version "2025.10.23"}},
+ :base "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+ :current-composition-independent-review :pending,
+ :pr 625,
+ :current-head-CI :pending,
+ :owner :ACC-01,
+ :candidate-tree "84ad6dcb8d889e9ad8973e873545f0f7102a6623",
+ :historical-helper-boundaries
+ {:selected-owner-differences-by-file
+  {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   22,
+   "bootstrap/gravity/src/gravity/effects.gravity" 24,
+   "bootstrap/gravity/p15_s23/emitter.gravity" 12},
+  :all22-upstream-helper-forms :historically-identical,
+  :new-selected-validator-names
+  [body-lc-validate-types p15-s23-lc-validate-types],
+  :selected-owner-form-differences 58,
+  :four-complete-explicit-source-correspondences
+  [{:name body-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name body-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {body-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {p15-s23-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}],
+  :semantic-equivalence :unproven,
+  :prior-private-or-source-reviews
+  :not-promoted-to-execution-or-parent-acceptance,
+  :two-real-remaining-structural-differences
+  [{:name body-all?,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     body-all?
+     [values]
+     (loop
+      [remaining values]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}
+   {:name p15-s23-typed-all,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     p15-s23-typed-all
+     [checks]
+     (loop
+      [remaining checks]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}],
+  :ID-width-and-host-guard-quota-disposition :not-assessed-or-changed,
+  :transitive-whole-callgraph-proof false}}

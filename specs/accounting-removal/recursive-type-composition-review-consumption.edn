@@ -1,0 +1,1260 @@
+{:findings [],
+ :integration-mode-preflight :required,
+ :tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+ :nonclaims
+ [:helper-or-transitive-equivalence
+  :authenticated-source-admission
+  :Effects-emitter-runtime-composition
+  :genuine-kernel-acceptance
+  :ACC06-capture-acceptance
+  :whole-recursive-accounting-removal
+  :PR502-closure
+  :release
+  :self-hosting
+  :main-integration
+  :GitHub-APPROVE],
+ :execution
+ {:held-relay-or-capture-retries false,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :merge false,
+  :CI :separate,
+  :APPROVE false,
+  :genuine-kernels :UNRUN,
+  :runtime-helper-native-target-projection-execution :none,
+  :sealed-source-data-checks 10698,
+  :checker-sha256
+  "aedc211bd5b1b21b935778995162dd0c60a57df24c19c469eae00b444ce16d9a",
+  :author-validation :reported-not-rerun,
+  :target-source-edits false},
+ :consumer-verification
+ {:receipt-checker-tree-parents-and-9-pins :verified,
+  :independent-source-checker :reproduced-byte-identical-receipt,
+  :clean-worktree true},
+ :source-hashes
+ {:current-test
+  "5209e1ce7a0f900bcb38f4f3da0f6318d0ec312077818c7ed45864cc9de3f8b0",
+  :base-test
+  "d6464313d475da679ff9cf1b723c13a78972c83b42320974e8c698199ee8fb65",
+  :original-test
+  "18224e4e291204b367f947c74a447d685a261bca4c72d820d726b72c1a454bd6",
+  :List-suffix
+  "31417693bb9bf07c87b3ef94d43ae5382b829eaa8d7a2c37b1a761c699d796fc",
+  :current-C7
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :original-C7
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :consumer-source-sha256
+ "81ddd905cd4a3c4f506dd974b716cd53418f09f3b42a617b647d5cec9dcad841",
+ :candidate "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+ :public-evidence
+ {:commit "330f8b18a39a92da5f35cdc1a591fd85a8088d3a",
+  :tree "2601c29b3ae1dbdffc0424d1c7aa51094dac93b7",
+  :path
+  "specs/accounting-removal/recursive-type-clean-composition.edn",
+  :sha256
+  "31175eae14a15e066c501f4130624b996b964cafd791b702fa3044fb92ece6ab",
+  :checker-generator-sha256
+  "88bb56f839eeb1b3b8971a06b6c1314b4cefded2b65ff68d42e7ae02c52c093f",
+  :mutating-compose-generator-sha256
+  "8e26a651535a34627b921dafe71e31f97b5b2402e6d1647c68da4efd3d000622",
+  :author-generators-executed false},
+ :remaining
+ [:CI
+  :fresh-integration-preflight
+  :coordinator-integration
+  :authorized-genuine-execution
+  :authenticated-admission
+  :downstream-composition
+  :behavioral-equivalence],
+ :original-base "e047157d711652a5624012f0da7d6911ce086718",
+ :source-obligations
+ {:List-late-invalid 4096,
+  :Symbol-added-depth 192,
+  :Symbol-prior-depths [127 129],
+  :cyclic-opaque-nestedNever-oddMap-extraField-zeroCallback-controls
+  :source-retained-unexecuted,
+  :List-width 4097,
+  :List-depth 192,
+  :Symbol-wide 1025,
+  :all-assertion-forms 38,
+  :Symbol-late-invalid 1024},
+ :original-evidence
+ {:receipt-sha256
+  "6acc15a62eea2cbf0837bc8309c5935e2671ca1fa7482df81a2e8da93e82cfbd",
+  :all-private-and-immutable-inputs-rehashed true,
+  :seven-original-controls-reexecuted true,
+  :generator-authenticated-not-run true},
+ :owner-pins
+ {:exact-immediate-current-targets
+  #{sh08-lc-native-view?
+    sh08-lc-ancestor?
+    sh08-hl-type?
+    sh08-ss-type?
+    sh08-lc-native-arguments
+    sh08-lc-validate-types
+    sh08-ni-type?
+    sh08-syc-type?
+    sh08-lc-native-map?},
+  :semantic-or-transitive-equivalence :unproven,
+  :differences
+  [{:name sh08-lc-ancestor?,
+    :current
+    (defn
+     sh08-lc-ancestor?
+     [value ancestors]
+     (loop
+      [index 0]
+      (if
+       (= index (count ancestors))
+       false
+       (if
+        (bootstrap-native-identical? value (get ancestors index))
+        true
+        (recur (+ index 1)))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-arguments,
+    :current
+    (defn
+     sh08-lc-native-arguments
+     [arguments]
+     (let
+      [header
+       (bootstrap-native-carrier-header arguments)
+       kind
+       (get header 0)]
+      (if
+       (contains? #{:empty-list :nil} kind)
+       {:status :accepted, :arguments []}
+       (if
+        (contains? #{:subvector :vector} kind)
+        (if
+         (sh08-lc-native-view? arguments)
+         {:status :accepted, :arguments arguments}
+         {:status :rejected, :reason :unsupported-arguments})
+        (if
+         (= :list-node kind)
+         (loop
+          [current arguments ancestors [] out []]
+          (if
+           (sh08-lc-ancestor? current ancestors)
+           {:status :rejected, :reason :cyclic-arguments}
+           (let
+            [node
+             (bootstrap-native-carrier-header current)
+             tag
+             (get node 0)]
+            (if
+             (contains? #{:empty-list :nil} tag)
+             {:status :accepted, :arguments out}
+             (if
+              (= :list-node tag)
+              (let
+               [next
+                (get node 5)
+                extent
+                (get node 2)
+                next-ancestors
+                (conj ancestors current)]
+               (if
+                (sh08-lc-ancestor? next next-ancestors)
+                {:status :rejected, :reason :cyclic-arguments}
+                (let
+                 [next-header
+                  (bootstrap-native-carrier-header next)
+                  coherent?
+                  (if
+                   (= extent nil)
+                   true
+                   (if
+                    (> extent 0)
+                    (if
+                     (= extent 1)
+                     (contains?
+                      #{:empty-list :nil}
+                      (get next-header 0))
+                     (if
+                      (= :list-node (get next-header 0))
+                      (= (- extent 1) (get next-header 2))
+                      false))
+                    false))]
+                 (if
+                  coherent?
+                  (recur next next-ancestors (conj out (get node 4)))
+                  {:status :rejected,
+                   :reason :unsupported-arguments}))))
+              {:status :rejected, :reason :unsupported-arguments})))))
+         {:status :rejected, :reason :unsupported-arguments}))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-map?,
+    :current
+    (defn
+     sh08-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-view?,
+    :current
+    (defn
+     sh08-lc-native-view?
+     [value]
+     (loop
+      [current value ancestors []]
+      (if
+       (sh08-lc-ancestor? current ancestors)
+       false
+       (let
+        [header
+         (bootstrap-native-carrier-header current)
+         kind
+         (get header 0)]
+        (if
+         (= :vector kind)
+         (>= (get header 2) 0)
+         (if
+          (= :subvector kind)
+          (let
+           [extent
+            (get header 2)
+            start
+            (get header 5)
+            backing
+            (get header 4)
+            backing-header
+            (bootstrap-native-carrier-header backing)]
+           (if
+            (contains? #{:subvector :vector} (get backing-header 0))
+            (if
+             (if
+              (>= start 0)
+              (if
+               (>= extent 0)
+               (if
+                (>= (get backing-header 2) 0)
+                (<= (+ start extent) (get backing-header 2))
+                false)
+               false)
+              false)
+             (recur backing (conj ancestors current))
+             false)
+            false))
+          false)))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-validate-types,
+    :current
+    (defn
+     sh08-lc-validate-types
+     [arguments]
+     (let
+      [ingress (sh08-lc-native-arguments arguments)]
+      (if
+       (= :accepted (get ingress :status))
+       (let
+        [arguments (get ingress :arguments)]
+        (loop
+         [pending
+          (loop
+           [remaining arguments out []]
+           (if
+            (= 0 (count remaining))
+            out
+            (recur
+             (rest remaining)
+             (conj
+              out
+              {:type (first remaining),
+               :ancestors [],
+               :operand? true}))))]
+         (if
+          (= 0 (count pending))
+          {:status :accepted}
+          (let
+           [frame
+            (get pending (- (count pending) 1))
+            type
+            (get frame :type)
+            ancestors
+            (get frame :ancestors)
+            tail
+            (subvec pending 0 (- (count pending) 1))]
+           (if
+            (if
+             (keyword? type)
+             (contains?
+              #{:gravity.type/i16
+                :gravity.type/f32
+                :gravity.type/bool
+                :gravity.type/u64
+                :gravity.type/f64
+                :gravity.type/u16
+                :gravity.type/map
+                :gravity.type/set
+                :gravity.type/decimal
+                :gravity.type/integer
+                :gravity.type/symbol
+                :gravity.type/nil
+                :gravity.type/i8
+                :gravity.type/i32
+                :gravity.type/u8
+                :gravity.type/character
+                :gravity.type/i64
+                :gravity.type/list
+                :gravity.type/string
+                :gravity.type/vector
+                :gravity.type/keyword
+                :gravity.type/ratio
+                :gravity.type/u32}
+              type)
+             false)
+            (recur tail)
+            (if
+             (= :gravity.type/never type)
+             (if
+              (get frame :operand?)
+              (recur tail)
+              {:status :rejected, :reason :nested-never})
+             (if
+              (sh08-lc-native-map? type)
+              (if
+               (sh08-lc-ancestor? type ancestors)
+               {:status :rejected, :reason :cyclic-type}
+               (let
+                [kind
+                 (get type :kind)
+                 members?
+                 (= :gravity.type/map kind)
+                 homogeneous?
+                 (if
+                  (sh08-ss-type? type)
+                  true
+                  (if
+                   (sh08-syc-type? type)
+                   true
+                   (if
+                    (keyword? (get type :element-type))
+                    (sh08-hl-type? type)
+                    false)))
+                 nil-bearing?
+                 (if
+                  (keyword? (get type :value-type))
+                  (sh08-ni-type? type)
+                  false)
+                 children
+                 (if
+                  nil-bearing?
+                  [(get type :value-type)]
+                  (if
+                   homogeneous?
+                   [(get type :element-type)]
+                   (get
+                    type
+                    (if members? :member-types :element-types))))
+                 valid?
+                 (if
+                  nil-bearing?
+                  true
+                  (if
+                   homogeneous?
+                   true
+                   (if
+                    (if
+                     (keyword? kind)
+                     (contains?
+                      #{:gravity.type/map
+                        :gravity.type/set
+                        :gravity.type/list
+                        :gravity.type/vector}
+                      kind)
+                     false)
+                    (if
+                     (=
+                      (if
+                       members?
+                       #{:kind :member-types :shape}
+                       #{:kind :shape :element-types})
+                      (set (keys type)))
+                     (if
+                      (= :literal (get type :shape))
+                      (if
+                       (sh08-lc-native-view? children)
+                       (if
+                        members?
+                        (loop
+                         [remaining children]
+                         (if
+                          (= 0 (count remaining))
+                          true
+                          (if
+                           (= 1 (count remaining))
+                           false
+                           (recur (rest (rest remaining))))))
+                        true)
+                       false)
+                      false)
+                     false)
+                    false)))
+                 next-ancestors
+                 (conj ancestors type)]
+                (if
+                 valid?
+                 (recur
+                  (loop
+                   [remaining children out tail]
+                   (if
+                    (= 0 (count remaining))
+                    out
+                    (recur
+                     (rest remaining)
+                     (conj
+                      out
+                      {:type (first remaining),
+                       :ancestors next-ancestors,
+                       :operand? false})))))
+                 {:status :rejected, :reason :malformed-type})))
+              {:status :rejected, :reason :unsupported-type})))))))
+       ingress))),
+    :historical
+    (defn
+     sh08-lc-validate-types
+     [arguments]
+     (let
+      [carrier (sh08-vf-original-data arguments)]
+      (if
+       (= :accepted (get carrier :status))
+       (loop
+        [pending
+         (loop
+          [remaining arguments out []]
+          (if
+           (= 0 (count remaining))
+           out
+           (recur
+            (rest remaining)
+            (conj out {:type (first remaining), :operand? true}))))]
+        (if
+         (= 0 (count pending))
+         {:status :accepted}
+         (let
+          [frame
+           (get pending (- (count pending) 1))
+           type
+           (get frame :type)
+           tail
+           (subvec pending 0 (- (count pending) 1))]
+          (if
+           (if
+            (keyword? type)
+            (contains?
+             #{:gravity.type/i16
+               :gravity.type/f32
+               :gravity.type/bool
+               :gravity.type/u64
+               :gravity.type/f64
+               :gravity.type/u16
+               :gravity.type/map
+               :gravity.type/set
+               :gravity.type/decimal
+               :gravity.type/integer
+               :gravity.type/symbol
+               :gravity.type/nil
+               :gravity.type/i8
+               :gravity.type/i32
+               :gravity.type/u8
+               :gravity.type/character
+               :gravity.type/i64
+               :gravity.type/list
+               :gravity.type/string
+               :gravity.type/vector
+               :gravity.type/keyword
+               :gravity.type/ratio
+               :gravity.type/u32}
+             type)
+            false)
+           (recur tail)
+           (if
+            (= :gravity.type/never type)
+            (if
+             (get frame :operand?)
+             (recur tail)
+             {:status :rejected, :reason :nested-never})
+            (if
+             (if
+              (map? type)
+              (loop
+               [fields (keys type)]
+               (if
+                (= 0 (count fields))
+                true
+                (if
+                 (keyword? (first fields))
+                 (recur (rest fields))
+                 false)))
+              false)
+             (let
+              [kind
+               (get type :kind)
+               members?
+               (= :gravity.type/map kind)
+               homogeneous?
+               (if
+                (sh08-ss-type? type)
+                true
+                (if
+                 (sh08-syc-type? type)
+                 true
+                 (if
+                  (keyword? (get type :element-type))
+                  (sh08-hl-type? type)
+                  false)))
+               nil-bearing?
+               (if
+                (keyword? (get type :value-type))
+                (sh08-ni-type? type)
+                false)
+               children
+               (if
+                nil-bearing?
+                [(get type :value-type)]
+                (if
+                 homogeneous?
+                 [(get type :element-type)]
+                 (get
+                  type
+                  (if members? :member-types :element-types))))
+               valid?
+               (if
+                nil-bearing?
+                true
+                (if
+                 homogeneous?
+                 true
+                 (if
+                  (if
+                   (keyword? kind)
+                   (contains?
+                    #{:gravity.type/map
+                      :gravity.type/set
+                      :gravity.type/list
+                      :gravity.type/vector}
+                    kind)
+                   false)
+                  (if
+                   (=
+                    (if
+                     members?
+                     #{:kind :member-types :shape}
+                     #{:kind :shape :element-types})
+                    (set (keys type)))
+                   (if
+                    (= :literal (get type :shape))
+                    (if
+                     (vector? children)
+                     (if
+                      members?
+                      (loop
+                       [remaining children]
+                       (if
+                        (= 0 (count remaining))
+                        true
+                        (if
+                         (= 1 (count remaining))
+                         false
+                         (recur (rest (rest remaining))))))
+                      true)
+                     false)
+                    false)
+                   false)
+                  false)))]
+              (if
+               valid?
+               (recur
+                (loop
+                 [remaining children out tail]
+                 (if
+                  (= 0 (count remaining))
+                  out
+                  (recur
+                   (rest remaining)
+                   (conj
+                    out
+                    {:type (first remaining), :operand? false})))))
+               {:status :rejected, :reason :malformed-type}))
+             {:status :rejected, :reason :unsupported-type}))))))
+       carrier))),
+    :historical-state :present,
+    :equivalence :unassessed}],
+  :historically-absent 4,
+  :historical-differences 5,
+  :current-forms-and-arguments-match-original true,
+  :count 9,
+  :entry sh08-lc-validate-types,
+  :details-sha256
+  "6b3fcccf68ad719527ea1bae717df56afa6f2fe59a884dabe8d96b29b8c77cfe"},
+ :qualifications
+ {:census-old-C7-and-test-hashes :historical-only,
+  :auxiliary-serialized-List-Symbol-hashes :not-independent-evidence,
+  :current-down-counter-Symbol-constructor :preserved,
+  :historical-up-counter-constructor-equivalence :not-certified,
+  :source-form-numbers-names-quota-schema-arity-normalization :none,
+  :only-reader-generated-host-local-symbols-normalized-for-form-comparison
+  true},
+ :host-dispatch
+ {:host-source-symbol-closure
+  [{:name c7-plan,
+    :form-sha256
+    "272a25cf110d62a8763fd8be7c2e58e9bbf5f55a203625efd026745004b547be",
+    :executed false}
+   {:name c7-source-relative-path,
+    :form-sha256
+    "c988827cd72f23ed2e2bb6c95b3f004d7139d57561e099f389d1a19b4aa20a76",
+    :executed false}
+   {:name compile-plan,
+    :form-sha256
+    "e83014a8390ec3c0d0494caec91ac77ac8b1073f0ea4c9c8b268e01bbbeaf6f6",
+    :executed false}
+   {:name invoke-c7,
+    :form-sha256
+    "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+    :executed false}
+   {:name keyword-predicate-input,
+    :form-sha256
+    "f340ebbd99d2ba248dbf3a2b81a6260c8b03256b2300266bf31d37bbcb815d4d",
+    :executed false}
+   {:name list-construction-derived,
+    :form-sha256
+    "fa1ed7efb109aafbb76343b838c9f556e786222e48d1a74313d807f5f4298d3a",
+    :executed false}
+   {:name list-construction-input,
+    :form-sha256
+    "e2224dbdc285091d4cce0aed03f03df834e634c0cea253269ba0660d7bb8dd24",
+    :executed false}
+   {:name list-predicate-input,
+    :form-sha256
+    "616d95ae19ce6f042f50fde797ab9297b7fb8c9e34d4996c043818792c7d45da",
+    :executed false}
+   {:name list-prepend-derived,
+    :form-sha256
+    "f1bd7536fe0cf27ba758827bfb993bb7a71a418e6e77295db2f1c84235e9c975",
+    :executed false}
+   {:name list-prepend-input,
+    :form-sha256
+    "5a9b1d764d54043808c2ee01641a238a27b7d4c4de0898bc8404d1276c5e8e4e",
+    :executed false}
+   {:name path,
+    :form-sha256
+    "736ef1a649ba77641c3cc67e500f81d691ea621359e8d1b55a5c47bdc91eaa9e",
+    :executed false}
+   {:name repository-root,
+    :form-sha256
+    "463cc4bc321d8e4cfd75b4b45134e4c254b4d0f5f6938841a2263680a9e7ffab",
+    :executed false}
+   {:name root,
+    :form-sha256
+    "094d8021289a81fc67ce1d4e416ad86f1945e5afb3226270c6bebcf29790fe33",
+    :executed false}
+   {:name set-predicate-input,
+    :form-sha256
+    "42f37ccd200fdf2e4ddf4e90648591dec79b124d056106116d4fcd7144a2e66c",
+    :executed false}],
+  :direct-bootstrap-adapters
+  [{:name c-backend-stage2-plan-emitter-source-rule!,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00644-c-backend-stage2-plan-emitter-source-rule.clj",
+    :arguments
+    "Load and validate the Gravity-authored P15-S23 stage2 plan-emitter rule.\n\n  Runtime-derived C lowering is deliberately bound to this source rule rather\n  than silently reusing the Clojure stage0 plan emitter.  The returned rule\n  hash is path-neutral and is carried into manifests/provenance so the exact\n  Gravity rule set used for lowering is auditable.",
+    :form-sha256
+    "d1eed19d0704e5755af7b9d0ea82ef79ea397ecb3ebf7263de6e46957b3da112",
+    :executed false}
+   {:name p15-s23-stage2-compiler-artifact-plan,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj",
+    :arguments
+    ([emitter artifact-source artifact-text]
+     (p15-s23-stage2-compiler-artifact-plan-raw
+      emitter
+      artifact-source
+      artifact-text
+      nil)),
+    :form-sha256
+    "2d98e63e939c156e3b4b4f9bc4d2c80d68a5ea68e4fdfaa117704ac7d110edbe",
+    :executed false}
+   {:name p15-s23-stage2-runtime-execute-function,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj",
+    :arguments [runtime plan callee args],
+    :form-sha256
+    "b9e1f9f18ab0d9bfa76a1d234420cf6e3eed5617b845283f6bbfdc0a42adf933",
+    :executed false}],
+  :all-original-forms-unchanged true,
+  :executed false,
+  :transitive-or-runtime-proof false},
+ :CI
+ {:head "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+  :run 41001963738,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :intake
+ {:author-helper-other-reviewers-read true,
+  :exact-receipt-search-done true,
+  :existing-exact-result false,
+  :competing-or-denied-exact-review false,
+  :prior-goals-remain-complete true},
+ :main-merge :UNRUN,
+ :kind :recursive-type-independent-composition-review-consumption,
+ :parents
+ ["47a0f75617aff8da5136e084b837b4f853190433"
+  "8300c415628d2110cd703824a059e06476f4e1e0"],
+ :receipt-sha256
+ "fc19c57032fd4f6c21c7628d0659ba3a1edd902d237cb1b1ac7ea0bef46b6e2d",
+ :verdict :scoped-source-pass,
+ :composition
+ {:base-entries 10089,
+  :candidate-entries 10091,
+  :full-tree-path-object-mode-equation true,
+  :all-base-paths-conserved-except-exact-Symbol-edit-and-List-append
+  true,
+  :two-records-byte-identical-to-original true,
+  :all-production-unchanged-from-base true,
+  :current-quote-collection-reader-predicate-RecordUnion-additions-retained
+  true},
+ :genuine-owner-tests :UNRUN,
+ :base "8300c415628d2110cd703824a059e06476f4e1e0",
+ :inert-corruption-controls
+ [{:refused true, :check :full-width-copy, :case :reduced-width}
+  {:refused true,
+   :check :zero-callback-conservation,
+   :case :removed-zero-callback-assertion}
+  {:refused true,
+   :check :prior-depth-conservation,
+   :case :lost-depth129}
+  {:refused true,
+   :check :immediate-pins-complete,
+   :case :omitted-immediate-dependency}
+  {:refused true, :check :production-sha, :case :forged-production-pin}
+  {:refused true,
+   :check :source-forms-not-identical,
+   :case :historical-equivalence-promotion}
+  {:case :reader-eval-payload,
+   :refused true,
+   :check :reader-eval-disabled}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    0
+    :List
+    "(is (= {:status :accepted} (check types)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    1
+    :List
+    "(is (= :rejected (:status (check [type]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    2
+    :List
+    "(is (empty? (clojure.core/deref callbacks)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion 3 :Symbol "(is (= carrier produced))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    4
+    :Symbol
+    "(is (true? (invoke (quote sh08-syc-type?) [produced])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    5
+    :Symbol
+    "(is (false? (invoke (quote sh08-ss-type?) [produced])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    6
+    :Symbol
+    "(is (false? (invoke (quote sh08-is-value-type?) [produced])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    7
+    :Symbol
+    "(is (false? (invoke (quote sh08-ds-type?) [produced])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    8
+    :Symbol
+    "(is (= {:status :accepted} (work [produced])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    9
+    :Symbol
+    "(is (= {:status :accepted} (work [nested])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    10
+    :Symbol
+    "(is (= {:status :accepted} (work [string-carrier])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    11
+    :Symbol
+    "(is (= {:status :accepted} (work [:gravity.type/set])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    12
+    :Symbol
+    "(is (= {:status :accepted} (work [:gravity.type/never])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    13
+    :Symbol
+    "(is (= :nested-never (:reason (work [{:kind :gravity.type/list, :shape :literal, :element-types [:gravity.type/never]}]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    14
+    :Symbol
+    "(is (= :rejected (:status (invoke (quote sh08-syin-validate-types) [[:gravity.type/set s]]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    15
+    :Symbol
+    "(is (= :rejected (:status (invoke (quote sh08-syin-validate-types) [[:gravity.type/unknown s]]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    16
+    :Symbol
+    "(is (= :accepted (:status checked)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    17
+    :Symbol
+    "(is (= expected (:result-type checked)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    18
+    :Symbol
+    "(is (nil? (:input-extent checked)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    19
+    :Symbol
+    "(is (not-any? (fn* [reader-generated-0] (contains? checked reader-generated-0)) [:work-count :operand-work :result-work :construction-work]))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    20
+    :Symbol
+    "(is (= :accepted (:status (invoke (quote sh08-ksm-domain) [[carrier s] 65536]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    21
+    :Symbol
+    "(is (= :rejected (:status (invoke (quote sh08-kse-domain) [[carrier carrier] 65536]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    22
+    :Symbol
+    "(is (= :rejected (:status (invoke (quote sh08-kse-domain) [[carrier (finite [s])] 65536]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case [:lost-semantic-assertion 23 :Symbol "(is (map? header))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    24
+    :Symbol
+    "(is (= [produced] (:argument-types descriptor)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    25
+    :Symbol
+    "(is (= expected (:result-type descriptor) (:return descriptor)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    26
+    :Symbol
+    "(is (false? (invoke (quote sh08-syc-type?) [wrong])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    27
+    :Symbol
+    "(is (= :rejected (:status (work [wrong]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    28
+    :Symbol
+    "(is (zero? (clojure.core/deref callbacks)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    29
+    :Symbol
+    "(is (= {:status :accepted} (work [value])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    30
+    :Symbol
+    "(is (= :unsupported-type (:reason (work [late]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    31
+    :Symbol
+    "(is (= :sh08-symbol-set-insertion-v2 (:version descriptor)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    32
+    :Symbol
+    "(is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:insertion-semantics :carrier-schema])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    33
+    :Symbol
+    "(is (= :accepted (:status construction)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    34
+    :Symbol
+    "(is (= {:kind :gravity.type/list, :shape :literal, :element-types [carrier]} (:type construction)))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    35
+    :Symbol
+    "(is (= :rejected (:status (invoke-c7 (quote sh08-syin-inferred-call) [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set) 65536]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    36
+    :Symbol
+    "(is (= :rejected (:status (invoke-c7 (quote sh08-syin-inferred-call) [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1) 65536]))))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case
+   [:lost-semantic-assertion
+    37
+    :Symbol
+    "(is (= :gravity.type/unknown (invoke-c7 (quote sh08-ft-loop-kernel-normal-join) [[finite carrier]])))"]}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-width}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-depth}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-late-invalid}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-never-operand}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-nestedNever}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-oddMap}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-extra-field}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-opaque}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-nestedOpaque}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-cycle-link}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :List-zero-callback}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :actual-owner-substitution}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :Symbol127}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :Symbol129}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :Symbol192}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :Symbol-wide1025}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :Symbol-late-invalid1024}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :lost-List-kernel}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :lost-current-main-additions}
+  {:refused true,
+   :check :complete-source-composition-equation,
+   :case :lost-Symbol-depth-edit}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-hl-type?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-hl-type?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-hl-type?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-lc-ancestor?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-lc-ancestor?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-lc-ancestor?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-lc-native-arguments]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-lc-native-arguments]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-lc-native-arguments]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-lc-native-map?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-lc-native-map?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-lc-native-map?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-lc-native-view?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-lc-native-view?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-lc-native-view?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-lc-validate-types]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-lc-validate-types]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-lc-validate-types]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-ni-type?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-ni-type?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-ni-type?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-ss-type?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-ss-type?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-ss-type?]}
+  {:refused true,
+   :check :immediate-pin-completeness,
+   :case [:lost-immediate-pin sh08-syc-type?]}
+  {:refused true,
+   :check :complete-current-owner-form,
+   :case [:forged-owner-pin sh08-syc-type?]}
+  {:refused true,
+   :check :current-owner-arguments,
+   :case [:lost-owner-arguments sh08-syc-type?]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter c7-plan]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter c7-source-relative-path]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter compile-plan]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter invoke-c7]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter keyword-predicate-input]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter list-construction-derived]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter list-construction-input]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter list-predicate-input]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter list-prepend-derived]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter list-prepend-input]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter path]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter repository-root]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter root]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case [:lost-dispatch-adapter set-predicate-input]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case
+   [:lost-dispatch-adapter c-backend-stage2-plan-emitter-source-rule!]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case
+   [:lost-dispatch-adapter p15-s23-stage2-compiler-artifact-plan]}
+  {:refused true,
+   :check :complete-dispatch-source,
+   :case
+   [:lost-dispatch-adapter p15-s23-stage2-runtime-execute-function]}
+  {:refused true,
+   :check :full-tree-path-object-mode-equation,
+   :case :unrelated-delete}
+  {:refused true,
+   :check :full-tree-path-object-mode-equation,
+   :case :unrelated-add}
+  {:refused true,
+   :check :full-tree-path-object-mode-equation,
+   :case :unrelated-blob}
+  {:refused true,
+   :check :full-tree-path-object-mode-equation,
+   :case :unrelated-mode}
+  {:refused true,
+   :check :full-tree-path-object-mode-equation,
+   :case :test-mode}
+  {:refused true, :check :candidate-tree, :case :forged-tree-identity}
+  {:refused true,
+   :check :historical-whole-production-boundary,
+   :case :historical-whole-production-as-current}
+  {:refused true,
+   :check :historical-whole-test-boundary,
+   :case :historical-whole-test-as-current}],
+ :pr 622,
+ :List-raw-span-sha256
+ "b22eb142c911747aa77f22062c5b24f2fc6c6ab5801b52d61b0cdcb0bab8bcfe",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :Symbol-single-replacement
+ {:before "[value [(nest 127 carrier) (nest 129 carrier) wide]]",
+  :after
+  "[value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]",
+  :one-occurrence true},
+ :owner :ACC-01}

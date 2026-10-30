@@ -1,0 +1,397 @@
+{:source-equation
+ :complete-original-arguments-and-entire-historical-body-under-native-map-validation-then-exact-status-only-accepted-cell-else-nil-at-both-guards,
+ :reviewer-checker-rerun :not-needed-no-reproduction-claim,
+ :whole-evidence-tree-conservation
+ {:changed-paths 3,
+  :production-writes 0,
+  :all-other-parent-paths-and-modes :unchanged},
+ :whole569 :open,
+ :result-route
+ :returned-in-this-chat-for-existing-authorized-parent-readback-no-outbound-denial-retry,
+ :tree "bf1d15b770b6763bc4032067662a8865e76db81e",
+ :execution
+ {:author-generator-executed false,
+  :compiler-kernel-runtime-and-genuine-owner-controls :UNRUN,
+  :shared-edits :none,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :source-and-reader-data-only true,
+  :native-and-helper-functions-called false,
+  :APPROVE :not-performed,
+  :target-definitions-evaluated false},
+ :counts
+ {:original-memberships 33,
+  :owners 3,
+  :author-case-refusals-independently-reconstructed 231,
+  :additional-coherent-and-integrity-refusals 108,
+  :checks 13050,
+  :full-source-equations 33,
+  :independent-corruption-refusals 339,
+  :original-inventory-paths 29,
+  :original-inventory-production-units 316,
+  :families 11},
+ :consumer-verification
+ :receipt-artifacts-tree-thirty-three-equations-and-policy-pins,
+ :generator-inspection
+ {:path "/tmp/acc01-predicate-guard-incorporation.clj",
+  :sha256
+  "b99a191989977b1e63b95d2b817b6f8ce032af5c4e3eb4afeb61931b5f72831a",
+  :mutates-evidence true,
+  :action :inspect-and-hash-only},
+ :consumer-source-sha256
+ "bb660a518cd8fa24deab77520436d6b98ba1f3d7302870e5da579577db1ca241",
+ :genuine-execution :UNRUN,
+ :blocking-findings [],
+ :historical-body-reader-path [3 2 2],
+ :reproduction
+ {:checker "/tmp/predicate-B-independent-review.clj",
+  :sha256
+  "c3fadfbfa1d44f9ba24cbbc6ee8ea2cf0222868b71e50432dcad33de0cbb66e7",
+  :artifacts
+  [{:path
+    "/tmp/predicate-B-independent-review/per-unit-assessments.edn",
+    :sha256
+    "be554da0f2082fc91aea8aa69fd25ff5e1348caaa4b94e1885bd0f43766869b3"}
+   {:path
+    "/tmp/predicate-B-independent-review/whole-file-distinction.edn",
+    :sha256
+    "139b70287a1367dd87ea2471ce5889dcf5a29ebf6aa477b5a0d41537e55817fc"}
+   {:path "/tmp/predicate-B-independent-review/negative-controls.edn",
+    :sha256
+    "0f801b17a33228efec912307cf440d04b7a7e7cb3275ff6e637af01b1a7147c1"}
+   {:path "/tmp/predicate-B-independent-review/policy-pins.edn",
+    :sha256
+    "a75636b825b886da7bbbee2cc7dbaa24e3b1efbe6283b90d97ad9562e22b34ef"}]},
+ :schema-version 1,
+ :counter-reporting
+ {:sealed-receipt-checks 13050,
+  :reviewer-final-handoff-checks 13052,
+  :credited-checks :sealed-13050-only,
+  :difference :preserved-not-summed},
+ :policy
+ {:pins
+  [{:path
+    "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+    :sha256
+    "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+   {:path
+    "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+    :sha256
+    "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+   {:path
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    :sha256
+    "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+  :AGENTS-sha256
+  "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
+  :interpretation
+  :retain-independent-type-source-native-carrier-validation-and-tamper-obligations-without-endorsing-other-helper-uses-or-accounting},
+ :head "115dae5086c95e40ba1a91fb9ceced60c05332fe",
+ :intake
+ {:A1-parameter-packet :separately-assigned,
+  :author-conflict :none,
+  :old-e7-and-Build68-send-denials
+  :preserved-stopped-no-retry-or-reroute,
+  :scope-distinctness
+  :new-33-builder-conditional-source-incorporation-not-held-Policy14-Metadata372-fixedwidth-OWN-or-whole569,
+  :related-reviewer-readback "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+  :helper-readback "01a18424-d867-7c12-8a04-07484900100c",
+  :author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :coordinator "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+  :exact-duplicate-review :none-observed},
+ :inputs
+ {:packet
+  {:path
+   "specs/accounting-removal/predicate-guarded-incorporation.edn",
+   :sha256
+   "2a1ec7d3b3d5f068a0cca4bd27b8416c2680fdbd3bda7c1a66e41a1b54bd4dc5"},
+  :original-inventory
+  {:path "specs/accounting-removal/preserved-source-inventory.edn",
+   :sha256
+   "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+   :unchanged-from-parent true},
+  :family-table
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj",
+   :source "6a4f87f013d0076b81aba9e0667650e70d28e635",
+   :form-sha256
+   "e0c44a1fe91e03ed61d423ed6258ea7ca7c7694fcd955752291cfe25c03966d4"},
+  :evidence-paths
+  [{:path
+    "specs/accounting-removal/predicate-guarded-incorporation.edn",
+    :sha256
+    "2a1ec7d3b3d5f068a0cca4bd27b8416c2680fdbd3bda7c1a66e41a1b54bd4dc5",
+    :tree-entry "100644 blob 194226f73401c93bf2c80246dfc914ed4fa429da"}
+   {:path
+    "specs/accounting-removal/predicate-guarded-incorporation.md",
+    :sha256
+    "3bdb3359756e464defff373f14c73a7e48945aeca7f5684429c3f7f18d78181c",
+    :tree-entry "100644 blob 431d92b2987878b6667b67652b92f25ef5b644d2"}
+   {:path "specs/accounting-removal/preserved-paths.md",
+    :sha256
+    "5b6bbcc0d0f1dcb64c7cd8a65d8bd8bc46a595902e2e68f2dc0ba7c4641a8795",
+    :tree-entry
+    "100644 blob 55c69765bed0f5dbfb3ac403aeff3604c3d6024d"}]},
+ :representation
+ :complete-reader-pr-str-preserving-numbers-symbols-args-schema-and-guard-terms,
+ :conditional-classification
+ {:units
+  [["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-mapp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-setp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-listp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-symp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-boolp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-chp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-nilp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-kp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-strp-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-ip-source]]
+   ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [defn sh08-vp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-mapp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-setp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-listp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-symp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-boolp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-chp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-nilp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-kp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-strp-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-ip-source]]
+   ["bootstrap/gravity/src/gravity/effects.gravity"
+    [defn body-vp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-mapp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-setp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-listp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-symp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-boolp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-chp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-nilp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-kp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-strp-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-ip-source]]
+   ["bootstrap/gravity/p15_s23/emitter.gravity"
+    [defn p15-s23-vp-source]]],
+  :result
+  :original-inner-source-conditionally-incorporated-with-current-guards-retained,
+  :changed-input-contract
+  :historical-status-accepted-cells-with-extra-fields-no-longer-admitted,
+  :not-unconditional-equivalence true,
+  :guard-evaluation :retained-before-historical-body,
+  :preserved-inner-obligations
+  [:source
+   :call
+   :binding
+   :evaluation-order
+   :descriptor
+   :query
+   :result-policy
+   :integer-representation],
+  :assumptions
+  [:pinned-source
+   :unrebound-callee-bindings
+   :L2-if-and-call-semantics]},
+ :assessed-tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :predicate-guarded-independent-classification-consumption,
+ :receipt-sha256
+ "e47a331ec7c613f6323e1d3dcad208b4adce6f690c9611413f4381800c93f9d2",
+ :whole-PR569-acceptance :not-conferred,
+ :limits
+ [:native-map-intrinsic-behavior-unproven
+  :callback-and-exception-behavior-unproven
+  :termination-unproven
+  :mutable-var-and-transitive-behavior-unproven
+  :other-native-guard-uses-or-bounds-unendorsed
+  :outer-budgets-open
+  :no-entire-function-equivalence
+  :no-current-main-composition-credit
+  :no-whole-predicate-family-accounting-removal
+  :no-whole-ACC01-PR502-release-or-self-hosting-credit],
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :canonical-disposition-adoption :not-performed,
+ :base "31888d2ea578e183f4aeb46b54edf2ba875c5709",
+ :raw-body-comment-identity :not-claimed-whole-file-byte-pins-only,
+ :completion-credit :none,
+ :assessed-source "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :all-three-assessed-source-files :unchanged,
+  :evidence-whole-file-differences :preserved},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :normalization :none,
+ :decision :PASS-conditional-source-incorporation,
+ :whole-file-version-distinction
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :historical-file-sha256
+   "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+   :assessed-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :evidence-file-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :whole-assessed-evidence-file-identical false,
+   :selected-builders-and-guard-form :reader-identical,
+   :native-guard
+   {:name sh08-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     sh08-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-file-sha256
+   "b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802",
+   :assessed-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :evidence-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :whole-assessed-evidence-file-identical false,
+   :selected-builders-and-guard-form :reader-identical,
+   :native-guard
+   {:name body-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     body-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-file-sha256
+   "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea",
+   :assessed-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :evidence-file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :whole-assessed-evidence-file-identical false,
+   :selected-builders-and-guard-form :reader-identical,
+   :native-guard
+   {:name p15-s23-lc-native-map?,
+    :arguments [value],
+    :complete-form
+    (defn
+     p15-s23-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :current-form-sha256
+    "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+    :historical-present false,
+    :historical-form-sha256 nil,
+    :native-intrinsic-and-transitive-behavior :unproven}}]}
