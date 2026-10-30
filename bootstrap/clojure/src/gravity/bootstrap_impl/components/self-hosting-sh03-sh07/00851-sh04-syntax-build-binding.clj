@@ -61,7 +61,7 @@
   (delay (sh04-syntax-build-binding! "<sh04-syntax-bootstrap>")))
 
 (defn sh04-syntax-current-binding!
-  [request-source]
+  ([request-source]
   (let [fresh (sh04-syntax-read-pinned-source! request-source)
         binding @sh04-syntax-cached-binding
         identities (sh04-syntax-plan-identities (:plan binding))]
@@ -78,6 +78,11 @@
        "C3-ID" request-source :fresh-syntax-source-and-plan-binding
        binding {}))
     binding))
+  ([request-source invocation]
+   (sh03-reader-authenticated-envelope-options request-source invocation)
+   (if (and invocation (contains? invocation :syntax-source-selection))
+     (sh04-development-syntax-binding! request-source invocation)
+     (sh04-syntax-current-binding! request-source))))
 
 (declare sh04-syntax-strip-host-metadata)
 

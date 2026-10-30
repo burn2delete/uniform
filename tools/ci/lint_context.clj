@@ -174,4 +174,7 @@
                            (throw (ex-info "Missing or nonregular base context source" {:path path})))
                          (let [entry (.getEntry zip path)]
                            (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
-                           (with-open [input (.getInputStream zip entry)] (.readAllBytes input)))) selected)))))
+                           (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))
+                       ;; Added fragments have no baseline. Current selection remains
+                       ;; strict; retained baseline dependencies still come from its manifest.
+                       (filterv #(contains? modes %) selected))))))

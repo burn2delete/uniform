@@ -8,7 +8,8 @@
    (c3-syntax-stream-reader-products-authentic? syntax-stream c2-artifact gravity-boundary nil))
   ([syntax-stream c2-artifact gravity-boundary invocation]
    (try
-    (let [ae-options (when invocation (sh03-reader-authenticated-envelope-options
+    (let [_ (sh04-development-syntax-verification-context! invocation c2-artifact gravity-boundary)
+          ae-options (when invocation (sh03-reader-authenticated-envelope-options
                                       (get-in c2-artifact [:source-unit-record :path]) invocation))]
      (if-not (apply c3-current-reader-revision-authentic?
                     (cond-> [c2-artifact gravity-boundary] invocation (conj invocation))) false
@@ -90,7 +91,7 @@
                (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
                 (cond-> [actual-sh03-envelope :c2-reader :gravity/sh03-reader-products
                          actual-sh03-envelope-descriptor source-path] ae-options (conj ae-options)))
-               binding (sh04-syntax-current-binding! source-path)
+               binding (sh04-syntax-verification-binding! source-path invocation gravity-boundary)
                requests (:stream-digest-requests gravity-boundary)
                digests (:stream-resolved-digests gravity-boundary)
                fresh-stream-verification
@@ -234,7 +235,6 @@
 (declare c3-syntax-verification-report
          c3-syntax-capability-proof
          c3-syntax-validate!)
-
 (defn- c3-syntax-verification-ops
   [invocation]
   {:c3-syntax-schema c3-syntax-schema
