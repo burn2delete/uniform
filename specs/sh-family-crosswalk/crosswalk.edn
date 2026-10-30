@@ -12902,6 +12902,106 @@
    "bb153fcd4d68231e04b4a6e0128904f15c7955298eb7a39ff9c9f646b9f16cec",
    :predecessor-input-fingerprint
    "11571ac96636b1c004f942bb042b2f2433cd6f9e95cc5b9b29f400b82b97b701"},
+  :c8-owner-current-source
+  {:earlier-current-applicability
+   {:C11-MIR-and-C14-Lower-criterion-bodies :unchanged-current-checked,
+    :earlier-whole-span-results :retain-original-subjects-not-renewed,
+    :active-current-basis :C8-refreshed-historical-and-decision-spans},
+   :C8-source-facets 103,
+   :new-Effects-criterion-witnesses
+   {:computation
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 1395,
+     :end-byte 2864,
+     :raw-sha256
+     "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+    :propagation
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 3226,
+     :end-byte 4445,
+     :raw-sha256
+     "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+    :legality
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 4827,
+     :end-byte 6319,
+     :raw-sha256
+     "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+    :replay
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 7368,
+     :end-byte 8501,
+     :raw-sha256
+     "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+    :handoff
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}},
+   :C8-semantic-cases 34,
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+    :sha256
+    "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199"},
+   :implementation-credit :none,
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :historical-Effects-file-pin-refreshes 2,
+   :C8-occurrences 50,
+   :current-bindings
+   {:path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+    :sha256
+    "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"},
+   :status :pending-independent-source-facet-review,
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-c8-owner-current-criterion-conservation.edn",
+   :qualification
+   "Five original C8 owners gain exact current criterion candidates. Two historical Effects-file span maps refresh without changing raw predicates. Earlier reviews retain their subjects and exclusions. This does not establish full L6/foundation attached-predicate coverage, actual effect computation/checking, replay/runtime/provider/probe execution, independent acceptance or final counting.",
+   :composition
+   "specs/requirement-reconciliation/c8-owner-source-refinement.edn",
+   :historical-predicate-raw-bodies :unchanged,
+   :original-owner-joins
+   ["compiler/c8/capability-proof"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :new-decision-ids 0,
+   :applicability
+   "specs/requirement-reconciliation/c8-owner-current-witness-applicability.edn"},
   :pkg5-source-review
   {:reviewed-commit "023a28488f8f161c68cbe57aa29fa48247197d62",
    :reviewed-tree "e8b660791bdaf3e865528f943725b5d1dd307b41",
@@ -14658,7 +14758,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "45a08b805ea772af586b511ad7d6ac591a9ec8acaae3e107f1b1d18cc58d8756"},
+  "9e6ddf9fa1831a57c0ed2176071002f64117f9392afde86c06910150db78e554"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16502,101 +16602,101 @@
   "effects"
   [{:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
      :start-byte 1031,
-     :end-byte 1394,
+     :end-byte 2864,
      :start-line 20,
      :end-line 24,
      :sha256
-     "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709",
+     "5b74358713c93fda6d9742dfb918afb8dcaa8dbb297446d2299ed334ba39839a",
      :raw
-     "- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references."},
+     "- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references. C8 computation/domain criterion compiler/c8/effect-computation compiler/c8/effect-domains (Open): Compute actual typed-core expression, function, namespace, module and macro-output direct/latent/transitive/build/replay/residual effects under L6; every operation beyond pure construction has effect facts or a diagnostic. Preserve concrete registered labels, thrown-error effects and source/generated identities rather than inferring behavior from declarations or backend/runtime behavior. Maintain distinct reader-extension/macro/compile-time/plugin/probe/generator build effects, emitted-program runtime effects and dependency-resolution/artifact-generation package/build effects. A build-effectful macro can emit pure code and a pure macro can emit runtime effects; neither domain substitutes for the other. Required outputs: source-bound effect graph with module/node identity, direct/latent/transitive/ordering/source facts, function declared/inferred/latent/throws table, namespace declared/inferred and module summaries, build log and residual report. Positive fixtures compute real operation and both macro-domain combinations; reject missing facts, unknown unregistered labels and hidden runtime/build effects with C8-UNKNOWN/BUILD/VERIFY. Preserve runtime checks, dynamic dispatch, fallback-provider calls, residual capability checks and replay logging remaining after proof/specialization, rather than treating a declaration or empty placeholder as inference."},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
     :id
     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 1396,
-     :end-byte 1755,
+     :start-byte 2866,
+     :end-byte 4445,
      :start-line 26,
      :end-line 30,
      :sha256
-     "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+     "f4994c1e46fe3b9387d37996d13322dd959a345b40e083a19b0a485898f27e26",
      :raw
-     "- [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects."},
+     "- [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects. C8 propagation criterion (Open): Derive function latent and transitive effects from actual resolved typed call/closure/dispatch/recursive edges, not by copying declared allowances. Preserve ordered evaluation and conservative branch alternatives under L6; every branch contributes to legality even when alternatives remain distinct for optimization. Function/namespace/module summaries distinguish declared, inferred and thrown-error effects; calls consume actual latent effects. Preserve L6 escaping versus handled labels, handler identity/residual effects and separately checked handler type/profile/capability/continuation/replay facts; handling does not erase original labels or grant authority. Required outputs: actual graph/fixed-point derivation, latent/throws and namespace/module tables and positive/rejected higher-order, recursive, dispatch, branch and generated-code fixtures. Reject underreported reachability, missing call/type facts, hidden handler residuals or declaration-only summaries before checked-core handoff. Recompute or invalidate affected summaries when actual calls, types, declarations or governing semantic inputs change; a structurally present graph is not evidence of sound propagation."},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
     :id
     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 1757,
-     :end-byte 2136,
+     :start-byte 4447,
+     :end-byte 6319,
      :start-line 32,
      :end-line 36,
      :sha256
-     "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+     "8e80f5111f23e145fe8cff199507e0ba56c4758315ee15b21b083331fb967f9e",
      :raw
-     "- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority."},
+     "- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority. C8 legality/capability/order criterion compiler/c8/capability-proof compiler/c8/effect-order (Open): Check the complete applicable intersection of function and namespace declarations, profile, package manifest, build/deployment grants, actual runtime/provider support and safety mode before MIR construction. Effects and capability sets remain distinct: derive required capabilities from registered effects and connect actual use to explicit authority evidence binding effect, core source, capability, provider, grant scope/principal/phase and status; reject missing or insufficient scoped grants before MIR. Backends/runtimes may narrow support but cannot grant authority absent from source/package/deployment. Authority evidence is not a safety proof; profile/safety/runtime-selection/audit consumers retain their own checks. Emit sequence, may-commute, must-not-duplicate, must-not-eliminate, resource acquire/release bracketing, volatile/MMIO/atomic and replay-order constraints; actual optimizers consume them before reordering/fusion/elimination. Required outputs: per-effect legality intersection, capability-proof records, ordering constraints and accepted/refused declaration/profile/grant/provider/safety fixtures, including resource/volatile/MMIO/atomic/workflow/AI order cases. Reject type-only legality, effect-name-derived grants, authority-widening handlers/providers and missing ordering evidence with C8-UNDECLARED/PROFILE/CAPABILITY/RUNTIME/ORDER and contextual diagnostics."},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
     :id
     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 2138,
-     :end-byte 3184,
+     :start-byte 6321,
+     :end-byte 8501,
      :start-line 38,
      :end-line 42,
      :sha256
-     "7f17130115957d43765f7b26020cddfc73ba195389eee4f958239a1006a05504",
+     "ae4a1c6f57aa56c7d0a51ecfb6b28adc4ba305ddd50395ea82d7ad69d1c7a87b",
      :raw
-     "- [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes. Decision criterion interface/language/effects/record-or-replay-nondeterminism: In record mode perform only admitted actions and append typed records; replay consumes the matching recorded result without repeating its external action. Preserve the qualified R6 graph-safe case only where R7/R8 recorded-output obligations do not apply. Reject: Reject missing/mismatched/reordered records, ungranted live actions and live nondeterminism in recorded-output segments; graph declarations do not grant authority. Required outputs: Typed event/effect/replay schema and record-versus-replay traces, qualified R6 case and all missing-record/authority/R7-R8 refusals."},
+     "- [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes. Decision criterion interface/language/effects/record-or-replay-nondeterminism: In record mode perform only admitted actions and append typed records; replay consumes the matching recorded result without repeating its external action. Preserve the qualified R6 graph-safe case only where R7/R8 recorded-output obligations do not apply. Reject: Reject missing/mismatched/reordered records, ungranted live actions and live nondeterminism in recorded-output segments; graph declarations do not grant authority. Required outputs: Typed event/effect/replay schema and record-versus-replay traces, qualified R6 case and all missing-record/authority/R7-R8 refusals. C8 replay/audit criterion compiler/c8/replay-audit (Open): Emit source-bound replay/audit obligations for time, randomness, external IO, external database reads, workflow events, model calls, tool calls, :ai/human-review and scheduler-sensitive operations, including distributed/AI effects. Actual workflow/AI/runtime/test consumers satisfy those obligations; a profile forbidding replay gaps rejects missing records before target lowering. Keep build/runtime/package domains distinct and enforce actual hermetic build grants, refusing ungranted build actions without performing them during this source reconciliation. Preserve the existing record-versus-replay criterion and its qualified R6/R7/R8 scope. Required outputs: build-effect log, replay-effect requirements and residual replay obligations, invalidation records and actual accepted/refused nondeterminism/hermetic fixtures. Reject hidden macro runtime effects, absent required replay/audit records, unreplayable hermetic behavior and ungranted build effects with C8-BUILD/REPLAY; obligation names or supplied success flags cannot replace actual recorded consumer evidence."},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
     :id
     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 3186,
-     :end-byte 4225,
+     :start-byte 8503,
+     :end-byte 10929,
      :start-line 44,
      :end-line 48,
      :sha256
-     "f10fdc642a4f1452f33cd9e6ee481fcd75d455b4fad553fb491d9f0168950f4c",
+     "bebbcd874fc41b41b1bee05ff5448476a635d18112b1ada079bdb239034daa83",
      :raw
-     "- [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases. Criterion behavior/pkg6/derived-capability-manifest: accept Derive deterministic package requests/denials/privileged summaries from actual effect analysis plus explicit declarations; include per-profile/target/dependency/tool/agent/FFI/unsafe/review/handle/audit metadata and provenance/SBOM links. Reject A summary differs from analyzed effects, omits a privileged surface or required capability/SBOM field, or treats a request as a grant. Emit Normalized capability manifest, derivation report, deny tables, dependency diff, deployment requirements, audit schema and SBOM capability fields; PKG6001/PKG6002/PKG6007/PKG6008. Dependencies: L6, L15, SAFE10, PKG6, R11."},
+     "- [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases. Criterion behavior/pkg6/derived-capability-manifest: accept Derive deterministic package requests/denials/privileged summaries from actual effect analysis plus explicit declarations; include per-profile/target/dependency/tool/agent/FFI/unsafe/review/handle/audit metadata and provenance/SBOM links. Reject A summary differs from analyzed effects, omits a privileged surface or required capability/SBOM field, or treats a request as a grant. Emit Normalized capability manifest, derivation report, deny tables, dependency diff, deployment requirements, audit schema and SBOM capability fields; PKG6001/PKG6002/PKG6007/PKG6008. Dependencies: L6, L15, SAFE10, PKG6, R11. C8 checked-core/artifact criterion (Open): Pass actual current effect graph, latent/throws tables, namespace/module summaries, capability proof, build log, replay obligations, ordering constraints, residual report and diagnostics to checked-core/profile/capability/safety validation and MIR; preserve effect annotations through actual MIR/optimizer/runtime/tool consumers. Consume actual C7 typed calls, L6 effect and L15 grant contracts, L9 throws, L12 build/hermetic policy, active profiles and runtime/package/provider/deployment artifacts. Required outputs: versioned source-bound products and actual positive/negative producer-consumer fixtures proving direct/latent/transitive/build/residual computation, function/namespace declarations, profile rejection, capability acceptance/refusal, hermetic rejection, replay emission, all order families and MIR preservation. Validate artifacts and reject malformed/stale or missing semantic facts with C8-VERIFY rather than accepting graph/schema presence alone. Retain all nine diagnostic meanings C8-UNDECLARED/PROFILE/CAPABILITY/BUILD/REPLAY/ORDER/RUNTIME/UNKNOWN/VERIFY and core-node/span/generated-origin/function/namespace/effect/capability/profile/target/provider/grant/remediation context for every failure class. These are future execution requirements, not current compiler/runtime/replay/probe results or independent acceptance."},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
     :id
     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
     :checked false}],
@@ -18957,7 +19057,7 @@
   "docs/component-roadmaps/domains.md"
   "3423c9bb473ac7cb90c86cf8152af87eab1b092767cc36406ecb5a1b6e17af11",
   "docs/component-roadmaps/effects.md"
-  "a54396309fdfcfc7ba32ae271f7a778f9f994a9ce90517a11e2e4ef6d9a54d5e",
+  "7eb3816b23d0a92627c8f4db232537a71c1f12f31423320470ac4c612255eab3",
   "docs/component-roadmaps/emit.md"
   "a66ae37d13573e2045bb2504d0ec5b2f51724cedd736011afa28a3022553ee00",
   "docs/component-roadmaps/evolution.md"
@@ -19037,7 +19137,7 @@
   "specs/domains-workflow/tasks.md"
   "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
   "specs/effects-workflow/tasks.md"
-  "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+  "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
   "specs/emit-workflow/tasks.md"
   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
   "specs/evolution-workflow/tasks.md"
@@ -19110,7 +19210,7 @@
   "specs/expand-workflow/tasks.md"
   "bc485c7e4b0197873f6a3104021764711215b3b1",
   "specs/effects-workflow/tasks.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "94dfa9c535268276765b76366c5c60687fa3807a",
   "specs/build-workflow/tasks.md"
   "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
   "docs/component-roadmaps/backends.md"
@@ -19154,7 +19254,7 @@
   "docs/component-roadmaps/domains.md"
   "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
   "docs/component-roadmaps/effects.md"
-  "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
+  "94dfa9c535268276765b76366c5c60687fa3807a",
   "specs/types-workflow/tasks.md"
   "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
   "specs/legality-workflow/plan.md"

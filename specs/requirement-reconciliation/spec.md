@@ -74,6 +74,11 @@ The [complete C14 source trace](c14-complete-current-facet-trace.edn) joins all
 122 C14 facets and 23 PERF4 boundary-layout predicates to the existing Lower
 tasks. Four original owners gain exact criterion candidates; source, provider,
 proof and artifact-consumer responsibilities remain distinct and unaccepted.
+The [complete C8 source trace](c8-complete-current-facet-trace.edn) joins all
+103 C8 facets and 50 occurrences to the five existing Effects tasks. Five
+original owners gain exact criterion candidates for computation, separate
+domains, capability evidence, ordering and replay. Full L6/foundation coverage
+and actual compiler or replay execution are not established by these proposals.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

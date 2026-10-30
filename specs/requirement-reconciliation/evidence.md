@@ -2612,3 +2612,42 @@ those populations, all four current refinement references, the retained
 retirement proposal reference, the active C14 binding path and all five
 extension descriptor states. Earlier C15/C11/D2/retirement scopes remain
 explicit; no implementation or final-count acceptance is added.
+
+## Complete C8 source and five Effects owner joins
+
+Task source `94dfa9c535268276765b76366c5c60687fa3807a` appends five C8
+criteria to the existing five Open Effects tasks. The source transaction in
+`c8-owner-source-refinement.edn` preserves each original acceptance body as an
+exact prefix, all task IDs/states and an exact insertion-removal inverse.
+No task or stable decision is added.
+
+The criteria require actual typed-core effect computation, conservative
+call/branch/latent/throws propagation and separate build/runtime/package
+domains. Actual authority evidence binds effect use to scoped grants and
+providers without becoming a safety proof. All applicable declaration,
+profile, package, deployment/build, provider and safety checks precede MIR.
+Ordering facts constrain actual optimizer consumers. Replay/audit obligations
+cover every named nondeterministic family, preserving `:ai/human-review` and
+the earlier R6/R7/R8 recorded-output qualification. Actual downstream consumers
+must satisfy those obligations; naming them supplies no execution evidence.
+Residual effects, all nine diagnostic meanings and complete diagnostic context
+survive the real checked-core/MIR handoff.
+
+`c8-complete-current-facet-trace.edn` retains all 103 C8 facets across 50
+occurrences through 34 manual semantic conjunction cases and 16 hierarchy or
+provenance contexts. Five original owners receive exact current criterion
+conjunctions; all await independent source acceptance. Example HTTP/filesystem
+subjects and empty sample fields are not universal defaults or grants. This
+trace does not claim full L6 or foundation attached-predicate coverage.
+
+All 833 Open decisions and 931 current owning witnesses authenticate. All
+561 historical mappings and 4,819 raw spans authenticate after refreshing two
+Effects-file pin maps with unchanged predicate bodies. Earlier MIR and Lower
+supplemental criteria remain current; earlier whole-span verdicts retain their
+captured subjects. Source tests pass 2 / 12; Effects projection tests pass
+4 / 41. The finite facet proposal index now contains 1,212 distinct IDs and
+eight metadata overlaps: 1,110 + 103 - one shared context facet. No compiler,
+effect/authority checker, runtime/provider, replay,
+broker/controller or probe execution occurred. Independent current-composition
+and final-count acceptance, full source entailment and coordinator integration
+remain pending.

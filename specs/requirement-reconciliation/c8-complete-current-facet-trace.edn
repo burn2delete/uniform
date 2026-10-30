@@ -1,0 +1,3997 @@
+{:counts
+ {:C8-facets 103,
+  :C8-occurrences 50,
+  :C8-semantic-conjunction-cases 34,
+  :proposed-facets 103,
+  :original-owner-joins 5},
+ :occurrence-cases
+ {"C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :predicate
+   "Preserve the declared C8 diagnostic family and meanings."},
+  "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b"
+  {:index 14,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3"
+  {:index 25,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :predicate
+   "Both macro combinations require independent records: build-effectful/pure-emitted-runtime and pure-build/effectful-runtime."},
+  "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7"
+  {:index 40,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."},
+  "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Capability proofs connect actual effect uses to actual scoped grants."},
+  "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :predicate
+   "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."},
+  "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2"
+  {:index 26,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."},
+  "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f"
+  {:index 22,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2"
+  {:index 45,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :predicate
+   "Replay-sensitive effects without required replay/audit artifacts refuse rather than silently performing live work."},
+  "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :predicate
+   "All following domains remain separate rather than interchangeable labels."},
+  "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785"
+  {:index 46,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Effectful reorder requires actual ordering evidence consumed by the optimizer."},
+  "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Actual optimizers consume ordering before reorder/fusion/elimination; this trace is not optimizer execution."},
+  "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41"
+  {:index 36,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."},
+  "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7"
+  {:index 18,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5"
+  {:index 42,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation],
+   :predicate
+   "Effect inference must derive actual typed-core behavior, not backend or runtime accidents."},
+  "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."},
+  "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a"
+  {:index 34,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Typing alone cannot legalize effects or grant authority."},
+  "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Per-effect records retain source, function/namespace/profile/package/deployment/runtime/safety acceptance, required versus granted capabilities and result; sample true flags are not verification."},
+  "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Ordering records include the complete subsequent constraint family."},
+  "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "An effect name cannot supply its own capability grant."},
+  "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."},
+  "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b"
+  {:index 30,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Types, effect actions and capability authority remain separate; neither implies the other."},
+  "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Authority records bind effect/source/capability/grant scope-principal-phase/provider/status; filesystem/config/app.server values illustrate one subject, not ambient grants."},
+  "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9"
+  {:index 48,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :predicate
+   "Conformance introduction quantifies the entire following producer/checker/consumer conjunction."},
+  "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082"
+  {:index 47,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+  "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300"
+  {:index 49,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."},
+  "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."},
+  "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :predicate
+   "Diagnostics retain core node/span/generated origins/function/namespace/effect/capability/profile/target/provider/grant/remediation."},
+  "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee"
+  {:index 21,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :predicate
+   "Authority evidence is not safety proof; profile/safety/runtime-selection/audit consumers retain distinct actual checks."},
+  "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :predicate
+   "Macro build facts cannot hide emitted runtime effects."},
+  "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:propagation :legality],
+   :predicate
+   "Branch alternatives may remain for optimization, but all alternatives conservatively contribute to L6 legality."},
+  "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Every applicable authority must accept the effect; the intersection is conjunctive."},
+  "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :predicate
+   "The checker implements actual L6 over typed core for every named expression/function/namespace/module/macro/build/replay/residual domain and validates all governing authority/provider/safety inputs; actual downstream consumers preserve its products."},
+  "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0"
+  {:index 17,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :predicate
+   "Backend/runtime support may narrow but never grant authority missing from source, package or deployment policy."},
+  "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation :replay :handoff],
+   :predicate
+   "After proof/specialization, actual runtime checks, dynamic dispatch, fallback-provider calls, residual authority checks and replay logging survive in residual reports and MIR/runtime artifacts."},
+  "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe"
+  {:index 29,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :predicate
+   "Workflow/AI/runtime/test consumers must satisfy obligations; profiles forbidding replay gaps reject missing records before target lowering."},
+  "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :predicate
+   "Replay records apply to the following nondeterministic families under the actual profile and consumer contract."},
+  "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :predicate
+   "Graph fields preserve module/node identity, direct/latent/transitive/order/source, function declared/inferred/latent/throws, namespace declared/inferred, build/replay and diagnostics. HTTP/HttpError and empty example vectors illustrate one graph; they are not universal pure defaults or permission to copy declarations into inference."}},
+ :dependency-joins
+ [{:source "C7/L6/L9",
+   :input
+   "Actual typed calls, effect/handler semantics and thrown-error facts",
+   :consumers [:computation :propagation :handoff]}
+  {:source "L15/profiles/Runtime/Package/L12",
+   :input
+   "Actual scoped grants, runtime/provider support, safety and hermetic build/deployment policies",
+   :consumers [:legality :replay]}
+  {:source "Checked-core/MIR/optimizer/runtime/workflow/AI/test",
+   :input
+   "Actual preserved effect annotations, consumed ordering/replay obligations and consumer results",
+   :consumers [:handoff]}],
+ :authority
+ :owner-proposal-pending-independent-current-source-facet-acceptance,
+ :criteria
+ {:computation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 1395,
+   :end-byte 2864,
+   :raw-sha256
+   "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+  :propagation
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 3226,
+   :end-byte 4445,
+   :raw-sha256
+   "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+  :legality
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 4827,
+   :end-byte 6319,
+   :raw-sha256
+   "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+  :replay
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 7368,
+   :end-byte 8501,
+   :raw-sha256
+   "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+  :handoff
+  {:path "specs/effects-workflow/tasks.md",
+   :marker "effects-implementation-tasks",
+   :task-id
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+   :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :start-byte 9543,
+   :end-byte 10929,
+   :raw-sha256
+   "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}},
+ :owner-joins
+ {"compiler/c8/capability-proof"
+  {:id "compiler/c8/capability-proof",
+   :original-obligation
+   "Connect effect use to actual scoped grants/provider evidence and report missing capabilities before MIR, without treating capability evidence as a safety proof.",
+   :criterion-keys [:legality :handoff],
+   :primary-criterion-witness
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 4827,
+    :end-byte 6319,
+    :raw-sha256
+    "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+   :criterion-witnesses
+   [{:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 4827,
+     :end-byte 6319,
+     :raw-sha256
+     "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}],
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none,
+   :qualification
+   "Exact current Effects criteria locate candidates only. Actual typed call/effect computation, authorization, profile/safety checks, build/replay enforcement and MIR/optimizer/runtime consumers retain their distinct responsibilities; independent complete entailment remains pending."},
+  "compiler/c8/effect-computation"
+  {:id "compiler/c8/effect-computation",
+   :original-obligation
+   "Compute direct/latent/transitive/namespace/module and residual effect facts conservatively, including thrown errors, exposing all behavior beyond pure construction.",
+   :criterion-keys [:computation :propagation :handoff],
+   :primary-criterion-witness
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 1395,
+    :end-byte 2864,
+    :raw-sha256
+    "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+   :criterion-witnesses
+   [{:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 1395,
+     :end-byte 2864,
+     :raw-sha256
+     "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 3226,
+     :end-byte 4445,
+     :raw-sha256
+     "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}],
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none,
+   :qualification
+   "Exact current Effects criteria locate candidates only. Actual typed call/effect computation, authorization, profile/safety checks, build/replay enforcement and MIR/optimizer/runtime consumers retain their distinct responsibilities; independent complete entailment remains pending."},
+  "compiler/c8/effect-domains"
+  {:id "compiler/c8/effect-domains",
+   :original-obligation
+   "Keep compile-time/build/package effects distinct from generated runtime effects, including macros whose two domains differ.",
+   :criterion-keys [:computation :replay :handoff],
+   :primary-criterion-witness
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 1395,
+    :end-byte 2864,
+    :raw-sha256
+    "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+   :criterion-witnesses
+   [{:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 1395,
+     :end-byte 2864,
+     :raw-sha256
+     "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 7368,
+     :end-byte 8501,
+     :raw-sha256
+     "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}],
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none,
+   :qualification
+   "Exact current Effects criteria locate candidates only. Actual typed call/effect computation, authorization, profile/safety checks, build/replay enforcement and MIR/optimizer/runtime consumers retain their distinct responsibilities; independent complete entailment remains pending."},
+  "compiler/c8/effect-order"
+  {:id "compiler/c8/effect-order",
+   :original-obligation
+   "Emit and preserve sequencing/commutation/duplication/elimination/resource/volatile/MMIO/atomic/replay constraints before optimization.",
+   :criterion-keys [:legality :handoff],
+   :primary-criterion-witness
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 4827,
+    :end-byte 6319,
+    :raw-sha256
+    "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+   :criterion-witnesses
+   [{:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 4827,
+     :end-byte 6319,
+     :raw-sha256
+     "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}],
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none,
+   :qualification
+   "Exact current Effects criteria locate candidates only. Actual typed call/effect computation, authorization, profile/safety checks, build/replay enforcement and MIR/optimizer/runtime consumers retain their distinct responsibilities; independent complete entailment remains pending."},
+  "compiler/c8/replay-audit"
+  {:id "compiler/c8/replay-audit",
+   :original-obligation
+   "Emit replay/audit obligations for nondeterministic external/workflow/AI/scheduler effects and reject forbidden gaps before lowering.",
+   :criterion-keys [:replay :handoff],
+   :primary-criterion-witness
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 7368,
+    :end-byte 8501,
+    :raw-sha256
+    "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+   :criterion-witnesses
+   [{:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 7368,
+     :end-byte 8501,
+     :raw-sha256
+     "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"}
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}],
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :implementation-credit :none,
+   :qualification
+   "Exact current Effects criteria locate candidates only. Actual typed call/effect computation, authorization, profile/safety checks, build/replay enforcement and MIR/optimizer/runtime consumers retain their distinct responsibilities; independent complete entailment remains pending."}},
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :checks {:test 2, :pass 12, :fail 0, :error 0, :type :summary},
+ :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+ :kind :complete-C8-current-facet-trace,
+ :facets
+ [{:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 0,
+   :raw-sha256
+   "ed41993e1ddf0ef48e7c83ce96d49a6c93c3fefc9bc92531729026c6b4291a71",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 0,
+    :end-byte 29,
+    :raw-sha256
+    "ed41993e1ddf0ef48e7c83ce96d49a6c93c3fefc9bc92531729026c6b4291a71"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "# C8 - Effect Checker Design\n",
+   :source-occurrence-id
+   "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/0-29/ed41993e1ddf0ef4",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 1,
+   :raw-sha256
+   "e47eb799105c6eee0413ee995cf5424ecdcdfbafe625144e7c575a152ee080c3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 30,
+    :end-byte 306,
+    :raw-sha256
+    "e47eb799105c6eee0413ee995cf5424ecdcdfbafe625144e7c575a152ee080c3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Sequence: 87\nPhase: 6 - Compiler Architecture\nStatus: Manual Draft 2\nSource basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 define EFIR/EML and certified elementary math, pages 89-113 define safety, and pages 114-130 define the final document sequence.\n",
+   :source-occurrence-id
+   "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/30-306/e47eb799105c6eee",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 2,
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 307,
+    :end-byte 318,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Purpose\n",
+   :source-occurrence-id
+   "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/307-318/994413297a3e95a9",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 3,
+   :raw-sha256
+   "91d0846d891e50307d0d8956ef6d85abac40432e484a71329e50ed58425049f0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 319,
+    :end-byte 678,
+    :raw-sha256
+    "91d0846d891e50307d0d8956ef6d85abac40432e484a71329e50ed58425049f0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The effect checker implements `L6` over typed core. It computes expression,\nfunction, namespace, module, macro-output, build, replay, and residual effects;\nvalidates them against declarations, profiles, capabilities, package/build\ngrants, runtime providers, and safety mode; and emits effect artifacts that MIR,\noptimizers, runtimes, and tools must preserve.\n",
+   :source-occurrence-id
+   "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/319-678",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "The checker implements actual L6 over typed core for every named expression/function/namespace/module/macro/build/replay/residual domain and validates all governing authority/provider/safety inputs; actual downstream consumers preserve its products."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Purpose", :line 8}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 4,
+   :raw-sha256
+   "d9fbc866dcf0b31c6ab764575dcc997b5b16e62112a60f9f268ebab7ecd5adf7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 679,
+    :end-byte 790,
+    :raw-sha256
+    "d9fbc866dcf0b31c6ab764575dcc997b5b16e62112a60f9f268ebab7ecd5adf7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Types say what values are. Effects say what actions occur. Capabilities say who\nhas authority to perform them.\n",
+   :source-occurrence-id
+   "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/679-790",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Types, effect actions and capability authority remain separate; neither implies the other."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 5,
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 791,
+    :end-byte 807,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Requirements\n",
+   :source-occurrence-id
+   "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/791-807/d8416f1863ce5290",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "b91ac4b30fa026d9ef223791746813639654e4778954397b95f8a6b242b27758",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 808,
+    :end-byte 915,
+    :raw-sha256
+    "b91ac4b30fa026d9ef223791746813639654e4778954397b95f8a6b242b27758"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Every expression with behavior beyond pure value construction must carry\n  effect facts or a diagnostic.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/effect-computation"],
+   :id "C8/facet/808-915",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "38746aee18cf62763946d8f34ba3039d596dc029455c9238eb4c2fa82770aca3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 915,
+    :end-byte 989,
+    :raw-sha256
+    "38746aee18cf62763946d8f34ba3039d596dc029455c9238eb4c2fa82770aca3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Function artifacts must record latent effects and thrown-error effects.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/effect-computation"],
+   :id "C8/facet/915-989",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "fca2de36dcf7f95b9df517f4d17e629a47e8df7a8e62e2ea56a6922753fdc922",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 989,
+    :end-byte 1068,
+    :raw-sha256
+    "fca2de36dcf7f95b9df517f4d17e629a47e8df7a8e62e2ea56a6922753fdc922"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Inferred function and namespace effects must fit inside declared allowances.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/989-1068",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "78e9a37be1693341ca9a8ea9048cf4e0e07a8bb851a14b9cbf8aff2259d69cb3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1068,
+    :end-byte 1235,
+    :raw-sha256
+    "78e9a37be1693341ca9a8ea9048cf4e0e07a8bb851a14b9cbf8aff2259d69cb3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Effect legality is the intersection of source declaration, active profile,\n  package manifest, build/deployment grants, runtime/provider support, and\n  safety mode.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/1068-1235",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "33ed39891c2214caca2aa3fc3dd9c903950e780c4a40825e6e482674fa7f8567",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1235,
+    :end-byte 1291,
+    :raw-sha256
+    "33ed39891c2214caca2aa3fc3dd9c903950e780c4a40825e6e482674fa7f8567"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Build effects must be separated from runtime effects.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/1235-1291",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "30077770ff412ee902ab151e748903a38bac36a6f570a5d9991f5fd5d4906e04",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1291,
+    :end-byte 1402,
+    :raw-sha256
+    "30077770ff412ee902ab151e748903a38bac36a6f570a5d9991f5fd5d4906e04"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Nondeterministic, external, AI, workflow, and distributed effects must record\n  replay or audit obligations.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/1291-1402",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "aab5da38d1a1cf85da83ef1ed86236ac465a63181f3c43143a1e4a7a0d5dd0bc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1402,
+    :end-byte 1491,
+    :raw-sha256
+    "aab5da38d1a1cf85da83ef1ed86236ac465a63181f3c43143a1e4a7a0d5dd0bc"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Effect ordering constraints must be emitted for operations that cannot be\n  reordered.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/1402-1491",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Requirements", :line 19}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 6,
+   :raw-sha256
+   "170f351ce96b141e7586fe207d84fe94e3c3737afa5a67aa2e77b748d274acaa",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1491,
+    :end-byte 1556,
+    :raw-sha256
+    "170f351ce96b141e7586fe207d84fe94e3c3737afa5a67aa2e77b748d274acaa"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Missing capabilities must be reported before MIR construction.\n",
+   :source-occurrence-id
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/1491-1556",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 7,
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1557,
+    :end-byte 1573,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Dependencies\n",
+   :source-occurrence-id
+   "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/1557-1573/21d1931a332d9b7f",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "840349f2ec39ff95b937a443d10a0e039a167028afd3507c73658f7a93d47fc5",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1574,
+    :end-byte 1608,
+    :raw-sha256
+    "840349f2ec39ff95b937a443d10a0e039a167028afd3507c73658f7a93d47fc5"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `L6` defines the effect system.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1574-1608",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "491c33facb79551bb118bb6843a154db66ca2a51259f914bb757fc16a2521dfd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1608,
+    :end-byte 1657,
+    :raw-sha256
+    "491c33facb79551bb118bb6843a154db66ca2a51259f914bb757fc16a2521dfd"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `L15` defines capability providers and grants.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1608-1657",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "38c2f0cdd8e667e93a498e7bbb98c6881b852cec97fb25f71eb43388920a9069",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1657,
+    :end-byte 1697,
+    :raw-sha256
+    "38c2f0cdd8e667e93a498e7bbb98c6881b852cec97fb25f71eb43388920a9069"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `L9` defines error and throw effects.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1657-1697",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "9cb9430652a2617af882b625bc7cb4fbbe740d9aa602413d54e53611a563c673",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1697,
+    :end-byte 1744,
+    :raw-sha256
+    "9cb9430652a2617af882b625bc7cb4fbbe740d9aa602413d54e53611a563c673"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `L12` defines build effects and hermeticity.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1697-1744",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "b92258650740625271a1cd926f726b9002909c3b12e123164669b1ae1c80e96d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1744,
+    :end-byte 1791,
+    :raw-sha256
+    "b92258650740625271a1cd926f726b9002909c3b12e123164669b1ae1c80e96d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C7` provides typed core and function types.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1744-1791",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "6155345711df625673c1164d0ad1122ff837d7b03b56b57fa1c1b451ab19a902",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1791,
+    :end-byte 1851,
+    :raw-sha256
+    "6155345711df625673c1164d0ad1122ff837d7b03b56b57fa1c1b451ab19a902"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Profile documents define effect availability per profile.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1791-1851",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Dependencies", :line 35}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff :propagation :legality :replay],
+   :index 8,
+   :raw-sha256
+   "1f24f7cdbafc82f8d0c76c4cb1fc59d8a3f6966d4b17291c02604d1d5e764a48",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1851,
+    :end-byte 1943,
+    :raw-sha256
+    "1f24f7cdbafc82f8d0c76c4cb1fc59d8a3f6966d4b17291c02604d1d5e764a48"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- Runtime and package documents define providers, deployment grants, and\n  manifest policy.\n",
+   :source-occurrence-id
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1851-1943",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 9,
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1944,
+    :end-byte 1969,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Outputs and Artifacts\n",
+   :source-occurrence-id
+   "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/1944-1969/f4280a4d61a89adc",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "b757caf1340d92257c7f0e8f315e7e4cd5d5546035828e5c9fea86104099222d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1970,
+    :end-byte 1986,
+    :raw-sha256
+    "b757caf1340d92257c7f0e8f315e7e4cd5d5546035828e5c9fea86104099222d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Effect graph.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1970-1986",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "7d05b5c6abd14d79892f795f1259adab3c831ee1b752777881c34ff69dff996e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 1986,
+    :end-byte 2018,
+    :raw-sha256
+    "7d05b5c6abd14d79892f795f1259adab3c831ee1b752777881c34ff69dff996e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Function latent-effect table.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/1986-2018",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "f241c48bf0dcda47b6a72bbdbf32ea3b39051591bb2125aa876a9b817a424474",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2018,
+    :end-byte 2059,
+    :raw-sha256
+    "f241c48bf0dcda47b6a72bbdbf32ea3b39051591bb2125aa876a9b817a424474"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Namespace and module effect summaries.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2018-2059",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "a02c889246e5a3e6258950f719ce2bafa6e57c4a1a00bd583697246ec99a128d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2059,
+    :end-byte 2086,
+    :raw-sha256
+    "a02c889246e5a3e6258950f719ce2bafa6e57c4a1a00bd583697246ec99a128d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Capability proof record.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2059-2086",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "6af76e7df658967d73aa5244931fb165b8cc8b59770034a41ab93b1a96328c78",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2086,
+    :end-byte 2106,
+    :raw-sha256
+    "6af76e7df658967d73aa5244931fb165b8cc8b59770034a41ab93b1a96328c78"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Build-effect log.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2086-2106",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "f09ff3a1457d0fbb8452832f89e308e3787e19543d146058a5e7ff9c125641c6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2106,
+    :end-byte 2136,
+    :raw-sha256
+    "f09ff3a1457d0fbb8452832f89e308e3787e19543d146058a5e7ff9c125641c6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Replay-effect requirements.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2106-2136",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "03b62224b9a26916fdee5d9f43dd96c1d0d100bb01273dd06d081e32d0b138b0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2136,
+    :end-byte 2167,
+    :raw-sha256
+    "03b62224b9a26916fdee5d9f43dd96c1d0d100bb01273dd06d081e32d0b138b0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Effect ordering constraints.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2136-2167",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "627c31dc9ade61b7fe2c8d3525c8bda6fe8c87916abeb33fef25df403c75291c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2167,
+    :end-byte 2193,
+    :raw-sha256
+    "627c31dc9ade61b7fe2c8d3525c8bda6fe8c87916abeb33fef25df403c75291c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Residual effect report.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2167-2193",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Outputs and Artifacts", :line 46}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 10,
+   :raw-sha256
+   "60d574837f66d9e69f9f7d907d9733c6b0182bd8bd883d057b7751b1014acb32",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2193,
+    :end-byte 2215,
+    :raw-sha256
+    "60d574837f66d9e69f9f7d907d9733c6b0182bd8bd883d057b7751b1014acb32"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- Effect diagnostics.\n",
+   :source-occurrence-id
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/2193-2215",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Effect Graph", :line 58}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 11,
+   :raw-sha256
+   "46a7930f8402005fed9cfdbfd694944c1797dd1a74ed08b9b01f6ff11249b85d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2216,
+    :end-byte 2232,
+    :raw-sha256
+    "46a7930f8402005fed9cfdbfd694944c1797dd1a74ed08b9b01f6ff11249b85d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Effect Graph\n",
+   :source-occurrence-id
+   "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/2216-2232/46a7930f8402005f",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Effect Graph", :line 58}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 12,
+   :raw-sha256
+   "c09743806283591e4255197c59befe4d0a7639c0935a5ee0bd2b8b9617fcb6d7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2233,
+    :end-byte 2845,
+    :raw-sha256
+    "c09743806283591e4255197c59befe4d0a7639c0935a5ee0bd2b8b9617fcb6d7"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/effect-graph\n :module module-id\n :nodes {core-node-id {:direct #{:network/http}\n                       :latent #{}\n                       :transitive #{:network/http}\n                       :ordering :sequence\n                       :source source-span}}\n :functions {fn-id {:declared #{:network/http}\n                    :inferred #{:network/http}\n                    :latent #{:network/http}\n                    :throws #{HttpError}}}\n :namespace {:declared #{:network/http}\n             :inferred #{:network/http}}\n :build-effects []\n :replay-required #{}\n :diagnostics []}\n```\n",
+   :source-occurrence-id
+   "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a",
+   :owner-requirement-ids ["compiler/c8/effect-computation"],
+   :id "C8/facet/2233-2845",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Graph fields preserve module/node identity, direct/latent/transitive/order/source, function declared/inferred/latent/throws, namespace declared/inferred, build/replay and diagnostics. HTTP/HttpError and empty example vectors illustrate one graph; they are not universal pure defaults or permission to copy declarations into inference."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Effect Graph", :line 58}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:propagation :legality],
+   :index 13,
+   :raw-sha256
+   "a144f0b4ad456782b71e7b69c717cb787a5a8fdd8bc2d8985c3aa286fbd250c8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2846,
+    :end-byte 2976,
+    :raw-sha256
+    "a144f0b4ad456782b71e7b69c717cb787a5a8fdd8bc2d8985c3aa286fbd250c8"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The graph preserves alternatives for branches where useful, but legality checks\nuse the conservative effect set required by `L6`.\n",
+   :source-occurrence-id
+   "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4",
+   :owner-requirement-ids ["compiler/c8/effect-computation"],
+   :id "C8/facet/2846-2976",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Branch alternatives may remain for optimization, but all alternatives conservatively contribute to L6 legality."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Legality Intersection", :line 82}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 14,
+   :raw-sha256
+   "137f13237b7f3de5a9753e69c652f22a5d5e873239bc4f0a7d92f973d94a5d1b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 2977,
+    :end-byte 3002,
+    :raw-sha256
+    "137f13237b7f3de5a9753e69c652f22a5d5e873239bc4f0a7d92f973d94a5d1b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Legality Intersection\n",
+   :source-occurrence-id
+   "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/2977-3002/137f13237b7f3de5",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Legality Intersection", :line 82}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 15,
+   :raw-sha256
+   "392e301cd4444a78bc9ddf72da1289c7301f974fb55d0f35fac96d4372d54ce4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3003,
+    :end-byte 3070,
+    :raw-sha256
+    "392e301cd4444a78bc9ddf72da1289c7301f974fb55d0f35fac96d4372d54ce4"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "An effect is legal only when all applicable authorities accept it:\n",
+   :source-occurrence-id
+   "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/3003-3070",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Every applicable authority must accept the effect; the intersection is conjunctive."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Legality Intersection", :line 82}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 16,
+   :raw-sha256
+   "c17cd4ee53640412688cf079efbc20fddaf6f57cc741638a9d1b97b23e08af6d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3071,
+    :end-byte 3432,
+    :raw-sha256
+    "c17cd4ee53640412688cf079efbc20fddaf6f57cc741638a9d1b97b23e08af6d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:effect :network/http\n :source core-node-id\n :allowed-by {:function true\n              :namespace true\n              :profile true\n              :package true\n              :deployment true\n              :runtime true\n              :safety true}\n :required-capabilities #{:http/client}\n :granted-capabilities #{:http/client}\n :result :accepted}\n```\n",
+   :source-occurrence-id
+   "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/3071-3432",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Per-effect records retain source, function/namespace/profile/package/deployment/runtime/safety acceptance, required versus granted capabilities and result; sample true flags are not verification."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Legality Intersection", :line 82}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 17,
+   :raw-sha256
+   "66b61eba52dd58a9cb95e6aaae11d8251364c3d628b17d392f1530aa64f7cc1e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3433,
+    :end-byte 3567,
+    :raw-sha256
+    "66b61eba52dd58a9cb95e6aaae11d8251364c3d628b17d392f1530aa64f7cc1e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Backends and runtimes may narrow support. They cannot grant new authority that\nwas absent from source, package, or deployment policy.\n",
+   :source-occurrence-id
+   "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/3433-3567",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Backend/runtime support may narrow but never grant authority missing from source, package or deployment policy."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Capability Proof", :line 104}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 18,
+   :raw-sha256
+   "1e7d7850b0cdcb12714d9d5b663381070982ed6cc97bd45114477cd636b506f2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3568,
+    :end-byte 3588,
+    :raw-sha256
+    "1e7d7850b0cdcb12714d9d5b663381070982ed6cc97bd45114477cd636b506f2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Capability Proof\n",
+   :source-occurrence-id
+   "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/3568-3588/1e7d7850b0cdcb12",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Capability Proof", :line 104}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 19,
+   :raw-sha256
+   "a38b123a1c30971b4649735e493f26c6eb406dd009cf8a1cf253b8a4f8f35563",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3589,
+    :end-byte 3644,
+    :raw-sha256
+    "a38b123a1c30971b4649735e493f26c6eb406dd009cf8a1cf253b8a4f8f35563"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Capability proof records connect effect use to grants:\n",
+   :source-occurrence-id
+   "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/3589-3644",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Capability proofs connect actual effect uses to actual scoped grants."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Capability Proof", :line 104}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 20,
+   :raw-sha256
+   "6981916d728266bab110a00d5c91eea6f8ad79078fa83ea2f5513a883f79eceb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3645,
+    :end-byte 3917,
+    :raw-sha256
+    "6981916d728266bab110a00d5c91eea6f8ad79078fa83ea2f5513a883f79eceb"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "```clojure\n{:artifact :gravity/capability-proof\n :effect :filesystem/read\n :source core-node-id\n :capability :fs/read\n :grant {:scope [\"config/*.edn\"]\n         :principal 'app.server\n         :phase :runtime}\n :provider :gravity.runtime/filesystem\n :status :accepted}\n```\n",
+   :source-occurrence-id
+   "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/3645-3917",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Authority records bind effect/source/capability/grant scope-principal-phase/provider/status; filesystem/config/app.server values illustrate one subject, not ambient grants."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Capability Proof", :line 104}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 21,
+   :raw-sha256
+   "3b16ab2620729b0dbb79ad8be6713b182236bf5b3e14187da9aef460f13d109c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 3918,
+    :end-byte 4073,
+    :raw-sha256
+    "3b16ab2620729b0dbb79ad8be6713b182236bf5b3e14187da9aef460f13d109c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The proof is not a safety proof by itself; it is authority evidence consumed by\nprofile validation, safety analysis, runtime selection, and audit tooling.\n",
+   :source-occurrence-id
+   "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/3918-4073",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Authority evidence is not safety proof; profile/safety/runtime-selection/audit consumers retain distinct actual checks."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 22,
+   :raw-sha256
+   "a040493e9f1b2ae47b2233297d43a0efd591e80961ebd647b5641a053c7a0a25",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4074,
+    :end-byte 4103,
+    :raw-sha256
+    "a040493e9f1b2ae47b2233297d43a0efd591e80961ebd647b5641a053c7a0a25"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Build and Runtime Effects\n",
+   :source-occurrence-id
+   "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/4074-4103/a040493e9f1b2ae4",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 23,
+   :raw-sha256
+   "1d7cfde69b1bb6d9ea4aee71fc26a970b414517ccf123b226b9cd81e80c220e4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4104,
+    :end-byte 4144,
+    :raw-sha256
+    "1d7cfde69b1bb6d9ea4aee71fc26a970b414517ccf123b226b9cd81e80c220e4"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "The checker maintains separate domains:\n",
+   :source-occurrence-id
+   "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/4104-4144",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All following domains remain separate rather than interchangeable labels."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 24,
+   :raw-sha256
+   "584c3026c90ab174f120738ff4d0323d4c9845dbbf87337f1c5acedae598353f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4145,
+    :end-byte 4274,
+    :raw-sha256
+    "584c3026c90ab174f120738ff4d0323d4c9845dbbf87337f1c5acedae598353f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- build effects from reader extensions, macros, compile-time evaluation,\n  compiler plugins, target probes, and code generators,\n",
+   :source-occurrence-id
+   "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/4145-4274",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 24,
+   :raw-sha256
+   "081d34dcf896f021dbdb795b0c188a72591363080435c3ef1966c28bfbc7fb70",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4274,
+    :end-byte 4318,
+    :raw-sha256
+    "081d34dcf896f021dbdb795b0c188a72591363080435c3ef1966c28bfbc7fb70"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- runtime effects from the emitted program,\n",
+   :source-occurrence-id
+   "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/4274-4318",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 24,
+   :raw-sha256
+   "429bb93fcc27926c67b75c1ad0305485b124b6f91d37a8fdcec2eba2520d21ee",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4318,
+    :end-byte 4394,
+    :raw-sha256
+    "429bb93fcc27926c67b75c1ad0305485b124b6f91d37a8fdcec2eba2520d21ee"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- package/build effects from dependency resolution and artifact generation.\n",
+   :source-occurrence-id
+   "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/4318-4394",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Build and Runtime Effects", :line 123}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 25,
+   :raw-sha256
+   "d982cd3d87d1f890d6e0242d3bfa3c52ca4d196b8dfe1e1076c2882c20fab63c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4395,
+    :end-byte 4555,
+    :raw-sha256
+    "d982cd3d87d1f890d6e0242d3bfa3c52ca4d196b8dfe1e1076c2882c20fab63c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "A macro may have build effects while emitting pure runtime code, or pure build\nbehavior while emitting effectful runtime code. The two are recorded separately.\n",
+   :source-occurrence-id
+   "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/4395-4555",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Both macro combinations require independent records: build-effectful/pure-emitted-runtime and pure-build/effectful-runtime."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 26,
+   :raw-sha256
+   "e58cd582f73ca1b8f5bcbde12e737fb4033ebceb7f2f8f98e3f7ef6871226d70",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4556,
+    :end-byte 4585,
+    :raw-sha256
+    "e58cd582f73ca1b8f5bcbde12e737fb4033ebceb7f2f8f98e3f7ef6871226d70"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Replay and Nondeterminism\n",
+   :source-occurrence-id
+   "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/4556-4585/e58cd582f73ca1b8",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 27,
+   :raw-sha256
+   "8ab5347db700243ee6feb15548faf9a3a049a9f6e6bbce31fac338756c8c3ca2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4586,
+    :end-byte 4635,
+    :raw-sha256
+    "8ab5347db700243ee6feb15548faf9a3a049a9f6e6bbce31fac338756c8c3ca2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Replay records are required for effects such as:\n",
+   :source-occurrence-id
+   "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4586-4635",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Replay records apply to the following nondeterministic families under the actual profile and consumer contract."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "377f4d94ca2f170de3354bc52631f94c912e8e0c78987b57b7e7735d56486b0f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4636,
+    :end-byte 4644,
+    :raw-sha256
+    "377f4d94ca2f170de3354bc52631f94c912e8e0c78987b57b7e7735d56486b0f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- time,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4636-4644",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "69f1441b514f991b54d09ebf913184efb80568362b781f97d9e09906a417698d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4644,
+    :end-byte 4658,
+    :raw-sha256
+    "69f1441b514f991b54d09ebf913184efb80568362b781f97d9e09906a417698d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- randomness,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4644-4658",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "799959d666d93fcad5385da7e0caacaa2cfd3fc7ef9057ef38dba5632d9d85f3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4658,
+    :end-byte 4673,
+    :raw-sha256
+    "799959d666d93fcad5385da7e0caacaa2cfd3fc7ef9057ef38dba5632d9d85f3"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- external IO,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4658-4673",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "4852bbc5630a1eafc5e484632f1a7e1bf834ae67db6fa95f45a5f0a9e6a23d4a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4673,
+    :end-byte 4705,
+    :raw-sha256
+    "4852bbc5630a1eafc5e484632f1a7e1bf834ae67db6fa95f45a5f0a9e6a23d4a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- database reads when external,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4673-4705",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "9f77970955df5507ff57675f29dbd574d401342cafd35c569cf4ba68c5b6eba1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4705,
+    :end-byte 4724,
+    :raw-sha256
+    "9f77970955df5507ff57675f29dbd574d401342cafd35c569cf4ba68c5b6eba1"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- workflow events,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4705-4724",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "65e2cb15cdf69d0e3c2f57c93d59710b4e8e6529a76749e02292458cd8452765",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4724,
+    :end-byte 4739,
+    :raw-sha256
+    "65e2cb15cdf69d0e3c2f57c93d59710b4e8e6529a76749e02292458cd8452765"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- model calls,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4724-4739",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "7ed8b93335e6abf5f9f752c177825bb880060921ef4313b792adee67b7fd0dbf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4739,
+    :end-byte 4753,
+    :raw-sha256
+    "7ed8b93335e6abf5f9f752c177825bb880060921ef4313b792adee67b7fd0dbf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- tool calls,\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4739-4753",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "64e664331947b0b37d7c901c6ae7e7c189f0fa542b86e9e7a2902e03defb6c9d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4753,
+    :end-byte 4803,
+    :raw-sha256
+    "64e664331947b0b37d7c901c6ae7e7c189f0fa542b86e9e7a2902e03defb6c9d"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- AI human-review decisions (`:ai/human-review`),\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4753-4803",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay],
+   :index 28,
+   :raw-sha256
+   "41c063cbec298c239e1e674bef04392de1e492dd6e2025080173fe06806f87ef",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4803,
+    :end-byte 4837,
+    :raw-sha256
+    "41c063cbec298c239e1e674bef04392de1e492dd6e2025080173fe06806f87ef"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- scheduler-sensitive operations.\n",
+   :source-occurrence-id
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4803-4837",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Replay and Nondeterminism", :line 135}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :index 29,
+   :raw-sha256
+   "78c665b2a562e8688b97326eb0eda165ee44d4d5d632a9586267dc052259689c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 4838,
+    :end-byte 5030,
+    :raw-sha256
+    "78c665b2a562e8688b97326eb0eda165ee44d4d5d632a9586267dc052259689c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "The checker emits replay obligations that downstream workflow, AI, runtime, and\ntest documents must satisfy. A profile that forbids replay gaps rejects missing\nrecords before target lowering.\n",
+   :source-occurrence-id
+   "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/4838-5030",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Workflow/AI/runtime/test consumers must satisfy obligations; profiles forbidding replay gaps reject missing records before target lowering."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 30,
+   :raw-sha256
+   "9f824f169210ee8d4308b073a0d2a03fd9ab8a340f6b4b9254aaa89e7bcf551a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5031,
+    :end-byte 5055,
+    :raw-sha256
+    "9f824f169210ee8d4308b073a0d2a03fd9ab8a340f6b4b9254aaa89e7bcf551a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Ordering Constraints\n",
+   :source-occurrence-id
+   "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/5031-5055/9f824f169210ee8d",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 31,
+   :raw-sha256
+   "9c2a7f4c6932377c3d0841a407351c6a3aa04500df302898524655e79bc2b4ca",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5056,
+    :end-byte 5089,
+    :raw-sha256
+    "9c2a7f4c6932377c3d0841a407351c6a3aa04500df302898524655e79bc2b4ca"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Effect ordering records include:\n",
+   :source-occurrence-id
+   "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5056-5089",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Ordering records include the complete subsequent constraint family."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "25a2c93af033b05592b617955e7e6a08a692e00ca3199688e8abd7c091ce1b62",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5090,
+    :end-byte 5102,
+    :raw-sha256
+    "25a2c93af033b05592b617955e7e6a08a692e00ca3199688e8abd7c091ce1b62"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- sequence,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5090-5102",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "c85f58f7d67fbb76e6fe7feeb91ef8ac8792baa57792b8840b5e09104693bc54",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5102,
+    :end-byte 5117,
+    :raw-sha256
+    "c85f58f7d67fbb76e6fe7feeb91ef8ac8792baa57792b8840b5e09104693bc54"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- may commute,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5102-5117",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "ed6f9db3d048c640088f3c833c355e517d07df4fa157303974ebf14efa6056af",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5117,
+    :end-byte 5139,
+    :raw-sha256
+    "ed6f9db3d048c640088f3c833c355e517d07df4fa157303974ebf14efa6056af"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- must not duplicate,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5117-5139",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "2078a11f24f350c0bf86dcf148b2c11837fd0e27ba041d4043155d5e7854f4db",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5139,
+    :end-byte 5161,
+    :raw-sha256
+    "2078a11f24f350c0bf86dcf148b2c11837fd0e27ba041d4043155d5e7854f4db"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- must not eliminate,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5139-5161",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "e07555151b20388ae9664cc8f70320f652edd00173cec7ba7542654090189090",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5161,
+    :end-byte 5202,
+    :raw-sha256
+    "e07555151b20388ae9664cc8f70320f652edd00173cec7ba7542654090189090"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- must bracket resource acquire/release,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5161-5202",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "6fdbb0e6820afa3cf101bb6cf2a6cb6284264092a6def166fc0fd20e40e90e3f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5202,
+    :end-byte 5249,
+    :raw-sha256
+    "6fdbb0e6820afa3cf101bb6cf2a6cb6284264092a6def166fc0fd20e40e90e3f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- must preserve volatile/MMIO/atomic ordering,\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5202-5249",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 32,
+   :raw-sha256
+   "44dcd8b9a32e8f066eab451410df56c8160cb726c236403f4d7495477324baaf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5249,
+    :end-byte 5279,
+    :raw-sha256
+    "44dcd8b9a32e8f066eab451410df56c8160cb726c236403f4d7495477324baaf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- must preserve replay order.\n",
+   :source-occurrence-id
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5249-5279",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Ordering Constraints", :line 153}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 33,
+   :raw-sha256
+   "db477ab3d01440d4e4c254e97851e1108171583fcef05b117fa5b93e45d74953",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5280,
+    :end-byte 5367,
+    :raw-sha256
+    "db477ab3d01440d4e4c254e97851e1108171583fcef05b117fa5b93e45d74953"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Optimizers consume these records before reordering, fusing, or eliminating\noperations.\n",
+   :source-occurrence-id
+   "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/5280-5367",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual optimizers consume ordering before reorder/fusion/elimination; this trace is not optimizer execution."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Residual Effects", :line 168}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 34,
+   :raw-sha256
+   "539f9381bff11bafd7a4a39cb3060e9fec2a71a24524d6f6558e1d2d22ac14a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5368,
+    :end-byte 5388,
+    :raw-sha256
+    "539f9381bff11bafd7a4a39cb3060e9fec2a71a24524d6f6558e1d2d22ac14a2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Residual Effects\n",
+   :source-occurrence-id
+   "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/5368-5388/539f9381bff11baf",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Residual Effects", :line 168}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation :replay :handoff],
+   :index 35,
+   :raw-sha256
+   "96575b8e2913d32203cf63b7cd21e7069bea44c5696624b77c1b64e280f0beb0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5389,
+    :end-byte 5674,
+    :raw-sha256
+    "96575b8e2913d32203cf63b7cd21e7069bea44c5696624b77c1b64e280f0beb0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Residual effects are effects that remain after static proof or specialization.\nExamples include preserved runtime checks, dynamic dispatch, fallback provider\ncalls, residual capability checks, and replay logging. The checker records them\nso MIR and runtime artifacts do not hide them.\n",
+   :source-occurrence-id
+   "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1",
+   :owner-requirement-ids ["compiler/c8/effect-computation"],
+   :id "C8/facet/5389-5674",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "After proof/specialization, actual runtime checks, dynamic dispatch, fallback-provider calls, residual authority checks and replay logging survive in residual reports and MIR/runtime artifacts."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 36,
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5675,
+    :end-byte 5690,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Diagnostics\n",
+   :source-occurrence-id
+   "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/5675-5690/84b964dab09b580d",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :index 37,
+   :raw-sha256
+   "99d9dcf4fa35cdc409d9d2c65c186a74ded9480fd6c284d32adcee42c8052aa2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5691,
+    :end-byte 5740,
+    :raw-sha256
+    "99d9dcf4fa35cdc409d9d2c65c186a74ded9480fd6c284d32adcee42c8052aa2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Effect checker diagnostics use `C8` identifiers:\n",
+   :source-occurrence-id
+   "C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5691-5740",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Preserve the declared C8 diagnostic family and meanings."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "d7fa9e15aa9dc08b5fb0e6cdbfc21be810ddcb75343d18a976d272128a85d7e2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5741,
+    :end-byte 5801,
+    :raw-sha256
+    "d7fa9e15aa9dc08b5fb0e6cdbfc21be810ddcb75343d18a976d272128a85d7e2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C8-UNDECLARED` for inferred effects outside declaration.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5741-5801",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "3264bccd66784540b2fcd83df1e0dffba864306f59db382c6e01ea409cab93dc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5801,
+    :end-byte 5849,
+    :raw-sha256
+    "3264bccd66784540b2fcd83df1e0dffba864306f59db382c6e01ea409cab93dc"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C8-PROFILE` for effects rejected by profile.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5801-5849",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "a55993a2800217b3277f137ef93d4934232429f3d78e266f75d72486a19e0e79",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5849,
+    :end-byte 5914,
+    :raw-sha256
+    "a55993a2800217b3277f137ef93d4934232429f3d78e266f75d72486a19e0e79"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C8-CAPABILITY` for missing or insufficient capability grants.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5849-5914",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "9de8f5e4a52db82c85e7bf9e5a7e319fd6569d624920ddbbbb939727973e90c8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5914,
+    :end-byte 5956,
+    :raw-sha256
+    "9de8f5e4a52db82c85e7bf9e5a7e319fd6569d624920ddbbbb939727973e90c8"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C8-BUILD` for ungranted build effects.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5914-5956",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "a7324ca9e7960d6c1016e11e139ec6135f935ea403533c4217f903cf736c0d9f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 5956,
+    :end-byte 6027,
+    :raw-sha256
+    "a7324ca9e7960d6c1016e11e139ec6135f935ea403533c4217f903cf736c0d9f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C8-REPLAY` for replay-sensitive effects without replay obligations.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/5956-6027",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "97fb350023117c91bd021feef622b11b444f1fd9cfe85a835c15ec65ad448f25",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6027,
+    :end-byte 6081,
+    :raw-sha256
+    "97fb350023117c91bd021feef622b11b444f1fd9cfe85a835c15ec65ad448f25"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C8-ORDER` for missing effect ordering constraints.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6027-6081",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "753ce0ee5eed3e9454ee3e762d331776d4cad65d55ad9b5eaa3068a251c9c45a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6081,
+    :end-byte 6135,
+    :raw-sha256
+    "753ce0ee5eed3e9454ee3e762d331776d4cad65d55ad9b5eaa3068a251c9c45a"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- `C8-RUNTIME` for no legal runtime/provider support.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6081-6135",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "6147db1987d3b40e2079a484ad7f45a243f9607fee40122b6092c6a3d266ed0b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6135,
+    :end-byte 6181,
+    :raw-sha256
+    "6147db1987d3b40e2079a484ad7f45a243f9607fee40122b6092c6a3d266ed0b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C8-UNKNOWN` for unregistered effect names.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6135-6181",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :legality :replay :handoff],
+   :index 38,
+   :raw-sha256
+   "6d7988e5e28a4517ec59c8d3ce00d1a1dcdb5682f5c3ee42ecfb00248abe6785",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6181,
+    :end-byte 6227,
+    :raw-sha256
+    "6d7988e5e28a4517ec59c8d3ce00d1a1dcdb5682f5c3ee42ecfb00248abe6785"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- `C8-VERIFY` for malformed effect artifacts.\n",
+   :source-occurrence-id
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6181-6227",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Diagnostics", :line 175}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:handoff],
+   :index 39,
+   :raw-sha256
+   "ab84d5f06b9805c3b4bd91d8049521a8cc2b35b437601cfa405a53c3bc7e7f5e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6228,
+    :end-byte 6396,
+    :raw-sha256
+    "ab84d5f06b9805c3b4bd91d8049521a8cc2b35b437601cfa405a53c3bc7e7f5e"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Diagnostics must include core node id, source span, generated-origin chain,\nfunction, namespace, effect, capability, profile, target, provider, grant, and\nremediation.\n",
+   :source-occurrence-id
+   "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6228-6396",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Diagnostics retain core node/span/generated origins/function/namespace/effect/capability/profile/target/provider/grant/remediation."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 40,
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6397,
+    :end-byte 6417,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Rejected Designs\n",
+   :source-occurrence-id
+   "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/6397-6417/81a99744c82b0f20",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 41,
+   :raw-sha256
+   "f8de6fc93fe9ebd28d26c574f7c679e7942229ebc9072b981eb2dec25b832db8",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6418,
+    :end-byte 6481,
+    :raw-sha256
+    "f8de6fc93fe9ebd28d26c574f7c679e7942229ebc9072b981eb2dec25b832db8"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects treating type checking as sufficient legality.\n",
+   :source-occurrence-id
+   "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/6418-6481",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Typing alone cannot legalize effects or grant authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :propagation],
+   :index 42,
+   :raw-sha256
+   "de78df7d13f67413140fd7766e5b81dd57c6146c28848e8d01fa2bd424517749",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6482,
+    :end-byte 6552,
+    :raw-sha256
+    "de78df7d13f67413140fd7766e5b81dd57c6146c28848e8d01fa2bd424517749"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects effects inferred only by backend or runtime behavior.\n",
+   :source-occurrence-id
+   "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/6482-6552",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Effect inference must derive actual typed-core behavior, not backend or runtime accidents."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:computation :replay],
+   :index 43,
+   :raw-sha256
+   "b6eb242438f60f5bd1a85596e1e616794516c4797c3491db72c1cb5e104f07c6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6553,
+    :end-byte 6603,
+    :raw-sha256
+    "b6eb242438f60f5bd1a85596e1e616794516c4797c3491db72c1cb5e104f07c6"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "Gravity rejects macros that hide runtime effects.\n",
+   :source-occurrence-id
+   "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/6553-6603",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate "Macro build facts cannot hide emitted runtime effects."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality],
+   :index 44,
+   :raw-sha256
+   "57306b6d475214637940d1bbd5086f71301ecd9f0d5ee6e639e45fcc1a59e1ab",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6604,
+    :end-byte 6666,
+    :raw-sha256
+    "57306b6d475214637940d1bbd5086f71301ecd9f0d5ee6e639e45fcc1a59e1ab"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects capability grants inferred from effect names.\n",
+   :source-occurrence-id
+   "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/6604-6666",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate "An effect name cannot supply its own capability grant."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:replay :handoff],
+   :index 45,
+   :raw-sha256
+   "3d2a7ab13a8f50a51e6675649d72102770b7045a2373e94678192bbd965d9027",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6667,
+    :end-byte 6743,
+    :raw-sha256
+    "3d2a7ab13a8f50a51e6675649d72102770b7045a2373e94678192bbd965d9027"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects replay-sensitive effects without replay or audit artifacts.\n",
+   :source-occurrence-id
+   "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/6667-6743",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Replay-sensitive effects without required replay/audit artifacts refuse rather than silently performing live work."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Rejected Designs", :line 193}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:legality :handoff],
+   :index 46,
+   :raw-sha256
+   "6e28a58f03de74fa7df6b9d4dc3b521afaa898344368e3a4ac586f592946b8d0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6744,
+    :end-byte 6820,
+    :raw-sha256
+    "6e28a58f03de74fa7df6b9d4dc3b521afaa898344368e3a4ac586f592946b8d0"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "Gravity rejects optimizations that reorder effects without effect evidence.\n",
+   :source-occurrence-id
+   "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/6744-6820",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Effectful reorder requires actual ordering evidence consumed by the optimizer."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :index 47,
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6821,
+    :end-byte 6845,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "## Conformance Criteria\n",
+   :source-occurrence-id
+   "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082",
+   :owner-requirement-ids [],
+   :id "C8/normalized-facet/6821-6845/4cea7efb2bd3a140",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 48,
+   :raw-sha256
+   "a56598a841213af107dc06c2c9b5cba5a38216f4f108b3217f3317a863ee05ad",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6846,
+    :end-byte 6892,
+    :raw-sha256
+    "a56598a841213af107dc06c2c9b5cba5a38216f4f108b3217f3317a863ee05ad"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "A conforming effect checker must demonstrate:\n",
+   :source-occurrence-id
+   "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9",
+   :owner-requirement-ids
+   ["compiler/c8/capability-proof"
+    "language/effects/check-narrowest-allowance"
+    "compiler/c8/effect-computation"
+    "compiler/c8/effect-domains"
+    "compiler/c8/effect-order"
+    "compiler/c8/replay-audit"],
+   :id "C8/facet/6846-6892",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Conformance introduction quantifies the entire following producer/checker/consumer conjunction."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "bbdefcc526f9f35f3fc3f774611094ea8820f130e7329c2a1cfab0dd8279dc0b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6893,
+    :end-byte 6963,
+    :raw-sha256
+    "bbdefcc526f9f35f3fc3f774611094ea8820f130e7329c2a1cfab0dd8279dc0b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- direct, latent, transitive, build, and residual effect computation,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids
+   ["compiler/c8/effect-computation" "compiler/c8/effect-domains"],
+   :id "C8/facet/6893-6963",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "983f069b4fc403462a716e56321331b10dc351b739311be5c1549a0c5c310994",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 6963,
+    :end-byte 7008,
+    :raw-sha256
+    "983f069b4fc403462a716e56321331b10dc351b739311be5c1549a0c5c310994"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- namespace and function declaration checks,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/6963-7008",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "1f56e0a810620135be1f78a7da362affe98f5ac0b348a95432150391a8bf6596",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7008,
+    :end-byte 7045,
+    :raw-sha256
+    "1f56e0a810620135be1f78a7da362affe98f5ac0b348a95432150391a8bf6596"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- profile-specific effect rejection,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/7008-7045",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "d8ab99a7b0bbf465255e89bfe7fe0bb53aabf36776b91b598cc17231c95b17ce",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7045,
+    :end-byte 7090,
+    :raw-sha256
+    "d8ab99a7b0bbf465255e89bfe7fe0bb53aabf36776b91b598cc17231c95b17ce"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- capability proof acceptance and rejection,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids ["compiler/c8/capability-proof"],
+   :id "C8/facet/7045-7090",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "9d0db791f76287f26a537aa9787b930c7e6e8af4a026b86768afd1747b9df833",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7090,
+    :end-byte 7125,
+    :raw-sha256
+    "9d0db791f76287f26a537aa9787b930c7e6e8af4a026b86768afd1747b9df833"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- build-effect hermetic rejection,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids ["compiler/c8/effect-domains"],
+   :id "C8/facet/7090-7125",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "a9ee51456ddcccbaa753f80ca6003970c54e4db80cd699156c5b065fa3e9ca5f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7125,
+    :end-byte 7155,
+    :raw-sha256
+    "a9ee51456ddcccbaa753f80ca6003970c54e4db80cd699156c5b065fa3e9ca5f"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- replay obligation emission,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids ["compiler/c8/replay-audit"],
+   :id "C8/facet/7125-7155",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "99bfcd4aec3d25dd7bc6dcbcec19efd35621ce615988039e038cee804a0fedcf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7155,
+    :end-byte 7242,
+    :raw-sha256
+    "99bfcd4aec3d25dd7bc6dcbcec19efd35621ce615988039e038cee804a0fedcf"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text
+   "- ordering constraints for resource, volatile, MMIO, atomic, workflow, and AI\n  cases,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids ["compiler/c8/effect-order"],
+   :id "C8/facet/7155-7242",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "91bb614788c0a5d198a8d77b1a11746b8b1202e6345896eb130b6cd5070ee12b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7242,
+    :end-byte 7280,
+    :raw-sha256
+    "91bb614788c0a5d198a8d77b1a11746b8b1202e6345896eb130b6cd5070ee12b"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- MIR effect annotation preservation,\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids
+   ["compiler/c8/effect-computation" "compiler/c8/effect-order"],
+   :id "C8/facet/7242-7280",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}
+  {:hierarchical-context
+   [{:level 1, :title "C8 - Effect Checker Design", :line 1}
+    {:level 2, :title "Conformance Criteria", :line 207}],
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:computation :propagation :legality :replay :handoff],
+   :index 49,
+   :raw-sha256
+   "cbbde1ab0d9ea0b652f80c214e679b39ba499ed845f853da55b1692acabc6b2c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :file-sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+    :start-byte 7280,
+    :end-byte 7328,
+    :raw-sha256
+    "cbbde1ab0d9ea0b652f80c214e679b39ba499ed845f853da55b1692acabc6b2c"},
+   :disposition
+   :owner-proposed-exact-disposition-pending-independent-facet-review,
+   :source-text "- diagnostics for every legality failure class.\n",
+   :source-occurrence-id
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+   :owner-requirement-ids
+   ["language/effects/check-narrowest-allowance"],
+   :id "C8/facet/7280-7328",
+   :document-id "C8",
+   :independent-facet-acceptance :pending,
+   :predicate
+   "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."}],
+ :qualification
+ "All C8 source facets and occurrences have manual current criterion conjunctions. This does not claim complete L6 or foundation attached-predicate coverage, actual compiler/effect/authority/replay/runtime/probe execution, independent entailment, implementation, release or final-count acceptance. Earlier source reviews retain their original subjects and exclusions; the recorded-output R6/R7/R8 qualification survives unchanged.",
+ :input
+ {:facet-matrix
+  {:sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"},
+  :current-criteria
+  {:path
+   "specs/requirement-reconciliation/all833-c8-owner-current-criterion-conservation.edn",
+   :sha256
+   "97e39bbed6af8d4f72c635845e5fb50d7cafd002953b1b74947be54dd72c51b3"},
+  :current-bindings
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+   :sha256
+   "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe"}},
+ :new-decision-ids 0}
