@@ -1,5 +1,22 @@
 # PR502 preserved path reconciliation
 
+## Publication scope reassessment; exact composition review pending
+
+Accounting withdrew its blanket Bootstrap publication gate after inspecting the
+actual configured hosted CI operations against standing human authority. The
+gate came from its scoped inert-source assignment, not an identified user or
+platform prohibition on routine CI. Assessment SHA256:
+`069f0fa11ee7988fa8956c596d41554058756dcd6d7bee9a5929b99cb4db0952`.
+This corrects the preparation-gate interpretation recorded below; it does not
+modify the frozen candidate, original intake or review subject. The specific
+held/unknown genuine operations remain stopped, including genuine C12 work.
+
+Normal publication and configured CI may proceed only after exact `404fc27b`
+composition acceptance, followed by current dependencies/checks and fresh
+integration preflight. That existing review remains pending; no new review is
+requested, prior source acceptance is not inherited, and nothing is published
+or integrated on the basis of this scope reassessment alone.
+
 ## Consumed serialization review and local main composition
 
 `verifier-serialization-review-consumption.edn` consumes PR642 receipt
