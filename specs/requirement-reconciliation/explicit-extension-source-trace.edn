@@ -7126,7 +7126,7 @@
    :unit-ids ["policy/accounting/host-external-boundary-separation"],
    :start-byte 3009}],
  :current-applicability-source
- "cb12d36ec567b0f6b070c4fa2693406554fa74b0",
+ "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
  :qualified-independent-byte-provenance-review
  {:path
   "specs/requirement-reconciliation/c11-extension-qualified-review-adoption.edn",
@@ -7139,7 +7139,7 @@
    :scope :historical-extension-byte-provenance-only},
   :implementation-credit :none,
   :scope :historical-extension-byte-provenance-only,
-  :artifact-source-commit "cb12d36ec567b0f6b070c4fa2693406554fa74b0",
+  :artifact-source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
   :subject-source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
   :operation-authority :not-conferred,
   :sha256

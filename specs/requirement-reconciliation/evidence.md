@@ -3816,3 +3816,42 @@ count or integration acceptance follows. The prior finite-main assessment is
 history at its captured source; C12's pending-review premise is now superseded
 by this qualified adoption. Main's missing reviewed bodies and provenance
 dependencies still require a new affected-composition candidate and review.
+
+C12-review publication uses metadata/census source
+`0b95e1c32b705666fab8afdf7d652110b1b8d974` and inventory source
+`7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8`. Inventory SHA256 is
+`188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee`.
+Applicability SHA256 is
+`86a71e3204030450eb6f0dcd49d21807356d245eb85a9379534ff0fb956de1cd`;
+adoption SHA256 is
+`b9f56a99c2495f94e0435d97078f45fde537982770bec924545602f44fcdb686`.
+Fresh captured-byte continuity has 71 authentic predicate joins, two older
+Compiler API file pin changes and no review renewal; SHA256
+`6841ddfd99c0559dcfc225bc8c35027ada816e4f8dab4e1eae82503fe3e19a51`.
+Earlier frozen continuity artifacts remain unchanged.
+
+Complete inventory checks pass 16 tests/86 assertions and serialized readback.
+Readback verifies all 1,585 qualified facet ID/role partitions, seven review
+groups, twelve source refinements, current witnesses, exact C17/C12 source
+partitions and unchanged extension descriptor states. All original 240
+documents, 9,945 occurrences, 28,785 facets and 1,188 owner identities conserve.
+Owner states remain 984 candidates, 201 task-reference-only and three retirement
+proposals. Other dispositions remain 5,375 format/hierarchy contexts, 20,136
+pending complete predicates, 700 dependency joins and 357 owner/metadata
+adjudications. Source applicability passes 3/38; SH 12/541; census 5/18;
+boundary 6/11; both document validators; generated SH/census checks; zero-finding
+changed SH lint; whitespace. The provisional census remains 3/195 with 190
+Open, one Partial, one unassessed and 192 remaining. Independent whole-current
+composition/final counting and coordinator integration remain pending.
+
+An isolated main-based source composition is now being prepared in managed
+worktree `/Users/matt/.codex/worktrees/compiler-domain-contracts/uniform`,
+branch `codex/compiler-domain-contracts`. Its first source commit
+`f25e6f571e610587da8142f5b0fc33e7806d440e` extracts only the four Compiler API
+task/roadmap/projector/test files, preserving the four prior main bodies and
+Open statuses while adding the existing domain outcome. That new composition
+is not independently accepted, and it imports no global reconciliation
+database or denominator. The canonical checkout is retained without reset.
+The separate source-only C18 paragraph remains scratch preparation; no C18
+canonical task change or execution has occurred while the incoming C12 review
+was authenticated.
