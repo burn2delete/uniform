@@ -1,5 +1,38 @@
 # PR502 preserved path reconciliation
 
+## Verifier-fixture frozen source review intake
+
+PR599 remains frozen at `b786b464a67e33af2b75bfcf90a87619b71774c3`, tree
+`b2fd8edc5444f46c588a5db66e6881b72b3f1e33`, on exact PR598 parent
+`d58d61c4a83f09ebd3c742a3cc13b9d000244759`.
+`verifier-fixtures-frozen-review-intake.edn` verifies the complete seven-path
+mode/blob overlay, unchanged production and exact parent test-byte prefix.
+Four original fixture paths match the unchanged inventory and historical bytes;
+their preserved copies retain both source spellings. Thirty complete C7 forms
+are pinned: twenty-eight historical matches and two explicit differences,
+the migrated accounting reads and imported-carrier diagnostic. Neither difference
+is treated as equivalence or accounting approval.
+
+All four added helper/test definitions are checked. The ordinary construction
+body is historical-exact. The qualified body changes only the test name,
+fixture basename, definition and key. Helper changes are the preserved directory
+and basename arity. Ordered assertion/source pins retain thirteen syntactic
+assertions in each construction test, including complete product equality and
+malformed Core diagnostics. The fresh-verifier test's nine syntactic assertions
+and eight mutations for each of two fixture cases match its complete literal
+source equation. Four shared test helper definitions remain parent-identical.
+These are source counts, not executed test results.
+
+`verifier-fixtures-frozen-ci.json` records existing exact-head CI, seven successes
+and two configured skips, without rerun. Independent source/test/adaptation
+review awaits Accounting/Reconciliation routing; no reviewer is assigned here.
+PR598's review remains a separate qualified gate, including disposition of six
+retired complete-result comparisons. PR599 does not repair or inherit parent
+acceptance. Actual source/Core construction, public verification, companion
+semantics, native/runtime behavior and current-main integration remain UNRUN.
+The original 29-path/530-unit/316-production-unit scope and PR502 remain open;
+the native root goal stays blocked and all held operations stay stopped.
+
 ## Mixed-ledger frozen source review intake
 
 PR598 remains frozen at `d58d61c4a83f09ebd3c742a3cc13b9d000244759`, tree
