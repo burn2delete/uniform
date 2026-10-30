@@ -9,6 +9,7 @@
 
 (defn- build-operations [] (private-operation 'syntax-stage-build-operations))
 (defn- reader-operations [] (private-operation 'syntax-stage-reader-verification-operations))
+(defn- runtime-operations [] (private-operation 'syntax-stage-runtime-operations))
 (defn- reader-path [] (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
@@ -155,3 +156,177 @@
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))
+
+(def ^:private runtime-template
+  (delay
+    (let [artifact @gravity-product
+          resolved (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])
+          reader-binding (:reader-binding resolved)
+          revision (:reader-source-revision resolved)
+          binding (bootstrap/sh04-syntax-current-binding! (source-path ".gravity"))
+          base (:syntax-object (first (:resolved-object-products resolved)))
+          product (bootstrap/sh04-syntax-generated-products!
+                   (source-path ".gravity") binding base
+                   (:semantic-source-id reader-binding) reader-binding revision)]
+      {:binding binding :reader-binding reader-binding :revision revision :product product})))
+
+(deftest pinned-runtime-builds-the-real-plan-and-rechecks-cache-freshness
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        cache (syntax/plan-binding-cache operations)
+        _ (is (false? (realized? cache)))
+        binding (syntax/current-plan-binding! path cache operations)]
+    (is (realized? cache))
+    (is (= (bootstrap/sh04-syntax-current-binding! path) binding))
+    (is (= :gravity/sh04-pinned-syntax-plan-binding (:artifact binding)))
+    (is (= :gravity-source (:semantic-authority binding)))
+    (is (= bootstrap/sh04-syntax-expected-source-content-hash (:source-content-hash binding)))
+    (is (= bootstrap/sh04-syntax-expected-source-byte-count (:source-byte-count binding)))
+    (is (= bootstrap/sh04-syntax-expected-function-count (count (get-in binding [:plan :functions]))))
+    (is (= (select-keys binding (keys (syntax/plan-identities (:plan binding) operations)))
+           (syntax/plan-identities (:plan binding) operations)))
+    (doseq [changed [(assoc binding :source-content-hash "sha256:substituted")
+                     (assoc binding :source-byte-count 0)
+                     (update-in binding [:plan :functions] dissoc 'c3-syntax-verify-resolved)]]
+      (let [error (caught #(syntax/current-plan-binding! path (delay changed) operations))]
+        (is (= "C3-ID" (:id (ex-data error))))
+        (is (= path (get-in (ex-data error) [:source-span :source])))))
+    (let [bad-plan (update-in binding [:plan] update :functions dissoc 'c3-syntax-build-template)
+          error (caught #(syntax/build-plan-binding!
+                          path (assoc operations :p15-s23-stage2-compiler-artifact-plan
+                                      (fn [& _] (:plan bad-plan)))))]
+      (is (= "C3-ID" (:id (ex-data error))))
+      (is (= [:pinned-syntax-plan-and-functions] (:missing-fields (ex-data error)))))))
+
+(deftest pinned-source-refuses-real-byte-length-and-content-drift
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        source (syntax/read-pinned-plan-source! path operations)
+        bytes (java.nio.file.Files/readAllBytes (.toPath (io/file (:source-path source))))
+        temporary (java.nio.file.Files/createTempFile
+                   "gravity-syntax-pin-" ".gravity"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        selected (assoc operations :sh04-syntax-resolve-source-path (constantly (str temporary)))]
+    (try
+      (spit (str temporary) "1")
+      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
+        (is (= "C3-ID" (:id (ex-data error))))
+        (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error)))))
+      (aset-byte bytes 0 (byte (bit-xor 1 (aget bytes 0))))
+      (java.nio.file.Files/write temporary bytes (make-array java.nio.file.OpenOption 0))
+      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
+        (is (= "C3-ID" (:id (ex-data error))))
+        (is (= [:pinned-syntax-source-identity] (:missing-fields (ex-data error))))
+        (is (= path (get-in (ex-data error) [:source-span :source]))))
+      (finally (java.nio.file.Files/deleteIfExists temporary)))))
+
+(deftest real-template-replay-and-digest-resolution-preserve-and-authenticate-products
+  (let [{:keys [binding reader-binding revision product]} @runtime-template
+        path (source-path ".gravity") operations (runtime-operations) raw (:raw-result product)
+        resolve! #(syntax/resolve-template! path binding % reader-binding revision operations)
+        actual (resolve! raw)]
+    (is (= product actual))
+    (is (= :passed (get-in actual [:verification-report :status])))
+    (is (= :passed (get-in actual [:resolved-verification-report :status])))
+    (is (= (:semantic-binding-id reader-binding) (first (:resolved-digests actual))))
+    (is (= (:serialization-id actual) (second (:resolved-digests actual))))
+    (is (= reader-binding (get-in actual [:syntax :reader-binding])))
+    (is (= revision (get-in actual [:syntax :reader-source-revision])))
+    (doseq [[changed expected]
+            [[(assoc raw :status :rejected) "C3-SHAPE"]
+             [(assoc raw :schema-version 2) "C3-SHAPE"]
+             [(assoc-in raw [:containment :downstream-artifacts-forbidden] true) "C3-SHAPE"]
+             [(update raw :digest-requests #(vec (reverse %))) "C3-ID"]
+             [(assoc-in raw [:syntax-template :syntax-id] {:digest-ref 0}) "C3-ID"]
+             [(assoc-in raw [:digest-requests 1 :depends-on] []) "C3-ID"]]]
+      (let [error (caught #(resolve! changed))]
+        (is (= expected (:id (ex-data error))))
+        (is (= path (get-in (ex-data error) [:source-span :source])))))
+    (doseq [[changed-binding changed-revision]
+            [[(assoc reader-binding :semantic-binding-id "sha256:substituted") revision]
+             [reader-binding (assoc revision :source-content-hash "sha256:substituted")]]]
+      (is (= "C3-ID" (:id (ex-data
+                           (caught #(syntax/resolve-template!
+                                     path binding raw changed-binding changed-revision operations)))))))))
+
+(deftest digest-resolution-treats-only-declared-identity-slots-as-control-data
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        semantic-data {:digest-ref 0 :ordinary-source-map {:digest-ref 1}}
+        object {:syntax-id {:digest-ref 1} :form semantic-data}
+        stream {:artifact-id {:digest-ref 0} :semantic-value semantic-data}
+        preimage {:reader-binding {:semantic-binding-id {:digest-ref 0}}
+                  :form semantic-data}
+        resolved (syntax/resolve-request-preimage!
+                  path {:ordinal 1 :depends-on [0] :preimage preimage} ["reader-id"] operations)]
+    (is (= (assoc object :syntax-id "syntax-id")
+           (syntax/resolve-object-template! path object ["reader-id" "syntax-id"] operations)))
+    (is (= (assoc stream :artifact-id "stream-id")
+           (syntax/resolve-stream-template! path stream ["stream-id"] operations)))
+    (is (= (assoc-in preimage [:reader-binding :semantic-binding-id] "reader-id") resolved))
+    (is (= semantic-data (syntax/resolve-stream-request-preimage!
+                         path {:ordinal 0 :depends-on [] :preimage semantic-data} [] operations)))
+    (doseq [thunk [#(syntax/resolve-object-template! path object ["only-one"] operations)
+                   #(syntax/resolve-stream-template! path stream [] operations)
+                   #(syntax/resolve-request-preimage! path {:ordinal 2 :depends-on []} [] operations)
+                   #(syntax/resolve-request-preimage! path {:ordinal 0 :depends-on [1]} [] operations)
+                   #(syntax/resolve-stream-request-preimage! path {:ordinal 1 :depends-on []} [] operations)]]
+      (is (= "C3-ID" (:id (ex-data (caught thunk))))))))
+
+(deftest result-carrier-admission-refuses-foreign-values-without-claiming-quotas
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        raw (get-in @runtime-template [:product :raw-result])]
+    (is (= raw (syntax/require-result-carrier! path :actual-syntax-result raw operations)))
+    (is (= raw (syntax/accept-result! path raw operations)))
+    (doseq [unsupported [(Object.) (with-meta {:value 1} {:host-only true})]]
+      (let [error (caught #(syntax/require-result-carrier! path :invalid-carrier unsupported operations))]
+        (is (= "C3-SHAPE" (:id (ex-data error))))
+        (is (= [:bounded-syntax-result-carrier] (:missing-fields (ex-data error))))))
+    ;; The shared validator's legacy limit arguments do not enforce quotas.
+    ;; Preserve that explicit boundary rather than presenting them as bounds.
+    (let [deep (reduce (fn [value _] [value]) nil (range 257))]
+      (is (identical? deep (syntax/require-result-carrier! path :deep-native-carrier deep operations))))))
+
+(deftest execution-contains-host-failures-and-propagates-interruptions
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        run! (fn [error]
+               (syntax/execute-plan! path {} 'test-function []
+                                     (assoc operations :p15-s23-stage2-runtime-execute-function
+                                            (fn [& _] (throw error)))))]
+    (doseq [[error field]
+            [[(StackOverflowError. "test") :bounded-syntax-host-stack]
+             [(AssertionError. "test") :contained-syntax-assertion]
+             [(UnsatisfiedLinkError. "test") :contained-syntax-linkage]
+             [(ex-info "test" {:id "TEST"}) :contained-syntax-runtime-diagnostic]
+             [(Exception. "test") :contained-syntax-host-failure]]]
+      (let [diagnostic (ex-data (caught #(run! error)))]
+        (is (= "C3-SHAPE" (:id diagnostic)))
+        (is (= [field] (:missing-fields diagnostic)))
+        (is (= path (get-in diagnostic [:source-span :source])))))
+    (let [interruption (InterruptedException. "test")
+          observed (try
+                     (run! interruption) nil
+                     (catch InterruptedException error
+                       ;; Capture before clojure.test's reporting uses STM,
+                       ;; which can consume the current thread's interrupt.
+                       [error (.isInterrupted (Thread/currentThread))])
+                     (finally (Thread/interrupted)))]
+      (is (identical? interruption (first observed)))
+      (is (true? (second observed))))))
+
+(deftest runtime-ports-retain-late-interposition-and-strip-host-metadata
+  (let [path (source-path ".gravity") operations (runtime-operations)
+        arguments [(with-meta {:value 1} {:host-only true})]
+        observed (atom nil)
+        runner-var #'bootstrap/p15-s23-stage2-runtime-execute-function]
+    (is (var? (:p15-s23-stage2-runtime-execute-function operations)))
+    (with-redefs-fn
+      {runner-var (fn [_ _ _ clean]
+                    (reset! observed clean)
+                    (with-meta {:result (first clean)} {:host-only true}))}
+      #(let [result (syntax/execute-plan! path {} 'test-function arguments operations)]
+         (is (= {:result {:value 1}} result))
+         (is (nil? (meta result)))
+         (is (nil? (meta (first @observed))))
+         (is (nil? (meta (:result result)))))))
+  (let [operations (runtime-operations) cache (syntax/plan-binding-cache operations)
+        builder-var #'bootstrap/sh04-syntax-build-binding!]
+    (with-redefs-fn {builder-var (fn [source] {:interposed-source source})}
+      #(is (= {:interposed-source "<sh04-syntax-bootstrap>"} @cache)))))

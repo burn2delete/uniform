@@ -10,32 +10,39 @@
  '{:public-api
  {resolve-stream-request-preimage!
   {:arglists ([source-path request resolved-digests operations]),
-   :operation-inputs [:sh04-syntax-boundary-fail!]},
+   :operation-inputs [:sh04-syntax-boundary-fail!],
+   :returns :resolved-digest-preimage},
   resolve-request-preimage!
   {:arglists ([source-path request resolved-digests operations]),
-   :operation-inputs [:sh04-syntax-boundary-fail!]},
+   :operation-inputs [:sh04-syntax-boundary-fail!],
+   :returns :resolved-digest-preimage},
   resolve-stream-template!
   {:arglists
    ([source-path stream-template resolved-digests operations]),
-   :operation-inputs [:sh04-syntax-boundary-fail!]},
+   :operation-inputs [:sh04-syntax-boundary-fail!],
+   :returns :resolved-syntax-stream},
   current-plan-binding!
   {:arglists ([request-source binding-cache operations]),
    :operation-inputs
    [:sh04-syntax-boundary-fail!
     :sh04-syntax-plan-identities
-    :sh04-syntax-read-pinned-source!]},
+    :sh04-syntax-read-pinned-source!],
+   :returns :gravity/sh04-pinned-syntax-plan-binding},
   require-result-carrier!
   {:arglists ([source-path carrier value operations]),
    :operation-inputs
-   [:p15-s23-trusted-carrier-validation :sh04-syntax-boundary-fail!]},
+   [:p15-s23-trusted-carrier-validation :sh04-syntax-boundary-fail!],
+   :returns :native-carrier},
   boundary-fail!
   {:arglists
    ([rule source-path missing-field observed facts operations]),
-   :operation-inputs [:c3-syntax-fail! :source-span]},
+   :operation-inputs [:c3-syntax-fail! :source-span],
+   :returns :throws-c3-diagnostic},
   accept-result!
   {:arglists ([source-path result operations]),
    :operation-inputs
-   [:c3-syntax-fail! :sh04-syntax-require-carrier! :source-span]},
+   [:c3-syntax-fail! :sh04-syntax-require-carrier! :source-span],
+   :returns :accepted-gravity-result},
   reader-products-authentic?
   {:arglists
    ([syntax-stream
@@ -50,15 +57,19 @@
    [:p15-s23-c11-mir-digest
     :p15-s23-stage2-compiler-artifact-semantic-input
     :sh04-syntax-public-function-hashes
-    :sh04-syntax-public-function-shapes]},
+    :sh04-syntax-public-function-shapes],
+   :returns :plan-identity-map},
   plan-binding-cache
-  {:arglists ([operations]), :returns :delayed-plan-binding},
+  {:arglists ([operations]),
+   :returns :delayed-plan-binding,
+   :operation-inputs [:sh04-syntax-build-binding!]},
   execute-plan!
   {:arglists ([source-path binding function arguments operations]),
    :operation-inputs
    [:p15-s23-stage2-runtime-execute-function
     :sh04-syntax-boundary-fail!
-    :sh04-syntax-strip-host-metadata]},
+    :sh04-syntax-strip-host-metadata],
+   :returns :gravity-runtime-value},
   read-pinned-plan-source!
   {:arglists ([request-source operations]),
    :operation-inputs
@@ -66,12 +77,14 @@
     :sh04-syntax-expected-source-byte-count
     :sh04-syntax-expected-source-content-hash
     :sh04-syntax-resolve-source-path
-    :sha256-bytes-hex]},
+    :sha256-bytes-hex],
+   :returns :pinned-source-record},
   resolve-plan-source-path
   {:arglists ([operations]),
    :operation-inputs
    [:p15-s23-stage2-compiler-artifact-source-path
-    :sh04-syntax-source-relative-path]},
+    :sh04-syntax-source-relative-path],
+   :returns :source-path},
   resolve-template!
   {:arglists
    ([source-path
@@ -86,11 +99,13 @@
     :sh04-syntax-execute!
     :sh04-syntax-raise-result!
     :sh04-syntax-resolve-object-template!
-    :sh04-syntax-resolve-request-preimage!]},
+    :sh04-syntax-resolve-request-preimage!],
+   :returns :resolved-syntax-template},
   resolve-object-template!
   {:arglists
    ([source-path syntax-template resolved-digests operations]),
-   :operation-inputs [:sh04-syntax-boundary-fail!]},
+   :operation-inputs [:sh04-syntax-boundary-fail!],
+   :returns :resolved-syntax-object},
   build
   {:arglists ([request operations]),
    :returns :gravity/stage0-c3-syntax-object-artifact},
@@ -110,7 +125,8 @@
     :sh04-syntax-public-function-hashes
     :sh04-syntax-public-function-shapes
     :sh04-syntax-read-pinned-source!
-    :sha256-hex]},
+    :sha256-hex],
+   :returns :gravity/sh04-pinned-syntax-plan-binding},
   verify
   {:arglists ([source-path artifact operations]), :returns :complete}},
  :operation-inputs
@@ -168,15 +184,11 @@
    :sh04-syntax-read-pinned-source!
    :sh04-syntax-plan-identities
    :sh04-syntax-build-binding!
-   :sh04-syntax-current-binding!
    :sh04-syntax-execute!
    :sh04-syntax-require-carrier!
    :sh04-syntax-raise-result!
    :sh04-syntax-resolve-object-template!
-   :sh04-syntax-resolve-stream-template!
    :sh04-syntax-resolve-request-preimage!
-   :sh04-syntax-resolve-stream-request-preimage!
-   :sh04-syntax-resolve-template!
    :c3-syntax-fail!
    :source-span
    :p15-s23-stage2-compiler-artifact-source-path

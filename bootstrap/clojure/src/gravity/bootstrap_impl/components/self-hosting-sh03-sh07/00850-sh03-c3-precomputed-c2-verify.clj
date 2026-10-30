@@ -133,63 +133,57 @@
 (defn-
  syntax-stage-runtime-operations
  []
- {:c-backend-canonical-value #'c-backend-canonical-value,
-  :c-backend-stage2-plan-emitter-source-rule!
-  #'c-backend-stage2-plan-emitter-source-rule!,
-  :c3-syntax-fail! #'c3-syntax-fail!,
-  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
-  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
-  :p15-s23-stage2-compiler-artifact-plan
+ {:p15-s23-stage2-compiler-artifact-plan
   #'p15-s23-stage2-compiler-artifact-plan,
-  :p15-s23-stage2-compiler-artifact-semantic-input
-  #'p15-s23-stage2-compiler-artifact-semantic-input,
-  :p15-s23-stage2-compiler-artifact-source-path
-  #'p15-s23-stage2-compiler-artifact-source-path,
-  :p15-s23-stage2-runtime-execute-function
-  #'p15-s23-stage2-runtime-execute-function,
-  :p15-s23-trusted-carrier-validation
-  #'p15-s23-trusted-carrier-validation,
-  :sh04-syntax-boundary-fail! #'sh04-syntax-boundary-fail!,
-  :sh04-syntax-build-binding! #'sh04-syntax-build-binding!,
-  :sh04-syntax-current-binding! #'sh04-syntax-current-binding!,
-  :sh04-syntax-execute! #'sh04-syntax-execute!,
-  :sh04-syntax-expected-function-count
-  sh04-syntax-expected-function-count,
-  :sh04-syntax-expected-function-names-hash
-  sh04-syntax-expected-function-names-hash,
-  :sh04-syntax-expected-function-shapes-hash
-  sh04-syntax-expected-function-shapes-hash,
-  :sh04-syntax-expected-functions-semantic-hash
-  sh04-syntax-expected-functions-semantic-hash,
-  :sh04-syntax-expected-plan-semantic-hash
-  sh04-syntax-expected-plan-semantic-hash,
-  :sh04-syntax-expected-source-byte-count
-  sh04-syntax-expected-source-byte-count,
-  :sh04-syntax-expected-source-content-hash
-  sh04-syntax-expected-source-content-hash,
-  :sh04-syntax-plan-identities #'sh04-syntax-plan-identities,
   :sh04-syntax-public-function-hashes
   sh04-syntax-public-function-hashes,
   :sh04-syntax-public-function-shapes
   sh04-syntax-public-function-shapes,
-  :sh04-syntax-raise-result! #'sh04-syntax-raise-result!,
+  :source-span #'source-span,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :c3-syntax-fail! #'c3-syntax-fail!,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sha256-hex #'sha256-hex,
+  :p15-s23-trusted-carrier-validation
+  #'p15-s23-trusted-carrier-validation,
+  :c-backend-canonical-value #'c-backend-canonical-value,
   :sh04-syntax-read-pinned-source! #'sh04-syntax-read-pinned-source!,
-  :sh04-syntax-require-carrier! #'sh04-syntax-require-carrier!,
-  :sh04-syntax-resolve-object-template!
-  #'sh04-syntax-resolve-object-template!,
+  :sh04-syntax-resolve-source-path #'sh04-syntax-resolve-source-path,
+  :sh04-syntax-expected-function-shapes-hash
+  sh04-syntax-expected-function-shapes-hash,
+  :sh04-syntax-build-binding! #'sh04-syntax-build-binding!,
   :sh04-syntax-resolve-request-preimage!
   #'sh04-syntax-resolve-request-preimage!,
-  :sh04-syntax-resolve-source-path #'sh04-syntax-resolve-source-path,
-  :sh04-syntax-resolve-stream-request-preimage!
-  #'sh04-syntax-resolve-stream-request-preimage!,
-  :sh04-syntax-resolve-stream-template!
-  #'sh04-syntax-resolve-stream-template!,
-  :sh04-syntax-resolve-template! #'sh04-syntax-resolve-template!,
-  :sh04-syntax-source-relative-path sh04-syntax-source-relative-path,
-  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata,
+  :sh04-syntax-expected-source-byte-count
+  sh04-syntax-expected-source-byte-count,
+  :sh04-syntax-plan-identities #'sh04-syntax-plan-identities,
+  :sh04-syntax-execute! #'sh04-syntax-execute!,
+  :sh04-syntax-expected-function-names-hash
+  sh04-syntax-expected-function-names-hash,
+  :sh04-syntax-expected-functions-semantic-hash
+  sh04-syntax-expected-functions-semantic-hash,
   :sha256-bytes-hex #'sha256-bytes-hex,
-  :sha256-hex #'sha256-hex,
-  :source-span #'source-span})
+  :sh04-syntax-expected-function-count
+  sh04-syntax-expected-function-count,
+  :sh04-syntax-expected-plan-semantic-hash
+  sh04-syntax-expected-plan-semantic-hash,
+  :sh04-syntax-source-relative-path sh04-syntax-source-relative-path,
+  :sh04-syntax-raise-result! #'sh04-syntax-raise-result!,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh04-syntax-boundary-fail! #'sh04-syntax-boundary-fail!,
+  :sh04-syntax-require-carrier! #'sh04-syntax-require-carrier!,
+  :sh04-syntax-expected-source-content-hash
+  sh04-syntax-expected-source-content-hash,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
+  :sh04-syntax-resolve-object-template!
+  #'sh04-syntax-resolve-object-template!,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
 (defn
  sh04-syntax-boundary-fail!

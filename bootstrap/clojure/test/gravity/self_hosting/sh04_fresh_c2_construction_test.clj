@@ -43,14 +43,14 @@
         events (atom [])
         actual (observe-validations events
                  #(with-redefs-fn
-                    {worker-var (fn [source c2 report]
+                    {worker-var (fn [source c2 report invocation]
                                   (swap! events conj {:kind :worker :c2 c2 :report report})
-                                  (worker source c2 report))}
+                                  (worker source c2 report invocation))}
                     (fn [] (construct "1"))))
         ;; Reconstruct the former path with the actual standalone public
         ;; verifier and unchanged builder. No passed report is fabricated.
         reference (with-redefs-fn
-                    {worker-var (fn [source c2 _]
+                    {worker-var (fn [source c2 _ _invocation]
                                   (with-redefs-fn {worker-var worker}
                                     #(bootstrap/sh04-syntax-resolved-result! source c2)))}
                     #(construct "1"))
