@@ -1073,6 +1073,20 @@ test controls, not whole quoted-data or whole-file acceptance.
 
 ### Four retired validator branch proposals
 
+The later `retired-validator-return-envelope.edn` adds a bounded normal-return
+source analysis on accepted main `e4d98947`. Current C7 and all six selected
+definitions match the earlier correspondence pins. The analysis follows the
+returned ingress summary as well as literal terminal maps; its conservative
+envelope includes six semantic error reasons and excludes work-limit reasons
+and returned work-count fields. Unknown tails, escaped loop variables and
+shadowed helper calls refuse proof. Twelve mutations of actual return maps
+refuse without executing Gravity or Bootstrap. Branch reachability, exact
+runtime schemas, arithmetic/object identity, native behavior and termination
+are not proved. The concrete decision requested is rejection of restoring the
+eight accounting remnants while retaining the remaining current source under
+its existing qualifications. Independent classification remains pending; no
+completion credit or whole-PR569 acceptance follows from this new packet.
+
 The [complete source correspondence](retired-validator-branch-correspondence.md)
 accounts for four additional changed C7 units that do not match historical
 forms exactly: `sh08-pc-first-work`, `sh08-pc-key-part`,

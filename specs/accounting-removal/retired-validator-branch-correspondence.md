@@ -41,11 +41,55 @@ their retention or remove them.
 
 ## Proposed disposition and acceptance
 
-Retain current definitions and account for these eight exact historical source
-differences explicitly. Independent review must decide whether their removal is
-fully supported by the current validator contract and Gravity arithmetic
-semantics. No host-language execution is offered as that proof. Until then,
-the four incorporated dispositions remain proposals, with no completion credit.
+The requested decision is to retain the current four definitions and reject
+restoration of the eight listed accounting remnants under the repository's
+project-accounting removal instruction. All other complete-form source and
+arguments match history. The old zero-charge expressions and work-limit
+diagnostic alternatives remain recorded as history rather than recreated to
+obtain matching hashes. This request does not endorse the still-present outer
+budgets or width predicates. It does not claim arithmetic or host-number-object
+identity equivalence. Independent classification and acceptance remain pending;
+the four units receive no completion credit yet.
+
+### Current normal-return source envelope
+
+`retired-validator-return-envelope.edn` adds a distinct bounded source analysis
+on main `e4d98947201a9473d8bca5777c1f59f5e3426bfd`. The complete C7 file and all
+six selected definitions are unchanged from the original correspondence. The
+record pins the governing accounting policy, L2 core-control semantics and D9.
+
+The analysis reads only `sh08-lc-native-arguments` and
+`sh08-lc-validate-types`. It joins tail branches of `if`, follows `let` result
+aliases, treats `recur` as a control transfer, and uses a pinned summary for the
+native-arguments helper when the validator returns `ingress`. An unclassified
+tail expression, unknown returned variable or shadowed helper call refuses the
+proof. Loop-bound variables are unknown rather than assumed to retain their
+initial values, so a value escaping through a loop cannot acquire a false
+literal-map summary.
+
+Unlike the earlier literal-map scan, the validator's conservative envelope
+includes the ingress helper's unsupported/cyclic argument reasons as well as
+its own nested-Never, cyclic-type, malformed-type and unsupported-type reasons.
+No normal-return reason in that envelope is `:work-limit`, and no returned map
+schema contains `:work-count`. This supports independent assessment of the
+historical work-limit alternatives in the four callers.
+
+Branch conditions are deliberately not refined. For example, the envelope
+includes the ingress helper's accepted argument result even though the actual
+status guard excludes it from the returned-ingress branch. This conservative
+overapproximation suffices for the work-limit exclusion; it is not an exact
+runtime return-schema or reachability claim. The argument assumes L2 control
+semantics and the pinned, unrebound helper definitions, not a host-language
+implementation of Gravity arithmetic or native behavior.
+
+Twelve negative source controls each mutate one actual return map in a pinned
+helper while preserving the surrounding source. They introduce a retired
+work-limit reason, a nonliteral reason, an unknown provider return, an escaping
+loop variable, a shadowed helper call or returned work telemetry. The work-limit
+and telemetry mutations preserve both status alternatives and expose the
+forbidden result in the computed envelope before rejection. No source helper,
+Bootstrap or target program is executed. Termination, exceptions, effects,
+mutable bindings, native providers and transitive equivalence remain unproved.
 
 The Clojure reader checks use evaluation disabled and verify all four complete
 comparisons and both validator pins. Ten inert negative controls refuse a
