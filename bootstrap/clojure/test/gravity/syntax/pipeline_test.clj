@@ -460,8 +460,9 @@
   (let [{:keys [reader]} @literal-gravity operations (view-operations) projected? (atom false)
         observing (assoc operations :sh04-syntax-registered-literal-registry
                          (fn [& _] (reset! projected? true) (throw (ex-info "unexpected projection" {}))))]
-    (doseq [[product ports] [[(assoc reader :artifact-id "sha256:substituted") observing]
+    (doseq [[product ports] [[(assoc-in reader [:gravity-reader-boundary :owner] :substituted) observing]
                              [reader (assoc observing :sh03-reader-internal-product-authority (Object.))]]]
+      (reset! projected? false)
       (is (= "C2-HASH" (:id (ex-data (caught #(syntax/reader-artifact-view product (invocation) ports))))))
       (is (false? @projected?)))))
 
