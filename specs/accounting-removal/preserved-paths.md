@@ -842,6 +842,28 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### List-construction lowering and value restoration
+
+Dependent [PR636](https://github.com/burn2delete/uniform/pull/636) restores the
+complete original List-construction lowering kernel on exact PR623
+`c5e9fccdad293b34c290859cc3e4716870241dd6`. Candidate
+`db8aaac9851ba287cf189c186703a4f85730903e`, tree
+`b218b0cb3d6cfb90d1acabc155d7af123bfc8e12`, changes only that test plus
+census/documentation. The original width-1025 descriptor, runtime List shape
+and member identity assertions, seven malformed/early/late-invalid cases and
+two additional wide validator positives survive. Two explicit raw substitutions
+migrate positive/negative old validator calls to the current semantic API;
+every current assertion, other parent test/fixture byte and production remain
+unchanged. Three production file hashes, eight owner definitions/arguments,
+three fixture/invocation definitions and the uninvoked runtime-projection
+helper are pinned. Boundary 6/11, docs, roadmap, whitespace and pinned lint
+pass (zero errors, identical 76-warning multisets; new EDN zero findings).
+This explicitly requires the unaccepted PR623 width removal; no production is
+copied to main and no parent receipt is extended. Independent review, CI,
+parent/composition acceptance and integration remain pending. Genuine kernel
+and target runtime remain UNRUN, with no held selector retry or whole-path/
+ACC01/PR502 completion credit.
+
 ### Collection header reconstruction restoration
 
 Main-based [PR635](https://github.com/burn2delete/uniform/pull/635), head
