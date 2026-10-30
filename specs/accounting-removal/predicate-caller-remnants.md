@@ -66,8 +66,19 @@ substituting the source builder, changing a semantic diagnostic and changing
 a retained integer representation. These are 110 inert source corruption
 controls; no source helper or target program is executed.
 
-Independent classification remains pending, and no original unit receives
-completion credit from this proposal alone. C7, L2, D9 and the repository's
+Independent classification is consumed in
+`predicate-caller-classification-consumption.edn`. Sealed receipt
+`f29b9851934699293de651ca8552e5fdc833f5d2024b28d4d48fe6b0e2678ba0`
+accepts rejecting restoration of exactly these 55 remnants after 3,928
+source/data checks and 187 independent corruption refusals. Receipt, checker,
+input/tree identities, all 22 complete form reconstruction equations, helper
+pins and policy pins were rechecked against current main
+`b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf`. The evidence branch's whole C7
+file differs from assessed main; all 22 selected forms match. No independent
+checker rerun is claimed. The original machine proposal's pending status is
+retained as historical input; the later consumption records its finite decision.
+
+Canonical adoption and whole-scope completion remain separate. C7, L2, D9 and the repository's
 accounting-removal policy govern the requested decision. The original 29-path
 inventory and all earlier receipts remain unchanged. Genuine owner controls
 are UNRUN. No whole ACC01/PR502, release or self-hosting claim follows.

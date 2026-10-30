@@ -1058,7 +1058,7 @@ unchanged selected forms/policy. The old denied DSE-attribution review remains
 stopped; its exact original approval-policy error was preserved and the new
 packet was independently admitted as a distinct subject.
 
-### Predicate caller remnant proposal
+### Predicate caller remnant classification
 
 `predicate-caller-remnants.edn` and its companion Markdown bind 22 original
 C7 units: each original predicate family's derive and inferred-call function.
@@ -1076,8 +1076,19 @@ helper shadow or assignment. Five effective source corruptions per caller,
 and altered integer representation. The requested decision rejects restoration
 of these exact 55 remnants under accounting-removal policy, while leaving
 outer budgets/refusals/fields explicitly unresolved and unendorsed. No
-arithmetic identity or runtime/effect/transitive proof is claimed. Independent
-classification remains pending; no new unit receives completion credit yet.
+arithmetic identity or runtime/effect/transitive proof is claimed.
+
+Independent receipt
+`f29b9851934699293de651ca8552e5fdc833f5d2024b28d4d48fe6b0e2678ba0`
+now accepts rejecting restoration of precisely those 55 remnants. Its 3,928
+source/data checks and 187 independent corruption refusals are recorded in
+`predicate-caller-classification-consumption.edn`. Consumption rehashes the
+receipt/checker, exact frozen tree and source inputs, reconstructs all 22
+complete forms and verifies helper/policy pins against current main
+`b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf`. Evidence-branch whole C7 remains
+different from assessed main; the selected 22 forms match. No reviewer checker
+rerun or genuine execution is claimed. The original machine proposal stays
+historical; canonical adoption and whole ACC01/PR502 completion remain separate.
 
 ### Guarded predicate source incorporation proposal
 
