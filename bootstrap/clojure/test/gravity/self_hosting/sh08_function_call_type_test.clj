@@ -23016,3 +23016,104 @@
     (is (not (contains? cold :quote-work-count)))
     (doseq [value [nil 0 1 97]]
       (is (= cold (invoke-c7 'sh08-is-cold-evidence [(assoc input :quoted-products {:work-count value})]))))))
+
+(deftest record-union-descriptor-rows-have-no-count-quota
+  ;; Normalized descriptor DATA exercises the owning closed-family checker.
+  ;; This is not authenticated source, nominal records/unions, or roadmap credit.
+  (let [names (mapv #(keyword (str "member-" %)) (range 65))
+        last-name (peek names)
+        family {:record-type {:name :record
+                              :fields (mapv #(hash-map :name % :type :gravity.type/integer) names)}
+                :record-construction {:type :record
+                                      :fields (mapv #(hash-map :name % :value 7) names)}
+                :record-access {:record-type :record :field last-name}
+                :union-type {:name :union
+                             :variants (mapv #(hash-map :tag % :payload-type :gravity.type/integer) names)}
+                :union-construction {:type :union :variant last-name :payload 7}
+                :union-match {:union-type :union
+                              :branches (mapv #(hash-map :variant % :result 1) names)}}
+        check #(invoke-c7 'sh08-ru-check-family [%])]
+    (is (= {:status :accepted} (check family)))
+    (doseq [[function path id-key]
+            [['sh08-ru-all-field-schemas-valid? [:record-type :fields] :name]
+             ['sh08-ru-all-field-values-valid? [:record-construction :fields] :name]
+             ['sh08-ru-all-variant-schemas-valid? [:union-type :variants] :tag]
+             ['sh08-ru-all-match-branches-valid? [:union-match :branches] :variant]]]
+      (let [rows (get-in family path)
+            valid? #(invoke-c7 function [%])]
+        (is (true? (valid? rows)))
+        (is (false? (valid? (assoc-in rows [64 id-key] (get (first rows) id-key)))))
+        (is (false? (valid? (assoc-in rows [64 id-key] "not-a-keyword"))))
+        (is (false? (valid? (assoc-in rows [64 :unexpected] true))))
+        (is (false? (valid? (apply list rows))))))
+    (doseq [[changed reason]
+            [[(assoc-in family [:record-type :fields 64 :type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(assoc-in family [:union-type :variants 64 :payload-type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(update-in family [:record-construction :fields] pop) :record-missing-field]
+             [(assoc-in family [:record-construction :fields 64 :value] "wrong") :record-field-type-mismatch]
+             [(assoc-in family [:record-access :field] :absent) :record-access-invalid-field]
+             [(assoc-in family [:union-construction :variant] :absent) :union-invalid-variant]
+             [(assoc-in family [:union-construction :payload] "wrong") :union-payload-type-mismatch]
+             [(update-in family [:union-match :branches] pop) :union-match-nonexhaustive]
+             [(assoc-in family [:union-match :branches 64 :variant] :absent) :union-match-invalid-variant]
+             [(assoc-in family [:union-match :branches 64 :result] "wrong") :union-match-branch-type-mismatch]]]
+      (let [result (check changed)]
+        (is (= :rejected (:status result)))
+        (is (= reason (:reason result)))))))
+
+(deftest union-branch-definitions-have-no-count-quota
+  ;; Normalized Core DATA exercises branch-name admission and resolution only.
+  ;; This does not establish authenticated source or executable union behavior.
+  (let [names (mapv #(symbol (str "branch-" %)) (range 65))
+        last-name (peek names)
+        match {:union-type :union :scrutinee-definition 'constructed-union
+               :branch-definitions names}
+        program {:record-construction-definition 'constructed-record
+                 :record-access-definition 'accessed-record
+                 :union-construction-definition 'constructed-union
+                 :union-match-definition 'matched-union}
+        sources (concat [['program program]
+                         ['constructed-record {:type :record :fields []}]
+                         ['accessed-record {:record-definition 'constructed-record :field :value}]
+                         ['constructed-union {:type :union :variant :last :payload 7}]
+                         ['matched-union match]]
+                        (map-indexed (fn [index name]
+                                       [name {:variant (keyword (str "variant-" index))
+                                              :binding :value :pattern-payload-type :gravity.type/integer
+                                              :result index}]) names))
+        core {:definitions (mapv (fn [[name _]] {:name name :value-node-id name}) sources)
+              :nodes (mapv (fn [[name value]]
+                             {:node-id name :core-form :collection-literal
+                              :attributes {:literal-kind :map :source-value value}}) sources)}
+        valid-names? #(invoke-c7 'sh08-ram-symbol-vector? [%])
+        valid-match? #(invoke-c7 'sh08-ram-match-shape? [%])
+        resolve-program #(invoke-c7 'sh08-ram-resolve-program [% 'program])
+        resolved (resolve-program core)]
+    (is (true? (valid-names? names)))
+    (is (true? (valid-match? match)))
+    (is (= :accepted (:status resolved)))
+    (is (= names (mapv #(get-in % [:definition :name]) (:branch-sources resolved))))
+    (is (= 64 (get-in resolved [:branch-sources 64 :family :result])))
+    (doseq [invalid [[] (apply list names) (assoc names 64 (first names))
+                     (assoc names 64 :not-a-symbol)]]
+      (is (false? (valid-names? invalid)))
+      (is (false? (valid-match? (assoc match :branch-definitions invalid))))
+      (let [changed (assoc-in core [:nodes 4 :attributes :source-value :branch-definitions] invalid)
+            result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :union-match-shape-invalid (:reason result)))))
+    (doseq [invalid [(assoc match :unexpected true)
+                     (dissoc match :scrutinee-definition)
+                     (assoc match :scrutinee-definition :not-a-symbol)
+                     (assoc match :union-type 'not-a-keyword)]]
+      (is (false? (valid-match? invalid))))
+    (doseq [changed [(update core :definitions pop)
+                     (update core :definitions conj (peek (:definitions core)))
+                     (assoc-in core [:nodes 69 :attributes :literal-kind] :vector)
+                     (assoc-in core [:nodes 69 :attributes :source-value] [])]]
+      (let [result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :match-branch-definition-required (:reason result)))
+        (is (= last-name (:actual result)))))))
