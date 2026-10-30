@@ -121,7 +121,10 @@
         ;; production-path allowance for stale compatibility declarations.
         (case (:namespace test-entry)
           gravity.c2-artifact-identity-test
-          (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
+          (or (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
+              (contains? #{"bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"} path))
           gravity.c11-mir-test
           (boolean (re-matches #"bootstrap/clojure/src/gravity/c11_mir/[^/]+\.clj" path))
           gravity.compiler-pass-manifest-test
@@ -130,7 +133,9 @@
 
     :test (= path (:path test-entry))
     :fixture (str/starts-with? path "bootstrap/clojure/fixtures/")
-    :runner (contains? reviewed-runner-paths path)
+    :runner (or (contains? reviewed-runner-paths path)
+                (and (= 'gravity.c2-artifact-identity-test (:namespace test-entry))
+                     (= "bootstrap/clojure/test/gravity/build/producer_git_observation.clj" path)))
     :contract (contains? reviewed-contract-paths path)
     :classpath (= "deps.edn" path)
     false))

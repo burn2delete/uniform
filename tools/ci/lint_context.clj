@@ -1,5 +1,5 @@
 (ns ci.lint-context
-  "Non-evaluating lint view of the reviewed Bootstrap resource loader."
+  "Non-evaluating lint views of the reviewed Bootstrap and facade resource loaders."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str])
@@ -11,6 +11,17 @@
 (def manifest (str source-root "gravity/bootstrap_impl/load_order.edn"))
 (def loader (str source-root "gravity/bootstrap_impl/loader.clj"))
 (def loader-sha "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7")
+(def facade (str source-root "gravity/authenticated_artifact_pipeline.clj"))
+(def facade-prefix (str source-root "gravity/authenticated_artifact_pipeline/"))
+(def facade-resources
+  ["01-pipeline-schema-version" "02-clear-cache" "03-revalidate-payload"
+   "04-envelope-valid" "05-run-pipeline"])
+
+(defn context-path? [path]
+  (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
+      (= facade path) (str/starts-with? path facade-prefix)))
+
+(defn whole-context-path? [path] (contains? #{bootstrap manifest loader facade} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -78,16 +89,52 @@
                                                _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
                                      [path bytes]))}))
 
-(defn assemble! [directory {:keys [paths inputs]}]
+(defn facade-plan! [read-bytes]
+  (let [entry (read-bytes facade)
+        [header load-form :as forms] (source-forms! facade entry)
+        expected (cons 'load (map #(str "/gravity/authenticated_artifact_pipeline/" %)
+                                  facade-resources))
+        paths (into [facade] (map #(str facade-prefix % ".clj") facade-resources))]
+    (when-not (and (= 2 (count forms))
+                   (= '(ns gravity.authenticated-artifact-pipeline) (take 2 header))
+                   (= expected load-form))
+      (throw (ex-info "Facade entrypoint changed; unsupported lint assembly recipe" {})))
+    {:paths paths
+     :namespace-by-path (zipmap paths (repeat 'gravity.authenticated-artifact-pipeline))
+     :entrypoints #{facade}
+     :inputs (into {facade entry}
+                   (for [path (rest paths) :let [bytes (read-bytes path)
+                                                 forms (source-forms! path bytes)]]
+                     (do
+                       (when (some #(and (seq? %) (#{'ns 'in-ns 'clojure.core/ns 'clojure.core/in-ns
+                                                     'load 'clojure.core/load} (first %)))
+                                   (tree-seq coll? seq forms))
+                         (throw (ex-info "Unsupported namespace/load change in facade fragment" {:path path})))
+                       [path bytes])))}))
+
+(defn selected-plan! [read-bytes selected]
+  (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
+        facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
+        plans (cond-> [] bootstrap? (conj (plan! read-bytes)) facade? (conj (facade-plan! read-bytes)))
+        combined {:paths (vec (mapcat :paths plans))
+                  :inputs (apply merge (map :inputs plans))
+                  :namespace-by-path (apply merge (map :namespace-by-path plans))
+                  :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
+    (doseq [path selected :when (and (context-path? path) (not (#{loader manifest} path)))]
+      (when-not (some #{path} (:paths combined))
+        (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
+    combined))
+
+(defn assemble! [directory {:keys [paths inputs namespace-by-path entrypoints]}]
   (let [target (io/file directory "gravity/bootstrap.clj")
         spans (atom [])
         row (atom 1)]
     (io/make-parents target)
     (with-open [writer (io/writer target)]
       (doseq [path paths]
-        (when-not (= bootstrap path)
+        (when-not (contains? (or entrypoints #{bootstrap}) path)
           ;; load-component! binds *ns* afresh for EVERY resource.
-          (.write writer "(in-ns 'gravity.bootstrap)\n")
+          (.write writer (str "(in-ns '" (get namespace-by-path path 'gravity.bootstrap) ")\n"))
           (swap! row inc))
         (let [text (source-text! path (get inputs path))
               lines (str/split text #"\r?\n" -1)
@@ -115,14 +162,16 @@
     (assoc finding :filename (:path span)
            :row (inc (- row (:start span))) :end-row (inc (- end-row (:start span))))))
 
-(defn archived-plan! [archive inventory]
-  (let [modes (into {} (for [entry (remove str/blank? (str/split (slurp inventory) #"\u0000"))
-                             :let [[header path] (str/split entry #"\t" 2)]]
-                         [path (first (str/split header #" "))]))]
-    (with-open [zip (ZipFile. (io/file archive))]
-      (plan! (fn [path]
-               (when-not (#{"100644" "100755"} (get modes path))
-                 (throw (ex-info "Missing or nonregular base context source" {:path path})))
-               (let [entry (.getEntry zip path)]
-                 (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
-                 (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))))))
+(defn archived-plan!
+  ([archive inventory] (archived-plan! archive inventory [bootstrap]))
+  ([archive inventory selected]
+   (let [modes (into {} (for [entry (remove str/blank? (str/split (slurp inventory) #"\u0000"))
+                              :let [[header path] (str/split entry #"\t" 2)]]
+                          [path (first (str/split header #" "))]))]
+     (with-open [zip (ZipFile. (io/file archive))]
+       (selected-plan! (fn [path]
+                         (when-not (#{"100644" "100755"} (get modes path))
+                           (throw (ex-info "Missing or nonregular base context source" {:path path})))
+                         (let [entry (.getEntry zip path)]
+                           (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
+                           (with-open [input (.getInputStream zip entry)] (.readAllBytes input)))) selected)))))

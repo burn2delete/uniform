@@ -1051,16 +1051,15 @@
         bound (+ 2 selected-nodes (- (count records) 1) (- slots (count (get record :parameter-binding-ids))) (count ids) selected-locals)]
     (if (body-all?
           [(sh09-exact-keys? cold #{:mode :cut :source-argument-call-node-ids :source-preparation-work-count
-                                   :quote-work-count :round-count :round-bound :work-count})
+                                   :round-count :round-bound :work-count})
            (= cut (get cold :cut)) (= (get cut :mode) (get cold :mode))
            (= ids (get cold :source-argument-call-node-ids)) (= preparation (get cold :source-preparation-work-count))
            (= bound (get cold :round-bound))
-           (loop [remaining [(get cold :quote-work-count) (get cold :round-count) (get cold :work-count)]]
+           (loop [remaining [(get cold :round-count) (get cold :work-count)]]
              (if (= 0 (count remaining)) true
                (if (integer? (first remaining)) (if (>= (first remaining) 0) (recur (rest remaining)) false) false)))])
       (body-all? [(> (get cold :round-count) 0) (<= (get cold :round-count) bound)
-                  (<= (get cold :quote-work-count) (count forms))
-                  (<= (+ preparation (get cold :quote-work-count) (* round-work (get cold :round-count))) (get cold :work-count))
+                  (<= (+ preparation (* round-work (get cold :round-count))) (get cold :work-count))
                   (<= (get cold :work-count) 65536)]) false)))
 
 (defn body-is-source-cost [core bindings forms record arguments target-slots]

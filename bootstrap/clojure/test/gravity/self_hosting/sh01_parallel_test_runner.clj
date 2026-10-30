@@ -1666,147 +1666,235 @@
         (throw fatal)
         captured))))
 
-(defn- process-descendants
-  [^Process process]
-  (let [root (.toHandle process)]
-    (try
+(defn- handle-descendants
+  [^java.lang.ProcessHandle root]
+  (try
       (with-open [descendants (.descendants root)]
         {:handles (vec (iterator-seq (.iterator descendants)))
          :error nil})
       (catch Throwable throwable
-        (rethrow-fatal! throwable)
         (restore-interrupt! throwable)
         ;; Enumeration failure is itself non-authoritative.  The caller still
         ;; terminates the root, but must not claim the descendant tree was
         ;; cleaned when it could not observe that tree.
         {:handles []
-         :error (str throwable)}))))
+         :error throwable})))
+
+(defrecord RetainedProcess
+    [process handles discovery-error cleanup-error wait-throwable terminal owner-thread-id])
+
+(defn- retain-process-error! [cell error]
+  (restore-interrupt! error)
+  (let [previous @cell
+        fatal (fatal-cause error)
+        primary (cond (nil? previous) (or fatal error)
+                      (and fatal (not (fatal-cause previous))) fatal
+                      :else previous)
+        secondary (if (identical? primary previous) fatal previous)]
+    (when (and secondary (not (identical? primary secondary))
+               (< (count (.getSuppressed ^Throwable primary)) 8)
+               (not-any? #(identical? secondary %) (.getSuppressed ^Throwable primary)))
+      (.addSuppressed ^Throwable primary secondary))
+    (reset! cell primary)))
+
+(defn- require-retained-process! [owned]
+  (when-not (and (instance? RetainedProcess owned)
+                 (= (:owner-thread-id owned) (.getId (Thread/currentThread))))
+    (throw (ex-info "Owned process handle belongs to its retaining thread"
+                    {:id "SH01-PROCESS-OWNERSHIP"})))
+  owned)
+
+(defn retain-owned-process!
+  "Retain the actual Process and observed handles, never look up a PID.
+
+  Call immediately after launch on the thread that will wait/finalize. Java
+  cannot prove that observation covers every descendant, even at this point."
+  [process]
+  (when-not (instance? Process process)
+    (throw (ex-info "Retaining ownership requires an actual Process"
+                    {:id "SH01-PROCESS-OWNERSHIP"})))
+  (let [owned (->RetainedProcess process (atom []) (atom nil) (atom nil) (atom nil)
+                                (atom nil) (.getId (Thread/currentThread)))]
+    (try
+      (swap! (:handles owned) conj (.toHandle ^Process process))
+      (catch Throwable error
+        (retain-process-error! (:discovery-error owned) error)))
+    owned))
+
+(defn retained-process-handles
+  "Return retained raw handles, not evidence or PID-reconstructed ownership."
+  [owned]
+  @(:handles (require-retained-process! owned)))
+
+(defn- observe-owned-process! [owned]
+  (require-retained-process! owned)
+  ;; Revisit retained descendants as well as the root: a known child can fork
+  ;; after root exit. Absence from a later enumeration never drops a handle.
+  (doseq [handle @(:handles owned)]
+    (let [{:keys [handles error]} (handle-descendants handle)]
+      (when error (retain-process-error! (:discovery-error owned) error))
+      (swap! (:handles owned) #(vec (distinct (concat % handles))))))
+  owned)
 
 (defn- handle-pid
   [^java.lang.ProcessHandle handle]
   (long (.pid handle)))
 
 (defn- alive-handle?
-  [^java.lang.ProcessHandle handle]
+  [^java.lang.ProcessHandle handle owned]
   (try
     (.isAlive handle)
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
+      (retain-process-error! (:cleanup-error owned) throwable)
       ;; If a handle can no longer be queried, retain it as a cleanup failure
       ;; rather than promoting an unverified timeout to a clean result.
       true)))
 
 (defn- request-handle-termination!
-  [^java.lang.ProcessHandle handle forcibly?]
+  [^java.lang.ProcessHandle handle forcibly? owned]
   (try
     (if forcibly?
       (.destroyForcibly handle)
       (.destroy handle))
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
+      (retain-process-error! (:cleanup-error owned) throwable)
       false)))
 
 (defn- reap-process-handle!
-  [^java.lang.ProcessHandle handle]
+  [^java.lang.ProcessHandle handle deadline owned]
   (try
     ;; ProcessHandle::onExit is the JVM-level wait/reap boundary for a
     ;; descendant that is not represented by a java.lang.Process object.
-    (.get (.onExit handle) 100 TimeUnit/MILLISECONDS)
-    true
+    (when (< (System/nanoTime) deadline)
+      (.get (.onExit handle)
+            (long (max 1 (min 100 (quot (- deadline (System/nanoTime)) 1000000))))
+            TimeUnit/MILLISECONDS)
+      true)
     (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      (not (alive-handle? handle)))))
+      (retain-process-error! (:cleanup-error owned) throwable)
+      false)))
 
-(defn- terminate-process-tree!
-  "Terminates and reaps the observed ProcessHandle descendant tree.
+(defn- retained-root-alive? [owned]
+  (try
+    (.isAlive ^Process (:process owned))
+    (catch Throwable error
+      (retain-process-error! (:cleanup-error owned) error)
+      true)))
 
-  This is intentionally a bounded JVM ProcessHandle operation, not a host
-  `ps` census or a container/supervisor implementation.  The observed handle
-  set is retained across root termination so reparenting cannot turn a known
-  live descendant into an unreported success.  Unknown cross-session escapes
-  remain outside this Stage-0 claim."
-  [^Process process]
-  (let [root (.toHandle process)
-        descendant-observation (process-descendants process)
-        descendants (:handles descendant-observation)
-        discovery-error (:error descendant-observation)
-        observed (vec (distinct (cons root descendants)))
-        observed-descendants (vec (remove #(= root %) observed))
+(defn- terminate-retained-process! [owned]
+  (let [root (first @(:handles owned))
         started (System/nanoTime)
         grace-deadline (+ started (* process-cleanup-grace-ms 1000000))
-        deadline (+ started (* process-cleanup-timeout-ms 1000000))]
-    ;; Kill deepest observed descendants first, then the root.  The root is
-    ;; still handled explicitly because descendants can outlive its shell.
-    (doseq [handle (reverse observed-descendants)]
-      (when (alive-handle? handle)
-        (request-handle-termination! handle false)))
-    (when (alive-handle? root)
-      (request-handle-termination! root false))
-    (loop [forced? false]
-      (let [alive (vec (filter alive-handle? observed))
+        deadline (+ started (* process-cleanup-timeout-ms 1000000))
+        requested (atom #{})
+        forced (atom #{})
+        live-at-entry (atom nil)]
+    (loop []
+      (observe-owned-process! owned)
+      (let [observed @(:handles owned)
+            alive (vec (filter #(alive-handle? % owned) observed))
+            root-alive? (retained-root-alive? owned)
             now (System/nanoTime)]
+        (compare-and-set! live-at-entry nil (count (remove #(= root %) alive)))
+        (doseq [handle (reverse (remove #(= root %) alive))
+                :when (not (contains? @requested handle))]
+          (request-handle-termination! handle false owned)
+          (swap! requested conj handle))
+        ;; The actual Process is the root control handle, including when its
+        ;; ProcessHandle is unavailable or cannot be queried.
+        (when (and root-alive? (not (contains? @requested :root)))
+          (try (.destroy ^Process (:process owned))
+               (catch Throwable error (retain-process-error! (:cleanup-error owned) error)))
+          (swap! requested conj :root))
         (cond
-          (empty? alive)
-          (do
-            (doseq [handle observed]
-              (reap-process-handle! handle))
-            {:status (if discovery-error :failed :clean)
-             :complete? (not discovery-error)
-             :forced? forced?
+          (and (empty? alive) (not root-alive?))
+          (let [reaped (mapv #(reap-process-handle! % deadline owned) observed)
+                reaped? (and (every? true? reaped) (nil? @(:cleanup-error owned)))]
+            {:status (if reaped? :tracked-clean :failed)
+             :complete? (when-not reaped? false)
+             :tracked-complete? reaped?
+             :descendant-coverage :unknown
              :root-alive? false
              :descendants-alive 0
+             :live-descendants-at-finalization @live-at-entry
+             :forced? (boolean (seq @forced))
              :observed-pids (mapv handle-pid observed)
              :survivor-pids []
-             :discovery-error discovery-error})
-
-          (and (not forced?) (>= now grace-deadline))
-          (do
-            (doseq [handle (reverse alive)]
-              (request-handle-termination! handle true))
-            (recur true))
+             :discovery-error (some-> @(:discovery-error owned) str)
+             :cleanup-error (some-> @(:cleanup-error owned) str)})
 
           (>= now deadline)
-          (let [survivors (vec (filter alive-handle? observed))]
-            {:status :failed
-             :complete? false
-             :forced? forced?
-             :root-alive? (alive-handle? root)
-             :descendants-alive
-             (count (remove #(= root %) survivors))
-             :observed-pids (mapv handle-pid observed)
-             :survivor-pids (mapv handle-pid survivors)
-             :discovery-error discovery-error})
+          {:status :failed :complete? false :tracked-complete? false
+           :descendant-coverage :unknown :root-alive? root-alive?
+           :descendants-alive (count (remove #(= root %) alive))
+           :live-descendants-at-finalization @live-at-entry
+           :forced? (boolean (seq @forced))
+           :observed-pids (mapv handle-pid observed)
+           :survivor-pids (mapv handle-pid alive)
+           :discovery-error (some-> @(:discovery-error owned) str)
+           :cleanup-error (some-> @(:cleanup-error owned) str)}
 
           :else
           (do
-            ;; A bounded park avoids an uninterruptible sleep while retaining
-            ;; a deterministic cleanup deadline.  Interrupted cleanup is
-            ;; reported as incomplete by the next alive-handle observation.
+            (when (>= now grace-deadline)
+              (doseq [handle (reverse (remove #(= root %) alive))
+                      :when (and (not (contains? @forced handle)) (alive-handle? handle owned))]
+                (request-handle-termination! handle true owned)
+                (swap! forced conj handle))
+              (when (and (retained-root-alive? owned) (not (contains? @forced :root)))
+                (try (.destroyForcibly ^Process (:process owned))
+                     (catch Throwable error (retain-process-error! (:cleanup-error owned) error)))
+                (swap! forced conj :root)))
             (java.util.concurrent.locks.LockSupport/parkNanos
-             (long (* (min 25
-                           (max 1
-                                (quot (- deadline now)
-                                      1000000)))
-                       1000000)))
-            (recur forced?)))))))
+             (long (* (min 25 (max 1 (quot (- deadline now) 1000000))) 1000000)))
+            (recur)))))))
+
+(defn finalize-owned-process!
+  "Finalize retained handles once on the retaining thread; repeat calls reuse
+  the same observation. :tracked-complete? never proves descendant coverage.
+  :complete? is nil (unknown) or false, never a global success claim. A caller
+  whose required lifecycle scope is these retained handles can consume the
+  tracked fact; source-bound creation knowledge belongs to its exact method,
+  not to an all-OS registry or an inferred meaning for the unknown field."
+  [owned]
+  (require-retained-process! owned)
+  (let [terminal (:terminal owned)]
+    (if (compare-and-set! terminal nil :finalizing)
+      (try
+        (let [result (terminate-retained-process! owned)]
+          (when-let [error @(:discovery-error owned)] (rethrow-fatal! error))
+          (when-let [error @(:cleanup-error owned)] (rethrow-fatal! error))
+          (reset! terminal {:result result})
+          result)
+        (catch Throwable error
+          (reset! terminal {:error error})
+          (throw error)))
+      (let [{:keys [result error]} @terminal]
+        (cond error (throw error)
+              result result
+              :else (throw (ex-info "Reentrant process finalization refused"
+                                   {:id "SH01-PROCESS-FINALIZATION"})))))))
 
 (defn- wait-for-process
   "Waits for a process with an optional bound and never hides interruption.
 
   The unbounded form is used only for an ordinary process whose caller did
   not request a timeout.  Cleanup paths always use the bounded form below."
-  [^Process process timeout-ms]
+  [^Process process timeout-ms owned]
   (try
-    (if (some? timeout-ms)
-      {:completed? (.waitFor process (long timeout-ms) TimeUnit/MILLISECONDS)
-       :interrupted? false}
-      (do
-        (.waitFor process)
-        {:completed? true :interrupted? false}))
+    (let [deadline (when timeout-ms (+ (System/nanoTime) (* timeout-ms 1000000)))]
+      (loop []
+        (observe-owned-process! owned)
+        (when-let [error @(:discovery-error owned)] (rethrow-fatal! error))
+        (let [remaining (when deadline (max 0 (quot (- deadline (System/nanoTime)) 1000000)))
+              completed? (.waitFor process (long (min 50 (or remaining 50))) TimeUnit/MILLISECONDS)]
+          (observe-owned-process! owned)
+          (cond completed? {:completed? true :interrupted? false}
+                (and deadline (>= (System/nanoTime) deadline))
+                {:completed? false :interrupted? false}
+                :else (recur)))))
     (catch Throwable throwable
+      (reset! (:wait-throwable owned) throwable)
       (rethrow-fatal! throwable)
       (restore-interrupt! throwable)
       {:completed? false
@@ -1822,24 +1910,20 @@
       (restore-interrupt! throwable)
       false)))
 
-(defn- process-result
-  [process options]
+(defn- retained-process-result
+  [process options owned]
   (let [stdout-stream (.getInputStream ^Process process)
         stderr-stream (.getErrorStream ^Process process)
         stdout-capture (stream-capture stdout-stream
                                        (capture-limits options :stdout))
         stderr-capture (stream-capture stderr-stream
                                        (capture-limits options :stderr))
-        {:keys [completed? interrupted? error] :as wait-result}
-        (wait-for-process process (:timeout-ms options))
-        timed-out? (and (some? (:timeout-ms options)) (not completed?))
-        containment-needed? (or timed-out? interrupted?)
-        cleanup (when containment-needed?
-                  ;; Capture and retain the ProcessHandle tree before the root
-                  ;; exits.  Cleanup remains best effort; every timeout is
-                  ;; still marked unproven because a descendant may fork after
-                  ;; this snapshot.
-                  (terminate-process-tree! process))]
+        {:keys [completed? interrupted? error]}
+        (wait-for-process process (:timeout-ms options) owned)
+        timed-out? (and (some? (:timeout-ms options)) (not completed?)
+                         (not interrupted?) (nil? error))
+        containment-needed? (or timed-out? interrupted? (some? error))
+        cleanup (finalize-owned-process! owned)]
     (when containment-needed?
       ;; Close after descendant termination: this releases pipe readers without
       ;; allowing an inherited child descriptor to hide a live process.
@@ -1868,15 +1952,13 @@
                                                   (:forced-close? stderr)})
                               (= :capture-timeout (:status stdout))
                               (= :capture-timeout (:status stderr)))
-          root-alive? (when containment-needed?
-                        (try (.isAlive ^Process process)
-                             (catch Throwable throwable
-                               (rethrow-fatal! throwable)
-                               (restore-interrupt! throwable)
-                               true)))
+          root-alive? (:root-alive? cleanup)
+          tracked-failure? (or (not (:tracked-complete? cleanup))
+                               (and completed? (pos? (:live-descendants-at-finalization cleanup))))
           exit-code (cond
                       timed-out? 124
                       interrupted? 1
+                      error 1
                       :else (try
                               (long (.exitValue ^Process process))
                               (catch Throwable throwable
@@ -1886,6 +1968,8 @@
           status (cond
                    timed-out? :timeout
                    interrupted? :error
+                   error :error
+                   tracked-failure? :error
                    capture-failed? :error
                    (zero? exit-code) :passed
                    :else :failed)
@@ -1899,20 +1983,22 @@
        :wait-interrupted? (boolean interrupted?)
        :cleanup cleanup
        :cleanup-root-alive? (boolean root-alive?)
+       :root-exited? (not root-alive?)
+       :tracked-owned-processes-terminal? (boolean (:tracked-complete? cleanup))
+       :descendant-coverage :unknown
        ;; Timeout containment is inherently unproven: ProcessHandle only
        ;; observes the tree present at the snapshot point.  Preserve nested
        ;; best-effort telemetry without claiming lane cleanliness.
        :timeout-containment-unproven? (boolean timed-out?)
        :cleanup-status (if timed-out?
                          :unproven-timeout
-                         (:status cleanup))
+                         (if tracked-failure? :failed :unproven-descendant-coverage))
        :cleanup-complete? (if containment-needed?
                             false
-                            true)
+                            nil)
        :cleanup-failed? (boolean (or timed-out?
                                      interrupted?
-                                     (and cleanup
-                                          (not (:complete? cleanup)))))
+                                     tracked-failure?))
        :capture-failed? (boolean capture-failed?)
        :stdout-capture-status (:status stdout)
        :stderr-capture-status (:status stderr)
@@ -1942,6 +2028,41 @@
        :stderr-limit-bytes (:byte-limit stderr)
        :stdout-limit-chars (:char-limit stdout)
        :stderr-limit-chars (:char-limit stderr)})))
+
+(defn process-result
+  "Wait/capture/finalize through the normal runner. An optional retained token
+  lets the parent retain raw owned handles and the original wait throwable.
+  Natural command success does not prove complete descendant containment."
+  ([process options]
+   (process-result process options (retain-owned-process! process)))
+  ([process options owned]
+   (require-retained-process! owned)
+   (when-not (and (identical? process (:process owned)) (nil? @(:terminal owned)))
+     (throw (ex-info "Process wait requires its unused retained ownership token"
+                     {:id "SH01-PROCESS-OWNERSHIP"})))
+   (try
+     (retained-process-result process options owned)
+     (catch Throwable original
+       (let [wait-error @(:wait-throwable owned)
+             primary (if (and (not (fatal-cause original))
+                               (interrupted-throwable? original)
+                               (instance? InterruptedException wait-error))
+                       wait-error original)]
+         (when-not (identical? primary original) (.addSuppressed primary original))
+         (try
+           (finalize-owned-process! owned)
+           (catch Throwable cleanup-error
+             (when-not (identical? primary cleanup-error)
+               (.addSuppressed primary cleanup-error))))
+         (doseq [stream-fn [#(.getInputStream ^Process process)
+                            #(.getErrorStream ^Process process)]]
+           (try
+             (close-stream! (stream-fn))
+             (catch Throwable close-error
+               (when-not (identical? primary close-error)
+                 (.addSuppressed primary close-error)))))
+         (restore-interrupt! primary)
+         (throw primary))))))
 
 (defn- clip-result-text
   [value {:keys [byte-limit char-limit]}]

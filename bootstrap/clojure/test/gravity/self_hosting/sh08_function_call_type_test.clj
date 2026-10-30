@@ -939,10 +939,10 @@
       (is (= {:kind :quoted-data :quote-core-node-id (:node-id node) :form-id payload
               :syntax-id payload :data-path [] :child-form-ids []} (:origin data)))))
   (doseq [[value kind] [['() :gravity.type/list] [[] :gravity.type/vector] [{} :gravity.type/map] [#{} :gravity.type/set]
-                        ['(throw unresolved-data-name) :gravity.type/list]
-                        ['(quote (throw unresolved-data-name)) :gravity.type/list]
-                        [[nil true 1 \a "s" :k 'symbol '(nested data) #{:a :b} {:k []}] :gravity.type/vector]
-                        [{'symbol [:value] :k '(item)} :gravity.type/map]]]
+                        [(list 'throw 'unresolved-data-name) :gravity.type/list]
+                        [(list 'quote (list 'throw 'unresolved-data-name)) :gravity.type/list]
+                        [[nil true 1 \a "s" :k 'symbol (list 'nested 'data) #{:a :b} {:k []}] :gravity.type/vector]
+                        [{'symbol [:value] :k (list 'item)} :gravity.type/map]]]
     (let [{:keys [node forms source-forms]} (quoted-data-input value)
           result (invoke-c7 'sh08-qd-node [node forms])
           products (invoke-c7 'sh08-qd-products [[node] source-forms {:profile :meta :target :jvm}])
@@ -954,7 +954,7 @@
       (is (= (:data result) (:quoted-data fact) (get-in fact [:dependencies :data])))
       (is (= :no-evaluation (get-in fact [:solution :evaluation])))
       (is (= (get-in result [:data :type]) (get (:type-table products) (:node-id node))))))
-  (let [{:keys [node forms]} (quoted-data-input '(quote (throw unresolved-data-name)))
+  (let [{:keys [node forms]} (quoted-data-input (list 'quote (list 'throw 'unresolved-data-name)))
         result (invoke-c7 'sh08-qd-node [node forms])]
     (is (= :gravity.type/symbol (get-in result [:data :children 0 :type])))
     (is (= :gravity.type/list (get-in result [:data :children 1 :type :kind])))
@@ -1591,7 +1591,7 @@
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                              [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types 50 {:boolean-matches [group]}])]
     (doseq [[value expected] [[false :false] [true :true] [nil :gravity.type/nil] ["wrong" :gravity.type/string]
-                             ['(throw unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
+                             [(list 'throw 'unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
       (let [quoted (quoted-data-input value)
             node (assoc (:node quoted) :node-id guard-id)
             qresult (invoke-c7 'sh08-qd-node [node (:forms quoted)])
@@ -5571,6 +5571,7 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= expected (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
+        (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[(:type result)]])))
         (let [consumer (list-query-derived (list-query-input 'first [expected]))]
           (is (= :accepted (:status consumer)))
           (is (= (if (empty? (:element-types expected)) :gravity.type/nil (first (:element-types expected))) (:type consumer))))
@@ -5610,6 +5611,7 @@
                       (assoc (:types input) :operator changed :call (:type result))])))))
     (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
       (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
+      (is (= :accepted (:status (derive (vector-rest-input (nested 192)) 65536))))
       (let [result (derive (vector-rest-input (nested 129)) 65536)]
         (is (= :accepted (:status result)))
         (is (= (finite :gravity.type/list []) (:type result) (get-in result [:descriptor :result-type])))))
@@ -12517,11 +12519,18 @@
              [(positional [:gravity.type/unknown]) s :list-prepend-operand-type-required]
              [(assoc homogeneous :schema :secret) s :list-prepend-operand-type-required]]]
       (is (= reason (:reason (list-prepend-derived (list-prepend-input receiver value))))))
-    (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]
-      (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))
-      (let [value (nested 128) result (list-prepend-derived (list-prepend-input (positional []) value))]
-        (is (= :accepted (:status result)))
-        (is (= (positional [value]) (:type result) (get-in result [:descriptor :result-type])))))
+    (let [nested (fn [leaf depth]
+                   (nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) leaf) depth))]
+      ;; The canonical C7 validator already checks complete finite type DATA
+      ;; without a depth allowance. Consumer helper limits are a separate scope.
+      (doseq [depth [127 128 129]]
+        (let [value (nested k depth)
+              result (list-prepend-derived (list-prepend-input (positional []) value))]
+          (is (= :accepted (:status result)))
+          (is (= (positional [value]) (:type result) (get-in result [:descriptor :return])
+                 (get-in result [:descriptor :result-type]))))
+        (is (= :list-prepend-operand-type-required
+               (:reason (list-prepend-derived (list-prepend-input (positional []) (nested :gravity.type/unknown depth))))))))
     (doseq [args [[] [:arg0] [:arg0 :arg1 :arg0]]]
       (is (= :list-prepend-arity-mismatch (:reason (list-prepend-derived (assoc-in (list-prepend-input homogeneous s) [:call :argument-node-ids] args))))))
     (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)
@@ -19945,7 +19954,7 @@
     (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
                      wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
                      late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
-                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]
                    (is (= {:status :accepted} (work [value]))))
                  (is (= :unsupported-type (:reason (work [late]))))))
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} s :gravity.type/symbol
@@ -22980,3 +22989,154 @@
           (is (= :rejected (:status rejected)))
           (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
                  ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
+
+(defn cold-metadata-input []
+  ;; Normalized metadata only. Legacy non-quote fields satisfy the unchanged API.
+  (let [record {:function-syntax-id :function :parameter-binding-ids []}
+        cut {:mode :entries :excluded-node-ids [] :work-count 0}
+        core {:function-records [record] :calls [] :call-edges [] :nodes []
+              :lexical-bindings [] :definitions []}
+        input {:mode :entries :cut cut :source-argument-call-node-ids []
+               :source-preparation-work-count 4 :quoted-products {:work-count 97}
+               :inference {:round-count 1 :round-bound 2} :work-count 11}
+        cold (invoke-c7 'sh08-is-cold-evidence [input])]
+    {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
+     :input input :cold cold :cut cut}))
+
+(defn cold-metadata-invalid-inputs [cold]
+  [(assoc cold :quote-work-count 0) (assoc cold :quote-work-count 1) (assoc cold :quote-work-count nil)
+   (assoc cold :mode :body) (assoc-in cold [:cut :excluded-node-ids] [:forged])
+   (assoc cold :source-argument-call-node-ids [:forged])
+   (dissoc cold :source-argument-call-node-ids) (assoc cold :unknown-field true)])
+
+(deftest cold-quote-metadata-production-development-kernel
+  (let [{:keys [input cold cut]} (cold-metadata-input)]
+    (is (= {:mode :entries :cut cut :source-argument-call-node-ids []
+            :source-preparation-work-count 4 :round-count 1 :round-bound 2 :work-count 11} cold))
+    (is (not (contains? cold :quote-work-count)))
+    (doseq [value [nil 0 1 97]]
+      (is (= cold (invoke-c7 'sh08-is-cold-evidence [(assoc input :quoted-products {:work-count value})]))))))
+
+(deftest record-union-descriptor-rows-have-no-count-quota
+  ;; Normalized descriptor DATA exercises the owning closed-family checker.
+  ;; This is not authenticated source, nominal records/unions, or roadmap credit.
+  (let [names (mapv #(keyword (str "member-" %)) (range 65))
+        last-name (peek names)
+        family {:record-type {:name :record
+                              :fields (mapv #(hash-map :name % :type :gravity.type/integer) names)}
+                :record-construction {:type :record
+                                      :fields (mapv #(hash-map :name % :value 7) names)}
+                :record-access {:record-type :record :field last-name}
+                :union-type {:name :union
+                             :variants (mapv #(hash-map :tag % :payload-type :gravity.type/integer) names)}
+                :union-construction {:type :union :variant last-name :payload 7}
+                :union-match {:union-type :union
+                              :branches (mapv #(hash-map :variant % :result 1) names)}}
+        check #(invoke-c7 'sh08-ru-check-family [%])]
+    (is (= {:status :accepted} (check family)))
+    (doseq [[function path id-key]
+            [['sh08-ru-all-field-schemas-valid? [:record-type :fields] :name]
+             ['sh08-ru-all-field-values-valid? [:record-construction :fields] :name]
+             ['sh08-ru-all-variant-schemas-valid? [:union-type :variants] :tag]
+             ['sh08-ru-all-match-branches-valid? [:union-match :branches] :variant]]]
+      (let [rows (get-in family path)
+            valid? #(invoke-c7 function [%])]
+        (is (true? (valid? rows)))
+        (is (false? (valid? (assoc-in rows [64 id-key] (get (first rows) id-key)))))
+        (is (false? (valid? (assoc-in rows [64 id-key] "not-a-keyword"))))
+        (is (false? (valid? (assoc-in rows [64 :unexpected] true))))
+        (is (false? (valid? (apply list rows))))))
+    (doseq [[changed reason]
+            [[(assoc-in family [:record-type :fields 64 :type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(assoc-in family [:union-type :variants 64 :payload-type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(update-in family [:record-construction :fields] pop) :record-missing-field]
+             [(assoc-in family [:record-construction :fields 64 :value] "wrong") :record-field-type-mismatch]
+             [(assoc-in family [:record-access :field] :absent) :record-access-invalid-field]
+             [(assoc-in family [:union-construction :variant] :absent) :union-invalid-variant]
+             [(assoc-in family [:union-construction :payload] "wrong") :union-payload-type-mismatch]
+             [(update-in family [:union-match :branches] pop) :union-match-nonexhaustive]
+             [(assoc-in family [:union-match :branches 64 :variant] :absent) :union-match-invalid-variant]
+             [(assoc-in family [:union-match :branches 64 :result] "wrong") :union-match-branch-type-mismatch]]]
+      (let [result (check changed)]
+        (is (= :rejected (:status result)))
+        (is (= reason (:reason result)))))))
+
+(deftest union-branch-definitions-have-no-count-quota
+  ;; Normalized Core DATA exercises branch-name admission and resolution only.
+  ;; This does not establish authenticated source or executable union behavior.
+  (let [names (mapv #(symbol (str "branch-" %)) (range 65))
+        last-name (peek names)
+        match {:union-type :union :scrutinee-definition 'constructed-union
+               :branch-definitions names}
+        program {:record-construction-definition 'constructed-record
+                 :record-access-definition 'accessed-record
+                 :union-construction-definition 'constructed-union
+                 :union-match-definition 'matched-union}
+        sources (concat [['program program]
+                         ['constructed-record {:type :record :fields []}]
+                         ['accessed-record {:record-definition 'constructed-record :field :value}]
+                         ['constructed-union {:type :union :variant :last :payload 7}]
+                         ['matched-union match]]
+                        (map-indexed (fn [index name]
+                                       [name {:variant (keyword (str "variant-" index))
+                                              :binding :value :pattern-payload-type :gravity.type/integer
+                                              :result index}]) names))
+        core {:definitions (mapv (fn [[name _]] {:name name :value-node-id name}) sources)
+              :nodes (mapv (fn [[name value]]
+                             {:node-id name :core-form :collection-literal
+                              :attributes {:literal-kind :map :source-value value}}) sources)}
+        valid-names? #(invoke-c7 'sh08-ram-symbol-vector? [%])
+        valid-match? #(invoke-c7 'sh08-ram-match-shape? [%])
+        resolve-program #(invoke-c7 'sh08-ram-resolve-program [% 'program])
+        resolved (resolve-program core)]
+    (is (true? (valid-names? names)))
+    (is (true? (valid-match? match)))
+    (is (= :accepted (:status resolved)))
+    (is (= names (mapv #(get-in % [:definition :name]) (:branch-sources resolved))))
+    (is (= 64 (get-in resolved [:branch-sources 64 :family :result])))
+    (doseq [invalid [[] (apply list names) (assoc names 64 (first names))
+                     (assoc names 64 :not-a-symbol)]]
+      (is (false? (valid-names? invalid)))
+      (is (false? (valid-match? (assoc match :branch-definitions invalid))))
+      (let [changed (assoc-in core [:nodes 4 :attributes :source-value :branch-definitions] invalid)
+            result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :union-match-shape-invalid (:reason result)))))
+    (doseq [invalid [(assoc match :unexpected true)
+                     (dissoc match :scrutinee-definition)
+                     (assoc match :scrutinee-definition :not-a-symbol)
+                     (assoc match :union-type 'not-a-keyword)]]
+      (is (false? (valid-match? invalid))))
+    (doseq [changed [(update core :definitions pop)
+                     (update core :definitions conj (peek (:definitions core)))
+                     (assoc-in core [:nodes 69 :attributes :literal-kind] :vector)
+                     (assoc-in core [:nodes 69 :attributes :source-value] [])]]
+      (let [result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :match-branch-definition-required (:reason result)))
+        (is (= last-name (:actual result)))))))
+
+(deftest sh08-list-construction-unmetered-types-development-kernel
+  (let [check #(invoke-c7 'sh08-lc-validate-types [%])
+        s :gravity.type/string
+        members (vec (repeat 4097 s))
+        wide {:kind :gravity.type/list :element-types members :shape :literal}
+        deep (nth (iterate (fn [type] {:kind :gravity.type/vector :element-types [type] :shape :literal}) s) 192)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "type hash")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "type rendering"))))
+        backing (object-array [:kind :gravity.type/list :shape :literal :element-types nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 5 [cyclic])
+    (doseq [types [[] [s] [wide] [deep] [:gravity.type/never wide]]]
+      (is (= {:status :accepted} (check types))))
+    (doseq [type [(assoc wide :element-types (assoc members 4096 :gravity.type/unknown))
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}
+                  {:kind :gravity.type/map :shape :literal :member-types [s]}
+                  (assoc wide :extra true) cyclic opaque
+                  {:kind :gravity.type/list :shape :literal :element-types [opaque]}]]
+      (is (= :rejected (:status (check [type])))))
+    (is (empty? @callbacks))))

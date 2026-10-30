@@ -993,15 +993,18 @@
                           (try
                             (wiring/run-child-unit! [c11] {} #(throw failure))
                             (catch clojure.lang.ExceptionInfo observed observed)))))
-        ;; The three reviewed leaves still reach the existing runtime observer.
+        (is (= :unreviewed-or-fresh-test-policy
+               (get-in (wiring/run-child-unit! [leaf] {} (constantly {:status :passed}))
+                       [:child-cache-receipt :reason])))
+        (is (empty? @observations))
+        ;; The two cache-eligible leaves still reach the existing runtime observer.
         ;; No saved result or successful compiler execution is supplied here.
-        (doseq [selection [['gravity.c2-artifact-identity-test]
-                           ['gravity.c11-mir-test]
+        (doseq [selection [['gravity.c11-mir-test]
                            ['gravity.compiler-pass-manifest-test]]]
           (let [result (wiring/run-child-unit! selection {} (constantly {:status :passed}))]
             (is (= :unknown-child-configuration
                    (get-in result [:child-cache-receipt :reason])))))
-        (is (= [:startup :runtime :startup :runtime :startup :runtime] @observations))))))
+        (is (= [:startup :runtime :startup :runtime] @observations))))))
 
 (deftest componentized-leaf-closures-bind-the-nested-implementation
   (doseq [[namespace directory expected-count]
@@ -1078,6 +1081,116 @@
                 (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
                 (is (= 2 @calls))))))))))
 
+(defn- literal-require-gaps
+  "Check literal repository ns dependencies, not dynamic reads or effect closure."
+  [source text declared-paths available?]
+  (let [form (binding [*read-eval* false *data-readers* {}
+                       *default-data-reader-fn*
+                       (fn [tag _] (throw (ex-info "Unsupported dependency source tag" {:tag tag})))]
+               (read (java.io.PushbackReader. (java.io.StringReader. text))))]
+    (when-not (and (seq? form) (= 'ns (first form)))
+      (throw (ex-info "Expected an explicit namespace declaration" {:source source})))
+    (vec
+     (for [clause (drop 2 form)
+           :when (and (seq? clause) (#{:require :use} (first clause)))
+           spec (rest clause)
+           :let [namespace (cond (symbol? spec) spec
+                                 (and (vector? spec) (symbol? (first spec))) (first spec)
+                                 :else (throw (ex-info "Unreviewed namespace dependency form"
+                                                       {:source source :spec spec})))]
+           :when (str/starts-with? (str namespace) "gravity.")
+           :let [relative (str (-> (str namespace) (str/replace "." "/")
+                                   (str/replace "-" "_")) ".clj")
+                 candidates (filterv available?
+                                     (mapv #(str % relative)
+                                           ["bootstrap/clojure/src/" "bootstrap/clojure/test/"]))]
+           :when (or (not= 1 (count candidates))
+                     (not (contains? declared-paths (first candidates))))]
+       {:source source :namespace namespace :candidates candidates
+        :reason (if (= 1 (count candidates)) :undeclared-input :unresolved-or-shadowed-input)}))))
+
+(deftest reviewed-leaf-closures-cover-literal-repository-requires
+  ;; This is a regression fence for the three existing declarations. Passing
+  ;; does not authorize new closures, dynamic imports, callbacks or reuse.
+  (doseq [namespace '[gravity.c11-mir-test gravity.compiler-pass-manifest-test
+                      gravity.c2-artifact-identity-test]
+          :let [job (reviewed-closure-job namespace)
+                inputs (get-in job [:cache-closure :inputs])
+                declared (set (map :path inputs))]
+          {:keys [path]} inputs
+          :when (str/ends-with? path ".clj")]
+    (is (empty? (literal-require-gaps path (slurp path) declared #(.isFile (io/file %))))
+        (str namespace " consumes " path))))
+
+(deftest literal-require-guard-rejects-mutation-unknown-and-shadowed-inputs
+  (let [source "fixture.clj"
+        original "(ns fixture (:require [gravity.digest :as digest]))"
+        changed "(ns fixture (:require [gravity.digest :as digest] [gravity.new-helper :as helper]))"
+        digest "bootstrap/clojure/src/gravity/digest.clj"
+        helper "bootstrap/clojure/src/gravity/new_helper.clj"
+        available #{digest helper}
+        gaps #(literal-require-gaps source % #{digest} available)]
+    (is (empty? (gaps original)))
+    (is (= [{:source source :namespace 'gravity.new-helper :candidates [helper]
+             :reason :undeclared-input}] (gaps changed)))
+    (is (empty? (literal-require-gaps source changed #{digest helper} available)))
+    (is (= :unresolved-or-shadowed-input
+           (:reason (first (literal-require-gaps source changed #{digest} #{digest})))))
+    (is (= :unresolved-or-shadowed-input
+           (:reason (first (literal-require-gaps source original #{digest}
+                            #{digest "bootstrap/clojure/test/gravity/digest.clj"})))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (literal-require-gaps source "(ns fixture (:require (gravity digest)))"
+                                      #{digest} available)))
+    (is (thrown? RuntimeException
+                 (literal-require-gaps source "#=(throw (Exception.))" #{digest} available)))
+    (let [calls (atom 0)]
+      (binding [*data-readers* {'fixture/run (fn [_] (swap! calls inc))}]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (literal-require-gaps source "#fixture/run []" #{digest} available))))
+      (is (zero? @calls)))))
+
+(deftest reader-identity-lexical-inputs-invalidate-reuse
+  ;; Hypothetical admitted-policy mechanics only. The actual catalog policy
+  ;; remains fresh until real expanded-closure producer evidence is reviewed.
+  ;; The identity test calls the lexical facade, which requires all three
+  ;; focused implementations. A comment preserves behavior but changes evidence.
+  (doseq [relative ["bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"]]
+    (with-coordination-root
+      (fn [base]
+        (let [root (.resolve base "repository")
+              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+              _ (Files/createDirectories root no-file-attributes)
+              _ (copy-reviewed-closure! root job)
+              selected-context (assoc (context base) :working-directory (str root)
+                                      :revalidate-snapshot? true)
+              classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'explicit-classpath-identities)
+              calls (atom 0)]
+          (with-redefs-fn
+            {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+            (fn []
+              (let [plan (impact-plan (:namespace job))
+                    attached (wiring/attach-request selected-context plan {} job)
+                    operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+                (is (true? (get-in attached [:development-cache-request :test-policy :deterministic?])))
+                (is (= :passed (:status (wiring/run-unit! selected-context attached operation))))
+                (is (true? (:cache-hit? (wiring/run-unit! selected-context attached operation))))
+                (is (= 1 @calls))
+                (spit (str (.resolve root relative)) "\n; consumed lexical implementation changed\n" :append true)
+                (is (= :explicit-closure
+                       (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+                (let [renewed (wiring/attach-request selected-context plan {} job)]
+                  (is (not= (cache/cache-key (:development-cache-request attached))
+                            (cache/cache-key (:development-cache-request renewed)))))
+                (Files/delete (.resolve root relative))
+                (is (= :explicit-closure
+                       (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+                (is (= 1 @calls))))))))))
+
 (deftest reader-identity-digest-runner-input-invalidates-reuse
   (with-coordination-root
     (fn [base]
@@ -1110,6 +1223,81 @@
                           (cache/cache-key (:development-cache-request renewed))))
                 (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
                 (is (= 2 @calls))))))))))
+
+(deftest reader-identity-declared-lexical-input-deletion-refuses-before-execution
+  ;; Audit the retained declaration without enabling the real catalog policy.
+  (doseq [relative ["bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                    "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"]]
+    (with-coordination-root
+      (fn [base]
+        (let [root (.resolve base "repository")
+              job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+              selected-context (assoc (context base) :working-directory (str root)
+                                                    :revalidate-snapshot? true)
+              classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'explicit-classpath-identities)
+              verify-inputs (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                        'verify-inputs!)]
+          (Files/createDirectories root no-file-attributes)
+          (copy-reviewed-closure! root job)
+          (with-redefs-fn
+            {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+            (fn []
+              (let [attached (wiring/attach-request selected-context
+                               (impact-plan (:namespace job)) {} job)]
+                (Files/delete (.resolve root relative))
+                (is (= :explicit-closure
+                       (:input-kind (exception-data
+                                      #(verify-inputs selected-context :control [attached])))))))))))))
+
+(deftest reader-identity-catalog-policy-prevents-parent-cache-reuse
+  (with-coordination-root
+    (fn [base]
+      (let [namespace 'gravity.c2-artifact-identity-test
+            plan ((requiring-resolve 'gravity.self-hosting.sh01-impact-test-planner/build-plan)
+                  {:changed-paths ["bootstrap/clojure/src/gravity/c2_artifact_identity.clj"]})
+            job (first (:shards plan))
+            attached (wiring/attach-request (context base) plan
+                       {:freshness-required? false :fresh? false} job)
+            request (:development-cache-request attached)
+            calls (atom 0)
+            operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+        (is (= namespace (:namespace job)))
+        (is (true? (get-in job [:test-policy :freshness-required?])))
+        (is (false? (:cache-closure-authorized? job)))
+        (is (true? (get-in request [:test-policy :freshness-required?])))
+        (doseq [_ (range 2)]
+          (let [outcome (cache/lookup-or-run! request operation)]
+            (is (= :miss (get-in outcome [:receipt :decision])))
+            (is (= :freshness-required-test (get-in outcome [:receipt :reason])))
+            (is (false? (get-in outcome [:receipt :cacheable?])))
+            (is (false? (get-in outcome [:receipt :stored?])))))
+        (is (= 2 @calls))))))
+
+(deftest reader-identity-catalog-policy-prevents-child-cache-reuse
+  (let [calls (atom 0)
+        forbidden (fn [& _] (throw (ex-info "Fresh selection must not prepare cache/runtime state" {})))
+        resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)]
+    (with-redefs-fn
+      {(resolve-wiring 'supported-resource-loaders?) (constantly true)
+       (resolve-wiring 'child-startup-resources-absent?) forbidden
+       (resolve-wiring 'effective-child-runtime) forbidden
+       #'wiring/prepare-context forbidden}
+      (fn []
+        (doseq [_ (range 2)]
+          (let [result (wiring/run-child-unit!
+                        ['gravity.c2-artifact-identity-test] {}
+                        #(do (swap! calls inc) {:status :passed :exit-code 0}))]
+            (is (true? (:tests-executed? result)))
+            (is (false? (:child-cache-hit? result)))
+            (is (= :fresh (get-in result [:child-cache-receipt :decision])))
+            (is (= :unreviewed-or-fresh-test-policy
+                   (get-in result [:child-cache-receipt :reason])))
+            (is (false? (get-in result [:child-cache-receipt :cacheable?])))
+            (is (false? (get-in result [:child-cache-receipt :stored?])))))
+        (is (= 2 @calls))))))
 
 (deftest project-startup-resource-absence-is-explicit-and-link-safe
   (with-coordination-root
