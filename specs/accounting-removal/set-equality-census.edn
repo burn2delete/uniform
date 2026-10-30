@@ -1,0 +1,555 @@
+{:baseline
+ {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+  :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"},
+ :nonclaims
+ [:gravity-producer-execution
+  :typed-effects-composition
+  :emitted-execution
+  :runtime-execution
+  :authenticated-source
+  :independent-acceptance
+  :integration
+  :accounting-closure
+  :release
+  :self-hosting],
+ :owners
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :pinned-consumer-boundaries {},
+   :source-family-dependency-callgraph
+   {sh08-bka-binding? [sh08-ft-all-true? sh08-lc-native-view?],
+    sh08-bka-ids? [sh08-ft-all-true? sh08-sse-ids?],
+    sh08-bka-optional-id? [sh08-sse-ids?],
+    sh08-ft-all-true? [sh08-ft-all-true?],
+    sh08-lc-ancestor? [],
+    sh08-lc-native-arguments [sh08-lc-ancestor? sh08-lc-native-view?],
+    sh08-lc-native-view? [sh08-lc-ancestor?],
+    sh08-ma-form-source [],
+    sh08-sm-failure [],
+    sh08-sse-ids? [],
+    types-set-equality-call-fact [],
+    types-set-equality-constraint [],
+    types-set-equality-data?
+    [sh08-lc-ancestor? sh08-lc-native-arguments sh08-lc-native-view?],
+    types-set-equality-derive
+    [sh08-sm-failure
+     types-set-equality-constraint
+     types-set-equality-data?
+     types-set-equality-forms?
+     types-set-equality-header],
+    types-set-equality-entry? [sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-forms?
+    [sh08-ma-form-source sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-header
+    [sh08-bka-binding?
+     sh08-bka-ids?
+     sh08-bka-optional-id?
+     sh08-ft-all-true?
+     sh08-sse-ids?
+     types-set-equality-data?
+     types-set-equality-originals
+     types-set-equality-type?],
+    types-set-equality-inferred-call [types-set-equality-header],
+    types-set-equality-originals
+    [sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-type? [sh08-ft-all-true?]},
+   :current-definitions
+   [types-set-equality-call-fact
+    types-set-equality-constraint
+    types-set-equality-data?
+    types-set-equality-derive
+    types-set-equality-entry?
+    types-set-equality-forms?
+    types-set-equality-header
+    types-set-equality-inferred-call
+    types-set-equality-originals
+    types-set-equality-type?],
+   :patch-hunks
+   ["@@ -6253 +6253 @@"
+    "@@ -6544 +6544 @@"
+    "@@ -6596 +6596 @@"
+    "@@ -6648 +6648 @@"
+    "@@ -9312,0 +9313,265 @@"
+    "@@ -9626,0 +9892,2 @@"
+    "@@ -9671 +9938 @@"
+    "@@ -9673,0 +9941,2 @@"
+    "@@ -9687 +9956 @@"
+    "@@ -9689,0 +9959,2 @@"
+    "@@ -9697 +9968 @@"
+    "@@ -17406 +17677 @@"
+    "@@ -17710,0 +17982,2 @@"
+    "@@ -17735 +18008 @@"
+    "@@ -17737,0 +18011,2 @@"
+    "@@ -17767 +18042 @@"
+    "@@ -23868,3 +24143,3 @@"],
+   :direct-source-callgraph
+   {types-set-equality-call-fact [],
+    types-set-equality-constraint [],
+    types-set-equality-data?
+    [sh08-lc-ancestor? sh08-lc-native-arguments sh08-lc-native-view?],
+    types-set-equality-derive
+    [sh08-sm-failure
+     types-set-equality-constraint
+     types-set-equality-data?
+     types-set-equality-forms?
+     types-set-equality-header],
+    types-set-equality-entry? [sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-forms?
+    [sh08-ma-form-source sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-header
+    [sh08-bka-binding?
+     sh08-bka-ids?
+     sh08-bka-optional-id?
+     sh08-ft-all-true?
+     sh08-sse-ids?
+     types-set-equality-data?
+     types-set-equality-originals
+     types-set-equality-type?],
+    types-set-equality-inferred-call [types-set-equality-header],
+    types-set-equality-originals
+    [sh08-sse-ids? types-set-equality-data?],
+    types-set-equality-type? [sh08-ft-all-true?]},
+   :existing-dispatch-fallback-conservation
+   {sh08-bka-derive true,
+    sh08-bka-entry? true,
+    sh08-bka-inferred-call true,
+    sh08-kse-call-fact true,
+    sh08-kse-constraint true},
+   :sha256
+   "901b55390c957c2eadeb68332a20647c8f12246dbf2a54f36e445897c03b4472",
+   :historical-dse-definitions
+   [sh08-dse-bare?
+    sh08-dse-binding?
+    sh08-dse-call-fact
+    sh08-dse-constraint
+    sh08-dse-derive
+    sh08-dse-entry?
+    sh08-dse-family-work
+    sh08-dse-header
+    sh08-dse-ids?
+    sh08-dse-inferred-call
+    sh08-dse-source-match-work
+    sh08-dse-type?],
+   :historical-dse-referring-definitions
+   [sh08-ae-inferred-call-valid?
+    sh08-ae-step
+    sh08-dse-derive
+    sh08-dse-entry?
+    sh08-dse-header
+    sh08-dse-inferred-call
+    sh08-dse-type?
+    sh08-ft-call-constraints-with-context
+    sh08-ft-call-facts-with-context
+    sh08-ft-dse-entry-step?
+    sh08-ft-dse-step
+    sh08-kse-call-fact
+    sh08-kse-constraint
+    sh08-kse-derive
+    sh08-kse-inferred-call
+    sh08-tc-constraint
+    sh08-tc-products-with-source-forms
+    sh08-tc-scope-with-types]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :pinned-consumer-boundaries {},
+   :source-family-dependency-callgraph
+   {body-all? [],
+    body-bka-binding? [body-all? body-lc-native-view?],
+    body-bka-ids? [body-all? body-sse-ids?],
+    body-bka-optional-id? [body-sse-ids?],
+    body-lc-ancestor? [],
+    body-lc-native-arguments [body-lc-ancestor? body-lc-native-view?],
+    body-lc-native-view? [body-lc-ancestor?],
+    body-ma-form-node [],
+    body-sse-ids? [],
+    effects-set-equality-call-fact [],
+    effects-set-equality-call-valid?
+    [effects-set-equality-data?
+     effects-set-equality-evidence
+     effects-set-equality-forms?],
+    effects-set-equality-constraint [],
+    effects-set-equality-data?
+    [body-lc-ancestor? body-lc-native-arguments body-lc-native-view?],
+    effects-set-equality-entry?
+    [body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-evidence
+    [body-all?
+     effects-set-equality-call-fact
+     effects-set-equality-constraint
+     effects-set-equality-data?
+     effects-set-equality-fact-census
+     effects-set-equality-header
+     effects-set-equality-originals
+     effects-set-equality-row-census],
+    effects-set-equality-fact-census
+    [body-sse-ids?
+     effects-set-equality-call-fact
+     effects-set-equality-data?],
+    effects-set-equality-forms?
+    [body-ma-form-node body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-header
+    [body-all?
+     body-bka-binding?
+     body-bka-ids?
+     body-bka-optional-id?
+     body-sse-ids?
+     effects-set-equality-data?
+     effects-set-equality-originals
+     effects-set-equality-type?],
+    effects-set-equality-originals
+    [body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-row-census
+    [body-all?
+     body-sse-ids?
+     effects-set-equality-constraint
+     effects-set-equality-data?
+     effects-set-equality-header],
+    effects-set-equality-type? [body-all?]},
+   :current-definitions
+   [effects-set-equality-call-fact
+    effects-set-equality-call-valid?
+    effects-set-equality-constraint
+    effects-set-equality-data?
+    effects-set-equality-entry?
+    effects-set-equality-evidence
+    effects-set-equality-fact-census
+    effects-set-equality-forms?
+    effects-set-equality-header
+    effects-set-equality-originals
+    effects-set-equality-row-census
+    effects-set-equality-type?],
+   :patch-hunks
+   ["@@ -12957,0 +12958,324 @@"
+    "@@ -13271,0 +13596,2 @@"
+    "@@ -13285 +13611 @@"
+    "@@ -13354,0 +13681,2 @@"
+    "@@ -13381 +13709 @@"
+    "@@ -13397,0 +13726,2 @@"
+    "@@ -13404 +13734 @@"
+    "@@ -13406,0 +13737,2 @@"
+    "@@ -13431 +13763 @@"
+    "@@ -13433,0 +13766,2 @@"
+    "@@ -13463 +13797 @@"
+    "@@ -19644 +19978 @@ true"],
+   :direct-source-callgraph
+   {effects-set-equality-call-fact [],
+    effects-set-equality-call-valid?
+    [effects-set-equality-data?
+     effects-set-equality-evidence
+     effects-set-equality-forms?],
+    effects-set-equality-constraint [],
+    effects-set-equality-data?
+    [body-lc-ancestor? body-lc-native-arguments body-lc-native-view?],
+    effects-set-equality-entry?
+    [body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-evidence
+    [body-all?
+     effects-set-equality-call-fact
+     effects-set-equality-constraint
+     effects-set-equality-data?
+     effects-set-equality-fact-census
+     effects-set-equality-header
+     effects-set-equality-originals
+     effects-set-equality-row-census],
+    effects-set-equality-fact-census
+    [body-sse-ids?
+     effects-set-equality-call-fact
+     effects-set-equality-data?],
+    effects-set-equality-forms?
+    [body-ma-form-node body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-header
+    [body-all?
+     body-bka-binding?
+     body-bka-ids?
+     body-bka-optional-id?
+     body-sse-ids?
+     effects-set-equality-data?
+     effects-set-equality-originals
+     effects-set-equality-type?],
+    effects-set-equality-originals
+    [body-sse-ids? effects-set-equality-data?],
+    effects-set-equality-row-census
+    [body-all?
+     body-sse-ids?
+     effects-set-equality-constraint
+     effects-set-equality-data?
+     effects-set-equality-header],
+    effects-set-equality-type? [body-all?]},
+   :existing-dispatch-fallback-conservation
+   {body-bka-call-valid? true,
+    body-bka-entry? true,
+    body-bka-evidence true,
+    body-kse-call-fact true,
+    body-kse-constraint true},
+   :sha256
+   "55a290c199a24546fc983d133cd1f7a0f20800f658c6ab97f79dbcb2770ea5b5",
+   :historical-dse-definitions
+   [body-dse-bare?
+    body-dse-binding?
+    body-dse-call-fact
+    body-dse-call-valid?
+    body-dse-constraint
+    body-dse-entry?
+    body-dse-evidence
+    body-dse-fact-census
+    body-dse-family-work
+    body-dse-forms-work
+    body-dse-forms?
+    body-dse-header
+    body-dse-ids?
+    body-dse-originals
+    body-dse-row-census
+    body-dse-source-match-work
+    body-dse-type?],
+   :historical-dse-referring-definitions
+   [body-ae-call-valid?
+    body-ae-context
+    body-call-joins-with-foreign-valid?
+    body-dse-call-valid?
+    body-dse-entry?
+    body-dse-evidence
+    body-dse-fact-census
+    body-dse-header
+    body-dse-row-census
+    body-dse-type?
+    body-kse-call-fact
+    body-kse-call-valid?
+    body-kse-constraint
+    body-tc-constraint]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :pinned-consumer-boundaries
+   {p15-s23-typed-compile-children
+    :existing-generic-child-compiler-full-file-pinned},
+   :source-family-dependency-callgraph
+   {emit-set-equality-call-fact [],
+    emit-set-equality-compile
+    [emit-set-equality-data?
+     emit-set-equality-evidence
+     emit-set-equality-forms?
+     p15-s23-compiler-complete?
+     p15-s23-compiler-result
+     p15-s23-typed-all
+     p15-s23-typed-compile-children
+     p15-s23-typed-node-error],
+    emit-set-equality-constraint [],
+    emit-set-equality-data?
+    [p15-s23-lc-ancestor?
+     p15-s23-lc-native-arguments
+     p15-s23-lc-native-view?],
+    emit-set-equality-entry?
+    [emit-set-equality-data? p15-s23-sse-ids?],
+    emit-set-equality-evidence
+    [emit-set-equality-call-fact
+     emit-set-equality-constraint
+     emit-set-equality-data?
+     emit-set-equality-fact-census
+     emit-set-equality-header
+     emit-set-equality-originals
+     emit-set-equality-row-census
+     p15-s23-typed-all],
+    emit-set-equality-fact-census
+    [emit-set-equality-call-fact
+     emit-set-equality-data?
+     p15-s23-sse-ids?],
+    emit-set-equality-forms?
+    [emit-set-equality-data? p15-s23-sse-ids? p15-s23-typed-source],
+    emit-set-equality-header
+    [emit-set-equality-data?
+     emit-set-equality-originals
+     emit-set-equality-type?
+     p15-s23-bka-binding?
+     p15-s23-bka-ids?
+     p15-s23-bka-optional-id?
+     p15-s23-sse-ids?
+     p15-s23-typed-all],
+    emit-set-equality-originals
+    [emit-set-equality-data? p15-s23-sse-ids?],
+    emit-set-equality-row-census
+    [emit-set-equality-constraint
+     emit-set-equality-data?
+     emit-set-equality-header
+     p15-s23-sse-ids?
+     p15-s23-typed-all],
+    emit-set-equality-type? [p15-s23-typed-all],
+    p15-s23-bka-binding? [p15-s23-lc-native-view? p15-s23-typed-all],
+    p15-s23-bka-ids? [p15-s23-sse-ids? p15-s23-typed-all],
+    p15-s23-bka-optional-id? [p15-s23-sse-ids?],
+    p15-s23-compiler-complete? [],
+    p15-s23-compiler-error [],
+    p15-s23-compiler-result [],
+    p15-s23-lc-ancestor? [],
+    p15-s23-lc-native-arguments
+    [p15-s23-lc-ancestor? p15-s23-lc-native-view?],
+    p15-s23-lc-native-view? [p15-s23-lc-ancestor?],
+    p15-s23-sse-ids? [],
+    p15-s23-typed-all [],
+    p15-s23-typed-compile-children [],
+    p15-s23-typed-node-error [p15-s23-compiler-error],
+    p15-s23-typed-source []},
+   :current-definitions
+   [emit-set-equality-call-fact
+    emit-set-equality-compile
+    emit-set-equality-constraint
+    emit-set-equality-data?
+    emit-set-equality-entry?
+    emit-set-equality-evidence
+    emit-set-equality-fact-census
+    emit-set-equality-forms?
+    emit-set-equality-header
+    emit-set-equality-originals
+    emit-set-equality-row-census
+    emit-set-equality-type?],
+   :patch-hunks
+   ["@@ -14080,0 +14081,339 @@"
+    "@@ -14394,0 +14734,2 @@"
+    "@@ -14408 +14749 @@"
+    "@@ -14477,0 +14819,2 @@"
+    "@@ -14504 +14847 @@"
+    "@@ -14520,0 +14864,2 @@"
+    "@@ -14587 +14932 @@"
+    "@@ -14816,0 +15162,2 @@"
+    "@@ -14839 +15186 @@"
+    "@@ -14841,0 +15189,2 @@"
+    "@@ -14869 +15218 @@"],
+   :direct-source-callgraph
+   {emit-set-equality-call-fact [],
+    emit-set-equality-compile
+    [emit-set-equality-data?
+     emit-set-equality-evidence
+     emit-set-equality-forms?
+     p15-s23-compiler-complete?
+     p15-s23-compiler-result
+     p15-s23-typed-all
+     p15-s23-typed-compile-children
+     p15-s23-typed-node-error],
+    emit-set-equality-constraint [],
+    emit-set-equality-data?
+    [p15-s23-lc-ancestor?
+     p15-s23-lc-native-arguments
+     p15-s23-lc-native-view?],
+    emit-set-equality-entry?
+    [emit-set-equality-data? p15-s23-sse-ids?],
+    emit-set-equality-evidence
+    [emit-set-equality-call-fact
+     emit-set-equality-constraint
+     emit-set-equality-data?
+     emit-set-equality-fact-census
+     emit-set-equality-header
+     emit-set-equality-originals
+     emit-set-equality-row-census
+     p15-s23-typed-all],
+    emit-set-equality-fact-census
+    [emit-set-equality-call-fact
+     emit-set-equality-data?
+     p15-s23-sse-ids?],
+    emit-set-equality-forms?
+    [emit-set-equality-data? p15-s23-sse-ids? p15-s23-typed-source],
+    emit-set-equality-header
+    [emit-set-equality-data?
+     emit-set-equality-originals
+     emit-set-equality-type?
+     p15-s23-bka-binding?
+     p15-s23-bka-ids?
+     p15-s23-bka-optional-id?
+     p15-s23-sse-ids?
+     p15-s23-typed-all],
+    emit-set-equality-originals
+    [emit-set-equality-data? p15-s23-sse-ids?],
+    emit-set-equality-row-census
+    [emit-set-equality-constraint
+     emit-set-equality-data?
+     emit-set-equality-header
+     p15-s23-sse-ids?
+     p15-s23-typed-all],
+    emit-set-equality-type? [p15-s23-typed-all]},
+   :existing-dispatch-fallback-conservation
+   {p15-s23-bka-entry? true,
+    p15-s23-bka-evidence true,
+    p15-s23-kse-call-fact true,
+    p15-s23-kse-constraint true,
+    p15-s23-typed-compile-bare-keyword-anchor-set-equality true},
+   :sha256
+   "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5",
+   :historical-dse-definitions
+   [p15-s23-dse-bare?
+    p15-s23-dse-binding?
+    p15-s23-dse-call-fact
+    p15-s23-dse-constraint
+    p15-s23-dse-entry?
+    p15-s23-dse-evidence
+    p15-s23-dse-fact-census
+    p15-s23-dse-family-work
+    p15-s23-dse-forms-work
+    p15-s23-dse-forms?
+    p15-s23-dse-header
+    p15-s23-dse-ids?
+    p15-s23-dse-originals
+    p15-s23-dse-row-census
+    p15-s23-dse-source-match-work
+    p15-s23-dse-type?],
+   :historical-dse-referring-definitions
+   [p15-s23-checked-set-equality-route?
+    p15-s23-dse-entry?
+    p15-s23-dse-evidence
+    p15-s23-dse-fact-census
+    p15-s23-dse-header
+    p15-s23-dse-row-census
+    p15-s23-dse-type?
+    p15-s23-typed-compile-call
+    p15-s23-typed-compile-checked-bare-set-equality
+    p15-s23-typed-compile-equality
+    p15-s23-typed-compile-keyword-set-equality]}],
+ :unchanged-dependencies
+ [{:path "bootstrap/gravity/src/gravity/runtime.gravity",
+   :sha256
+   "e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe"}
+  {:path
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-native-carrier-header.clj",
+   :sha256
+   "790f5253e5621f5255f9a62374af6f5bba791a7119503484139b65ecddd5fe85"}
+  {:path
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-runtime-invoke-builtin.clj",
+   :sha256
+   "8824c2d186ba447370835b328e7835434f1a688a6ab213600b3ae02f1e306143"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443"}
+  {:path "deps.edn",
+   :sha256
+   "dd3c7a170b1fb7f24cf877701231795b7480ba23210c7d57814e3aa2a453a48c"}],
+ :scope :finite-checked-bare-set-equality-source-port,
+ :preserved-fixtures
+ [{:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.gravity",
+   :preserved-blob "d86e9f560969d8e04738950c897f495c08516621",
+   :sha256
+   "a65f559b1bb75251268783e6addc406a5eea5359f97ea041b008157631f0f373",
+   :consumed? false,
+   :accepted? false,
+   :current-checkout :absent,
+   :disposition :preserved-at-historical-head}
+  {:path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-bare-set-equality.qst",
+   :preserved-blob "d86e9f560969d8e04738950c897f495c08516621",
+   :sha256
+   "a65f559b1bb75251268783e6addc406a5eea5359f97ea041b008157631f0f373",
+   :consumed? false,
+   :accepted? false,
+   :current-checkout :absent,
+   :disposition :preserved-at-historical-head}],
+ :runtime-provider-callgraph
+ {p15-s23-runtime-atomic-equality [],
+  p15-s23-runtime-keyword-set-domain [],
+  p15-s23-runtime-keyword-set-equality-work
+  [p15-s23-runtime-atomic-equality
+   p15-s23-runtime-keyword-set-domain]},
+ :accounting-ids [:ACC-04 :ACC-09 :ACC-12],
+ :model-control
+ {:path "bootstrap/clojure/test/gravity/types/set_equality_test.clj",
+  :sha256
+  "0c58cbf3403124b2c8d1f11401a1c772103fc512cd42d5b8d91f4f18810927e6",
+  :authority :source-bound-clojure-model-only},
+ :preserved
+ {:commit "6a4f87f013d0076b81aba9e0667650e70d28e635",
+  :tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+  :disposition :immutable-history-not-merged}}

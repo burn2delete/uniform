@@ -1,0 +1,13 @@
+(ns self-hosting.sh08.local-runtime-bare-set-equality
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [compare-sets main]))
+
+(defn compare-sets [left right]
+  (= left right))
+
+(defn main []
+  (compare-sets (set (keys {})) (set (keys {:a 1}))))
