@@ -12,6 +12,11 @@
   {:arglists ([source-path request resolved-digests operations]),
    :operation-inputs [:sh04-syntax-boundary-fail!],
    :returns :resolved-digest-preimage},
+  registered-literal-fail!
+  {:arglists
+   ([source-path form-record missing-fields facts operations]),
+   :operation-inputs [:c3-syntax-fail! :source-span],
+   :returns :throws-c3-fact-stale},
   resolve-request-preimage!
   {:arglists ([source-path request resolved-digests operations]),
    :operation-inputs [:sh04-syntax-boundary-fail!],
@@ -21,6 +26,20 @@
    ([source-path stream-template resolved-digests operations]),
    :operation-inputs [:sh04-syntax-boundary-fail!],
    :returns :resolved-syntax-stream},
+  current-reader-revision-authentic?
+  {:arglists ([c2-artifact boundary invocation operations]),
+   :operation-inputs
+   [:p15-s23-stage2-sh02-descriptor-envelope-verify!
+    :sh03-reader-expected-source-content-hash
+    :sh03-reader-verification-invocation!
+    :sh03-reader-verifier
+    :sh04-syntax-reader-binding
+    :sh04-syntax-semantic-source-id],
+   :returns :boolean},
+  registered-literal-registry
+  {:arglists ([source-path c2-artifact operations]),
+   :operation-inputs [:sh04-syntax-registered-literal-fail!],
+   :returns :registered-occurrence-registry},
   current-plan-binding!
   {:arglists ([request-source binding-cache operations]),
    :operation-inputs
@@ -43,6 +62,13 @@
    :operation-inputs
    [:c3-syntax-fail! :sh04-syntax-require-carrier! :source-span],
    :returns :accepted-gravity-result},
+  registered-literal-projection-authentic?
+  {:arglists ([c2-view gravity-boundary operations]),
+   :operation-inputs
+   [:p15-s23-c6c10-canonical-digest
+    :p15-s23-trusted-carrier-validation
+    :sh04-syntax-strip-host-metadata],
+   :returns :boolean},
   reader-products-authentic?
   {:arglists
    ([syntax-stream
@@ -63,6 +89,18 @@
   {:arglists ([operations]),
    :returns :delayed-plan-binding,
    :operation-inputs [:sh04-syntax-build-binding!]},
+  reader-artifact-view
+  {:arglists ([c2-artifact invocation operations]),
+   :operation-inputs
+   [:p15-s23-c6c10-canonical-digest
+    :sh03-c3-precomputed-c2-verify!
+    :sh03-reader-internal-product-authority
+    :sh04-syntax-current-sh03-product-binding
+    :sh04-syntax-project-registered-literal-values
+    :sh04-syntax-reader-binding
+    :sh04-syntax-registered-literal-registry
+    :sh04-syntax-semantic-source-id],
+   :returns :reader-artifact-view},
   execute-plan!
   {:arglists ([source-path binding function arguments operations]),
    :operation-inputs
@@ -85,6 +123,10 @@
    [:p15-s23-stage2-compiler-artifact-source-path
     :sh04-syntax-source-relative-path],
    :returns :source-path},
+  project-registered-literal-values
+  {:arglists ([source-path registry value operations]),
+   :operation-inputs [:sh04-syntax-registered-literal-fail!],
+   :returns :native-projected-value},
   resolve-template!
   {:arglists
    ([source-path
@@ -101,6 +143,12 @@
     :sh04-syntax-resolve-object-template!
     :sh04-syntax-resolve-request-preimage!],
    :returns :resolved-syntax-template},
+  current-reader-identity-view
+  {:arglists ([source-path c2-artifact operations]),
+   :operation-inputs
+   [:sh04-syntax-project-registered-literal-values
+    :sh04-syntax-registered-literal-registry],
+   :returns :reader-identity-view},
   resolve-object-template!
   {:arglists
    ([source-path syntax-template resolved-digests operations]),
@@ -212,7 +260,25 @@
    :sh04-syntax-expected-function-names-hash
    :sh04-syntax-expected-function-shapes-hash
    :sh04-syntax-public-function-hashes
-   :sh04-syntax-public-function-shapes]},
+   :sh04-syntax-public-function-shapes],
+  :reader-views
+  [:c3-syntax-fail!
+   :p15-s23-c6c10-canonical-digest
+   :p15-s23-stage2-sh02-descriptor-envelope-verify!
+   :p15-s23-trusted-carrier-validation
+   :sh03-c3-precomputed-c2-verify!
+   :sh03-reader-expected-source-content-hash
+   :sh03-reader-internal-product-authority
+   :sh03-reader-verification-invocation!
+   :sh03-reader-verifier
+   :sh04-syntax-current-sh03-product-binding
+   :sh04-syntax-project-registered-literal-values
+   :sh04-syntax-reader-binding
+   :sh04-syntax-registered-literal-fail!
+   :sh04-syntax-registered-literal-registry
+   :sh04-syntax-semantic-source-id
+   :sh04-syntax-strip-host-metadata
+   :source-span]},
  :bootstrap-hosted? true,
  :dependency-direction
  {:requires [clojure.core gravity.c3-syntax-verification],
@@ -242,7 +308,10 @@
   :seed-authentication-operations
   :pinned-gravity-syntax-source
   :plan-binding-cache
-  :digest-requests],
+  :digest-requests
+  :registered-reader-occurrences
+  :reader-revision
+  :internal-reader-reverification-port],
  :namespace gravity.syntax,
  :release-authority? false,
  :diagnostic-ownership
@@ -251,7 +320,9 @@
    :reader-syntax-association-refusal
    :pinned-plan-authentication
    :runtime-containment
-   :digest-resolution],
+   :digest-resolution
+   :registered-literal-projection-refusal
+   :reader-view-revision-join],
   :propagates
   [:C2-HASH
    :C3-SHAPE
@@ -268,7 +339,9 @@
  [:gravity/stage0-c3-syntax-object-artifact
   :gravity/syntax-verification-report
   :gravity/sh04-pinned-syntax-plan-binding
-  :resolved-syntax-template],
+  :resolved-syntax-template
+  :gravity/sh04-registered-literal-projection
+  :reader-artifact-view],
  :clojure-seed-boundary? true,
  :contract-boundary
  :stage0-syntax-construction-verification-and-pinned-plan-runtime}
@@ -1520,21 +1593,641 @@
  [{:keys [sh04-syntax-build-binding!]}]
  (delay (sh04-syntax-build-binding! "<sh04-syntax-bootstrap>")))
 
-(doseq [operation [#'build #'reader-products-authentic? #'verify
-                     #'boundary-fail!
-                     #'resolve-plan-source-path
-                     #'read-pinned-plan-source!
-                     #'plan-identities
-                     #'build-plan-binding!
-                     #'current-plan-binding!
-                     #'execute-plan!
-                     #'require-result-carrier!
-                     #'accept-result!
-                     #'resolve-object-template!
-                     #'resolve-stream-template!
-                     #'resolve-request-preimage!
-                     #'resolve-stream-request-preimage!
-                     #'resolve-template!
-                     #'plan-binding-cache
-                     ]]
-  (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
+;; Registered-literal transport and authenticated reader views.
+
+(defn
+ registered-literal-fail!
+ [source-path
+  form-record
+  missing-fields
+  facts
+  {:keys [c3-syntax-fail! source-span]}]
+ (c3-syntax-fail!
+  "C3-FACT-STALE"
+  source-path
+  {:source-span (or (:span form-record) (source-span source-path 0)),
+   :producer :gravity.bootstrap.reader,
+   :form-kind :tagged-literal}
+  {:missing-fields missing-fields, :facts facts}))
+
+(defn
+ registered-literal-registry
+ [source-path
+  c2-artifact
+  {:keys [sh04-syntax-registered-literal-fail!]}]
+ (let
+  [forms
+   (:form-tree c2-artifact)
+   forms-by-id
+   (into {} (map (juxt :form-id identity)) forms)
+   tagged-forms
+   (filterv
+    (fn*
+     [p1__153#]
+     (and
+      (= :tagged-literal (:kind p1__153#))
+      (contains? #{'uuid 'inst} (:tag p1__153#))))
+    forms)
+   literals-by-form
+   (group-by :form-id (:literal-decoding-records c2-artifact))
+   invocations-by-form
+   (group-by
+    :form-id
+    (for
+     [extension
+      (:reader-extension-invocation-records c2-artifact)
+      invocation
+      (:invocations extension)]
+     (assoc invocation :tag (:tag extension))))
+   entries
+   (mapv
+    (fn
+     [form-record]
+     (let
+      [tag
+       (:tag form-record)
+       payload-record
+       (get forms-by-id (first (:children form-record)))
+       literal-records
+       (get literals-by-form (:form-id form-record) [])
+       invocation-records
+       (get invocations-by-form (:form-id form-record) [])
+       literal-record
+       (first literal-records)
+       invocation-record
+       (first invocation-records)
+       decoded
+       (:value form-record)
+       payload
+       (:value payload-record)
+       canonical-text
+       (case
+        tag
+        inst
+        (when
+         (= java.util.Date (class decoded))
+         (let
+          [expected
+           (try
+            (.toEpochMilli
+             (.toInstant (java.time.OffsetDateTime/parse payload)))
+            (catch Exception _ nil))
+           observed
+           (.getTime decoded)]
+          (when (= expected observed) (Long/toString observed))))
+        uuid
+        (when
+         (= java.util.UUID (class decoded))
+         (let
+          [expected
+           (try
+            (java.util.UUID/fromString payload)
+            (catch Exception _ nil))
+           observed
+           (.toString decoded)]
+          (when (= expected decoded) observed)))
+        nil)
+       descriptor
+       (case
+        tag
+        inst
+        {:artifact :gravity/registered-literal-value,
+         :kind :tagged-literal,
+         :tag 'inst,
+         :canonical-value
+         {:kind :instant, :epoch-milliseconds canonical-text},
+         :semantic-validation :accepted}
+        uuid
+        {:artifact :gravity/registered-literal-value,
+         :kind :tagged-literal,
+         :tag 'uuid,
+         :canonical-value
+         {:kind :uuid, :canonical-text canonical-text},
+         :semantic-validation :accepted})]
+      (when-not
+       (and
+        (= 1 (count (:children form-record)))
+        (= :string (:kind payload-record))
+        (string? payload)
+        (= 1 (count literal-records))
+        (= 1 (count invocation-records))
+        (=
+         tag
+         (get-in literal-record [:facts :tag])
+         (:tag invocation-record))
+        (= decoded (:decoded literal-record))
+        (=
+         (:raw form-record)
+         (:raw literal-record)
+         (:raw invocation-record))
+        (=
+         (:span form-record)
+         (:span literal-record)
+         (:span invocation-record))
+        (string? canonical-text))
+       (sh04-syntax-registered-literal-fail!
+        source-path
+        form-record
+        [:authenticated-registered-literal-occurrence]
+        {:tag tag, :form-id (:form-id form-record)}))
+      {:lookup-key [tag canonical-text],
+       :descriptor descriptor,
+       :binding
+       {:form-id (:form-id form-record),
+        :literal-id (:literal-id literal-record),
+        :tag tag,
+        :raw (:raw form-record),
+        :payload payload,
+        :descriptor descriptor}}))
+    tagged-forms)
+   expected-form-ids
+   (set (map :form-id tagged-forms))
+   invoked-form-ids
+   (set
+    (for
+     [[form-id records]
+      invocations-by-form
+      :when
+      (some
+       (fn* [p1__154#] (contains? #{'uuid 'inst} (:tag p1__154#)))
+       records)]
+     form-id))]
+  (when-not
+   (= expected-form-ids invoked-form-ids)
+   (sh04-syntax-registered-literal-fail!
+    source-path
+    nil
+    [:registered-literal-invocation-bijection]
+    {:expected-form-ids expected-form-ids,
+     :invoked-form-ids invoked-form-ids}))
+  {:lookup
+   (reduce
+    (fn
+     [lookup {:keys [lookup-key descriptor]}]
+     (if-let
+      [current (get lookup lookup-key)]
+      (if
+       (= current descriptor)
+       lookup
+       (sh04-syntax-registered-literal-fail!
+        source-path
+        nil
+        [:unambiguous-registered-literal-descriptor]
+        {:lookup-key lookup-key}))
+      (assoc lookup lookup-key descriptor)))
+    {}
+    entries),
+   :bindings (mapv :binding entries)}))
+
+(defn
+ project-registered-literal-values
+ [source-path
+  registry
+  value
+  {:keys [sh04-syntax-registered-literal-fail!]}]
+ (letfn
+  [(project
+    [item]
+    (cond
+     (= java.util.Date (class item))
+     (or
+      (get-in
+       registry
+       [:lookup ['inst (Long/toString (.getTime item))]])
+      (sh04-syntax-registered-literal-fail!
+       source-path
+       nil
+       [:registered-instant-bound-to-reader-occurrence]
+       {}))
+     (= java.util.UUID (class item))
+     (or
+      (get-in registry [:lookup ['uuid (.toString item)]])
+      (sh04-syntax-registered-literal-fail!
+       source-path
+       nil
+       [:registered-uuid-bound-to-reader-occurrence]
+       {}))
+     (map? item)
+     (into
+      (empty item)
+      (map (fn [[key child]] [(project key) (project child)]))
+      item)
+     (vector? item)
+     (mapv project item)
+     (set? item)
+     (into #{} (map project) item)
+     (seq? item)
+     (apply list (map project item))
+     :else
+     item))]
+  (project value)))
+
+(defn
+ registered-literal-projection-authentic?
+ [c2-view
+  gravity-boundary
+  {:keys
+   [p15-s23-c6c10-canonical-digest
+    p15-s23-trusted-carrier-validation
+    sh04-syntax-strip-host-metadata]}]
+ (try
+  (let
+   [projection
+    (:registered-literal-projection c2-view)
+    bindings
+    (:bindings projection)
+    source-path
+    (get-in c2-view [:source-unit-record :path])
+    expected-projection-id
+    (p15-s23-c6c10-canonical-digest
+     source-path
+     {:domain :gravity/sh04-registered-literal-projection-v1,
+      :bindings bindings})
+    forms-by-id
+    (into {} (map (juxt :form-id identity)) (:form-tree c2-view))
+    literals-by-form
+    (group-by :form-id (:literal-decoding-records c2-view))
+    invocations-by-form
+    (group-by
+     :form-id
+     (for
+      [extension
+       (:reader-extension-invocation-records c2-view)
+       invocation
+       (:invocations extension)]
+      (assoc invocation :tag (:tag extension))))
+    tagged-form-ids
+    (set
+     (map
+      :form-id
+      (filter
+       (fn*
+        [p1__155#]
+        (and
+         (= :tagged-literal (:kind p1__155#))
+         (contains? #{'uuid 'inst} (:tag p1__155#))))
+       (:form-tree c2-view))))
+    binding-form-ids
+    (set (map :form-id bindings))
+    provenance
+    (:reader-authentication-provenance gravity-boundary)
+    carrier-validation
+    (p15-s23-trusted-carrier-validation
+     (sh04-syntax-strip-host-metadata c2-view)
+     :default-only
+     1048576
+     256
+     4096)]
+   (and
+    (=
+     #{:reader-source-revision
+       :bindings
+       :schema-version
+       :reader-binding
+       :upstream-product-binding
+       :upstream-integrity-hash
+       :projection-id
+       :artifact
+       :upstream-artifact-id}
+     (set (keys projection)))
+    (=
+     :gravity/sh04-registered-literal-projection
+     (:artifact projection))
+    (= 1 (:schema-version projection))
+    (= expected-projection-id (:projection-id projection))
+    (= :passed (:status carrier-validation))
+    (= tagged-form-ids binding-form-ids)
+    (= (count bindings) (count binding-form-ids))
+    (every?
+     (fn
+      [{:keys [form-id literal-id tag raw payload descriptor]}]
+      (let
+       [form-record
+        (get forms-by-id form-id)
+        payload-record
+        (get forms-by-id (first (:children form-record)))
+        literal-records
+        (get literals-by-form form-id [])
+        invocation-records
+        (get invocations-by-form form-id [])
+        literal-record
+        (first literal-records)
+        invocation-record
+        (first invocation-records)]
+       (and
+        (= :tagged-literal (:kind form-record))
+        (=
+         tag
+         (:tag form-record)
+         (get-in literal-record [:facts :tag])
+         (:tag invocation-record))
+        (= 1 (count (:children form-record)))
+        (= :string (:kind payload-record))
+        (= payload (:value payload-record))
+        (= 1 (count literal-records))
+        (= literal-id (:literal-id literal-record))
+        (= 1 (count invocation-records))
+        (=
+         raw
+         (:raw form-record)
+         (:raw literal-record)
+         (:raw invocation-record))
+        (=
+         descriptor
+         (:value form-record)
+         (:decoded literal-record)))))
+     bindings)
+    (=
+     (:upstream-artifact-id projection)
+     (:actual-c2-artifact-id provenance))
+    (=
+     (:upstream-integrity-hash projection)
+     (:actual-reader-product-integrity-hash provenance))
+    (=
+     (:upstream-product-binding projection)
+     (:actual-sh03-semantic-product-binding provenance))
+    (=
+     (:reader-binding projection)
+     (:reader-semantic-binding gravity-boundary))
+    (=
+     (:reader-source-revision projection)
+     (:reader-source-revision gravity-boundary))))
+  (catch
+   InterruptedException
+   interrupted
+   (.interrupt (Thread/currentThread))
+   (throw interrupted))
+  (catch Throwable _ false)))
+
+(defn
+ current-reader-identity-view
+ [source-path
+  c2-artifact
+  {:keys
+   [sh04-syntax-project-registered-literal-values
+    sh04-syntax-registered-literal-registry]}]
+ (if
+  (:registered-literal-projection c2-artifact)
+  c2-artifact
+  (let
+   [registry
+    (sh04-syntax-registered-literal-registry source-path c2-artifact)]
+   (if
+    (seq (:bindings registry))
+    (sh04-syntax-project-registered-literal-values
+     source-path
+     registry
+     c2-artifact)
+    c2-artifact))))
+
+(defn
+ current-reader-revision-authentic?
+ [c2-artifact
+  boundary
+  invocation
+  {:keys
+   [p15-s23-stage2-sh02-descriptor-envelope-verify!
+    sh03-reader-expected-source-content-hash
+    sh03-reader-verification-invocation!
+    sh03-reader-verifier
+    sh04-syntax-reader-binding
+    sh04-syntax-semantic-source-id]}]
+ (if
+  (nil? boundary)
+  true
+  (let
+   [retained
+    (or
+     (get-in
+      c2-artifact
+      [:sh03-reader-authentication :reader-source-revision])
+     (when
+      (=
+       :gravity/sh03-current-source-reader-plan-binding
+       (get-in
+        c2-artifact
+        [:gravity-reader-boundary :plan-binding :artifact]))
+      (get-in
+       c2-artifact
+       [:gravity-reader-boundary
+        :authenticated-envelope-descriptor
+        :source-revision])))
+    provenance
+    (:reader-authentication-provenance boundary)
+    descriptor
+    (:actual-sh03-envelope-descriptor provenance)
+    actual
+    (:source-revision descriptor)
+    path
+    (get-in c2-artifact [:source-unit-record :path])
+    context
+    (when
+     invocation
+     (sh03-reader-verification-invocation! path invocation))]
+   (if
+    (or
+     (some? retained)
+     (contains?
+      (get-in actual [:function-shapes sh03-reader-verifier])
+      :semantic-hash)
+     (not=
+      sh03-reader-expected-source-content-hash
+      (:source-content-hash actual))
+     (not=
+      sh03-reader-expected-source-content-hash
+      (get-in
+       boundary
+       [:reader-source-revision :source-content-hash])))
+    (and
+     (map? retained)
+     (= actual retained)
+     (or
+      (nil? invocation)
+      (=
+       (select-keys
+        actual
+        [:source-content-hash
+         :source-byte-count
+         :plan-semantic-hash
+         :functions-semantic-hash])
+       (select-keys
+        (:binding context)
+        [:source-content-hash
+         :source-byte-count
+         :plan-semantic-hash
+         :functions-semantic-hash])))
+     (=
+      :passed
+      (apply
+       p15-s23-stage2-sh02-descriptor-envelope-verify!
+       (cond->
+        [(:actual-sh03-authenticated-envelope provenance)
+         :c2-reader
+         :gravity/sh03-reader-products
+         descriptor
+         path]
+        (:envelope-options context)
+        (conj (:envelope-options context)))))
+     (let
+      [path
+       (get-in c2-artifact [:source-unit-record :path])
+       expected
+       (sh04-syntax-reader-binding
+        path
+        c2-artifact
+        (sh04-syntax-semantic-source-id
+         path
+         (:source-unit-record c2-artifact)))]
+      (and
+       (=
+        (:reader-binding expected)
+        (:reader-semantic-binding boundary))
+       (=
+        (:reader-source-revision expected)
+        (:reader-source-revision boundary)))))
+    true))))
+
+(defn
+ reader-artifact-view
+ [c2-artifact
+  invocation
+  {:keys
+   [p15-s23-c6c10-canonical-digest
+    sh03-c3-precomputed-c2-verify!
+    sh03-reader-internal-product-authority
+    sh04-syntax-current-sh03-product-binding
+    sh04-syntax-project-registered-literal-values
+    sh04-syntax-reader-binding
+    sh04-syntax-registered-literal-registry
+    sh04-syntax-semantic-source-id]}]
+ (when
+  invocation
+  (sh03-c3-precomputed-c2-verify!
+   sh03-reader-internal-product-authority
+   (get-in c2-artifact [:source-unit-record :path])
+   c2-artifact
+   invocation))
+ (let
+  [boundary
+   (:gravity-reader-boundary c2-artifact)
+   source-path
+   (get-in c2-artifact [:source-unit-record :path])
+   registry
+   (sh04-syntax-registered-literal-registry source-path c2-artifact)
+   semantic-source-id
+   (sh04-syntax-semantic-source-id
+    source-path
+    (:source-unit-record c2-artifact))
+   reader-authentication
+   (sh04-syntax-reader-binding
+    source-path
+    c2-artifact
+    semantic-source-id)
+   projection-bindings
+   (:bindings registry)
+   projection-id
+   (p15-s23-c6c10-canonical-digest
+    source-path
+    {:domain :gravity/sh04-registered-literal-projection-v1,
+     :bindings projection-bindings})
+   projection
+   {:reader-source-revision
+    (:reader-source-revision reader-authentication),
+    :bindings projection-bindings,
+    :schema-version 1,
+    :reader-binding (:reader-binding reader-authentication),
+    :upstream-product-binding
+    (sh04-syntax-current-sh03-product-binding c2-artifact),
+    :upstream-integrity-hash
+    (get-in c2-artifact [:reader-product-integrity :integrity-hash]),
+    :projection-id projection-id,
+    :artifact :gravity/sh04-registered-literal-projection,
+    :upstream-artifact-id (:artifact-id c2-artifact)}
+   base
+   (assoc
+    (select-keys
+     c2-artifact
+     [:kind
+      :artifact-id
+      :task
+      :document-set
+      :source-overrides
+      :representation-boundary
+      :capability-based-proof
+      :source-unit-record
+      :token-stream
+      :form-tree
+      :top-level-form-ids
+      :parsed-semantic-values
+      :syntax-seed-stream
+      :reader-source-map
+      :literal-decoding-records
+      :semantic-error-deferment-record
+      :reader-extension-invocation-records
+      :reader-diagnostics
+      :incremental-reader-hashes
+      :reader-product-integrity])
+    :sh03-reader-authentication
+    (cond->
+     {:reader-result-id
+      (get-in
+       boundary
+       [:resolved-reader-result
+        :incremental-reader-hashes
+        :reader-result]),
+      :semantic-envelope-id
+      (get-in
+       boundary
+       [:authenticated-envelope :semantic-envelope-id]),
+      :provenance-binding-id
+      (get-in
+       boundary
+       [:authenticated-envelope :provenance-binding-id])}
+     (=
+      :gravity/sh03-current-source-reader-plan-binding
+      (get-in boundary [:plan-binding :artifact]))
+     (assoc
+      :reader-source-revision
+      (get-in
+       boundary
+       [:authenticated-envelope-descriptor :source-revision]))))]
+  (if
+   (seq projection-bindings)
+   (sh04-syntax-project-registered-literal-values
+    source-path
+    registry
+    (assoc base :registered-literal-projection projection))
+   base)))
+
+(doseq
+ [operation
+  [#'accept-result!
+   #'boundary-fail!
+   #'build
+   #'build-plan-binding!
+   #'current-plan-binding!
+   #'current-reader-identity-view
+   #'current-reader-revision-authentic?
+   #'execute-plan!
+   #'plan-binding-cache
+   #'plan-identities
+   #'project-registered-literal-values
+   #'read-pinned-plan-source!
+   #'reader-artifact-view
+   #'reader-products-authentic?
+   #'registered-literal-fail!
+   #'registered-literal-projection-authentic?
+   #'registered-literal-registry
+   #'require-result-carrier!
+   #'resolve-object-template!
+   #'resolve-plan-source-path
+   #'resolve-request-preimage!
+   #'resolve-stream-request-preimage!
+   #'resolve-stream-template!
+   #'resolve-template!
+   #'verify]]
+ (alter-meta!
+  operation
+  assoc
+  :gravity/namespace-contract
+  namespace-contract))

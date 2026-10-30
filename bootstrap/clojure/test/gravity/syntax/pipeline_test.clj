@@ -1,6 +1,7 @@
 (ns gravity.syntax.pipeline-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
             [gravity.syntax :as syntax]))
 
@@ -10,6 +11,7 @@
 (defn- build-operations [] (private-operation 'syntax-stage-build-operations))
 (defn- reader-operations [] (private-operation 'syntax-stage-reader-verification-operations))
 (defn- runtime-operations [] (private-operation 'syntax-stage-runtime-operations))
+(defn- view-operations [] (private-operation 'syntax-stage-reader-view-operations))
 (defn- reader-path [] (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
@@ -153,6 +155,8 @@
            (set (get-in contract [:operation-inputs :reader-products-authentic?]))))
     (is (= (set (keys (private-operation 'syntax-stage-runtime-operations)))
            (set (get-in contract [:operation-inputs :runtime]))))
+    (is (= (set (keys (view-operations)))
+           (set (get-in contract [:operation-inputs :reader-views]))))
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))
@@ -330,3 +334,154 @@
         builder-var #'bootstrap/sh04-syntax-build-binding!]
     (with-redefs-fn {builder-var (fn [source] {:interposed-source source})}
       #(is (= {:interposed-source "<sh04-syntax-bootstrap>"} @cache)))))
+
+(defn- literal-path [extension]
+  (.getCanonicalPath
+   (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-04/accepted/registered-literal-views" extension))))
+
+(defn- literal-case [extension]
+  (let [path (literal-path extension) text (slurp path)
+        c2 (bootstrap/compiler-c2-reader-source-artifact
+            path text (bootstrap/reader-project-context-for-source path)
+            nil nil (reader-path) (invocation))
+        artifact (syntax/build (request path text) (build-operations))]
+    {:source path :text text :reader c2 :artifact artifact
+     :registry (syntax/registered-literal-registry path c2 (view-operations))
+     :view (syntax/reader-artifact-view c2 (invocation) (view-operations))}))
+
+(def ^:private literal-gravity (delay (literal-case ".gravity")))
+(def ^:private literal-qst (delay (literal-case ".qst")))
+
+(deftest paired-literal-views-preserve-occurrences-identity-and-provenance
+  (doseq [[extension product] [[".gravity" literal-gravity] [".qst" literal-qst]]]
+    (let [{:keys [source reader artifact registry view]} @product
+          operations (view-operations) boundary (:gravity-syntax-boundary artifact)
+          bindings (get-in view [:registered-literal-projection :bindings])]
+      (is (= view (:c2-reader-artifact artifact)
+             (bootstrap/c3-reader-artifact-view reader (invocation))))
+      (is (= view (syntax/reader-artifact-view reader nil operations)))
+      (is (= (private-operation 'c3-current-reader-identity-view source reader)
+             (syntax/current-reader-identity-view source reader operations)))
+      (is (= 3 (count bindings) (count (:bindings registry))
+             (count (set (map :form-id bindings)))))
+      (is (= 2 (count (:lookup registry))))
+      (is (= ['inst 'uuid 'uuid] (mapv :tag bindings)))
+      (is (= (get-in bindings [1 :descriptor]) (get-in bindings [2 :descriptor])))
+      (is (= "Registered literal provenance." (get-in artifact [:syntax-object-stream 0 :metadata :doc])))
+      (is (= source (get-in view [:source-unit-record :path])))
+      (is (= extension (get-in view [:source-unit-record :extension])))
+      (is (= (get-in reader [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision])
+             (get-in view [:sh03-reader-authentication :reader-source-revision])))
+      (is (true? (syntax/registered-literal-projection-authentic? view boundary operations)))
+      (is (true? (syntax/current-reader-revision-authentic? view boundary (invocation) operations)))
+      (is (= :complete (syntax/verify source artifact (verification-operations))))
+      (is (= :development-unadmitted
+             (get-in boundary [:authenticated-envelope :source-rule :admission-status])))))
+  (let [gravity @literal-gravity qst @literal-qst]
+    (is (= (:text gravity) (:text qst)))
+    (is (= (get-in gravity [:artifact :artifact-id]) (get-in qst [:artifact :artifact-id])))
+    (is (= (get-in gravity [:view :registered-literal-projection :projection-id])
+           (get-in qst [:view :registered-literal-projection :projection-id])))
+    (is (not= (get-in gravity [:artifact :gravity-syntax-boundary :authenticated-envelope :provenance-binding-id])
+              (get-in qst [:artifact :gravity-syntax-boundary :authenticated-envelope :provenance-binding-id])))))
+
+(deftest registered-occurrence-validation-rejects-real-reader-product-substitution
+  (let [{:keys [source reader]} @literal-gravity operations (view-operations)
+        form (first (filter #(= :tagged-literal (:kind %)) (:form-tree reader)))
+        id (:form-id form)
+        change-form (fn [f] (update reader :form-tree #(mapv (fn [record] (if (= id (:form-id record)) (f record) record)) %)))
+        literal (first (filter #(= id (:form-id %)) (:literal-decoding-records reader)))
+        changes [(change-form #(assoc % :value (java.util.Date. 1793059200001)))
+                 (change-form #(assoc % :children []))
+                 (update reader :literal-decoding-records #(filterv (fn [record] (not= id (:form-id record))) %))
+                 (update reader :literal-decoding-records conj literal)
+                 (update reader :literal-decoding-records
+                         #(mapv (fn [record] (if (= id (:form-id record)) (assoc record :raw "substituted") record)) %))
+                 (update reader :literal-decoding-records
+                         #(mapv (fn [record] (if (= id (:form-id record)) (update-in record [:span :byte-end] inc) record)) %))
+                 (assoc-in reader [:reader-extension-invocation-records 0 :invocations] [])
+                 (update-in reader [:reader-extension-invocation-records 0 :invocations]
+                            conj {:form-id :unregistered-form :raw (:raw form) :span (:span form)})]]
+    (doseq [changed changes]
+      (let [diagnostic (ex-data (caught #(syntax/registered-literal-registry source changed operations)))]
+        (is (= "C3-FACT-STALE" (:id diagnostic)))
+        (is (= :gravity.bootstrap.reader (:producer diagnostic)))
+        (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest native-literal-projection-retains-ordinary-data-and-refuses-unbound-values
+  (let [{:keys [source registry reader]} @literal-gravity operations (view-operations)
+        values (mapv :value (filter #(= :tagged-literal (:kind %)) (:form-tree reader)))
+        projected (syntax/project-registered-literal-values
+                   source registry {:ordinary {:digest-ref 0} :values values} operations)]
+    (is (= {:digest-ref 0} (:ordinary projected)))
+    (is (= (mapv :descriptor (:bindings registry)) (:values projected)))
+    (is (= (get-in projected [:values 1]) (get-in projected [:values 2])))
+    (doseq [value [(java.util.Date. 0)
+                   (java.util.UUID/fromString "00000000-0000-0000-0000-000000000000")]]
+      (let [diagnostic (ex-data (caught #(syntax/project-registered-literal-values source registry value operations)))]
+        (is (= "C3-FACT-STALE" (:id diagnostic)))
+        (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest projection-and-revision-verification-reject-tampered-native-views
+  (let [{:keys [source artifact view]} @literal-gravity
+        boundary (:gravity-syntax-boundary artifact) operations (view-operations)]
+    (doseq [changed [(assoc-in view [:registered-literal-projection :projection-id] "sha256:substituted")
+                     (update-in view [:registered-literal-projection :bindings] pop)
+                     (assoc-in view [:registered-literal-projection :bindings 0 :descriptor :semantic-validation] :substituted)
+                     (assoc-in view [:registered-literal-projection :upstream-artifact-id] "sha256:substituted")
+                     (assoc-in view [:registered-literal-projection :upstream-integrity-hash] "sha256:substituted")
+                     (assoc-in view [:registered-literal-projection :reader-source-revision :owner] :substituted)]]
+      (is (false? (syntax/registered-literal-projection-authentic? changed boundary operations))))
+    (is (false? (syntax/current-reader-revision-authentic?
+                 (assoc-in view [:sh03-reader-authentication :reader-source-revision :source-content-hash] "sha256:substituted")
+                 boundary (invocation) operations)))
+    (let [old (get-in view [:registered-literal-projection :bindings 0 :descriptor])
+          replacement (assoc-in old [:canonical-value :epoch-milliseconds] "0")
+          ;; Replace every occurrence and recompute public ids, while retaining
+          ;; the original independently authenticated reader/envelope authority.
+          projected (walk/postwalk #(if (= old %) replacement %) view)
+          projection-id (bootstrap/p15-s23-c6c10-canonical-digest
+                         source {:domain :gravity/sh04-registered-literal-projection-v1
+                                 :bindings (get-in projected [:registered-literal-projection :bindings])})
+          forged-view (assoc-in projected [:registered-literal-projection :projection-id] projection-id)
+          forged-base (-> (walk/postwalk #(if (= old %) replacement %) artifact)
+                          (assoc :c2-reader-artifact forged-view))
+          forged (assoc forged-base :artifact-id (bootstrap/c3-artifact-id forged-base))]
+      (is (false? (syntax/reader-products-authentic?
+                   (:syntax-object-stream forged) forged-view (:gravity-syntax-boundary forged)
+                   (invocation) (reader-operations))))
+      (let [diagnostic (ex-data (caught #(syntax/verify source forged (verification-operations))))]
+        ;; The unchanged verifier diagnoses serialization before association
+        ;; facts. The separate predicate above checks reader authentication.
+        (is (= "C3-SERIALIZE" (:id diagnostic)))
+        (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest reader-view-ingress-still-reverifies-internal-products-before-projection
+  (let [{:keys [reader]} @literal-gravity operations (view-operations) projected? (atom false)
+        observing (assoc operations :sh04-syntax-registered-literal-registry
+                         (fn [& _] (reset! projected? true) (throw (ex-info "unexpected projection" {}))))]
+    (doseq [[product ports] [[(assoc-in reader [:gravity-reader-boundary :owner] :substituted) observing]
+                             [reader (assoc observing :sh03-reader-internal-product-authority (Object.))]]]
+      (reset! projected? false)
+      (is (= "C2-HASH" (:id (ex-data (caught #(syntax/reader-artifact-view product (invocation) ports))))))
+      (is (false? @projected?)))))
+
+(deftest reader-view-ports-preserve-interposition-private-wrappers-and-interrupts
+  (let [{:keys [source reader view artifact]} @literal-gravity operations (view-operations)
+        sentinel (ex-info "interposed registry" {:id "TEST-REGISTRY"})]
+    (with-redefs [bootstrap/sh04-syntax-registered-literal-registry (fn [& _] (throw sentinel))]
+      (is (identical? sentinel (caught #(syntax/current-reader-identity-view source reader operations)))))
+    (doseq [name ['c3-current-reader-identity-view 'c3-current-reader-revision-authentic?]]
+      (is (true? (:private (meta (ns-resolve 'gravity.bootstrap name))))))
+    (with-redefs [syntax/reader-artifact-view (fn [actual-reader actual-invocation ports]
+                                             [actual-reader actual-invocation (set (keys ports))])]
+      (is (= [reader nil (set (keys operations))] (bootstrap/c3-reader-artifact-view reader)))
+      (is (= [reader (invocation) (set (keys operations))]
+             (bootstrap/c3-reader-artifact-view reader (invocation)))))
+    (let [interruption (InterruptedException. "test")
+          ports (assoc operations :p15-s23-c6c10-canonical-digest (fn [& _] (throw interruption)))
+          observed (try (syntax/registered-literal-projection-authentic? view (:gravity-syntax-boundary artifact) ports) nil
+                        (catch InterruptedException error [error (.isInterrupted (Thread/currentThread))])
+                        (finally (Thread/interrupted)))]
+      (is (identical? interruption (first observed)))
+      (is (true? (second observed))))))
