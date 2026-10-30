@@ -12,6 +12,7 @@
 (defn- reader-operations [] (private-operation 'syntax-stage-reader-verification-operations))
 (defn- runtime-operations [] (private-operation 'syntax-stage-runtime-operations))
 (defn- view-operations [] (private-operation 'syntax-stage-reader-view-operations))
+(defn- assembly-operations [] (private-operation 'syntax-stage-assembly-operations))
 (defn- reader-path [] (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
@@ -144,11 +145,11 @@
            (set (keys (ns-publics 'gravity.syntax)))))
     (is (= 'gravity.syntax (:namespace contract)))
     (is (= :stage0-syntax-construction-verification-and-pinned-plan-runtime (:contract-boundary contract)))
-    (is (= ['clojure.core 'gravity.c3-syntax-verification]
+    (is (= ['clojure.core 'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
-    (is (= #{'gravity.c3-syntax-verification}
+    (is (= #{'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification}
            (set (map ns-name (vals (ns-aliases 'gravity.syntax))))))
     (is (= (set (keys (build-operations))) (set (get-in contract [:operation-inputs :build]))))
     (is (= (set (keys (reader-operations)))
@@ -157,6 +158,8 @@
            (set (get-in contract [:operation-inputs :runtime]))))
     (is (= (set (keys (view-operations)))
            (set (get-in contract [:operation-inputs :reader-views]))))
+    (is (= (set (keys (assembly-operations)))
+           (set (get-in contract [:operation-inputs :assembly]))))
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))

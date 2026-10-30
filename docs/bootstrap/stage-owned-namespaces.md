@@ -140,6 +140,9 @@ same namespace. SH04 reader/envelope and rich-object host adaptation and the
 other syntax helper boundaries remain open. The
 [reader view extraction](syntax-reader-views-evidence.md) additionally moves
 registered-literal projection and authenticated reader views into the stage.
+The [assembly extraction](syntax-assembly-evidence.md) moves semantic bindings,
+stream replay/serialization, generated syntax and envelope assembly while
+retaining explicit seed descriptor and native-index operations.
 `gravity.diagnostics` and the existing narrow helper namespaces remain partial
 extractions. Other destination interfaces in the table remain proposed;
 existing Gravity modules, hosted facades and tests retain their current status.
