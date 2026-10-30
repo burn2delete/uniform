@@ -2268,3 +2268,47 @@ pass 2 / 13. Counts remain 931 criterion candidates, 254 task-reference-only
 joins and three retained retirements with successor proposals. The scoped task
 census remains 3 Accepted of 195, with 192 remaining and provisional ratio
 3/195; no accepted whole-project count or additional completion follows.
+
+## Exact D2 support-triage fixture in the existing AI task
+
+Task source `2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc` appends D2's
+positive fixture to the existing Open AI task and `domain/support-agent-integration`
+criterion. It requires ordinary Gravity source and compiler legality, one
+model-call step, one schema-validated tool step, one human-review step and a
+durable replay record binding those steps to the same fixture. Actual
+operation/event and record-versus-replay results are required; supplied counts
+or flags cannot substitute for them. Required internal typed event records are
+preserved rather than capped. These fixture members are source contract shape,
+not project work accounting or input-admission quotas.
+
+The same addition explicitly preserves all five D2 negative fixtures: missing
+tool capability, unvalidated model output, prompt-injected authority escalation,
+replay-sensitive current-time access without an event record and an agent
+memory write outside the granted namespace. Schema, Workflow, Auth and compiler
+owners keep their actual producer and checker responsibilities; AI owns the
+integrated fixture result. SDK-only execution and omitted required members
+cannot satisfy the ordinary-source artifact path.
+
+`d2-triage-source-refinement.edn` records the exact insertion and full-file
+inverse. All other 22 Domains records, existing criterion bodies, task IDs and
+states are preserved. `d2-triage-current-facet-trace.edn` joins the exact original
+positive facet and five negative facets to the new current criterion, with
+three authenticated supporting criterion roles. The immutable retired-owner
+proposal remains history; its exact fixture gap is now addressed by current
+source, pending independent acceptance. Other attached-context residuals,
+retirement review and implementation acceptance are not discharged.
+
+All 833 decision records remain exactly conserved and Open, with 931 current
+owning criterion witnesses. The refreshed 561-binding snapshot authenticates
+all 4,819 historical raw predicate spans, refreshing 4,046 Domains-file pin maps
+without changing their raw predicate bodies or extending prior source-review
+scope to the addition. The six new facet proposals make 674 distinct original
+owner-proposed facets, with the same four exact metadata overlaps. The separate
+72-facet retired-lineage audit is not added wholesale to that count.
+
+Source checks pass 2 tests / 17 assertions, including exact source populations,
+all four required members, member-removal and tampered-source refusals.
+Domains projection tests pass 8 / 275. No compiler/runtime/broker/controller
+or fixture execution occurred. Full facet entailment, independent current
+source/final-count acceptance and coordinator integration remain required;
+the provisional task census receives no new completion credit.

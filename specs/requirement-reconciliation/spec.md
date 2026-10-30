@@ -51,6 +51,10 @@ preserve all three retired IDs, their current criterion candidates and all
 72 attached facets. Two older context-absorption records are authenticated;
 the support-triage successor is a new proposal with an explicit D2 fixture gap.
 The remaining attached predicates are not discharged by those owner names.
+The [current D2 fixture refinement](d2-triage-current-facet-trace.edn) addresses
+that identified gap in the existing AI task, with exact positive and negative
+source witnesses. Its independent source acceptance and actual future fixture
+execution remain separate from the immutable earlier lineage proposal.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
