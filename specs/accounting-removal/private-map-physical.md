@@ -71,7 +71,14 @@ assertions. The language-boundary gate passes 6 tests / 11 assertions; focused
 lint and whitespace checks pass. Bootstrap stays unloaded. One new model reader
 error was corrected before the passing results. These are source models, not
 authentic compiler/provider/native/runtime requests. Independent affected
-review is pending for this finite source candidate.
+review returned finite source-only PASS for `e491354d7eb5665c2ba21393fe30822745ceb604`,
+tree `5e7725a67604a0f88f2ef7c14f860a9ded1bde2b`, with no actionable source defect.
+The reviewer independently reproduced all 15 tests / 5,727 assertions and
+verified the conservation digest, callers and whitespace. Boundary/lint
+remain implementation-owner observations.
+[Review consumption](private-map-physical-review-consumption.edn) records
+the exact input digests and completed independent reviewer turn; no duplicate
+review or new assessment is routed.
 
 The approved outer wrapper already consumed the one-execution limit, even
 though it failed before the selector started. The original goal stays BLOCKED;
