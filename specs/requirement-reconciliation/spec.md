@@ -40,7 +40,10 @@ coordinates, hashes and current criterion candidates. Its unresolved joins and
 owner proposals remain explicit; inventory conservation is not entailment or
 implementation acceptance. The [extension trace](explicit-extension-source-trace.edn)
 keeps 151 extension occurrences and 392 facets separate, including changed
-source-descriptor hashes that still require explicit rebinding.
+source-descriptor hashes. The [current byte bindings](explicit-extension-current-byte-bindings.edn)
+preserve all historical extension facets through exact matches, named table
+contexts and explicit expanded/replaced blocks. Added current text and full
+predicate entailment still require separate review.
 The [bootstrap diagnostic facet join](bootstrap-diagnostic-current-facet-trace.edn)
 binds its original owner to the existing diagnostic producer, module/fact
 preservation, stage-comparison, TEST13 and compatibility-review criteria.

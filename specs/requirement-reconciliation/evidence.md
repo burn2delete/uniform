@@ -2334,3 +2334,51 @@ retirements with pending independent successor acceptance. The explicit
 extension trace remains separate and its two changed descriptors still require
 rebinding. Inventory population checks pass 2 / 16; no full entailment or final
 count acceptance is inferred.
+
+## Explicit extension source recovery and current byte bindings
+
+At source `ab9782c592b262aba422f29261e35fd361b52454`,
+`explicit-extension-current-byte-bindings.edn` conserves all 392 historical
+extension facet IDs and their memberships in 151 occurrences, separately from
+the original 240 documents. Every old facet raw hash authenticates against
+recovered source bytes. The old Platform file is recovered from
+`a1b991be499d50579a8b4366976c519ae8949224` with its recorded
+`03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f`
+hash. The old AGENTS policy is recovered from
+`6276c94b0b753c888ef8fecc794bcc81245ea3b3` with its recorded
+`52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac`
+hash. The three unchanged descriptors recover identical historical content
+from current pinned files; that does not assert a historical creation date.
+
+The current bindings distinguish 277 exact spans in identical files, 108 unique
+exact byte matches in changed files, two repeated Platform table separators
+resolved by their distinct named headers, four expanded target rows and one
+explicit AGENTS integration-provenance replacement. Both table delimiters
+retain extraction history and context without manufacturing standalone
+implementation obligations. Each target row preserves the exact old work cell
+as a prefix of the current cell, and the current complete cell equals its
+actual owning task's work predicate. Platform projection validation confirms
+the generated relationship; target support and added predicate acceptance are
+not inferred.
+
+The policy replacement retains the integration-mode, immediately-before-
+integration and fail-closed identity/worktree predicates. It explicitly records
+the current complete integration tuple, immutable source tuple/workstream ID,
+and independently reviewed permitted lifecycle-metadata delta. This is file
+source provenance only; session instructions still govern actions, and neither
+integration nor a metadata-lane operation is authorized by this artifact.
+
+All current facet spans, context witnesses and owning target-task predicates
+authenticate to pinned file/raw hashes. The artifact also records every current
+byte range outside those historical facet witnesses. Such ranges may include
+whitespace, context or additions; neither their semantic status nor full
+current-extension coverage is inferred. Expanded replacement text is likewise
+not accepted merely because the historical predicate is retained.
+
+Source checks pass 2 tests / 17 assertions, including all populations and
+memberships, the five distinct binding kinds, retained/new policy predicates,
+distinct table contexts and tampered-current-hash refusal. No original source
+facet, current decision, historical criterion binding, task state or completion
+count changes. Full current-extension entailment, independent acceptance,
+complete original-facet entailment, final counting and coordinator integration
+remain required.
