@@ -50,11 +50,11 @@
     :sh04-syntax-read-pinned-source!],
    :returns :gravity/sh04-pinned-syntax-plan-binding},
   form-index
-  {:arglists ([c2-artifact transaction operations]),
+  {:arglists
+   ([c2-artifact transaction operations canonical-operations]),
    :returns :native-form-index,
    :operation-inputs
-   [:qualify-transaction
-    :sh04-syntax-form-index-roots-current?
+   [:sh04-syntax-form-index-roots-current?
     :sh04-syntax-native-keyword-map?
     :runtime-supported?]},
   require-result-carrier!
@@ -77,14 +77,15 @@
      reader-binding
      reader-source-revision
      registered-literals
-     operations]),
+     operations
+     canonical-operations
+     transaction-var]),
    :returns :syntax-source-descriptor,
    :operation-inputs
    [:c3-lossless-literal-descriptor
     :c3-source-facts
     :c3-source-form-kind
     :c3-tagged-literal-descriptor
-    :descriptor-context
     :sh04-syntax-descendant-form-ids
     :sh04-syntax-empty-hygiene
     :sh04-syntax-form-index
@@ -187,12 +188,18 @@
    :returns :gravity-runtime-value},
   literal-index
   {:arglists
-   ([artifact cache-key field id-key original transaction operations]),
+   ([artifact
+     cache-key
+     field
+     id-key
+     original
+     transaction
+     operations
+     canonical-operations]),
    :returns :native-literal-index,
    :operation-inputs
    [:literal-operation-defaults
     :literal-operations-current?
-    :qualify-transaction
     :runtime-supported?
     :sh04-syntax-form-index-roots-current?
     :sh04-syntax-native-keyword-map?]},
@@ -519,7 +526,6 @@
    :c3-source-facts
    :c3-source-form-kind
    :c3-tagged-literal-descriptor
-   :descriptor-context
    :sh04-syntax-descendant-form-ids
    :sh04-syntax-empty-hygiene
    :sh04-syntax-form-index
@@ -529,7 +535,6 @@
   :native-index
   [:literal-operation-defaults
    :literal-operations-current?
-   :qualify-transaction
    :runtime-supported?
    :sh04-syntax-form-index-roots-current?
    :sh04-syntax-native-keyword-map?]},
@@ -577,7 +582,9 @@
   :index-transaction-port
   :native-index-transaction
   :root-snapshots
-  :descriptor-operations],
+  :descriptor-operations
+  :canonical-operation-context
+  :seed-transaction-var],
  :namespace gravity.syntax,
  :release-authority? false,
  :diagnostic-ownership
@@ -3531,31 +3538,27 @@
    ^{:line 43, :column 58}
    (.valAt
     ^clojure.lang.ILookup operations
-    :sh04-syntax-strip-host-metadata)]
-  (let
-   [clean
-    (cond
-     (map? value)
-     (into
-      (empty value)
-      (map
-       (fn
-        [[key item]]
-        [(sh04-syntax-strip-host-metadata key)
-         (sh04-syntax-strip-host-metadata item)]))
-      value)
-     (vector? value)
-     (mapv sh04-syntax-strip-host-metadata value)
-     (set? value)
-     (into #{} (map sh04-syntax-strip-host-metadata) value)
-     (seq? value)
-     (apply list (map sh04-syntax-strip-host-metadata value))
-     :else
-     value)]
-   (if
-    (instance? clojure.lang.IObj clean)
-    (with-meta clean nil)
-    clean))))
+    :sh04-syntax-strip-host-metadata)
+   clean
+   (cond
+    (map? value)
+    (into
+     (empty value)
+     (map
+      (fn
+       [[key item]]
+       [(sh04-syntax-strip-host-metadata key)
+        (sh04-syntax-strip-host-metadata item)]))
+     value)
+    (vector? value)
+    (mapv sh04-syntax-strip-host-metadata value)
+    (set? value)
+    (into #{} (map sh04-syntax-strip-host-metadata) value)
+    (seq? value)
+    (apply list (map sh04-syntax-strip-host-metadata value))
+    :else
+    value)]
+  (if (instance? clojure.lang.IObj clean) (with-meta clean nil) clean)))
 
 (defn
  descendant-form-ids
@@ -3584,46 +3587,48 @@
   reader-binding
   reader-source-revision
   registered-literals
-  operations]
- (let
-  [c3-lossless-literal-descriptor
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :c3-lossless-literal-descriptor)
-   c3-source-facts
-   (.valAt ^clojure.lang.ILookup operations :c3-source-facts)
-   c3-source-form-kind
-   (.valAt ^clojure.lang.ILookup operations :c3-source-form-kind)
-   c3-tagged-literal-descriptor
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :c3-tagged-literal-descriptor)
-   descriptor-context
-   (.valAt ^clojure.lang.ILookup operations :descriptor-context)
-   sh04-syntax-descendant-form-ids
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh04-syntax-descendant-form-ids)
-   sh04-syntax-empty-hygiene
-   (.valAt ^clojure.lang.ILookup operations :sh04-syntax-empty-hygiene)
-   sh04-syntax-form-index
-   (.valAt ^clojure.lang.ILookup operations :sh04-syntax-form-index)
-   sh04-syntax-project-registered-literal-values
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh04-syntax-project-registered-literal-values)
-   sh04-syntax-semantic-span
-   (.valAt ^clojure.lang.ILookup operations :sh04-syntax-semantic-span)
-   sh04-syntax-strip-host-metadata
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh04-syntax-strip-host-metadata)]
-  (descriptor-context
-   operations
-   (fn
+  operations
+  canonical-operations
+  transaction-var]
+ (letfn
+  [(project
     []
     (let
-     [span
+     [c3-lossless-literal-descriptor
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :c3-lossless-literal-descriptor)
+      c3-source-facts
+      (.valAt ^clojure.lang.ILookup operations :c3-source-facts)
+      c3-source-form-kind
+      (.valAt ^clojure.lang.ILookup operations :c3-source-form-kind)
+      c3-tagged-literal-descriptor
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :c3-tagged-literal-descriptor)
+      sh04-syntax-descendant-form-ids
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-descendant-form-ids)
+      sh04-syntax-empty-hygiene
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-empty-hygiene)
+      sh04-syntax-form-index
+      (.valAt ^clojure.lang.ILookup operations :sh04-syntax-form-index)
+      sh04-syntax-project-registered-literal-values
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-project-registered-literal-values)
+      sh04-syntax-semantic-span
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-semantic-span)
+      sh04-syntax-strip-host-metadata
+      (.valAt
+       ^clojure.lang.ILookup operations
+       :sh04-syntax-strip-host-metadata)
+      span
       (sh04-syntax-semantic-span (:span seed) semantic-source-id)
       source-namespace
       (or (:namespace seed) 'gravity.user)
@@ -3736,7 +3741,18 @@
         :namespace namespace-context,
         :metadata (or (:metadata seed) {}),
         :profile (or (:profile seed) :meta),
-        :span span})))))))
+        :span span}))))]
+  ^{:line 21, :column 16}
+  (if
+   ^{:line 21, :column 20}
+   (identical? operations canonical-operations)
+   ^{:line 22, :column 18}
+   (project)
+   ^{:line 23, :column 18}
+   (with-bindings
+    {transaction-var nil}
+    ^{:line 23, :column 55}
+    (project)))))
 
 (defn
  native-keyword-map?
@@ -3780,14 +3796,14 @@
 
 (defn
  form-index
- [c2-artifact transaction operations]
+ [c2-artifact transaction operations canonical-operations]
  (let
-  [qualify
-   ^{:line 57, :column 36}
-   (.valAt ^clojure.lang.ILookup operations :qualify-transaction)
-   transaction
-   ^{:line 58, :column 40}
-   (qualify operations transaction)
+  [transaction
+   ^{:line 27, :column 48}
+   (when
+    ^{:line 27, :column 54}
+    (identical? operations canonical-operations)
+    transaction)
    sh04-syntax-form-index-roots-current?
    ^{:line 59, :column 66}
    (.valAt
@@ -3842,14 +3858,21 @@
 
 (defn
  literal-index
- [artifact cache-key field id-key original transaction operations]
+ [artifact
+  cache-key
+  field
+  id-key
+  original
+  transaction
+  operations
+  canonical-operations]
  (let
-  [qualify
-   ^{:line 69, :column 36}
-   (.valAt ^clojure.lang.ILookup operations :qualify-transaction)
-   transaction
-   ^{:line 70, :column 40}
-   (qualify operations transaction)
+  [transaction
+   ^{:line 27, :column 48}
+   (when
+    ^{:line 27, :column 54}
+    (identical? operations canonical-operations)
+    transaction)
    sh04-syntax-form-index-roots-current?
    ^{:line 71, :column 66}
    (.valAt

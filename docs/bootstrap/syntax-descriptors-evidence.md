@@ -19,11 +19,11 @@ validation, authentication, proof or capability facts.
 | `empty-hygiene` | Namespace -> existing empty hygiene context |
 | `strip-host-metadata` | Value and recursive callback port -> metadata-free structural value |
 | `descendant-form-ids` | Form index and root -> existing descendant closure |
-| `source-descriptor` | Reader seed/form, validated products/report, source/reader identities, registry and operations -> exact syntax descriptor |
+| `source-descriptor` | Reader seed/form, validated products/report, source/reader identities, registry, operations, canonical seed operations and transaction Var -> exact syntax descriptor |
 | `native-keyword-map?` | Value -> exact native map/key qualification |
 | `index-roots-current?` | Seed root snapshot -> current roots and absence of thread interposition |
-| `form-index` | Artifact, explicit transaction and operations -> original form lookup projection |
-| `literal-index` | Artifact, index fields/factory, explicit transaction and operations -> original literal lookup projection |
+| `form-index` | Artifact, explicit transaction, operations and canonical seed operations -> original form lookup projection |
+| `literal-index` | Artifact, index fields/factory, explicit transaction, operations and canonical seed operations -> original literal lookup projection |
 
 Constant seed operation maps contain callable Vars so late interposition stays
 live, including recursive cleanup, without reconstructing the maps per node.
@@ -34,9 +34,13 @@ at their original positions. Original JVM type hints are retained.
 Reuse still requires the same transaction, owner artifact, source vector,
 thread, supported runtime, native shape and current implementation roots.
 Altered descriptor/index operation maps disable reuse by object identity,
-without comparing or hashing supplied values. Canonical descriptor composition
+without comparing or hashing supplied values. This guard is inline and cannot be
+replaced through an operation-map callback. Canonical operations and transaction
+state are explicit trusted seed configuration, not caller authentication proof.
+Canonical descriptor composition
 introduces no extra transaction binding. The root snapshot additionally covers
-the new stage descriptor and descendant entry points. Opaque records/keys,
+the new stage descriptor and descendant entry points and canonical operation-map
+Vars. Opaque records/keys,
 collisions, malformed carriers, duplicated ids and interposed operations keep
 their original eager construction, callback order and failure behavior.
 

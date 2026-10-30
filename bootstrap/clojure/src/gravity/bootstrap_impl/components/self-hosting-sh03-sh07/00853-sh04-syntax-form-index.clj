@@ -1,31 +1,76 @@
-(def ^:dynamic ^:private *sh04-syntax-form-index-transaction* nil)
-(declare ^:private sh04-syntax-form-index-roots sh04-syntax-form-index-runtime? sh04-syntax-literal-operation-defaults)
-(declare ^:private sh04-syntax-form-index-roots-current? sh04-syntax-native-keyword-map?)
-(declare ^:private syntax-index-runtime-supported? syntax-index-literal-operation-defaults syntax-index-qualified-transaction)
+(def
+ ^{:private true, :dynamic true} *sh04-syntax-form-index-transaction*
+ nil)
 
-(def ^:private syntax-stage-index-defaults
-{:literal-operation-defaults #'syntax-index-literal-operation-defaults,
- :literal-operations-current?
- #'c3-literal-projection/c3-index-operations-current?,
- :qualify-transaction #'syntax-index-qualified-transaction,
- :runtime-supported? #'syntax-index-runtime-supported?,
- :sh04-syntax-form-index-roots-current?
- #'sh04-syntax-form-index-roots-current?,
- :sh04-syntax-native-keyword-map? #'sh04-syntax-native-keyword-map?}
-)
+(declare
+ ^{:private true} sh04-syntax-form-index-roots
+ sh04-syntax-form-index-runtime?
+ sh04-syntax-literal-operation-defaults)
+
+(declare
+ ^{:private true} sh04-syntax-form-index-roots-current?
+ sh04-syntax-native-keyword-map?)
+
+(declare
+ ^{:private true} syntax-index-runtime-supported?
+ syntax-index-literal-operation-defaults)
+
+(def
+ ^{:private true} syntax-stage-index-defaults
+ {:literal-operation-defaults
+  #'syntax-index-literal-operation-defaults,
+  :literal-operations-current?
+  #'c3-literal-projection/c3-index-operations-current?,
+  :runtime-supported? #'syntax-index-runtime-supported?,
+  :sh04-syntax-form-index-roots-current?
+  #'sh04-syntax-form-index-roots-current?,
+  :sh04-syntax-native-keyword-map? #'sh04-syntax-native-keyword-map?})
 
 (defn- syntax-stage-index-operations [] syntax-stage-index-defaults)
-(defn- syntax-index-runtime-supported? [] sh04-syntax-form-index-runtime?)
-(defn- syntax-index-literal-operation-defaults [] sh04-syntax-literal-operation-defaults)
-(defn- syntax-index-qualified-transaction [operations transaction]
-  (when (identical? operations syntax-stage-index-defaults) transaction))
 
-(defn- sh04-syntax-native-keyword-map? [value] (gravity.syntax/native-keyword-map? value))
-(defn- sh04-syntax-form-index-roots-current? [] (gravity.syntax/index-roots-current? sh04-syntax-form-index-roots))
-(defn- sh04-syntax-form-index [c2-artifact]
-  (gravity.syntax/form-index c2-artifact *sh04-syntax-form-index-transaction* syntax-stage-index-defaults))
-(defn- sh04-syntax-literal-index [artifact cache-key field id-key original]
-  (gravity.syntax/literal-index artifact cache-key field id-key original *sh04-syntax-form-index-transaction* syntax-stage-index-defaults))
+(defn-
+ syntax-index-runtime-supported?
+ []
+ sh04-syntax-form-index-runtime?)
+
+(defn-
+ syntax-index-literal-operation-defaults
+ []
+ sh04-syntax-literal-operation-defaults)
+
+(defn-
+ sh04-syntax-native-keyword-map?
+ [value]
+ (gravity.syntax/native-keyword-map? value))
+
+(defn-
+ sh04-syntax-form-index-roots-current?
+ []
+ (gravity.syntax/index-roots-current? sh04-syntax-form-index-roots))
+
+(defn-
+ sh04-syntax-form-index
+ [c2-artifact]
+ (gravity.syntax/form-index
+  c2-artifact
+  *sh04-syntax-form-index-transaction*
+  ^{:line 23, :column 65}
+  (syntax-stage-index-operations)
+  syntax-stage-index-defaults))
+
+(defn-
+ sh04-syntax-literal-index
+ [artifact cache-key field id-key original]
+ (gravity.syntax/literal-index
+  artifact
+  cache-key
+  field
+  id-key
+  original
+  *sh04-syntax-form-index-transaction*
+  ^{:line 23, :column 65}
+  (syntax-stage-index-operations)
+  syntax-stage-index-defaults))
 
 ;; The native PersistentVector factory paths in the supported Clojure runtime.
 ;; An interposed descriptor/walker or core dependency disables reuse, retaining
@@ -35,6 +80,8 @@
 (def ^:private sh04-syntax-form-index-roots
   {#'gravity.syntax/source-descriptor gravity.syntax/source-descriptor
    #'gravity.syntax/descendant-form-ids gravity.syntax/descendant-form-ids
+   #'syntax-stage-descriptor-defaults syntax-stage-descriptor-defaults
+   #'syntax-stage-index-defaults syntax-stage-index-defaults
    #'sh04-syntax-source-descriptor sh04-syntax-source-descriptor
    #'sh04-syntax-descendant-form-ids sh04-syntax-descendant-form-ids
    #'c3-literal-projection-call c3-literal-projection-call

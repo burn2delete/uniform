@@ -3,6 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-literal-projection :as literal]
             [gravity.syntax :as syntax]))
 
 (defn- private-operation [name & args]
@@ -596,11 +597,13 @@
         transaction-var (ns-resolve 'gravity.bootstrap '*sh04-syntax-form-index-transaction*)
         canonical-slot (volatile! nil) custom-slot (volatile! nil)
         canonical (with-bindings {transaction-var {:artifact reader :thread (Thread/currentThread) :slot canonical-slot}}
-                    (apply syntax/source-descriptor (conj arguments operations)))
+                    (apply syntax/source-descriptor (into arguments [operations operations transaction-var])))
         custom (with-bindings {transaction-var {:artifact reader :thread (Thread/currentThread) :slot custom-slot}}
                  (apply syntax/source-descriptor
-                        (conj arguments (assoc operations :c3-source-facts
-                                               (fn [& args] (apply (:c3-source-facts operations) args))))))]
+                        (into arguments [(assoc operations :c3-source-facts
+                                                (fn [& args] (apply (:c3-source-facts operations) args))
+                                                :descriptor-context (fn [_ thunk] (thunk)))
+                                         operations transaction-var])))]
     (is (= canonical custom (apply bootstrap/sh04-syntax-source-descriptor arguments)))
     (is (some? @canonical-slot))
     (is (nil? @custom-slot))
@@ -616,19 +619,22 @@
   (let [artifact {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 20))}
         transaction {:artifact artifact :thread (Thread/currentThread) :slot (volatile! nil)}
         operations (index-operations)
-        first-index (syntax/form-index artifact transaction operations)]
-    (is (identical? first-index (syntax/form-index artifact transaction operations)))
+        first-index (syntax/form-index artifact transaction operations operations)]
+    (is (identical? first-index (syntax/form-index artifact transaction operations operations)))
     (is (= first-index (private-operation 'sh04-syntax-form-index artifact)))
     (is (not (identical? first-index
                         (syntax/form-index artifact transaction
-                                           (assoc operations :runtime-supported? (fn [] true))))))
+                                           (assoc operations :runtime-supported? (fn [] true)) operations))))
+    (is (not (identical? first-index
+                        (syntax/form-index artifact transaction
+                                           (assoc operations :qualify-transaction (fn [_ tx] tx)) operations))))
     (doseq [v [#'syntax/source-descriptor #'syntax/descendant-form-ids]]
       (let [original @v
             observed (with-redefs-fn {v (fn [& args] (apply original args))}
-                       #(syntax/form-index artifact transaction operations))]
+                       #(syntax/form-index artifact transaction operations operations))]
         (is (= first-index observed))
         (is (not (identical? first-index observed)))))
-    (is (identical? first-index (syntax/form-index artifact transaction operations)))
+    (is (identical? first-index (syntax/form-index artifact transaction operations operations)))
     (is (= #{:a :b} (syntax/descendant-form-ids {:a {:children [:b]} :b {:children [:a]}} :a)))))
 
 (deftest recursive-metadata-cleanup-keeps-late-callback-order-and-semantic-data
@@ -650,19 +656,22 @@
            (bootstrap/sh04-syntax-strip-host-metadata {:metadata {:doc "preserved"}})))))
 
 (deftest stage-literal-index-custom-operations-keep-the-factory-live
-  (let [artifact {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 20))}
+  (literal/with-operations (private-operation 'c3-literal-projection-ops)
+   (fn []
+    (let [artifact {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 20))}
         transaction {:artifact artifact :thread (Thread/currentThread) :slot (volatile! nil)}
         operations (index-operations)
         calls (atom 0)
         factory (fn [] (swap! calls inc)
                   (into {} (map (juxt :form-id identity)) (:form-tree artifact)))
-        first-index (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations)
-        hit (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations)
+        first-index (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)
+        hit (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)
         custom (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction
-                                     (assoc operations :runtime-supported? (fn [] true)))]
+                                     (assoc operations :runtime-supported? (fn [] true)
+                                            :qualify-transaction (fn [_ tx] tx)) operations)]
     (is (identical? first-index hit))
     (is (= first-index custom))
     (is (not (identical? first-index custom)))
     (is (= 2 @calls))
     (is (identical? first-index
-                    (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations)))))
+                    (syntax/literal-index artifact :literal-forms :form-tree :form-id factory transaction operations operations)))))))
