@@ -3510,3 +3510,29 @@ Existing manifest/API-before-code-loading, actual sandbox/output verification,
 registration and trace/reuse criteria must be preserved. This is source/task
 reconciliation; no plugin, verifier callback, sandbox, domain or held operation
 is authorized or executed by identifying it.
+
+C16-review publication uses metadata/census source
+`4d960b99fedf645cf3a2f69ceb7162b047122517` and complete inventory source
+`475445d74dec9212dad5f696bc0e1e8e183cc8a8`. Inventory SHA256 is
+`b4fdd1171e7bc93fe977036b36e01d5c3f9a9a65efdd06ee3772e66cc83bddf9`;
+C16 adoption SHA256 is
+`098b0371fc757775b0ee6b410566bb4f9072ee8df17537557508b5c1752fdd55`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 owner identities
+remain conserved. Owner states stay 984 candidates, 201 task-reference-only
+joins and three retained retirement proposals. The inventory retains 1,171
+qualified semantic facets, 189 qualified contexts, two superseded-history
+fragments, 634 pending proposals, 5,404 other format/hierarchy contexts, 20,328
+pending complete predicates, 700 pending dependency joins and 357 pending
+owner/metadata adjudications. All 1,987 finite IDs remain present, with nine
+reviewed retirement facets outside the index and no overlap counted twice.
+
+Final checks pass: C16 applicability 2 tests/30 assertions; complete inventory
+11/63 and serialized readback; SH 12/541 after generated writer completion;
+census 5/18; boundary 6/11; both document validators; generated SH/census checks;
+changed SH lint with zero findings; whitespace. Readback verifies exact cumulative
+semantic/context/history IDs, five review-group references, ten source refinements,
+current witness pointers, unchanged owner states and five unchanged extension
+byte-applicability descriptor states. Earlier review records retain captured
+subjects and exclusions. The scoped task census remains three Accepted, 190
+Open, one Partial, one unassessed, 192 remaining out of 195 (3/195); complete
+current composition, final counting and coordinator integration remain open.
