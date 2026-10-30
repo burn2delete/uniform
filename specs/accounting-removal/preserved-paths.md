@@ -842,6 +842,30 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Verified finite collection header main integration
+
+PR635 is squash-merged at
+`e4d98947201a9473d8bca5777c1f59f5e3426bfd`, parent
+`9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636`, tree
+`4c6e069bfd7f8bbd375231fc410f85008ccad850`, identical to reviewed successor
+`1ddceb19b5372d1e0c297c8fcb186eb57808e680`. Same-reviewer affected-composition
+SOURCE/DATA PASS receipt
+`96d885e1c8271f1b8e8a9981fd0e23da313641b6db0c3724f1d46f0645f868ab`
+was verified: 548 source/DATA checks, 73 current corruption refusals and 68
+original refusals revalidated. The complete 10,084-entry tree, all three
+reviewed files, twelve header pins and six fixture helpers were verified.
+Live exact-head CI run `40981631055` passed seven jobs/two skips; final
+integration-mode preflight passed all complete-identity conditions on the clean
+named branch. Fresh GitHub/Git readback verifies merged/closed status, expected
+parent, identical tree and main reachability. See
+`collection-header-composition-review-consumption.edn` and
+`collection-header-main-integration.edn`. Only four existing kernel definitions
+and two records integrate. All production, other base entries and accepted
+PR626/634 entries survive; eleven original/eight parent assertion forms per
+kernel are preserved as definitions. Genuine kernels remain UNRUN. Existing
+outer budgets and exact/one-short assertions remain unresolved source facts,
+not endorsed accounting policy. No whole-path/ACC01/PR502 or release credit.
+
 ### Verified finite quoted-data fixture main integration
 
 PR634 is squash-merged at
