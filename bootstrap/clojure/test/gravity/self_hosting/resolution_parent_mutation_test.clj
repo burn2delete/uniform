@@ -1064,6 +1064,9 @@
                        (every? :current-operand? (filter #(= :trace-id-enter (:event %)) (:details positive))))
           (throw (ex-info "Actual positive did not reach two original trace projections"
                           {:id "RV1-TRACE-REACHABILITY" :size size :kind kind})))
+        (is (= (first projections) (second projections)))
+        (is (= [stored-id stored-id]
+               (mapv :value (filter #(= :trace-id-return (:event %)) (:details positive)))))
         ;; Inspect the actual original projection returns, not a replacement
         ;; partition model. Width 16 is an encoding detail, never admission fuel.
         (doseq [value projections]
