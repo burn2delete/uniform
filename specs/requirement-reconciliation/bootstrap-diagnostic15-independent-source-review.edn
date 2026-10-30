@@ -1,0 +1,1440 @@
+{:semantic-assessment
+ {:C15
+  :phase-availability-generated-origins-and-private-redaction-retained,
+  :module-facts :separate-module-and-pipeline-preservation-owner,
+  :BOOT2004 :missing-or-unstable-seed-code,
+  :BOOT4006 :self-hosted-diagnostic-code-gap,
+  :accepted-delta
+  :actual-policy-linked-GOV2-assessment-plus-release-comparison-report,
+  :TEST13 :both-named-stages-accepted-and-rejected-fixtures,
+  :actual-stable-code-span-record-and-module-manifest-production
+  :explicit,
+  :BOOT3003
+  :unreviewed-diagnostic-drift-or-diagnostic-compatibility-failure,
+  :producer-success-or-manifest-alone :insufficient},
+ :findings [],
+ :criterion-roles
+ {:compare :actual-stage-comparison-consumer,
+  :facts :pipeline-fact-preservation,
+  :module :module-manifest-and-preservation-producer,
+  :new-producer :diagnostic-code-span-and-manifest-producer,
+  :producer :diagnostic-record-producer,
+  :review :scoped-compatibility-assessment-producer,
+  :seed :seed-executable-and-diagnostic-producer,
+  :test :independent-fixture-comparison-consumer},
+ :tree "f17aaa36cdef24b581d224f1d3b755cacd420a4c",
+ :execution
+ {:target-allocations :none,
+  :compiler-runtime-or-genuine-execution :none,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :APPROVE false,
+  :sealed-source-data-checks 37869,
+  :checker-sha256
+  "d4b650fae470fec47bfbdfadf50e8431bd72d101bf97e7a6f5a934760bc82f5b",
+  :held-action-retry false,
+  :author-or-shared-source-writes false},
+ :authenticated-source
+ {:facets 15,
+  :occurrences 14,
+  :document-populations {"BOOT2" 3, "BOOT3" 5, "BOOT4" 7},
+  :matrix-sha256
+  "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7",
+  :occurrence-report
+  [{:id
+    "BOOT2/source/276ba68720710ad3c39591113699d57ccd476ae764e8d40e155d61f59d6ea2d3",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+    :source-range [10843 11183],
+    :envelope-sha256
+    "a1cd7cc459ac27e38fd413b90f7273421485aa47094cf129f09f5dccc3577271",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"]}
+   {:id
+    "BOOT2/source/8f82b01a85c43d10db27990a48a68d62e37c59e09463b4d4366cee5c34ef150a",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+    :source-range [9459 9965],
+    :envelope-sha256
+    "dcf84ed7be74119424a47ad6ffe985260af840dd974b0e88bfbf6d07675a5c26",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/505da451b5f3bb264884df1c"]}
+   {:id
+    "BOOT2/source/ccfe370a520288fa4ef1d6abb4ffaed06cd723aa75fa0c727be39ba24528ff17",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+    :source-range [11200 11488],
+    :envelope-sha256
+    "6c8511312489cbcedd50083921f6c7f8d14f7bb526b64533e6244670deef1196",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/da002dafeceba6c139475076"]}
+   {:id
+    "BOOT3/source/109bdda236f54387d7332fa7a9d13616be247ad09253bee927dcf6bd190bacdd",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    :source-range [3529 3837],
+    :envelope-sha256
+    "21a919979dd3c8dd7417be719408e68a6f5093657b47fc363f88e331a6e4209e",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"]}
+   {:id
+    "BOOT3/source/98ebb84a25021b3f290043723eb82248c597d0bb7fb20affa077542cb2de8720",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    :source-range [1824 2408],
+    :envelope-sha256
+    "6b9fa780c8e298e3e61fc86e536509d58c131b1bb38894c8f294d24f80861178",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/6093ae29b3f11f987a336324"]}
+   {:id
+    "BOOT3/source/d9a2befdb2ccf229823c711ced410ea62121a6818846d5bbaf99a6bb40613011",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    :source-range [3160 3512],
+    :envelope-sha256
+    "ccfe000cfc75d5edf654a1c7743857ddbc26243d8d76d2e87ecea03d011584cf",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/c3e3f3e38f576e592ddca225"]}
+   {:id
+    "BOOT3/source/e22654b4bfc11106674748c12bb8ba098b1390b6647c9b75fa51cfad1d98a753",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    :source-range [2731 2907],
+    :envelope-sha256
+    "8591579ebed6c62c178895e825108626ca2edda59978efbb40d731863be9f8e7",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/6dd8f73469e22b8835f02853"]}
+   {:id
+    "BOOT3/source/f4b0bbe1e4aa13f3dd170d8efa29a1e5b4bdb9be489dc08086139281a5a60ef7",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    :source-range [3863 4191],
+    :envelope-sha256
+    "5ed7afd30c4fc78795f4bbac4abf6bfc65bf636a410d1f7902de506de4c6e8e5",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"]}
+   {:id
+    "BOOT4/source/23f021996a87151c0d00406dfcea65f62de76a48ac68c12831d9f6f98b88b307",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [2803 3117],
+    :envelope-sha256
+    "94a2072c7cd5d47590a953e0ce4cec0c42aaef4c2eb1e44496aa0dce88bd71ad",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/71337a13a101b5814adb0daa"]}
+   {:id
+    "BOOT4/source/3e377c5f9375ba8f8afc0ba46433ec058f2b8dbacdccd70e277836f724e054b3",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [1135 1689],
+    :envelope-sha256
+    "beea394a408718fc7fbf049a8fda130da333e9632e5eeb816f4e92c19f7de200",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/f6dab719b49d575e4206c260"]}
+   {:id
+    "BOOT4/source/8eba53ee54e4d5ab1c7f9cc18ff0c4b6c95a4994bc313efcbc2a5d5497cd0297",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [3143 3560],
+    :envelope-sha256
+    "58a475eda3d74ad76ae2def119a4282f899681bdb968737e8ff5343cc1584128",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"]}
+   {:id
+    "BOOT4/source/c203991f28ebfd2756427b80e524a72b7cb47c44f8fdef2ce1be182dd9313a28",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [2411 2786],
+    :envelope-sha256
+    "d2a1216794c1b2e707eeb1b51b12ecd41d2087c380cc35270affc9ab95a301c8",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+     "facet/bootstrap-governance/4514878458baabba4c930293"]}
+   {:id
+    "BOOT4/source/e5b77559c82f734faaaa01be7ed88c7938f301fea6867f565efdc358491f5692",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [1975 2149],
+    :envelope-sha256
+    "a9eaa437cd3f8c4b6886f9e671ea4a95a5bfb3db14168e530980d793b8cdb065",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/d63a3272d89be72bdb912798"]}
+   {:id
+    "BOOT4/source/e85ed82d0754bd46d54a07de9939d61386afdad4f73a25704f3d87800b28562b",
+    :source-path
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    :source-range [809 1010],
+    :envelope-sha256
+    "d2202b887ec08b11f918e65eeb8b089579cc098e8c1df3c037d97028e596bd41",
+    :authenticated-via
+    :pinned-original-matrix-and-pinned-complete-document,
+    :selected-facets
+    ["facet/bootstrap-governance/3417f6796ec398bc1e8efd01"]}],
+  :all-source-witnesses-current-and-original-bytes-identical true,
+  :full-BOOT2-BOOT3-BOOT4-documents-read true,
+  :supporting-C15-GOV2-TEST13-documents-read true},
+ :inert-corruption-negatives
+ [{:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "505da451b5f3bb264884df1c"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/505da451b5f3bb264884df1c"
+    :seed]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "505da451b5f3bb264884df1c"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/505da451b5f3bb264884df1c"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "8fd3d7ae1a7a2a6f686b6c24"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"
+    :seed]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "8fd3d7ae1a7a2a6f686b6c24"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "da002dafeceba6c139475076"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/da002dafeceba6c139475076"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "6093ae29b3f11f987a336324"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "6093ae29b3f11f987a336324"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+    :test]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "6093ae29b3f11f987a336324"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+    :compare]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "6dd8f73469e22b8835f02853"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/6dd8f73469e22b8835f02853"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "6dd8f73469e22b8835f02853"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/6dd8f73469e22b8835f02853"
+    :compare]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "c3e3f3e38f576e592ddca225"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "c3e3f3e38f576e592ddca225"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+    :compare]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "c3e3f3e38f576e592ddca225"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+    :review]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "662d0f569d0b5e8e1c7c967d"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "662d0f569d0b5e8e1c7c967d"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"
+    :compare]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "1d0312c8f02b4ab87ee5c730"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "1d0312c8f02b4ab87ee5c730"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+    :test]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "1d0312c8f02b4ab87ee5c730"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+    :compare]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "3417f6796ec398bc1e8efd01"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"
+    :module]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "3417f6796ec398bc1e8efd01"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "f6dab719b49d575e4206c260"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/f6dab719b49d575e4206c260"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "f6dab719b49d575e4206c260"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/f6dab719b49d575e4206c260"
+    :producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "d63a3272d89be72bdb912798"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/d63a3272d89be72bdb912798"
+    :module]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "d63a3272d89be72bdb912798"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/d63a3272d89be72bdb912798"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "45f0e0e40c7e55839efd7410"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+    :module]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "45f0e0e40c7e55839efd7410"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+    :facts]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "4514878458baabba4c930293"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/4514878458baabba4c930293"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "4514878458baabba4c930293"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/4514878458baabba4c930293"
+    :producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "71337a13a101b5814adb0daa"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/71337a13a101b5814adb0daa"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "a63d8f50c0ce3aadfd9e4859"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"
+    :producer]}
+  {:refused true,
+   :reason
+   [:complete-producer-consumer-conjunction
+    "a63d8f50c0ce3aadfd9e4859"],
+   :case
+   [:lost-required-owner
+    "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"
+    :new-producer]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :compare
+    "Actually compare outputs of both named compiler artifacts"],
+   :case
+   [:weakened-predicate
+    :compare
+    "Actually compare outputs of both named compiler artifacts"]}
+  {:refused true,
+   :reason [:full-role-predicate :compare "diagnostic, conformance"],
+   :case [:weakened-predicate :compare "diagnostic, conformance"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :compare
+    "provenance-bound equivalence report"],
+   :case
+   [:weakened-predicate
+    :compare
+    "provenance-bound equivalence report"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :compare
+    "unreviewed or policy-unlinked deltas"],
+   :case
+   [:weakened-predicate
+    :compare
+    "unreviewed or policy-unlinked deltas"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :compare
+    "Preserve stable codes/source spans"],
+   :case
+   [:weakened-predicate :compare "Preserve stable codes/source spans"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :compare "cannot hide semantic drift"],
+   :case [:weakened-predicate :compare "cannot hide semantic drift"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :compare "BOOT1004/BOOT3003/BOOT6003"],
+   :case [:weakened-predicate :compare "BOOT1004/BOOT3003/BOOT6003"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :compare
+    "Comparison does not produce compiler executables"],
+   :case
+   [:weakened-predicate
+    :compare
+    "Comparison does not produce compiler executables"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :facts
+    "Carry source, syntax, hygiene, namespace, phase, profile and semantic evidence"],
+   :case
+   [:weakened-predicate
+    :facts
+    "Carry source, syntax, hygiene, namespace, phase, profile and semantic evidence"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :facts
+    "regenerate, prove, retain checks or reject"],
+   :case
+   [:weakened-predicate
+    :facts
+    "regenerate, prove, retain checks or reject"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :facts
+    "source span, syntax identity, hygiene, namespace, phase, profile, type, effect, ownership, capability or proof evidence"],
+   :case
+   [:weakened-predicate
+    :facts
+    "source span, syntax identity, hygiene, namespace, phase, profile, type, effect, ownership, capability or proof evidence"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :facts "before downstream consumption"],
+   :case [:weakened-predicate :facts "before downstream consumption"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :facts
+    "actual replacement or retained-check products"],
+   :case
+   [:weakened-predicate
+    :facts
+    "actual replacement or retained-check products"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :module
+    "manifest for every declared migrated compiler module"],
+   :case
+   [:weakened-predicate
+    :module
+    "manifest for every declared migrated compiler module"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :module "diagnostics, tests/fixtures"],
+   :case [:weakened-predicate :module "diagnostics, tests/fixtures"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :module
+    "actual source/module/pass/compiler/input hashes and produced outputs"],
+   :case
+   [:weakened-predicate
+    :module
+    "actual source/module/pass/compiler/input hashes and produced outputs"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :module "diagnostic/preservation reports"],
+   :case
+   [:weakened-predicate :module "diagnostic/preservation reports"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :module
+    "actual pass input/output/preservation behavior disagrees"],
+   :case
+   [:weakened-predicate
+    :module
+    "actual pass input/output/preservation behavior disagrees"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :module
+    "manifest alone do not prove migration"],
+   :case
+   [:weakened-predicate
+    :module
+    "manifest alone do not prove migration"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "Every declared self-hosted compiler module emits the C15 structured diagnostic record"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "Every declared self-hosted compiler module emits the C15 structured diagnostic record"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "diagnostic manifest naming its actual stable codes and source spans"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "diagnostic manifest naming its actual stable codes and source spans"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "Reject a missing or unstable seed code with BOOT2004"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "Reject a missing or unstable seed code with BOOT2004"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "a self-hosted diagnostic code gap with BOOT4006"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "a self-hosted diagnostic code gap with BOOT4006"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "actual seed and self-hosted diagnostic production"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "actual seed and self-hosted diagnostic production"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "Negative fixtures exercise missing/unstable codes and lost or changed source spans"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "Negative fixtures exercise missing/unstable codes and lost or changed source spans"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "existing release stage-equivalence and TEST13 diagnostic-schema checks"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "existing release stage-equivalence and TEST13 diagnostic-schema checks"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "Diagnostic drift without compatibility review fails BOOT3003"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "Diagnostic drift without compatibility review fails BOOT3003"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "rather than a producer-supplied success flag"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "rather than a producer-supplied success flag"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "C15 phase availability, generated origins, privacy/redaction"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "C15 phase availability, generated origins, privacy/redaction"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "does not itself compare stage executables or admit migration"],
+   :case
+   [:weakened-predicate
+    :new-producer
+    "does not itself compare stage executables or admit migration"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "authoritative machine-readable diagnostic records"],
+   :case
+   [:weakened-predicate
+    :producer
+    "authoritative machine-readable diagnostic records"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "primary and related locations, generated-origin chain"],
+   :case
+   [:weakened-predicate
+    :producer
+    "primary and related locations, generated-origin chain"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "explicit nil profile/target/primary syntax-id in early reader errors"],
+   :case
+   [:weakened-predicate
+    :producer
+    "explicit nil profile/target/primary syntax-id in early reader errors"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "unavailable input metadata in diagnostic-system errors"],
+   :case
+   [:weakened-predicate
+    :producer
+    "unavailable input metadata in diagnostic-system errors"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "unless package privacy redacts it"],
+   :case
+   [:weakened-predicate :producer "unless package privacy redacts it"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :producer "retaining authorized audit data"],
+   :case
+   [:weakened-predicate :producer "retaining authorized audit data"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION"],
+   :case
+   [:weakened-predicate
+    :producer
+    "C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :producer
+    "actual reader-through-lowering producers and public consumers"],
+   :case
+   [:weakened-predicate
+    :producer
+    "actual reader-through-lowering producers and public consumers"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :review
+    "Produce the GOV2 baseline comparison"],
+   :case
+   [:weakened-predicate
+    :review
+    "Produce the GOV2 baseline comparison"]}
+  {:refused true,
+   :reason [:full-role-predicate :review "exact governed change"],
+   :case [:weakened-predicate :review "exact governed change"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :review "diagnostic IDs/fields/remediation"],
+   :case
+   [:weakened-predicate :review "diagnostic IDs/fields/remediation"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :review
+    "diagnostic/security/stable/experimental break disposition"],
+   :case
+   [:weakened-predicate
+    :review
+    "diagnostic/security/stable/experimental break disposition"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :review
+    "silent diagnostic reuse/field drift"],
+   :case
+   [:weakened-predicate :review "silent diagnostic reuse/field drift"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :review
+    "Security breaks require actual GOV4 evidence and migration"],
+   :case
+   [:weakened-predicate
+    :review
+    "Security breaks require actual GOV4 evidence and migration"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :review
+    "neither implements their changes nor gates ordinary development"],
+   :case
+   [:weakened-predicate
+    :review
+    "neither implements their changes nor gates ordinary development"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :seed "Execute the declared minimal seed"],
+   :case
+   [:weakened-predicate :seed "Execute the declared minimal seed"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :seed
+    "stable diagnostic report and subset conformance"],
+   :case
+   [:weakened-predicate
+    :seed
+    "stable diagnostic report and subset conformance"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :seed "seed executable/backend artifact"],
+   :case
+   [:weakened-predicate :seed "seed executable/backend artifact"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :seed "unstable/missing diagnostic codes"],
+   :case
+   [:weakened-predicate :seed "unstable/missing diagnostic codes"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :seed "reject with BOOT2001-BOOT2006"],
+   :case [:weakened-predicate :seed "reject with BOOT2001-BOOT2006"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate :seed "do not confer seed retirement"],
+   :case [:weakened-predicate :seed "do not confer seed retirement"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :test
+    "Compile accepted and rejected fixtures with both named stages"],
+   :case
+   [:weakened-predicate
+    :test
+    "Compile accepted and rejected fixtures with both named stages"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :test
+    "stable codes, source spans and artifact schemas"],
+   :case
+   [:weakened-predicate
+    :test
+    "stable codes, source spans and artifact schemas"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :test
+    "fail lost origins or incompatible unexplained schemas"],
+   :case
+   [:weakened-predicate
+    :test
+    "fail lost origins or incompatible unexplained schemas"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :test
+    "supplied success flags, proposal delivery and broad parent links are not executable evidence"],
+   :case
+   [:weakened-predicate
+    :test
+    "supplied success flags, proposal delivery and broad parent links are not executable evidence"]}
+  {:refused true,
+   :reason [:independent-role :compare],
+   :case [:wrong-producer-consumer :compare]}
+  {:refused true,
+   :reason [:role-decision :compare],
+   :case [:wrong-decision-owner :compare]}
+  {:refused true,
+   :reason [:span-file-pin "specs/release-workflow/tasks.md"],
+   :case [:stale-file-pin :compare]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/release-workflow/tasks.md" 18826],
+   :case [:stale-raw-pin :compare]}
+  {:refused true,
+   :reason [:independent-role :facts],
+   :case [:wrong-producer-consumer :facts]}
+  {:refused true,
+   :reason [:role-decision :facts],
+   :case [:wrong-decision-owner :facts]}
+  {:refused true,
+   :reason [:span-file-pin "specs/compiler-api-workflow/tasks.md"],
+   :case [:stale-file-pin :facts]}
+  {:refused true,
+   :reason
+   [:raw-span-pin "specs/compiler-api-workflow/tasks.md" 14919],
+   :case [:stale-raw-pin :facts]}
+  {:refused true,
+   :reason [:independent-role :module],
+   :case [:wrong-producer-consumer :module]}
+  {:refused true,
+   :reason [:role-decision :module],
+   :case [:wrong-decision-owner :module]}
+  {:refused true,
+   :reason [:span-file-pin "specs/compiler-api-workflow/tasks.md"],
+   :case [:stale-file-pin :module]}
+  {:refused true,
+   :reason
+   [:raw-span-pin "specs/compiler-api-workflow/tasks.md" 11110],
+   :case [:stale-raw-pin :module]}
+  {:refused true,
+   :reason [:independent-role :new-producer],
+   :case [:wrong-producer-consumer :new-producer]}
+  {:refused true,
+   :reason :original-producer-owner,
+   :case [:wrong-decision-owner :new-producer]}
+  {:refused true,
+   :reason [:span-file-pin "specs/diag-workflow/tasks.md"],
+   :case [:stale-file-pin :new-producer]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/diag-workflow/tasks.md" 2075],
+   :case [:stale-raw-pin :new-producer]}
+  {:refused true,
+   :reason [:independent-role :producer],
+   :case [:wrong-producer-consumer :producer]}
+  {:refused true,
+   :reason [:role-decision :producer],
+   :case [:wrong-decision-owner :producer]}
+  {:refused true,
+   :reason [:span-file-pin "specs/diag-workflow/tasks.md"],
+   :case [:stale-file-pin :producer]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/diag-workflow/tasks.md" 942],
+   :case [:stale-raw-pin :producer]}
+  {:refused true,
+   :reason [:independent-role :review],
+   :case [:wrong-producer-consumer :review]}
+  {:refused true,
+   :reason [:role-decision :review],
+   :case [:wrong-decision-owner :review]}
+  {:refused true,
+   :reason [:span-file-pin "specs/evolution-workflow/tasks.md"],
+   :case [:stale-file-pin :review]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/evolution-workflow/tasks.md" 13898],
+   :case [:stale-raw-pin :review]}
+  {:refused true,
+   :reason [:independent-role :seed],
+   :case [:wrong-producer-consumer :seed]}
+  {:refused true,
+   :reason [:role-decision :seed],
+   :case [:wrong-decision-owner :seed]}
+  {:refused true,
+   :reason [:span-file-pin "specs/release-workflow/tasks.md"],
+   :case [:stale-file-pin :seed]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/release-workflow/tasks.md" 88982],
+   :case [:stale-raw-pin :seed]}
+  {:refused true,
+   :reason [:independent-role :test],
+   :case [:wrong-producer-consumer :test]}
+  {:refused true,
+   :reason [:role-decision :test],
+   :case [:wrong-decision-owner :test]}
+  {:refused true,
+   :reason [:span-file-pin "specs/release-workflow/tasks.md"],
+   :case [:stale-file-pin :test]}
+  {:refused true,
+   :reason [:raw-span-pin "specs/release-workflow/tasks.md" 80144],
+   :case [:stale-raw-pin :test]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md"
+    9528],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/505da451b5f3bb264884df1c"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md"
+    10998],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md"
+    11343],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/da002dafeceba6c139475076"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+    2254],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/6093ae29b3f11f987a336324"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+    2838],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/6dd8f73469e22b8835f02853"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+    3270],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+    3637],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+    4041],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    940],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    1352],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/f6dab719b49d575e4206c260"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    2031],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/d63a3272d89be72bdb912798"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    2501],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    2698],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/4514878458baabba4c930293"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    3026],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/71337a13a101b5814adb0daa"]}
+  {:refused true,
+   :reason
+   [:raw-span-pin
+    "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+    3367],
+   :case
+   [:coherent-forged-source
+    "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"]}
+  {:refused true,
+   :reason
+   [:no-permissive-drift
+    :new-producer
+    "producer flag authorizes drift"],
+   :case [:permissive-drift "producer flag authorizes drift"]}
+  {:refused true,
+   :reason
+   [:no-permissive-drift :new-producer "missing codes are accepted"],
+   :case [:permissive-drift "missing codes are accepted"]}
+  {:refused true,
+   :reason
+   [:no-permissive-drift
+    :new-producer
+    "diagnostic drift without review is permitted"],
+   :case
+   [:permissive-drift "diagnostic drift without review is permitted"]}
+  {:refused true,
+   :reason
+   [:no-permissive-drift
+    :new-producer
+    "manifest presence is sufficient"],
+   :case [:permissive-drift "manifest presence is sufficient"]}
+  {:refused true,
+   :reason
+   [:full-role-predicate
+    :new-producer
+    "Reject a missing or unstable seed code with BOOT2004"],
+   :case :wrong-BOOT-code-condition}
+  {:refused true,
+   :reason :full-exact-insertion-inverse,
+   :case :lost-full-refinement}
+  {:refused true,
+   :reason :new-predicate-not-inherited,
+   :case :prior-review-promoted-to-new-criterion}
+  {:refused true,
+   :reason [:span-file-pin "specs/diag-workflow/tasks.md"],
+   :case :forged-current-source-commit}],
+ :candidate "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+ :trace-sha256
+ "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+ :before-source "d952fb25c82e104f99967f94a65abf77a4f9d210",
+ :conservation
+ {:historical-record-authorities-and-raw-predicates-conserved true,
+  :canonical-documents-byte-mode-status-conserved 240,
+  :decisions 833,
+  :current-criterion-witnesses 931,
+  :history-file-pin-changes
+  [{:id "gravity/runtime-check-diagnostic-stability",
+    :old
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+     :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+     :file-sha256
+     "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+     :start-byte 4213,
+     :end-byte 5328,
+     :raw-sha256
+     "a084055bbda2aba3c42964fb5ada27c61f1e9e6789b15953716ca6317fa550bb"},
+    :new
+    {:path "specs/diag-workflow/tasks.md",
+     :task-id
+     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+     :bootstrap-diagnostic-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :file-sha256
+     "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+     :raw-sha256
+     "a084055bbda2aba3c42964fb5ada27c61f1e9e6789b15953716ca6317fa550bb",
+     :marker "diag-implementation-tasks",
+     :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+     :end-byte 6593,
+     :start-byte 5478}}],
+  :task-and-roadmap-whole-file-inverse
+  :exact-single-declared-insertion,
+  :task-count-delta 0,
+  :decision-records-entirely-conserved true,
+  :implementation-credit :none,
+  :historical-mappings 561,
+  :all-other-task-ledgers-unchanged true,
+  :decision-statuses {:open 833},
+  :new-decision-ids 0,
+  :current-history-spans 4819},
+ :scope-limits
+ [:fifteen-facets-only
+  :eight-exact-criterion-roles
+  :no-whole-BOOT-document-entailment
+  :no-runtime-or-implementation-acceptance
+  :no-authoritative-migration-or-release
+  :no-prior833-review-inheritance-of-new-append
+  :no-later9d151739-acceptance-inheritance
+  :current-applicability-and-adoption-separate
+  :no-project-denominator-or-completion-count],
+ :required-predicates
+ {:new-producer
+  ["Every declared self-hosted compiler module emits the C15 structured diagnostic record"
+   "diagnostic manifest naming its actual stable codes and source spans"
+   "Reject a missing or unstable seed code with BOOT2004"
+   "a self-hosted diagnostic code gap with BOOT4006"
+   "actual seed and self-hosted diagnostic production"
+   "Negative fixtures exercise missing/unstable codes and lost or changed source spans"
+   "existing release stage-equivalence and TEST13 diagnostic-schema checks"
+   "Diagnostic drift without compatibility review fails BOOT3003"
+   "accepted deltas require the actual policy-linked GOV2 compatibility assessment and the release comparison report"
+   "rather than a producer-supplied success flag"
+   "C15 phase availability, generated origins, privacy/redaction"
+   "does not itself compare stage executables or admit migration"],
+  :producer
+  ["authoritative machine-readable diagnostic records"
+   "primary and related locations, generated-origin chain"
+   "explicit nil profile/target/primary syntax-id in early reader errors"
+   "unavailable input metadata in diagnostic-system errors"
+   "unless package privacy redacts it"
+   "retaining authorized audit data"
+   "C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/REDACTION"
+   "actual reader-through-lowering producers and public consumers"],
+  :seed
+  ["Execute the declared minimal seed"
+   "stable diagnostic report and subset conformance"
+   "seed executable/backend artifact"
+   "unstable/missing diagnostic codes"
+   "reject with BOOT2001-BOOT2006"
+   "do not confer seed retirement"],
+  :module
+  ["manifest for every declared migrated compiler module"
+   "diagnostics, tests/fixtures"
+   "actual source/module/pass/compiler/input hashes and produced outputs"
+   "diagnostic/preservation reports"
+   "actual pass input/output/preservation behavior disagrees"
+   "manifest alone do not prove migration"],
+  :facts
+  ["Carry source, syntax, hygiene, namespace, phase, profile and semantic evidence"
+   "regenerate, prove, retain checks or reject"
+   "source span, syntax identity, hygiene, namespace, phase, profile, type, effect, ownership, capability or proof evidence"
+   "before downstream consumption"
+   "actual replacement or retained-check products"],
+  :compare
+  ["Actually compare outputs of both named compiler artifacts"
+   "diagnostic, conformance"
+   "provenance-bound equivalence report"
+   "unreviewed or policy-unlinked deltas"
+   "Preserve stable codes/source spans"
+   "cannot hide semantic drift"
+   "BOOT1004/BOOT3003/BOOT6003"
+   "Comparison does not produce compiler executables"],
+  :test
+  ["Compile accepted and rejected fixtures with both named stages"
+   "stable codes, source spans and artifact schemas"
+   "fail lost origins or incompatible unexplained schemas"
+   "supplied success flags, proposal delivery and broad parent links are not executable evidence"],
+  :review
+  ["Produce the GOV2 baseline comparison"
+   "exact governed change"
+   "diagnostic IDs/fields/remediation"
+   "diagnostic/security/stable/experimental break disposition"
+   "silent diagnostic reuse/field drift"
+   "Security breaks require actual GOV4 evidence and migration"
+   "neither implements their changes nor gates ordinary development"]},
+ :intake
+ {:canonical-helper-current-reviewers-read true,
+  :exact-receipt-reservation-authorship-denial-check :clear,
+  :prior622-and-other-goals :remain-complete,
+  :new-finite-goal true},
+ :task-source "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+ :kind
+ :independent-BOOT2-BOOT3-BOOT4-diagnostic15-source-criterion-witness-review,
+ :verdict :pass-in-exact-source-criterion-scope,
+ :criterion-witnesses
+ {:compare
+  {:decision-id "interface/bootstrap/stage-equivalence",
+   :role :actual-stage-comparison-consumer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :path "specs/release-workflow/tasks.md",
+     :role :stage-evidence-producer-and-comparison-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 18826,
+       :end-byte 20312,
+       :raw-sha256
+       "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"}]}]},
+  :facts
+  {:decision-id "interface/compiler/c1/preserve-evidence",
+   :role :pipeline-fact-preservation,
+   :task-links
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :specified-by-exact-closing-criteria,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 14919,
+       :end-byte 16076,
+       :raw-sha256
+       "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"}]}]},
+  :module
+  {:decision-id "interface/bootstrap/module-interface",
+   :role :module-manifest-and-preservation-producer,
+   :task-links
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 11110,
+       :end-byte 12133,
+       :raw-sha256
+       "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"}]}]},
+  :new-producer
+  {:original-obligation-id
+   "bootstrap/compiler-diagnostic-compatibility",
+   :role :diagnostic-code-span-and-manifest-producer,
+   :task-links
+   [{:task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+       :start-byte 2075,
+       :end-byte 3339,
+       :raw-sha256
+       "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"}]}]},
+  :producer
+  {:decision-id "interface/compiler/c15/structured-diagnostic",
+   :role :diagnostic-record-producer,
+   :task-links
+   [{:task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :path "specs/diag-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+       :start-byte 942,
+       :end-byte 2074,
+       :raw-sha256
+       "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}]}]},
+  :review
+  {:decision-id "interface/governance/compatibility-assessment",
+   :role :scoped-compatibility-assessment-producer,
+   :task-links
+   [{:task-id "evolution/change-review",
+     :path "specs/evolution-workflow/tasks.md",
+     :role :scoped-governance-record-and-decision-producer,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 13898,
+       :end-byte 15198,
+       :raw-sha256
+       "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"}]}]},
+  :seed
+  {:decision-id "interface/bootstrap/seed-subset",
+   :role :seed-executable-and-diagnostic-producer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :path "specs/release-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 88982,
+       :end-byte 90277,
+       :raw-sha256
+       "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"}]}]},
+  :test
+  {:decision-id "interface/testing/test13/diagnostic-schema",
+   :role :independent-fixture-comparison-consumer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :path "specs/release-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 80144,
+       :end-byte 80662,
+       :raw-sha256
+       "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"}]}]}},
+ :facet-conjunctions
+ {"f6dab719b49d575e4206c260" #{:producer :new-producer},
+  "662d0f569d0b5e8e1c7c967d" #{:new-producer :compare},
+  "505da451b5f3bb264884df1c" #{:new-producer :seed},
+  "d63a3272d89be72bdb912798" #{:new-producer :module},
+  "da002dafeceba6c139475076" #{:new-producer},
+  "1d0312c8f02b4ab87ee5c730" #{:new-producer :compare :test},
+  "3417f6796ec398bc1e8efd01" #{:new-producer :module},
+  "45f0e0e40c7e55839efd7410" #{:module :facts},
+  "c3e3f3e38f576e592ddca225" #{:new-producer :review :compare},
+  "a63d8f50c0ce3aadfd9e4859" #{:producer :new-producer},
+  "4514878458baabba4c930293" #{:producer :new-producer},
+  "6dd8f73469e22b8835f02853" #{:new-producer :compare},
+  "71337a13a101b5814adb0daa" #{:new-producer},
+  "8fd3d7ae1a7a2a6f686b6c24" #{:new-producer :seed},
+  "6093ae29b3f11f987a336324" #{:new-producer :compare :test}}}

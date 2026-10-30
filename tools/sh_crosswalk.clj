@@ -1922,6 +1922,71 @@
  :new-decision-ids 0,
  :applicability
  "specs/requirement-reconciliation/c13-owner-current-witness-applicability.edn"}
+    :bootstrap-diagnostic15-qualified-source-review-adoption
+    {:receipt
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-independent-source-review.edn",
+  :sha256
+  "4bbc549276ab31e9e47e668f76dfb83c7bbfeb99c83a214e9080b5ab47d7d30e",
+  :reviewed-source "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+  :reviewed-tree "f17aaa36cdef24b581d224f1d3b755cacd420a4c",
+  :checks 37869,
+  :refusal-controls 142,
+  :scope :fifteen-source-criterion-conjunctions-eight-roles-only},
+ :criterion-roles 8,
+ :predicate-review-adoptions-530 :unchanged,
+ :facet-ids
+ ["facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+  "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"
+  "facet/bootstrap-governance/4514878458baabba4c930293"
+  "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+  "facet/bootstrap-governance/505da451b5f3bb264884df1c"
+  "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+  "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"
+  "facet/bootstrap-governance/6dd8f73469e22b8835f02853"
+  "facet/bootstrap-governance/71337a13a101b5814adb0daa"
+  "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"
+  "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"
+  "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+  "facet/bootstrap-governance/d63a3272d89be72bdb912798"
+  "facet/bootstrap-governance/da002dafeceba6c139475076"
+  "facet/bootstrap-governance/f6dab719b49d575e4206c260"],
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :source-trace
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+  :sha256
+  "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+  :bytes :unchanged},
+ :scope :fifteen-source-criterion-conjunctions-eight-roles-only,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-qualified-source-review-adoption.edn",
+  :sha256
+  "eb076f3ba8e213a369021b76cad82c00bf91eada8e013bc2ea131611da866a7e"},
+ :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+ :source-facets 15,
+ :status :qualified-independent-source-criterion-conjunction-accepted,
+ :source-occurrences 14,
+ :qualification
+ "Independent sealed review of fifteen BOOT2/3/4 diagnostic source conjunctions is adopted after exact current byte/owner conservation. Two Diagnostics-file pins refresh unchanged predicates after C15 additions. No whole BOOT document, enclosing unselected conjunction, later C15/C11/C14/C8/C13 addition, implementation, migration or final denominator is accepted; full-owner entailment remains separately pending.",
+ :limits
+ [:fifteen-facets-only
+  :eight-exact-criterion-roles
+  :no-whole-BOOT-document-entailment
+  :no-runtime-or-implementation-acceptance
+  :no-authoritative-migration-or-release
+  :no-prior833-review-inheritance-of-new-append
+  :no-later9d151739-acceptance-inheritance
+  :current-applicability-and-adoption-separate
+  :no-project-denominator-or-completion-count],
+ :new-decision-ids 0,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-qualified-current-applicability.edn",
+  :sha256
+  "26603737c7d5e2161f39cc0c3513836a781553d68471a734b4a87239fc31221c"}}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

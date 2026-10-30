@@ -2744,3 +2744,50 @@ refinement references, the retained retirement proposal reference, the active
 C13 binding path and all five extension descriptor states. Earlier review
 subjects and source/implementation acceptance scopes remain explicit; this
 checkpoint confers no new independent acceptance or final denominator.
+
+## Qualified independent bootstrap-diagnostic15 source adoption
+
+Independent receipt `bootstrap-diagnostic15-independent-source-review.edn`
+is preserved byte-for-byte with SHA256
+`4bbc549276ab31e9e47e668f76dfb83c7bbfeb99c83a214e9080b5ab47d7d30e`.
+The existing coordinator-routed reviewer sealed it for source
+`08e8417a28055a2b249bb7b1bbce23bebe01c94a`, tree
+`f17aaa36cdef24b581d224f1d3b755cacd420a4c`, task source
+`81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f` and the unchanged bootstrap
+diagnostic trace SHA256
+`32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12`.
+Its 37,869 source/data checks and 142 effective inert refusal controls accept
+only fifteen BOOT2/3/4 source-to-criterion conjunctions across eight exact
+producer/consumer roles. These are the reviewer's sealed results, not new
+owner-run compiler or review executions.
+
+Current applicability at source
+`b9e72428c873e0b5badaca6852b5348b479f20ee` passes 3 tests / 70 assertions.
+All fifteen source facets and fourteen enclosing occurrence memberships remain
+authenticated, and all eight reviewed raw criterion bodies remain exact current
+owning-task spans. Two Diagnostics-file pins refresh to unchanged producer
+predicates after the later C15 appends. Lost facets/roles, changed owner roles,
+stale raw pins and widened implementation/counting scope refuse. The receipt's
+original semantic assessment and all exclusions survive; applicability is
+owner conservation work, not an independent review of later additions.
+
+The adopted source conjunctions require actual stable code/span records and
+module diagnostic manifests, exact BOOT2004/BOOT4006 refusal conditions,
+policy-linked GOV2 assessment plus the release comparison report for reviewed
+deltas, and TEST13 comparison of actual accepted/rejected fixtures using both
+named stages. BOOT3003 rejects unreviewed diagnostic drift. Module/fact
+preservation responsibilities, C15 phase availability, generated origins and
+privacy/audit records remain distinct. A producer success flag or manifest
+alone cannot accept its own compatibility drift.
+
+All 833 Open decisions/931 owning witnesses, all 561 historical identities and
+4,819 raw predicates, all 240 original documents and the active C13 binding
+pointer are conserved. The 530 qualified decision-source adoptions do not
+increase. Fifteen of the 1,331 finite facet proposal IDs now have qualified
+independent source-conjunction acceptance; 1,316 remain pending. Whole-owner,
+enclosing unselected predicate, full-document and whole-project entailment
+remain separate; later C15/C11/C14/C8/C13 additions inherit no acceptance.
+No task, accepted implementation outcome or final denominator changes. No
+compiler, diagnostic/stage executable, runtime, replay, broker/controller or
+target probe was run; migration, release, final-count review and coordinator
+integration remain pending.

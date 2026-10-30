@@ -47,8 +47,11 @@ predicate entailment still require separate review.
 The [bootstrap diagnostic facet join](bootstrap-diagnostic-current-facet-trace.edn)
 binds its original owner to the existing diagnostic producer, module/fact
 preservation, stage-comparison, TEST13 and compatibility-review criteria.
-Its added producer predicate and all fifteen facet joins await independent
-source acceptance; the join adds no task or stable decision ID.
+Its added producer predicate and fifteen facet conjunctions have
+[qualified independent source adoption](bootstrap-diagnostic15-qualified-source-review-adoption.edn)
+after current byte and owner checks. This accepts only the eight exact reviewed
+criterion roles, adds no task or stable decision ID, and does not accept whole
+bootstrap documents, later diagnostic additions or implementation.
 The [retired-owner successor proposals](retired-owner-current-successor-proposals.edn)
 preserve all three retired IDs, their current criterion candidates and all
 72 attached facets. Two older context-absorption records are authenticated;

@@ -1,0 +1,262 @@
+{:receipt
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic15-independent-source-review.edn",
+  :sha256
+  "4bbc549276ab31e9e47e668f76dfb83c7bbfeb99c83a214e9080b5ab47d7d30e",
+  :reviewed-source "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+  :reviewed-tree "f17aaa36cdef24b581d224f1d3b755cacd420a4c",
+  :checks 37869,
+  :refusal-controls 142,
+  :scope :fifteen-source-criterion-conjunctions-eight-roles-only},
+ :reviewed-trace
+ {:path
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+  :sha256
+  "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+  :bytes :unchanged},
+ :facet-ids
+ ["facet/bootstrap-governance/1d0312c8f02b4ab87ee5c730"
+  "facet/bootstrap-governance/3417f6796ec398bc1e8efd01"
+  "facet/bootstrap-governance/4514878458baabba4c930293"
+  "facet/bootstrap-governance/45f0e0e40c7e55839efd7410"
+  "facet/bootstrap-governance/505da451b5f3bb264884df1c"
+  "facet/bootstrap-governance/6093ae29b3f11f987a336324"
+  "facet/bootstrap-governance/662d0f569d0b5e8e1c7c967d"
+  "facet/bootstrap-governance/6dd8f73469e22b8835f02853"
+  "facet/bootstrap-governance/71337a13a101b5814adb0daa"
+  "facet/bootstrap-governance/8fd3d7ae1a7a2a6f686b6c24"
+  "facet/bootstrap-governance/a63d8f50c0ce3aadfd9e4859"
+  "facet/bootstrap-governance/c3e3f3e38f576e592ddca225"
+  "facet/bootstrap-governance/d63a3272d89be72bdb912798"
+  "facet/bootstrap-governance/da002dafeceba6c139475076"
+  "facet/bootstrap-governance/f6dab719b49d575e4206c260"],
+ :implementation-credit :none,
+ :conservation
+ {:historical-spans 4819,
+  :decisions 833,
+  :historical-IDs 561,
+  :decision-records :unchanged,
+  :original-documents 240,
+  :historical-authorities-and-predicates :unchanged,
+  :active-binding
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+   :sha256
+   "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f"},
+  :task-criteria-and-statuses :unchanged,
+  :current-owning-witnesses 931},
+ :checks {:test 3, :pass 70, :fail 0, :error 0, :type :summary},
+ :refreshed-file-pins
+ [{:path "specs/diag-workflow/tasks.md",
+   :old
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+    :file-sha256
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+    :start-byte 2075,
+    :end-byte 3339,
+    :raw-sha256
+    "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"},
+   :current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 2075,
+    :end-byte 3339,
+    :raw-sha256
+    "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"}}
+  {:path "specs/diag-workflow/tasks.md",
+   :old
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+    :file-sha256
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"},
+   :current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}}],
+ :final-denominator :not-accepted,
+ :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+ :kind :bootstrap-diagnostic15-qualified-current-source-applicability,
+ :source-occurrences 14,
+ :qualification
+ "Owner applicability authenticates the unchanged fifteen source predicates and eight reviewed criterion conjunctions at current source. Two Diagnostics-file pins refresh to the same raw bytes after later C15 appends. Those appends and all later C11/C14/C8/C13 criteria gain no semantic acceptance from this review. No compiler/stage/diagnostic/replay/runtime/probe execution or migration/release/counting authority follows.",
+ :checker-sha256
+ "a32cb10f1f0fcaf9eb5b16d520cdeca6e26d1500a1e1dfe2329df883abb6027c",
+ :current-criteria
+ {:compare
+  {:decision-id "interface/bootstrap/stage-equivalence",
+   :role :actual-stage-comparison-consumer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+     :path "specs/release-workflow/tasks.md",
+     :role :stage-evidence-producer-and-comparison-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 18826,
+       :end-byte 20312,
+       :raw-sha256
+       "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"}]}]},
+  :facts
+  {:decision-id "interface/compiler/c1/preserve-evidence",
+   :role :pipeline-fact-preservation,
+   :task-links
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :specified-by-exact-closing-criteria,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 14919,
+       :end-byte 16076,
+       :raw-sha256
+       "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"}]}]},
+  :module
+  {:decision-id "interface/bootstrap/module-interface",
+   :role :module-manifest-and-preservation-producer,
+   :task-links
+   [{:task-id "pipeline",
+     :path "specs/compiler-api-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/compiler-api-workflow/tasks.md",
+       :marker "compiler-api-implementation-tasks",
+       :task-id "pipeline",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+       :start-byte 11110,
+       :end-byte 12133,
+       :raw-sha256
+       "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"}]}]},
+  :new-producer
+  {:original-obligation-id
+   "bootstrap/compiler-diagnostic-compatibility",
+   :role :diagnostic-code-span-and-manifest-producer,
+   :task-links
+   [{:task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+       :start-byte 2075,
+       :end-byte 3339,
+       :raw-sha256
+       "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"}]}]},
+  :producer
+  {:decision-id "interface/compiler/c15/structured-diagnostic",
+   :role :diagnostic-record-producer,
+   :task-links
+   [{:task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :path "specs/diag-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/diag-workflow/tasks.md",
+       :marker "diag-implementation-tasks",
+       :task-id
+       "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+       :start-byte 942,
+       :end-byte 2074,
+       :raw-sha256
+       "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}]}]},
+  :review
+  {:decision-id "interface/governance/compatibility-assessment",
+   :role :scoped-compatibility-assessment-producer,
+   :task-links
+   [{:task-id "evolution/change-review",
+     :path "specs/evolution-workflow/tasks.md",
+     :role :scoped-governance-record-and-decision-producer,
+     :criterion-witnesses
+     [{:path "specs/evolution-workflow/tasks.md",
+       :marker "evolution-implementation-tasks",
+       :task-id "evolution/change-review",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+       :start-byte 13898,
+       :end-byte 15198,
+       :raw-sha256
+       "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"}]}]},
+  :seed
+  {:decision-id "interface/bootstrap/seed-subset",
+   :role :seed-executable-and-diagnostic-producer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :path "specs/release-workflow/tasks.md",
+     :role :owning-artifact-producer-and-checker,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 88982,
+       :end-byte 90277,
+       :raw-sha256
+       "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"}]}]},
+  :test
+  {:decision-id "interface/testing/test13/diagnostic-schema",
+   :role :independent-fixture-comparison-consumer,
+   :task-links
+   [{:task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :path "specs/release-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/release-workflow/tasks.md",
+       :marker "release-implementation-tasks",
+       :task-id
+       "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+       :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+       :file-sha256
+       "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+       :start-byte 80144,
+       :end-byte 80662,
+       :raw-sha256
+       "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"}]}]}},
+ :current-criteria-raw-bytes :identical-to-reviewed}
