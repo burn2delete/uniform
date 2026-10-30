@@ -14416,6 +14416,108 @@
    :source-recovery-review :pending-independent-review,
    :new-task-fields 21,
    :total-concrete-links 558},
+  :c14-owner-current-source
+  {:earlier-current-applicability
+   {:C11-MIR-criterion-bodies :unchanged-current-checked,
+    :C11-whole-span-result
+    :retained-at-its-bcb98c1c-subject-not-renewed,
+    :active-current-basis
+    :C14-refreshed-historical-and-decision-spans},
+   :task-count-delta 0,
+   :source-facet-trace
+   {:path
+    "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn",
+    :sha256
+    "1f01e802c48d8b477b35cf8c962360eca8d11174120f0e085c2cea25db91e678"},
+   :C14-semantic-cases 33,
+   :implementation-credit :none,
+   :C14-source-facets 122,
+   :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+   :current-bindings
+   {:path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+    :sha256
+    "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7"},
+   :status :pending-independent-source-facet-review,
+   :new-Lower-criterion-witnesses
+   {:input
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 4680,
+     :end-byte 6096,
+     :raw-sha256
+     "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+    :layout
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 6459,
+     :end-byte 8289,
+     :raw-sha256
+     "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+    :providers
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 8641,
+     :end-byte 9654,
+     :raw-sha256
+     "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+    :proof
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 11525,
+     :end-byte 12643,
+     :raw-sha256
+     "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+    :emission
+    {:path "specs/lower-workflow/tasks.md",
+     :marker "lower-implementation-tasks",
+     :task-id
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :file-sha256
+     "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+     :start-byte 14428,
+     :end-byte 15781,
+     :raw-sha256
+     "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"}},
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-c14-owner-current-criterion-conservation.edn",
+   :PERF4-boundary-facets 23,
+   :qualification
+   "Four original lowering/layout owners have exact current criterion candidates. Four historical Lower-file pins refresh without changing raw predicates; all other current criteria, including the six MIR bodies, remain current. Earlier source reviews and applicability verdicts retain their actual subject/scope; these additions do not implement backends/providers/proof checkers, choose a target or confer independent acceptance or final counting.",
+   :C14-occurrences 49,
+   :composition
+   "specs/requirement-reconciliation/c14-owner-source-refinement.edn",
+   :historical-predicate-raw-bodies :unchanged,
+   :original-owner-joins
+   ["compiler/c14/authority-preserving-providers"
+    "compiler/c14/proof-target-metadata"
+    "compiler/c14/unsupported-target"
+    "performance/layout-boundary"],
+   :new-decision-ids 0,
+   :historical-Lower-file-pin-refreshes 4,
+   :applicability
+   "specs/requirement-reconciliation/c14-owner-current-witness-applicability.edn"},
   :gpu2-source-metadata-admission
   {:metadata-records 2,
    :admission
@@ -14556,7 +14658,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "1dd19963ce087a6133593f81b42963687954021a03209d1bc038d22a84f1326d"},
+  "45a08b805ea772af586b511ad7d6ac591a9ec8acaae3e107f1b1d18cc58d8756"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16995,101 +17097,101 @@
   "lower"
   [{:path "specs/lower-workflow/tasks.md",
     :file-sha256
-    "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/lower-workflow/tasks.md",
      :start-byte 495,
-     :end-byte 4679,
+     :end-byte 6096,
      :start-line 14,
      :end-line 18,
      :sha256
-     "1a7e4341a46faf7489e0c939fa62dbbd9532f68abc35defb3b092b2add3a8753",
+     "2f45a8d3ce09b7be8126173c4e01701bbf6c42a73400af9e63e1a63cf8aad9e1",
      :raw
-     "- [ ] `lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs` lower/1: Validate lowering inputs\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces. Foundation requirement gravity/multiversion-guard-manifest: For every dispatched backend variant emit target-feature guards, profile and numeric/safety constraints, fallback/rejection behavior and source-bound benchmark evidence; exercise each variant and guard failure. Refusals: Reject an unguarded unavailable instruction, widened profile, unjustified fast path, absent valid fallback or a benchmark from a different variant/target. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/target-lowering-operation-contract: For every MIR/domain operation in the declared input closure emit its explicit accept/lower/delegate/reject disposition with target, profile, ABI/provider and preservation obligations, and consume that disposition at target emission. Refusals: Reject an uncovered operation, stale/unverified IR, unsupported feature or delegate that widens effects/authority or drops source/safety/proof facts; emit an owning unsupported-operation diagnostic. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products. Criterion profile-gap/native/feature-guard (Open): Input: Native SIMD/intrinsic lowering or shipped variant with declared feature, numeric semantics, alignment/layout, portable wrapper or target namespace and fallback/rejection policy. Accept: Check feature-specific lowering eligibility and separately select a shipped variant only under guards matching target/numeric/layout assumptions; retain a valid fallback or explicit rejection. Unchecked intrinsics remain unsafe. Reject: Missing/unavailable target feature, implicit backend numeric behavior, unsupported alignment/layout, invalid guarded variant/fallback or unchecked intrinsic presented as safe. Required outputs: SIMD/target feature and numeric/layout/guard report, eligible/ineligible target and fallback fixtures, P5-SIMD/NUMERIC or lowering diagnostic with feature/provider/proof/origin context. Dependencies: backend-interface, opt/current-evidence-and-remaining-work/opt2-implement-structural-families, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping native/feature-guard; all attached contextual and negative predicates remain required. No implementation acceptance is inferred."},
+     "- [ ] `lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs` lower/1: Validate lowering inputs\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. P5: admit SIMD/intrinsics only with declared target features, numeric mode and alignment/layout evidence plus a valid fallback or rejection. A target wrapper does not justify unchecked intrinsics or change source legality; guarded variant selection and target lowering remain distinct interfaces. Foundation requirement gravity/multiversion-guard-manifest: For every dispatched backend variant emit target-feature guards, profile and numeric/safety constraints, fallback/rejection behavior and source-bound benchmark evidence; exercise each variant and guard failure. Refusals: Reject an unguarded unavailable instruction, widened profile, unjustified fast path, absent valid fallback or a benchmark from a different variant/target. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts. Foundation requirement gravity/target-lowering-operation-contract: For every MIR/domain operation in the declared input closure emit its explicit accept/lower/delegate/reject disposition with target, profile, ABI/provider and preservation obligations, and consume that disposition at target emission. Refusals: Reject an uncovered operation, stale/unverified IR, unsupported feature or delegate that widens effects/authority or drops source/safety/proof facts; emit an owning unsupported-operation diagnostic. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products. Criterion profile-gap/native/feature-guard (Open): Input: Native SIMD/intrinsic lowering or shipped variant with declared feature, numeric semantics, alignment/layout, portable wrapper or target namespace and fallback/rejection policy. Accept: Check feature-specific lowering eligibility and separately select a shipped variant only under guards matching target/numeric/layout assumptions; retain a valid fallback or explicit rejection. Unchecked intrinsics remain unsafe. Reject: Missing/unavailable target feature, implicit backend numeric behavior, unsupported alignment/layout, invalid guarded variant/fallback or unchecked intrinsic presented as safe. Required outputs: SIMD/target feature and numeric/layout/guard report, eligible/ineligible target and fallback fixtures, P5-SIMD/NUMERIC or lowering diagnostic with feature/provider/proof/origin context. Dependencies: backend-interface, opt/current-evidence-and-remaining-work/opt2-implement-structural-families, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: specs/requirement-reconciliation/profile-system/gap-completion.edn, mapping native/feature-guard; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. C14 input/eligibility criterion (Open): Consume an actual versioned lowering request identifying verified MIR or verified domain IR, profile, backend/target triple/features, ABI, runtime/providers and current effect/capability/safety/proof manifests. Reject any missing, stale or unverified required input before emission. Check profile/backend eligibility, MIR/provider feature requirements, actual runtime availability or explicit absence of need, representable exported ABI/data, layout/type/ownership/safety compatibility, authority-preserving effect providers, unsafe audit records, accepted domain verifier results and proof assumptions valid at this lowering point. Required outputs: actual request, machine-readable eligibility/operation-disposition matrix and accepted/refused input/feature/profile fixtures explaining unavailable targets without inspecting backend source. Preserve C14-INPUT/PROFILE/TARGET/ABI/RUNTIME/PROVIDER/PROOF-METADATA/CAPABILITY/UNSUPPORTED/MANIFEST meanings and input artifact, operation/domain anchor, span/origin, profile, target/backend, missing feature/proof/provider, fallback and remediation context. Lowering cannot legalize prior profile or safety rejection or rely on target undefined behavior. The actual IR verifiers, semantic checkers, runtime/providers and proof checkers supply their own products; neither schema presence nor a supplied success flag is verification."},
     :owner-source "docs/component-roadmaps/lower.md",
     :component "lower",
-    :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+    :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
     :id
     "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
     :checked false}
    {:path "specs/lower-workflow/tasks.md",
     :file-sha256
-    "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/lower-workflow/tasks.md",
-     :start-byte 4681,
-     :end-byte 5041,
+     :start-byte 6098,
+     :end-byte 8289,
      :start-line 20,
      :end-line 24,
      :sha256
-     "dc9021fa815a023918979cc515260521568bef241fa172953e90c3eb785c632d",
+     "4021c8a70902bcfcbe65b244739a660c4ded90634506ada0dfeb47ca48ac64dd",
      :raw
-     "- [ ] `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` lower/2: Derive ABI and layout\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement calling conventions, data/closure/error/resource representations and FFI layouts from actual target rules, rejecting unrepresentable requests."},
+     "- [ ] `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` lower/2: Derive ABI and layout\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement calling conventions, data/closure/error/resource representations and FFI layouts from actual target rules, rejecting unrepresentable requests. C14/PERF4 layout criterion performance/layout-boundary (Open): Derive and preserve explicit target ABI/layout records for calling convention, exported symbols, data alignment, enum/union/closure representations, errors/panic, resource handles, FFI, stack/heap, GC/no-GC, device/address-space mapping and debug/unwind. ABI/FFI/hardware/kernel/firmware/GPU/serialization/persistence boundaries retain actual layout, alignment, packing and ownership facts. Consume actual typed-field and checked transformation/alias/ownership/address-identity/boundary evidence; every optimized layout has a manifest and layout changes cannot remain hidden in a backend. The layout manifest binds type, profile, target, selected strategy, field names/types/alignments, overall alignment, padding, ABI and proof references. Packed/unaligned access requires actual target support and access-safety facts, with trap/atomic/vector/fallback conditions and preserved initialization/padding-byte rules. Required outputs: layout/ABI manifest, alignment proof, padding/packing, alias/ownership and device-transfer records, source/debug mapping and conformance results available to actual backend/debugger/serializer/safety consumers. Positive fixtures retain boundary representations and validate host/device transfer layouts; reject missing/ambiguous manifests, unsupported alignment, packed access without safety facts, host/device mismatch, unauthorized boundary changes or layout-based check erasure without actual proof. Retain applicable C14-ABI and PERF4-LAYOUT/ALIGN/PACKED/DEVICE/PROOF with type/field/span/target/profile/boundary/transform/missing-proof context. Layout selection consumes upstream transformation correctness rather than independently implementing the layout optimizer or deriving mathematical equality from representation identity."},
     :owner-source "docs/component-roadmaps/lower.md",
     :component "lower",
-    :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+    :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
     :id
     "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
     :checked false}
    {:path "specs/lower-workflow/tasks.md",
     :file-sha256
-    "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/lower-workflow/tasks.md",
-     :start-byte 5043,
-     :end-byte 5392,
+     :start-byte 8291,
+     :end-byte 9654,
      :start-line 26,
      :end-line 30,
      :sha256
-     "f2a1e9832b747f5f614301e3d06234fa83ba52cd1a8579e956d3c849c82aacc4",
+     "4a84bd4594c4ce6fbf4c5f3af016b024f5f4e6c255bf1c42e3c10cbead96a3f0",
      :raw
-     "- [ ] `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers` lower/3: Select explicit providers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Match runtime services and providers to effects/capabilities/profile; reject hidden hosted services and authority-widening fallbacks."},
+     "- [ ] `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers` lower/3: Select explicit providers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Match runtime services and providers to effects/capabilities/profile; reject hidden hosted services and authority-widening fallbacks. C14 provider criterion compiler/c14/authority-preserving-providers (Open): Explicitly select or reject providers for allocation, panic/errors, bounds/safety checks, atomics/synchronization, filesystem/network/database/shell effects, math, FFI, workflow, AI model/tool execution and debug/tracing. Every selected provider matches actual profile, target, effect, capability and safety contracts; services are supplied or explicitly unnecessary, not silently hosted. No-runtime profiles reject hidden hosted dependencies. Required outputs: actual runtime/provider and delegation/fallback manifests and positive/refused service-selection fixtures. Reject missing/forbidden services, absent provider support and any backend, runtime or fallback that adds effects/capabilities or weakens source safety with C14-RUNTIME/PROVIDER/CAPABILITY and the exact request/provider/source context. Consume actual Runtime/Auth/target provider products; declaring a provider name does not prove its implementation or grant authority."},
     :owner-source "docs/component-roadmaps/lower.md",
     :component "lower",
-    :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+    :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
     :id
     "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
     :checked false}
    {:path "specs/lower-workflow/tasks.md",
     :file-sha256
-    "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/lower-workflow/tasks.md",
-     :start-byte 5394,
-     :end-byte 7262,
+     :start-byte 9656,
+     :end-byte 12643,
      :start-line 32,
      :end-line 36,
      :sha256
-     "c29020a391209c7c1f06b15bde8c86657a494b88e2096d6dfdbc050d0317b851",
+     "e813f7b95a6a288c69138a6e64cbc09cf6ca70a27485b9cc62bd1020fd386974",
      :raw
-     "- [ ] `lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins` lower/4: Preserve proofs and origins\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math. Decision criterion interface/native/concurrency-order: Preserve declared task/thread/lock/message and atomic/fence ordering semantics and required provider/target facts through native lowering. Reject: Reject unsupported target order/atomic operations, detached invalid borrows, unsafe shared-state transformations and weakened ordering without lawful semantics. Required outputs: Native scheduler/atomic/lock/transfer and target-lowering records, ordering/lifetime preservation and unsupported-context refusals. Criterion `performance/target-intrinsic-map` (Open; implementation unassessed). Input: source-bound performance/target-intrinsic-map request and its declared profile/target/policy facts. Accept: Lower vector operations only through intrinsic maps binding required features, numeric mode, alignment, memory order, fallback and proof/certificate. Reject: Reject a map with absent features, mismatched numeric/alignment/memory-order assumptions, missing applicable proof or math certificate, or an unsupported target reachable without fallback or an execution-preventing guard. Required output: Source-operation to target-intrinsic map, required features, numeric mode, alignment, memory order, fallback and proof/certificate references; accepted lowering and guard/fallback rejection fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion."},
+     "- [ ] `lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins` lower/4: Preserve proofs and origins\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math. Decision criterion interface/native/concurrency-order: Preserve declared task/thread/lock/message and atomic/fence ordering semantics and required provider/target facts through native lowering. Reject: Reject unsupported target order/atomic operations, detached invalid borrows, unsafe shared-state transformations and weakened ordering without lawful semantics. Required outputs: Native scheduler/atomic/lock/transfer and target-lowering records, ordering/lifetime preservation and unsupported-context refusals. Criterion `performance/target-intrinsic-map` (Open; implementation unassessed). Input: source-bound performance/target-intrinsic-map request and its declared profile/target/policy facts. Accept: Lower vector operations only through intrinsic maps binding required features, numeric mode, alignment, memory order, fallback and proof/certificate. Reject: Reject a map with absent features, mismatched numeric/alignment/memory-order assumptions, missing applicable proof or math certificate, or an unsupported target reachable without fallback or an execution-preventing guard. Required output: Source-operation to target-intrinsic map, required features, numeric mode, alignment, memory order, fallback and proof/certificate references; accepted lowering and guard/fallback rejection fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion. C14 proof criterion compiler/c14/proof-target-metadata (Open): Bind each no-overflow/noalias/dereferenceable/alignment/FMA/fast-math/volatile/atomic-order target metadata decision to its actual operation, target, typed/numeric/memory assumptions and justifying Gravity proof/certificate valid at lowering. Preserve source/generated origins, safety/check/proof and dependency provenance through the actual map and artifact output. Required outputs: source-operation/proof-to-target metadata map with current proof-check results and actual accepted/refused lowering fixtures. Positive cases justify the selected metadata for the exact subject and target; reject absent, stale, mismatched or invalidated proof/certificate, numeric-mode or ownership/lifetime/ordering assumptions with C14-PROOF-METADATA and contextual diagnostics. Keep required volatile/atomic/source safety semantics; missing optional optimization evidence cannot justify silently deleting them. Consume applicable SAFE15/PERF10/math, semantic and transformation evidence; target metadata or an unresolved proof reference is not a checked Gravity proof."},
     :owner-source "docs/component-roadmaps/lower.md",
     :component "lower",
-    :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+    :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
     :id
     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
     :checked false}
    {:path "specs/lower-workflow/tasks.md",
     :file-sha256
-    "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/lower-workflow/tasks.md",
-     :start-byte 7264,
-     :end-byte 9046,
+     :start-byte 12645,
+     :end-byte 15781,
      :start-line 38,
      :end-line 42,
      :sha256
-     "aad0a19181b566179d4562a5956c1225e67bc6af9373ff90e471b995ef2b2262",
+     "4e20af212e840de75e650c5d769f0d666ac98f45882c78755e51dfbb7abe4977",
      :raw
-     "- [ ] `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` lower/5: Integrate target emission\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed Emit accepted backend-ready inputs and rejected unsupported-feature cases for the selected staged Linux LLVM release candidate; keep hosted development evidence separate, without claiming every platform. Foundation requirement gravity/native-target-artifact-emission: Emit a real C/LLVM native object or executable for D2's declared typed CLI slice from verified MIR, selected target ABI/runtime/provider records and complete source/compiler/artifact provenance; inspect and execute the claimed output where required by that slice. Refusals: Reject unchecked MIR, an unsupported operation/target, missing runtime/provider evidence and a metadata-only or nonnative output presented as the required native artifact. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison."},
+     "- [ ] `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` lower/5: Integrate target emission\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed Emit accepted backend-ready inputs and rejected unsupported-feature cases for the selected staged Linux LLVM release candidate; keep hosted development evidence separate, without claiming every platform. Foundation requirement gravity/native-target-artifact-emission: Emit a real C/LLVM native object or executable for D2's declared typed CLI slice from verified MIR, selected target ABI/runtime/provider records and complete source/compiler/artifact provenance; inspect and execute the claimed output where required by that slice. Refusals: Reject unchecked MIR, an unsupported operation/target, missing runtime/provider evidence and a metadata-only or nonnative output presented as the required native artifact. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison. C14 emission/unsupported criterion compiler/c14/unsupported-target (Open): Emit only accepted backend-ready inputs with the actual verified-input identity, backend/profile/target fingerprint, produced artifact kinds/content hashes, source/generated map, proof map, effect/capability/safety summaries, runtime/provider and dependency provenance, diagnostics and eligibility/ABI/layout decisions. Actual backend and package consumer fixtures validate the complete artifact manifest and preserved metadata. For an unrepresentable operation or domain artifact, produce a machine-readable unsupported record naming that subject, required feature, backend/profile, source span, alternatives, fallback status and diagnostic identity. Select fallback only under the same semantic/effect/capability/safety/profile contract and actual support; reject hidden services, authority expansion, undefined-behavior paths, unsupported features or incomplete manifests with the applicable C14 rules. Required outputs: actual target artifacts/manifests, unsupported-feature report and legal-fallback/refusal/consumer results. Preserve the existing staged Linux LLVM release slice as its declared claim, with other target coverage explicitly unimplemented until evidenced; this general C14 contract adopts no additional target and confers no execution or release acceptance."},
     :owner-source "docs/component-roadmaps/lower.md",
     :component "lower",
-    :source-commit "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+    :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
     :id
     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
     :checked false}],
@@ -18865,7 +18967,7 @@
   "docs/component-roadmaps/legality.md"
   "9427faaa318f351e5ae59b97d6e2c20d6bcc63ac5a3e6551fe64027d6fa6e13c",
   "docs/component-roadmaps/lower.md"
-  "abc98cd14a7cc303d3f6621958d9e6ac066d053ae3507daa245ab525c6fd5ec1",
+  "cb388754ac001941803eba92a9c6d906939649758c1fba90a1539213b76c2dd0",
   "docs/component-roadmaps/mir.md"
   "baf22f4194df5dd45c23e48b6f2bff89e1840d2942881a88a3f2453980c2dce2",
   "docs/component-roadmaps/opt.md"
@@ -18945,7 +19047,7 @@
   "specs/legality-workflow/tasks.md"
   "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
   "specs/lower-workflow/tasks.md"
-  "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+  "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
   "specs/mir-workflow/tasks.md"
   "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
   "specs/opt-workflow/tasks.md"
@@ -18984,7 +19086,7 @@
   "specs/opt-workflow/tasks.md"
   "6905570c41d81afb1d2917a479cf4d92b2304b30",
   "docs/component-roadmaps/lower.md"
-  "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+  "e94de7388589c8251f40fbb1da4a6af6da6f5918",
   "specs/diag-workflow/tasks.md"
   "916f020c064991fd308550e4e934c0b4443f6d6b",
   "docs/component-roadmaps/stdlib.md"
@@ -19078,7 +19180,7 @@
   "docs/component-roadmaps/types.md"
   "45fc1420cfe4373e5a20b1fcd80d46f87e4edb63",
   "specs/lower-workflow/tasks.md"
-  "e8544466e159c5bd8898aeed0c928353fceeb0aa",
+  "e94de7388589c8251f40fbb1da4a6af6da6f5918",
   "docs/component-roadmaps/resolve.md"
   "122c13e4591a1503e7f030e291b3cde673d36973",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"

@@ -2541,3 +2541,54 @@ predicate conjunctions, 704 pending dependency joins and 360 pending
 owner/metadata adjudications. Earlier C15/D2/retirement joins and all five
 checked extension descriptor states remain intact. Population checks pass
 2 / 16; the original facet counts and all acceptance qualifications survive.
+
+## Complete C14 source and four target-lowering/layout owner joins
+
+Task source `e94de7388589c8251f40fbb1da4a6af6da6f5918` refines the
+existing five Open Lower tasks. `c14-owner-source-refinement.edn` records their
+exact appends and full-file inverse, retaining all original criterion bodies,
+task IDs and statuses. No stable decision or task unit is added.
+
+The request/eligibility criterion consumes actual verified IR and the complete
+profile/target/ABI/runtime/provider/effect/capability/safety/proof inputs, with
+all nine eligibility conditions and machine-readable refusals. ABI/layout
+preserves every C14 representation dimension and explicit PERF4 boundary facts,
+manifest field relationships, alignment/packing/initialization/padding safety,
+ownership and device-transfer records. Layout selection consumes actual checked
+transformation evidence and does not implement the layout optimizer. The
+provider criterion selects or rejects every named service family, refusing
+hidden hosted services and authority-widening fallback.
+
+The proof criterion binds actual operation/target/numeric/memory assumptions
+and checked Gravity proof/certificate evidence to target metadata. Source,
+safety, origin and dependency records survive. Emission retains complete
+manifests and actual backend/package consumers; unsupported-feature records
+retain subjects, features, alternatives, fallback and source-mapped diagnostics.
+Fallback cannot weaken semantic/effect/capability/safety/profile contracts.
+The existing staged Linux LLVM slice remains its stated claim; the generic
+contract adopts no additional backend, ISA or platform.
+
+`c14-complete-current-facet-trace.edn` conserves all 122 C14 facets across 49
+occurrences with 33 manual semantic conjunctions, plus all 23 attached PERF4
+boundary-layout predicates. Kernel/LLVM/SSE2 request, proof-map and Particle/F32/
+SoA/alignment examples retain their field relationships without becoming
+universal defaults. The trace does not claim complete PERF4 optimizer coverage.
+Four original owners now have exact current criterion candidates for providers,
+unsupported targets, proof-to-metadata and layout boundaries. These proposals
+remain pending independent acceptance and confer no current execution credit.
+
+All 833 decision records remain exactly conserved and Open with 931 current
+owning witnesses. All 561 historical mappings and 4,819 raw predicate spans
+authenticate; four Lower-file pin maps refresh, preserving their raw bodies.
+Earlier supplemental criteria, including all six MIR bodies, remain current.
+The C11 whole-span applicability verdict stays tied to its earlier captured
+subject; the active global basis now uses the C14 refreshed spans. Earlier
+reviews retain their actual scope and do not accept this addition.
+
+Source checks pass 2 tests / 15 assertions, including complete populations,
+partial-conjunction refusal and source tamper controls. Lower projection tests
+pass 6 / 57. The finite facet index is 1,110 distinct original IDs and seven
+exact metadata overlaps: 966 + 145 - one shared C14 preface. No compiler,
+lowerer, proof checker, domain/runtime/provider, broker/controller or target
+probe was executed. Full entailment, independent source/final-count acceptance
+and coordinator integration remain required.

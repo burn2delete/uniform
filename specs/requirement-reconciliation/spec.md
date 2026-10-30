@@ -67,8 +67,13 @@ or implementation credit.
 The [complete C11 source trace](c11-complete-current-facet-trace.edn) joins all
 134 C11 facets and fourteen foundation MIR predicates to the existing five MIR
 tasks. Six original MIR owners gain exact criterion candidates, with other
-foundation attachments kept as residuals. Earlier binding snapshots remain
-byte-identical and current; the new criteria require independent acceptance.
+foundation attachments kept as residuals. The C11 stage preserved its earlier
+binding snapshots; later file-pin updates remain explicit and new criteria
+require independent acceptance.
+The [complete C14 source trace](c14-complete-current-facet-trace.edn) joins all
+122 C14 facets and 23 PERF4 boundary-layout predicates to the existing Lower
+tasks. Four original owners gain exact criterion candidates; source, provider,
+proof and artifact-consumer responsibilities remain distinct and unaccepted.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
