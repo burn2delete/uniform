@@ -154,6 +154,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/reader.clj", "namespace": "gravity.reader"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj", "namespace": "gravity.bootstrap", "owner": "sh-reader"},
       "test": {"path": "bootstrap/clojure/test/gravity/reader/artifact_test.clj", "namespace": "gravity.reader.artifact-test", "registration": "standalone"}
+    },
+    {
+      "id": "syntax-pipeline",
+      "kind": "production-stage-helper",
+      "owner": "sh-syntax",
+      "source": {"path": "bootstrap/clojure/src/gravity/syntax.clj", "namespace": "gravity.syntax"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-syntax"},
+      "test": {"path": "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj", "namespace": "gravity.syntax.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
