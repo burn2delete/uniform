@@ -1,5 +1,34 @@
 # PR502 preserved path reconciliation
 
+## Consumed collection and qualified mixed-ledger source reviews
+
+`collection-builder-review-consumption.edn` consumes independent receipt
+`9722abc59ea5deed88c044dc2ed9eeb20e461e9c7bdf81b1c63e820566373b96`
+for frozen `091bc8d5`: 9,572 source checks and 86 corruption refusals.
+All four complete historical bodies remain under their recorded guards. The
+three query wrappers admit a closed accepted head-proof cell but do not certify
+its payload. The fourth body is in existing PR623; removing exactly the one
+1023-argument predicate from the complete assessed-main constructor reconstructs
+that draft. This is conditional source incorporation only. Retained accounting
+is unendorsed; PR623/636 adoption, native/transitive/runtime support and current
+integration are not established. No earlier predicate decision is extended.
+
+`mixed-ledgers-review-consumption.edn` consumes PR598 receipt
+`f058ec3cfbd19bfb439f6ae3ae8d557c453e99bf4d0377e371b56d092bcdb274`:
+29,124 checks and 25 corruption refusals, qualified source conservation PASS
+with P2 `PR598-TEST-RETIREMENT-01`. Six retired full-result comparisons across
+row census, fact census and compile results contain nonpayment semantic
+invariance coverage. Their status-only replacements are not assertion-equivalent.
+This records a coverage gap, not an established runtime regression. The exact
+frozen candidate and finding remain intact; a separate test successor must
+restore meaningful semantic products/invariance without payment requirements.
+It does not automatically repair or rebase PR599's active review.
+
+Both consumptions rehash the sealed receipts, checkers and artifacts and verify
+their exact Git trees and source inputs without rerunning foreign checkers or
+actual helpers. Genuine execution and current-main integration remain UNRUN;
+full ACC-01/PR502 disposition remains incomplete and the native goal blocked.
+
 ## Verifier-fixture frozen source review intake
 
 PR599 remains frozen at `b786b464a67e33af2b75bfcf90a87619b71774c3`, tree
