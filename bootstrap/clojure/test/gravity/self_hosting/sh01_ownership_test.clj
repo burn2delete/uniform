@@ -235,6 +235,10 @@
 (def ^:private syntax-helper-consumer
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj")
 (def ^:private syntax-helper-test "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj")
+(def ^:private macro-stage-path "bootstrap/clojure/src/gravity/macro.clj")
+(def ^:private macro-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
+(def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
@@ -245,7 +249,10 @@
               :consumer-path reader-helper-consumer :test-path reader-helper-test}
              syntax-helper-path
              {:namespace 'gravity.syntax :owner :sh-syntax :slice "SH-04"
-              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}}
+              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}
+             macro-stage-path
+             {:namespace 'gravity.macro :owner :sh-macro :slice "SH-05"
+              :consumer-path macro-stage-consumer :test-path macro-stage-test}}
             (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
@@ -257,6 +264,9 @@
          (= :sh-syntax (get-in record [:module-owners syntax-helper-path]))
          (= {:namespace 'gravity.syntax.pipeline-test :slice "SH-04" :owner :sh-syntax}
             (get-in record [:standalone-test-owners syntax-helper-test]))
+         (= :sh-macro (get-in record [:module-owners macro-stage-path]))
+         (= {:namespace 'gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
+            (get-in record [:standalone-test-owners macro-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
               "consumer" {"path" macro-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
@@ -271,8 +281,27 @@
               "source" {"path" syntax-helper-path "namespace" "gravity.syntax"}
               "consumer" {"path" syntax-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-syntax"}
               "test" {"path" syntax-helper-test "namespace" "gravity.syntax.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "macro-plan-runtime" "kind" "production-stage-helper" "owner" "sh-macro"
+              "source" {"path" macro-stage-path "namespace" "gravity.macro"}
+              "consumer" {"path" macro-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "test" {"path" macro-stage-test "namespace" "gravity.macro.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
+
+(deftest macro-runtime-helper-joins-real-stage-consumer-and-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [macro-stage-path macro-stage-consumer macro-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "(clojure.core/require 'gravity.macro)"))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "gravity.macro/build-plan-binding!"))
+    (doseq [bad [(assoc-in record [:module-owners macro-stage-path] :master-coordinator)
+                 (assoc-in record [:production-helper-associations macro-stage-path :consumer-path] "forged.clj")
+                 (update record :standalone-test-owners dissoc macro-stage-test)]]
+      (is (not (production-helper-registration-valid? bad contract))))))
 
 (deftest production-helper-joins-real-source-consumer-and-existing-standalone-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
