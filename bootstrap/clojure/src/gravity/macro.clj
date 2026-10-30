@@ -2524,7 +2524,7 @@
 
 (defn
  c4-artifact
- [source-path sh05 operations]
+ [_source-path sh05 operations]
  (let
   [input
    ^{:line 78, :column 42}
@@ -2731,7 +2731,7 @@
       (.valAt
        ^clojure.lang.ILookup operations
        :sh05-macro-sh02-descriptor)
-      {:keys [artifact allow-missing-proof? invocation]}
+      {:keys [artifact  invocation]}
       state
       source-path
       (get-in artifact [:provenance :source-path])
@@ -2887,19 +2887,10 @@
        :sh05-source-syntax-stream)
       {:keys
        [artifact
-        allow-missing-proof?
         source-path
         boundary
         c3-artifact
-        c3-boundary
-        gravity-verifiers
-        output-envelope-ok?
         binding
-        embedded-descriptor
-        expected-descriptor
-        descriptor-current?
-        sh03-current?
-        sh04-current?
         template-passed?
         resolved-passed?]}
       state
@@ -3105,38 +3096,13 @@
       (.valAt ^clojure.lang.ILookup operations :sh05-macro-artifact-id)
       {:keys
        [artifact
-        allow-missing-proof?
         source-path
-        boundary
         c3-artifact
         c3-boundary
-        gravity-verifiers
-        output-envelope-ok?
-        binding
-        embedded-descriptor
-        expected-descriptor
-        descriptor-current?
-        sh03-current?
-        sh04-current?
         template-passed?
         resolved-passed?
         runs
-        input-forms
-        input-syntax
-        input-module
-        expected-expanded-stream
-        expected-trace
-        first-run
-        first-run-shortcuts-current?
-        run-count-current?
-        run-storage-exact?
-        plan-binding-current?
-        pinned-version?
-        grants-current?
-        trace-current?
-        output-current?
-        generated-origins-current?
-        input-lineage-current?]}
+        ]}
       state
       c3-syntax-by-id
       (into
@@ -3259,27 +3225,10 @@
      [{:keys
        [artifact
         allow-missing-proof?
-        source-path
-        boundary
-        c3-artifact
-        c3-boundary
-        gravity-verifiers
         output-envelope-ok?
-        binding
-        embedded-descriptor
-        expected-descriptor
         descriptor-current?
         sh03-current?
         sh04-current?
-        template-passed?
-        resolved-passed?
-        runs
-        input-forms
-        input-syntax
-        input-module
-        expected-expanded-stream
-        expected-trace
-        first-run
         first-run-shortcuts-current?
         run-count-current?
         run-storage-exact?
@@ -3290,10 +3239,6 @@
         output-current?
         generated-origins-current?
         input-lineage-current?
-        c3-syntax-by-id
-        expected-reader-binding
-        expected-reader-revision
-        expected-definition-span
         run-provenance-current?
         provenance-current?
         graph-valid?
@@ -3393,56 +3338,10 @@
     (semantic-late-sh05-macro-artifact-verification*-provenance
      state-2)
     state-4
-    (semantic-late-sh05-macro-artifact-verification*-proof state-3)]
-   (clojure.core/let
-    [{:keys
-      [artifact
-       allow-missing-proof?
-       source-path
-       boundary
-       c3-artifact
-       c3-boundary
+    (semantic-late-sh05-macro-artifact-verification*-proof state-3)
+    {:keys
+      [
        gravity-verifiers
-       output-envelope-ok?
-       binding
-       embedded-descriptor
-       expected-descriptor
-       descriptor-current?
-       sh03-current?
-       sh04-current?
-       template-passed?
-       resolved-passed?
-       runs
-       input-forms
-       input-syntax
-       input-module
-       expected-expanded-stream
-       expected-trace
-       first-run
-       first-run-shortcuts-current?
-       run-count-current?
-       run-storage-exact?
-       plan-binding-current?
-       pinned-version?
-       grants-current?
-       trace-current?
-       output-current?
-       generated-origins-current?
-       input-lineage-current?
-       c3-syntax-by-id
-       expected-reader-binding
-       expected-reader-revision
-       expected-definition-span
-       run-provenance-current?
-       provenance-current?
-       graph-valid?
-       graph-current?
-       exact-shape?
-       artifact-id-current?
-       base-checks
-       base-failed-checks
-       expected-embedded-proof
-       embedded-proof-current?
        checks
        failed-checks]}
      state-4]
@@ -3450,7 +3349,7 @@
      :status (if (empty? failed-checks) :passed :failed),
      :checks checks,
      :failed-checks failed-checks,
-     :gravity-verifiers gravity-verifiers}))))
+     :gravity-verifiers gravity-verifiers})))
 
 (doseq
  [operation

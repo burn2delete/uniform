@@ -27,7 +27,7 @@
      (filter var? ^{:line 142, :column 49} (vals canonical-operations))
      [#'macro-stage-operations
       #'macro-stage-defaults
-      #'gravity.macro-run-storage/exact?]
+      #'macro-run-storage/exact?]
      [#'c4-macro-diagnostic-ids
       #'c4-macro-governing-document
       #'sh05-identity-chunk-width

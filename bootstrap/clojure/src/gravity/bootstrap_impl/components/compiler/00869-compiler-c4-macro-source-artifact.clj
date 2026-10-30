@@ -1,7 +1,6 @@
 
 
-(defn
- compiler-c4-macro-source-artifact
+(defn compiler-c4-macro-source-artifact
  [source-path source-text]
  (gravity.macro/compile-source
   source-path
