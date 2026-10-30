@@ -1023,6 +1023,27 @@ unchanged selected forms/policy. The old denied DSE-attribution review remains
 stopped; its exact original approval-policy error was preserved and the new
 packet was independently admitted as a distinct subject.
 
+### Predicate caller remnant proposal
+
+`predicate-caller-remnants.edn` and its companion Markdown bind 22 original
+C7 units: each original predicate family's derive and inferred-call function.
+Their complete argument lists match history; applying exactly 55 listed
+subtree replacements reconstructs all current forms at main `b1d590cc`.
+Each derive has one zero-charge simplification and two retired LC work-limit
+diagnostic choices; each inferred-call has the zero-charge simplification and
+reason choice. Every other source term is preserved without normalization.
+
+The proposal reuses only the unchanged two-helper normal-return evidence from
+independent receipt `5b7b28a3...`, not its four-caller disposition. All 22
+callers directly bind the pinned LC validator result once, without a local
+helper shadow or assignment. Five effective source corruptions per caller,
+110 total, reject restored accounting, arity/source-builder/diagnostic changes
+and altered integer representation. The requested decision rejects restoration
+of these exact 55 remnants under accounting-removal policy, while leaving
+outer budgets/refusals/fields explicitly unresolved and unendorsed. No
+arithmetic identity or runtime/effect/transitive proof is claimed. Independent
+classification remains pending; no new unit receives completion credit yet.
+
 ### Guarded predicate source incorporation proposal
 
 `predicate-guarded-incorporation.edn` and its companion Markdown bind exactly
