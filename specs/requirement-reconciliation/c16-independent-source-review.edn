@@ -1,0 +1,3086 @@
+{:findings [],
+ :facet-verdicts
+ [{:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "b1533f4b06824ead83ffd960ee5fb0254e4606924c1ef9880d73dd657877bef5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 0,
+    :end-byte 39,
+    :raw-sha256
+    "b1533f4b06824ead83ffd960ee5fb0254e4606924c1ef9880d73dd657877bef5"},
+   :source-occurrence-id
+   "C16/source/d9af46bcc47e2d3f93e9c6326f20dfeef27b8983c6cd9fc132062900b1bf6f21",
+   :id "C16/normalized-facet/0-39/b1533f4b06824ead",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "64388db857b74ef899a81b871e0c1db897afbb9b5a4a2cdfc91ca7c44e382314",
+   :prior-provenance-overlap true,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 40,
+    :end-byte 316,
+    :raw-sha256
+    "64388db857b74ef899a81b871e0c1db897afbb9b5a4a2cdfc91ca7c44e382314"},
+   :source-occurrence-id
+   "C16/source/8cecbd59feeff90a8078a1f2e643822baf4972fc200b7964fcc46b83bf22d7c0",
+   :id "C16/normalized-facet/40-316/64388db857b74ef8",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 317,
+    :end-byte 328,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :source-occurrence-id
+   "C16/source/f3e22a7047b40a82f8aeeef8179a1330d67df2bd2e6a59593b1b3c24f35c7f39",
+   :id "C16/normalized-facet/317-328/994413297a3e95a9",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "6dc8c55899bad2a1d9898d20e87cca247c78f8c2a420253a854f56ead54e57bd",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 329,
+    :end-byte 622,
+    :raw-sha256
+    "6dc8c55899bad2a1d9898d20e87cca247c78f8c2a420253a854f56ead54e57bd"},
+   :source-occurrence-id
+   "C16/source/4a82da1bf814df3c3652c80ece4d76726acf2edf65ef99bcd08ee3b5c11abd70",
+   :id "C16/facet/329-622",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "93851511c5ddfff580848d7823fc7d8dbe8de910b9f67875745004028300e3cd",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 623,
+    :end-byte 713,
+    :raw-sha256
+    "93851511c5ddfff580848d7823fc7d8dbe8de910b9f67875745004028300e3cd"},
+   :source-occurrence-id
+   "C16/source/879807156b48d418d5197c9e6429a0f83b160eabd206ae9b367f51bb9dedbab9",
+   :id "C16/facet/623-713",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 714,
+    :end-byte 730,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :source-occurrence-id
+   "C16/source/07b4f48acb7943f4efdabb5c40d67f123ba333916a04d3fce3afb2043dc407bb",
+   :id "C16/normalized-facet/714-730/d8416f1863ce5290",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "e1bef964d0b67e30ebb69882ed586b351b225623033ca2fde260d19d33f229f2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 731,
+    :end-byte 882,
+    :raw-sha256
+    "e1bef964d0b67e30ebb69882ed586b351b225623033ca2fde260d19d33f229f2"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/731-882",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "84ee40632387b37daea2be77da3580e8a820a21d4cef72143e31a6a2ccbb724f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 882,
+    :end-byte 972,
+    :raw-sha256
+    "84ee40632387b37daea2be77da3580e8a820a21d4cef72143e31a6a2ccbb724f"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/882-972",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "b8ecb1b305b7c6ffd8878b228e53f9bd0591acbe036442f114fe841ee13748b2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 972,
+    :end-byte 1146,
+    :raw-sha256
+    "b8ecb1b305b7c6ffd8878b228e53f9bd0591acbe036442f114fe841ee13748b2"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/972-1146",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "1d00369ebc9eedb0607ab6c3f675c083ccdfc24318d26dbd5ed8aacef9fa5b1d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1146,
+    :end-byte 1233,
+    :raw-sha256
+    "1d00369ebc9eedb0607ab6c3f675c083ccdfc24318d26dbd5ed8aacef9fa5b1d"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/1146-1233",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "029fec42ea19fc3582f970ce597f242161f39148bf3a17384a5e70e0356b251e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1233,
+    :end-byte 1322,
+    :raw-sha256
+    "029fec42ea19fc3582f970ce597f242161f39148bf3a17384a5e70e0356b251e"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/1233-1322",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "2bda143813bac1181c9dbab2959896a191ed3bf951edc7fd3a1c299ed4d81de5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1322,
+    :end-byte 1416,
+    :raw-sha256
+    "2bda143813bac1181c9dbab2959896a191ed3bf951edc7fd3a1c299ed4d81de5"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/1322-1416",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "a23bff721217aead12be4bf6ddccb440138dc56ab32fb649c8f4960f782858d8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1416,
+    :end-byte 1538,
+    :raw-sha256
+    "a23bff721217aead12be4bf6ddccb440138dc56ab32fb649c8f4960f782858d8"},
+   :source-occurrence-id
+   "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+   :id "C16/facet/1416-1538",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1539,
+    :end-byte 1555,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :source-occurrence-id
+   "C16/source/be09d21f0c19ff80e3297bf00f379add33b87f29646367c8dd7360c080ec4e18",
+   :id "C16/normalized-facet/1539-1555/21d1931a332d9b7f",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "4ba7cf640c2cd1c245b46d913ccf64d354cc7dd96b623b6007ae4344526d25f8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1556,
+    :end-byte 1594,
+    :raw-sha256
+    "4ba7cf640c2cd1c245b46d913ccf64d354cc7dd96b623b6007ae4344526d25f8"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1556-1594",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "1b9ecf213ea23d88e72191dfc2027ab8edd0296f9d1939c56fc83003c00405bf",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1594,
+    :end-byte 1655,
+    :raw-sha256
+    "1b9ecf213ea23d88e72191dfc2027ab8edd0296f9d1939c56fc83003c00405bf"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1594-1655",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "fa2f111ea22b28568a963896bb879e42c1b999d64e1fd3530502a2b94a192f8f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1655,
+    :end-byte 1710,
+    :raw-sha256
+    "fa2f111ea22b28568a963896bb879e42c1b999d64e1fd3530502a2b94a192f8f"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1655-1710",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "323b0894965e9f90640ee62e50df9580643d2cf706390936d2eaef7448fa70b1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1710,
+    :end-byte 1765,
+    :raw-sha256
+    "323b0894965e9f90640ee62e50df9580643d2cf706390936d2eaef7448fa70b1"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1710-1765",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "6ef20f97df35838b1b9fed637206a79933081e84b798f436962c561c0403f05e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1765,
+    :end-byte 1818,
+    :raw-sha256
+    "6ef20f97df35838b1b9fed637206a79933081e84b798f436962c561c0403f05e"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1765-1818",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "b383a4091f154bfbf007ec815cdeeb1499b8a8ee3308e1534b5a9680d71cb348",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1818,
+    :end-byte 1933,
+    :raw-sha256
+    "b383a4091f154bfbf007ec815cdeeb1499b8a8ee3308e1534b5a9680d71cb348"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1818-1933",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "217ed50e76d210f0b6f0bd46b393c0349e9f49daa42cc29e99e2f083c2375b2e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 1933,
+    :end-byte 2003,
+    :raw-sha256
+    "217ed50e76d210f0b6f0bd46b393c0349e9f49daa42cc29e99e2f083c2375b2e"},
+   :source-occurrence-id
+   "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+   :id "C16/facet/1933-2003",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2004,
+    :end-byte 2029,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :source-occurrence-id
+   "C16/source/cc425c73eafeba23c7842808fa87f96afef3117c5c9a624bbd3e3498e0cf1e30",
+   :id "C16/normalized-facet/2004-2029/f4280a4d61a89adc",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "740684f7424034213791be933b436d3ec27dd7f97c55b928e26bfee237cea9c0",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2030,
+    :end-byte 2062,
+    :raw-sha256
+    "740684f7424034213791be933b436d3ec27dd7f97c55b928e26bfee237cea9c0"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2030-2062",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "a67a32223c0ac45c2def28b16a57568fe611e8474b54de25194e31e8a09ae430",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2062,
+    :end-byte 2088,
+    :raw-sha256
+    "a67a32223c0ac45c2def28b16a57568fe611e8474b54de25194e31e8a09ae430"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2062-2088",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "0ce10bbe448a1d167b7139599fd85374b24ac6d86dd311afd99f4c39a3088387",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2088,
+    :end-byte 2112,
+    :raw-sha256
+    "0ce10bbe448a1d167b7139599fd85374b24ac6d86dd311afd99f4c39a3088387"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2088-2112",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "4404ade3fd069ec79b1162d8269a5832c8ebfb6e8e86f3839eb1e8edd9402c5b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2112,
+    :end-byte 2134,
+    :raw-sha256
+    "4404ade3fd069ec79b1162d8269a5832c8ebfb6e8e86f3839eb1e8edd9402c5b"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2112-2134",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "579913e845ee0e1e4ee3ae4a35f13d3700d33f793b23530188fb0dc43b93d8b4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2134,
+    :end-byte 2159,
+    :raw-sha256
+    "579913e845ee0e1e4ee3ae4a35f13d3700d33f793b23530188fb0dc43b93d8b4"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2134-2159",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "4e91fb6000a41d17a1953c826e030c11a9e72a9d98fea59f0cb1904df1cc7fd6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2159,
+    :end-byte 2182,
+    :raw-sha256
+    "4e91fb6000a41d17a1953c826e030c11a9e72a9d98fea59f0cb1904df1cc7fd6"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2159-2182",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "3b45dbcff672114d063bfc11b5f9111ec9311d1febe5820d7950996eaedcabe3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2182,
+    :end-byte 2214,
+    :raw-sha256
+    "3b45dbcff672114d063bfc11b5f9111ec9311d1febe5820d7950996eaedcabe3"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2182-2214",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "be2b3cb2825537ab6c0a30068ed0f49c11faa9127732d4640369c589992d4917",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2214,
+    :end-byte 2241,
+    :raw-sha256
+    "be2b3cb2825537ab6c0a30068ed0f49c11faa9127732d4640369c589992d4917"},
+   :source-occurrence-id
+   "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+   :id "C16/facet/2214-2241",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "07fd7c08ec1f7168d12e9e097ee6bf43c21391f1b26a3db1abfbf05c487460cf",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2242,
+    :end-byte 2262,
+    :raw-sha256
+    "07fd7c08ec1f7168d12e9e097ee6bf43c21391f1b26a3db1abfbf05c487460cf"},
+   :source-occurrence-id
+   "C16/source/51af5d9ca77a9f904c409cd9e3e6bc6fb1079fe9a4d254ea2bb0c49880fb5fd5",
+   :id "C16/normalized-facet/2242-2262/07fd7c08ec1f7168",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "7676213e66efe25b02b42400ea56e83198b7f56a84d9a6b0e1f1a891a4a3d25c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2263,
+    :end-byte 2300,
+    :raw-sha256
+    "7676213e66efe25b02b42400ea56e83198b7f56a84d9a6b0e1f1a891a4a3d25c"},
+   :source-occurrence-id
+   "C16/source/b0b8e2aa6323b12251f9c373d193cf6f36d99d3a8afd62ed0094122be6a3d1fc",
+   :id "C16/facet/2263-2300",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "8402c2f4534d4271a113782765e7e96771d04463ef451f47232b377b5e7a46bb",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2301,
+    :end-byte 2317,
+    :raw-sha256
+    "8402c2f4534d4271a113782765e7e96771d04463ef451f47232b377b5e7a46bb"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2301-2317",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "19b1f268da52fc49c61473b4dba653ae774908fc255ab50593e32286f96e2a82",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2317,
+    :end-byte 2342,
+    :raw-sha256
+    "19b1f268da52fc49c61473b4dba653ae774908fc255ab50593e32286f96e2a82"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2317-2342",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "70feb124c0cc18b3adcd9251f1a0351d6f288786c5aa27d5299dd305eb186941",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2342,
+    :end-byte 2368,
+    :raw-sha256
+    "70feb124c0cc18b3adcd9251f1a0351d6f288786c5aa27d5299dd305eb186941"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2342-2368",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "03654bda34c93e2897dc289164aa7ebff76907b8fdacae0e0a8218947806f2f3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2368,
+    :end-byte 2390,
+    :raw-sha256
+    "03654bda34c93e2897dc289164aa7ebff76907b8fdacae0e0a8218947806f2f3"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2368-2390",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "5c107a57b48a958bbf5b64ff60a97220e7f379c852c213431aac5218ade92a1f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2390,
+    :end-byte 2404,
+    :raw-sha256
+    "5c107a57b48a958bbf5b64ff60a97220e7f379c852c213431aac5218ade92a1f"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2390-2404",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "15247f13a586029e8058c6489f5595b89498b5bcc2d8b2ce5be49be57714f78f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2404,
+    :end-byte 2420,
+    :raw-sha256
+    "15247f13a586029e8058c6489f5595b89498b5bcc2d8b2ce5be49be57714f78f"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2404-2420",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "a23cef0f5e554c6b2f11ef4cfb1f27de4a8e65050fae2f941e1808c19cae280e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2420,
+    :end-byte 2439,
+    :raw-sha256
+    "a23cef0f5e554c6b2f11ef4cfb1f27de4a8e65050fae2f941e1808c19cae280e"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2420-2439",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "5f5f7e76dddaa2647bba3a797ec90164ff43cc87ad8d03036cd1f7810d8f2538",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2439,
+    :end-byte 2458,
+    :raw-sha256
+    "5f5f7e76dddaa2647bba3a797ec90164ff43cc87ad8d03036cd1f7810d8f2538"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2439-2458",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "55b262e2fdfad0bd56ae7e9437c33f05f42936d5b6813104ce19c6cc8348396b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2458,
+    :end-byte 2473,
+    :raw-sha256
+    "55b262e2fdfad0bd56ae7e9437c33f05f42936d5b6813104ce19c6cc8348396b"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2458-2473",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "3a5fe5c2504d9e7708471bcbb1bcd36426210bfac6e54cd14787f4333d0697ae",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2473,
+    :end-byte 2499,
+    :raw-sha256
+    "3a5fe5c2504d9e7708471bcbb1bcd36426210bfac6e54cd14787f4333d0697ae"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2473-2499",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "d53c5a09223b316b705ae8bfde938c941502efae065343f5d599c844fc7540d3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2499,
+    :end-byte 2522,
+    :raw-sha256
+    "d53c5a09223b316b705ae8bfde938c941502efae065343f5d599c844fc7540d3"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2499-2522",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "fc54557048fd9695a7bb448f7a8809ecdea9af78cd1098f7cc8a1a78750ca05f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2522,
+    :end-byte 2542,
+    :raw-sha256
+    "fc54557048fd9695a7bb448f7a8809ecdea9af78cd1098f7cc8a1a78750ca05f"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2522-2542",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2542,
+    :end-byte 2557,
+    :raw-sha256
+    "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2542-2557",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "1d650bf16999d09ba65d0ac60f36d013915bb0fd1cf935be225689e39a839156",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2557,
+    :end-byte 2584,
+    :raw-sha256
+    "1d650bf16999d09ba65d0ac60f36d013915bb0fd1cf935be225689e39a839156"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2557-2584",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "76a5d08324635f9ba05cea34ee36cbdca2753f4a40c32ff50b89ba7556fcbc23",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2584,
+    :end-byte 2618,
+    :raw-sha256
+    "76a5d08324635f9ba05cea34ee36cbdca2753f4a40c32ff50b89ba7556fcbc23"},
+   :source-occurrence-id
+   "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+   :id "C16/facet/2584-2618",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "a1b05356c88586bfaeaa04e8e905b5b60199a87af7df587f6d8e1a34e2d19af9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2619,
+    :end-byte 2756,
+    :raw-sha256
+    "a1b05356c88586bfaeaa04e8e905b5b60199a87af7df587f6d8e1a34e2d19af9"},
+   :source-occurrence-id
+   "C16/source/16a758bfb50b6cf7ab1feda1b6936d3c99940b473a947e42d0306061a4e92aac",
+   :id "C16/facet/2619-2756",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "6f681672a55b0cd374cfe19ec8d48aa54c081b7f1901f7a6c7be016d5f721718",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2757,
+    :end-byte 2770,
+    :raw-sha256
+    "6f681672a55b0cd374cfe19ec8d48aa54c081b7f1901f7a6c7be016d5f721718"},
+   :source-occurrence-id
+   "C16/source/47de5367df50cd65a8968b8adff0d4c417c93d589b21ef5905e36c1486bd2a3b",
+   :id "C16/normalized-facet/2757-2770/6f681672a55b0cd3",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "308107f227038a10bd0ad10a26e8370d3046957e8172b208edfad78ce3bf4e2f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 2771,
+    :end-byte 3262,
+    :raw-sha256
+    "308107f227038a10bd0ad10a26e8370d3046957e8172b208edfad78ce3bf4e2f"},
+   :source-occurrence-id
+   "C16/source/e2681642f4a462a0cb0c03c85170764f9dd344dd8d0955a0eee1882921ec361b",
+   :id "C16/facet/2771-3262",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "94ed17ecacfc2729e4e38336e2214789b3fd1934a2f803e739e8b8d107a8059a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 3263,
+    :end-byte 3373,
+    :raw-sha256
+    "94ed17ecacfc2729e4e38336e2214789b3fd1934a2f803e739e8b8d107a8059a"},
+   :source-occurrence-id
+   "C16/source/25b04269ebba3b9fa69631d0f42e248a6c12c649751cd0528eaf495dbdb211c2",
+   :id "C16/facet/3263-3373",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "70b5897793835bb54c6c87248744a96ce40b7ac5f7d1a620b63c2336804ad916",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 3374,
+    :end-byte 3398,
+    :raw-sha256
+    "70b5897793835bb54c6c87248744a96ce40b7ac5f7d1a620b63c2336804ad916"},
+   :source-occurrence-id
+   "C16/source/0daa913e0f5eaae0dd76efe96884065563f4dfb7c251eaeae52034ab02b1a97f",
+   :id "C16/normalized-facet/3374-3398/70b5897793835bb5",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "edc87e8c6ee7425b7a44a508b4e32628fa447b5995204eabf8a76da96d8602de",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 3399,
+    :end-byte 3883,
+    :raw-sha256
+    "edc87e8c6ee7425b7a44a508b4e32628fa447b5995204eabf8a76da96d8602de"},
+   :source-occurrence-id
+   "C16/source/1aa888bdc6e95778b509c8bf2d0d8ec01c718ef5175aa6f3bb70a9e3efb53cee",
+   :id "C16/facet/3399-3883",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "379843073785311b4d476ac40b744ad0a1543c4ecdb7aacd0f171326f50782ba",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 3884,
+    :end-byte 3983,
+    :raw-sha256
+    "379843073785311b4d476ac40b744ad0a1543c4ecdb7aacd0f171326f50782ba"},
+   :source-occurrence-id
+   "C16/source/ad0ffb0ee79ec605dfe8765b23e2c43f24da9a0abbd914b9193219fd75f2e438",
+   :id "C16/facet/3884-3983",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "65655c963bad2c966bf15de7090892bae31ce79ef4774290a13feeb9341752b0",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 3984,
+    :end-byte 4008,
+    :raw-sha256
+    "65655c963bad2c966bf15de7090892bae31ce79ef4774290a13feeb9341752b0"},
+   :source-occurrence-id
+   "C16/source/ea70c7f90a8182308c7c6d6d4040ee6a51ab12bbf85aa7672291155fb3d6fe83",
+   :id "C16/normalized-facet/3984-4008/65655c963bad2c96",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "132cf3b90fbf3984604b827fa293064228b88d80a9154da1c8ce95a8db9639bf",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4009,
+    :end-byte 4038,
+    :raw-sha256
+    "132cf3b90fbf3984604b827fa293064228b88d80a9154da1c8ce95a8db9639bf"},
+   :source-occurrence-id
+   "C16/source/73973f34701a310778b06ae0ff91cca52213b6625b6d85e7f8070432c2137a20",
+   :id "C16/facet/4009-4038",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "36193308b7ef57e32fd60f5c3b8e9cf947d5d6d3e0fffdbab5d118949e1275e0",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4039,
+    :end-byte 4063,
+    :raw-sha256
+    "36193308b7ef57e32fd60f5c3b8e9cf947d5d6d3e0fffdbab5d118949e1275e0"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4039-4063",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "6256e6ee53f702f87cf66f899e5762de3b810c090e2c6aaf24f9667a3cc58ac3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4063,
+    :end-byte 4089,
+    :raw-sha256
+    "6256e6ee53f702f87cf66f899e5762de3b810c090e2c6aaf24f9667a3cc58ac3"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4063-4089",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "7841f722be4939d21357adfe4d2fad552e221a8fecc61f0b095f6d4331a210a4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4089,
+    :end-byte 4117,
+    :raw-sha256
+    "7841f722be4939d21357adfe4d2fad552e221a8fecc61f0b095f6d4331a210a4"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4089-4117",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ad452ee9beff8f6c5837c83a0cdf5cc028b1f5f12ae8009e3f52e6d73afc6e4e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4117,
+    :end-byte 4165,
+    :raw-sha256
+    "ad452ee9beff8f6c5837c83a0cdf5cc028b1f5f12ae8009e3f52e6d73afc6e4e"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4117-4165",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "e12ab0d6aef0f64e57bca13b06a4efdb2ab835c2a73a5aaa701b6f021633da68",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4165,
+    :end-byte 4204,
+    :raw-sha256
+    "e12ab0d6aef0f64e57bca13b06a4efdb2ab835c2a73a5aaa701b6f021633da68"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4165-4204",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "35840949520bc50bdb84fd15ddbd620c244e86974c73094ce92b64f0624c3e5a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4204,
+    :end-byte 4245,
+    :raw-sha256
+    "35840949520bc50bdb84fd15ddbd620c244e86974c73094ce92b64f0624c3e5a"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4204-4245",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "6100ea76bf81e827393e5a43ab8b85105825f63aafecc5a66f29d945457940e6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4245,
+    :end-byte 4283,
+    :raw-sha256
+    "6100ea76bf81e827393e5a43ab8b85105825f63aafecc5a66f29d945457940e6"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4245-4283",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c114fcd67a0fe96355824e4208e72e1d1ec361f44ec1a3b18cd3b63c150bb75e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4283,
+    :end-byte 4321,
+    :raw-sha256
+    "c114fcd67a0fe96355824e4208e72e1d1ec361f44ec1a3b18cd3b63c150bb75e"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4283-4321",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ec9be76f94895b8832b0fda6d929cdbb4e82df7a3299b3ab972ef58e85aaeebc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4321,
+    :end-byte 4369,
+    :raw-sha256
+    "ec9be76f94895b8832b0fda6d929cdbb4e82df7a3299b3ab972ef58e85aaeebc"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4321-4369",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "bde97230e6313670af80ee0fb571db9e1ab5a8a7dac287b7cf77fbca3e8b430a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4369,
+    :end-byte 4397,
+    :raw-sha256
+    "bde97230e6313670af80ee0fb571db9e1ab5a8a7dac287b7cf77fbca3e8b430a"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4369-4397",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d3c52542886157ac7f490a847d15bf758a3e1fc5ade146ed6c031a3f5f88e5d5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4397,
+    :end-byte 4465,
+    :raw-sha256
+    "d3c52542886157ac7f490a847d15bf758a3e1fc5ade146ed6c031a3f5f88e5d5"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4397-4465",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "39aa4587ecb885adbff4e52d18013b23d7d1b347333cf3464f84a8edfbe99edc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4465,
+    :end-byte 4503,
+    :raw-sha256
+    "39aa4587ecb885adbff4e52d18013b23d7d1b347333cf3464f84a8edfbe99edc"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4465-4503",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "82fc36a589530c74e19b876ebd6afda74e8d85ff58ae111c0f4b5b460a712b99",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4503,
+    :end-byte 4540,
+    :raw-sha256
+    "82fc36a589530c74e19b876ebd6afda74e8d85ff58ae111c0f4b5b460a712b99"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4503-4540",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4af5225240cb5649a15bbc17949e00af67aba94f9ab4894a7f670ee36e395a74",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4540,
+    :end-byte 4577,
+    :raw-sha256
+    "4af5225240cb5649a15bbc17949e00af67aba94f9ab4894a7f670ee36e395a74"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4540-4577",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d7b9b460d32a3887a509f04c0d2b7fa8c2fe0309b73571876ac7e440ba10767a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4577,
+    :end-byte 4607,
+    :raw-sha256
+    "d7b9b460d32a3887a509f04c0d2b7fa8c2fe0309b73571876ac7e440ba10767a"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4577-4607",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "15fac6cf9aea135344ee909552029e8e844e0a53dea2788f043afeae1dae908b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4607,
+    :end-byte 4636,
+    :raw-sha256
+    "15fac6cf9aea135344ee909552029e8e844e0a53dea2788f043afeae1dae908b"},
+   :source-occurrence-id
+   "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+   :id "C16/facet/4607-4636",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "cb6e5c589cc9763a726573397f49c5db86721c62ddf54344298557acdbc4a9a8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4637,
+    :end-byte 4717,
+    :raw-sha256
+    "cb6e5c589cc9763a726573397f49c5db86721c62ddf54344298557acdbc4a9a8"},
+   :source-occurrence-id
+   "C16/source/b8a9ce501774f1bf92d9fbb29576b9c2c5356fe102f839058367fc9f47015c92",
+   :id "C16/facet/4637-4717",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "783e447e4e42b17dd1984f2e1db51843a390171f76bff3840f9bcfde4e08414a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4718,
+    :end-byte 4734,
+    :raw-sha256
+    "783e447e4e42b17dd1984f2e1db51843a390171f76bff3840f9bcfde4e08414a"},
+   :source-occurrence-id
+   "C16/source/c325588faabe92e80d147223ecbc395c4bbfbbdd8ce13bdf2839e168d1940c9c",
+   :id "C16/normalized-facet/4718-4734/783e447e4e42b17d",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "706816feb4abf9ca578afc773a3dfc82ddf744e1a842669df6447a542277dad3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4735,
+    :end-byte 4756,
+    :raw-sha256
+    "706816feb4abf9ca578afc773a3dfc82ddf744e1a842669df6447a542277dad3"},
+   :source-occurrence-id
+   "C16/source/ccca9e06a699efb82ffb69a9d3740b0ea7c2a6d9709a4662d7be7db1e155beb3",
+   :id "C16/facet/4735-4756",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "541123655814215c50f4c20555ee1029717ede4f26e158bdebb9dbfbb31cc1d8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4757,
+    :end-byte 4779,
+    :raw-sha256
+    "541123655814215c50f4c20555ee1029717ede4f26e158bdebb9dbfbb31cc1d8"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4757-4779",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "78e6822a7aefb96bfbea02820f1c70f78b34f5be6b12b259551841c532f98e81",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4779,
+    :end-byte 4806,
+    :raw-sha256
+    "78e6822a7aefb96bfbea02820f1c70f78b34f5be6b12b259551841c532f98e81"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4779-4806",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "a1d651b080a9d159eb143d4132f588c32cb3a7e0768d39643a84275853e22a93",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4806,
+    :end-byte 4831,
+    :raw-sha256
+    "a1d651b080a9d159eb143d4132f588c32cb3a7e0768d39643a84275853e22a93"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4806-4831",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "f2d92c727bad5693eae4c4e923f2b3a907eee78fad1f8c3c930f0155957b52d7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4831,
+    :end-byte 4853,
+    :raw-sha256
+    "f2d92c727bad5693eae4c4e923f2b3a907eee78fad1f8c3c930f0155957b52d7"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4831-4853",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "13e6b3158bf390b4aaca7a4976496fd0db7dc98e57842b6c6403e6cf1805da08",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4853,
+    :end-byte 4884,
+    :raw-sha256
+    "13e6b3158bf390b4aaca7a4976496fd0db7dc98e57842b6c6403e6cf1805da08"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4853-4884",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "b7317b422711359550c49808c9ee72820b490d7a62b1fafd37a6296bcc6e8524",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4884,
+    :end-byte 4920,
+    :raw-sha256
+    "b7317b422711359550c49808c9ee72820b490d7a62b1fafd37a6296bcc6e8524"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4884-4920",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "29b8764eec3453cebb75b4a8b8db596be93e8e480705c981448cdca50bc6976d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4920,
+    :end-byte 4955,
+    :raw-sha256
+    "29b8764eec3453cebb75b4a8b8db596be93e8e480705c981448cdca50bc6976d"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4920-4955",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "dea04d36aed845f78635b5f4f9b91b687c148a268210ffc21b0be4cf3600a262",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4955,
+    :end-byte 4989,
+    :raw-sha256
+    "dea04d36aed845f78635b5f4f9b91b687c148a268210ffc21b0be4cf3600a262"},
+   :source-occurrence-id
+   "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+   :id "C16/facet/4955-4989",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ee928111a9d8363069351c6ae7fcb5260e799a976c026f446bc3740de9a0eae7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 4990,
+    :end-byte 5142,
+    :raw-sha256
+    "ee928111a9d8363069351c6ae7fcb5260e799a976c026f446bc3740de9a0eae7"},
+   :source-occurrence-id
+   "C16/source/50edccdfe201db1353086acd15cca806a2e14d1211ec9c219a6eede441ea558c",
+   :id "C16/facet/4990-5142",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "90cb5cf7d99617dd61180a16336638af48834be8f222ccbe835bcadfe1e1aa02",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5143,
+    :end-byte 5174,
+    :raw-sha256
+    "90cb5cf7d99617dd61180a16336638af48834be8f222ccbe835bcadfe1e1aa02"},
+   :source-occurrence-id
+   "C16/source/86d9995f96c186c23b3a47da0c7ebe3a55beb1fe485900a6914cf11f8f08210d",
+   :id "C16/normalized-facet/5143-5174/90cb5cf7d99617dd",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "646f420529a36af2b27a71f55e8473c19c38bcbc26c2521d3ac135eb27a53652",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5175,
+    :end-byte 5470,
+    :raw-sha256
+    "646f420529a36af2b27a71f55e8473c19c38bcbc26c2521d3ac135eb27a53652"},
+   :source-occurrence-id
+   "C16/source/b33f13d9e0c2df3814aa637c3ead1a6619aef38597591180781e2cf12db6eb76",
+   :id "C16/facet/5175-5470",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5471,
+    :end-byte 5486,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :source-occurrence-id
+   "C16/source/5fa564012938853f289e3b62c9c4b8130abe72401896424a71e9cad5687b96d4",
+   :id "C16/normalized-facet/5471-5486/84b964dab09b580d",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "d14d45b735c1955e3280e563db30c01357e775665c434b01c11688b2c6dcdaf2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5487,
+    :end-byte 5546,
+    :raw-sha256
+    "d14d45b735c1955e3280e563db30c01357e775665c434b01c11688b2c6dcdaf2"},
+   :source-occurrence-id
+   "C16/source/9e0de417c737286474447693a6ac5be9c743d3f45a7be8a99c28f20cead9bea3",
+   :id "C16/facet/5487-5546",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "89cc9efd81e1f6301199da1e926a23cb30d4735dda349b581ef77675119f2c2a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5547,
+    :end-byte 5599,
+    :raw-sha256
+    "89cc9efd81e1f6301199da1e926a23cb30d4735dda349b581ef77675119f2c2a"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5547-5599",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "008b8d7b899c8367b3ff473cb4837e7ff6e029035bf95781acc3746f6a73e4cf",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5599,
+    :end-byte 5642,
+    :raw-sha256
+    "008b8d7b899c8367b3ff473cb4837e7ff6e029035bf95781acc3746f6a73e4cf"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5599-5642",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "44c2046dcb7e8bdc5fd82b8c90fbad947465b8c85c0174707f6fc00fc2da8ba6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5642,
+    :end-byte 5709,
+    :raw-sha256
+    "44c2046dcb7e8bdc5fd82b8c90fbad947465b8c85c0174707f6fc00fc2da8ba6"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5642-5709",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "5d1c37e6455a31dce2ecb9eee64918998af1f6dc2cc2a75aad526f0dce512f6a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5709,
+    :end-byte 5761,
+    :raw-sha256
+    "5d1c37e6455a31dce2ecb9eee64918998af1f6dc2cc2a75aad526f0dce512f6a"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5709-5761",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "3c135e3c4d7eb4eb182cc56106adf4268482c6ce89c80f5e4f8e6a2a8f6de6ec",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5761,
+    :end-byte 5836,
+    :raw-sha256
+    "3c135e3c4d7eb4eb182cc56106adf4268482c6ce89c80f5e4f8e6a2a8f6de6ec"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5761-5836",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "e16a34a9f5a9bd82f2b06ec44d8a6fb297bd031bd0a3743b2b169453ca4cab7f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5836,
+    :end-byte 5892,
+    :raw-sha256
+    "e16a34a9f5a9bd82f2b06ec44d8a6fb297bd031bd0a3743b2b169453ca4cab7f"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5836-5892",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "0683ea69b2223b3ea046db183748af972270de751a3871eb707c544e8eeb4504",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5892,
+    :end-byte 5984,
+    :raw-sha256
+    "0683ea69b2223b3ea046db183748af972270de751a3871eb707c544e8eeb4504"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5892-5984",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "fdacf5565102656fa8534af8924b6461547d4331dadb5e1adff5dea3005e34cc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 5984,
+    :end-byte 6033,
+    :raw-sha256
+    "fdacf5565102656fa8534af8924b6461547d4331dadb5e1adff5dea3005e34cc"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/5984-6033",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "c0ed8fce8e68b5209ea469a72a21899b61f47e0f8ed2397d3e22ecc91c5f9247",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6033,
+    :end-byte 6085,
+    :raw-sha256
+    "c0ed8fce8e68b5209ea469a72a21899b61f47e0f8ed2397d3e22ecc91c5f9247"},
+   :source-occurrence-id
+   "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+   :id "C16/facet/6033-6085",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "39ee5a190349c88d936f16452d900cc5cc660951f7049bdf0c59c08eba22bb09",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6086,
+    :end-byte 6242,
+    :raw-sha256
+    "39ee5a190349c88d936f16452d900cc5cc660951f7049bdf0c59c08eba22bb09"},
+   :source-occurrence-id
+   "C16/source/1c55eca6e0bcc12a9250807ce1e8eecf5aaa96eac6c495c0bdc798e6db3e2b10",
+   :id "C16/facet/6086-6242",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6243,
+    :end-byte 6263,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :source-occurrence-id
+   "C16/source/7aba80be970f34bb1ea983c10189a943f60eee71f2c8d6df5c6ca38ed7e047a2",
+   :id "C16/normalized-facet/6243-6263/81a99744c82b0f20",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0feab245ca5e5182fd96521da5777c54345671cdbf15f04618588be6a557b863",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6264,
+    :end-byte 6320,
+    :raw-sha256
+    "0feab245ca5e5182fd96521da5777c54345671cdbf15f04618588be6a557b863"},
+   :source-occurrence-id
+   "C16/source/8169ab4c3aeacd50c265bd1a5501ef4c1a6c91151ad9b210e8be82324eb3eb01",
+   :id "C16/facet/6264-6320",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "8afdc905903c0f151818e8e7776d738a2ca840529a2b947aa11190063744a195",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6321,
+    :end-byte 6420,
+    :raw-sha256
+    "8afdc905903c0f151818e8e7776d738a2ca840529a2b947aa11190063744a195"},
+   :source-occurrence-id
+   "C16/source/533f892e31da1f8c2d3bb507b8e8ef015181299b2e3894d137eadf7d9a5b2a04",
+   :id "C16/facet/6321-6420",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "7380613576397174324e1bdf71b7771d4c4b1ab6f009c3f7e0bb89d2e321bdf7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6421,
+    :end-byte 6494,
+    :raw-sha256
+    "7380613576397174324e1bdf71b7771d4c4b1ab6f009c3f7e0bb89d2e321bdf7"},
+   :source-occurrence-id
+   "C16/source/e158cd5df2290a42a2c80bf4c642dc142d8020275fa29b41edfaf8870a12ab46",
+   :id "C16/facet/6421-6494",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "624758cee1aac6a17392efd35413e315a0917d6bff8b4918c2579e07e490e7e5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6495,
+    :end-byte 6567,
+    :raw-sha256
+    "624758cee1aac6a17392efd35413e315a0917d6bff8b4918c2579e07e490e7e5"},
+   :source-occurrence-id
+   "C16/source/aa39593b3ed16db99ef6248fe89dcaca7ca473e0065acdfbe143f85ac742c6b9",
+   :id "C16/facet/6495-6567",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "602c2fac0abf653b3e51992c0a5b8820e605326545d72a46fbbd23aec57c283d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6568,
+    :end-byte 6638,
+    :raw-sha256
+    "602c2fac0abf653b3e51992c0a5b8820e605326545d72a46fbbd23aec57c283d"},
+   :source-occurrence-id
+   "C16/source/c41812f1bcfe4a68fed5d7a28611b6ef3e5ae22fa06440c0a402275d054ff213",
+   :id "C16/facet/6568-6638",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6639,
+    :end-byte 6663,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :source-occurrence-id
+   "C16/source/5944a98c1f3c222d31c0c4603d206a3c82b9703c7ce585e7656eb2a0fb514265",
+   :id "C16/normalized-facet/6639-6663/4cea7efb2bd3a140",
+   :verdict :context-preserved-no-semantic-credit}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "d73f4cf790a8bee8ecea4c14f9fb199552555c8add3d9da565e52258a00cb1d3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6664,
+    :end-byte 6716,
+    :raw-sha256
+    "d73f4cf790a8bee8ecea4c14f9fb199552555c8add3d9da565e52258a00cb1d3"},
+   :source-occurrence-id
+   "C16/source/9d215b1b4472059ce1f4a6a618fec61dd96eaf772c5582234884978fdc044428",
+   :id "C16/facet/6664-6716",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "df60b7dcb1398113af24bb5626a7113b62730057255cbac0d8db12e553afa546",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6717,
+    :end-byte 6746,
+    :raw-sha256
+    "df60b7dcb1398113af24bb5626a7113b62730057255cbac0d8db12e553afa546"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/6717-6746",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "0b260f15b33b372b98293896acfaa759653ca0ba2c753726e7faf6dc86aae3c5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6746,
+    :end-byte 6779,
+    :raw-sha256
+    "0b260f15b33b372b98293896acfaa759653ca0ba2c753726e7faf6dc86aae3c5"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/6746-6779",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "749f7becba5e7de6912884bb0a3ccd738ab2b7e90d0cf125f3d5687773712a22",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6779,
+    :end-byte 6830,
+    :raw-sha256
+    "749f7becba5e7de6912884bb0a3ccd738ab2b7e90d0cf125f3d5687773712a22"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/6779-6830",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "12e5ae33f9548644eb6f9bd8e1a5db78eac5a889212e2307a60585d46e4caa94",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6830,
+    :end-byte 6956,
+    :raw-sha256
+    "12e5ae33f9548644eb6f9bd8e1a5db78eac5a889212e2307a60585d46e4caa94"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/6830-6956",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "2f88fabcfc9037a16d76d7580646facc86bc26ca7a1f5c852e873e1fc489fd8b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 6956,
+    :end-byte 7002,
+    :raw-sha256
+    "2f88fabcfc9037a16d76d7580646facc86bc26ca7a1f5c852e873e1fc489fd8b"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/6956-7002",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "9190e7af2482cda2ebc4bf9899fc04b308b99de85d241a3eee84d99b5853a4ab",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 7002,
+    :end-byte 7039,
+    :raw-sha256
+    "9190e7af2482cda2ebc4bf9899fc04b308b99de85d241a3eee84d99b5853a4ab"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/7002-7039",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "a6041153ca5e02b7e6d5b91faec2088cfda4fde668e802d5a80da7cd486c4212",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 7039,
+    :end-byte 7092,
+    :raw-sha256
+    "a6041153ca5e02b7e6d5b91faec2088cfda4fde668e802d5a80da7cd486c4212"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/7039-7092",
+   :verdict :source-conjunction-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :raw-sha256
+   "4c07eece3e29b9f9d05a3ac475a9db45ac07bb32b37af22ac66b74fae47ce3f1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :start-byte 7092,
+    :end-byte 7145,
+    :raw-sha256
+    "4c07eece3e29b9f9d05a3ac475a9db45ac07bb32b37af22ac66b74fae47ce3f1"},
+   :source-occurrence-id
+   "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+   :id "C16/facet/7092-7145",
+   :verdict :source-conjunction-scoped-pass}],
+ :outbound-delivery :none,
+ :writes :private-review-artifacts-only,
+ :canonical-writes :none,
+ :schema-version 1,
+ :exclusions
+ [:implementation
+  :compiler
+  :cache-runtime
+  :provider-proofchecker
+  :execution
+  :release
+  :publication-authority
+  :integration
+  :final-task-denominator
+  :readiness
+  :entire-PR-approval
+  :unselected-scope-acceptance
+  :previously-authored-Safety107-semantics
+  :later-C13-Resolve-Core-Types-adoptions
+  :later-main70dcb222-Reader640-applicability
+  :all-held-and-unknown-actions],
+ :conservation
+ {:report-successors
+  :inert-source-form-review-Build-two-sourcepins-and-C16-pending-metadata-plus-test-successor-selection-only,
+  :retirement-proposals :unchanged,
+  :task-baseline :identity-status-routing-conserved,
+  :overlap
+  {:ids ["C16/normalized-facet/40-316/64388db857b74ef8"],
+   :count 1,
+   :prior-provenance-reference :retained-pending-context,
+   :new-unique-proposal-delta 113,
+   :additional-credit :none},
+  :decisions
+  :all833-full-record-hashes-status-Open-and931-current-witnesses-authenticated,
+  :owners :all1188-identities-retained,
+  :extension-trace
+  :only-two-existing-applicability-source-successor-pointers-change-no-semantic-adoption,
+  :unselected
+  :foundation-retirement-metadata-held-and-other-scope-dispositions-and-owner-states-unchanged,
+  :qualified-scopes
+  {:count 572,
+   :exact-ID-set-and-dispositions :unchanged,
+   :ids-sha256
+   "a44b92d8209780d5a1b119dcf4ada32b95f1dffaf7d7acf684aa684bc1bd67d5"},
+  :original-corpus
+  :all240-document-identities-content-hashes-and-mode-blob-objects-preserved,
+  :changed-file-mode-and-blob-pins
+  {"tools/sh_crosswalk_test.clj"
+   "100644 blob a38547d75bae0a2d770e33f1e659107ced6b069b\ttools/sh_crosswalk_test.clj",
+   "docs/component-roadmaps/build.md"
+   "100644 blob 6a53e16ffe5dc403105dcb0b850ffdb630418f85\tdocs/component-roadmaps/build.md",
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   "100644 blob f9698396c00f6ecdd870df415a994979befe0dd4\tspecs/sh-family-crosswalk/crosswalk.edn",
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+   "100644 blob 90ef175449e400fa760d065f0f65fa05f990831d\tspecs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   "specs/requirement-reconciliation/incremental-owner-source-refinement.edn"
+   "100644 blob f4021bd9a4948b81c0774db070c3a15e19821a2c\tspecs/requirement-reconciliation/incremental-owner-source-refinement.edn",
+   "specs/requirement-reconciliation/spec.md"
+   "100644 blob f6ae841f3aa90085ccb8d64460e7e00f306163e3\tspecs/requirement-reconciliation/spec.md",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn"
+   "100644 blob a37292224c97346c199ef7fd229770e3dad90d9a\tspecs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+   "specs/build-workflow/tasks.md"
+   "100644 blob 3b06c068aa9249ad777fd268d9640fef42bd750d\tspecs/build-workflow/tasks.md",
+   "tools/sh_crosswalk.clj"
+   "100644 blob 6fa0d6f16e7690d4ac6a905ab530340dbf44552d\ttools/sh_crosswalk.clj",
+   "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn"
+   "100644 blob 34982a23d249f5c8b4ee2da8c79159ea74a5ad93\tspecs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+   "specs/requirement-reconciliation/task-baseline.edn"
+   "100644 blob aee74c8ff1d99c06d4dc1dea5867ffdf29e41573\tspecs/requirement-reconciliation/task-baseline.edn",
+   "specs/requirement-reconciliation/explicit-extension-source-trace.edn"
+   "100644 blob eb322b9cdd60ecb62be070bfb7358da8fc601a75\tspecs/requirement-reconciliation/explicit-extension-source-trace.edn",
+   "specs/requirement-reconciliation/all833-incremental-owner-current-criterion-conservation.edn"
+   "100644 blob d8e2a29ce9396a4b1bae7cb3c379f6ce62efc750\tspecs/requirement-reconciliation/all833-incremental-owner-current-criterion-conservation.edn",
+   "specs/requirement-reconciliation/incremental-owner-current-witness-applicability.edn"
+   "100644 blob 211684b4ed8972e47247ddfb0e0fdef34517e987\tspecs/requirement-reconciliation/incremental-owner-current-witness-applicability.edn",
+   "specs/requirement-reconciliation/evidence.md"
+   "100644 blob d529f513c75e0d9b74f4d21b46a7d11273d72e51\tspecs/requirement-reconciliation/evidence.md",
+   "specs/requirement-reconciliation/source-dispositions.edn"
+   "100644 blob 4dd875ef29b4ae5d501d5041e40edd62abb76f82\tspecs/requirement-reconciliation/source-dispositions.edn"},
+  :source-facets :all28785-identities-lineage-retained,
+  :five-Build-identities-statuses :unchanged,
+  :task-and-roadmap-inverse :exact-one-append-restores-both-base-files,
+  :historical
+  :all561-identities-and4819-raw-predicate-spans-preserved-169-filepin-refreshes-authenticated},
+ :controls
+ {:serialized-report
+  {:path "/tmp/c16-independent-e32ada7e/report-check.edn",
+   :sha256
+   "23039d88fbf48ee785de72bfb08b1d84328360471a069c932760cf418d4cc621",
+   :checker-sha256
+   "d27b077872470ba6ddcf826e5afcabe0cf947cbcfb9b88293d9c985090dc28be"},
+  :semantic-fixture-method
+  :private-data-document-rebuilt-with-consistent-full-document-hash-byte-ranges-criterion-rawhashes-owner-witnesses-and-payload-digest-before-semantic-check,
+  :reproduction
+  {:path "/tmp/c16-independent-e32ada7e/check.clj",
+   :sha256
+   "8dcaf0dc7d4c6d6bd2e1fe0b6bdbb64dc4601948116815a1ca76a66cbd7f43d8",
+   :command
+   "clojure -J-Xmx1400m -M /tmp/c16-independent-e32ada7e/check.clj"},
+  :meaningful-semantic-mutations 27,
+  :details
+  {:path "/tmp/c16-independent-e32ada7e/controls.edn",
+   :sha256
+   "fedef82dbe2fee7662209a7d3ff5d1befc25805ea690680dd8d644c550c446bd"},
+  :result :pass,
+  :qualification
+  :private-source-data-contract-fixtures-not-compiler-cache-execution-or-complete-regenerated-Git-candidates,
+  :negative-count 38,
+  :results
+  {:universal-example-subset true,
+   :publish-partial true,
+   :flag-positive true,
+   :missing-node true,
+   :forged-source-pin true,
+   :timestamp-only-key true,
+   :trust-label-authority true,
+   :generic-invalidation true,
+   :proof-mapping-optional true,
+   :lost-graph-refusal true,
+   :owner-promoted true,
+   :lost-diagnostic-context true,
+   :missing-rebuild-owner-role true,
+   :replay-input-ignored true,
+   :lost-invalidated-provenance true,
+   :missing-producer-version true,
+   :cachehash-bypasses-invalid-manifest true,
+   :missing-entry-inputs true,
+   :missing-dependency true,
+   :missing-change-class true,
+   :hidden-implementation-credit true,
+   :coarse-skips-invalidation true,
+   :missing-owner-witness true,
+   :hash-only-revalidation true,
+   :residual-checks-dropped true,
+   :context-promoted true,
+   :stale-task true,
+   :lost-speculation-mark true,
+   :source-conjunction-shortened true,
+   :flag-only-dependency true,
+   :duplicate-append true,
+   :ambient-rebuild true,
+   :no-real-rebuild true,
+   :uncontrolled-release true,
+   :missing-key-reader true,
+   :proof-provider-ignored true,
+   :lost-diagnostic-origin true,
+   :forged-current-span true}},
+ :normative-review
+ {:diagnostics
+  :all9-C16-meanings-and-key-artifact-stage-invalidatinginput-available-spanormanifest-profile-target-remediation-context,
+  :file-sha256
+  "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+  :key
+  :producer-owned-stage-required-subsets-over-every-meaning-legality-proof-diagnostic-output-input-missing-required-and-timestamp-only-refuse,
+  :publication
+  :mark-every-partial-interactive-artifact-speculative-with-status-and-withhold-release-until-full-revalidation,
+  :authority
+  :trust-cache-labels-or-comparison-links-do-not-supply-capability-policy-proof-or-release-authority,
+  :criteria
+  :three-authenticated-current-task-spans-in-two-existing-Build-tasks,
+  :coverage
+  :full-document-and-all29-complete-semantic-paragraph-conjunctions,
+  :preserved-clauses
+  :stage-validation-invalidation-proof-reuse-recorded-rebuild-and-speculation-publication,
+  :proof
+  :all-claim-input-assumption-profile-target-compiler-provider-package-invalidation-premises-and-node-ID-proof-mapping-otherwise-reject-or-reprove-retain-residual-checks,
+  :document
+  "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+  :dependency-roles
+  :C1-C2throughC15-L12-SAFE15-PERF3-input-contracts-package-project-lock-environment-and-Build-rebuild-producer-bootstrap-stagecomparison-separate-consumer,
+  :new-clause :graph-key-entry-diagnostic-record-structure,
+  :rebuild
+  :actual-authentic-unchanged-reproducibility-task-produces-recorded-input-replay-repeated-canonical-output-comparison-no-cache-flag-substitute,
+  :examples
+  :typecheck-localbuild-and-example-hashes-not-universal-values-or-authority,
+  :graph
+  :all15-node-families-exact-field-level-edges-when-available-coarse-edges-reduce-reuse-without-skipping-invalidation,
+  :lifetime
+  :retain-invalidated-provenance-diagnostics-check-current-origin-facts-schema-policy-and-graph-before-reuse,
+  :entry
+  :versioned-inspectable-key-artifact-stage-pass-input-facts-invalidation-diagnostics-trust-revalidation-records,
+  :dependency-document-acceptance :not-conferred},
+ :eligibility
+ {:author-publication-turn "01a18b8a-d7f5-7162-b96b-8e8ca0a469c8",
+  :previously-authored-Safety107
+  :unchanged-record-and-byte-conservation-only,
+  :intake-artifact
+  {:path "/tmp/c16-independent-e32ada7e/goal-intake.json",
+   :sha256
+   "eda0130f9b112868148a6f0b4cb8a5cdd61fb63a73bac55187a404bdd7ed763e"},
+  :fresh-author-activity
+  :separate-C13-Resolve-Core-Types-receipt-adoption,
+  :orchestrator-thread "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :holds
+  :all-Metadata372-Policy14-fixedwidth-OWN-ACC08-DSE-unknownops-ACC09v4delivery-531merge-still-excluded,
+  :competing-exact-C16-review :none-in-checked-readbacks,
+  :selected-semantic-selfauthorship :none,
+  :author-drafting-turn "01a18b77-2874-7932-8b18-4b694761e5ad",
+  :canonical-author-thread "01a18424-d867-7c12-8a04-07484900100c"},
+ :scope
+ {:historical-spans 4819,
+  :task-ids 5,
+  :current-witnesses 931,
+  :overlapping-context-facets 1,
+  :semantic-conjunctions 29,
+  :owner-joins 6,
+  :history 561,
+  :833-records 833,
+  :occurrences 44,
+  :task-appends 1,
+  :facets 114,
+  :prior-qualified-scopes 572,
+  :contexts 15,
+  :criterion-spans 3},
+ :inputs
+ {"specs/requirement-reconciliation/all833-incremental-owner-current-criterion-conservation.edn"
+  {:sha256
+   "ec1d1c1ffeb17839764fe2885cb01ca48306f08ff27ae5b2fa2597a2c8e2eb7a",
+   :blob "d8e2a29ce9396a4b1bae7cb3c379f6ce62efc750"},
+  "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn"
+  {:sha256
+   "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21",
+   :blob "a37292224c97346c199ef7fd229770e3dad90d9a"},
+  "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn"
+  {:sha256
+   "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1",
+   :blob "34982a23d249f5c8b4ee2da8c79159ea74a5ad93"},
+  "specs/requirement-reconciliation/incremental-owner-current-witness-applicability.edn"
+  {:sha256
+   "37883411156014301c1c51644a6f67cbe1cf1c9ffb04c0d11845fa84ab53b318",
+   :blob "211684b4ed8972e47247ddfb0e0fdef34517e987"},
+  "specs/requirement-reconciliation/incremental-owner-source-refinement.edn"
+  {:sha256
+   "4fdc355ae5f335e80db6ea890b7a87c0d0109daf79975252a344c8a8161d2f82",
+   :blob "f4021bd9a4948b81c0774db070c3a15e19821a2c"}},
+ :kind :independent-C16-source-entailment-review,
+ :verdict :scoped-pass,
+ :owner-verdicts
+ {"compiler/c16/cache-revalidation"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}],
+   :original-obligation
+   "Reuse stage-specific entries only after producing-pass/schema/version/facts/policy/dependency/diagnostic validation, retaining provenance and invalidation records.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none},
+  "compiler/c16/dependency-invalidation"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}],
+   :original-obligation
+   "Invalidate downstream artifacts on every specified source/macro/namespace/type/effect/profile/capability/safety/proof/provider/target/backend/package/policy/facet/diagnostic change; record exact affected revalidation stages.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none},
+  "compiler/c16/proof-reuse"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}],
+   :original-obligation
+   "Reuse proofs/certificates only when complete claim/input/assumption/context/invalidation conditions match; require a mapping when node identity changes but semantics survive.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none},
+  "compiler/c16/recorded-rebuild"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records :rebuild],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 52302,
+     :end-byte 60337,
+     :raw-sha256
+     "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}],
+   :original-obligation
+   "Reproduce hermetic/release artifacts from recorded inputs and replay rather than trusting stale or incomplete caches.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none},
+  "compiler/c16/semantic-cache-key"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}],
+   :original-obligation
+   "Key each reusable stage artifact over all meaning/legality/proof/diagnostic/output inputs with producer-owned required fields; reject incomplete or timestamp-only identity.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none},
+  "compiler/c16/speculation-publication-gate"
+  {:verdict :source-conjunction-scoped-pass,
+   :criterion-keys [:existing :records :rebuild],
+   :criterion-witnesses
+   [{:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 22471,
+     :end-byte 27237,
+     :raw-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 27238,
+     :end-byte 30497,
+     :raw-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}
+    {:path "specs/build-workflow/tasks.md",
+     :marker "build-implementation-tasks",
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :file-sha256
+     "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+     :start-byte 52302,
+     :end-byte 60337,
+     :raw-sha256
+     "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}],
+   :original-obligation
+   "Mark partial interactive reuse speculative and withhold release publication until full revalidation succeeds.",
+   :previous-candidate-state-retained true,
+   :implementation-credit :none}},
+ :criterion-verdicts
+ {:existing
+  {:verdict
+   :source-conjunction-entails-with-preserved-and-dependent-criteria,
+   :witness
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 22471,
+    :end-byte 27237,
+    :raw-sha256
+    "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}},
+  :records
+  {:verdict
+   :source-conjunction-entails-with-preserved-and-dependent-criteria,
+   :witness
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 27238,
+    :end-byte 30497,
+    :raw-sha256
+    "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}},
+  :rebuild
+  {:verdict
+   :source-conjunction-entails-with-preserved-and-dependent-criteria,
+   :witness
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 52302,
+    :end-byte 60337,
+    :raw-sha256
+    "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}}},
+ :occurrence-verdicts
+ {"C16/source/07b4f48acb7943f4efdabb5c40d67f123ba333916a04d3fce3afb2043dc407bb"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/0daa913e0f5eaae0dd76efe96884065563f4dfb7c251eaeae52034ab02b1a97f"
+  {:index 18,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "All nine key/entry/stale/proof/speculative/replay/policy/diagnostic/graph failures retain actual refusal fixtures.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/16a758bfb50b6cf7ab1feda1b6936d3c99940b473a947e42d0306061a4e92aac"
+  {:index 14,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Use field-level dependencies when available; explicitly coarse early edges are legal but reduce reuse and cannot skip invalidation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Source/syntax/expansion/namespace/typed core/effect/ownership/safety/MIR/optimization/domain/target/diagnostic/proof/package-provider nodes retain real identities.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/1aa888bdc6e95778b509c8bf2d0d8ec01c718ef5175aa6f3bb70a9e3efb53cee"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Entry manifests bind actual key/artifact/producer version/inputs/preserved facts/invalidation/diagnostics/trust/revalidation. Example local-build trust and type-check values confer no authority or universal policy.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/1c55eca6e0bcc12a9250807ce1e8eecf5aaa96eac6c495c0bdc798e6db3e2b10"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Diagnostics retain cache key/artifact/stage/invalidating input/available span-or-manifest/profile/target/remediation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/25b04269ebba3b9fa69631d0f42e248a6c12c649751cd0528eaf495dbdb211c2"
+  {:index 17,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Each producing stage owns its required subset; omitted required key fields reject.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/47de5367df50cd65a8968b8adff0d4c417c93d589b21ef5905e36c1486bd2a3b"
+  {:index 15,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/4a82da1bf814df3c3652c80ece4d76726acf2edf65ef99bcd08ee3b5c11abd70"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Reuse preserves semantic/safety/profile/proof/reproducibility guarantees and keys all actual meaning-bearing source/compiler/profile/target/dependency/build-effect/authority/pass/policy facts.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/50edccdfe201db1353086acd15cca806a2e14d1211ec9c219a6eede441ea558c"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Mark partial interactive artifacts :reuse :speculative and record status; prevent release publication until full revalidation passes.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/51af5d9ca77a9f904c409cd9e3e6bc6fb1079fe9a4d254ea2bb0c49880fb5fd5"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/533f892e31da1f8c2d3bb507b8e8ef015181299b2e3894d137eadf7d9a5b2a04"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Changed type/effect/profile/safety/proof inputs cannot bypass validation through cache reuse.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/5944a98c1f3c222d31c0c4603d206a3c82b9703c7ce585e7656eb2a0fb514265"
+  {:index 41,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/5fa564012938853f289e3b62c9c4b8130abe72401896424a71e9cad5687b96d4"
+  {:index 31,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "All seven requirements survive: complete keys, stage/pass validation, all named changes, diagnostics/provenance/invalidation, proof freshness, reproducible recorded/replay builds and explicit speculative revalidation status.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/73973f34701a310778b06ae0ff91cca52213b6625b6d85e7f8070432c2137a20"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "All following invalidation classes participate in actual dependency revalidation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/7aba80be970f34bb1ea983c10189a943f60eee71f2c8d6df5c6ca38ed7e047a2"
+  {:index 35,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/8169ab4c3aeacd50c265bd1a5501ef4c1a6c91151ad9b210e8be82324eb3eb01"
+  {:index 36,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Timestamp-only identity refuses.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/86d9995f96c186c23b3a47da0c7ebe3a55beb1fe485900a6914cf11f8f08210d"
+  {:index 29,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/879807156b48d418d5197c9e6429a0f83b160eabd206ae9b367f51bb9dedbab9"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Reuse is optimization and never bypasses stale/incomplete artifact validation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/8cecbd59feeff90a8078a1f2e643822baf4972fc200b7964fcc46b83bf22d7c0"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Require real stage keys/graphs, equal-input-policy reuse, changed source/macro/namespace/type/effect/profile/safety/proof/dependency/target/backend refusals/recompute, stale proof/diagnostics, replay keying, nonpublishing speculation and recorded-input release rebuild.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/9d215b1b4472059ce1f4a6a618fec61dd96eaf772c5582234884978fdc044428"
+  {:index 42,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Conformance requires actual results for the complete following reuse/invalidation/rebuild matrix.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/9e0de417c737286474447693a6ac5be9c743d3f45a7be8a99c28f20cead9bea3"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Preserve C16 diagnostic family and meanings.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Actual C1 and stage contracts, L12 replay/effects, SAFE15 proof, PERF3 specialization, package/project/lock/graph/environment and later bootstrap comparison interfaces retain distinct producer/consumer evidence, not completed-component prerequisites.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/aa39593b3ed16db99ef6248fe89dcaca7ca473e0065acdfbe143f85ac742c6b9"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Speculative cache artifacts cannot satisfy release publication.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/ad0ffb0ee79ec605dfe8765b23e2c43f24da9a0abbd914b9193219fd75f2e438"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Cache entries remain inspectable/invalidateable provenance artifacts like other compiler products.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/b0b8e2aa6323b12251f9c373d193cf6f36d99d3a8afd62ed0094122be6a3d1fc"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Dependency graph retains the full following artifact node family set.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/b33f13d9e0c2df3814aa637c3ead1a6619aef38597591180781e2cf12db6eb76"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Proof reuse compares claim/inputs/assumptions/profile/target/compiler/provider/package/invalidation; changed node identity with preserved operation needs actual proof mapping before reuse, otherwise reject/reprove and retain residual checks.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/b8a9ce501774f1bf92d9fbb29576b9c2c5356fe102f839058367fc9f47015c92"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Invalidation names exact affected nodes and downstream stages, not merely a changed flag.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/be09d21f0c19ff80e3297bf00f379add33b87f29646367c8dd7360c080ec4e18"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/c325588faabe92e80d147223ecbc395c4bbfbbdd8ce13bdf2839e168d1940c9c"
+  {:index 25,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/c41812f1bcfe4a68fed5d7a28611b6ef3e5ae22fa06440c0a402275d054ff213"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Proof invalidation premises are checked before reuse.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/cc425c73eafeba23c7842808fa87f96afef3117c5c9a624bbd3e3498e0cf1e30"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/ccca9e06a699efb82ffb69a9d3740b0ea7c2a6d9709a4662d7be7db1e155beb3"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "The complete following revalidation conjunction precedes ordinary non-speculative reuse.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/d9af46bcc47e2d3f93e9c6326f20dfeef27b8983c6cd9fc132062900b1bf6f21"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Cover source/reader option-extension/macro-definition-dependency/grant-replay/namespace import-export-alias/package version/type-rule-provider/effect-capability policy/profile/safety-proof-trust/pass/target-backend/runtime-provider/facet/diagnostic changes.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/e158cd5df2290a42a2c80bf4c642dc142d8020275fa29b41edfaf8870a12ab46"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Changed diagnostic origins/facts cannot reuse a stale stream.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/e2681642f4a462a0cb0c03c85170764f9dd344dd8d0955a0eee1882921ec361b"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Key fields bind actual stage/source/reader/syntax/expansion/namespace/profile/target/compiler/pass/dependency/replay/capability/facet hashes; type-check example does not set universal subsets or supply valid hashes.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/ea70c7f90a8182308c7c6d6d4040ee6a51ab12bbf85aa7672291155fb3d6fe83"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/f3e22a7047b40a82f8aeeef8179a1330d67df2bd2e6a59593b1b3c24f35c7f39"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Check key equality/schema/pass version/preserved facts/proof freshness/profile-target/diagnostic/dependency graph compatibility.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :rebuild],
+   :predicate
+   "Emit every graph/key/entry/invalidation/reuse/revalidation/stale-proof/diagnostic product.",
+   :verdict :complete-source-conjunction-scoped-pass}},
+ :subject
+ {:repository "burn2delete/uniform",
+  :pr 554,
+  :commit "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+  :tree "df7be4829dfc2b132b8cd8e10d74ca1acd74bbba",
+  :subject-parent "f0343c1c02c2636a9725648aa152d970a6615527",
+  :previous-published-base "103fba824db72589e6afbfc7a5d3573ce3af2d27",
+  :base-tree "3ff8fea6661f140648712b0322d3ecc1f8122a15",
+  :task-source "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7"},
+ :completion
+ :sealed-frozen-source-review-only-native-goal-readback-separate}

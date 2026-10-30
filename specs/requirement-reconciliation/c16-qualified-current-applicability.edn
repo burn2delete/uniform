@@ -1,0 +1,121 @@
+{:receipt
+ {:path
+  "specs/requirement-reconciliation/c16-independent-source-review.edn",
+  :sha256
+  "4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299",
+  :reviewed-source "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+  :reviewed-tree "df7be4829dfc2b132b8cd8e10d74ca1acd74bbba"},
+ :counts
+ {:new-reviewed-facets 114,
+  :all-reviewed-source-facets 1362,
+  :semantic-conjunction-facets 1171,
+  :retained-context-facets 189,
+  :superseded-history-facets 2,
+  :finite-proposal-ids 1987,
+  :pending-finite-proposal-ids 634,
+  :reviewed-outside-finite-index 9},
+ :trace
+ {:path
+  "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+  :sha256
+  "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1"},
+ :criteria
+ {:existing
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 22471,
+   :end-byte 27237,
+   :raw-sha256
+   "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"},
+  :records
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 27238,
+   :end-byte 30497,
+   :raw-sha256
+   "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"},
+  :rebuild
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :task-id
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :file-sha256
+   "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+   :start-byte 52302,
+   :end-byte 60337,
+   :raw-sha256
+   "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}},
+ :coherent-clause-refusals
+ [{:role :existing,
+   :fresh
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "ec258380e1e5486921444d54e7659a9dec31ba0e1fe9484150f2346698bc9a74",
+    :start-byte 22471,
+    :end-byte 26949,
+    :raw-sha256
+    "7425366962dfe401eaee3abf8c6a1c203bc180f3d1197e629f11450eb5c1a883"}}
+  {:role :records,
+   :fresh
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "8335abb31257c18198336d97dda2225b2b6a5fc1555653d081e1db9703f7f457",
+    :start-byte 27238,
+    :end-byte 30152,
+    :raw-sha256
+    "e54db28f83777a981c44710de56cb5c95e6ec58a2ffcc283a9c78c9624c5586f"}}
+  {:role :rebuild,
+   :fresh
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "a241114f4b3bd34c705d79179ffdad1c0e149801f0735f1507e0a5d6b22c76b1",
+    :start-byte 52302,
+    :end-byte 59982,
+    :raw-sha256
+    "c509cd2181cda2c94f304f438bccd0ce1269ac2bd1282cc738a7513acad4d49f"}}],
+ :implementation-credit :none,
+ :conservation
+ {:original-documents 240,
+  :decisions 833,
+  :decision-witnesses 931,
+  :historical-ids 561,
+  :historical-spans 4819,
+  :decisions-tasks-statuses-and-prior-review-scopes :unchanged,
+  :binding
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+   :sha256
+   "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21"}},
+ :checks {:test 2, :pass 30, :fail 0, :error 0, :type :summary},
+ :scope :C16-source-only,
+ :source-commit "e0a01bf7a7774a6b2c99852323cf67a174c359e7",
+ :reviewer-checker-execution :none,
+ :kind :C16-frozen-source-review-current-applicability,
+ :whole-current-head :not-accepted,
+ :qualification
+ "Exact frozen C16 source, all three cache/rebuild predicates and original identity/provenance records remain current. Four intervening adopted review scopes are preserved, not conferred by this older receipt. One overlapping metadata context remains one identity with source-context-only authority. No runtime/compiler/cache/proof/provider execution, broader dependency/held scope, implementation, count or integration authority follows.",
+ :checker-sha256
+ "ee5746631e6224b44ef3963c1d8a5f12d82a33d2e415f1b2037c9a1f47c64479"}
