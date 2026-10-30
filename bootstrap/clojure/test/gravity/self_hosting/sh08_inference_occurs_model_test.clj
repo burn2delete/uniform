@@ -882,3 +882,83 @@
     (check [a (assoc b :role :incoming-alias)] :compatible-scalar-declarations)
     (check [a (alias-import-source-fixture)] :unsupported)
     (check [a (assoc b :type :gravity.type/string)] :invalid-source-premise)))
+
+(defn closed-alias-grounding-model
+  "Actual-shape internal DATA only. Transitive closure distinguishes reachable
+  literal initializers from cycles; it does not execute or normalize Gravity."
+  [{:keys [nodes lexical-bindings parameter-binding-ids] :as input}]
+  (let [ids (mapv :binding-id lexical-bindings) index (into {} (map (juxt :node-id identity) nodes))
+        unique? (and (= (count ids) (count (set ids)))
+                     (= (count nodes) (count index))
+                     (not-any? (set parameter-binding-ids) ids)
+                     (every? #(contains? index (:initializer-node-id %)) lexical-bindings))]
+    (if-not unique? {:status :invalid-source-census :input input}
+      (let [bindings (set ids)
+            initializers (into {} (map (fn [r] [(:binding-id r) (index (:initializer-node-id r))]) lexical-bindings))
+            edges (into {} (for [[binding node] initializers
+                                 :let [dependency (get-in node [:attributes :binding-id])]
+                                 :when (and (= :reference (:core-form node)) (= [] (:children node))
+                                            (bindings dependency))] [binding dependency]))
+            roots (set (for [[binding node] initializers
+                             :when (and (= :literal (:core-form node)) (= [] (:children node))
+                                        (= :integer (get-in node [:attributes :literal-kind]))
+                                        (integer? (get-in node [:attributes :value])))] binding))
+            reach (loop [relation (set (map vec edges))]
+                    (let [next (into relation (for [[a b] relation [c d] relation :when (= b c)] [a d]))]
+                      (if (= relation next) relation (recur next))))
+            components (set (for [a ids :when (reach [a a])]
+                              (set (filter #(and (reach [a %]) (reach [% a])) ids))))
+            grounded (set (for [a ids :when (some #(or (= a %) (reach [a %])) roots)] a))]
+        {:status :classified :input input :edges edges :literal-roots roots
+         :components components :grounded-binding-ids grounded
+         :component-grounding (into {} (map (fn [c] [c (set (filter grounded c))]) components))}))))
+
+(defn actual-alias-grounding-data [dependencies]
+  (let [bindings (mapv #(keyword (str "binding-" %)) (range (count dependencies)))
+        node-ids (mapv #(keyword (str "initializer-" %)) (range (count dependencies)))]
+    {:nodes (mapv (fn [node-id dependency]
+                    (if (= :literal dependency)
+                      {:node-id node-id :core-form :literal :children [] :attributes {:literal-kind :integer :value 1}}
+                      {:node-id node-id :core-form :reference :children [] :attributes {:binding-id (get bindings dependency)}}))
+                  node-ids dependencies)
+     :lexical-bindings (mapv (fn [binding node-id] {:binding-id binding :initializer-node-id node-id}) bindings node-ids)}))
+
+(deftest closed-unique-alias-cycles-cannot-also-have-a-literal-initializer-anchor
+  ;; Enumerate every functional initializer graph on one through four bindings,
+  ;; where each initializer is either one ordinary reference or a literal.
+  (doseq [size (range 1 5)
+          dependencies (reduce (fn [prefixes _] (for [p prefixes d (conj (vec (range size)) :literal)] (conj p d)))
+                               [[]] (range size))]
+    (let [data (actual-alias-grounding-data dependencies) r (closed-alias-grounding-model data)]
+      (is (= :classified (:status r)))
+      (is (every? empty? (vals (:component-grounding r))))
+      (is (every? (fn [c] (every? #(c (get (:edges r) %)) c)) (:components r)))))
+  (let [cycle (actual-alias-grounding-data [1 0])
+        tail (actual-alias-grounding-data [1 0 0])
+        anchored (actual-alias-grounding-data [1 :literal])
+        anchor-plus-cycle (actual-alias-grounding-data [1 0 :literal])
+        root-id :binding-0]
+    (is (= #{#{:binding-0 :binding-1}} (:components (closed-alias-grounding-model cycle))))
+    (is (= #{} (:grounded-binding-ids (closed-alias-grounding-model tail))))
+    (is (= #{:binding-0 :binding-1} (:grounded-binding-ids (closed-alias-grounding-model anchored))))
+    (is (= #{} (:components (closed-alias-grounding-model anchored))))
+    (is (= #{:binding-2} (:grounded-binding-ids (closed-alias-grounding-model anchor-plus-cycle))))
+    ;; Extra source obligations or compatible prior observations do not change
+    ;; an initializer, nor establish value existence for a circular equation.
+    (let [extra (assoc cycle :observations {:binding-0 :gravity.type/i8 :binding-1 :gravity.type/string}
+                      :mandatory-contributions [(atomic-handler-constraint :gravity.type/i8 \0)]
+                      :grounding :caller-approved)
+          r (closed-alias-grounding-model extra)]
+      (is (= extra (:input r)))
+      (is (= (:components (closed-alias-grounding-model cycle)) (:components r)))
+      (is (= #{} (:grounded-binding-ids r))))
+    ;; A second producer is not a way to preserve the cycle and graft a root.
+    (let [second-producer (-> cycle
+                              (update :nodes conj {:node-id :literal :core-form :literal :children []
+                                                   :attributes {:literal-kind :integer :value 1}})
+                              (update :lexical-bindings conj {:binding-id root-id :initializer-node-id :literal}))]
+      (is (= :invalid-source-census (:status (closed-alias-grounding-model second-producer)))))
+    (doseq [bad [(update cycle :nodes conj (first (:nodes cycle)))
+                 (assoc cycle :parameter-binding-ids [root-id])
+                 (assoc-in cycle [:lexical-bindings 0 :initializer-node-id] :missing)]]
+      (is (= :invalid-source-census (:status (closed-alias-grounding-model bad)))))))
