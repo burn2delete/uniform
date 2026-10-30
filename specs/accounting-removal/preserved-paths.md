@@ -1,5 +1,29 @@
 # PR502 preserved path reconciliation
 
+## C7 branch-join frozen review intake
+
+PR595 remains frozen at `99893151b3d0b7c3c435d5c2e6e90c03255b5951`, tree
+`67c0a515f30c26b61fc6f0bc06d37f2ed28bd107`, on exact PR593
+`c8f16877f822959b7a024aed6efefad511bfb868`. Its full range has two linear
+commits: source commit `cffe5c4cb226767f0eabbe73bcfdd8af3b98e11e`, then a
+two-evidence-file update. `branch-joins-frozen-review-intake.edn` verifies the
+complete six-path mode/blob overlay across that range, all four source/test
+input hashes, seven complete historical forms including the unchanged atomic
+helper, the seven actually changed production definitions, both retired APIs,
+all recorded source call arities, five complete historical test bodies and
+six exact dependent test-call migrations. Other parent test definitions and
+Effects/emitter/runtime production are conserved.
+
+`branch-joins-frozen-ci.json` records existing exact-head CI: seven successes
+and two configured skips, without rerunning jobs. PR593's source review is
+bounded parent evidence, not inherited acceptance of PR595. The old
+parameter-choice observation remains historical; its separate consumed
+classification is not reopened by this request. Independent branch-join source
+acceptance is pending. Genuine C7/Effects/lowering/runtime and current-main
+composition/integration remain UNRUN. PR637/638's later controls and width
+composition do not establish this parent's acceptance or cross-stage wide
+support. The original inventory and PR502 open status remain unchanged.
+
 ## Direct-call helper incorporation proposal
 
 `direct-call-inline-correspondence.edn` and its companion Markdown cover the
