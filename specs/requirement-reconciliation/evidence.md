@@ -1758,6 +1758,14 @@ source-review status. Its progress arithmetic stays unchanged. Later C5 clauses,
 the finite 386 facet records, full entailment, final counting and coordinator
 integration remain separate. No implementation or execution credit is conferred.
 
+The derived census at `e2f0d94c4fc70d42b70383ae8c690c63154f461d` and its
+check preserve 195 total, three Accepted and 192 remaining while displaying
+the qualified ACC source-review status. Focused metadata controls pass 2 tests /
+6 assertions: missing review bytes, a coherently rehashed wrong scope subject
+and a coherently rehashed status mismatch all refuse. These synthetic fixtures
+exercise metadata validation only; they confer no review authority. SH 12/529,
+census 5/18, boundary 6/11, generated SH check and changed-tool lint also pass.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten
