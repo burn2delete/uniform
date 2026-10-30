@@ -983,6 +983,27 @@ parent/composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Current predicate-family composition
+
+PR625 is normally reconciled with accepted main
+`e4d98947201a9473d8bca5777c1f59f5e3426bfd` at
+`7b4dea35cc0ac17803de06ec56b7484ca7e62319`, tree
+`84ad6dcb8d889e9ad8973e873545f0f7102a6623`. Parents are original reviewed
+`50c7e58c` and that main. The complete 10,087-entry tree contains every one
+of the 10,084 base blob/mode identities plus exactly the three reviewed
+additions. All three file bytes are identical to the original reviewed
+candidate; production and all accepted main entries remain unchanged.
+All 114 owner definitions/arguments and 22 upstream helper pins were freshly
+verified. Whole-owner-file hashes in the original census remain historical;
+the new record pins actual current hashes separately. Fifty-eight selected
+historical owner differences, four explicit source correspondences and the
+two unproven Boolean aggregation/equality-order differences remain qualified.
+See `predicate-family-clean-composition.edn`. Clean exact-identity inspect,
+boundary 6/11, docs, roadmap, whitespace and two-file zero-finding pinned lint
+pass. Original source PASS is not extended automatically. Current-head CI and
+affected-composition acceptance remain pending; integration-mode/merge and
+genuine owner tests remain UNRUN.
+
 ### Current collection header composition
 
 PR635 is normally reconciled with accepted main
