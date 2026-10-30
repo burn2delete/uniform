@@ -9,7 +9,8 @@
  :successes 7
  :configured-skips 2
  :all-completed true
- :independent-source-review :active
+ :independent-source-review-at-CI-capture :active
+ :independent-source-review :qualified-source-PASS-consumed
  :parent-acceptance :not-established
  :current-main-composition :not-established
  :genuine-kernel-and-target-runtime :UNRUN

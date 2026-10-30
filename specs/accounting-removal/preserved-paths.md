@@ -842,6 +842,28 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Verified finite quoted-data fixture main integration
+
+PR634 is squash-merged at
+`9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636`, parent
+`c0053c47a171fb58d627ee4ef6d406ab86f752ab`, tree
+`74bac5000d6042e5b3330e28aee15f4fcae48b38`, identical to reviewed successor
+`a37b1b80115dfd7afb762da65523855d3ec6a313`. Same-reviewer affected-composition
+SOURCE PASS receipt
+`71c82e76afca0ee0c519c62028d94b42cca2173d4aaced826db29e129b90467f`
+was verified: 12,019 source/DATA checks, nineteen corruption refusals, the
+complete 10,082-entry tree equation, all three reviewed files and six C7/two
+helper pins. Live exact-head CI run `40979694261` passed seven jobs/two skips;
+final integration-mode preflight passed every complete-identity condition on
+the clean named branch. Fresh remote/Git readback verifies merged/closed,
+reviewed-base parent, identical tree and main reachability. See
+`quote-fixture-composition-review-consumption.edn` and
+`quote-fixture-main-integration.edn`. Only two original test bodies/six fixture
+lines plus two records are integrated; production, all other base entries and
+all five PR626 additions survive. Both genuine tests remain UNRUN. The original
+15,176 sealed/15,177 handoff discrepancy and all historical restrictions remain
+preserved; no host constructor equivalence or whole-path/ACC01/PR502 acceptance.
+
 ### Verified finite reader-contract main integration
 
 PR626 is squash-merged at
@@ -895,6 +917,22 @@ reviewer readback shows its prior PR635 review complete and the distinct PR626
 review active. See `reader-composition-review-delivery.edn`. This resolves the
 earlier optional confirmation question without clearing any actual denied
 operation or claiming review completion.
+
+### Qualified List-construction lowering review
+
+PR636 exact `db8aaac9` now has independently verified SOURCE/DATA PASS,
+receipt SHA256
+`f02c3eaba37b74131d927e7f8f6a8bd9d514b474bedf6a5c59788abcd9c1ea6e`.
+`list-construction-lowering-review-consumption.edn` records 19,235 sealed
+source/DATA checks and fifteen effective corruption refusals. Three artifact
+hashes, all eight owner definitions/arguments, three fixture helpers, the
+uninvoked runtime-projection helper, checker/generator hashes and complete
+historical/parent/adapted file equation were verified. Seventeen original and
+six parent assertion forms survive with multiplicity under the two raw API
+adaptations. Two owner forms match history; six differ, including two formerly
+absent validators. No helper equivalence is inferred. Exact-head CI7/2 remains
+separate. Parent623 acceptance and later current-main composition/preflight are
+open; genuine kernel/helper/projection/runtime/allocations remain UNRUN.
 
 ### List-construction lowering and value restoration
 

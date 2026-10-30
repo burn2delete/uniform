@@ -1,0 +1,111 @@
+{:inert-corruption-refusals 19,
+ :integration-mode-preflight :required,
+ :base-test-file-and-C7-complete-source-identity
+ :verified-between-old-and-current-bases,
+ :tree "74bac5000d6042e5b3330e28aee15f4fcae48b38",
+ :nonclaims
+ [:genuine-quoted-data-guard-compiler-runtime-acceptance
+  :constructor-carrier-metadata-equivalence
+  :parent-or-future-head-acceptance
+  :current-head-CI-acceptance
+  :integration-mode-preflight
+  :main-merge
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:mode :Clojure-reader-EDN-text-hash-Git-only,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :whitespace-exit 0,
+  :author-or-shared-writes false,
+  :actual-Gravity-helper-kernel-native-provider-runtime :not-run,
+  :APPROVE-or-merge false,
+  :old569303619OWNDSE-or-held-retry false,
+  :target-allocation :none,
+  :genuine-tests :UNRUN,
+  :sealed-source-data-checks 12019,
+  :checker-sha256
+  "8421b96056a7ae9afe05b90ba59085343a2faf23c249cb18927f419477c7ecc6"},
+ :sealed-source-DATA-checks 12019,
+ :accepted-PR626-preservation
+ {:paths
+  ["bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj"
+   "specs/accounting-removal/reader-contract-controls-results.edn"
+   "specs/accounting-removal/reader-contract-controls.md"],
+  :all-five-complete-entries-and-bytes :identical-to-current-main,
+  :historical-query-nonpasses-and-genuine-nonclaims :unchanged},
+ :new-genuine-execution false,
+ :candidate "a37b1b80115dfd7afb762da65523855d3ec6a313",
+ :blocking-findings [],
+ :tree-equation
+ {:base-entries 10080,
+  :candidate-entries 10082,
+  :formula
+  :all-base-entries-plus-exact-original-three-reviewed-file-overlay,
+  :full-path-blob-mode-identity true,
+  :only-modified-path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :only-additions
+  ["specs/accounting-removal/quote-fixture-controls-census.edn"
+   "specs/accounting-removal/quote-fixture-controls.md"],
+  :all-other-main-production-tests-and-records :preserved},
+ :remaining
+ "Current-head CI, fresh clean integration-mode preflight and coordinator merge remain author-owned. Prior source review reused only for identical reviewed artifacts, with this independent current-base composition check. Stopped operations remain stopped.",
+ :full-10082-tree-equation :verified,
+ :generator-sha256
+ "e38af2f47c38dd40a0821541a3ed986b57e5a535b464da7118e59078f979e3e6",
+ :current-source-applicability
+ {:all6C7-definitions-and-args :repinned,
+  :both-shared-helpers :repinned,
+  :two-original-test-raw-bodies-and22assertions :verified,
+  :six-original-fixture-line-edits :preserved-by-identical-source,
+  :four-historical-C7-matches-two-qd-wrapper-differences
+  :scope-retained,
+  :constructor-host-metadata-equivalence :not-assumed,
+  :transitive-helper-equivalence :not-inferred},
+ :prior-review
+ {:old-log-sha256
+  "f5282e0cbb33c93310c640f5aba31889685ea5161ee2d10f16f93ed3a76c6538",
+  :candidate "f540ca1baba2d1a9080a9a600653ff34a7d73815",
+  :old-handoff-check-count 15177,
+  :scope :original-frozen-three-file-source-restoration-only,
+  :sealed-check-count 15176,
+  :discrepancy :preserved-not-overwritten-credit-sealed-only,
+  :sha256
+  "4a0052ff98614444748977a35b87a44ba2481f0a2b4a3cb5e510eaaa706b1a6f",
+  :base "2654d155322f7863dd087065f19000b43c877cbe",
+  :future-head-acceptance :not-inherited},
+ :public-author-record
+ {:ref "3077e00443a6a2d17640fcfe73da57e9891f377f",
+  :path "specs/accounting-removal/quote-fixture-clean-composition.edn",
+  :sha256
+  "e4a9afa7f87fbd71d6928b2a55cf54dc8d17f5decc4c48d6badd62857283e2ac",
+  :authority :source-composition-record-only},
+ :main-merge :UNRUN,
+ :result :pass-in-exact-source-composition-scope,
+ :all-six-C7-and-two-helper-pins :verified,
+ :kind :quote-fixture-final-composition-review-consumption,
+ :parents
+ ["f540ca1baba2d1a9080a9a600653ff34a7d73815"
+  "c0053c47a171fb58d627ee4ef6d406ab86f752ab"],
+ :receipt-sha256
+ "71c82e76afca0ee0c519c62028d94b42cca2173d4aaced826db29e129b90467f",
+ :all-three-original-reviewed-bytes :identical,
+ :clean-worktree-at-consumption true,
+ :genuine-tests :UNRUN,
+ :base-tree "c21fbaf86832bd9fa4e3f2ad1f94c50021457c71",
+ :base "c0053c47a171fb58d627ee4ef6d406ab86f752ab",
+ :reviewed-artifacts
+ {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  "specs/accounting-removal/quote-fixture-controls-census.edn"
+  "4309b9e2c7829af4898dd791b13c7c023d7bc266bbe68d37ea4e00dfcae2896a",
+  "specs/accounting-removal/quote-fixture-controls.md"
+  "93ec48ee6adf44c5017c4a1dcdf4381ab6084c7c24b89b1ae3dd211913f5030a"},
+ :pr 634,
+ :owner :ACC-01}
