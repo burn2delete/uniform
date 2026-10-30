@@ -22,7 +22,8 @@
       (write! (io/file root ".cpcache/123.manifest") (str install "/lib/clojure/deps.edn"))
       (write! (io/file root ".cpcache/unrelated-secret") "MUST-NOT-CAPTURE")
       (write! (io/file home ".m2/settings.xml") "MUST-NOT-CAPTURE")
-      (write! (io/file capture "init.stderr") "Could not locate clojure/spec/alpha; https://user:secret@example.test/private")
+      (write! (io/file capture "init.stderr")
+              "Could not locate clojure/spec/alpha; https://user:secret@example.test/private HTTPS://DATA-user:UPPER-TOKEN@example.invalid/a HtTp://DATA-user:MIXED-TOKEN@example.invalid/a")
       (write! (io/file capture "launcher.txt") (str install "/bin/clojure"))
       (let [result (apply diagnostic/collect dirs) text (pr-str result)]
         (is (= :observed (:cache-status result)))
@@ -32,7 +33,10 @@
         (is (= :observed (get-in result [:files "classpath-cache/123.basis" :status])))
         (is (= :missing (get-in result [:files "spec.alpha/0.5.238.jar" :status])))
         (is (re-matches #"[0-9a-f]{64}" (get-in result [:files "installed-deps" :sha256])))
-        (doseq [secret [(str (.getParentFile root)) "MUST-NOT-CAPTURE" "user:secret"]]
+        (is (= "Could not locate clojure/spec/alpha; <url-redacted> <url-redacted> <url-redacted>"
+               (get-in result [:files "init-stderr" :text])))
+        (doseq [secret [(str (.getParentFile root)) "MUST-NOT-CAPTURE" "user:secret"
+                       "DATA-user" "UPPER-TOKEN" "MIXED-TOKEN"]]
           (is (not (str/includes? text secret))))))))
 
 (deftest missing-oversize-and-linked-inputs-stay-explicit
