@@ -1,0 +1,57 @@
+{:changed-production-definitions
+ #{p15-s23-mkeys-fact-census
+   typed-ledger-record?
+   p15-s23-lset-row-census
+   p15-s23-lset-fact-census
+   p15-s23-mkeys-row-census},
+ :historical-negative-cases 30,
+ :old-negative-assertions :preserved-with-multiplicity,
+ :parent-source-review
+ {:receipt-sha256
+  "abc71f43b05081928f8fc39992deefcfc0a732166554c64d95c54f260bcdafde",
+  :sealed-checks 31418,
+  :refusals 20,
+  :inheritance :none},
+ :tree "5b895b67131de6d209b50585551840fd3954011f",
+ :nonclaims
+ [:no-native-callback-metadata-provider-proof
+  :no-DSE-port-or-denied-review-retry
+  :no-general-lowering-accounting-removal
+  :no-parent-stack-acceptance
+  :no-whole-ACC01-PR502-closure],
+ :retained-accounting :open-unendorsed,
+ :candidate "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
+ :source-checker-sha256
+ "6a41b64c404e7324d0cf94faaf9833a18f6f2a2fa624cfa2c051c04d5b9594ef",
+ :genuine-C7-native-lowering-runtime :UNRUN,
+ :added-native-record-cases 8,
+ :other-historical-helpers :unchanged,
+ :historical-positive-test-bodies 2,
+ :complete-five-path-mode-blob-overlay :pass,
+ :other-parent-production :unchanged,
+ :current-main-integration :UNRUN,
+ :added-tag-stripped-cases 16,
+ :original-inventory :unchanged,
+ :independent-source-review
+ :pending-intake-and-reservation-checks-no-author-assignment,
+ :census-functions 4,
+ :kind :mixed-ledgers-frozen-source-review-intake,
+ :changed-paths
+ ["bootstrap/gravity/p15_s23/emitter.gravity"
+  "specs/accounting-removal/mixed-ledgers-census.edn"
+  "specs/accounting-removal/mixed-ledgers.md"
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj"],
+ :retired-payment-test
+ :requires-independent-assertion-level-disposition,
+ :base "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :new-native-record-guard 1,
+ :pr 598,
+ :reconstruction-equation
+ :undo-only-explicit-default-ownership-and-native-predicate-substitutions-to-get-complete-base-forms,
+ :source-checker-preserved-locally true,
+ :owner :ACC-01,
+ :census
+ {:path "specs/accounting-removal/mixed-ledgers-census.edn",
+  :sha256
+  "324b3a559c0a586fecefee8784282da72a77ad762cc7405d32441e3e85133c15"}}

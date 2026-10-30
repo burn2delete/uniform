@@ -1,5 +1,28 @@
 # PR502 preserved path reconciliation
 
+## Mixed-ledger frozen source review intake
+
+PR598 remains frozen at `d58d61c4a83f09ebd3c742a3cc13b9d000244759`, tree
+`5b895b67131de6d209b50585551840fd3954011f`, on exact reviewed-source PR595
+`99893151b3d0b7c3c435d5c2e6e90c03255b5951`. The new
+`mixed-ledgers-frozen-review-intake.edn` verifies its complete five-path tree,
+four census functions and one new native-record predicate. Reversing only the
+explicit missing-tag defaults, ownership classification and native-predicate
+substitutions reconstructs all previous census bodies. All other parent
+production definitions are unchanged. Two complete historical positive tests,
+all other historical helpers and all thirty original negative cases/assertions
+remain, with sixteen added stripped-tag cases and eight native-record cases.
+The retired payment test requires independent assertion-level disposition.
+
+`mixed-ledgers-frozen-ci.json` records completed exact-head CI: seven successes
+and two configured skips, no rerun. Independent source/adaptation/test review
+is pending intake and reservation checks; no author reviewer assignment.
+PR595 contributes bounded parent source evidence, not inherited acceptance.
+Native header/callback/metadata behavior, actual C7/lowering/runtime, retained
+accounting removal and current-main integration remain unproved or UNRUN.
+This is not a DSE port or a retry of a denied review. Original inventory and
+PR502 open status remain unchanged.
+
 ## Query builders and existing constructor draft correspondence
 
 `collection-builder-guarded-correspondence.edn` and its companion Markdown
