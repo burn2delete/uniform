@@ -6900,7 +6900,7 @@
               (if (= false (= :accepted (get validation :status)))
                 {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}
                 (if (if (keyword? receiver) (= :gravity.type/map receiver) false)
-                  (let [normal? true key-domain-work 0 construction-work 1]
+                  (let [normal? true key-domain-work 0]
                       (if true
                       (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :gravity.type/never)]
                         (if (if (p15-s23-nq-ids? node call nodes bindings module)
@@ -6958,12 +6958,12 @@
                                                        :provider-allocation-bound :not-established}
                                                       {:collection-construction :not-invoked})
                                       :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
-                                      :key-domain-work key-domain-work :construction-work construction-work
+                                      :key-domain-work key-domain-work
                                       :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
                                       :profile (get module :profile) :target (get module :target)
                                       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
                                                      :private-entry-domain :caller-entries :reference-uses :preserved-resolution :exports :mutations :var-references :recur-targets :recur-transfers :recursion-components
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :private-map-keys-source-mismatch}))
@@ -7228,7 +7228,7 @@
   (let [limit (if (> budget 65536) 65536 budget)
         source (p15-s23-pmk-source core node call edge nodes bindings types (get core :module))]
     (if (= :accepted (get source :status))
-      (let [initial (+ 3 (get (get source :descriptor) :construction-work))]
+      (let [initial 3]
         (if (> initial limit) {:status :rejected :reason :private-map-keys-work-limit :work-count initial}
           (let [proof (p15-s23-pmk-proof (get source :descriptor) core node nodes bindings types forms (- limit initial))
                 work (+ initial (get proof :work-count))]
@@ -7236,7 +7236,7 @@
               {:status :accepted :work-count work
                :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
                              :key-domain-work (get proof :key-domain-work)
-                             :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
+                             :result-type-work 3)}
               (assoc proof :work-count work)))))
       (assoc source :work-count 3))))
 
@@ -7246,7 +7246,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :private-map-keys}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)
-              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy) :key-domain-proof (get descriptor :key-domain-proof)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})

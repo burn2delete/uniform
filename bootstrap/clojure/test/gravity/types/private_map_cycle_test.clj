@@ -118,6 +118,9 @@
           :let [f (fixture m) d (:descriptor f)]]
     (is (= :accepted (:status (consume m f))))
     (doseq [changed [(assoc-in f [:row :solution :key-domain-proof :coverage] :partial)
+                    (assoc-in f [:row :solution :construction-work] nil)
+                    (assoc-in f [:row :solution :construction-work] 0)
+                    (assoc-in f [:row :solution :construction-work] 1)
                     (assoc-in f [:fact :profile] :hosted)
                     (assoc-in f [:core :module :permission] false)
                     (update-in f [:core :call-edges] conj (edge :leaf :private))

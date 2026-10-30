@@ -1,5 +1,10 @@
 # Private Map source-census accounting removal
 
+The later [construction-report supplement](private-map-construction.md) removes
+the construction field/debit retained by this historical source-census increment.
+Its acceptance tuple and conservation evidence below remain scoped to that
+earlier change.
+
 This finite ACC-04 source supplement continues from `cbfd2f6aee78020b3a3468938e2c676e6ca1e6e5`,
 tree `f0206b9ee8513ac423462d856575efcd77ccd483`. It changes the three
 `sh08-pmk-source`, `body-pmk-source`, `p15-s23-pmk-source` builders and their

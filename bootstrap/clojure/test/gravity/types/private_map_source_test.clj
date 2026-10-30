@@ -74,7 +74,7 @@
       (is (= baseline (cell m wide)))
       (is (= :accepted (:status (cell m profiles))))
       (is (= :accepted (:status (cell m targets))))
-      (is (= 1 (get-in baseline [:descriptor :construction-work])))
+      (is (not (contains? (:descriptor baseline) :construction-work)))
       (is (= :none (get-in baseline [:descriptor :query-policy :flow-refinement])))
       (is (= :possible (get-in baseline [:descriptor :allocation-policy :empty-result]))))))
 
@@ -108,23 +108,28 @@
         (cell m (assoc-in f [:call :operator-binding-id] opaque))
         (is (= before @(:validation m)) "Invalid physical IDs refuse before type admission")))))
 
-(deftest header-handoff-retains-only-separate-construction-and-result-charges
+(deftest header-handoff-retains-only-separate-result-charge
   (doseq [m @models :let [f (fixture) args (mapv f [:core :node :call :edge :nodes :bindings :types])
                         _ (reset! (:proof-budgets m) [])
                         header (apply invoke m "pmk-header" (concat args [{} 20]))]]
     (is (= :accepted (:status header)))
-    (is (= 9 (:work-count header)))
-    (is (= [16] @(:proof-budgets m)))
+    (is (= 8 (:work-count header)))
+    (is (= [17] @(:proof-budgets m)))
     (is (= {:source-model true} (get-in header [:descriptor :key-domain-proof])))
     (is (not (contains? (:descriptor header) :profile-validation-work)))
     (is (= {:status :rejected :reason :private-map-keys-source-mismatch :work-count 3}
            (apply invoke m "pmk-header"
                   (concat (assoc args 0 (assoc (:core f) :function-records [])) [{} 20]))))
-    (is (= [16] @(:proof-budgets m)) "Source refusal never reaches entry proof")
+    (is (= [17] @(:proof-budgets m)) "Source refusal never reaches entry proof")
     (is (nil? (find-ns 'gravity.bootstrap)))))
 
 (deftest complete-descriptor-parity-and-stale-source-field-refusal
-  (let [f (fixture) args (mapv f [:core :node :call :edge :nodes :bindings :types])
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "opaque cost hash" {})))
+                 (equals [_] (swap! callbacks conj :equals) (throw (ex-info "opaque cost equality" {})))
+                 (toString [] (swap! callbacks conj :format) (throw (ex-info "opaque cost rendering" {}))))
+        f (fixture) args (mapv f [:core :node :call :edge :nodes :bindings :types])
         headers (mapv #(apply invoke % "pmk-header" (concat args [{} 20])) @models)]
     (is (apply = (map :descriptor headers)))
     (doseq [[m header] (map vector (rest @models) (rest headers))
@@ -136,4 +141,35 @@
       (is (= {:status :accepted :items [fact]}
              (invoke m "pmk-fact-census" [fact] (:module f) {:call descriptor} :call)))
       (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
-             (invoke m "pmk-fact-census" [forged] (:module f) {:call descriptor} :call))))))
+             (invoke m "pmk-fact-census" [forged] (:module f) {:call descriptor} :call)))
+      (doseq [[field value] [[:construction-work 0] [:construction-work 1]
+                             [:construction-work-basis :one-static-operation-with-separate-existing-runtime-census]
+                             [:construction-work opaque] [:construction-work-basis opaque]]]
+        (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+               (invoke m "pmk-fact-census"
+                       [(invoke m "pmk-call-fact" (assoc descriptor field value) (:module f))]
+                       (:module f) {:call descriptor} :call)))
+        (is (empty? @callbacks))))))
+
+(deftest semantic-construction-facts-survive-report-removal
+  (doseq [m @models :let [f (fixture) args (mapv f [:core :node :call :edge :nodes :bindings :types])
+                        descriptor (:descriptor (apply invoke m "pmk-header" (concat args [{} 20])))
+                        row (invoke m "pmk-constraint" descriptor)]]
+    (is (not (contains? descriptor :construction-work)))
+    (is (not (contains? descriptor :construction-work-basis)))
+    (is (not (some #{:construction-work} (:invalidation descriptor))))
+    (is (not (contains? (:solution row) :construction-work)))
+    (is (= {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+           (:result-type descriptor)))
+    (is (= [:memory/allocate] (:direct-effects descriptor)))
+    (is (= :each-stored-key-once (get-in descriptor [:query-policy :selection])))
+    (when (= "body" (:prefix m))
+      (binding [*ns* (:space m)] (eval (get (:defs m) 'body-pmk-allocation)))
+      (let [allocation (invoke m "pmk-allocation" (:node f) {:operator {:type descriptor}})]
+        (is (not (contains? allocation :construction-work)))
+        (is (not (contains? allocation :construction-work-basis)))
+        (is (= (:allocation-policy descriptor) (:allocation-policy allocation)))
+        (is (= (:storage-policy descriptor) (:storage-policy allocation)))
+        (is (= (:key-domain-proof descriptor) (:key-domain-proof allocation)))
+        (is (true? (:normal-completion-possible? allocation)))
+        (is (nil? (:extent allocation)))))))
