@@ -1,0 +1,74 @@
+{:source-review :pending,
+ :prior-plugin-criterion-pin-changes 3,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+  :sha256
+  "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
+  :sha256
+  "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c"},
+ :historical-file-pin-changes 40,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :domain-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:existing
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "domain-ir-boundaries",
+   :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+   :file-sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+   :start-byte 41767,
+   :end-byte 47262,
+   :raw-sha256
+   "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+  :records
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "domain-ir-boundaries",
+   :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+   :file-sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+   :start-byte 47264,
+   :end-byte 51509,
+   :raw-sha256
+   "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+  :proof
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "pass-evidence",
+   :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+   :file-sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+   :start-byte 29748,
+   :end-byte 41650,
+   :raw-sha256
+   "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/domain-owner-source-refinement.edn",
+  :sha256
+  "f684657133b78d630b2cfbb58132842175092b4acc596e58aad5d9367e9c3678"},
+ :full-file-inverse :exact-declared-insertion-removal}

@@ -437094,6 +437094,95 @@
    "gravity/foundation-diagnostic-context"],
   :applicability
   "specs/requirement-reconciliation/c15-owner-current-witness-applicability.edn"},
+ :domain-owner-current-source
+ {:reviewed-original-source-facets 1362,
+  :qualified-source-dispositions :unchanged,
+  :new-Domain-criterion-witnesses
+  {:existing
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 41767,
+    :end-byte 47262,
+    :raw-sha256
+    "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+   :records
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 47264,
+    :end-byte 51509,
+    :raw-sha256
+    "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+   :proof
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pass-evidence",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}},
+  :task-count-delta 0,
+  :source-facet-trace
+  {:path
+   "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+   :sha256
+   "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff"},
+  :prior-plugin-criterion-pin-refreshes 3,
+  :implementation-credit :none,
+  :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+  :proof-dependency-witness
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "pass-evidence",
+   :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+   :file-sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+   :start-byte 29748,
+   :end-byte 41650,
+   :raw-sha256
+   "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+  :current-bindings
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   :sha256
+   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+  :status :pending-independent-source-facet-review,
+  :earlier-qualified-source-reviews
+  :retain-captured-subjects-scopes-and-exclusions,
+  :source-occurrences 50,
+  :criterion-conservation
+  "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+  :context-occurrences 16,
+  :qualification
+  "Six original C12 owners were already candidates. Existing domain boundaries and unchanged pass-evidence producer conjoin with explicit record/transition/verifier/family/diagnostic obligations. All833/all561 conserve;40 historical Compiler API spans and3 prior C17 criterion pins refresh identical predicates. C17 remains frozen at45fa1763 for separate review; twelve earlier qualified cohorts retain captured subjects. No domain callback/compiler/target/runtime/provider/proof-checker/probe execution or implementation/release/final-count credit follows.",
+  :composition
+  "specs/requirement-reconciliation/domain-owner-source-refinement.edn",
+  :active-current-basis
+  :Domain-refreshed-historical-and-decision-spans,
+  :C12-source-facets 115,
+  :semantic-conjunction-cases 34,
+  :historical-predicate-raw-bodies :unchanged,
+  :original-owner-joins
+  ["compiler/c12/domain-entry"
+   "compiler/c12/domain-fallback"
+   "compiler/c12/domain-proof-boundary"
+   "compiler/c12/domain-registration"
+   "compiler/c12/domain-semantic-anchor"
+   "compiler/c12/registered-domain-exit"],
+  :new-decision-ids 0,
+  :historical-Domain-file-pin-refreshes 40,
+  :applicability
+  "specs/requirement-reconciliation/domain-owner-current-witness-applicability.edn"},
  :completed-source-reviews-qualified-adoption
  {:C8-full-L6 :not-accepted,
   :whole-owner-entailment :not-conferred,
@@ -437304,6 +437393,19 @@
      "compiler/c17/plugin-reuse-trace"
      "compiler/c17/plugin-scoped-authority"
      "meta/pass-contract-execution"],
+    :authority :owner-proposal-pending-independent-source-review}
+   {:path
+    "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+    :sha256
+    "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :original-owner-ids
+    ["compiler/c12/domain-entry"
+     "compiler/c12/domain-fallback"
+     "compiler/c12/domain-proof-boundary"
+     "compiler/c12/domain-registration"
+     "compiler/c12/domain-semantic-anchor"
+     "compiler/c12/registered-domain-exit"],
     :authority :owner-proposal-pending-independent-source-review}]},
  :kind :canonical-task-source-dispositions,
  :plugin-owner-current-source
@@ -437697,7 +437799,7 @@
    :whole-source-entailment :pending,
    :reviewed-superseded-history-facets 2,
    :implementation-credit :none,
-   :remaining-proposed-facet-ids 741,
+   :remaining-proposed-facet-ids 855,
    :reviewed-outside-finite-proposals 9,
    :adoptions
    [{:path
@@ -437838,16 +437940,24 @@
     "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57",
     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
     :facets 108,
+    :authority :owner-proposal-pending-independent-facet-review}
+   {:path
+    "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+    :sha256
+    "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :facets 115,
     :authority :owner-proposal-pending-independent-facet-review}],
   :implementation-credit :none,
   :whole-original-facet-entailment :pending,
-  :distinct-original-facet-ids 2094,
+  :distinct-original-facet-ids 2208,
   :overlapping-facet-ids
   ["B2/partition-facet/0002c00810823e6e36eda359f33ccecef11c4be09818becf62a441cb3284c0dc"
    "B2/partition-facet/147020ee6370b29c41205dd466eef7686a52c4a1c8eb39c9751382d65de30eb0"
    "B2/partition-facet/3f48819d9ccd493a71dcef3e6e1371585819f8f022dc633480c058693ee78ca3"
    "B2/partition-facet/6d73be7f225aa62f5f6033d88b059c60ae66c256d4c7d3588c29a6a1ec9a0b30"
    "C11/normalized-facet/35-311/5d2a2088ba679b30"
+   "C12/normalized-facet/32-308/0db33c18d4541ff6"
    "C13/normalized-facet/40-316/f32b1559e9b71c1f"
    "C14/normalized-facet/38-314/2d90a44cab032ab7"
    "C15/normalized-facet/44-320/b485539e48884ed3"
@@ -437895,7 +438005,7 @@
   :five-existing-C-backend-obligation-criteria-and-conserved-current-witnesses-only},
  :current-criterion-bindings
  {:path
-  "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
   :remaining-unadopted-dispatch-ids 0,
   :unbound-historical-mappings 0,
   :current-concrete-decision-links 833,
@@ -437932,6 +438042,11 @@
    "specs/requirement-reconciliation/c13-complete-current-facet-trace.edn",
    :review :pending-independent-facet-review,
    :new-task-units 0},
+  :Domain-source-facet
+  {:path
+   "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+   :review :pending-independent-source-review,
+   :new-task-units 0},
   :canonical-mapping-adoption
   :accepted-enumerated-historical-source-criterion-mappings,
   :Plugin-source-facet
@@ -437964,7 +438079,7 @@
    "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
    :review :pending-independent-facet-review,
    :new-task-units 0},
-  :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+  :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
   :Resolve-source-facet
   {:path
    "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
@@ -437974,7 +438089,7 @@
   "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
   :predecessor
   {:path
-   "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
    :remaining-unadopted-dispatch-ids 0,
    :unbound-historical-mappings 0,
    :current-concrete-decision-links 833,
@@ -438013,6 +438128,11 @@
     :new-task-units 0},
    :canonical-mapping-adoption
    :accepted-enumerated-historical-source-criterion-mappings,
+   :Plugin-source-facet
+   {:path
+    "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn",
+    :review :pending-independent-source-review,
+    :new-task-units 0},
    :qualified-independent-source-reviews-adopted 530,
    :canonically-adopted-new-mappings 561,
    :accepted-manifest
@@ -438038,7 +438158,7 @@
     "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
     :review :pending-independent-facet-review,
     :new-task-units 0},
-   :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+   :source-commit "726b04bbb4add5092074876522ced4792584ae30",
    :Resolve-source-facet
    {:path
     "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
@@ -438048,7 +438168,7 @@
    "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
    :predecessor
    {:path
-    "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+    "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
     :remaining-unadopted-dispatch-ids 0,
     :unbound-historical-mappings 0,
     :current-concrete-decision-links 833,
@@ -438092,6 +438212,11 @@
     :accepted-manifest
     "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
     :task-count-delta 0,
+    :Incremental-source-facet
+    {:path
+     "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+     :review :pending-independent-source-review,
+     :new-task-units 0},
     :implementation-credit :none,
     :new-independent-receipts
     [{:cohort "build68",
@@ -438107,7 +438232,7 @@
      "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
      :review :pending-independent-facet-review,
      :new-task-units 0},
-    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
     :Resolve-source-facet
     {:path
      "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
@@ -438117,7 +438242,7 @@
     "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
     :predecessor
     {:path
-     "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
+     "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
      :remaining-unadopted-dispatch-ids 0,
      :unbound-historical-mappings 0,
      :current-concrete-decision-links 833,
@@ -438176,7 +438301,7 @@
       "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
       :review :pending-independent-facet-review,
       :new-task-units 0},
-     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
      :Resolve-source-facet
      {:path
       "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
@@ -438186,7 +438311,7 @@
      "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
      :predecessor
      {:path
-      "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn",
+      "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
       :remaining-unadopted-dispatch-ids 0,
       :unbound-historical-mappings 0,
       :current-concrete-decision-links 833,
@@ -438245,7 +438370,7 @@
        "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
        :review :pending-independent-facet-review,
        :new-task-units 0},
-      :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+      :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
       :Resolve-source-facet
       {:path
        "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
@@ -438255,7 +438380,7 @@
       "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
       :predecessor
       {:path
-       "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+       "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn",
        :remaining-unadopted-dispatch-ids 0,
        :unbound-historical-mappings 0,
        :current-concrete-decision-links 833,
@@ -438314,12 +438439,17 @@
         "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
         :review :pending-independent-facet-review,
         :new-task-units 0},
-       :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+       :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+       :Resolve-source-facet
+       {:path
+        "specs/requirement-reconciliation/resolve-complete-current-facet-trace.edn",
+        :review :pending-independent-source-review,
+        :new-task-units 0},
        :bound-ids-sha256
        "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
        :predecessor
        {:path
-        "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+        "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
         :remaining-unadopted-dispatch-ids 0,
         :unbound-historical-mappings 0,
         :current-concrete-decision-links 833,
@@ -438351,6 +438481,11 @@
          "6e112737f53a045165b832cbe0b00720092282c5e6feed54ed54c61e84994e62"},
         :remaining-current-decision-allocation-work 0,
         :source-reviewed-and-current-bound 561,
+        :C13-owner-source-facet
+        {:path
+         "specs/requirement-reconciliation/c13-complete-current-facet-trace.edn",
+         :review :pending-independent-facet-review,
+         :new-task-units 0},
         :canonical-mapping-adoption
         :accepted-enumerated-historical-source-criterion-mappings,
         :qualified-independent-source-reviews-adopted 530,
@@ -438373,15 +438508,20 @@
          "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
          :review :pending-independent-facet-review,
          :new-task-units 0},
-        :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+        :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
         :bound-ids-sha256
         "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
         :predecessor
         {:path
-         "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+         "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
          :remaining-unadopted-dispatch-ids 0,
          :unbound-historical-mappings 0,
          :current-concrete-decision-links 833,
+         :C8-owner-source-facet
+         {:path
+          "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+          :review :pending-independent-facet-review,
+          :new-task-units 0},
          :existing-original-obligation-criteria
          {:composition
           "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
@@ -438427,12 +438567,12 @@
           "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
           :review :pending-independent-facet-review,
           :new-task-units 0},
-         :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+         :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
          :bound-ids-sha256
          "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
          :predecessor
          {:path
-          "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+          "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
           :remaining-unadopted-dispatch-ids 0,
           :unbound-historical-mappings 0,
           :current-concrete-decision-links 833,
@@ -438481,12 +438621,12 @@
            "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
            :review :pending-independent-facet-review,
            :new-task-units 0},
-          :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+          :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
           :bound-ids-sha256
           "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
           :predecessor
           {:path
-           "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+           "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
            :remaining-unadopted-dispatch-ids 0,
            :unbound-historical-mappings 0,
            :current-concrete-decision-links 833,
@@ -438530,12 +438670,17 @@
             "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
             :review :pending-independent-facet-review,
             :new-task-units 0},
-           :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+           :c15-owner-source-facet
+           {:path
+            "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
+            :review :pending-independent-facet-review,
+            :new-task-units 0},
+           :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
            :bound-ids-sha256
            "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
            :predecessor
            {:path
-            "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+            "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
             :remaining-unadopted-dispatch-ids 0,
             :unbound-historical-mappings 0,
             :current-concrete-decision-links 833,
@@ -438579,12 +438724,12 @@
              "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
              :review :pending-independent-facet-review,
              :new-task-units 0},
-            :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+            :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
             :bound-ids-sha256
             "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
             :predecessor
             {:path
-             "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+             "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
              :remaining-unadopted-dispatch-ids 0,
              :unbound-historical-mappings 0,
              :current-concrete-decision-links 833,
@@ -438623,12 +438768,17 @@
              [{:cohort "build68",
                :independent-receipt-sha256
                "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
-             :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+             :bootstrap-diagnostic-source-facet
+             {:path
+              "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn",
+              :review :pending-independent-facet-review,
+              :new-task-units 0},
+             :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
              :bound-ids-sha256
              "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
              :predecessor
              {:path
-              "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+              "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
               :remaining-unadopted-dispatch-ids 0,
               :unbound-historical-mappings 0,
               :current-concrete-decision-links 833,
@@ -438668,12 +438818,12 @@
                 :independent-receipt-sha256
                 "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
               :source-commit
-              "611fc634c62910ca040ae47c66e62674c6678a6a",
+              "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
               :bound-ids-sha256
               "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
               :predecessor
               {:path
-               "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn",
+               "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
                :remaining-unadopted-dispatch-ids 0,
                :unbound-historical-mappings 0,
                :current-concrete-decision-links 833,
@@ -438681,7 +438831,18 @@
                {:composition
                 "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
                 :count 5,
-                :review :pending-independent-source-review},
+                :review
+                :independent-finite-C5-source-criterion-review-accepted-current-join-verified,
+                :review-adoption
+                {:path
+                 "specs/requirement-reconciliation/existing-c5-qualified-source-review-adoption.edn",
+                 :sha256
+                 "4437ed34ea75fabcf2812e83b83951c308899d4317e2b99730a381e272d8b2ed"},
+                :predecessor
+                {:composition
+                 "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
+                 :count 5,
+                 :review :pending-independent-source-review}},
                :canonical-adoption-proof
                {:path
                 "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
@@ -438702,15 +438863,20 @@
                  :independent-receipt-sha256
                  "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                :source-commit
-               "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+               "611fc634c62910ca040ae47c66e62674c6678a6a",
                :bound-ids-sha256
                "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                :predecessor
                {:path
-                "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+                "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn",
                 :remaining-unadopted-dispatch-ids 0,
                 :unbound-historical-mappings 0,
                 :current-concrete-decision-links 833,
+                :existing-original-obligation-criteria
+                {:composition
+                 "specs/requirement-reconciliation/existing-c5-task-criterion-refinement.edn",
+                 :count 5,
+                 :review :pending-independent-source-review},
                 :canonical-adoption-proof
                 {:path
                  "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
@@ -438731,12 +438897,12 @@
                   :independent-receipt-sha256
                   "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                 :source-commit
-                "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
+                "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
                 :bound-ids-sha256
                 "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                 :predecessor
                 {:path
-                 "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn",
+                 "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
                  :remaining-unadopted-dispatch-ids 0,
                  :unbound-historical-mappings 0,
                  :current-concrete-decision-links 833,
@@ -438760,12 +438926,12 @@
                    :independent-receipt-sha256
                    "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                  :source-commit
-                 "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+                 "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
                  :bound-ids-sha256
                  "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                  :predecessor
                  {:path
-                  "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25-reviewed.edn",
+                  "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn",
                   :remaining-unadopted-dispatch-ids 0,
                   :unbound-historical-mappings 0,
                   :current-concrete-decision-links 833,
@@ -438778,7 +438944,7 @@
                   :source-reviewed-and-current-bound 561,
                   :canonical-mapping-adoption
                   :accepted-enumerated-historical-source-criterion-mappings,
-                  :qualified-independent-source-reviews-adopted 516,
+                  :qualified-independent-source-reviews-adopted 530,
                   :canonically-adopted-new-mappings 561,
                   :accepted-manifest
                   "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
@@ -438789,12 +438955,12 @@
                     :independent-receipt-sha256
                     "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                   :source-commit
-                  "4686e37b28181c5c712573cafc651d74ef40166a",
+                  "fc9eeaf61a61726027261d954907fddf8bbffdbe",
                   :bound-ids-sha256
                   "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                   :predecessor
                   {:path
-                   "specs/requirement-reconciliation/current-criterion-bindings-561-performance-ai17-reviewed.edn",
+                   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25-reviewed.edn",
                    :remaining-unadopted-dispatch-ids 0,
                    :unbound-historical-mappings 0,
                    :current-concrete-decision-links 833,
@@ -438807,7 +438973,7 @@
                    :source-reviewed-and-current-bound 561,
                    :canonical-mapping-adoption
                    :accepted-enumerated-historical-source-criterion-mappings,
-                   :qualified-independent-source-reviews-adopted 491,
+                   :qualified-independent-source-reviews-adopted 516,
                    :canonically-adopted-new-mappings 561,
                    :accepted-manifest
                    "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
@@ -438818,12 +438984,12 @@
                      :independent-receipt-sha256
                      "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                    :source-commit
-                   "c55255b582504bf44f4dbe661b3674daeb785963",
+                   "4686e37b28181c5c712573cafc651d74ef40166a",
                    :bound-ids-sha256
                    "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                    :predecessor
                    {:path
-                    "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn",
+                    "specs/requirement-reconciliation/current-criterion-bindings-561-performance-ai17-reviewed.edn",
                     :remaining-unadopted-dispatch-ids 0,
                     :unbound-historical-mappings 0,
                     :current-concrete-decision-links 833,
@@ -438836,7 +439002,7 @@
                     :source-reviewed-and-current-bound 561,
                     :canonical-mapping-adoption
                     :accepted-enumerated-historical-source-criterion-mappings,
-                    :qualified-independent-source-reviews-adopted 474,
+                    :qualified-independent-source-reviews-adopted 491,
                     :canonically-adopted-new-mappings 561,
                     :accepted-manifest
                     "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
@@ -438847,21 +439013,21 @@
                       :independent-receipt-sha256
                       "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                     :source-commit
-                    "3993e0fd95b455e766896bfa8557871cb7ba062f",
+                    "c55255b582504bf44f4dbe661b3674daeb785963",
                     :bound-ids-sha256
                     "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                     :predecessor
                     {:path
-                     "specs/requirement-reconciliation/current-criterion-bindings-561-policy-product2-reviewed.edn",
+                     "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn",
                      :remaining-unadopted-dispatch-ids 0,
                      :unbound-historical-mappings 0,
-                     :current-concrete-decision-links 808,
+                     :current-concrete-decision-links 833,
                      :canonical-adoption-proof
                      {:path
                       "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
                       :sha256
                       "6e112737f53a045165b832cbe0b00720092282c5e6feed54ed54c61e84994e62"},
-                     :remaining-current-decision-allocation-work 25,
+                     :remaining-current-decision-allocation-work 0,
                      :source-reviewed-and-current-bound 561,
                      :canonical-mapping-adoption
                      :accepted-enumerated-historical-source-criterion-mappings,
@@ -438876,12 +439042,12 @@
                        :independent-receipt-sha256
                        "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                      :source-commit
-                     "eac630f380023ab9d91eb548594f21d566b7a39c",
+                     "3993e0fd95b455e766896bfa8557871cb7ba062f",
                      :bound-ids-sha256
                      "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                      :predecessor
                      {:path
-                      "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn",
+                      "specs/requirement-reconciliation/current-criterion-bindings-561-policy-product2-reviewed.edn",
                       :remaining-unadopted-dispatch-ids 0,
                       :unbound-historical-mappings 0,
                       :current-concrete-decision-links 808,
@@ -438895,7 +439061,7 @@
                       :canonical-mapping-adoption
                       :accepted-enumerated-historical-source-criterion-mappings,
                       :qualified-independent-source-reviews-adopted
-                      472,
+                      474,
                       :canonically-adopted-new-mappings 561,
                       :accepted-manifest
                       "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
@@ -438906,21 +439072,21 @@
                         :independent-receipt-sha256
                         "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                       :source-commit
-                      "370a7b5d26814243b1a8fecbfd2ebf0b904db489",
+                      "eac630f380023ab9d91eb548594f21d566b7a39c",
                       :bound-ids-sha256
                       "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                       :predecessor
                       {:path
-                       "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn",
+                       "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn",
                        :remaining-unadopted-dispatch-ids 0,
                        :unbound-historical-mappings 0,
-                       :current-concrete-decision-links 777,
+                       :current-concrete-decision-links 808,
                        :canonical-adoption-proof
                        {:path
                         "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
                         :sha256
                         "6e112737f53a045165b832cbe0b00720092282c5e6feed54ed54c61e84994e62"},
-                       :remaining-current-decision-allocation-work 56,
+                       :remaining-current-decision-allocation-work 25,
                        :source-reviewed-and-current-bound 561,
                        :canonical-mapping-adoption
                        :accepted-enumerated-historical-source-criterion-mappings,
@@ -438936,12 +439102,12 @@
                          :independent-receipt-sha256
                          "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                        :source-commit
-                       "712b7bef6d9e3a1c9aaadb1b222b4973e2b525b7",
+                       "370a7b5d26814243b1a8fecbfd2ebf0b904db489",
                        :bound-ids-sha256
                        "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                        :predecessor
                        {:path
-                        "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7-reviewed.edn",
+                        "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn",
                         :remaining-unadopted-dispatch-ids 0,
                         :unbound-historical-mappings 0,
                         :current-concrete-decision-links 777,
@@ -438966,20 +439132,20 @@
                           :independent-receipt-sha256
                           "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                         :source-commit
-                        "bac911632784079dbbeb93e244a3489c4208d234",
+                        "712b7bef6d9e3a1c9aaadb1b222b4973e2b525b7",
                         :bound-ids-sha256
                         "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                         :predecessor
                         {:path
                          "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7-reviewed.edn",
-                         :remaining-unadopted-dispatch-ids 68,
+                         :remaining-unadopted-dispatch-ids 0,
                          :unbound-historical-mappings 0,
                          :current-concrete-decision-links 777,
                          :canonical-adoption-proof
                          {:path
-                          "specs/requirement-reconciliation/historical63-current-applicability.edn",
+                          "specs/requirement-reconciliation/build68-historical-current-applicability.edn",
                           :sha256
-                          "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
+                          "6e112737f53a045165b832cbe0b00720092282c5e6feed54ed54c61e84994e62"},
                          :remaining-current-decision-allocation-work
                          56,
                          :source-reviewed-and-current-bound 561,
@@ -438987,31 +439153,22 @@
                          :accepted-enumerated-historical-source-criterion-mappings,
                          :qualified-independent-source-reviews-adopted
                          472,
-                         :canonically-adopted-new-mappings 493,
+                         :canonically-adopted-new-mappings 561,
                          :accepted-manifest
-                         "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+                         "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
                          :task-count-delta 0,
                          :implementation-credit :none,
                          :new-independent-receipts
-                         [{:cohort "governance12",
+                         [{:cohort "build68",
                            :independent-receipt-sha256
-                           "c280c6bb5ec9a38b83e6800f4d158f9e1f284fda970a9f7be391c846b468f891"}
-                          {:cohort "core31",
-                           :independent-receipt-sha256
-                           "4b01218ef47c2cc3665fef3167e0c602f2cbfbb752496716b3a6fb9d7dbf6e55"}
-                          {:cohort "bootstrap12",
-                           :independent-receipt-sha256
-                           "994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e"}
-                          {:cohort "accounting8",
-                           :independent-receipt-sha256
-                           "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
+                           "f9b6c582a744b7f1325e10a53312b8eec8f423c8bd764915a528ff3308fe2ef6"}],
                          :source-commit
                          "bac911632784079dbbeb93e244a3489c4208d234",
                          :bound-ids-sha256
                          "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                          :predecessor
                          {:path
-                          "specs/requirement-reconciliation/current-criterion-bindings-561-schema25-reviewed.edn",
+                          "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7-reviewed.edn",
                           :remaining-unadopted-dispatch-ids 68,
                           :unbound-historical-mappings 0,
                           :current-concrete-decision-links 777,
@@ -439026,7 +439183,7 @@
                           :canonical-mapping-adoption
                           :accepted-enumerated-historical-source-criterion-mappings,
                           :qualified-independent-source-reviews-adopted
-                          465,
+                          472,
                           :canonically-adopted-new-mappings 493,
                           :accepted-manifest
                           "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
@@ -439046,12 +439203,12 @@
                             :independent-receipt-sha256
                             "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                           :source-commit
-                          "65e0704bc180521c3393725b39c284995657a065",
+                          "bac911632784079dbbeb93e244a3489c4208d234",
                           :bound-ids-sha256
                           "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                           :predecessor
                           {:path
-                           "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34-reviewed.edn",
+                           "specs/requirement-reconciliation/current-criterion-bindings-561-schema25-reviewed.edn",
                            :remaining-unadopted-dispatch-ids 68,
                            :unbound-historical-mappings 0,
                            :current-concrete-decision-links 777,
@@ -439066,7 +439223,7 @@
                            :canonical-mapping-adoption
                            :accepted-enumerated-historical-source-criterion-mappings,
                            :qualified-independent-source-reviews-adopted
-                           440,
+                           465,
                            :canonically-adopted-new-mappings 493,
                            :accepted-manifest
                            "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
@@ -439086,12 +439243,12 @@
                              :independent-receipt-sha256
                              "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                            :source-commit
-                           "79876421a2576008e005b6cbcc31b5570db8ad6f",
+                           "65e0704bc180521c3393725b39c284995657a065",
                            :bound-ids-sha256
                            "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                            :predecessor
                            {:path
-                            "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7.edn",
+                            "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34-reviewed.edn",
                             :remaining-unadopted-dispatch-ids 68,
                             :unbound-historical-mappings 0,
                             :current-concrete-decision-links 777,
@@ -439106,7 +439263,7 @@
                             :canonical-mapping-adoption
                             :accepted-enumerated-historical-source-criterion-mappings,
                             :qualified-independent-source-reviews-adopted
-                            406,
+                            440,
                             :canonically-adopted-new-mappings 493,
                             :accepted-manifest
                             "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
@@ -439126,22 +439283,22 @@
                               :independent-receipt-sha256
                               "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                             :source-commit
-                            "8677d9e3daa440b9f1f7af3d62cee67ef595a2e4",
+                            "79876421a2576008e005b6cbcc31b5570db8ad6f",
                             :bound-ids-sha256
                             "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                             :predecessor
                             {:path
-                             "specs/requirement-reconciliation/current-criterion-bindings-561-math20-reviewed.edn",
+                             "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7.edn",
                              :remaining-unadopted-dispatch-ids 68,
                              :unbound-historical-mappings 0,
-                             :current-concrete-decision-links 770,
+                             :current-concrete-decision-links 777,
                              :canonical-adoption-proof
                              {:path
                               "specs/requirement-reconciliation/historical63-current-applicability.edn",
                               :sha256
                               "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
                              :remaining-current-decision-allocation-work
-                             63,
+                             56,
                              :source-reviewed-and-current-bound 561,
                              :canonical-mapping-adoption
                              :accepted-enumerated-historical-source-criterion-mappings,
@@ -439166,12 +439323,12 @@
                                :independent-receipt-sha256
                                "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                              :source-commit
-                             "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+                             "8677d9e3daa440b9f1f7af3d62cee67ef595a2e4",
                              :bound-ids-sha256
                              "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                              :predecessor
                              {:path
-                              "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn",
+                              "specs/requirement-reconciliation/current-criterion-bindings-561-math20-reviewed.edn",
                               :remaining-unadopted-dispatch-ids 68,
                               :unbound-historical-mappings 0,
                               :current-concrete-decision-links 770,
@@ -439186,7 +439343,7 @@
                               :canonical-mapping-adoption
                               :accepted-enumerated-historical-source-criterion-mappings,
                               :qualified-independent-source-reviews-adopted
-                              386,
+                              406,
                               :canonically-adopted-new-mappings 493,
                               :accepted-manifest
                               "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
@@ -439206,22 +439363,22 @@
                                 :independent-receipt-sha256
                                 "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                               :source-commit
-                              "7543e6ec966d96678843a176d8d30820ee4c07a8",
+                              "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
                               :bound-ids-sha256
                               "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                               :predecessor
                               {:path
-                               "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
+                               "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn",
                                :remaining-unadopted-dispatch-ids 68,
                                :unbound-historical-mappings 0,
-                               :current-concrete-decision-links 769,
+                               :current-concrete-decision-links 770,
                                :canonical-adoption-proof
                                {:path
                                 "specs/requirement-reconciliation/historical63-current-applicability.edn",
                                 :sha256
                                 "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
                                :remaining-current-decision-allocation-work
-                               64,
+                               63,
                                :source-reviewed-and-current-bound 561,
                                :canonical-mapping-adoption
                                :accepted-enumerated-historical-source-criterion-mappings,
@@ -439246,22 +439403,22 @@
                                  :independent-receipt-sha256
                                  "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                :source-commit
-                               "71b7adb71e229358f2fcf32136f42732be9dbc4e",
+                               "7543e6ec966d96678843a176d8d30820ee4c07a8",
                                :bound-ids-sha256
                                "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                :predecessor
                                {:path
-                                "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn",
+                                "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
                                 :remaining-unadopted-dispatch-ids 68,
                                 :unbound-historical-mappings 0,
-                                :current-concrete-decision-links 768,
+                                :current-concrete-decision-links 769,
                                 :canonical-adoption-proof
                                 {:path
                                  "specs/requirement-reconciliation/historical63-current-applicability.edn",
                                  :sha256
                                  "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
                                 :remaining-current-decision-allocation-work
-                                65,
+                                64,
                                 :source-reviewed-and-current-bound 561,
                                 :canonical-mapping-adoption
                                 :accepted-enumerated-historical-source-criterion-mappings,
@@ -439286,12 +439443,12 @@
                                   :independent-receipt-sha256
                                   "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                 :source-commit
-                                "2c16e1dbe634189e203356e00e5a2007a5cf8e44",
+                                "71b7adb71e229358f2fcf32136f42732be9dbc4e",
                                 :bound-ids-sha256
                                 "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                 :predecessor
                                 {:path
-                                 "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed190.edn",
+                                 "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn",
                                  :remaining-unadopted-dispatch-ids 68,
                                  :unbound-historical-mappings 0,
                                  :current-concrete-decision-links 768,
@@ -439327,12 +439484,12 @@
                                    :independent-receipt-sha256
                                    "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                  :source-commit
-                                 "5331194fcf47baf9419566e839b11607e45470a3",
+                                 "2c16e1dbe634189e203356e00e5a2007a5cf8e44",
                                  :bound-ids-sha256
                                  "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                  :predecessor
                                  {:path
-                                  "specs/requirement-reconciliation/current-criterion-bindings-561-math20.edn",
+                                  "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed190.edn",
                                   :remaining-unadopted-dispatch-ids 68,
                                   :unbound-historical-mappings 0,
                                   :current-concrete-decision-links 768,
@@ -439348,7 +439505,7 @@
                                   :canonical-mapping-adoption
                                   :accepted-enumerated-historical-source-criterion-mappings,
                                   :qualified-independent-source-reviews-adopted
-                                  196,
+                                  386,
                                   :canonically-adopted-new-mappings
                                   493,
                                   :accepted-manifest
@@ -439369,24 +439526,24 @@
                                     :independent-receipt-sha256
                                     "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                   :source-commit
-                                  "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33",
+                                  "5331194fcf47baf9419566e839b11607e45470a3",
                                   :bound-ids-sha256
                                   "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                   :predecessor
                                   {:path
-                                   "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+                                   "specs/requirement-reconciliation/current-criterion-bindings-561-math20.edn",
                                    :remaining-unadopted-dispatch-ids
                                    68,
                                    :unbound-historical-mappings 0,
                                    :current-concrete-decision-links
-                                   748,
+                                   768,
                                    :canonical-adoption-proof
                                    {:path
                                     "specs/requirement-reconciliation/historical63-current-applicability.edn",
                                     :sha256
                                     "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
                                    :remaining-current-decision-allocation-work
-                                   85,
+                                   65,
                                    :source-reviewed-and-current-bound
                                    561,
                                    :canonical-mapping-adoption
@@ -439413,12 +439570,12 @@
                                      :independent-receipt-sha256
                                      "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                    :source-commit
-                                   "66d6bfa395c64e3cf5ee28a71380d15328131433",
+                                   "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33",
                                    :bound-ids-sha256
                                    "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                    :predecessor
                                    {:path
-                                    "specs/requirement-reconciliation/current-criterion-bindings-561-profile74-adopted.edn",
+                                    "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
                                     :remaining-unadopted-dispatch-ids
                                     68,
                                     :unbound-historical-mappings 0,
@@ -439457,38 +439614,56 @@
                                       :independent-receipt-sha256
                                       "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                     :source-commit
-                                    "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
+                                    "66d6bfa395c64e3cf5ee28a71380d15328131433",
                                     :bound-ids-sha256
                                     "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                     :predecessor
                                     {:path
                                      "specs/requirement-reconciliation/current-criterion-bindings-561-profile74-adopted.edn",
                                      :remaining-unadopted-dispatch-ids
-                                     131,
+                                     68,
                                      :unbound-historical-mappings 0,
                                      :current-concrete-decision-links
                                      748,
+                                     :canonical-adoption-proof
+                                     {:path
+                                      "specs/requirement-reconciliation/historical63-current-applicability.edn",
+                                      :sha256
+                                      "f9e55c629d4320290b2de258cd41cdf07cf5bfe6d60d3f05f0da0dfc65027c78"},
                                      :remaining-current-decision-allocation-work
                                      85,
                                      :source-reviewed-and-current-bound
                                      561,
                                      :canonical-mapping-adoption
-                                     :430-accepted-and-131-pending-independent-current-composition-review,
+                                     :accepted-enumerated-historical-source-criterion-mappings,
                                      :qualified-independent-source-reviews-adopted
                                      196,
                                      :canonically-adopted-new-mappings
-                                     430,
+                                     493,
                                      :accepted-manifest
-                                     "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+                                     "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
                                      :task-count-delta 0,
                                      :implementation-credit :none,
+                                     :new-independent-receipts
+                                     [{:cohort "governance12",
+                                       :independent-receipt-sha256
+                                       "c280c6bb5ec9a38b83e6800f4d158f9e1f284fda970a9f7be391c846b468f891"}
+                                      {:cohort "core31",
+                                       :independent-receipt-sha256
+                                       "4b01218ef47c2cc3665fef3167e0c602f2cbfbb752496716b3a6fb9d7dbf6e55"}
+                                      {:cohort "bootstrap12",
+                                       :independent-receipt-sha256
+                                       "994e3d33d201af4eeb80f67ad14c6b207d678f8ae14ec6b928f30ef95e3fca2e"}
+                                      {:cohort "accounting8",
+                                       :independent-receipt-sha256
+                                       "df75e6f1ae76ce5bee466320f7f4c755bcfc479f4d0c5c1b48ecc28670b4a114"}],
                                      :source-commit
                                      "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
                                      :bound-ids-sha256
                                      "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                      :predecessor
                                      {:path
-                                      "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed115.edn",
+                                      "specs/requirement-reconciliation/current-criterion-bindings-561-profile74-adopted.edn",
                                       :remaining-unadopted-dispatch-ids
                                       131,
                                       :unbound-historical-mappings 0,
@@ -439501,7 +439676,7 @@
                                       :canonical-mapping-adoption
                                       :430-accepted-and-131-pending-independent-current-composition-review,
                                       :qualified-independent-source-reviews-adopted
-                                      122,
+                                      196,
                                       :canonically-adopted-new-mappings
                                       430,
                                       :accepted-manifest
@@ -439509,12 +439684,12 @@
                                       :task-count-delta 0,
                                       :implementation-credit :none,
                                       :source-commit
-                                      "4ee78ca564d73063dbba833793555fb6d68f5e82",
+                                      "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
                                       :bound-ids-sha256
                                       "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                       :predecessor
                                       {:path
-                                       "specs/requirement-reconciliation/current-criterion-bindings-561-stdlib83.edn",
+                                       "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed115.edn",
                                        :remaining-unadopted-dispatch-ids
                                        131,
                                        :unbound-historical-mappings 0,
@@ -439527,7 +439702,7 @@
                                        :canonical-mapping-adoption
                                        :430-accepted-and-131-pending-independent-current-composition-review,
                                        :qualified-independent-source-reviews-adopted
-                                       7,
+                                       122,
                                        :canonically-adopted-new-mappings
                                        430,
                                        :accepted-manifest
@@ -439535,19 +439710,19 @@
                                        :task-count-delta 0,
                                        :implementation-credit :none,
                                        :source-commit
-                                       "848cb140b132109a692ed7e1781f77a589a8c62b",
+                                       "4ee78ca564d73063dbba833793555fb6d68f5e82",
                                        :bound-ids-sha256
                                        "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                        :predecessor
                                        {:path
-                                        "specs/requirement-reconciliation/current-criterion-bindings-561-package7-adopted.edn",
+                                        "specs/requirement-reconciliation/current-criterion-bindings-561-stdlib83.edn",
                                         :remaining-unadopted-dispatch-ids
                                         131,
                                         :unbound-historical-mappings 0,
                                         :current-concrete-decision-links
-                                        665,
+                                        748,
                                         :remaining-current-decision-allocation-work
-                                        168,
+                                        85,
                                         :source-reviewed-and-current-bound
                                         561,
                                         :canonical-mapping-adoption
@@ -439561,12 +439736,12 @@
                                         :task-count-delta 0,
                                         :implementation-credit :none,
                                         :source-commit
-                                        "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
+                                        "848cb140b132109a692ed7e1781f77a589a8c62b",
                                         :bound-ids-sha256
                                         "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                         :predecessor
                                         {:path
-                                         "specs/requirement-reconciliation/current-criterion-bindings-561-safety107.edn",
+                                         "specs/requirement-reconciliation/current-criterion-bindings-561-package7-adopted.edn",
                                          :remaining-unadopted-dispatch-ids
                                          131,
                                          :unbound-historical-mappings
@@ -439579,6 +439754,8 @@
                                          561,
                                          :canonical-mapping-adoption
                                          :430-accepted-and-131-pending-independent-current-composition-review,
+                                         :qualified-independent-source-reviews-adopted
+                                         7,
                                          :canonically-adopted-new-mappings
                                          430,
                                          :accepted-manifest
@@ -439586,20 +439763,20 @@
                                          :task-count-delta 0,
                                          :implementation-credit :none,
                                          :source-commit
-                                         "e8b30404da883433274acf7eabb90e9077f56e8e",
+                                         "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
                                          :bound-ids-sha256
                                          "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                          :predecessor
                                          {:path
-                                          "specs/requirement-reconciliation/current-criterion-bindings-561-profile74.edn",
+                                          "specs/requirement-reconciliation/current-criterion-bindings-561-safety107.edn",
                                           :remaining-unadopted-dispatch-ids
                                           131,
                                           :unbound-historical-mappings
                                           0,
                                           :current-concrete-decision-links
-                                          558,
+                                          665,
                                           :remaining-current-decision-allocation-work
-                                          275,
+                                          168,
                                           :source-reviewed-and-current-bound
                                           561,
                                           :canonical-mapping-adoption
@@ -439611,20 +439788,20 @@
                                           :task-count-delta 0,
                                           :implementation-credit :none,
                                           :source-commit
-                                          "7063afd8bfdf2d77d95e1b9f591f9d523f4b5393",
+                                          "e8b30404da883433274acf7eabb90e9077f56e8e",
                                           :bound-ids-sha256
                                           "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                           :predecessor
                                           {:path
-                                           "specs/requirement-reconciliation/current-criterion-bindings-561-runtime20.edn",
+                                           "specs/requirement-reconciliation/current-criterion-bindings-561-profile74.edn",
                                            :remaining-unadopted-dispatch-ids
                                            131,
                                            :unbound-historical-mappings
                                            0,
                                            :current-concrete-decision-links
-                                           484,
+                                           558,
                                            :remaining-current-decision-allocation-work
-                                           349,
+                                           275,
                                            :source-reviewed-and-current-bound
                                            561,
                                            :canonical-mapping-adoption
@@ -439637,20 +439814,20 @@
                                            :implementation-credit
                                            :none,
                                            :source-commit
-                                           "714c9e057bb89e9af0fc87e921da6106e5fd1f29",
+                                           "7063afd8bfdf2d77d95e1b9f591f9d523f4b5393",
                                            :bound-ids-sha256
                                            "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                            :predecessor
                                            {:path
-                                            "specs/requirement-reconciliation/current-criterion-bindings-561-domains30.edn",
+                                            "specs/requirement-reconciliation/current-criterion-bindings-561-runtime20.edn",
                                             :remaining-unadopted-dispatch-ids
                                             131,
                                             :unbound-historical-mappings
                                             0,
                                             :current-concrete-decision-links
-                                            464,
+                                            484,
                                             :remaining-current-decision-allocation-work
-                                            369,
+                                            349,
                                             :source-reviewed-and-current-bound
                                             561,
                                             :canonical-mapping-adoption
@@ -439663,20 +439840,20 @@
                                             :implementation-credit
                                             :none,
                                             :source-commit
-                                            "6bb2e263f167ec3d7748f3de13c68284367ad283",
+                                            "714c9e057bb89e9af0fc87e921da6106e5fd1f29",
                                             :bound-ids-sha256
                                             "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                             :predecessor
                                             {:path
-                                             "specs/requirement-reconciliation/current-criterion-bindings-561-tooling65.edn",
+                                             "specs/requirement-reconciliation/current-criterion-bindings-561-domains30.edn",
                                              :remaining-unadopted-dispatch-ids
                                              131,
                                              :unbound-historical-mappings
                                              0,
                                              :current-concrete-decision-links
-                                             434,
+                                             464,
                                              :remaining-current-decision-allocation-work
-                                             399,
+                                             369,
                                              :source-reviewed-and-current-bound
                                              561,
                                              :canonical-mapping-adoption
@@ -439689,20 +439866,20 @@
                                              :implementation-credit
                                              :none,
                                              :source-commit
-                                             "f1b78d6d368ea6b636e131d258ec342decc88fba",
+                                             "6bb2e263f167ec3d7748f3de13c68284367ad283",
                                              :bound-ids-sha256
                                              "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                              :predecessor
                                              {:path
-                                              "specs/requirement-reconciliation/current-criterion-bindings-561-schema25.edn",
+                                              "specs/requirement-reconciliation/current-criterion-bindings-561-tooling65.edn",
                                               :remaining-unadopted-dispatch-ids
                                               131,
                                               :unbound-historical-mappings
                                               0,
                                               :current-concrete-decision-links
-                                              369,
+                                              434,
                                               :remaining-current-decision-allocation-work
-                                              464,
+                                              399,
                                               :source-reviewed-and-current-bound
                                               561,
                                               :canonical-mapping-adoption
@@ -439715,20 +439892,20 @@
                                               :implementation-credit
                                               :none,
                                               :source-commit
-                                              "1ce47440d9c8bf1f2a1b684bb8a10def96fd7946",
+                                              "f1b78d6d368ea6b636e131d258ec342decc88fba",
                                               :bound-ids-sha256
                                               "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                               :predecessor
                                               {:path
-                                               "specs/requirement-reconciliation/current-criterion-bindings-561-package7.edn",
+                                               "specs/requirement-reconciliation/current-criterion-bindings-561-schema25.edn",
                                                :remaining-unadopted-dispatch-ids
                                                131,
                                                :unbound-historical-mappings
                                                0,
                                                :current-concrete-decision-links
-                                               344,
+                                               369,
                                                :remaining-current-decision-allocation-work
-                                               489,
+                                               464,
                                                :source-reviewed-and-current-bound
                                                561,
                                                :canonical-mapping-adoption
@@ -439741,20 +439918,20 @@
                                                :implementation-credit
                                                :none,
                                                :source-commit
-                                               "1fe616719bc9f27236d44a2c003d1b3b19756247",
+                                               "1ce47440d9c8bf1f2a1b684bb8a10def96fd7946",
                                                :bound-ids-sha256
                                                "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                                :predecessor
                                                {:path
-                                                "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34.edn",
+                                                "specs/requirement-reconciliation/current-criterion-bindings-561-package7.edn",
                                                 :remaining-unadopted-dispatch-ids
                                                 131,
                                                 :unbound-historical-mappings
                                                 0,
                                                 :current-concrete-decision-links
-                                                337,
+                                                344,
                                                 :remaining-current-decision-allocation-work
-                                                496,
+                                                489,
                                                 :source-reviewed-and-current-bound
                                                 561,
                                                 :canonical-mapping-adoption
@@ -439767,16 +439944,20 @@
                                                 :implementation-credit
                                                 :none,
                                                 :source-commit
-                                                "e3f51140beb4665f1f612b1c195ac3967697eeff",
+                                                "1fe616719bc9f27236d44a2c003d1b3b19756247",
                                                 :bound-ids-sha256
                                                 "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                                 :predecessor
                                                 {:path
-                                                 "specs/requirement-reconciliation/current-criterion-bindings-561.edn",
+                                                 "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34.edn",
                                                  :remaining-unadopted-dispatch-ids
                                                  131,
                                                  :unbound-historical-mappings
                                                  0,
+                                                 :current-concrete-decision-links
+                                                 337,
+                                                 :remaining-current-decision-allocation-work
+                                                 496,
                                                  :source-reviewed-and-current-bound
                                                  561,
                                                  :canonical-mapping-adoption
@@ -439789,20 +439970,20 @@
                                                  :implementation-credit
                                                  :none,
                                                  :source-commit
-                                                 "7687c79684ade2ec13147a2c987967c5757703ae",
+                                                 "e3f51140beb4665f1f612b1c195ac3967697eeff",
                                                  :bound-ids-sha256
                                                  "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                                  :predecessor
                                                  {:path
-                                                  "specs/requirement-reconciliation/current-criterion-bindings-553.edn",
+                                                  "specs/requirement-reconciliation/current-criterion-bindings-561.edn",
                                                   :remaining-unadopted-dispatch-ids
                                                   131,
                                                   :unbound-historical-mappings
-                                                  8,
+                                                  0,
                                                   :source-reviewed-and-current-bound
-                                                  553,
+                                                  561,
                                                   :canonical-mapping-adoption
-                                                  :430-accepted-and-123-pending-independent-current-composition-review,
+                                                  :430-accepted-and-131-pending-independent-current-composition-review,
                                                   :canonically-adopted-new-mappings
                                                   430,
                                                   :accepted-manifest
@@ -439811,296 +439992,335 @@
                                                   :implementation-credit
                                                   :none,
                                                   :source-commit
-                                                  "122c13e4591a1503e7f030e291b3cde673d36973",
+                                                  "7687c79684ade2ec13147a2c987967c5757703ae",
                                                   :bound-ids-sha256
-                                                  "e657b15fa9e81bb6af15e2442e3544e93cef01241ab2f439c8efa28c68f4cb97",
+                                                  "9e988365bbf0ee4119603faef1444c1dfa1a3c505342690d3a38ab1a5dfe2a72",
                                                   :predecessor
                                                   {:path
-                                                   "specs/requirement-reconciliation/current-criterion-bindings-485.edn",
+                                                   "specs/requirement-reconciliation/current-criterion-bindings-553.edn",
                                                    :remaining-unadopted-dispatch-ids
                                                    131,
                                                    :unbound-historical-mappings
-                                                   76,
+                                                   8,
                                                    :source-reviewed-and-current-bound
-                                                   485,
+                                                   553,
                                                    :canonical-mapping-adoption
-                                                   :430-accepted-and-55-pending-independent-current-composition-review,
+                                                   :430-accepted-and-123-pending-independent-current-composition-review,
                                                    :canonically-adopted-new-mappings
                                                    430,
                                                    :accepted-manifest
                                                    "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
-                                                   :task-count-delta 1,
+                                                   :task-count-delta 0,
                                                    :implementation-credit
                                                    :none,
                                                    :source-commit
-                                                   "8ab091e04b53beac6a4a59c82d116382a5ea9f30",
+                                                   "122c13e4591a1503e7f030e291b3cde673d36973",
                                                    :bound-ids-sha256
-                                                   "fb03a99e14312d9d830542d4a9b1a3a27144f741e1abef1d38934b327bad694e",
+                                                   "e657b15fa9e81bb6af15e2442e3544e93cef01241ab2f439c8efa28c68f4cb97",
                                                    :predecessor
                                                    {:path
-                                                    "specs/requirement-reconciliation/current-criterion-bindings-473.edn",
+                                                    "specs/requirement-reconciliation/current-criterion-bindings-485.edn",
                                                     :remaining-unadopted-dispatch-ids
                                                     131,
                                                     :unbound-historical-mappings
-                                                    88,
+                                                    76,
                                                     :source-reviewed-and-current-bound
-                                                    473,
+                                                    485,
                                                     :canonical-mapping-adoption
-                                                    :430-accepted-and-43-pending-independent-current-composition-review,
+                                                    :430-accepted-and-55-pending-independent-current-composition-review,
                                                     :canonically-adopted-new-mappings
                                                     430,
                                                     :accepted-manifest
                                                     "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
                                                     :task-count-delta
-                                                    10,
+                                                    1,
                                                     :implementation-credit
                                                     :none,
                                                     :source-commit
-                                                    "53ebb7f4f0bc712b253436b8f53182b07e3399df",
+                                                    "8ab091e04b53beac6a4a59c82d116382a5ea9f30",
                                                     :bound-ids-sha256
-                                                    "6d16206ffd772f48afe9d00d366e4bfa3baf18944e5adc6ac326a7c1ca406146",
+                                                    "fb03a99e14312d9d830542d4a9b1a3a27144f741e1abef1d38934b327bad694e",
                                                     :predecessor
                                                     {:path
-                                                     "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
+                                                     "specs/requirement-reconciliation/current-criterion-bindings-473.edn",
                                                      :remaining-unadopted-dispatch-ids
                                                      131,
+                                                     :unbound-historical-mappings
+                                                     88,
+                                                     :source-reviewed-and-current-bound
+                                                     473,
                                                      :canonical-mapping-adoption
-                                                     :accepted-enumerated-historical-source-criterion-mappings,
+                                                     :430-accepted-and-43-pending-independent-current-composition-review,
                                                      :canonically-adopted-new-mappings
                                                      430,
                                                      :accepted-manifest
                                                      "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+                                                     :task-count-delta
+                                                     10,
+                                                     :implementation-credit
+                                                     :none,
                                                      :source-commit
-                                                     "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
+                                                     "53ebb7f4f0bc712b253436b8f53182b07e3399df",
                                                      :bound-ids-sha256
-                                                     "f49fd0565a48c49802f05b050615215788933a00a7b638fab95e7c2a5af32fcc",
+                                                     "6d16206ffd772f48afe9d00d366e4bfa3baf18944e5adc6ac326a7c1ca406146",
                                                      :predecessor
                                                      {:path
-                                                      "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+                                                      "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
                                                       :remaining-unadopted-dispatch-ids
-                                                      216,
+                                                      131,
                                                       :canonical-mapping-adoption
                                                       :accepted-enumerated-historical-source-criterion-mappings,
-                                                      :pending-current-source-successor
-                                                      {:path
-                                                       "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
-                                                       :sha256
-                                                       "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
-                                                       :source-commit
-                                                       "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
-                                                       :unaccepted-criterion-bindings
-                                                       85,
-                                                       :task-count-delta
-                                                       13,
-                                                       :status
-                                                       :pending-independent-composition-and-task-scope-review},
                                                       :canonically-adopted-new-mappings
-                                                      345,
+                                                      430,
                                                       :accepted-manifest
-                                                      "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
+                                                      "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
                                                       :source-commit
-                                                      "19e1120301643581e6a8b55b933ec12643d0ba2f",
+                                                      "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
                                                       :bound-ids-sha256
-                                                      "b3fbc2e2e5cb552a675b53115389731e5752a01283ac0af876f3a62780956369",
+                                                      "f49fd0565a48c49802f05b050615215788933a00a7b638fab95e7c2a5af32fcc",
                                                       :predecessor
                                                       {:path
-                                                       "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
+                                                       "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
                                                        :remaining-unadopted-dispatch-ids
-                                                       286,
+                                                       216,
                                                        :canonical-mapping-adoption
                                                        :accepted-enumerated-historical-source-criterion-mappings,
                                                        :pending-current-source-successor
                                                        {:path
-                                                        "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+                                                        "specs/requirement-reconciliation/current-criterion-bindings-430.edn",
                                                         :sha256
-                                                        "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
+                                                        "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
                                                         :source-commit
-                                                        "19e1120301643581e6a8b55b933ec12643d0ba2f",
+                                                        "d7ff9de2d916918acb5aeabfa3f2409784a33f2a",
                                                         :unaccepted-criterion-bindings
-                                                        70,
+                                                        85,
                                                         :task-count-delta
-                                                        9,
+                                                        13,
                                                         :status
                                                         :pending-independent-composition-and-task-scope-review},
                                                        :canonically-adopted-new-mappings
-                                                       275,
+                                                       345,
                                                        :accepted-manifest
-                                                       "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+                                                       "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
                                                        :source-commit
-                                                       "6905570c41d81afb1d2917a479cf4d92b2304b30",
+                                                       "19e1120301643581e6a8b55b933ec12643d0ba2f",
                                                        :bound-ids-sha256
-                                                       "63aaabb02f0e15e990589c7ed509121de243ac16d05a8e43da5a79e34b581736",
+                                                       "b3fbc2e2e5cb552a675b53115389731e5752a01283ac0af876f3a62780956369",
                                                        :predecessor
                                                        {:path
-                                                        "specs/requirement-reconciliation/current-criterion-bindings.edn",
+                                                        "specs/requirement-reconciliation/current-criterion-bindings-275.edn",
                                                         :remaining-unadopted-dispatch-ids
-                                                        361,
-                                                        :source-reviewed-and-current-bound
-                                                        200,
+                                                        286,
                                                         :canonical-mapping-adoption
                                                         :accepted-enumerated-historical-source-criterion-mappings,
+                                                        :pending-current-source-successor
+                                                        {:path
+                                                         "specs/requirement-reconciliation/current-criterion-bindings-345.edn",
+                                                         :sha256
+                                                         "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
+                                                         :source-commit
+                                                         "19e1120301643581e6a8b55b933ec12643d0ba2f",
+                                                         :unaccepted-criterion-bindings
+                                                         70,
+                                                         :task-count-delta
+                                                         9,
+                                                         :status
+                                                         :pending-independent-composition-and-task-scope-review},
                                                         :canonically-adopted-new-mappings
-                                                        200,
+                                                        275,
                                                         :accepted-manifest
-                                                        "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+                                                        "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
                                                         :source-commit
-                                                        "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+                                                        "6905570c41d81afb1d2917a479cf4d92b2304b30",
                                                         :bound-ids-sha256
-                                                        "472dd8fa27e91fc1306782cb132accdb055475bbe877d6091222d591a97b5385",
+                                                        "63aaabb02f0e15e990589c7ed509121de243ac16d05a8e43da5a79e34b581736",
+                                                        :predecessor
+                                                        {:path
+                                                         "specs/requirement-reconciliation/current-criterion-bindings.edn",
+                                                         :remaining-unadopted-dispatch-ids
+                                                         361,
+                                                         :source-reviewed-and-current-bound
+                                                         200,
+                                                         :canonical-mapping-adoption
+                                                         :accepted-enumerated-historical-source-criterion-mappings,
+                                                         :canonically-adopted-new-mappings
+                                                         200,
+                                                         :accepted-manifest
+                                                         "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+                                                         :source-commit
+                                                         "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+                                                         :bound-ids-sha256
+                                                         "472dd8fa27e91fc1306782cb132accdb055475bbe877d6091222d591a97b5385",
+                                                         :sha256
+                                                         "2378fa880c9ecec322a1db2911622dd025ac83710efa22fd52955d5fc7e83b84",
+                                                         :qualification
+                                                         "These are independently reviewed historical obligation-to-criterion source bindings with fresh current spans, not implementation acceptance or blanket entailment of every sentence of inherited broad facets. Whole-project scope, granularity and the 833 current Open decision identities remain separate and unassessed.",
+                                                         :independent-composition-receipt-sha256
+                                                         "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"},
                                                         :sha256
-                                                        "2378fa880c9ecec322a1db2911622dd025ac83710efa22fd52955d5fc7e83b84",
-                                                        :qualification
-                                                        "These are independently reviewed historical obligation-to-criterion source bindings with fresh current spans, not implementation acceptance or blanket entailment of every sentence of inherited broad facets. Whole-project scope, granularity and the 833 current Open decision identities remain separate and unassessed.",
+                                                        "6abfff77840a7a12abdd3eb6b11096424871058fd67976cbfbb2d80bd3c9ceea",
                                                         :independent-composition-receipt-sha256
-                                                        "217081cbf817433a4602ae1a4fd610b632fc1d112651117f65f2632c4676c59b"},
+                                                        "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb"},
                                                        :sha256
-                                                       "6abfff77840a7a12abdd3eb6b11096424871058fd67976cbfbb2d80bd3c9ceea",
+                                                       "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
                                                        :independent-composition-receipt-sha256
-                                                       "96eddffad7386c91b09077bbc60b72befaa337a68ad48d523a052919d5e238cb"},
+                                                       "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612"},
                                                       :sha256
-                                                      "3f79577f67dac65ed1cfe2afaedd771fc5b62277addfef22f51156825693b28f",
+                                                      "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
                                                       :independent-composition-receipt-sha256
-                                                      "7444d0478f89f3b2dc8f8ea92eb1887fb91da091846fa3dd3e3cceed1b37d612"},
+                                                      "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579"},
                                                      :sha256
-                                                     "eec1c483e4d0cba5bb674b751e2743571ef83fc6f388538273aca3eb91f21b87",
-                                                     :independent-composition-receipt-sha256
-                                                     "17bd02213bf02315bb649d8ceed00d45862e6f15b3872ec9e4a93fe35534f579"},
+                                                     "423fcc2b0dc7358147db355600857f0507935dc1297bc1e5b07030a06ef10278"},
                                                     :sha256
-                                                    "423fcc2b0dc7358147db355600857f0507935dc1297bc1e5b07030a06ef10278"},
+                                                    "68c2314aef87d9dd2dd5d07925c4298ca2d23df5b77f0be0bbc63bf56e55c50e"},
                                                    :sha256
-                                                   "68c2314aef87d9dd2dd5d07925c4298ca2d23df5b77f0be0bbc63bf56e55c50e"},
+                                                   "9902446a95d7a64307e8535ebdfe63c4e494927a0a9a85253d046bc0f083193b"},
                                                   :sha256
-                                                  "9902446a95d7a64307e8535ebdfe63c4e494927a0a9a85253d046bc0f083193b"},
+                                                  "2f014e29c7bb7e20610f4fc8b8e6be180e8f828497e55b8b6a52496e74888e48"},
                                                  :sha256
-                                                 "2f014e29c7bb7e20610f4fc8b8e6be180e8f828497e55b8b6a52496e74888e48"},
+                                                 "d4db0c00859c1a8580be3ae9b863737640891fac086eba141eee41fec0b234c9",
+                                                 :current-decision-links-pending-review
+                                                 34},
                                                 :sha256
-                                                "d4db0c00859c1a8580be3ae9b863737640891fac086eba141eee41fec0b234c9",
+                                                "26b027957ba73e02e1d2f09545afb56d4850c54c95ae41f12447a00609f6b8eb",
                                                 :current-decision-links-pending-review
-                                                34},
+                                                41},
                                                :sha256
-                                               "26b027957ba73e02e1d2f09545afb56d4850c54c95ae41f12447a00609f6b8eb",
+                                               "ec9699f564a7a32ece6f27673075292a71a04b167639509de2acbdf691112f74",
                                                :current-decision-links-pending-review
-                                               41},
+                                               66},
                                               :sha256
-                                              "ec9699f564a7a32ece6f27673075292a71a04b167639509de2acbdf691112f74",
+                                              "224064bc18e93029a2bca96bb51d67a3586808209756dc8136bf804ff0edadbb",
                                               :current-decision-links-pending-review
-                                              66},
+                                              131},
                                              :sha256
-                                             "224064bc18e93029a2bca96bb51d67a3586808209756dc8136bf804ff0edadbb",
+                                             "177402867a94c259ff0f3e090c531f39f45de43acf57b7d9fd8cb7ef04e4de77",
                                              :current-decision-links-pending-review
-                                             131},
+                                             161},
                                             :sha256
-                                            "177402867a94c259ff0f3e090c531f39f45de43acf57b7d9fd8cb7ef04e4de77",
+                                            "0aac9654a12c73cedd795afc1e1bff89583360ddf675757a2b7d00d1a6e79cb8",
                                             :current-decision-links-pending-review
-                                            161},
+                                            181},
                                            :sha256
-                                           "0aac9654a12c73cedd795afc1e1bff89583360ddf675757a2b7d00d1a6e79cb8",
+                                           "bd79139054c9d34c568f2cb74957d98d4e4fdfdd4dcaadc08cff3bc81eaa85f3",
                                            :current-decision-links-pending-review
-                                           181},
+                                           255},
                                           :sha256
-                                          "bd79139054c9d34c568f2cb74957d98d4e4fdfdd4dcaadc08cff3bc81eaa85f3",
+                                          "153796f893ffdaf175d31af735f5a651e26644d54100aa22a3c2fa07434162eb",
                                           :current-decision-links-pending-review
-                                          255},
+                                          362},
                                          :sha256
-                                         "153796f893ffdaf175d31af735f5a651e26644d54100aa22a3c2fa07434162eb",
+                                         "2e555e4a9394fdd6cfa9f49aaa982cef738d566543733e78964e818402701a74",
                                          :current-decision-links-pending-review
-                                         362},
+                                         355},
                                         :sha256
-                                        "2e555e4a9394fdd6cfa9f49aaa982cef738d566543733e78964e818402701a74",
+                                        "68c5323dffcce19b8d92a697a6c6ebf61fb46296c0c863a0653c1df1f0666b04",
                                         :current-decision-links-pending-review
-                                        355},
+                                        438},
                                        :sha256
-                                       "68c5323dffcce19b8d92a697a6c6ebf61fb46296c0c863a0653c1df1f0666b04",
+                                       "30f2457b26d1bd03518e1ccbeb58c5dc48784eb982a2b46d424dcd7a1d66bd31",
                                        :current-decision-links-pending-review
-                                       438},
+                                       323},
                                       :sha256
-                                      "30f2457b26d1bd03518e1ccbeb58c5dc48784eb982a2b46d424dcd7a1d66bd31",
+                                      "53cc4a1526fe26a232364de6947d21dd0c692b79f8f9e44e434844ba07faac44",
                                       :current-decision-links-pending-review
-                                      323},
+                                      249},
                                      :sha256
                                      "53cc4a1526fe26a232364de6947d21dd0c692b79f8f9e44e434844ba07faac44",
                                      :current-decision-links-pending-review
                                      249},
                                     :sha256
-                                    "53cc4a1526fe26a232364de6947d21dd0c692b79f8f9e44e434844ba07faac44",
+                                    "2361911fca48e9a083fa1f95b901c05c0c89b080c0a0f62968eb10279ed41195",
                                     :current-decision-links-pending-review
                                     249},
                                    :sha256
-                                   "2361911fca48e9a083fa1f95b901c05c0c89b080c0a0f62968eb10279ed41195",
+                                   "ad9d8239da3c1c6d823ca463204fb7dc21d568bfc4e47a6ab4c91b9b9c08510a",
                                    :current-decision-links-pending-review
-                                   249},
+                                   269},
                                   :sha256
-                                  "ad9d8239da3c1c6d823ca463204fb7dc21d568bfc4e47a6ab4c91b9b9c08510a",
+                                  "e46460855df01064e968f92ee354c687a316daac7beafc76a81ead0535a5a7ef",
                                   :current-decision-links-pending-review
-                                  269},
+                                  79},
                                  :sha256
-                                 "e46460855df01064e968f92ee354c687a316daac7beafc76a81ead0535a5a7ef",
+                                 "a6167ac7135249bfdad21f87d439c34b98c25a7182e74c9ac99dbe3835d0b8b2",
                                  :current-decision-links-pending-review
                                  79},
                                 :sha256
-                                "a6167ac7135249bfdad21f87d439c34b98c25a7182e74c9ac99dbe3835d0b8b2",
+                                "bac0312a18522fa14ef0dd3ece9c35eccff0f59532fdf4de8416b237a070bf7c",
                                 :current-decision-links-pending-review
-                                79},
+                                80},
                                :sha256
-                               "bac0312a18522fa14ef0dd3ece9c35eccff0f59532fdf4de8416b237a070bf7c",
+                               "f7b234705c97ffb4718ff0c2bd92beec03440abc4d026334b095cfae96403207",
                                :current-decision-links-pending-review
-                               80},
+                               81},
                               :sha256
-                              "f7b234705c97ffb4718ff0c2bd92beec03440abc4d026334b095cfae96403207",
+                              "4e03175abfe896b3c57b75c4eaed115506b3b231f8e0b2ef3ca98204ccafe229",
                               :current-decision-links-pending-review
-                              81},
+                              61},
                              :sha256
-                             "4e03175abfe896b3c57b75c4eaed115506b3b231f8e0b2ef3ca98204ccafe229",
+                             "71c12dabbea70904ef038e51e6fda2deb8c1f1e2acd90f4d94703ff8db63cfce",
                              :current-decision-links-pending-review
-                             61},
+                             68},
                             :sha256
-                            "71c12dabbea70904ef038e51e6fda2deb8c1f1e2acd90f4d94703ff8db63cfce",
-                            :current-decision-links-pending-review 68},
+                            "5bc2fb8d29c22ffb9ed02b4a18090df296442085557850c18cb947f4d7f8521a",
+                            :current-decision-links-pending-review 34},
                            :sha256
-                           "5bc2fb8d29c22ffb9ed02b4a18090df296442085557850c18cb947f4d7f8521a",
-                           :current-decision-links-pending-review 34},
+                           "be26b81588b918d57ded78e201e317ddca9f37472c37a3f4336bee0e2510eea4",
+                           :current-decision-links-pending-review 9},
                           :sha256
-                          "be26b81588b918d57ded78e201e317ddca9f37472c37a3f4336bee0e2510eea4",
-                          :current-decision-links-pending-review 9},
+                          "4dfcf1628e9b4cba998fc3092bf9cea0edbd01fdc0304b6808335118f4c6ef65",
+                          :current-decision-links-pending-review 2},
                          :sha256
                          "4dfcf1628e9b4cba998fc3092bf9cea0edbd01fdc0304b6808335118f4c6ef65",
                          :current-decision-links-pending-review 2},
                         :sha256
-                        "4dfcf1628e9b4cba998fc3092bf9cea0edbd01fdc0304b6808335118f4c6ef65",
+                        "b1afac0c2ff9cff17412f3472d52accad4abc0287766b69795075e5c22d67d39",
                         :current-decision-links-pending-review 2},
                        :sha256
-                       "b1afac0c2ff9cff17412f3472d52accad4abc0287766b69795075e5c22d67d39",
-                       :current-decision-links-pending-review 2},
+                       "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786",
+                       :current-decision-links-pending-review 33},
                       :sha256
-                      "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786",
-                      :current-decision-links-pending-review 33},
+                      "3d3f583875676acd8c296c69bfceef5ded926c16cab976b70753179d29d634d2",
+                      :current-decision-links-pending-review 31},
                      :sha256
-                     "3d3f583875676acd8c296c69bfceef5ded926c16cab976b70753179d29d634d2",
-                     :current-decision-links-pending-review 31},
+                     "23defa1f5b730126d5b6d39cb5743a6e21819c7b0af707b01b90ed3a49e1e88b",
+                     :current-decision-links-pending-review 56},
                     :sha256
-                    "23defa1f5b730126d5b6d39cb5743a6e21819c7b0af707b01b90ed3a49e1e88b",
-                    :current-decision-links-pending-review 56},
+                    "c801484e40b4a4d933119c6b17e8668ccd2e1d9725f3c0e3190746092d482cdf",
+                    :current-decision-links-pending-review 39},
                    :sha256
-                   "c801484e40b4a4d933119c6b17e8668ccd2e1d9725f3c0e3190746092d482cdf",
-                   :current-decision-links-pending-review 39},
+                   "6a4da49e04efecb16bbbb5574969bd324fdb03308e6f2daa163b86d867e757e1",
+                   :current-decision-links-pending-review 14},
                   :sha256
-                  "6a4da49e04efecb16bbbb5574969bd324fdb03308e6f2daa163b86d867e757e1",
-                  :current-decision-links-pending-review 14},
+                  "ce86c5aacc8c7cea39e2785a51889c762f0e4661010813dcafcbc73c368c41d1",
+                  :current-decision-links-pending-review 0},
                  :sha256
-                 "ce86c5aacc8c7cea39e2785a51889c762f0e4661010813dcafcbc73c368c41d1",
+                 "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982",
+                 :current-granularity-routing-review
+                 :pending-independent-review,
                  :current-decision-links-pending-review 0},
                 :sha256
-                "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982",
+                "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
                 :current-granularity-routing-review
                 :pending-independent-review,
                 :current-decision-links-pending-review 0},
                :sha256
-               "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+               "15d5afcad1d9e3649f4b444a4f9e88361bbfce11608fd27101eaae6b9fda6d13",
+               :granularity13-review-adoption
+               {:path
+                "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
+                :sha256
+                "f465d0c4ab5ec5b9bc7c0fc32f0e11c3433778ec02fff9bf6fb34ea7ccda2cb7"},
                :current-granularity-routing-review
-               :pending-independent-review,
+               :independent-finite-source-repartition-review-accepted-current-join-verified,
                :current-decision-links-pending-review 0},
+              :B2-fixed-width-source-facet
+              {:path
+               "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+               :review :pending-independent-facet-review,
+               :new-task-units 0},
               :sha256
-              "15d5afcad1d9e3649f4b444a4f9e88361bbfce11608fd27101eaae6b9fda6d13",
+              "afdc75a8a18b640768a2ee9ec694afd2daf2bbc9ecf313cd0c5fdc03d7c20aba",
               :granularity13-review-adoption
               {:path
                "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440115,7 +440335,7 @@
               :review :pending-independent-facet-review,
               :new-task-units 0},
              :sha256
-             "afdc75a8a18b640768a2ee9ec694afd2daf2bbc9ecf313cd0c5fdc03d7c20aba",
+             "06fc51ee46d659538b862dce3830e3fc4bbf9857eac3b94747e64790a44b3604",
              :granularity13-review-adoption
              {:path
               "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440130,7 +440350,7 @@
              :review :pending-independent-facet-review,
              :new-task-units 0},
             :sha256
-            "06fc51ee46d659538b862dce3830e3fc4bbf9857eac3b94747e64790a44b3604",
+            "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25",
             :granularity13-review-adoption
             {:path
              "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440138,14 +440358,19 @@
              "f465d0c4ab5ec5b9bc7c0fc32f0e11c3433778ec02fff9bf6fb34ea7ccda2cb7"},
             :current-granularity-routing-review
             :independent-finite-source-repartition-review-accepted-current-join-verified,
-            :current-decision-links-pending-review 0},
+            :current-decision-links-pending-review 0,
+            :d2-triage-source-facet
+            {:path
+             "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn",
+             :review :pending-independent-facet-review,
+             :new-task-units 0}},
            :B2-fixed-width-source-facet
            {:path
             "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
             :review :pending-independent-facet-review,
             :new-task-units 0},
            :sha256
-           "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25",
+           "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
            :granularity13-review-adoption
            {:path
             "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440165,7 +440390,7 @@
            :review :pending-independent-facet-review,
            :new-task-units 0},
           :sha256
-          "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+          "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7",
           :granularity13-review-adoption
           {:path
            "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440174,6 +440399,11 @@
           :current-granularity-routing-review
           :independent-finite-source-repartition-review-accepted-current-join-verified,
           :current-decision-links-pending-review 0,
+          :C14-owner-source-facet
+          {:path
+           "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn",
+           :review :pending-independent-facet-review,
+           :new-task-units 0},
           :d2-triage-source-facet
           {:path
            "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn",
@@ -440185,7 +440415,7 @@
           :review :pending-independent-facet-review,
           :new-task-units 0},
          :sha256
-         "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7",
+         "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe",
          :granularity13-review-adoption
          {:path
           "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440210,7 +440440,7 @@
          :review :pending-independent-facet-review,
          :new-task-units 0},
         :sha256
-        "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe",
+        "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f",
         :granularity13-review-adoption
         {:path
          "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440235,7 +440465,7 @@
         :review :pending-independent-facet-review,
         :new-task-units 0},
        :sha256
-       "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f",
+       "872e73b9d8a4bb00216f4992fd1bb000e6eb0672357f67204c5bd5bec94f70f4",
        :granularity13-review-adoption
        {:path
         "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440260,7 +440490,7 @@
        :review :pending-independent-facet-review,
        :new-task-units 0},
       :sha256
-      "872e73b9d8a4bb00216f4992fd1bb000e6eb0672357f67204c5bd5bec94f70f4",
+      "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945",
       :granularity13-review-adoption
       {:path
        "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440269,6 +440499,11 @@
       :current-granularity-routing-review
       :independent-finite-source-repartition-review-accepted-current-join-verified,
       :current-decision-links-pending-review 0,
+      :Types-source-facet
+      {:path
+       "specs/requirement-reconciliation/types-complete-current-facet-trace.edn",
+       :review :pending-independent-source-review,
+       :new-task-units 0},
       :C14-owner-source-facet
       {:path
        "specs/requirement-reconciliation/c14-complete-current-facet-trace.edn",
@@ -440285,7 +440520,12 @@
       :review :pending-independent-facet-review,
       :new-task-units 0},
      :sha256
-     "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945",
+     "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16",
+     :Core-source-facet
+     {:path
+      "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
+      :review :pending-independent-source-review,
+      :new-task-units 0},
      :granularity13-review-adoption
      {:path
       "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
@@ -440315,7 +440555,7 @@
      :review :pending-independent-facet-review,
      :new-task-units 0},
     :sha256
-    "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16",
+    "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21",
     :Core-source-facet
     {:path
      "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
@@ -440350,7 +440590,7 @@
     :review :pending-independent-facet-review,
     :new-task-units 0},
    :sha256
-   "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21",
+   "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c",
    :Core-source-facet
    {:path
     "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
@@ -440385,7 +440625,7 @@
    :review :pending-independent-facet-review,
    :new-task-units 0},
   :sha256
-  "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c",
+  "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122",
   :Core-source-facet
   {:path
    "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",

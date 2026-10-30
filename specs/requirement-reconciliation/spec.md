@@ -142,6 +142,13 @@ original facets and six existing owners to current Plugin Host and unchanged
 Pipeline criteria. All C17 dispositions remain proposals pending independent
 source review. This changes no task units, statuses or implementation credit.
 
+The subsequent C12 source amendment extends only the existing domain-IR block
+with explicit record, transition, verifier, family and diagnostic requirements.
+Its [complete trace](domain-complete-current-facet-trace.edn) proposes all 115
+facets across 50 occurrences and six existing candidate owners. The C17
+candidate remains frozen at its prior review tuple; refreshed identical C17
+criterion pins do not accept C12 additions or change C17 review authority.
+
 Reject stale predecessors, duplicate application, dropped source spans,
 unsupported aliases and acceptance inferred from document migration. The
 current provisional 3/195 observation counts the component and Product task

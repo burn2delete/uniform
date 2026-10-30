@@ -3607,3 +3607,37 @@ census remains three Accepted, 190 Open, one Partial and one unassessed, with
 192 remaining out of 195 (3/195). Independent C17 source review, complete
 current-composition/final-count acceptance and coordinator integration remain
 pending; this publication sends no cross-chat message or review assignment.
+
+## C12 domain-IR source refinement
+
+Direct reading of C12 and the existing domain-IR task block identified missing
+explicit domain registration/artifact record fields, complete entry/exit and
+baseline family sets, verifier conjunctions and nine diagnostic meanings with
+context. The existing five registration/transition/proof/fallback rows remain
+exact, including the actual EFIR/schema/workflow/identified HDL conformance
+population; the separate unchanged pass-evidence criterion supplies checked
+transformation-evidence obligations. Task-source commit
+`fb3a05011cc819256dc8c3aa5d6851aa139c74cd` appends one paragraph to that
+block and its derived roadmap. Exact insertion removal restores source
+predecessor `45fa1763f939bdad59a9ee78401223a957382454`. All five literal
+outcome IDs, tables, Open statuses and other projected bodies are preserved.
+
+The complete C12 trace proposes 115 facets across 50 occurrences: 34 semantic
+conjunction cases, 16 context occurrences, three criteria and six already
+candidate owners. Its three tests pass 35 assertions, including ten coherently
+rehashed required-clause removals. These are source-presence controls, not a
+domain or language verifier. All 833 decisions remain Open with 931 authentic
+current criterion witnesses; all 561 historical IDs and 4,819 spans conserve.
+Forty historical Compiler API file pins and three prior C17 criterion pins
+refresh identical predicates. C17 remains frozen at candidate `45fa1763` for
+its separate independent review, with no self-acceptance or changed review
+subject. Twelve earlier qualified cohorts retain captured scopes/exclusions.
+
+The finite proposal index now has 2,208 distinct IDs, 25 overlap IDs and 855
+pending proposals. C12's one shared provenance context is counted once. The
+1,362 qualified dispositions remain unchanged. No new task units, decision IDs
+or implementation credit arise. Full C11/MATH3/MATH4/domain/SAFE15/PERF1/PERF10
+and backend implementation, compiler ordering, independent C12 source review,
+complete-current-composition/final counting and coordinator integration remain
+separate. No domain entry/verifier/exit callback, optimizer, proof checker,
+compiler, target, runtime/provider, probe or held operation was executed.
