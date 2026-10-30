@@ -66,3 +66,49 @@ initially copied an older bridge adapter; final diff review caught the missing
 newer Reader history before publication. The final adapter retains current
 main's complete history and changes only the ownership pin, successor
 fingerprint/qualification and the historical-versus-current ownership checks.
+
+## Current-main source composition
+
+The local successor normally merges accepted `c15e5be3` with main
+`6c7df70327e8ccfe138bd21ffa0db89a11cee99e`. The source merge is
+`3f22e4be1ec73b85bec9dd1a47c5dea9732cdd63`; its parents are actual main
+and the accepted candidate. The final candidate identity is recorded outside
+this document so it cannot claim its own commit hash.
+
+The pure C11 contract, header, selector and rule code retain the accepted
+mode/blob identities. Main's C3/Syntax, Reader extraction, loader, development
+runner, CI configuration and production dependencies are preserved. The six
+overlapping reviewed paths are the ownership test, Stage0 component catalog,
+ownership EDN, SH projection, crosswalk adapter and crosswalk tests. Catalog
+and ownership counts add the paired header without dropping current helpers.
+The three textual conflicts were in reporting projection/adapter/tests.
+
+`pr574-composition-source-version.edn` binds the actual committed ownership
+bytes at the source merge and the exact main predecessor. Removing its three
+listed header registrations reproduces main's ownership record. The historical
+Native successor from PR453 remains in `source-version-bridge.edn`; merged
+PR640's Reader history remains in `reader-assembly-source-version.edn`, and
+the subsequent Syntax history is unchanged. Both predecessor review maps are
+retained. The recomputed fingerprint describes this reporting input only;
+all 180 current whole-criterion states remain unassessed.
+
+Current focused checks passed: reporting conservation and negative controls
+14 tests / 192 assertions; affected ownership/Reader/Syntax/catalog checks
+4 / 594; leaf catalog checks 3 / 25; language boundary 6 / 11; governance and
+document/roadmap validation. An initial added-test parenthesis error was
+corrected before these passing results. Accepted synthetic API controls were
+not rerun. No Bootstrap, Gravity compiler, source authentication or genuine
+Core/C11 product was executed.
+
+The private candidate-bound source closure records every tracked mode/blob
+and every source/test classpath-root file, actual resource multiplicity,
+namespace declarations, classpath dependencies and load-manifest units. It
+must include exactly one `gravity.reader` resource from this worktree. Static
+closure inspection does not establish equivalence to PR453's historical
+physical runtime inputs or execute that closure. Source-contract DATA pins
+are unchanged; no latest-source or v3 product acceptance is inferred.
+
+This is a local source freeze awaiting one affected composition review routed
+through Reconciliation. No push, CI dispatch, integration preflight, GitHub
+approval or merge is performed by this step. Current-composition CI and a
+fresh exact-base preflight remain gates for any later coordinator integration.

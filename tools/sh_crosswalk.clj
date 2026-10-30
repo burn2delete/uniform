@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c7804fa6b5826b5a73a0e98274079376fcf1f3be", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "3f22e4be1ec73b85bec9dd1a47c5dea9732cdd63", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -647,13 +647,22 @@
 
 (def syntax-pipeline-predecessor-review (assoc compiler-domain-predecessor-review :compiler-domain-predecessor-review compiler-domain-predecessor-review :input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465" :compiler-domain-current-source {:status :pending-independent-affected-composition-review, :path "specs/compiler-api-workflow/domain-contract-source-composition.edn", :sha256 "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e", :source-commit "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474", :implementation-credit :none, :global-count-adoption :none}))
 
-(def mapping-review
+(def pr574-predecessor-review
   (assoc syntax-pipeline-predecessor-review
          :input-fingerprint "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"
          :source-version-bridge "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
          :syntax-pipeline-predecessor-review
          (select-keys syntax-pipeline-predecessor-review
                       [:status :input-fingerprint :source-version-bridge])))
+
+(def mapping-review
+  (assoc pr574-predecessor-review
+         :input-fingerprint "3d669ff375f173660995b57708934d827a168995e15cf4dfa2541d6ab898c60e"
+         :pr574-predecessor-review pr574-predecessor-review
+         :native-pure-source-review
+         (:native-pure-source-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn")))
+         :source-version-bridge "specs/sh-family-crosswalk/pr574-composition-source-version.edn"
+         :qualification "Current-main and accepted Native ownership composition only; all predecessor histories retained; independent affected review pending, no implementation or runtime acceptance."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -742,6 +751,9 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :pr574-composition-source-version
+     {:path "specs/sh-family-crosswalk/pr574-composition-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn"))}
      :syntax-pipeline-source-version
      {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
       :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"))}
