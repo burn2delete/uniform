@@ -98,7 +98,11 @@
  {"bootstrap/clojure/src/gravity/macro_run_storage.clj"
   {:namespace gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"
-   :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}}
+   :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}
+  "bootstrap/clojure/src/gravity/reader.clj"
+  {:namespace gravity.reader :owner :sh-reader :slice "SH-03"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj"
+   :test-path "bootstrap/clojure/test/gravity/reader/artifact_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -221,6 +225,7 @@
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/pass_execution.clj" :sh-verification
   "bootstrap/clojure/src/gravity/profile_validation.clj" :sh-profile
+  "bootstrap/clojure/src/gravity/reader.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :sh-reader
@@ -311,7 +316,10 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+ {"bootstrap/clojure/test/gravity/reader/artifact_test.clj"
+  {:namespace gravity.reader.artifact-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
   {:namespace gravity.reader.normal-dispatch-test
    :slice "SH-03" :owner :sh-reader}
   "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"

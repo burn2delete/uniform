@@ -9,6 +9,9 @@ This slice extracts the existing stage0 reader artifact assembly body into
 The stage takes its owning operations explicitly and never loads bootstrap.
 The seam loads the new namespace without modifying `gravity/bootstrap.clj`,
 which appears in another active reader candidate's recorded ownership.
+The existing production-helper inventory registers the new source as owned
+by the reader stage, with its exact bootstrap consumer and standalone test.
+Primary component pairs and their counts remain unchanged.
 
 Governing contracts are D0-D3, D6, D8-D9, L1, C1-C3, C15 and TEST2.
 The [namespace boundary map](stage-owned-namespaces.md) assigns all requested
@@ -55,6 +58,7 @@ Commands ran from the repository root. Focused runs used fresh JVMs.
 | `clojure -J-Xmx512m -M tools/ci/run_test.clj` | 11 tests, 101 assertions; passed with CI-pinned clj-kondo 2025.10.23 on PATH |
 | `clojure -J-Xmx512m -M tools/validate_gravity_docs.clj` | 240 documents, 19 phase indexes, ASCII and content checks; passed |
 | `clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj` | Passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 17 tests, 749 assertions; passed |
 | `git diff --check` | Passed |
 
 The first harness run had two errors because local `clj-kondo` was absent.
@@ -62,6 +66,12 @@ After installing the version already pinned by CI in a task-local temporary
 directory, the complete harness passed. No failure was suppressed or changed
 into an acceptance. The new reader tests are also registered in the existing
 CI `reader-regression` command.
+
+The ownership integration check initially rejected the new top-level source
+because its registration was missing. The existing production-helper records
+now join the actual reader namespace, bootstrap consumer, reader owner and
+standalone test. Positive and tampered-registration checks pass without
+changing primary component counts or weakening the inventory comparison.
 
 ## Review and integration boundary
 
