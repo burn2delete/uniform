@@ -983,6 +983,40 @@ parent/composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Verified finite Record and Union control integration
+
+PR620 is squash-integrated at
+`8300c415628d2110cd703824a059e06476f4e1e0`, parent
+`7d590aa40932b2592f43dd8aa0785ac79328fcfc`, tree
+`d9a23f1c7944288f2756baa073fbc44ca7226496`, exactly matching reviewed
+composition `7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55`. Its explicit append
+resolution preserves the entire current-main SH08 test prefix and appends
+exactly the two original reviewed kernels, including comments and all 21
+syntactic assertion forms. Both original census/Markdown records are
+byte-identical. All other 10,087 base path/mode/blob identities survive;
+the complete candidate tree has 10,089 entries.
+
+Same-reviewer SOURCE/DATA receipt
+`57f46b92d793d97f5be8fd2dbc668061e2acb4f7c2068bff4cf5e5989d39db82`
+passes 10,851 checks and 150 inert corruption refusals, including six original
+controls reexecuted. The consumer reproduced the receipt byte-identically.
+All 31 selected C7 definitions/arguments and ten existing dispatch adapters
+are pinned as unchanged source. Current whole C7/test hashes differ from the
+original census's historical hashes; six historical helper differences and
+two unendorsed auxiliary serialized-test hashes retain their qualifications.
+This is no resolved/transitive semantic proof.
+
+Exact-head CI run 40988755307 passed seven checks with two configured skips.
+Clean complete-identity integration-mode preflight passed immediately before
+normal expected-head squash merge. Fresh remote readback confirms merged/
+closed, exact parent/tree and main reachability. See
+`record-union-clean-composition.edn`,
+`record-union-composition-review-consumption.edn` and
+`record-union-main-integration.edn`. Source refs and original cache remain
+untouched. Genuine kernels, authenticated admission and executable Record/
+Union behavior remain UNRUN; no whole-path, ACC01, PR502 closure, release or
+self-hosting acceptance follows. Earlier PR620 pending states are history.
+
 ### Current predicate-family composition
 
 PR625 is normally reconciled with accepted main
