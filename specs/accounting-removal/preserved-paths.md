@@ -33,15 +33,24 @@ its two independently rejected accounting subtrees removed. See
 `vector-rest-metadata-draft-publication.edn` and the draft's census/document.
 
 This is an accountable finite implementation draft, not a cleared equivalence
-hold. The independent finite-List `vec` correspondence remains HELD. Source
-review is pending. Exact-head routine CI completes seven successes and two
+hold. The independent finite-List `vec` correspondence remains HELD. Independent
+receipt `b450173c5e0f9c915715646869d3c20becf7f647d14759170826973ecdd2acdd`
+passes exact source preservation: 1,192 checks and eleven corruption refusals.
+`vector-rest-preservation-review-consumption.edn` verifies the receipt/checker,
+prior split, full three-path tree, complete file equation, historical header
+with its two accounting exclusions and eight unchanged fixture source pins.
+No reviewer checker rerun or fixture-result inheritance is claimed.
+Exact-head routine CI completes seven successes and two
 configured skips, recorded in `vector-rest-metadata-draft-ci.json`; no job is
 rerun. Genuine controls and main integration remain UNRUN.
 No fixture-only acceptance is extended to changed production. Local source
 equations, eight unchanged fixture pins, five corruption refusals, boundary
 6/11, docs 240/19, roadmap and whitespace pass. Standalone source lint exactly
 matches the nonclean parent (180 errors/115 warnings), new EDN zero. No runtime,
-storage, native, allocation or whole PR502 completion claim follows.
+storage, native, allocation or whole PR502 completion claim follows. Integration
+is not eligible from source preservation alone: semantic validation of this
+changed production source, the held correspondence and fresh accepted
+composition/preflight remain unresolved or unrun. The candidate stays draft.
 
 ## Vector-first inferred-call proposal
 
