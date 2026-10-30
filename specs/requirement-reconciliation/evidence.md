@@ -2861,3 +2861,30 @@ inverse restored the three uncommitted paths when this completed-review intake
 arrived. It is not published, accepted or counted. Existing frozen Resolve
 verification artifacts remain untouched; source extraction resumes after review
 consumption. No review was requested, duplicated, delegated or self-conferred.
+
+Metadata/census source `7a927fdbf96e43aa406c362741c4de8710fb195c`
+passes SH 12 tests / 541 assertions, census 5 / 18, boundary 6 / 11, changed-SH
+lint with zero findings, both document validators and generated SH/census
+checks. The scoped census remains 195 total, 3 Accepted, 190 Open, 1 Partial,
+1 unassessed and 192 remaining, with provisional ratio 3/195.
+
+Complete inventory source `40af74fd6ceac06ac1c10d7a016be0bf21f03797`
+passes 4 tests / 29 assertions and serialized readback. Its exact facet states
+are 376 qualified source conjunctions, 48 retained reviewed contexts, 916 pending
+owner proposals, 5,501 formatting/hierarchy contexts, 20,880 pending exact
+predicate conjunctions, 704 pending dependencies and 360 pending owner/metadata
+adjudications. All 240/9,945/28,785 original populations, 955 candidate owners,
+230 task-reference-only joins, three retained retirements, earlier refinement
+references and all five extension descriptor states survive. Nine reviewed
+primary retirement facets move from pending predicate joins; contexts receive
+no semantic or implementation credit.
+
+During this publication, two later completed receipts were delivered and their
+hashes verified for the next separate current-applicability intake: C11 at
+`de0c5c94392b398c6e8ff128b0010d454dd739e2`, receipt SHA256
+`622d42263745b4dac6545ca26eb50f11e711da5d0af53d0cf468305cd8087d5a`,
+and extension-byte rebinding at `4486ad9e3eda0ec648696edc407a8b57f5c864d1`,
+receipt SHA256
+`cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98`.
+Neither is adopted by this checkpoint. The extension receipt is byte-provenance
+only; it accepts no added clauses, operational authority or full entailment.
