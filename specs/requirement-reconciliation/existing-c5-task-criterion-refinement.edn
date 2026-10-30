@@ -1,0 +1,344 @@
+{:task-id "backend-c",
+ :criteria
+ [{:id "backend/c/source-emission",
+   :outputs
+   "Declared-dialect C translation units and headers, C backend/build manifests, source/debug/provenance maps and compilation fixtures under the recorded flags.",
+   :accept
+   "Consume B1-eligible verified MIR or domain IR; declare freestanding C11, hosted C17 or a named extension profile. Emit values, control, calls, closures, regions, linear cleanup, panic/error paths and initialized storage without importing C semantics. Preserve source/generated origins and proof-to-C assumptions; helpers belong to the artifact graph.",
+   :refuse
+   "Missing/unsupported dialect, unverified input, signed-overflow/uninitialized-read/invalid-shift/fallthrough/unchecked-narrowing UB, incomplete manifests or missing source/debug/provenance maps. Report applicable B2-DIALECT/B2-UB/B2-MANIFEST with MIR/domain anchor, source/generated origins, profile, target, dialect, missing fact, selected/rejected helper and remediation.",
+   :dependencies
+   "B1 eligible packet and C14 lowering/proof request; ABI, memory, numeric and helper outputs below; Emit/Build consume actual translation/header/build/map artifacts.",
+   :positive
+   "Compile hosted and freestanding fixtures under the exact declared compiler/flags, including structs, unions, calls, closures, regions, linear resources and error paths; compare Gravity observations and preserve maps.",
+   :original-obligation
+   "Emit declared-dialect C translation units and headers implementing accepted MIR/domain values, control, calls, cleanup and error paths.",
+   :original-source-facet-ids
+   ["B2/partition-facet/80ab23ec809249e77d6bea6bb71483215a79bce904c002d6efaa0e7080b30450"
+    "B2/partition-facet/a02e54adde5b29f3122e9b537d0ca436f909d553f2cb8954bfe39edd66bffa5c"
+    "B2/partition-facet/607d260396d842d552ec30a56818cb8bfb06716086513138843bd436e65dbb0a"
+    "B2/partition-facet/6103e9437fb1664ba8670cf005eabad1ff14a2c141497238ea18d9d589d275d5"
+    "B2/partition-facet/d1d15bd637b04117cf5e767e632eeeb912a97724eb8e7896c32218ca391c9d8c"
+    "B2/partition-facet/390314fa30d7cc6b38e069b57187ce36018daa3e9be4df032b85dd4b78a6aaec"
+    "B2/partition-facet/eb8a3b0a6f9133dea0f77408ac9be92cbc35b11976377921f27552a0d60d8624"
+    "B2/partition-facet/92ab9191d4b1a2e1547ff2acdd4867b470a4e48f0ed4cfefe1f58e36c72e8d34"
+    "B2/partition-facet/811ab8ef731fcd715e4a5235de252563fa34364f0b7315a2394193c0bb6f846d"
+    "B2/partition-facet/cf684a5f11c03f3d84da4e19132977285e1d83fe5043374b559f4728ee954d98"
+    "B2/partition-facet/f96f49eb0c48f7f5bf137df68d987a12c199183a18ff38b27898d31f7074bc7e"
+    "B2/partition-facet/05e07ae129febbfa4333241d7583bbdf90748ba055c9b1577c34c61a537d48cd"
+    "B2/partition-facet/c7c31ad029a9bb0280a76764180c5b76d04f02c71c8bc8eb839741327e2d2f1a"
+    "B2/partition-facet/ca5d7c304311b3173c1443a7d07a7cd7a184caec5b762ed70824f9c39dc5344b"
+    "B2/partition-facet/4f73da0982431539799962e55c318892d054b920f61ed5ad995be6e202d5b858"
+    "B2/partition-facet/bdfdfa7279d4f14b59ca3b1a755cedf2d7a8782e3c33ea09dee8351f244284ed"
+    "B2/partition-facet/063e246c4ebee8f37c4e1befe13306e02312b84023d4efe2288aa791f7a23753"
+    "B2/partition-facet/b4eb63173d2e4171340dfda73b511e2160b506576c32932aa1775b65ff64742d"
+    "B2/partition-facet/dc7e8b514de8f137d66783d1b962dda8d009e5bab3674df1f9d4fefc40a1c649"
+    "B2/partition-facet/04a421df1439bf898321878b42cbc720ebdf4f948fb4c2cc139967debde20653"
+    "B2/partition-facet/2123cedcfca3e4ec9281cd9bedb8bda57a41219e0f2689b14fa637ffc4d95806"
+    "B2/partition-facet/fe247c3c38ad98ac8a08c725da93b410a9e2c7db37a98f9dddaf73a6c7efdfe5"
+    "B2/partition-facet/7626c51350480cfd7113e4b7ae49a99eaa8f235ade4a8ff2caf5b9c961c3dd01"
+    "B2/partition-facet/8c4ecdb1d69fbec827b608210d83c2283af038e84bf1f5c63b98017f9f9ddaca"
+    "B2/partition-facet/dc9b272915ca95d1407c814b32f41acdd67edb6a764112c4dbcc54ad72eafcf5"
+    "B2/partition-facet/de0cb4d7d124042f97487cdb0ce306141f57fee38d2da0cb1097446e45c1abe9"
+    "B2/partition-facet/619295fc25d5eaa317c91d3112d110332c37d627d05bf3861d275172453db2e6"
+    "B2/partition-facet/d7c3923511e6c9d7d5bd46258b9b84239b104ac9877b230fda093f05c81e9a0e"
+    "B2/partition-facet/9d2f086a58ef058e1cc0e47dfe4861b076932fa37a1f06af3ec934769cbe766f"
+    "B2/partition-facet/9c6d422a52e5e49b55c971f4174b27145df22c790e5950a99b2266127c1fe11e"
+    "B2/partition-facet/91200a5ce5a509ef038431b0d036d50b53b402d3f10aebbf20bf58cd6b902e43"
+    "B2/partition-facet/f04921acd065e13381867662020136f8b94c21b4dfefa5ac06f2c9022281700c"
+    "B2/partition-facet/3f43c8c89b1c51aa32d2d8904e22d9870355e8658d814d4cac7e776b395e752a"
+    "B2/partition-facet/5236d82a9f83eaa582f4472e77c9d038b5e2c1f5bbf4f0a30bde7c6b305945f1"
+    "B2/partition-facet/f26a9a43e9319c248603d4b6c13da9584ae129fb07a5cad27207651d7067510c"]}
+  {:id "backend/c/abi-layout",
+   :outputs
+   "Pinned C ABI/layout manifest and checked exported-value/foreign-boundary representations.",
+   :accept
+   "Record compiler family/version constraint, target/platform, data model, endianness, alignment, field order/padding, enum/tag widths, closure/slice/buffer/region/arena/linear-handle representations and FFI calling convention. Demonstrate layout for structs, tagged unions and exported/foreign values; safe representations preserve Gravity semantics.",
+   :refuse
+   "Unpinned implementation-defined assumptions, incompatible or unrepresentable ABI/layout, incomplete FFI mapping or changed target/compiler facts without invalidation; report B2-ABI/B2-FFI with the exact missing subject.",
+   :dependencies
+   "B1/C14 target/layout request, Types/ownership representation facts and SAFE7 FFI contract; C source and foreign adapters consume this exact manifest.",
+   :positive
+   "Produce matching ABI/layout and calling-convention fixtures for the declared compiler/data model and reject mismatched or incomplete foreign boundaries.",
+   :original-obligation
+   "Produce and enforce the pinned C compiler/data-model/layout/calling-convention representation for exported values and foreign boundaries.",
+   :original-source-facet-ids
+   ["B2/partition-facet/42587cd76ea8fee465a9cfe875aacf9b194a587eecad1031d1f538c2eeb8e442"
+    "B2/partition-facet/b9bc5d9cc4e07920e45d7ba457e1801a334470743459fbab778f85e34af65ba3"
+    "B2/partition-facet/51c44f4da49f3392b92f8f93c280ad6a5d13c7d2a52aa6b127ede5456fb064c4"
+    "B2/partition-facet/8855399353403da7230345a254fb801f42630096bcc94a5255627b954e9772e0"
+    "B2/partition-facet/1fbaf580c8d8965747223ddecc2675bfbb02ec02bf0116cf160b51b5a72b6bd7"
+    "B2/partition-facet/800fa168465db1699606fb44ffe02e939b6213a89f5c9582af974291e48e129e"
+    "B2/partition-facet/393ce5dd7fd5710ccbaf21c3b5df36667ccd7cbf7b8e268b3d357178c6444694"
+    "B2/partition-facet/8b70decd7b44854766e1fac4db1039264110712637228991660e609d6feb9b76"
+    "B2/partition-facet/645312c9fe5e55cdb1f828a72d9d750dcfdf31f3f6a7c9014aaf618f003cab29"
+    "B2/partition-facet/670e508c8d70aa8543cd921ee526677039f8f6932a7838b3da8e7893fb9114cc"
+    "B2/partition-facet/6b8146cacdc83350734f7b7df52cffa8f286c3e17b9d57208059076a9ca91a29"
+    "B2/partition-facet/3cfadf8e8f434f3def726cb10163aaf096ed2f27e5a30c53cacc474b1049a36b"
+    "B2/partition-facet/a5bacbce541abfe4948a27180606251a1117f0b4ec9e5e5497d3e74020ced5b1"
+    "B2/partition-facet/6221e3e160ba67194e0998a6cdf8a4ed98cc7a8e25be8fe2f8a4d829a61dc414"
+    "B2/partition-facet/3f9bd7df01edd6c8489b600c5bf297ea8ab70941831bb56bd4eda16bc7a02553"
+    "B2/partition-facet/06dcc26102fa613d14b76c4fb7db5ab1bea67549c75d74dc5e9eab91c5c28727"
+    "B2/partition-facet/a70329fc4945d3c89ad8546d1163938562287ce43f89f6b6556aa551b064321d"
+    "B2/partition-facet/658d0320e417100f6dc603decd4161a4e95c2fd99d88425f7567ef6e6581885c"
+    "B2/partition-facet/8e35a9b079f25ca41c3e85d1237ab80cd960e42212cbf87e7b17f9dd0c4b6813"
+    "B2/partition-facet/8cc632f1ff88b26f37ce4086ee9d3ef782e1956359e2ee96e6492a2f780bc257"
+    "B2/partition-facet/15b80136199bce1e86ce10dc46d420cfa17f9ab9adc5075df1450bd73159c3c0"
+    "B2/partition-facet/8f04e19fe8efe5ef547f94d00d36f357e94d44b91e89ffed4f5daacdfd2553e0"
+    "B2/partition-facet/676e70b9381eac016660fe33404f2e8323dcd7613ea80a04fc89bacc7200e373"
+    "B2/partition-facet/bbc3aa2e487e87b3491247d781bffeb910841dfe50351095d7d451b339a78435"
+    "B2/partition-facet/c64e78d08b82a6c0ebaccdc3ba82dfb3a2421e50556f59ccc6a12842f116d12b"
+    "B2/partition-facet/235e075b4d30b1e64f908c48eae1f6559c4c415d5c02c855e82a79d26d1f2503"
+    "B2/partition-facet/cc3744d67cf9fd79e1fa3a35b87dc6acf4bdde9e57e0899a1b6c54839ce1d512"
+    "B2/partition-facet/a1871573f9fb9baf2d8bf4e56e1765cff00fa98b42582fcd9123da71c67cd74c"
+    "B2/partition-facet/fcb84298f0665a65e1cf4ea3ae8cb82f9fd9f24728e5ebe4946e11879d955141"
+    "B2/partition-facet/f5ebbf9755217b34de6a6082b8563ea01cfd65d4c4eaca44be3a97cbe1937fba"
+    "B2/partition-facet/effcf607b64f457e6f590ca97d0758dadf682252b115563454dabdd7a9e2511f"
+    "B2/partition-facet/e259600b04af77b64f0fe59511b24be578a932b21c402f85547b884310ec6c88"
+    "B2/partition-facet/a1bf14993ff88c0c35716d1db493bda0adf6bd9e16bd762cf6bb3afc54fea2ee"
+    "B2/partition-facet/a7175ae6a0f6241799d1b18a5207c15880794431800c3e75bba93f4c61f51ea6"
+    "B2/partition-facet/6599ccd40201f257fcfb41337d1aa848072dc6eb90dd4c3ef62b772e8f76bd67"
+    "B2/partition-facet/2b088067a80649a8e0c30de187691217384117823125102ce074352526671ec9"
+    "B2/partition-facet/c0cd37360d7cd3fb2de1be0cfbda8e6d085e015976e072c07add0ce2372d960b"
+    "B2/partition-facet/bed04e1b13055728dd1546406cb4e7486c4515a3c67513c9b540e1d000a98f1a"
+    "B2/partition-facet/d146345bd678fb957c1d94959ff13c1d11faad471901ccf206d4544c634d65d4"
+    "B2/partition-facet/db1ab78db5918616c049cd38fdb0b5aa47e75a5729ccafe1af090321b3bcef20"
+    "B2/partition-facet/d9ba5d1b178e430227d4cbc4155b6fc87bda45a361b0c68ec410bd471f166fd7"
+    "B2/partition-facet/3e9c72a3923672f6cbaa884a9ac565bed6bd6dacc9892f4adb02bfbde9b83fd9"
+    "B2/partition-facet/ae412e26bede534f12a3704b32fe8345c1083660159725043b1f9ff8f10cdd79"
+    "B2/partition-facet/063e246c4ebee8f37c4e1befe13306e02312b84023d4efe2288aa791f7a23753"
+    "B2/partition-facet/dcae7c02690503d173da3f7d924fba46ecbe601e42a0019abc37f01d326bf03d"
+    "B2/partition-facet/0879b1988dd09bc3337ed833ea930c4e75d8d66df7e22cc0cc30130dbb0a8b45"
+    "B2/partition-facet/2123cedcfca3e4ec9281cd9bedb8bda57a41219e0f2689b14fa637ffc4d95806"
+    "B2/partition-facet/fe247c3c38ad98ac8a08c725da93b410a9e2c7db37a98f9dddaf73a6c7efdfe5"
+    "B2/partition-facet/7626c51350480cfd7113e4b7ae49a99eaa8f235ade4a8ff2caf5b9c961c3dd01"
+    "B2/partition-facet/8c4ecdb1d69fbec827b608210d83c2283af038e84bf1f5c63b98017f9f9ddaca"
+    "B2/partition-facet/dc9b272915ca95d1407c814b32f41acdd67edb6a764112c4dbcc54ad72eafcf5"
+    "B2/partition-facet/de0cb4d7d124042f97487cdb0ce306141f57fee38d2da0cb1097446e45c1abe9"
+    "B2/partition-facet/619295fc25d5eaa317c91d3112d110332c37d627d05bf3861d275172453db2e6"
+    "B2/partition-facet/d7c3923511e6c9d7d5bd46258b9b84239b104ac9877b230fda093f05c81e9a0e"
+    "B2/partition-facet/9d2f086a58ef058e1cc0e47dfe4861b076932fa37a1f06af3ec934769cbe766f"
+    "B2/partition-facet/9c6d422a52e5e49b55c971f4174b27145df22c790e5950a99b2266127c1fe11e"
+    "B2/partition-facet/6b4ccbb0d3ba83314b6604d41326b9465ab1ef872a569456170331df94fcc36b"
+    "B2/partition-facet/fa046113fb0bb54129ff6aef35ad54fc8669c37f6d053d6ba9d4bccc284f22cc"
+    "B2/partition-facet/44c2c99ca8e30241cbcedc665872e096732cfeeffeeae82976004776c46a9e32"]}
+  {:id "backend/c/memory-lowering",
+   :outputs
+   "Pointer/memory/MMIO lowering with proof-to-assumption, audited unsafe-helper and volatile/atomic ordering records.",
+   :accept
+   "Require object identity, valid range, alignment, lifetime, aliasing mode, mutability, nullability, allocator/provider identity and provenance across casts. Raw pointer arithmetic needs an explicit unsafe island or bounds/lifetime proof; isolate unsafe pointers in audited helpers. MMIO needs profile-specific width/address-space/ordering facts; volatile and atomics require their declared access and memory-order records.",
+   :refuse
+   "Lost cast provenance, invalid bounds/lifetime/alignment/alias assumptions, unjustified strict-aliasing or check erasure, invalid object lifetime, ambient volatile/MMIO or weakened/missing atomic order. Emit B2-POINTER/B2-MMIO or B2-UB with exact facts and source context.",
+   :dependencies
+   "SAFE2/SAFE7/SAFE15 memory/FFI/proof artifacts, C14 fact map, selected allocator/provider and profile/device access contracts; source lowering consumes only matching current evidence.",
+   :positive
+   "Exercise valid pointer, region, buffer, cleanup and MMIO/atomic mappings with retained proof/check/audit metadata; reject missing/stale provenance, range, lifetime and access-order evidence.",
+   :original-obligation
+   "Lower C pointer/memory/MMIO operations only with applicable provenance, range, lifetime, alignment, alias and ordering evidence or explicit unsafe audit.",
+   :original-source-facet-ids
+   ["B2/partition-facet/d6722bcb92d87982404620c0ec8550395d40e64f669901202bd72e5386b17b68"
+    "B2/partition-facet/de4083a7c1b1be6026f1443255b3ec7ffb3d674301975739c800531d24291bdf"
+    "B2/partition-facet/44cc079297c7aed75e3d42e535c59131177df1216eb6c90f7bb77677c38e31ac"
+    "B2/partition-facet/c2358909a8a010a1f8218cd71fac93a618ee364626dac0693b6e4d33cdba4a22"
+    "B2/partition-facet/a06a5057b24717d8125ae889185455f66c74edbfe2df7aa7419270bc29f7dd82"
+    "B2/partition-facet/cf66de7d94a7a472496cbcf9b56af32682ee8b4f4279213a0becccc23a5f6ef4"
+    "B2/partition-facet/16c9899cf599b96689071a15dcd2b295eb0cd933e60d52f28526d34bbcb33a49"
+    "B2/partition-facet/7a25a454c114a373af300c68029e8b3ae0da30fb7bfeda70468d263f08069f3c"
+    "B2/partition-facet/56aed214fdbaa8525cd9263206c34e4599fd8a739b2ea00f26289593fbbea056"
+    "B2/partition-facet/698edc04cd9c9ba466d89b7529e3b5d700afe4eadb9f9f90ed25860abc9293ff"
+    "B2/partition-facet/3b1c83a5cb185bedb9664b10047395c6c9e169683c7b58df5d41433bcc5a9f75"
+    "B2/partition-facet/ce9e93f388cea8ad507c5ec7d53f65c16ec9638ae034ca8ac1f2f6837e6d0640"
+    "B2/partition-facet/fb4ad0667a7ae2d42a5c5360ea31323bd8df63f271b58cf86fb34fbd3a846b96"
+    "B2/partition-facet/035aba88a0be75d06a413da68baa76de1be8d228c3ce519c59feda3abd91f6f5"
+    "B2/partition-facet/0a1d5f5073835dad260fc1efc2240711ba1f0fa744ed978c95805ba4ab6fe7dd"
+    "B2/partition-facet/c2c99a976803fa503290463a622f8bd282497379a53a687ca4a3bf827b1f39eb"
+    "B2/partition-facet/330547a62e0bda4e2ba7a4bf3aba847671efdaafe42884f070816ba5a5bda234"
+    "B2/partition-facet/871c5dce0ee167b3c1180eafc1d8e536ae5af917f01de2d83539362484deca2c"
+    "B2/partition-facet/c7c31ad029a9bb0280a76764180c5b76d04f02c71c8bc8eb839741327e2d2f1a"
+    "B2/partition-facet/ca5d7c304311b3173c1443a7d07a7cd7a184caec5b762ed70824f9c39dc5344b"
+    "B2/partition-facet/4f73da0982431539799962e55c318892d054b920f61ed5ad995be6e202d5b858"
+    "B2/partition-facet/bdfdfa7279d4f14b59ca3b1a755cedf2d7a8782e3c33ea09dee8351f244284ed"
+    "B2/partition-facet/00dba1a5e3faac8416ed3abc239bfdb66809023cf57cc7f57db8de86b2dac89c"
+    "B2/partition-facet/47fe26761ed401c3e38b705c3c9cd76ae76641209e2e0e200a977b39dcef9467"
+    "B2/partition-facet/804e87285cb47c527a6e17a48fe96b6466cf14fdd2f91788cc0a605b43b2ce4f"
+    "B2/partition-facet/352f01c75cc38371dd287943dda0618448c7e71092ae6a9301b07f97b9a80fa7"
+    "B2/partition-facet/f1981e98877a790fda14ab248aaa7473f5b9179662086bd277abfb22bf23e922"
+    "B2/partition-facet/7efc40aabdae807db3e79cb323b0d4cc09ffffd25ed8397fd42fba57bb8f744c"
+    "B2/partition-facet/03af78eba35b754d70e3f9e49b30e8d402e5caefaacf3d229f2762179ed7acea"
+    "B2/partition-facet/0b4f61a615140c281aaea23c7d615e52a4f23e67cb5d57877bfd1843b524816a"
+    "B2/partition-facet/481efc2abfdae40423ffe354740944ceb2ab1633c7a475c1fcd6fe48157c9c6a"
+    "B2/partition-facet/5ed44ffa4f8924f902ef87389676e1810b4b6a9e8599a10a7f525f4180ee8ede"
+    "B2/partition-facet/a3655d00733f843e3001a55c83168dcbd2b61626a78ace040e8fbcde0f9d4dc2"
+    "B2/partition-facet/3edca7428c0ba1e3d7c3aa65070ee4fafaebc9879e80c0083dcd8584b0f6ac10"
+    "B2/partition-facet/b9f80de19c81df6e307aaa49a007217934f6f2dfe968054202c15b3369f2c8bd"
+    "B2/partition-facet/8b34bd7c81a08adb2d9e1d0c8d420684c7b530026422094116dde3caa4603796"
+    "B2/partition-facet/7c0041b5b91a3a2f64d4ade143993a1a4eaca528a08c98a17676bd35ebce9ef1"
+    "B2/partition-facet/063e246c4ebee8f37c4e1befe13306e02312b84023d4efe2288aa791f7a23753"
+    "B2/partition-facet/ff98de006965bb163707feee13f181bef1376f0cb73924c8fe79a9c71d15cc81"
+    "B2/partition-facet/dbd2af7be96e56b01b4bb84b18b5708eb160575541c37f878c3aa5f91c1bd67f"
+    "B2/partition-facet/a223e728f083b9b7f823afd046a335882790fcd649d3505f1599bb0076338b2b"
+    "B2/partition-facet/90576006a5e334fc01747c2171d498a9cc4b5454f8323e96c7ccf8f80e016227"
+    "B2/partition-facet/2123cedcfca3e4ec9281cd9bedb8bda57a41219e0f2689b14fa637ffc4d95806"
+    "B2/partition-facet/fe247c3c38ad98ac8a08c725da93b410a9e2c7db37a98f9dddaf73a6c7efdfe5"
+    "B2/partition-facet/7626c51350480cfd7113e4b7ae49a99eaa8f235ade4a8ff2caf5b9c961c3dd01"
+    "B2/partition-facet/8c4ecdb1d69fbec827b608210d83c2283af038e84bf1f5c63b98017f9f9ddaca"
+    "B2/partition-facet/dc9b272915ca95d1407c814b32f41acdd67edb6a764112c4dbcc54ad72eafcf5"
+    "B2/partition-facet/de0cb4d7d124042f97487cdb0ce306141f57fee38d2da0cb1097446e45c1abe9"
+    "B2/partition-facet/619295fc25d5eaa317c91d3112d110332c37d627d05bf3861d275172453db2e6"
+    "B2/partition-facet/d7c3923511e6c9d7d5bd46258b9b84239b104ac9877b230fda093f05c81e9a0e"
+    "B2/partition-facet/9d2f086a58ef058e1cc0e47dfe4861b076932fa37a1f06af3ec934769cbe766f"
+    "B2/partition-facet/9c6d422a52e5e49b55c971f4174b27145df22c790e5950a99b2266127c1fe11e"
+    "B2/partition-facet/a79927484220c474f83d972553d36542fce01d89a2e886fa453193d785096b24"
+    "B2/partition-facet/c05e2c16b274c1995fd1698c777ae44797f7b7766ced6edafc8140994b0aabe5"
+    "B2/partition-facet/78ff8dac9cbbaabe661da2db54e54b71e31043a0751db1f5be6a72ea2904550b"
+    "B2/partition-facet/e9d7b8347ed69531ad6caaeb3d099f2e46ef9635f8bfcfd3c98a5185b3c92d20"
+    "B2/partition-facet/54ac0ef8b90effd1d083837b9dbe74feefbc71367a9e3fd0dcb5ab6a1dc61e24"
+    "B2/partition-facet/0c001aaa6dd7eaf8c6d3c75be1a3d8e816ae56abe011d25c8ab394308260a7f4"
+    "B2/partition-facet/c36363f873fa3e202de96656fbc9898ee415d607bed908f737ea8ca0b5520b64"
+    "B2/partition-facet/27ea9b3f471f7e2ba6aa56b45067fba7403da56b6b15a240e8f50f723b297e1d"
+    "B2/partition-facet/ce44840dc9d0bf84924b7dc53095e51a6b72ea70781f7cb6c3b4b550b4461ee1"
+    "B2/partition-facet/f7a3690a887e73bae3ab905b83e1ec1b306106509864ed08d5c70d9a62e558e8"
+    "B2/partition-facet/fc461dbbeac58be70ec6cc2951b3f42141b190ebaca572983cfdf8a6abf27a02"
+    "B2/partition-facet/a39dd99fa9b9685a82fb49ebc5f1287d95d4d9a0a0ec4d614a25d9a10a7fc3dd"
+    "B2/partition-facet/59f9ce37ddf4c9fa8b4647bd218edb767c8c11e0617301e2c193f029753799b4"
+    "B2/partition-facet/30a5cd8401f4682b02a8f44b6ad519685216a5ba31286d841a0ea28b795a078d"]}
+  {:id "backend/c/numeric-lowering",
+   :outputs
+   "C numeric-mode lowering, check/proof or helper decisions, MATH8 manifests, applicable MATH5 certificate references and matching compiler-flag assumptions.",
+   :accept
+   "Checked integers keep checks or matching proof-elision records; wrapping uses unsigned or explicitly wrapped operations; saturating uses explicit helpers/inlining. Preserve declared floating modes and elementary-function certificates. Record every flag affecting floating/overflow behavior in the build manifest and match its proof assumptions.",
+   :refuse
+   "Unsafe overflow, shift or narrowing, signed-UB shortcuts, changed floating behavior, missing/stale approximation evidence or compiler flags that invalidate the Gravity numeric contract; report B2-NUMERIC/B2-UB.",
+   :dependencies
+   "SAFE9 numeric legality, MATH8 mode and MATH5 certificate/checker outputs where applicable, C14 selected operation and Build compiler flags; no benchmark or backend optimization substitutes for matching evidence.",
+   :positive
+   "Compile/run checked, wrapping, saturating and declared floating fixtures under recorded flags, including required exceptional/boundary cases; reject incompatible flags, proof subjects or unchecked operations.",
+   :original-obligation
+   "Lower numeric operations and conversions into C while preserving checked/wrapping/saturating/floating/certificate behavior and declared compiler flags.",
+   :original-source-facet-ids
+   ["B2/partition-facet/9b809674ad77c6e4bd902aecfa1c03d08143278db812e76eb1e31ff127a60dfc"
+    "B2/partition-facet/c7c31ad029a9bb0280a76764180c5b76d04f02c71c8bc8eb839741327e2d2f1a"
+    "B2/partition-facet/ca5d7c304311b3173c1443a7d07a7cd7a184caec5b762ed70824f9c39dc5344b"
+    "B2/partition-facet/4f73da0982431539799962e55c318892d054b920f61ed5ad995be6e202d5b858"
+    "B2/partition-facet/bdfdfa7279d4f14b59ca3b1a755cedf2d7a8782e3c33ea09dee8351f244284ed"
+    "B2/partition-facet/da986f572d79537ebc686469433decc365511ab82c75e53a04fd4e2f96f7292c"
+    "B2/partition-facet/239b112a448cd5eed5e91fc2725872016f35621a0fd6191070ed1018b3e27fa2"
+    "B2/partition-facet/6bcbe3384545d9dafc9c4f5ffc710293188bcf7e25caf243aa76bafd4b218f3c"
+    "B2/partition-facet/b5d9a49948e480fd0493c40215573304986b526c07528ea3bc956de17d1415ee"
+    "B2/partition-facet/1fc545ccffd27355d302e4646f730d2eee1ba554bbc7bd4715f8d82e6ad3aa20"
+    "B2/partition-facet/01bb92a419f9e2114c3c27334fd38487d6b2053facd407b293c70c522de0e1bb"
+    "B2/partition-facet/14924b4547c98dad6e9fb165a3c25bdf29dd18fc2f04d301d9f6f43439828916"
+    "B2/partition-facet/aabf909c8490fad7848dc34c8e7801df106be478d1cc54d70ae1704d86f2b711"
+    "B2/partition-facet/063e246c4ebee8f37c4e1befe13306e02312b84023d4efe2288aa791f7a23753"
+    "B2/partition-facet/33d25d6673aae124cafe4a0874a100f35e749d6e5d6a4b6bf43107c8ee40cf75"
+    "B2/partition-facet/068a8cf5144babb56fa980a932e72dd2f011cb9df34ed70ab6f6f739ea1d84b5"
+    "B2/partition-facet/5f1372013a7428defc30aa7a1a1e887108d43f294b36512782b263a5fbb0b0c7"
+    "B2/partition-facet/e46c7f8628861df089a639d89980cca54779526fb9a0c7a65e9a997217b99a08"
+    "B2/partition-facet/2123cedcfca3e4ec9281cd9bedb8bda57a41219e0f2689b14fa637ffc4d95806"
+    "B2/partition-facet/fe247c3c38ad98ac8a08c725da93b410a9e2c7db37a98f9dddaf73a6c7efdfe5"
+    "B2/partition-facet/7626c51350480cfd7113e4b7ae49a99eaa8f235ade4a8ff2caf5b9c961c3dd01"
+    "B2/partition-facet/8c4ecdb1d69fbec827b608210d83c2283af038e84bf1f5c63b98017f9f9ddaca"
+    "B2/partition-facet/dc9b272915ca95d1407c814b32f41acdd67edb6a764112c4dbcc54ad72eafcf5"
+    "B2/partition-facet/de0cb4d7d124042f97487cdb0ce306141f57fee38d2da0cb1097446e45c1abe9"
+    "B2/partition-facet/619295fc25d5eaa317c91d3112d110332c37d627d05bf3861d275172453db2e6"
+    "B2/partition-facet/d7c3923511e6c9d7d5bd46258b9b84239b104ac9877b230fda093f05c81e9a0e"
+    "B2/partition-facet/9d2f086a58ef058e1cc0e47dfe4861b076932fa37a1f06af3ec934769cbe766f"
+    "B2/partition-facet/9c6d422a52e5e49b55c971f4174b27145df22c790e5950a99b2266127c1fe11e"
+    "B2/partition-facet/1a295b2782516130c45a50e5d908b7dd2aa9ea8616fefa7a4fe1c14a04dbe524"]}
+  {:id "backend/c/helper-selection",
+   :outputs
+   "Profile-legal runtime helper manifest and artifact graph for panic/trap, checks, allocation/region/arena, cleanup, atomics, FFI, math and debug/provenance helpers.",
+   :accept
+   "Select only explicit helpers declaring profile support and exact runtime/provider dependencies. Freestanding helpers must be supplied by the package/target when required. Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims; panic and errors follow the selected profile.",
+   :refuse
+   "Hidden/forbidden libc, allocator, runtime or GC dependence, unavailable/profile-incompatible helper, missing provider identity or undeclared helper artifact; emit B2-RUNTIME/B2-MANIFEST with selected/rejected helper and remediation.",
+   :dependencies
+   "P6/P7 and active profile legality, Runtime/provider panic/check/resource interfaces, package/target supplied freestanding helpers; Build/Emit consume the declared dependency graph.",
+   :positive
+   "Demonstrate hosted and freestanding helper selection, actual graph inclusion and profile-specific panic/check behavior; reject forbidden or missing runtime dependencies.",
+   :original-obligation
+   "Select and record only profile-legal explicit C runtime helpers and reject hidden libc, allocator or hosted dependencies.",
+   :original-source-facet-ids
+   ["B2/partition-facet/abcca1b9c6f196b92dbbcceaa35d6eac3dd47eb8651dde6ca85bdf71a36d258b"
+    "B2/partition-facet/cb3ea113f9dd096378bf5b499566e5634ad6d0042c0f29d93f0e2a3170878fde"
+    "B2/partition-facet/3e2ed2230ee3814d99b24750b19bfa5db9b992d62ad7af2772452221eb94b37a"
+    "B2/partition-facet/1c5d4c2014086f8a9ff6e6e3f826edd6eee6d79387611d2eab8894d26684faff"
+    "B2/partition-facet/5f615b3fbab19ea7e694d6da84805464dc3c7a203ea3b64c3a2b1418e912a3ce"
+    "B2/partition-facet/9119ece27415d13838826c3625e379f495344a65ebe18a527114aa8a32b805a0"
+    "B2/partition-facet/8fd8b3a291c8478af9c4b5bf6435e6d425d1a51ea23346b21d5c4ef7c1d8c3e4"
+    "B2/partition-facet/ba051f5f6719e1b17aaa420b3c1a5bac77182004e4109fb4d14b21488fd90146"
+    "B2/partition-facet/b6103663ce6ac84e8b422410be2df5c90432dce54f1aa1373a0721dbc9bc2ab4"
+    "B2/partition-facet/8ab24aa21d23092f721b594cd2e1eb1e2eddb58ee286be662822d18f37d19f3e"
+    "B2/partition-facet/b67cc3e699810b989e77d64e056830ef1bcfbc615b217883f0bdf7f34c5268d4"
+    "B2/partition-facet/beb94fdab6ed42b1910fe6985b4601aa9c4b72a38ae0c37bf2920dfa48c967bc"
+    "B2/partition-facet/5bd2ee82d96dd131dc1e3d3063bfd9356c0b4c307e0810307bd16b7ce0958666"
+    "B2/partition-facet/9ca97d2c43f89018b32eb095758ec4b907ccc3af7a1b64f4b591bbaa6918581d"
+    "B2/partition-facet/412e0f6c60b82ba872aa6991bc070df23fc93270b164c92d4880a277d5c673ae"
+    "B2/partition-facet/d3075ef3f61eb5cdf682e5e6b25877133c97c2aef2c77323ac3cc8e29eeaba59"
+    "B2/partition-facet/49263b2cde8870616791abd8d3ae6555998c8ff18aaffa11f3526007933baecd"
+    "B2/partition-facet/6bb6fbed70347849cb5c011426b03a790ad72c277d2bf645f4cd98d66879f560"
+    "B2/partition-facet/db8b5755a1ce0b8cf4c13b5627ec104f6efc3476f82fea2cc23a1f857cdea147"
+    "B2/partition-facet/e6ee6b0559fa6a9a117105d3405064594b7e11ebdfddffdfb20f1c7f7afe4c0f"
+    "B2/partition-facet/6bfd2bd1545a6a79de9e95edad0d18534ca01cd116dfec5b572c67929524a690"
+    "B2/partition-facet/123770565eb6818b321c5363e1839a7d3f2d390796bb800ea429c9e14eda16d3"
+    "B2/partition-facet/eccff8fe6dddeae4108c6629d5c74d055da22b0dbd9bd8f64b5c6b85cc775979"
+    "B2/partition-facet/e9d17adc141d8367edb6ff12cd55671e67c4c763b679cf7fd3eb6f7e07536a41"
+    "B2/partition-facet/25446d308185ad97756b1a846ea89b2f8f4cb16f16a5267616bb489f9d5cfed9"
+    "B2/partition-facet/d24d64731b89f894875dc78c00d30e0f535b51f0b4aa3b98cc93af6ce047de80"
+    "B2/partition-facet/8c4de4cafdcf35e302434fb79358d968bf4d8965cc4fb5c6c8353c1fbeee3746"
+    "B2/partition-facet/f13433c580daac9f5477e3b9e963b2a0acc7202e5e77e3697c7f5d1d597facd9"
+    "B2/partition-facet/cced7c72f375aec49d8e428061b7b39ce4201eff8d6a07f4a3563e14639dc371"
+    "B2/partition-facet/035d90b7ea01c4d1449fe34ae15d0e623d364d37a38980b4d04650975b17a4ec"
+    "B2/partition-facet/bf0782620baa15d9d8fe2def8cb129fc6740ca4a33b7362a0fef3db9037e0d7b"
+    "B2/partition-facet/063e246c4ebee8f37c4e1befe13306e02312b84023d4efe2288aa791f7a23753"
+    "B2/partition-facet/7b31c90018ab8b9c19b94d49c25935ab76f7bbe33758037ebe8ab0d118c9bb2a"
+    "B2/partition-facet/2123cedcfca3e4ec9281cd9bedb8bda57a41219e0f2689b14fa637ffc4d95806"
+    "B2/partition-facet/fe247c3c38ad98ac8a08c725da93b410a9e2c7db37a98f9dddaf73a6c7efdfe5"
+    "B2/partition-facet/7626c51350480cfd7113e4b7ae49a99eaa8f235ade4a8ff2caf5b9c961c3dd01"
+    "B2/partition-facet/8c4ecdb1d69fbec827b608210d83c2283af038e84bf1f5c63b98017f9f9ddaca"
+    "B2/partition-facet/dc9b272915ca95d1407c814b32f41acdd67edb6a764112c4dbcc54ad72eafcf5"
+    "B2/partition-facet/de0cb4d7d124042f97487cdb0ce306141f57fee38d2da0cb1097446e45c1abe9"
+    "B2/partition-facet/619295fc25d5eaa317c91d3112d110332c37d627d05bf3861d275172453db2e6"
+    "B2/partition-facet/d7c3923511e6c9d7d5bd46258b9b84239b104ac9877b230fda093f05c81e9a0e"
+    "B2/partition-facet/9d2f086a58ef058e1cc0e47dfe4861b076932fa37a1f06af3ec934769cbe766f"
+    "B2/partition-facet/9c6d422a52e5e49b55c971f4174b27145df22c790e5950a99b2266127c1fe11e"
+    "B2/partition-facet/57916b8342f91e50fa66ca88675c65221c90d07dc271180271b1099e95cff8ea"
+    "B2/partition-facet/1500dfbd1c30d7ec8b3d6b8882cab5b860bd44585a84f49e700e78c5e6a26c95"
+    "B2/partition-facet/bd1ff993d6855217a66e631bbee4190ffc21b6316f17b709330a3dd10fe5ccd7"
+    "B2/partition-facet/3b0f5c8bbb62e79e6db756123beb2322a94dc157ca2f3fd127abfb12379e10b4"
+    "B2/partition-facet/399eccabf681d73db2491af0d2373ae728b0e115ab10a748f31703d55adf251e"]}],
+ :crosswalk-and-census :pending-source-commit,
+ :original-catalog
+ {:path "/tmp/acc11-final-facet-review/criterion-catalog.edn",
+  :sha256
+  "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f"},
+ :source-commit "16a9aa48a126e7a60776290b1753cd3635662e8e",
+ :current-witness-rebinding :pending-source-commit,
+ :source-document
+ {:path
+  "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+  :sha256
+  "07dfa27179dd655baf2747b955c0cbc93bfb2084d93585dbdb8292071b9e48b1"},
+ :status :owner-source-composition-pending-independent-review,
+ :preservation
+ {:task-ids :unchanged,
+  :all-other-fourteen-backend-records :unchanged,
+  :new-task-units 0,
+  :new-decision-ids 0,
+  :implementation-credit :none,
+  :prior-review-scopes :not-extended-to-these-new-clauses},
+ :kind :existing-c5-obligation-task-criterion-refinement,
+ :operations
+ [{:path "specs/backends-workflow/tasks.md",
+   :before-sha256
+   "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+   :after-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :appended-criterion-text
+   "\n\nExisting source obligation `backend/c/source-emission` (Open; B2 producer/consumer contract).\nRequired outputs: Declared-dialect C translation units and headers, C backend/build manifests, source/debug/provenance maps and compilation fixtures under the recorded flags.\nAccept: Consume B1-eligible verified MIR or domain IR; declare freestanding C11, hosted C17 or a named extension profile. Emit values, control, calls, closures, regions, linear cleanup, panic/error paths and initialized storage without importing C semantics. Preserve source/generated origins and proof-to-C assumptions; helpers belong to the artifact graph.\nPositive evidence: Compile hosted and freestanding fixtures under the exact declared compiler/flags, including structs, unions, calls, closures, regions, linear resources and error paths; compare Gravity observations and preserve maps.\nRefuse: Missing/unsupported dialect, unverified input, signed-overflow/uninitialized-read/invalid-shift/fallthrough/unchecked-narrowing UB, incomplete manifests or missing source/debug/provenance maps. Report applicable B2-DIALECT/B2-UB/B2-MANIFEST with MIR/domain anchor, source/generated origins, profile, target, dialect, missing fact, selected/rejected helper and remediation.\nDependencies consume actual artifacts: B1 eligible packet and C14 lowering/proof request; ABI, memory, numeric and helper outputs below; Emit/Build consume actual translation/header/build/map artifacts.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/abi-layout` (Open; B2 producer/consumer contract).\nRequired outputs: Pinned C ABI/layout manifest and checked exported-value/foreign-boundary representations.\nAccept: Record compiler family/version constraint, target/platform, data model, endianness, alignment, field order/padding, enum/tag widths, closure/slice/buffer/region/arena/linear-handle representations and FFI calling convention. Demonstrate layout for structs, tagged unions and exported/foreign values; safe representations preserve Gravity semantics.\nPositive evidence: Produce matching ABI/layout and calling-convention fixtures for the declared compiler/data model and reject mismatched or incomplete foreign boundaries.\nRefuse: Unpinned implementation-defined assumptions, incompatible or unrepresentable ABI/layout, incomplete FFI mapping or changed target/compiler facts without invalidation; report B2-ABI/B2-FFI with the exact missing subject.\nDependencies consume actual artifacts: B1/C14 target/layout request, Types/ownership representation facts and SAFE7 FFI contract; C source and foreign adapters consume this exact manifest.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/memory-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: Pointer/memory/MMIO lowering with proof-to-assumption, audited unsafe-helper and volatile/atomic ordering records.\nAccept: Require object identity, valid range, alignment, lifetime, aliasing mode, mutability, nullability, allocator/provider identity and provenance across casts. Raw pointer arithmetic needs an explicit unsafe island or bounds/lifetime proof; isolate unsafe pointers in audited helpers. MMIO needs profile-specific width/address-space/ordering facts; volatile and atomics require their declared access and memory-order records.\nPositive evidence: Exercise valid pointer, region, buffer, cleanup and MMIO/atomic mappings with retained proof/check/audit metadata; reject missing/stale provenance, range, lifetime and access-order evidence.\nRefuse: Lost cast provenance, invalid bounds/lifetime/alignment/alias assumptions, unjustified strict-aliasing or check erasure, invalid object lifetime, ambient volatile/MMIO or weakened/missing atomic order. Emit B2-POINTER/B2-MMIO or B2-UB with exact facts and source context.\nDependencies consume actual artifacts: SAFE2/SAFE7/SAFE15 memory/FFI/proof artifacts, C14 fact map, selected allocator/provider and profile/device access contracts; source lowering consumes only matching current evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/numeric-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: C numeric-mode lowering, check/proof or helper decisions, MATH8 manifests, applicable MATH5 certificate references and matching compiler-flag assumptions.\nAccept: Checked integers keep checks or matching proof-elision records; wrapping uses unsigned or explicitly wrapped operations; saturating uses explicit helpers/inlining. Preserve declared floating modes and elementary-function certificates. Record every flag affecting floating/overflow behavior in the build manifest and match its proof assumptions.\nPositive evidence: Compile/run checked, wrapping, saturating and declared floating fixtures under recorded flags, including required exceptional/boundary cases; reject incompatible flags, proof subjects or unchecked operations.\nRefuse: Unsafe overflow, shift or narrowing, signed-UB shortcuts, changed floating behavior, missing/stale approximation evidence or compiler flags that invalidate the Gravity numeric contract; report B2-NUMERIC/B2-UB.\nDependencies consume actual artifacts: SAFE9 numeric legality, MATH8 mode and MATH5 certificate/checker outputs where applicable, C14 selected operation and Build compiler flags; no benchmark or backend optimization substitutes for matching evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/helper-selection` (Open; B2 producer/consumer contract).\nRequired outputs: Profile-legal runtime helper manifest and artifact graph for panic/trap, checks, allocation/region/arena, cleanup, atomics, FFI, math and debug/provenance helpers.\nAccept: Select only explicit helpers declaring profile support and exact runtime/provider dependencies. Freestanding helpers must be supplied by the package/target when required. Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims; panic and errors follow the selected profile.\nPositive evidence: Demonstrate hosted and freestanding helper selection, actual graph inclusion and profile-specific panic/check behavior; reject forbidden or missing runtime dependencies.\nRefuse: Hidden/forbidden libc, allocator, runtime or GC dependence, unavailable/profile-incompatible helper, missing provider identity or undeclared helper artifact; emit B2-RUNTIME/B2-MANIFEST with selected/rejected helper and remediation.\nDependencies consume actual artifacts: P6/P7 and active profile legality, Runtime/provider panic/check/resource interfaces, package/target supplied freestanding helpers; Build/Emit consume the declared dependency graph.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit."}
+  {:path "docs/component-roadmaps/backends.md",
+   :before-sha256
+   "82e2b9a44152e22013126510eb1c525d841afb32bc59409458e1c35666bba49b",
+   :after-sha256
+   "09b23ffb0c64054e2c6fb0257473b1881947486638787ea33fec5aa06f2f94df",
+   :kind :derived-projection}]}
