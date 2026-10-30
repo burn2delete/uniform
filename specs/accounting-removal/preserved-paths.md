@@ -1,5 +1,26 @@
 # PR502 preserved path reconciliation
 
+## Quoted-data frozen source-review intake
+
+PR591 remains frozen at `1c0d699f06372fe3c52fa003f53aa38ffd40d07c`, tree
+`5daf1c0d0f690a4557c362fc7203ebe589570768`, base
+`b7347f6b1b978dbc318e88dfe50e7917f7b1e318`. The new
+`quoted-data-frozen-review-intake.edn` revalidates its complete five-path tree,
+all source/test file hashes, seventeen complete historical source definitions
+with the explicit native-guard call substitution, three original test bodies
+and two retired quote entrypoints. All eight directly named external C7
+dependencies are unchanged from both parent and history. This is a bounded
+source observation, not a transitive call-graph or runtime proof.
+
+`quoted-data-frozen-ci.json` records the already completed exact-head routine
+CI run 40927469385: seven successes and two configured skips. No job is rerun.
+Independent source/adaptation acceptance still needs coordinator routing and
+duplicate/intake checks. No reviewer is assigned by this author. The accepted
+PR634 fixture-only review does not cover PR591's changed production source.
+Genuine quote/native/source-authentication/compiler/runtime controls remain
+UNRUN. Current-main composition, shared carrier removal, public verifier arenas
+and whole PR502 closure are separate and incomplete.
+
 ## Vector-empty and vector-rest header proposal
 
 `vector-header-source-disposition.edn` and its companion Markdown bind all six
