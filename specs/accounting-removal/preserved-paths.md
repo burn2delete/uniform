@@ -1,5 +1,28 @@
 # PR502 preserved path reconciliation
 
+## Separate mixed-ledger semantic comparison draft
+
+[PR641](https://github.com/burn2delete/uniform/pull/641) is frozen at
+`6f7aa9068a19c0e58ff6b480afcba7a599cbbf4a`, tree
+`7ab0999423b0697915a6c8f0f98eb577495315df`, directly on frozen PR598.
+Its four-path overlay changes only the two mixed-ledger replacement tests and
+adds `mixed-ledger-semantic-coverage.edn/.md`. Six semantic comparison instances
+check complete expected row/fact/compile products across two fixed legacy API
+arguments, 65536 and 65537. Only top-level work-count telemetry is projected
+out; all nested/unknown fields remain visible. No payment arithmetic, exact
+threshold or one-short refusal requirement returns. Each original status
+assertion remains first; all other parent test bytes and production are exact.
+
+The inert source checker verifies full test equations, whole-file inverses,
+producer shapes and 24 effective source corruptions. Lint passes with zero
+errors/warnings; language boundary passes 6/11; whitespace and clean complete
+tree-overlay checks pass. Independent affected source/test review is pending
+Accounting/Reconciliation routing. The P2 finding remains in the original
+receipt; full old-assertion equivalence and runtime success are not claimed.
+PR599 remains frozen with its separately active review; this draft does not
+rebase or automatically repair it. Genuine execution, accepted dependency/current
+main composition and integration remain separate UNRUN gates.
+
 ## Consumed collection and qualified mixed-ledger source reviews
 
 `collection-builder-review-consumption.edn` consumes independent receipt
