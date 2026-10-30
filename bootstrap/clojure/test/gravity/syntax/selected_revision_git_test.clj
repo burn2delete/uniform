@@ -110,7 +110,10 @@
     (is (identical? original (try (old "git") nil (catch Throwable error error))))
     (is (identical? original (try (#'git/shell-result! ports {:cwd "/fixture"} records ["git"])
                                  nil (catch Throwable error error))))
-    (is (empty? @records)))
+    (is (= 1 (count @records)))
+    (is (identical? original (:launch-error @(first @records))))
+    (is (true? (:launch-attempted? @(first @records))))
+    (is (nil? (:process @(first @records)))))
   (doseq [exit [0 7]]
     (let [events (atom []) records (atom []) verification (atom 0)
           drift (ex-info "configuration changed during command" {:reason :identity-after-drift})

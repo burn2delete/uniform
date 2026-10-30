@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [run!])
   (:require [clojure.edn :as edn] [clojure.java.io :as io]
             [gravity.resolve.selected-source-harness :as h]
+            [gravity.syntax.selected-revision-acceptance :as acceptance]
             [gravity.syntax.selected-revision-request :as request]
             [gravity.syntax.selected-revision-git :as git]))
 
@@ -46,12 +47,19 @@
     (cond (nil? error) false (instance? InterruptedException error) true
           :else (recur (.getCause ^Throwable error)))))
 
+(defn- child-capture-terminal? [result]
+  (and (false? (:capture-failed? result))
+       (every? nil? (map result [:stdout-capture-error :stderr-capture-error]))
+       (every? #{:complete :truncated} (map result [:stdout-capture-status :stderr-capture-status]))
+       (every? false? (map result [:stdout-capture-forced-close? :stderr-capture-forced-close?]))))
+
 (defn run!
   "One C3 parent sequence through explicit ports. Caller retains state, including
   raw handles, even on fatal exits. Controls are not runtime admission. A shared
   monotonic deadline clips waits; interrupt/native-call limits remain explicit."
   [packet ports state]
-  (h/ensure! (and (= C-root (get-in packet [:guard-proposal :coordination-root]))
+  (h/ensure! (and (= acceptance/selector (:selector packet))
+                  (= C-root (get-in packet [:guard-proposal :coordination-root]))
                   (= L-path (get-in packet [:guard-proposal :canonical-lock]))
                   (= :immediate-try-lock (get-in packet [:guard-proposal :lock-mode]))
                   (= :exclusive (get-in packet [:guard-proposal :resource-class]))
@@ -63,7 +71,7 @@
                :try-L :release-L :launch :retain :handles :wait :finalize :creation-coverage]]
     (h/ensure! (or (fn? (get ports key)) (var? (get ports key))) :C3-parent-port))
   (let [owner (.getId (Thread/currentThread)) began ((:now ports))
-        bookends (atom []) primary (atom nil) interrupted (atom false)
+        bookends (atom []) primary (atom nil) interrupted (atom (.isInterrupted (Thread/currentThread)))
         record! (fn [error]
                   (when (or (interrupted? error) (.isInterrupted (Thread/currentThread)))
                     (reset! interrupted true))
@@ -95,6 +103,7 @@
         (swap! state assoc :L ((:try-L ports) L-path))
         (h/ensure! (:L @state) :C3-L-refused)
         (recheck!)
+        (work (:child-timeout-ms profile))
         (swap! state assoc :start-attempted? true)
         (swap! state assoc :process ((:launch ports) (:argv packet) (:cwd packet)))
         (h/ensure! (:process @state) :C3-process-missing)
@@ -107,6 +116,9 @@
                        :timeout-ms (work (:child-timeout-ms profile))
                        :capture-wait-ms (work (:capture-wait-ms profile))) (:owned @state)))
         (when (true? (get-in @state [:result :wait-interrupted?])) (reset! interrupted true))
+        (doseq [field [:wait-error :stdout-capture-error :stderr-capture-error]]
+          (when (instance? Throwable (get-in @state [:result field]))
+            (record! (get-in @state [:result field]))))
         (catch Throwable error (record! error))
         (finally
           (when-let [owned (:owned @state)]
@@ -130,6 +142,7 @@
                            (or (empty? @bookends) (true? (get-in @state [:creation-coverage :owned-complete?])))
                            (or (not (:start-attempted? @state))
                                (and (true? (get-in @state [:finalization :tracked-complete?]))
+                                    (child-capture-terminal? (:result @state))
                                     (true? (:post-recheck-complete? @state))
                                     (true? (get-in @state [:creation-coverage :owned-complete?])))))]
             (when safe?
@@ -175,7 +188,8 @@
         (when @interrupted (.interrupt (Thread/currentThread)))))))
 
 (defn proposal [child-request]
-  (h/ensure! (and (= C-root (get-in child-request [:guard-proposal :coordination-root]))
+  (h/ensure! (and (= acceptance/selector (:selector child-request))
+                  (= C-root (get-in child-request [:guard-proposal :coordination-root]))
                   (= C3-participants (get-in child-request [:guard-proposal :participants]))) :C3-proposed-C-root)
   (assoc child-request :parent-profile profile :participating-callers participants
          :parent-method {:sequence 'gravity.syntax.selected-revision-parent/run!
@@ -296,15 +310,20 @@
        :recheck
        (fn [request ports records]
          (with-redefs [h/git! (partial git/git! ports (:git-binding request) records)]
-           (request/read-prepared! (get-in request [:prepared-input :path])
-                                   (get-in request [:prepared-input :sha256]))
+           (let [prepared (request/read-prepared! (get-in request [:prepared-input :path])
+                                                   (get-in request [:prepared-input :sha256]))]
+             (h/ensure! (and (= (:argv request) (get-in prepared [:closure :argv]))
+                             (= (:source request) (:source prepared))
+                             (= (:cwd request) (:root prepared))
+                             (= (:git-binding request) (:git-binding prepared))) :C3-parent-child-binding))
            (request/verify-git-binding! (:git-binding request))))})))
 
 (defn read-proposal! [path expected-sha]
   (let [input (h/file-input! path)]
     (h/ensure! (= expected-sha (:sha256 input)) :C3-parent-packet-drift)
     (let [packet (edn/read-string (:text input))]
-      (h/ensure! (and (false? (:launchable packet)) (= :never-submitted (:execution packet))
+      (h/ensure! (and (= acceptance/selector (:selector packet))
+                      (false? (:launchable packet)) (= :never-submitted (:execution packet))
                       (= C-root (get-in packet [:guard-proposal :coordination-root]))
                       (= profile (:parent-profile packet))) :C3-parent-proposal-only)
       (verify-source-bindings! packet)
@@ -325,7 +344,9 @@
                                 :release-authorized? :L-release :C-release :watchdog-disarmed?])
                    :global-descendant-coverage :unknown
                    :result (scalars (:result raw) [:status :exit-code :wait-interrupted?
-                                                  :output-truncated? :capture-failed? :cleanup-failed?])
+                                                  :output-truncated? :capture-failed? :cleanup-failed?
+                                                  :stdout-capture-status :stderr-capture-status
+                                                  :stdout-capture-forced-close? :stderr-capture-forced-close?])
                    :finalization (scalars (:finalization raw) [:tracked-complete? :complete?])
                    :creation-coverage (scalars (:creation-coverage raw) [:owned-complete? :reason])
                    :bookends (when-let [records (:bookends raw)] (git/observation-view records)))

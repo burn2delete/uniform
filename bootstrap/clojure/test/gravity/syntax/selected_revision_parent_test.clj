@@ -3,10 +3,12 @@
   (:require [clojure.test :refer [deftest is]]
             [clojure.java.io :as io]
             [gravity.syntax.selected-revision-request :as request]
+            [gravity.syntax.selected-revision-git :as git]
             [gravity.syntax.selected-revision-parent :as parent]))
 
 (def packet
-  {:guard-proposal {:coordination-root parent/C-root :canonical-lock parent/L-path
+  {:selector :syntax/selected-reader-revision
+   :guard-proposal {:coordination-root parent/C-root :canonical-lock parent/L-path
                     :resource-class :exclusive :lock-mode :immediate-try-lock
                     :participants parent/C3-participants
                     :acquire-order [:C :L] :release-order [:L :C]}
@@ -52,6 +54,8 @@
                        (swap! events conj :wait)
                        (finalize token)
                        {:status :passed :exit-code 0 :wait-interrupted? false
+                        :stdout-capture-status :complete :stderr-capture-status :complete
+                        :stdout-capture-forced-close? false :stderr-capture-forced-close? false
                         :output-truncated? false :capture-failed? false :cleanup-failed? false})
                :finalize finalize
                :creation-coverage (fn [raw]
@@ -61,6 +65,14 @@
                                     {:owned-complete? true :global-descendant-coverage :unknown})}]
     {:ports ports :events events :clock clock :state state :C C :L L :process process :owned owned
      :watchdog watchdog :physical-finalizations physical-finalizations}))
+
+(deftest another-selector-cannot-open-any-parent-port
+  (let [{:keys [ports state events]} (fixture)
+        error (try (parent/run! (assoc packet :selector :other) ports state) nil
+                   (catch clojure.lang.ExceptionInfo error error))]
+    (is (= :C3-parent-packet (:reason (ex-data error))))
+    (is (empty? @state))
+    (is (empty? @events))))
 
 (deftest parent-order-same-tokens-cached-finalization-and-reverse-release
   (let [{:keys [ports events state process owned physical-finalizations]} (fixture)
@@ -95,7 +107,7 @@
       (let [result (parent/run! packet (assoc ports :wait (fn [& _] (throw original))) state)
             interrupted (.isInterrupted (Thread/currentThread))]
         (is (identical? original (:error result))) (is interrupted)
-        (is (= :released (:C-release result))))
+        (is (nil? (:C-release result))))
       (finally (Thread/interrupted))))
   (doseq [cleanup [(ex-info "cleanup" {}) (LinkageError. "fatal cleanup")]]
     (let [{:keys [ports state process owned events]} (fixture) original (ex-info "wait" {})
@@ -115,6 +127,14 @@
     (is (not-any? #{:release-L :release-C :disarm} @events))))
 
 (deftest one-deadline-is-recomputed-after-startup-and-release-errors-are-not-retried
+  (let [{:keys [ports state clock events]} (fixture)
+        result (parent/run! packet
+                 (assoc ports :recheck (fn [& args]
+                                        (apply (:recheck ports) args)
+                                        (reset! clock 289000))) state)]
+    (is (= :C3-whole-deadline (:reason (ex-data (:error result)))))
+    (is (not-any? #{:launch} @events))
+    (is (= :released (:C-release result))))
   (let [{:keys [ports state clock]} (fixture) wait (:wait ports) observed (atom nil)]
     (parent/run! packet
       (assoc ports :launch (fn [& args] (reset! clock 240000) (apply (:launch ports) args))
@@ -173,6 +193,74 @@
       (is (= [:cancel :shutdown] @events))
       (if (= initial :armed) (is (= :cancelled @state))
           (is (= :C3-whole-deadline (:reason (ex-data error))))))))
+
+(deftest unknown-bookend-launch-is-recorded-before-creation-and-keeps-guards
+  (let [{:keys [ports state events]} (fixture) original (ex-info "launch uncertainty" {})
+        result (parent/run! packet
+                 (assoc ports :creation-coverage (constantly {:owned-complete? false})
+                   :recheck (fn [_ git-ports records]
+                              (git/git! (assoc git-ports :verify-git! (constantly nil)
+                                                        :launch (fn [& _] (throw original)))
+                                        {:root "/fixture" :cwd "/fixture"} records
+                                        "/fixture" "rev-parse" "HEAD"))) state)
+        record @(first @(:bookends result))]
+    (is (identical? original (:error result)))
+    (is (identical? original (:launch-error record)))
+    (is (true? (:launch-attempted? record)))
+    (is (nil? (:process record)))
+    (is (not-any? #{:release-L :release-C :disarm} @events))
+    (is (not (.contains (pr-str (parent/observation-view state)) "#object")))))
+
+(deftest child-capture-must-be-terminal-before-releasing-guards
+  (doseq [alteration [{:capture-failed? true :stdout-capture-status :capture-timeout}
+                     {:stdout-capture-status :error}
+                     {:stderr-capture-status :closed :stderr-capture-forced-close? true}
+                     {:stdout-capture-status nil}
+                     {:stdout-capture-error (ex-info "capture" {})}]]
+    (let [{:keys [ports state events]} (fixture)
+          result (parent/run! packet
+                   (assoc ports :wait (fn [& args] (merge (apply (:wait ports) args) alteration))) state)]
+      (is (= :failed (:status result)))
+      (is (true? (get-in result [:finalization :tracked-complete?])))
+      (is (false? (:release-authorized? result)))
+      (is (not-any? #{:release-L :release-C :disarm} @events)))))
+
+(deftest returned-Throwables-remain-original-primary-errors
+  (doseq [field [:wait-error :stdout-capture-error :stderr-capture-error]]
+    (let [{:keys [ports state]} (fixture) original (ex-info "returned error" {:field field})
+          cleanup (ex-info "secondary cleanup" {})
+          result (parent/run! packet
+                   (assoc ports :wait (fn [& args] (assoc (apply (:wait ports) args) field original))
+                                :finalize (fn [_] (throw cleanup))) state)]
+      (is (identical? original (:error result)))
+      (is (identical? original (get-in result [:result field])))
+      (is (some #(identical? cleanup %) (.getSuppressed ^Throwable original)))
+      (is (= :failed (:status result))))))
+
+(deftest returned-fatal-error-propagates-with-the-original-wait-error-suppressed
+  (let [{:keys [ports state events]} (fixture) wait-error (ex-info "wait" {})
+        fatal (LinkageError. "capture fatal")
+        result (try
+                 (parent/run! packet
+                   (assoc ports :wait (fn [& args]
+                                        (assoc (apply (:wait ports) args)
+                                               :wait-error wait-error :stderr-capture-error fatal))) state)
+                 (catch LinkageError error error))]
+    (is (identical? fatal result))
+    (is (identical? fatal (:error @state)))
+    (is (some #(identical? wait-error %) (.getSuppressed ^Throwable fatal)))
+    (is (not-any? #{:release-L :release-C :disarm} @events))))
+
+(deftest completed-nonpassing-child-is-distinct-from-unresolved-capture
+  (doseq [alteration [{:status :failed :exit-code 7}
+                     {:output-truncated? true :stdout-capture-status :truncated}]]
+    (let [{:keys [ports state]} (fixture)
+          result (parent/run! packet
+                   (assoc ports :wait (fn [& args] (merge (apply (:wait ports) args) alteration))) state)]
+      (is (= :failed (:status result)))
+      (is (= :released (:L-release result)))
+      (is (= :released (:C-release result)))
+      (is (= :unknown (:global-descendant-coverage result))))))
 
 (deftest preparation-pins-the-proposed-root-and-never-loads-runtime-ports
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory

@@ -68,12 +68,18 @@
   [ports binding records argv]
   ((:verify-git! ports) binding)
   (remaining-ms ports)
-  (let [process ((:launch ports) argv (:cwd binding))
-        record (atom {:argv argv :cwd (:cwd binding) :process process
+  (let [record (atom {:argv argv :cwd (:cwd binding) :launch-attempted? true
                       :root-wait-exited? :unknown :descendant-coverage :unknown})]
-    ;; Keep the original Process even if retaining its ownership token refuses.
+    ;; Register intent before launch: a thrown launcher gives no proof that
+    ;; nothing was created. Keep the returned Process before retaining it.
     (swap! records conj record)
-    (let [owned (try ((:retain ports) process)
+    (let [process (try ((:launch ports) argv (:cwd binding))
+                       (catch Throwable error
+                         (swap! record assoc :launch-error error :terminal :unproven)
+                         (when (interrupted-error? error) (.interrupt (Thread/currentThread)))
+                         (throw error)))
+          _ (swap! record assoc :process process)
+          owned (try ((:retain ports) process)
                      (catch Throwable error
                        (swap! record assoc :retain-error error :terminal :unproven)
                        (when (interrupted-error? error) (.interrupt (Thread/currentThread)))
@@ -126,7 +132,8 @@
   ;; these serializable observations. Unknown coverage is never promoted.
   (mapv (fn [record]
           (let [r @record]
-            (cond-> (select-keys r [:argv :cwd :exit :root-wait-exited? :capture-complete? :finalization :descendant-coverage :terminal])
+            (cond-> (select-keys r [:argv :cwd :launch-attempted? :exit :root-wait-exited? :capture-complete? :finalization :descendant-coverage :terminal])
+              (:launch-error r) (assoc :launch-error-class (.getName (class (:launch-error r))))
               (:error r) (assoc :error-class (.getName (class (:error r))))
               (:retain-error r) (assoc :retain-error-class (.getName (class (:retain-error r))))
               (:identity-error r) (assoc :identity-error-class (.getName (class (:identity-error r))))

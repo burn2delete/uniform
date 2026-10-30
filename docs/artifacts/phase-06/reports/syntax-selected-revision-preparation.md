@@ -457,3 +457,30 @@ late completion, timer cancellation races and raw-value-free observation views.
 The affected panel passes 33 tests / 945 assertions. No normal ports, timer,
 canonical lock, broker lease, selected target, owner or C3 child were opened by
 these controls. All four historical requests remain immutable.
+
+The first parent source `30e7c235` received changes-required review, receipt
+`969f9166d06850536f3a219ad277a7d5be31bc6fd7d8634a1d209dcdd501793b`.
+Five independent fake counterexamples exposed unknown Git launch attempts with
+no record, child capture timeouts permitting guard release, and returned
+wait/capture Throwables losing primary identity. The original request and parent
+packet remain unchanged as historical evidence. Passing tests and 3,073 frozen
+graph checks did not confer source or runtime acceptance.
+
+The correction registers a pending Git attempt before crossing the launch
+boundary and preserves its original launch error even without a returned
+Process. Child guard release now requires explicit terminal stream statuses,
+no forced close or capture error, and successful source recheck, in addition to
+tracked finalization and owned creation coverage. Completed nonzero output and
+EOF-drained truncation remain distinct from unresolved capture: they can release
+known-owned guards while the operation still fails. Returned Throwable fields
+enter the original-error collector before cleanup or generic refusals; fatal
+priority and interruption remain explicit. The parent checks its C3 selector,
+and its normal recheck joins the exact parent/child argv, source, CWD and Git
+bindings. These changes require a new source/request pair and affected review;
+the old pair is not replayed or rewritten.
+
+The corrected affected panel passes 39 tests / 1,554 assertions, including the
+three independent failure shapes, returned fatal priority and completed
+nonpassing capture. Boundary, lint, document, roadmap and whitespace checks pass.
+These remain compiler-free source controls, not C3 acceptance or permission to
+activate the unlaunchable packet.
