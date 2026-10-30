@@ -1,0 +1,190 @@
+{:owner-join-status :proposed-no-canonical-state-change,
+ :input-base
+ {:commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+ :dependency-joins
+ [{:source
+   "B1/C11/C14/P4/P9/P10/P13/SAFE9-SAFE12/Schema/Runtime/Package/Tooling",
+   :consumers [:target :value :async :host :numeric :ui :verification],
+   :authority :actual-interface-outputs-not-whole-component-acceptance}
+  {:source "backend-conformance",
+   :consumer :verification,
+   :witness
+   {:path "specs/backends-workflow/tasks.md",
+    :marker "backends-implementation-tasks",
+    :task-id "backend-conformance",
+    :source-commit "1e95777f44d2fc292c3cbd0fa185a53ceb5013ed",
+    :file-sha256
+    "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+    :start-byte 49599,
+    :end-byte 56176,
+    :raw-sha256
+    "610e7a230a9daeeeafa96f51b3f5cb2c79228915cced6f967bf9467e21d0c72c"},
+   :authority
+   :authentic-producer-contract-not-execution-or-acceptance}],
+ :C18-frozen-dependency
+ {:frozen-subject "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :frozen-witness
+  {:path "specs/backends-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "backend-conformance",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :start-byte 39998,
+   :end-byte 40994,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"},
+  :successor-witness
+  {:path "specs/backends-workflow/tasks.md",
+   :marker "backends-implementation-tasks",
+   :task-id "backend-conformance",
+   :source-commit "1e95777f44d2fc292c3cbd0fa185a53ceb5013ed",
+   :file-sha256
+   "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+   :start-byte 49599,
+   :end-byte 50595,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"},
+  :predicate-bytes :exact,
+  :containing-file-drift :explicit-new-subject-file-hash-and-offset,
+  :frozen-C18-pins :unchanged-not-relabelled,
+  :successor-review :required},
+ :publication-scope
+ :source-review-branch-not-main-integration-candidate,
+ :holds
+ {:PR645-integration :denied-no-substitute,
+  :36-config-OWN-7b-643-642-531-genuine-unknown :unchanged,
+  :alternate-held-actor :none},
+ :trace
+ {:path
+  "specs/requirement-reconciliation/b6-complete-source-facet-trace.edn",
+  :sha256
+  "05180467b44c6cea70b115573dfbb73a3764f97e99c33da375942ab04fc60691",
+  :counts
+  {:source-facets 398,
+   :source-occurrences 51,
+   :semantic-conjunction-cases 35,
+   :retained-context-occurrences 16,
+   :original-owner-proposed-joins 7,
+   :task-count-delta 0,
+   :new-decision-ids 0}},
+ :review-scope
+ [:complete-original-B6-source-entailment
+  :35-atomic-occurrence-conjunctions
+  :conditional-UI-and-other-source-branches
+  :seven-proposed-owner-joins
+  :old-whole-predicate-preservation
+  :authentic-producer-byte-continuity
+  :prospective-coherent-clause-role-condition-evidence-controls],
+ :governing-source
+ {:path
+  "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+  :sha256
+  "3f75907be68c0f4e8f576c1a0882e5fd007d88472140fe322b38b6d371b23d8c"},
+ :exclusions
+ [:C18-review-or-old-review-renewal
+  :whole-component-dependency-acceptance
+  :canonical-witness-index-count-promotion
+  :production-backend-compiler-runtime-provider-execution
+  :actual-numeric-or-fixed-width-acceptance
+  :held-B2-or-MetadataPolicy-or-ACC08-payload-import-review-delivery
+  :implementation-release-self-hosting-main-integration],
+ :implementation-credit :none,
+ :controls
+ {:path "specs/requirement-reconciliation/b6-source-controls.edn",
+  :sha256
+  "6347a91bf6a892f3e0719019d062f6f425af63d952f2c000fbec1dbe8be06910",
+  :checks {:test 3, :pass 89, :fail 0, :error 0, :type :summary},
+  :negative-controls 85,
+  :clause-removals 71,
+  :authority :author-source-data-self-audit},
+ :route :coordinator-only,
+ :amendment
+ {:path
+  "specs/requirement-reconciliation/b6-owner-source-amendment.edn",
+  :sha256
+  "582739254e82dc7b4b408aa0ba19c124e054ee91f8f6ebe2a906e8ac7d2aa2d9"},
+ :boundary {:tests 6, :assertions 11, :result :pass},
+ :new-task-units 0,
+ :final-denominator :not-adopted,
+ :documents :pass,
+ :frozen-C18-canonical-checkout
+ {:path "/Users/matt/.codex/worktrees/6a97/uniform",
+  :commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :tree "2e106366aab696a975f0160067e9dff9b78538a0",
+  :clean true,
+  :changes :none},
+ :published-canonical-counts
+ {:source-dispositions 1585,
+  :proposal-index 2308,
+  :pending 732,
+  :original-owner-states [984 201 3],
+  :provisional-task-ratio [3 195],
+  :authority :captured494-only-not-a-B6-adoption},
+ :trace-controls-stage
+ {:commit "5fd4f50508f6621a2489ac4038a7bd16f6e43b47",
+  :tree "705031177f4c92c1d0b83717e9a99c6e2a094f3f"},
+ :kind :one-B6-source-entailment-review-inputs,
+ :reservation-inputs
+ {:ledger
+  {:path "contracts/workstream-ledger.json",
+   :sha256
+   "9c576c03720fe52f6339e8c3f2e9db940b4b15a5d10708aa823d3317fa9e879f"},
+  :active-records
+  [{:path
+    "contracts/workstream-active/native-specialization-evidence.json",
+    :sha256
+    "cbfa15c2d832e2feb4e28ab0ec44c34e8fd8ad53a74dcaf2e248d30f2be84179"}
+   {:path
+    "contracts/workstream-active/reader-extension-policy-normal-dispatch-v1.json",
+    :sha256
+    "abb2796ddbff3012a1cc5ad2d2edc210ffc166407d5399866493f83167dd0928"}
+   {:path
+    "contracts/workstream-active/sh07-b51-git-object-evidence-publication-implementation-v9.json",
+    :sha256
+    "c4edb5e6eedaad84a7ae9a14af7e519b7b544c60653c2fc9c6372ecc520c2ebd"}
+   {:path
+    "contracts/workstream-active/sh07-b51-vector-destructuring-architecture-v17-attempt-3.json",
+    :sha256
+    "8b5bffe2fcdcf8269480ba1834a7f9865ebf646b23c59cec2899f5550b565476"}
+   {:path
+    "contracts/workstream-active/sh07-exception-core-lowering-architecture-decision-v1.json",
+    :sha256
+    "6a7952d84bb6923b4bc3d67eadb72bd27f2ecd461eff4c965862288941f1f414"}
+   {:path
+    "contracts/workstream-active/sh13-typed-direct-call-mir-architecture-decision-v1.json",
+    :sha256
+    "e5770128490eea61d74c3675e3d5338423362a63ee357f6c3badb165c0782645"}],
+  :owned-path-collision :none-for-task-and-backend-projection},
+ :roadmap :pass,
+ :independent-review :pending,
+ :qualification
+ "Exactly one isolated successor. Fifteen backend outcome IDs/Open statuses and every prior full predicate body survive; only backend-js gains the conjoined source clauses. The complete frozen candidate tuple is bound by its external intake envelope. No author-assigned reviewer/new worker, source acceptance, final denominator or implementation promotion follows.",
+ :deduplication
+ {:facet-ids :unique,
+  :source-occurrence-membership :complete,
+  :overlap-reviews-or-counts :not-inherited,
+  :canonical-index-adoption :none},
+ :source-stage
+ {:commit "1e95777f44d2fc292c3cbd0fa185a53ceb5013ed",
+  :tree "802e5d3202175f5da479eef8fb1a84909e1f4fa5"},
+ :original-owner-ids
+ ["backend/js/async-error-adapter"
+  "backend/js/dynamic-operation-gate"
+  "backend/js/host-binding-gate"
+  "backend/js/module-api-emission"
+  "backend/js/nullish-adapter"
+  "backend/js/numeric-lowering"
+  "backend/js/ui-artifacts"],
+ :branch "codex/b6-source-entailment",
+ :worktree "/Users/matt/.codex/worktrees/b6-source-entailment/uniform",
+ :source-conjunctions
+ :whole-occurrences-not-individual-scalar-fragments,
+ :B6-index-and-current833-561-adoption :none,
+ :new-decision-ids 0,
+ :unmutated-prospective-model
+ {:path "/tmp/B6-model-positive.log",
+  :sha256
+  "6cd07deaa637899e74700e21a66c11e8cdfdbb8c8b81c4abcef8c204386e5130",
+  :result :pass},
+ :projection {:tests 5, :assertions 211, :result :pass}}
