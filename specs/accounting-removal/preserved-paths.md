@@ -912,6 +912,9 @@ unchanged. Three production file hashes, eight owner definitions/arguments,
 three fixture/invocation definitions and the uninvoked runtime-projection
 helper are pinned. Boundary 6/11, docs, roadmap, whitespace and pinned lint
 pass (zero errors, identical 76-warning multisets; new EDN zero findings).
+Later exact-head CI run `40978066790` completed seven successes/two skips;
+see `list-construction-lowering-controls-ci.edn`. Independent source review
+is active. These observations supersede only their earlier pending states.
 This explicitly requires the unaccepted PR623 width removal; no production is
 copied to main and no parent receipt is extended. Independent review, CI,
 parent/composition acceptance and integration remain pending. Genuine kernel
@@ -957,6 +960,10 @@ docs, roadmap, whitespace and pinned lint pass (zero errors, identical complete
 PASS and CI7/2 are not extended automatically to this successor. Current-head
 CI and affected-composition acceptance remain pending; integration-mode and
 main merge remain UNRUN, as do both genuine kernels.
+One normal affected-composition request was acknowledged by the original
+reviewer after duplicate/denial checks, under standing user coordination
+authority. Supported readback confirms it is queued after that reviewer's
+distinct active PR636 review; no duplicate owner or denied operation is retried.
 
 ### Exact quoted-data fixture restoration
 
