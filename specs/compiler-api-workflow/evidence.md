@@ -190,3 +190,8 @@ inputs remain exact. The incoming Resolver artifacts retain their main
 disposition and have not been executed or admitted by these source checks.
 The declared review base is now that exact `787637b9` commit, with independent
 affected-composition review and fresh exact-head CI/integration checks pending.
+
+Documentation commit `16404713` was staged while the base-record writer was
+finishing, so the completed base record is committed separately. No validation
+of that partial documentation-only commit is claimed. Final checks wait for
+writer completion and use the complete record and its actual immutable pin.

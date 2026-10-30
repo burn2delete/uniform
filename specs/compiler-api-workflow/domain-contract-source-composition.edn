@@ -8,7 +8,15 @@
   "development-boundaries"],
  :integration-eligibility :not-conferred,
  :source-extraction-from "8ba98ee7683d7f87a431b7b6d273b06fd5d1a144",
+ :source-extraction-base-commit
+ "70dcb2220701529dbb02bd2317a822eb3ac72fed",
  :existing-main-outcome-predicates :preserved-as-exact-prefixes,
+ :main-reconciliation
+ {:prior-candidate "feccc0e36169d72710ec4aaaa6525e7517e53ed6",
+  :merge-commit "55b2f836c0ff45e8bf04309fe1b919b9460881ac",
+  :owned-source-mode-and-blobs :identical-before-provenance-refresh,
+  :incoming-paths :four-disjoint-Resolver-fixture-and-test-paths,
+  :execution-credit :none},
  :current-main-composition-review
  :pending-independent-affected-composition-review,
  :global-denominator :not-adopted,
@@ -297,8 +305,8 @@
   "100644 blob 2656b64762e849e8fbb75ad2b42aeeaf58b42f0c\tdocs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"
   "100644 blob 9f6bb4660bfec34af10fc99186d3d5034b5c79fd\tdocs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"},
- :base-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
- :base-commit "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :base-tree "10296896f7c605b16b25cdf2981c23d0519b996c",
+ :base-commit "787637b9ae780a7cfef7ca5763611882a8f2b629",
  :global-reconciliation-database :not-copied,
  :source-file-pins
  {"docs/component-roadmaps/compiler-api.md"
