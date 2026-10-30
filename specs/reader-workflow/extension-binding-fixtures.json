@@ -1,0 +1,35 @@
+{
+  "task": "reader/finite-remaining-work/extension-policy-closure",
+  "planning_id": "FL-P01-T01",
+  "inspected_base": "ae0cd80165b2085e7ce362d0c7bfc5eeec79b2de",
+  "status": "source-definitions-only-unrun",
+  "normal_admission": "missing-authenticated-registration-input",
+  "format_scope": "Declarative test definitions; symbol names are strings here. This is not a runtime policy or provider API.",
+  "fixture_root": "bootstrap/clojure/fixtures/reader-extension-binding/",
+  "existing_leaf_selection": {
+    "profile": "meta",
+    "registry": {
+      "text": {"handler": "gravity.reader/read-text", "build_effects": [], "capabilities": [], "profiles": ["meta"]},
+      "resource": {"handler": "gravity.reader/read-input", "build_effects": ["filesystem/read"], "capabilities": ["fs/read"], "profiles": ["meta"]}
+    },
+    "enabled_tags": ["text", "resource"],
+    "build_effects": ["filesystem/read"],
+    "capabilities": ["fs/read"]
+  },
+  "existing_grant_definition": {
+    "id": "read-fixture",
+    "principal": "gravity.reader/read-input",
+    "provider": "declared-fixture-provider",
+    "phase": "build",
+    "lifetime": "invocation",
+    "capability": "fs/read",
+    "input": "bootstrap/clojure/fixtures/accepted/reader-extension-input.txt"
+  },
+  "cases": [
+    {"id": "pure", "sources": ["pure.qst", "pure.gravity"], "policy_variation": "base selection", "future_normal_outcome": "accept text seed unchanged", "provider": "none"},
+    {"id": "granted", "sources": ["granted.qst", "granted.gravity"], "policy_variation": "base selection with exact existing grant", "future_normal_outcome": "accept returned text seed from explicitly bound input provider", "provider": "existing trusted host binding required; absent from this packet"},
+    {"id": "unknown", "sources": ["unknown.qst", "unknown.gravity"], "policy_variation": "base selection", "future_normal_outcome": "reject before any invocation", "leaf_diagnostic": {"id": "C2-EXTENSION", "reason": "unknown-tag"}},
+    {"id": "disallowed", "sources": ["disallowed.qst", "disallowed.gravity"], "policy_variation": "enabled_tags is text only; resource registration retained", "future_normal_outcome": "reject before any invocation", "leaf_diagnostic": {"id": "C2-EXTENSION", "reason": "disallowed-tag"}},
+    {"id": "undeclared-effect", "sources": ["undeclared-effect.qst", "undeclared-effect.gravity"], "policy_variation": "policy build_effects empty; resource implementation and entry unchanged", "future_normal_outcome": "reject before any invocation", "leaf_diagnostic": {"id": "C2-EXTENSION", "reason": "undeclared-effect"}}
+  ]
+}
