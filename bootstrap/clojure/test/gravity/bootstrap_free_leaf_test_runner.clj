@@ -26,7 +26,7 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 52)
+(def ^:const expected-catalog-count 53)
 
 (def excluded-top-level-test-files
   "The top-level tests that intentionally remain outside the leaf runner."
@@ -102,6 +102,7 @@
    "reader_diagnostic_policy"
    "reader_host_oracle"
    "reader_namespace"
+   "source_interface_header"
    "source_unit"
    "syntax_object_stream"
    "syntax_origin"])

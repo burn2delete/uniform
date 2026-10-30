@@ -173,9 +173,9 @@
       (is (= all-direct-stage0-tests
              (set/union actual-stage0-tests support-test-paths (set (keys auxiliary)))))
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
-      (is (= (+ 108 (count helper-paths)) (count actual-stage0-paths)))
+      (is (= (+ 110 (count helper-paths)) (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= (+ 202 (count helper-paths)) (count module-owners)))
+      (is (= (+ 204 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= 17 (count support-paths)))
@@ -209,11 +209,11 @@
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (str/starts-with? module "bootstrap/gravity/src/")]
         (is (= :master-coordinator (get module-owners module)) module)))
-    (testing "reserved Stage0 ids cover exactly the 54 source components"
+    (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)
             primary-sources (set/difference actual-stage0-sources helper-paths)
             expected-ids (set (map stage0-component-id primary-sources))]
-        (is (= 54 (count reserved)))
+        (is (= 55 (count reserved)))
         (is (= expected-ids (set (keys reserved))))
         (doseq [source primary-sources
                 :let [id (stage0-component-id source)
@@ -433,7 +433,7 @@
                          (var-get
                           (ns-resolve runner-ns
                                       'excluded-top-level-test-files)))))]
-          (is (= 52 (count catalog)))
+          (is (= 53 (count catalog)))
           (is (= expected (set (map :test-path catalog))))
           (is (true? (validate!)))
           (is (every? symbol? (map :namespace catalog)))
