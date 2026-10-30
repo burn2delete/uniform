@@ -1,0 +1,33 @@
+{:kind :reader-composition-review-delivery
+ :owner :ACC-01
+ :pr 626
+ :candidate "b78b221a17684e02415a9317f2b605e78e59ef24"
+ :candidate-tree "c21fbaf86832bd9fa4e3f2ad1f94c50021457c71"
+ :base "2654d155322f7863dd087065f19000b43c877cbe"
+ :authorization :standing-user-review-coordination-confirmed-by-coordinator
+ :authorization-source-thread "01a183cc-8cd1-735d-bf59-055c4b5f0039"
+ :prior-fresh-confirmation-question :resolved-by-existing-standing-authorization
+ :prior-message-call :none
+ :prior-message-denial :none
+ :prior-uncertain-send :none
+ :duplicate-readback :no-existing-b78b221a-delivery-or-result
+ :destination-thread "01a18529-b6ff-77a3-b5de-835ef9d4b5ab"
+ :tool :send-message-to-thread
+ :result :acknowledged
+ :returned-thread-id "01a18529-b6ff-77a3-b5de-835ef9d4b5ab"
+ :operation-id :not-returned
+ :acknowledgment-observed-at "2026-10-30T00:14:59Z"
+ :subsequent-supported-readback
+ {:review-turn "01a18a28-8569-7c33-9fff-6913c8fb1215"
+  :state :active
+  :prior-PR635-review :completed
+  :reviewer-message :starting-distinct-PR626-intake-and-receipt-verification}
+ :review-result :pending-at-delivery-record
+ :request-scope :exact-current-main-source-DATA-composition-only
+ :prior-source-receipt "096b93e4afec7ea29d51a49fd3ae971a1bf5bec76b59522e8f84db6482f9c963"
+ :genuine-owner-controls :UNRUN
+ :denied-review-runtime-selector-or-relay-retry false
+ :new-reviewer false
+ :GitHub-APPROVE false
+ :nonclaims [:independent-PASS :current-main-integration
+             :whole-ACC01 :PR502-closure :release :self-hosting]}

@@ -842,6 +842,38 @@ negative private-family/remapped-get mutations pass the supplemental source
 comparisons. These are proposed source-level incorporation/adaptation decisions;
 independent acceptance and all unrelated unique-path obligations remain open.
 
+### Current finite source-review consumption
+
+PR634 exact `f540ca1b` now has independent SOURCE/DATA PASS, consumed in
+`quote-fixture-review-consumption.edn`, receipt SHA256
+`4a0052ff98614444748977a35b87a44ba2481f0a2b4a3cb5e510eaaa706b1a6f`.
+Sealed count 15,176 versus handoff 15,177 remains an explicit discrepancy;
+only the sealed count is credited. Thirteen inert corruption controls refuse.
+Tree/parent/three artifact hashes, six current/historical C7 form pins, both
+shared helpers and checker/generator provenance were verified. Both genuine
+tests remain UNRUN; changed-main applicability and integration remain separate.
+
+PR635 exact `b745ccee` has independent SOURCE/DATA PASS, consumed in
+`collection-header-review-consumption.edn`, receipt SHA256
+`839487b24fe504a037615b0cc4391e43bd6c7b24eb9428a7151818981f01406c`.
+The receipt records 293 source/DATA checks and 68 corruption refusals.
+Four complete adapted bodies, eleven original/eight parent assertion forms per
+kernel, all twelve current/historical header pins, six historically identical
+upstream helpers, three-path/full-tree conservation and reproduction hashes
+were verified. Genuine assertions were read as definitions, not executed.
+CI run `40977551920` completed seven successes/two skips. Source acceptance
+does not establish genuine header/runtime behavior; changed-main applicability
+and exact integration-mode preflight remain separate.
+
+PR626's first affected-composition review message was successfully delivered
+once under the standing user review-coordination authorization confirmed by the
+coordinator. Before that call there was no attempted/rejected/uncertain send,
+and duplicate readback found no prior b78b221a delivery/result. Supported
+reviewer readback shows its prior PR635 review complete and the distinct PR626
+review active. See `reader-composition-review-delivery.edn`. This resolves the
+earlier optional confirmation question without clearing any actual denied
+operation or claiming review completion.
+
 ### List-construction lowering and value restoration
 
 Dependent [PR636](https://github.com/burn2delete/uniform/pull/636) restores the

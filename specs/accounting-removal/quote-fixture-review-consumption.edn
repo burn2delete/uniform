@@ -1,0 +1,316 @@
+{:verified-paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :entry "100644 blob 751acad0b76bb79ae71acaa5293b47e3d4510be6",
+   :sha256
+   "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71"}
+  {:path "specs/accounting-removal/quote-fixture-controls-census.edn",
+   :entry "100644 blob 05feb23f02c419b8b138046679bf8f4b88be00cc",
+   :sha256
+   "4309b9e2c7829af4898dd791b13c7c023d7bc266bbe68d37ea4e00dfcae2896a"}
+  {:path "specs/accounting-removal/quote-fixture-controls.md",
+   :entry "100644 blob f3e4e4c55af93ea16da0efc6c53e3b542f880dc5",
+   :sha256
+   "93ec48ee6adf44c5017c4a1dcdf4381ab6084c7c24b89b1ae3dd211913f5030a"}],
+ :integration-mode-preflight :UNRUN,
+ :C7-API-pins
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :two-historical-differences
+  {:sh08-qd-node
+   {:historical-form
+    (defn
+     sh08-qd-node
+     [node forms]
+     (if
+      (= :accepted (get (sh08-carrier-preflight [node forms]) :status))
+      (sh08-qd-node-valid-data node forms)
+      (sh08-qd-failure
+       "C7-VERIFY"
+       :malformed-quoted-data-tree
+       {}
+       :finite-native-quoted-data
+       nil))),
+    :current-form
+    (defn
+     sh08-qd-node
+     [node forms]
+     (sh08-qd-node-with-budget
+      node
+      forms
+      (get (sh08-local-bounds-value) :maximum-core-nodes))),
+    :change
+    :carrier-preflight-valid-data-wrapper-to-with-budget-wrapper},
+   :sh08-qd-products
+   {:historical-form
+    (defn
+     sh08-qd-products
+     [nodes source-forms module]
+     (if
+      (=
+       :accepted
+       (get
+        (sh08-carrier-preflight [nodes source-forms module])
+        :status))
+      (sh08-qd-products-valid-data nodes source-forms module)
+      {:type-table {},
+       :constraints [],
+       :diagnostics
+       [(sh08-bm-error
+         "C7-VERIFY"
+         :malformed-quoted-data-tree
+         {}
+         :finite-native-quoted-data
+         nil)]})),
+    :current-form
+    (defn
+     sh08-qd-products
+     [nodes source-forms module]
+     (sh08-qd-products-with-budget
+      nodes
+      source-forms
+      module
+      (get (sh08-local-bounds-value) :maximum-core-nodes))),
+    :change
+    :carrier-preflight-valid-data-wrapper-to-with-budget-wrapper}},
+  :definitions
+  [{:name sh08-bm-products,
+    :arguments [core products source-forms],
+    :historical-arguments [core products source-forms],
+    :current-form-sha256
+    "868abb6c7bc140160c039a3536d4038ebc5067fe70185aaa017d3870de7f8136",
+    :historical-form-sha256
+    "868abb6c7bc140160c039a3536d4038ebc5067fe70185aaa017d3870de7f8136",
+    :complete-form-identical true,
+    :semantic-equivalence :not-inferred}
+   {:name sh08-ft-infer-acyclic-with-context,
+    :arguments
+    [node-sequence
+     node-table
+     lexical-bindings
+     definitions
+     calls
+     edges
+     function-types
+     binding-types
+     maximum-rounds
+     context],
+    :historical-arguments
+    [node-sequence
+     node-table
+     lexical-bindings
+     definitions
+     calls
+     edges
+     function-types
+     binding-types
+     maximum-rounds
+     context],
+    :current-form-sha256
+    "c2f6f9204e6a81309b4ae7402f93ae1da851542592c8471023daa334da1abbce",
+    :historical-form-sha256
+    "c2f6f9204e6a81309b4ae7402f93ae1da851542592c8471023daa334da1abbce",
+    :complete-form-identical true,
+    :semantic-equivalence :not-inferred}
+   {:name sh08-gd-result,
+    :arguments [group branch types validate?],
+    :historical-arguments [group branch types validate?],
+    :current-form-sha256
+    "cc830ca05c3dbbc35bde0a9041482ec7f51441657d16aa1bfd4af4a4e06ff729",
+    :historical-form-sha256
+    "cc830ca05c3dbbc35bde0a9041482ec7f51441657d16aa1bfd4af4a4e06ff729",
+    :complete-form-identical true,
+    :semantic-equivalence :not-inferred}
+   {:name sh08-qd-node,
+    :arguments [node forms],
+    :historical-arguments [node forms],
+    :current-form-sha256
+    "31dd3ca59e9ea792603c596cd74f4de0c69bdbbd968c15a754d61b056e96e0cb",
+    :historical-form-sha256
+    "1544243a1032d866dda4d43a984da441c453df24f8e9019cf4958c9feb0418f2",
+    :complete-form-identical false,
+    :semantic-equivalence :not-inferred}
+   {:name sh08-qd-products,
+    :arguments [nodes source-forms module],
+    :historical-arguments [nodes source-forms module],
+    :current-form-sha256
+    "e36d10edb8868b3eb75841828e902e25aeb1f4273abbd1388d40faa5a26a04d2",
+    :historical-form-sha256
+    "e704f964b5a3a220abd35920a553ea92ca027cb7989d7600b91bd3f202538912",
+    :complete-form-identical false,
+    :semantic-equivalence :not-inferred}
+   {:name sh08-sm-check,
+    :arguments [group types functions module],
+    :historical-arguments [group types functions module],
+    :current-form-sha256
+    "523cb74b439c5d8932d5682998fcc1bcea3afc92e28fc1dd51524e4f270da0b4",
+    :historical-form-sha256
+    "523cb74b439c5d8932d5682998fcc1bcea3afc92e28fc1dd51524e4f270da0b4",
+    :complete-form-identical true,
+    :semantic-equivalence :not-inferred}],
+  :file-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :PR591-production-import :none,
+  :host-carrier-metadata-semantics :not-assumed,
+  :semantic-equivalence :not-inferred,
+  :transitive-helper-equivalence :unproved,
+  :surrounding-metering :separate-open-work,
+  :four-original-forms :identical,
+  :direct-call-set
+  #{sh08-qd-products
+    sh08-qd-node
+    sh08-bm-products
+    sh08-ft-infer-acyclic-with-context
+    sh08-sm-check
+    sh08-gd-result},
+  :current-arities :verified-unchanged},
+ :restored-tests
+ [{:name sh08-quoted-data-recursive-development-kernel,
+   :raw-start "(deftest sh08-quoted-data-recursive-development-kernel",
+   :raw-end
+   "(deftest sh08-quoted-data-authentication-development-kernel",
+   :before-raw-sha256
+   "5dab12ce02b15b1a6e3a70c7599cd08fd6a0a1116115e94f9bbe9294f05d0ed0",
+   :historical-and-candidate-raw-sha256
+   "89aebae16d5dbe2431cd3a2cadf7deedefb7cf430c8c28f8bcc3dbfb7261436f",
+   :whole-original-body :byte-identical,
+   :assertion-source-forms 14,
+   :assertions-compared-with-both-base-and-history :identical}
+  {:name sh08-quoted-data-guard-development-kernel,
+   :raw-start "(deftest sh08-quoted-data-guard-development-kernel",
+   :raw-end "(deftest sh08-quoted-data-c8-composition",
+   :before-raw-sha256
+   "c74d867c945609b0d5db95e4216e0eb5012f8525b54ce13b88fa24fe474f37a9",
+   :historical-and-candidate-raw-sha256
+   "181517dc0635e1b707014c9d2c8965a0234c7c6a712ecdbef6d24cb0b164d05b",
+   :whole-original-body :byte-identical,
+   :assertion-source-forms 8,
+   :assertions-compared-with-both-base-and-history :identical}],
+ :tree "8804c400b2290f47cb441aff72b3dc65402c4a4c",
+ :nonclaims
+ [:host-constructor-equivalence
+  :source-authentication
+  :genuine-compiler-runtime-acceptance
+  :parent-quote-stack-acceptance
+  :whole-path-incorporation
+  :whole-ACC01
+  :PR502-closure
+  :main-composition
+  :fresh-clean-preflight
+  :integration
+  :release
+  :self-hosting],
+ :execution
+ {:denied-operation-or-relay-retry false,
+  :CI-execution :none,
+  :author-and-shared-writes false,
+  :actual-owner-helper-kernel-runtime :not-executed,
+  :generator-sha256
+  "58e44d6300b4d70b5ce4e4da71311b3f86cff07c2d3fa53e5de8d2edcb598e63",
+  :mode :reader-EDN-text-hash-Git-objects-only,
+  :both-genuine-tests :UNRUN,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :generator-path "/tmp/acc01-quote-fixture-controls.clj",
+  :new-workers false,
+  :whitespace-exit 0,
+  :source-data-assertions 15176,
+  :APPROVE false,
+  :target-allocation :none,
+  :draft-checker-history
+  "Draft delimiter errors were corrected before the final successful reader/data run; no source test namespace or Gravity function was evaluated.",
+  :checker-sha256
+  "ea1e5a1e0292d4b512eb0d5185e86c2ad6cddac1f27b4293c7b5eb9fa02727a9"},
+ :new-genuine-execution false,
+ :genuine-owner-controls :UNRUN,
+ :candidate "f540ca1baba2d1a9080a9a600653ff34a7d73815",
+ :blocking-findings [],
+ :remaining
+ "Later current-main dependency/source composition and fresh clean preflight remain author/coordinator-owned. Existing CI successes/skips stay separate evidence. Source PASS grants no genuine owner or runtime acceptance and reopens no stopped operation.",
+ :generator-sha256
+ "a0a36ec6f404353eb6b63dee3f2f00552940dc63a7a50f980baac2eab3753ea1",
+ :shared-helpers
+ {:count 2,
+  :complete-parent-and-historical-form-identity true,
+  :pins
+  [{:name quoted-data-input,
+    :arguments ([value] (quoted-data-input value 7000)),
+    :form-sha256
+    "04c5e89223bf83830e0f594a12e70817194feb072210e57c754a2630201ee15c",
+    :parent-and-historical :identical}
+   {:name literal-guard-input,
+    :arguments [truth fallback?],
+    :form-sha256
+    "ba5edb2b77236a5ec42c2feddf1f399ab6022f0e02496a20b67618c1a6b1a212",
+    :parent-and-historical :identical}]},
+ :negative-control-count 13,
+ :conservation
+ {:every-other-test-byte :unchanged,
+  :all-other-parent-blobs-and-modes :identical,
+  :added-source-records
+  ["specs/accounting-removal/quote-fixture-controls-census.edn"
+   "specs/accounting-removal/quote-fixture-controls.md"],
+  :all-other-definition-forms :unchanged,
+  :modified-path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :production :all-unchanged,
+  :mode-and-kind-preserved true,
+  :base-tracked-paths 10075,
+  :complete-base-file-equation
+  :replace-only-two-declared-raw-intervals-with-historical-originals},
+ :review-count-qualification
+ {:sealed-receipt 15176,
+  :handoff 15177,
+  :discrepancy :preserved,
+  :credited-count :sealed-receipt-only,
+  :no-cause-inferred true},
+ :fixture-expression-changes
+ {:original-unevaluated-throw-and-nested-quote :preserved,
+  :deleted-lines
+  ["-                        ['(throw unresolved-data-name) :gravity.type/list]"
+   "-                        ['(quote (throw unresolved-data-name)) :gravity.type/list]"
+   "-                        [[nil true 1 \\a \"s\" :k 'symbol '(nested data) #{:a :b} {:k []}] :gravity.type/vector]"
+   "-                        [{'symbol [:value] :k '(item)} :gravity.type/map]]]"
+   "-  (let [{:keys [node forms]} (quoted-data-input '(quote (throw unresolved-data-name)))"
+   "-                             ['(throw unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]"],
+  :host-constructor-carrier-or-metadata-equivalence :not-assumed,
+  :exact-origin-paths :preserved,
+  :added-lines
+  ["+                        [(list 'throw 'unresolved-data-name) :gravity.type/list]"
+   "+                        [(list 'quote (list 'throw 'unresolved-data-name)) :gravity.type/list]"
+   "+                        [[nil true 1 \\a \"s\" :k 'symbol (list 'nested 'data) #{:a :b} {:k []}] :gravity.type/vector]"
+   "+                        [{'symbol [:value] :k (list 'item)} :gravity.type/map]]]"
+   "+  (let [{:keys [node forms]} (quoted-data-input (list 'quote (list 'throw 'unresolved-data-name)))"
+   "+                             [(list 'throw 'unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]"],
+  :Boolean-positive-nonBoolean-L7-diagnostic-node-and-false-guard-shapes
+  :preserved,
+  :all-and-only-original-explicit-list-fixtures :restored,
+  :scalar-container-and-type-value-checks :preserved,
+  :exact-line-pairs 6,
+  :no-evaluation-and-constraint-type-table-checks :preserved},
+ :CI
+ {:head "f540ca1baba2d1a9080a9a600653ff34a7d73815",
+  :run 40976646423,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :main-merge :UNRUN,
+ :result :pass-in-exact-source-data-scope,
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :quote-fixture-independent-review-consumption,
+ :receipt-sha256
+ "4a0052ff98614444748977a35b87a44ba2481f0a2b4a3cb5e510eaaa706b1a6f",
+ :current-main-applicability
+ :must-remain-exact-base-or-obtain-affected-review,
+ :base-tree "8e2f688ffcad861682c54571a07eee37517b9363",
+ :base "2654d155322f7863dd087065f19000b43c877cbe",
+ :pr 634,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :artifacts
+ {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  "specs/accounting-removal/quote-fixture-controls-census.edn"
+  "4309b9e2c7829af4898dd791b13c7c023d7bc266bbe68d37ea4e00dfcae2896a",
+  "specs/accounting-removal/quote-fixture-controls.md"
+  "93ec48ee6adf44c5017c4a1dcdf4381ab6084c7c24b89b1ae3dd211913f5030a"}}
