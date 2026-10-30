@@ -58,12 +58,22 @@ Executed development checks:
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | 6 tests, 11 assertions; passed |
 | `clojure -J-Xmx512m -M tools/ci/run_test.clj` | 11 tests, 101 assertions; passed with CI-pinned clj-kondo |
+| `clojure -J-Xmx512m -M tools/sh_crosswalk_test.clj` | 13 tests, 171 assertions; passed |
+| `clojure -J-Xmx512m -M tools/acceptance_dependencies_test.clj` | 14 tests, 402 assertions; passed |
 
 The existing production-helper records join the new namespace to its actual
 bootstrap constructor, syntax owner and standalone tests. Primary component
 counts are unchanged. The CI syntax regression command uses the same 2 GiB
 host class as the genuine construction tests; its process watchdog is a host
 safeguard, not a compiler admission allowance.
+
+The [ownership source-version successor](../../specs/sh-family-crosswalk/syntax-pipeline-source-version.edn)
+binds the new entries to committed source `c7804fa6`. It preserves the prior
+reader ownership and compiler-domain composition records and their pending
+review history. Source and generated crosswalk hashes are current. The mapping
+remains pending and all whole-criterion assessments remain unassessed; no
+compiler migration fingerprint, task completion or historical receipt is
+rewritten by this reporting update.
 
 ## Remaining work and nonclaims
 

@@ -12638,6 +12638,10 @@
    {:state :no-whole-milestone-completion-claim},
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}],
+ :syntax-pipeline-source-version
+ {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn",
+  :sha256
+  "9d523d98557d63d4e2e95112f223e05b93b2db1ddde9188d1bc0f1ac7ec9d3e7"},
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
@@ -12703,7 +12707,7 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :source-version-bridge
-  "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
+  "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn",
   :reader-assembly-source-version
   "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
   :predecessor-review
@@ -13054,6 +13058,12 @@
    :qualification
    "Normal Reader dispatch fixture ownership added at 4d96671d; prior Reader/task/roadmap and all predecessor reviews retained. Changed ownership source awaits independent source-version review. No implementation acceptance or task credit.",
    :source-commit "afe5d20b3d013beabec45fa23768949ea05f2611"},
+  :syntax-pipeline-predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/reader-assembly-source-version.edn"},
   :reader-assembly-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -13190,7 +13200,7 @@
   :qualification
   "Normal Reader fixture ownership and current Build task source pins composed; both predecessor source/review histories retained. Changed exact composition awaits independent review; no implementation acceptance or mapping promotion.",
   :input-fingerprint
-  "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465"},
+  "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16676,7 +16686,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "5fa64daeb378b1a0c7c269d0dd76a3e0285a7b9653feb782284ccbf3c72fbf0c",
+  "c03f626c84f8d2f21405c867735e4bcad8228eb4ced5a8f1a16123ca34e200a4",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16743,7 +16753,7 @@
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
-  "7b0800bf8a5113b323f693acbaecba11724a6104",
+  "c7804fa6b5826b5a73a0e98274079376fcf1f3be",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c"},
  :scope-boundaries
