@@ -209,7 +209,8 @@
 
 (deftest receipt-reuse-requires-current-stage-and-seed-operations
   (doseq [v [#'macro/verify #'macro/expanded-syntax-object
-             #'bootstrap/sh05-macro-gravity-verifier-report]]
+             #'bootstrap/sh05-macro-gravity-verifier-report
+             #'gravity.macro-run-storage/exact?]]
     (let [original @v calls (atom 0)]
       (assert-interposition-misses
        (fn [operation]
@@ -224,7 +225,12 @@
      #(with-redefs-fn {defaults (assoc copied :verifier-root (fn [] :not-a-guard))} %)))
   (let [cache (private-var 'sh05-macro-pinned-plan-identities)
         replacement (atom @@cache)]
-    (assert-interposition-misses #(with-redefs-fn {cache replacement} %))))
+    (assert-interposition-misses #(with-redefs-fn {cache replacement} %)))
+  (let [version (private-var 'sh05-macro-version)
+        replacement (String. ^String @version)]
+    (is (= @version replacement))
+    (is (not (identical? @version replacement)))
+    (assert-interposition-misses #(with-redefs-fn {version replacement} %))))
 
 (deftest identical-value-thread-binding-disables-receipt-reuse
   (let [v #'macro/verify dynamic? (.isDynamic v) original @v]

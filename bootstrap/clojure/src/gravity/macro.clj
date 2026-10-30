@@ -210,7 +210,7 @@
       :sh05-c4-compatibility-artifact
       :sh05-macro-source-artifact]},
     c4-artifact
-    {:arglists ([source-path sh05 operations]),
+    {:arglists ([_source-path sh05 operations]),
      :operation-inputs [:input :sh05-c4-compatibility-artifact-id]},
     replay-report
     {:arglists ([source-path boundary operations]),
