@@ -10223,29 +10223,19 @@
               {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
         {:status :rejected :reason :private-map-keys-source-mismatch :work-count base}))))
 
-(defn sh08-pmk-source [core node call edge nodes bindings types module budget]
+(defn sh08-pmk-source [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-  (let [limit (if (> budget 65536) 65536 budget)
-        base (+ 129 (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
       (if (sh08-mkeys-ids? node call nodes bindings module)
         (let [args (get call :argument-node-ids) children (get node :children)
               operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
-              binding (get bindings bid) receiver (get types (first args))
-              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
-          (if (> reserved limit) {:status :rejected :reason :private-map-keys-work-limit :work-count reserved}
-            (let [validation (sh08-lc-validate-types [receiver])
-                  work reserved]
+              binding (get bindings bid) receiver (get types (first args))]
+            (let [validation (sh08-lc-validate-types [receiver])]
               (if (= false (= :accepted (get validation :status)))
-                {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required
-                 :work-count work}
+                {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}
                 (if (if (keyword? receiver) (= :gravity.type/map receiver) false)
-                  (let [normal? true key-domain-work 0 construction-work 1
-                        total (+ work key-domain-work construction-work)]
-                    (if (> total limit) {:status :rejected :reason :private-map-keys-work-limit :work-count total}
+                  (let [normal? true key-domain-work 0 construction-work 1]
                       (if true
-                      (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :gravity.type/never)
-                            work total]
+                      (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :gravity.type/never)]
                         (if (if (sh08-nq-ids? node call nodes bindings module)
                         (if (map? edge)
                           (if (integer? (get edge :ordinal))
@@ -10282,7 +10272,7 @@
                              (= :operator-then-arguments (get (get node :evaluation) :kind))
                              (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
                                 (get (get node :evaluation) :order))])
-                        {:status :accepted :work-count work
+                        {:status :accepted
                          :descriptor {:kind :gravity.type/applied-private-map-keys :version :sh08-private-map-keys-v1
                                       :operation 'keys :semantic-owner 'gravity.collections :intrinsic :gravity.collections/private-parameter-map-keys
                                       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -10301,7 +10291,6 @@
                                                        :provider-allocation-bound :not-established}
                                                       {:collection-construction :not-invoked})
                                       :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
-                                       :profile-validation-work (- reserved base)
                                       :key-domain-work key-domain-work :construction-work construction-work
                                       :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
@@ -10310,12 +10299,12 @@
                                                      :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
                                                      :private-entry-domain :caller-entries :reference-uses :preserved-resolution :exports :mutations :var-references :recur-targets :recur-transfers :recursion-components
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
-                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))
-                    {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))
-                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required :work-count total})))
-                  {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required :work-count work})))))
-        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})))
-    {:status :rejected :reason :private-map-keys-source-mismatch :work-count 129}))
+                        {:status :rejected :reason :private-map-keys-source-mismatch}))
+                    {:status :rejected :reason :private-map-keys-source-mismatch}))
+                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
+                  {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))))
+        {:status :rejected :reason :private-map-keys-source-mismatch})
+    {:status :rejected :reason :private-map-keys-source-mismatch}))
 
 (defn sh08-pmk-parameter [census core node nodes bindings forms budget]
   (let [record (get census :function-record) params (get record :parameter-binding-ids)
@@ -10570,19 +10559,19 @@
 
 (defn sh08-pmk-header [core node call edge nodes bindings types forms budget]
   (let [limit (if (> budget 65536) 65536 budget)
-        source (sh08-pmk-source core node call edge nodes bindings types (get core :module) limit)
-        initial (+ 3 (get source :work-count))]
-    (if (> initial limit) {:status :rejected :reason :private-map-keys-work-limit :work-count initial}
-      (if (= :accepted (get source :status))
-        (let [proof (sh08-pmk-proof (get source :descriptor) core node nodes bindings types forms (- limit initial))
-              work (+ initial (get proof :work-count))]
-          (if (= :accepted (get proof :status))
-            {:status :accepted :work-count work
-             :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
-                           :key-domain-work (get proof :key-domain-work)
-                           :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
-            (assoc proof :work-count work)))
-        (assoc source :work-count initial)))))
+        source (sh08-pmk-source core node call edge nodes bindings types (get core :module))]
+    (if (= :accepted (get source :status))
+      (let [initial (+ 3 (get (get source :descriptor) :construction-work))]
+        (if (> initial limit) {:status :rejected :reason :private-map-keys-work-limit :work-count initial}
+          (let [proof (sh08-pmk-proof (get source :descriptor) core node nodes bindings types forms (- limit initial))
+                work (+ initial (get proof :work-count))]
+            (if (= :accepted (get proof :status))
+              {:status :accepted :work-count work
+               :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
+                             :key-domain-work (get proof :key-domain-work)
+                             :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
+              (assoc proof :work-count work)))))
+      (assoc source :work-count 3))))
 
 (defn sh08-pmk-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-private-map-keys-constraint-v1 :application descriptor}

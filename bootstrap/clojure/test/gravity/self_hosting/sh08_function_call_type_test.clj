@@ -21899,7 +21899,7 @@
 (deftest pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor
   (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
         ((pr359-descriptor-helper 'private-map-keys-typed-input))
-        source-args [core node call edge nodes bindings types (:module core) 65536]
+        source-args [core node call edge nodes bindings types (:module core)]
         sources [(apply pr359-descriptor-c7 'sh08-pmk-source source-args)
                  (apply pr359-descriptor-body 'body-pmk-source source-args) (apply pr359-descriptor-emit 'p15-s23-pmk-source source-args)]
         complete-args [core node call edge nodes bindings types forms 65536]
@@ -21925,6 +21925,8 @@
     (is (every? #(= :accepted (:status %)) sources))
     (is (apply = (map :descriptor sources)))
     (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (not-any? #(contains? % :work-count) sources))
+    (is (not-any? #(contains? (:descriptor %) :profile-validation-work) sources))
     (is (every? #(= :accepted (:status %)) headers))
     (is (every? #(= descriptor (:descriptor %)) headers))
     (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
