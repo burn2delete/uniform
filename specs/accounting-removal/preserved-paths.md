@@ -48,8 +48,14 @@ their declared parameter symbols exactly. Substitution of both bodies produces
 one complete current enclosing `let` subtree; all five outer `let` binding
 vectors and caller parameters remain identical. Full function/body/file,
 call/subtree/binding and dependency pins are recorded, with six effective
-source corruption refusals. Independent conditional source classification is
-pending. No whole-caller, DSE dispatch, reachability, call-frame, transitive or
+author source corruption refusals. Independent conditional source receipt
+`a7217cfabb7b900a679989fbd018e5f4a8275f99c1c16b1b4d6f6afcbac261ba`
+passes with 4,776 sealed checks and 35 independent corruption refusals.
+`direct-call-inline-review-consumption.edn` verifies receipt/checker and five
+artifacts, frozen tree and inputs, both bodies, complete `let`, all five outer
+bindings and dependency/policy pins without a foreign checker rerun. The
+historically changed `p15-s23-lp-compatibility` dependency remains explicit.
+No whole-caller, DSE dispatch, reachability, call-frame, transitive or
 runtime equivalence follows; retained accounting remains unendorsed.
 
 The earlier DSE correspondence contributes only its two inline observations;

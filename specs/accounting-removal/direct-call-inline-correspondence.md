@@ -51,6 +51,18 @@ either lost inline body or changed context, budget, edge and argument sources.
 No Gravity helper, Bootstrap, compiler, native provider or runtime executes.
 
 L2, C14, D9 and current accounting-removal policy govern independent review.
-Independent classification remains pending. The original inventory and stable
+Independent receipt
+`a7217cfabb7b900a679989fbd018e5f4a8275f99c1c16b1b4d6f6afcbac261ba`
+now accepts conditional complete-body source incorporation: 4,776 sealed
+checks and 35 independent corruption refusals, with no blocking findings.
+`direct-call-inline-review-consumption.edn` rehashes its checker and five
+artifacts, exact frozen tree and inputs, both body equations, complete `let`,
+five outer binding vectors, dependencies and policy pins. No reviewer checker
+rerun is claimed. The historical source of `p15-s23-lp-compatibility` differs
+from the assessed dependency; that difference remains explicit without a
+transitive behavior claim. Retained accounting remains open and unendorsed.
+
+The original machine proposal stays historical input. Canonical adoption and
+whole-scope completion remain separate. The original inventory and stable
 ACC IDs remain unchanged. No whole PR569/ACC01/PR502, release, self-hosting,
 or actual direct-call support claim follows.
