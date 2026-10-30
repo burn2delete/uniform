@@ -2931,3 +2931,20 @@ No task or implementation status changes; the provisional scoped ratio remains
 3/195. C13 and remaining unreviewed predicates, whole-owner/enclosing scope,
 current-extension additions, final counting and coordinator integration remain
 pending. Held scopes and all prior reviewer exclusions remain in force.
+
+Metadata/census source `fb0dc3f18804bfd91a606cb0166578f26a3fcb18`
+passes SH 12 tests / 541 assertions, census 5 / 18, boundary 6 / 11, changed-SH
+lint with zero findings, both document validators and generated SH/census
+checks. The scoped census remains 195 total, 3 Accepted, 190 Open, 1 Partial,
+1 unassessed and 192 remaining, with provisional ratio 3/195.
+
+Complete inventory source `a1bf99e686e8cfc448ff9b121297be6379214169`
+passes 5 tests / 34 assertions and serialized readback. Its exact original-source
+facet states are 507 qualified conjunctions, 65 retained reviewed contexts,
+768 pending owner proposals, 5,501 formatting/hierarchy contexts, 20,880 pending
+exact predicate conjunctions, 704 pending dependencies and 360 pending
+owner/metadata adjudications. The 240/9,945/28,785 original populations and
+955/230/3 owner states remain intact. Extension byte review is recorded
+separately in the inventory and extension trace with an explicit no-operation,
+no-semantic-entailment scope; it adds no original facet acceptance. The immutable
+392-binding artifact and earlier retained link-check subject remain unchanged.
