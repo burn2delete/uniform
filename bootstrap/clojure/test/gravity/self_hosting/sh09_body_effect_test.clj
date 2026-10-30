@@ -2461,7 +2461,9 @@
   (let [input (sh08-helper 'list-if-join-input) c7 (sh08-helper 'invoke-c7)
         s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
-        data [(input (finite [s]) (finite []) 0) (input homogeneous (finite [s s]) 1)]
+        data [(input (finite [s]) (finite []) 0) (input homogeneous (finite [s s]) 1)
+              (input (finite (vec (repeat 1025 s))) (finite []) 2)
+              (input (finite []) (finite (vec (repeat 1025 s))) 3)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
                         (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
@@ -2476,6 +2478,9 @@
     (is (= :accepted (:status result)) (pr-str result))
     (is (= (set ids) (set (keys (get-in result [:context :premises])))))
     (is (= (mapv :premise checked) (mapv #(get-in result [:context :premises %]) ids)))
+    (doseq [[index branch] [[2 0] [3 1]]]
+      (is (= 1025 (get-in result [:context :premises (get ids index)
+                                 :branch-compatibility branch :checked-member-count]))))
     (is (= result (run facts (:work-count result))))
     (is (= :list-if-join-work-limit (:reason (run facts (dec (:work-count result))))))
     (doseq [changed [(assoc facts :constraint-ledger [])
@@ -2490,6 +2495,17 @@
                      (assoc-in facts [:type-table (first ids) :element-type] :gravity.type/keyword)
                      (assoc-in facts [:type-table (get-in data [0 :nids :then]) :element-types] [:gravity.type/keyword])]]
       (is (= :rejected (:status (run changed 65536)))))
+    (let [{:keys [core node nodes types bindings forms nids]} (get data 2)
+          id (nids :then) original (get types id)]
+      (doseq [bad [(assoc-in original [:element-types 1024] :gravity.type/keyword)
+                   (assoc original :extra :forged)
+                   (assoc original :element-types (apply list (:element-types original)))]]
+        (let [changed (assoc types id bad)]
+          (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms]))))
+          (is (= :not-applicable (:status (leaf 'body-ij-derive core node nodes changed bindings forms 65536))))
+          (is (= :rejected (:status (run (assoc-in facts [:type-table id] bad) 65536))))))
+      (is (= :rejected (:status (run (assoc-in facts [:constraint-ledger 2 :dependencies
+                                                     :branch-compatibility 0 :checked-member-count] 1024) 65536)))))
     (let [first-data (first data) owner (:definition first-data)
           altered (assoc-in bindings [owner :binding-class] :core)]
       (is (= :list-if-join-source-mismatch
