@@ -12702,6 +12702,8 @@
     :qualification
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
+  :source-version-bridge
+  "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
   :reader-assembly-source-version
   "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
   :predecessor-review

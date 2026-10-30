@@ -640,6 +640,7 @@
 (def mapping-review
   (assoc reader-dispatch-mapping-review
          :input-fingerprint "72d98bc3492489de1de0f43982ac06f707578f57468b3df934e2eec3c8e85aed"
+         :source-version-bridge "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
          :reader-assembly-predecessor-review reader-dispatch-mapping-review
          :reader-assembly-source-version
          "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))

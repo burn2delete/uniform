@@ -61,7 +61,7 @@ Commands ran from the repository root. Focused runs used fresh JVMs.
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 17 tests, 749 assertions; passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
 | `clojure -J-Xmx512m -M tools/acceptance_dependencies_test.clj` | 14 tests, 402 assertions; passed |
-| `clojure -J-Xmx512m -M tools/sh_crosswalk_test.clj` | 12 tests, 143 assertions; passed |
+| `clojure -J-Xmx512m -M tools/sh_crosswalk_test.clj` | 12 tests, 145 assertions; passed |
 | `clojure -J-Xmx512m -M tools/sh_crosswalk.clj --check` | Passed |
 | `git diff --check` | Passed |
 

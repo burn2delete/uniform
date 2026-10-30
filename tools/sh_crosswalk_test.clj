@@ -190,6 +190,10 @@
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= sh-crosswalk/reader-dispatch-mapping-review
            (get-in view [:mapping-review :reader-assembly-predecessor-review])))
+    (is (= (get-in view [:reader-assembly-source-version :path])
+           (get-in view [:mapping-review :source-version-bridge])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
     (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
       (is (thrown? Exception
