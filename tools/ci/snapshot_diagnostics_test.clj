@@ -41,7 +41,7 @@
 
 (deftest missing-oversize-and-linked-inputs-stay-explicit
   (fixture
-    (fn [[root home install capture :as dirs] write!]
+    (fn [[root home _install _capture :as dirs] write!]
       (write! (io/file root ".cpcache/9.cp") (apply str (repeat (inc diagnostic/text-cap) "x")))
       (let [outside (io/file home "secret") link (io/file root ".cpcache/9.basis")]
         (write! outside "MUST-NOT-CAPTURE")

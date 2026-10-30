@@ -1,6 +1,6 @@
 (ns ci.snapshot-diagnostics
   "Read-only post-launch dependency evidence. Never resolves or launches anything."
-  (:require [clojure.edn :as edn] [clojure.java.io :as io] [clojure.string :as str])
+  (:require [clojure.java.io :as io] [clojure.string :as str])
   (:import [java.nio.file Files LinkOption] [java.security MessageDigest]))
 
 (def coordinates [["clojure" "1.12.5"] ["spec.alpha" "0.5.238"]
