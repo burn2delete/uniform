@@ -1,0 +1,129 @@
+{:restored-files
+ {:two-byte-exact true,
+  :List-query-exact-raw-adaptations
+  [["[clojure.test :refer [deftest is testing]]"
+    "[clojure.test :refer [deftest is]]"]
+   ["body-all? sh08-ft-all-true?"
+    "body-all? sh08-ft-all-true?\n               body-lc-native-map? sh08-lc-native-map?"]
+   ["p15-s23-typed-all sh08-ft-all-true?"
+    "p15-s23-typed-all sh08-ft-all-true?\n               p15-s23-lc-native-map? sh08-lc-native-map?"]
+   ["  ;; its exact predicate independently visible; do not normalize the\n  ;; known emitter/private-map-key disagreement into list-query acceptance."
+    "  ;; its exact predicate independently visible; complete wrapper parity and\n  ;; private-map-key routing are checked separately from scoped leaf parity."]
+   ["(deftest other-collection-routing-difference-remains-explicit-and-unchanged"
+    "(deftest map-key-routing-and-complete-wrappers-agree"]
+   ["(doseq [[index {:keys [path prefix aliases]}] (map-indexed vector owners)"
+    "(doseq [{:keys [path prefix aliases]} owners"]
+   ["          (if (= 2 index)\n            '(= :gravity.type/applied-map-keys (get descriptor :kind))\n            '(if (keyword? (get descriptor :kind))\n               (contains? #{:gravity.type/applied-map-keys\n                            :gravity.type/applied-private-map-keys}\n                          (get descriptor :kind)) false))"
+    "          '(if (keyword? (get descriptor :kind))\n             (contains? #{:gravity.type/applied-map-keys\n                          :gravity.type/applied-private-map-keys}\n                        (get descriptor :kind)) false)"]
+   ["Private-map-key routing still differs; this slice does not accept or repair it."
+    "Every owner preserves the repaired public/private Map-key routing."]
+   ["    (is (not (apply =\n                    (for [{:keys [path prefix aliases]} owners]\n                      (normalize aliases\n                                 (nnext (definition (source-forms path)\n                                                    (symbol (str prefix (name part)))))))))\n        \"Complete wrapper parity is explicitly false, not claimed by scoped tail parity.\")))"
+    "    (is (apply =\n               (for [{:keys [path prefix aliases]} owners]\n                 (normalize aliases\n                            (nnext (definition (source-forms path)\n                                               (symbol (str prefix (name part))))))))\n        \"Complete wrappers agree independently of scoped leaf parity.\")))"]],
+  :extra-source-control-sha256
+  "11b2fec70b5b5ea1e7f62d3c015afb136790bd573261e9df5e3fd972709e9ba8"},
+ :nonclaims
+ [:unchanged-historical-List-query-suite-passed
+  :helper-equivalence-from-names
+  :genuine-three-owner-semantic-acceptance
+  :authenticated-source-admission
+  :ACC-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :original-List-query
+ {:test-file-sha256
+  "a2925092466e5dbd8962275b7eec10acb692cc8854c621acc956f39ceb7f75df",
+  :result {:test 7, :pass 257, :fail 5, :error 0, :type :summary},
+  :status :NONPASS,
+  :log-sha256
+  "f105f6ef0f503b2e56879fdfda3010a596198f515621112bd8228a2c271eb0ba",
+  :failure-history-preserved true},
+ :integration :UNRUN,
+ :CI-correction
+ {:run 40960649429,
+  :strict-lint
+  {:unchanged-lint-implementation-sha256
+   "c7476633d1a33b535a20f92a7796b19bfbf03a2676e0c775b8438e60c43b71f5",
+   :runner-sha256
+   "e5bbfb784b95a83789d46ba9f5e93b690976239768390b24923baf235afb4cd5",
+   :all-errors-block true,
+   :baseline-warnings 0,
+   :driver-sha256
+   "7c973e6646b589ce45578e572de1357ee44c194266338c20f5b754f621876337",
+   :macro-source-sha256
+   "fac1feb7cbad2e2268580fcfe3b5250b7e27894b835a36a9f661fc87bb4ed6d4",
+   :output-directory-only-parameterized true,
+   :report-sha256
+   "f94ff9318057ebdeb2eaad1c77a70046ffec2213fd507c568549bc8734d35473",
+   :decision-rules-unchanged true,
+   :blocking 0,
+   :raw-evidence-preserved-locally true},
+  :verified-failure
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :row 7,
+   :column 46,
+   :type :unused-referred-var,
+   :baseline-warning-count 0,
+   :blocking-warning-count 1},
+  :correction-generator
+  {:language :clojure,
+   :sha256
+   "e40685af42c95840160d121a944e7b249bccf7cd873d84dd021e686772c9868e",
+   :preserved-locally true},
+  :original-query-NONPASS :preserved,
+  :production-unchanged true,
+  :predecessor-result :NONPASS,
+  :corrected-reader-results :unchanged-14-tests-666-passing-assertions,
+  :predecessor "bcf0bb4ba093a2634bf51b4541aa153040e333aa",
+  :only-test-code-change :remove-unused-clojure-test-testing-refer,
+  :static-job 123752212872,
+  :successor-CI :pending},
+ :scope
+ {:reader-eval false,
+  :Clojure-reader-tests-executed true,
+  :Gravity-code-executed false,
+  :Bootstrap-loaded false,
+  :compiler-authenticated-pipeline-or-runtime-executed false},
+ :production
+ {:changed false,
+  :input-pins
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :sha256
+    "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :sha256
+    "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :sha256
+    "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+  :bookends-identical true},
+ :kind :restored-reader-contract-source-results,
+ :generator
+ {:language :clojure,
+  :sha256
+  "327775ea3d04ad08df23aba4098bd84dfb4d335374f07d715bdf2a0cf948a240",
+  :restoration-script-sha256
+  "fae13d37132884c567614ae5e8ed3eb9496aa1dde5449f1d61656a2478e93d8d",
+  :preserved-locally true},
+ :candidate-results
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+   :test-file-sha256
+   "70d6ba31a1eda4085d522c6c0bf97b3959d74bf7a88cecd9209bed85a8106ced",
+   :result {:test 2, :pass 223, :fail 0, :error 0, :type :summary}}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+   :test-file-sha256
+   "1e80fb01f61bac427efd01d684c558e7263517315b481939966061aa27407ca5",
+   :result {:test 4, :pass 167, :fail 0, :error 0, :type :summary}}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :test-file-sha256
+   "856886bfada854ca9046cd4c84e236c09db7276e686b29b3fb13c07830ed14f8",
+   :result {:test 8, :pass 276, :fail 0, :error 0, :type :summary}}],
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :independent-disposition :pending}
