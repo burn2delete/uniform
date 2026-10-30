@@ -110,11 +110,23 @@
           (is (= expected (:value compiled))))))))
 
 (deftest mixed-ledger-remains-complete-with-ordinary-entries
-  (let [{:keys [context ordinary-row ordinary-fact mkeys-row mkeys-fact]} (products)
+  (let [{:keys [context descriptor ordinary-row ordinary-fact mkeys-row mkeys-fact]} (products)
         rows [ordinary-row mkeys-row] facts [ordinary-fact mkeys-fact]
         candidate (assoc context :ledger rows :call-facts facts)
         result (compile-node candidate 65536)]
-    (is (= :complete (:status result)))))
+    (is (= :complete (:status result)))
+    ;; Compare every semantic field across two fixed legacy API arguments.
+    ;; Only top-level work telemetry is excluded; no payment is asserted.
+    (is (= {:status :accepted :items [mkeys-row] :descriptors {:call descriptor}}
+           (dissoc (row-census candidate rows descriptor 65536) :work-count)
+           (dissoc (row-census candidate rows descriptor 65537) :work-count)))
+    (is (= {:status :accepted :items [mkeys-fact]}
+           (dissoc (fact-census candidate facts descriptor 65536) :work-count)
+           (dissoc (fact-census candidate facts descriptor 65537) :work-count)))
+    (is (= {:status :complete
+            :value {:op :builtin-call :function 'keys :args [{:op :local :name 'items}]}}
+           (dissoc result :work-count)
+           (dissoc (compile-node candidate 65537) :work-count)))))
 
 (deftest malformed-and-forged-mkeys-joins-remain-rejected
   (let [{:keys [context descriptor ordinary-row ordinary-fact mkeys-row mkeys-fact]} (products)

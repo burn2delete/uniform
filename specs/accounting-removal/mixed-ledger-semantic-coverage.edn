@@ -1,0 +1,211 @@
+{:actual-test-and-helper-execution :UNRUN,
+ :nonclaims
+ [:no-runtime-regression-proved-or-disproved
+  :no-native-callback-safety
+  :no-accounting-approval
+  :no-parent-stack-acceptance
+  :no-current-main-integration
+  :no-whole-ACC01-PR502-closure],
+ :original-payment-deltas-and-one-short-refusals :not-restored,
+ :legacy-arguments [65536 65537],
+ :tests
+ [{:original-status-assertion :retained-first,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_list_set_mixed_ledger_test.clj",
+   :family "lset",
+   :other-definitions-unchanged 10,
+   :base-sha256
+   "74cf9a9074af7eef3aee982eb0d02d04242c2e35d5ef7de5d8441658471b4dc1",
+   :restored-semantic-comparison-instances 3,
+   :ordered-assertion-sha256
+   "93d47e4336739cd90bdd8184f403174b14def41b5736aced477c447377db89c9",
+   :parent-byte-equation
+   :replace-only-this-complete-test-section-to-recover-parent,
+   :only-projection-exclusion
+   {:path [:work-count],
+    :reason :temporary-bootstrap-accounting-telemetry,
+    :nested-fields :never-filtered,
+    :other-unknown-fields :never-filtered},
+   :syntactic-assertions 4,
+   :candidate-form-sha256
+   "606fdbe6ef63e685321297d4eef898ba27fa012b634d4367286467fda952bd06",
+   :test-name mixed-ledger-remains-complete-with-ordinary-entries,
+   :candidate-sha256
+   "2a6bb3b958889a2a253c5b911de152cde4c08cd60474b02b750ff97eefb289b6",
+   :output-source-pins
+   [{:name p15-s23-lset-row-census,
+     :form-sha256
+     "fdbfc5f8f3fdcb16fb7991d83820cc90cb3dcd322151990caedc49a7b44dcefa"}
+    {:name p15-s23-lset-fact-census,
+     :form-sha256
+     "c9e8a32d02d78408aaad4bfbd153d8789a41b33bb0dde4f721020cac5491926a"}
+    {:name p15-s23-typed-compile-list-set-conversion,
+     :form-sha256
+     "ec259b111aa778959d09afe41a62225560bcdc74cbb69a935a164a0c03ae7803"}
+    {:name p15-s23-compiler-result,
+     :form-sha256
+     "a5715290918e147da4bb3a222ec2cbda4cf97eda0cfaa429880157e6f0210068"}],
+   :base-form-sha256
+   "6f2701aee42a83ba9082f4de26a834ab52c33ebfb12fcdee9170cca8b7bd407b",
+   :corruptions
+   [{:case :status-only,
+     :coherent-mutant-assertion-sha256
+     "30072cd07c4b867ea14ddbf4f953a71c5682db24c0042031acbb2ad5aeb4746e",
+     :refused-source-equation true}
+    {:case :lost-row,
+     :coherent-mutant-assertion-sha256
+     "a1d6e1a356ee179c28b2441565b7194ff12aa5b8437d6a9af18c96a3d3dba510",
+     :refused-source-equation true}
+    {:case :lost-fact,
+     :coherent-mutant-assertion-sha256
+     "031e47e9aa6b49dac8cdcc9a7fce9397f47af2f36cee492ee45ea49a199edcc2",
+     :refused-source-equation true}
+    {:case :lost-compile,
+     :coherent-mutant-assertion-sha256
+     "34f07b4a8d091822a518eefeac16d4db1acd50439abb3f57b734c1f1c908c35b",
+     :refused-source-equation true}
+    {:case :lost-descriptor,
+     :coherent-mutant-assertion-sha256
+     "169083cdab237a76e590f3f90fb0ceed49b7b00ed1549e154816e96993e7ec33",
+     :refused-source-equation true}
+    {:case :lost-row-product,
+     :coherent-mutant-assertion-sha256
+     "92a0db68f4da4c4ce685e4bb19881f23a186ff413fe8394d80a463b64534b858",
+     :refused-source-equation true}
+    {:case :lost-fact-product,
+     :coherent-mutant-assertion-sha256
+     "7f1c06429b98969af112586c12b0c01d2fbe853b5a5aecc89b40e6c61045eeba",
+     :refused-source-equation true}
+    {:case :wrong-lowered-builtin,
+     :coherent-mutant-assertion-sha256
+     "ba94259c2903e6ecaa5410b4c42e7653b77481eed4175d4c9549dfd99b708b34",
+     :refused-source-equation true}
+    {:case :same-argument,
+     :coherent-mutant-assertion-sha256
+     "a27e912265eb910c7dfe3653da8613026e0ed9518df88b3a27a8429ae79992ea",
+     :refused-source-equation true}
+    {:case :payment-derived-argument,
+     :coherent-mutant-assertion-sha256
+     "68aeeae43a8214104de428eb4b9939337233ad4438a4a22b1926aa5adc8423df",
+     :refused-source-equation true}
+    {:case :hidden-diagnostic,
+     :coherent-mutant-assertion-sha256
+     "707746e087f81184a6031d24e7953040fbd606aafc5607a2b4245c4f490c2165",
+     :refused-source-equation true}
+    {:case :lost-status,
+     :coherent-mutant-assertion-sha256
+     "a80f29a90bc72d680452d325e798156e5dd72f913aedbcaaabb07f74b2fb0e5f",
+     :refused-source-equation true}]}
+  {:original-status-assertion :retained-first,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_map_keys_mixed_ledger_test.clj",
+   :family "mkeys",
+   :other-definitions-unchanged 10,
+   :base-sha256
+   "aedba1a86d390596981b2a62d3cb929706a82da8a2a887b6035f3cac7b8d72f2",
+   :restored-semantic-comparison-instances 3,
+   :ordered-assertion-sha256
+   "fa6141fca75168bdbe1a3bf8a3a9dfc7247472615a7a941fa16e4b8732affbd3",
+   :parent-byte-equation
+   :replace-only-this-complete-test-section-to-recover-parent,
+   :only-projection-exclusion
+   {:path [:work-count],
+    :reason :temporary-bootstrap-accounting-telemetry,
+    :nested-fields :never-filtered,
+    :other-unknown-fields :never-filtered},
+   :syntactic-assertions 4,
+   :candidate-form-sha256
+   "19dff23a14e9cbf9c7a10972e545463da8c1741c6e9b2f03a126a1b07b9a6473",
+   :test-name mixed-ledger-remains-complete-with-ordinary-entries,
+   :candidate-sha256
+   "8a94a3618750b9c4afe9fa04aa94d4665caa1cbc34bb56880b7e65d6ffb48d4f",
+   :output-source-pins
+   [{:name p15-s23-mkeys-row-census,
+     :form-sha256
+     "aa923c0cb16ba76e6791e2fd38acf68efe027142d0f13db248352763e3331ada"}
+    {:name p15-s23-mkeys-fact-census,
+     :form-sha256
+     "f530bf00c67211e0906610735e55cf040614981b8ae44c40951442101822e3f3"}
+    {:name p15-s23-typed-compile-map-keys,
+     :form-sha256
+     "73c817d8a93c5e6e8adfaffbb5b13846dfe32bc4f74f6c888d95283af3b3b204"}
+    {:name p15-s23-compiler-result,
+     :form-sha256
+     "a5715290918e147da4bb3a222ec2cbda4cf97eda0cfaa429880157e6f0210068"}],
+   :base-form-sha256
+   "84015fb26ff2eec45d08fee56afaf287a900f7b044188b763b1a32b70b05b83d",
+   :corruptions
+   [{:case :status-only,
+     :coherent-mutant-assertion-sha256
+     "30072cd07c4b867ea14ddbf4f953a71c5682db24c0042031acbb2ad5aeb4746e",
+     :refused-source-equation true}
+    {:case :lost-row,
+     :coherent-mutant-assertion-sha256
+     "3b4275cc1b83338bf5709c92062be5ecfc431364f729a9205b4e9f264e9bed77",
+     :refused-source-equation true}
+    {:case :lost-fact,
+     :coherent-mutant-assertion-sha256
+     "1d1d75e36116fd64b6fd3a944687738ffa45f81ec9ca1b4a2a875a1f7b873bf1",
+     :refused-source-equation true}
+    {:case :lost-compile,
+     :coherent-mutant-assertion-sha256
+     "ed21112f091455d24939390ffee1d88207ce6f92f32b15d8d8a8843a5287d632",
+     :refused-source-equation true}
+    {:case :lost-descriptor,
+     :coherent-mutant-assertion-sha256
+     "970e0ac25922561a1a7b2da25a210024feba31b26983403908f93f29b924cc14",
+     :refused-source-equation true}
+    {:case :lost-row-product,
+     :coherent-mutant-assertion-sha256
+     "51fd80df00fef9b1175955672a869ba2db8c3b07a6b94c44b6bafc2392044163",
+     :refused-source-equation true}
+    {:case :lost-fact-product,
+     :coherent-mutant-assertion-sha256
+     "54e06ebae85bce90ff5d2355a7abdb6afe6afa2d021e86b57abcbbd82f7a57da",
+     :refused-source-equation true}
+    {:case :wrong-lowered-builtin,
+     :coherent-mutant-assertion-sha256
+     "ab9431e0265b4faf66e0de9bb4fe1fa2062e8fee5699b5b428ccd93afd93f6d1",
+     :refused-source-equation true}
+    {:case :same-argument,
+     :coherent-mutant-assertion-sha256
+     "16b551f4aa80531c49707d3daca523fdf5b6c5521251aff49dd07bd23a5a3911",
+     :refused-source-equation true}
+    {:case :payment-derived-argument,
+     :coherent-mutant-assertion-sha256
+     "bf5278e0f4d54aa613a14e52a95e59646512eb90956c47d4a5c535ba016b0786",
+     :refused-source-equation true}
+    {:case :hidden-diagnostic,
+     :coherent-mutant-assertion-sha256
+     "9803da2c06177a3b31a3a9ab3c57aa9257af2b3facff9cca21025630dbd04203",
+     :refused-source-equation true}
+    {:case :lost-status,
+     :coherent-mutant-assertion-sha256
+     "27b3ba9f3a042254cf8ad39d58c617c2f8bb34d6c0fa81f21249351da0f0375c",
+     :refused-source-equation true}]}],
+ :comparison-domain
+ :same-mixed-source-context-two-fixed-legacy-API-arguments,
+ :restored-comparison-instances 6,
+ :read-eval false,
+ :production-source :byte-identical-parent,
+ :payment-calculation-or-threshold-assertion :none,
+ :kind :mixed-ledger-semantic-comparison-source-successor,
+ :parent-positives-negatives-helpers-order-multiplicity-and-native-cases
+ :unchanged,
+ :source-corruptions-refused 24,
+ :generator
+ {:path "/tmp/acc01-mixed-ledger-semantic-coverage.clj",
+  :sha256
+  "032bec91fc633aefb71ec0c8ace91cea07d14c9ffac4511b8833ce3fd741741d",
+  :language :clojure},
+ :base-tree "5b895b67131de6d209b50585551840fd3954011f",
+ :finding :PR598-TEST-RETIREMENT-01,
+ :base "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
+ :complete-semantic-products
+ [:status :items :descriptors :value :all-other-present-fields],
+ :PR599 :frozen-active-review-unchanged-no-rebase-or-inherited-repair,
+ :owner :ACC-01,
+ :exact-old-payment-assertion-equivalence :NOT-claimed,
+ :qualified-review-receipt-sha256
+ "f058ec3cfbd19bfb439f6ae3ae8d557c453e99bf4d0377e371b56d092bcdb274",
+ :independent-affected-review :pending-coordinator-routing}
