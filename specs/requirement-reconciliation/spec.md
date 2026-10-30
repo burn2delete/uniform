@@ -79,6 +79,11 @@ The [complete C8 source trace](c8-complete-current-facet-trace.edn) joins all
 original owners gain exact criterion candidates for computation, separate
 domains, capability evidence, ordering and replay. Full L6/foundation coverage
 and actual compiler or replay execution are not established by these proposals.
+The [complete C13 source trace](c13-complete-current-facet-trace.edn) joins all
+120 C13 facets and 47 occurrences to the five existing Opt tasks. Four original
+owners gain exact candidates for reproducibility, legal variant choice, actual
+post-pass verification and explanatory decisions. Earlier performance source
+reviews retain their scopes; these additions await independent acceptance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

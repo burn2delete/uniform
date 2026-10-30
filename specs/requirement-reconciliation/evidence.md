@@ -2673,3 +2673,54 @@ references, the unchanged retirement proposal reference, the active C8 binding
 path and all five extension descriptor states (three unchanged-source and two
 explicitly rebound-source descriptors). Earlier source and acceptance scopes
 remain intact; this is not implementation or final-count acceptance.
+
+## Complete C13 source and four optimization owner joins
+
+Task source `ded6c1d2eede7985e078af57ed53fa367645436a` appends five C13
+criteria to the existing five Open Opt tasks. The exact source transaction in
+`c13-owner-source-refinement.edn` preserves every earlier criterion body,
+including the reviewed PERF1/2/6/7 predicates, all IDs/states and an exact
+insertion-removal inverse. No task or stable decision is added.
+
+The criteria require actual target-independent transformations under complete
+pre/post pass contracts; all standard families retain semantic, effect,
+authority, ownership, safety, profile, proof and source obligations. Target
+instruction selection remains Lower's responsibility. Rankings and benchmarks
+select only among legal variants and do not prove correctness. Accounting
+removal does not establish a performance or zero-cost claim; the existing
+PERF2 evidence requirement survives. Check retention/elision consumes actual
+PERF10 evidence; domain/math changes retain anchors and applicable checked
+evidence without executing those providers here.
+
+Post-pass verification requires the actual current MIR verifier result after
+every named mutation class. High-risk semantic evidence remains separate from
+structural verification. Conservative invalidation records every analysis,
+fact, rerun, proof/certificate, restored check, cleared cache and affected
+diagnostic. Pipelines bind the complete semantic input tuple and replay or
+reject nondeterministic search in hermetic builds. Every executed pass,
+including no-change, emits an explanatory decision with actual evidence and
+verifier identity. All ten C13 diagnostic meanings and full context survive;
+the example passed flag and size-threshold reason supply neither execution
+evidence nor a project allowance.
+
+`c13-complete-current-facet-trace.edn` retains all 120 C13 facets across 47
+occurrences through 32 manual semantic conjunction cases and 15 hierarchy or
+provenance contexts. Four original owners gain exact current criterion
+conjunctions for pass reproducibility, legal variant ranking, actual post-pass
+verification and explanatory decisions. These proposals await independent
+acceptance; full PERF1-10, MATH10 and foundation attached-predicate coverage is
+not claimed.
+
+All 833 Open decisions and 931 current owning witnesses authenticate. All 561
+historical mappings and 4,819 raw spans authenticate after refreshing 21 Opt-file
+pin maps with unchanged raw predicates. Earlier MIR/Lower/Effects supplemental
+criteria remain current. Earlier reviews and whole-span verdicts retain their
+captured subjects and exclusions. Source tests pass 2 / 13; Opt projection tests
+pass 6 / 68. No optimizer, MIR verifier, proof/translation/domain checker,
+runtime/provider, benchmark, broker/controller or target probe was executed.
+Full entailment, independent current-composition/final-count acceptance and
+coordinator integration remain pending.
+
+The finite facet proposal index contains 1,331 distinct original IDs and nine
+metadata overlaps: 1,212 + 120 - one shared C13 context facet. Repetition
+retains its source identity and does not create another task or credit unit.
