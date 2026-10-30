@@ -1336,6 +1336,25 @@
  :applicability
  "specs/requirement-reconciliation/existing-c5-current-witness-applicability.edn",
  :qualified-predicate-reviews 530}
+    :granularity13-qualified-source-review-adoption
+    {:reviewed-source "145442c5434cad807870505fb75d523a0ef22998",
+ :current-spans 4819,
+ :current-witnesses
+ "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+ :predicate-reviews-unchanged 530,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/granularity13-qualified-source-review-adoption.edn",
+ :new-C-source-review :pending,
+ :new-open-leaves 13,
+ :final-count-acceptance :not-conferred,
+ :source-commit "611fc634c62910ca040ae47c66e62674c6678a6a",
+ :historical-bindings 561,
+ :status
+ :independent-finite-source-repartition-review-accepted-current-join-verified,
+ :decision-records-unchanged 833,
+ :applicability
+ "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

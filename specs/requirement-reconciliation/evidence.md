@@ -1682,6 +1682,41 @@ validator pass. No C compiler, emitted program, backend or runtime was executed.
 The crosswalk, source metadata and provisional census are being refreshed for
 this source; independent repartition receipt adoption remains a separate step.
 
+## Qualified independent thirteen-sibling source adoption
+
+The sealed independent receipt has SHA256
+`e10d615fd3b48411846d4a46631d2c1398a2ec35377d0ec693ca2324fe738a12`.
+It reports PASS for frozen `145442c5434cad807870505fb75d523a0ef22998`,
+with 22,957 source/data checks, 5,734 owning-task containment checks and ten
+refusal controls. Receipt and all three reproduction-file hashes were verified.
+Its scope is the thirteen-sibling source envelopes and witness routing; actual
+runtime execution is UNRUN. Tooling65 and PlatformProduct11 semantic acceptance
+are explicitly excluded, and legacy contexts without a source commit do not
+independently authenticate themselves.
+
+`granularity13-qualified-current-applicability.edn` joins that result to
+`611fc634c62910ca040ae47c66e62674c6678a6a`. All nine reviewed artifacts and
+all 833 decision records are exact. All 50 registry task/roadmap files recover
+their reviewed bytes after reversing only the five later C clauses and the
+single boundary separator; all 240 original documents are identical. Two later
+C-file span pin changes reverse the current 561 binding vector exactly to its
+reviewed predecessor. All 4,819 current historical spans and 931 current owning
+criterion witnesses authenticate against current files.
+
+`granularity13-qualified-source-review-adoption.edn` is the explicit current
+source-scope adoption authority. Step-specific pending flags in earlier routing
+and composition records remain derivation history. The newly derived binding
+snapshot preserves its entire binding vector; no decision record changes and
+the 530 prior predicate reviews retain their original scopes. The thirteen
+additional leaves remain Open, and there is no counted parent rollup.
+
+The independent review supports the scoped 195-record census with three prior
+Accepted records; it does not accept a final whole-project denominator. Later
+C5 clauses, ACC13 source-scope adjudication and the 386 finite facet dispositions
+are excluded. Their pending reviews, complete facet entailment and coordinator
+integration remain open. No implementation, runtime, release or self-hosting
+credit is conferred.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten

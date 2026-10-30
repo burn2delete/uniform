@@ -1,0 +1,349 @@
+{:new-C-criterion-review :pending-independent-source-review,
+ :receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-b6ff-77a3-b5de-835ef9d4b5ab/granularity13-review-145442c5/receipt.edn",
+  :sha256
+  "e10d615fd3b48411846d4a46631d2c1398a2ec35377d0ec693ca2324fe738a12",
+  :scope :granularity13-source-and-witness-routing-only,
+  :checks 22957,
+  :owning-task-checks 5734,
+  :negative-controls
+  [:duplicate-leaf
+   :lost-leaf
+   :coherently-weakened
+   :lost-checker-role
+   :wrong-migration-role
+   :wrong-direction
+   :forged-span
+   :stale-span
+   :legacy-context-self-authentication
+   :lost-producer-link]},
+ :coordinator-integration :required-separately,
+ :reviewed-source "145442c5434cad807870505fb75d523a0ef22998",
+ :authorship-exclusions
+ {:Tooling65
+  {:IDs
+   ["interface/behavior/t1/cli-redaction"
+    "interface/behavior/t1/explain-command-decision"
+    "interface/behavior/t1/explicit-command-context"
+    "interface/behavior/t1/stable-command-results"
+    "interface/behavior/t10/failing-stage-location"
+    "interface/behavior/t10/pass-evidence-view"
+    "interface/behavior/t10/real-stage-inspection"
+    "interface/behavior/t10/redacted-ir-export"
+    "interface/behavior/t10/semantic-ir-diff"
+    "interface/behavior/t11/compatible-benchmark-comparison"
+    "interface/behavior/t11/distributed-ai-cost-classes"
+    "interface/behavior/t11/performance-artifact"
+    "interface/behavior/t11/performance-proof-view"
+    "interface/behavior/t11/profile-measurement-identity"
+    "interface/behavior/t12/ai-safety-view"
+    "interface/behavior/t12/proof-checker-view"
+    "interface/behavior/t12/safety-audit-report"
+    "interface/behavior/t12/safety-fact-view"
+    "interface/behavior/t12/supply-chain-safety-view"
+    "interface/behavior/t13/ai-development-context"
+    "interface/behavior/t13/applied-change-lineage"
+    "interface/behavior/t13/development-replay-trace"
+    "interface/behavior/t13/development-tool-authority"
+    "interface/behavior/t13/generated-change-validation"
+    "interface/behavior/t13/generated-test-lineage"
+    "interface/behavior/t13/proposed-patch-artifact"
+    "interface/behavior/t2/explicit-repl-state"
+    "interface/behavior/t2/repl-normal-compilation"
+    "interface/behavior/t2/repl-runtime-audit"
+    "interface/behavior/t2/repl-semantic-queries"
+    "interface/behavior/t2/repl-transcript-replay"
+    "interface/behavior/t3/formatter-check-mode"
+    "interface/behavior/t3/formatter-config"
+    "interface/behavior/t3/formatter-report"
+    "interface/behavior/t3/formatter-write-policy"
+    "interface/behavior/t3/semantic-preserving-format"
+    "interface/behavior/t4/fact-based-lint"
+    "interface/behavior/t4/lint-baseline-policy"
+    "interface/behavior/t4/lint-structured-export"
+    "interface/behavior/t4/validated-lint-fix"
+    "interface/behavior/t5/checked-editor-edit"
+    "interface/behavior/t5/editor-fact-parity"
+    "interface/behavior/t5/editor-format-delegation"
+    "interface/behavior/t5/editor-redaction"
+    "interface/behavior/t5/editor-request-lifecycle"
+    "interface/behavior/t5/generated-editor-origin"
+    "interface/behavior/t6/artifact-bound-debugging"
+    "interface/behavior/t6/authorized-debug-inspection"
+    "interface/behavior/t6/debug-mutation-authority"
+    "interface/behavior/t6/debug-report"
+    "interface/behavior/t6/replay-safe-debug-stepping"
+    "interface/behavior/t7/documentation-products"
+    "interface/behavior/t7/documentation-redaction"
+    "interface/behavior/t7/fact-derived-documentation"
+    "interface/behavior/t7/runnable-doc-examples"
+    "interface/behavior/t8/deterministic-dev-update"
+    "interface/behavior/t8/dev-artifact-events"
+    "interface/behavior/t8/dev-protected-state"
+    "interface/behavior/t8/dev-release-separation"
+    "interface/behavior/t8/explicit-dev-session"
+    "interface/behavior/t9/registry-fact-view"
+    "interface/behavior/t9/registry-latent-view"
+    "interface/behavior/t9/registry-policy-search"
+    "interface/behavior/t9/registry-update-view"
+    "interface/behavior/t9/registry-view-privacy"],
+   :all-predecessor-records-exactly-conserved true,
+   :predicate-acceptance :excluded},
+  :PlatformProduct11
+  :count-and-source-conservation-only-semantic-acceptance-excluded,
+  :legacy-ACC13 :separate-review-slice-not-accepted},
+ :excluded-later-work
+ [:five-C-backend-clauses
+  :legacy-ACC13-source-scope
+  :finite386-facet-dispositions
+  :whole-facet-entailment
+  :final-whole-project-count
+  :implementation-execution],
+ :full-facet-entailment :not-conferred,
+ :implementation-credit :none,
+ :scope
+ :thirteen-sibling-source-envelopes-and-conserved-witness-routing-only,
+ :decision-records
+ {:count 833,
+  :sha256
+  "240f72987f896fbbf0183fc89ea63ee9d320f54d2766ff70048268f21fd1c1d0",
+  :change :none,
+  :predicate-review-adoptions 530,
+  :pending-new-decision-allocation-reviews 0},
+ :source-commit "611fc634c62910ca040ae47c66e62674c6678a6a",
+ :historical-bindings
+ {:IDs 561, :current-spans 4819, :source-adoptions :unchanged},
+ :status
+ :independent-finite-source-repartition-review-accepted-current-join-verified,
+ :kind :qualified-independent-granularity13-source-review-adoption,
+ :legacy-ACC13-review :separate-pending-independent-scope-review,
+ :sealed-source-review
+ {:current-published-applicability
+  {:head "16a9aa48a126e7a60776290b1753cd3635662e8e",
+   :tree "e21d03d782985f6c94384e5aab35771dfbaae0c6",
+   :changed-paths-since-reviewed-published
+   ("specs/requirement-reconciliation/evidence.md"
+    "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn"
+    "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn"),
+   :nine-reviewed-artifacts :exact-unchanged,
+   :qualification
+   "PASS applies only to frozen granularity/witness source and conserved current paths. Three later facet/evidence files are outside review; no whole-head, whole-facet, ACC-scope or implementation acceptance."},
+  :projector-assessment
+  "Independent task parsing and link rebasing reconstruct23Domain regions and the11-row Stdlib table exactly. Source diff changes only Domains IDs/headings/one-level ID syntax and Stdlib IDs plus the explicit legacy primary-leaf title exception; all other projector logic remains unchanged.",
+  :negative-controls
+  [:duplicate-leaf
+   :lost-leaf
+   :coherently-weakened
+   :lost-checker-role
+   :wrong-migration-role
+   :wrong-direction
+   :forged-span
+   :stale-span
+   :legacy-context-self-authentication
+   :lost-producer-link],
+  :new-leaves
+  ["math/eml-normalization-and-search"
+   "math/certified-implementation-synthesis"
+   "math/interval-and-real-proof-production"
+   "math/symbolic-rule-and-trace-production"
+   "math/independent-proof-and-certificate-checking"
+   "schema/compatibility-and-migration"
+   "schema/checked-consumer-projection"
+   "stdlib/remaining-tasks-and-evidence/implement-query-and-transaction-adapters"
+   "stdlib/remaining-tasks-and-evidence/implement-durable-workflow-adapters"
+   "stdlib/remaining-tasks-and-evidence/implement-ai-provider-and-policy-adapters"
+   "stdlib/remaining-tasks-and-evidence/implement-compiler-and-syntax-adapters"
+   "stdlib/remaining-tasks-and-evidence/implement-cryptographic-adapters"
+   "stdlib/remaining-tasks-and-evidence/implement-ui-and-event-adapters"],
+  :canonical-writes :none,
+  :nine-artifact-pins
+  [{:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-current-partition.edn",
+    :sha256
+    "a63b8c315a95ad7a1d48a997cd12b6c096c33c050f8db16371f8c25b18299f4a"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-current-task-composition.edn",
+    :sha256
+    "f090b0acec61ffe3b1db12303efba7b9a56b9ff9bc2b7f28cd511843b105c456"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-library-consumer-interfaces.edn",
+    :sha256
+    "f0fa3b097d100f490af1fc03d6597039d4fe2220065e59fd2a21e9e36f29d700"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-task-application-checks.edn",
+    :sha256
+    "b29734b1bee2a4d3e1a72ddc29bd6a208c4c7b2e907172838169bd500cef9d74"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-current-decision-routing.edn",
+    :sha256
+    "a95352c879b6aba88a85c10fd162bad2376929f6220beced2259046ac8696a13"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-historical-witness-refinement.edn",
+    :sha256
+    "6d74c169b3eb557722db31b9e000b6721252473e0d6a355967c5cb1930b630d6"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/granularity13-routing-checks.edn",
+    :sha256
+    "7bf1b8bdf54920adb499c184303a061943510783cfdaf9580808dfb0143ee5df"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/all833-granularity13-current-criterion-conservation.edn",
+    :sha256
+    "7e97517ec15d548d63b29c0807a2fb9b285efc860d0fcebf7b82005833fc5552"}
+   {:source-commit "145442c5434cad807870505fb75d523a0ef22998",
+    :path
+    "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+    :sha256
+    "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982"}],
+  :reproduction
+  {"check.clj"
+   "9bb30b7c87a8e30d1da42ecc582020e8a28c7d11cef887b28e6347cc620a05f8",
+   "check.log"
+   "7d918f7ef868ebc2019013ae1dd8e2cc613c79d9db7bbee399df8836d5f40303",
+   "finalize.clj"
+   "bed3a66a446cebb15bdbf313f24c8787e364418b9964e94b3bc43e97481f9b29"},
+  :docs {:original 240, :byte-conserved true},
+  :history
+  {:IDs 561,
+   :current-spans 4819,
+   :refinements 170,
+   :prior-predicate-scope-only true,
+   :legacy-unpinned-context-authentication false},
+  :checks 22957,
+  :scope :granularity13-source-and-witness-routing-only,
+  :adoption :canonical-only,
+  :decision-conservation
+  {:IDs 833,
+   :Open 833,
+   :routing-changes 321,
+   :current-criterion-spans 931},
+  :library
+  {:aliases 20,
+   :API-groups 11,
+   :producer-and-consumer-links-retained true},
+  :predecessor "b0ab14a6f29d3171878d7c044cb598a0c97135b9",
+  :tuple-sha256
+  "dbd74da3adf4b1343c42b3089e8fd6529590ed18f7d7feffdd55648efdf8582f",
+  :runtime :UNRUN,
+  :authorship
+  {:Tooling65
+   {:IDs
+    ["interface/behavior/t1/cli-redaction"
+     "interface/behavior/t1/explain-command-decision"
+     "interface/behavior/t1/explicit-command-context"
+     "interface/behavior/t1/stable-command-results"
+     "interface/behavior/t10/failing-stage-location"
+     "interface/behavior/t10/pass-evidence-view"
+     "interface/behavior/t10/real-stage-inspection"
+     "interface/behavior/t10/redacted-ir-export"
+     "interface/behavior/t10/semantic-ir-diff"
+     "interface/behavior/t11/compatible-benchmark-comparison"
+     "interface/behavior/t11/distributed-ai-cost-classes"
+     "interface/behavior/t11/performance-artifact"
+     "interface/behavior/t11/performance-proof-view"
+     "interface/behavior/t11/profile-measurement-identity"
+     "interface/behavior/t12/ai-safety-view"
+     "interface/behavior/t12/proof-checker-view"
+     "interface/behavior/t12/safety-audit-report"
+     "interface/behavior/t12/safety-fact-view"
+     "interface/behavior/t12/supply-chain-safety-view"
+     "interface/behavior/t13/ai-development-context"
+     "interface/behavior/t13/applied-change-lineage"
+     "interface/behavior/t13/development-replay-trace"
+     "interface/behavior/t13/development-tool-authority"
+     "interface/behavior/t13/generated-change-validation"
+     "interface/behavior/t13/generated-test-lineage"
+     "interface/behavior/t13/proposed-patch-artifact"
+     "interface/behavior/t2/explicit-repl-state"
+     "interface/behavior/t2/repl-normal-compilation"
+     "interface/behavior/t2/repl-runtime-audit"
+     "interface/behavior/t2/repl-semantic-queries"
+     "interface/behavior/t2/repl-transcript-replay"
+     "interface/behavior/t3/formatter-check-mode"
+     "interface/behavior/t3/formatter-config"
+     "interface/behavior/t3/formatter-report"
+     "interface/behavior/t3/formatter-write-policy"
+     "interface/behavior/t3/semantic-preserving-format"
+     "interface/behavior/t4/fact-based-lint"
+     "interface/behavior/t4/lint-baseline-policy"
+     "interface/behavior/t4/lint-structured-export"
+     "interface/behavior/t4/validated-lint-fix"
+     "interface/behavior/t5/checked-editor-edit"
+     "interface/behavior/t5/editor-fact-parity"
+     "interface/behavior/t5/editor-format-delegation"
+     "interface/behavior/t5/editor-redaction"
+     "interface/behavior/t5/editor-request-lifecycle"
+     "interface/behavior/t5/generated-editor-origin"
+     "interface/behavior/t6/artifact-bound-debugging"
+     "interface/behavior/t6/authorized-debug-inspection"
+     "interface/behavior/t6/debug-mutation-authority"
+     "interface/behavior/t6/debug-report"
+     "interface/behavior/t6/replay-safe-debug-stepping"
+     "interface/behavior/t7/documentation-products"
+     "interface/behavior/t7/documentation-redaction"
+     "interface/behavior/t7/fact-derived-documentation"
+     "interface/behavior/t7/runnable-doc-examples"
+     "interface/behavior/t8/deterministic-dev-update"
+     "interface/behavior/t8/dev-artifact-events"
+     "interface/behavior/t8/dev-protected-state"
+     "interface/behavior/t8/dev-release-separation"
+     "interface/behavior/t8/explicit-dev-session"
+     "interface/behavior/t9/registry-fact-view"
+     "interface/behavior/t9/registry-latent-view"
+     "interface/behavior/t9/registry-policy-search"
+     "interface/behavior/t9/registry-update-view"
+     "interface/behavior/t9/registry-view-privacy"],
+    :all-predecessor-records-exactly-conserved true,
+    :predicate-acceptance :excluded},
+   :PlatformProduct11
+   :count-and-source-conservation-only-semantic-acceptance-excluded,
+   :legacy-ACC13 :separate-review-slice-not-accepted},
+  :source-scope-qualification
+  "Partition/composition/check records retain their step-specific pending/not-applied history; the later exact task, decision and historical sources independently establish application. Original predicate acceptance is conserved, not extended to new envelopes or consumer implementation. Legacy context without a source commit is retained history and never independently authenticates itself.",
+  :criterion-owning-task-containment-checks 5734,
+  :harness-sha256
+  "9bb30b7c87a8e30d1da42ecc582020e8a28c7d11cef887b28e6347cc620a05f8",
+  :frozen "145442c5434cad807870505fb75d523a0ef22998",
+  :census-provenance
+  "Tuple census source-commit145442c5 identifies generation input, not the storage commit of the generated census. Its exact output hash is verified at ebba8d97. Published17b4 census regenerated from d8a37ba6 preserves195/3 and includes separate unacceptedACC scope. Neither report establishes a final denominator.",
+  :decision :PASS,
+  :published "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+  :census
+  {:records 195,
+   :accepted 3,
+   :authority :provisional-scoped-records-only,
+   :whole-project-denominator :unestablished,
+   :implementation-credit :none},
+  :families
+  {:math 6,
+   :schema 3,
+   :library 7,
+   :old-primary-IDs-preserved true,
+   :counted-parent-rollups 0}},
+ :task-records
+ {:new-open-leaves 13,
+  :Math 6,
+  :Schema 3,
+  :library 7,
+  :counted-parent-rollups 0,
+  :task-implementation-state :unchanged},
+ :step-specific-pending-statuses
+ :preserved-derivation-history-this-enumerated-adoption-is-current-scope-authority,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn",
+  :sha256
+  "f504931650e7d32d96b367ebf5f5e233347ceb39429f41708e6b0619706b3b6b"},
+ :census
+ {:total 195,
+  :accepted 3,
+  :authority :provisional-scoped-source-records-only,
+  :final-project-denominator :not-accepted}}

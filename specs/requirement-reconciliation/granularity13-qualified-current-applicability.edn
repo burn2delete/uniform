@@ -1,0 +1,431 @@
+{:receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-b6ff-77a3-b5de-835ef9d4b5ab/granularity13-review-145442c5/receipt.edn",
+  :sha256
+  "e10d615fd3b48411846d4a46631d2c1398a2ec35377d0ec693ca2324fe738a12",
+  :scope :granularity13-source-and-witness-routing-only,
+  :checks 22957,
+  :owning-task-checks 5734,
+  :negative-controls
+  [:duplicate-leaf
+   :lost-leaf
+   :coherently-weakened
+   :lost-checker-role
+   :wrong-migration-role
+   :wrong-direction
+   :forged-span
+   :stale-span
+   :legacy-context-self-authentication
+   :lost-producer-link]},
+ :reviewed-source "145442c5434cad807870505fb75d523a0ef22998",
+ :authorship-exclusions
+ {:Tooling65
+  {:IDs
+   ["interface/behavior/t1/cli-redaction"
+    "interface/behavior/t1/explain-command-decision"
+    "interface/behavior/t1/explicit-command-context"
+    "interface/behavior/t1/stable-command-results"
+    "interface/behavior/t10/failing-stage-location"
+    "interface/behavior/t10/pass-evidence-view"
+    "interface/behavior/t10/real-stage-inspection"
+    "interface/behavior/t10/redacted-ir-export"
+    "interface/behavior/t10/semantic-ir-diff"
+    "interface/behavior/t11/compatible-benchmark-comparison"
+    "interface/behavior/t11/distributed-ai-cost-classes"
+    "interface/behavior/t11/performance-artifact"
+    "interface/behavior/t11/performance-proof-view"
+    "interface/behavior/t11/profile-measurement-identity"
+    "interface/behavior/t12/ai-safety-view"
+    "interface/behavior/t12/proof-checker-view"
+    "interface/behavior/t12/safety-audit-report"
+    "interface/behavior/t12/safety-fact-view"
+    "interface/behavior/t12/supply-chain-safety-view"
+    "interface/behavior/t13/ai-development-context"
+    "interface/behavior/t13/applied-change-lineage"
+    "interface/behavior/t13/development-replay-trace"
+    "interface/behavior/t13/development-tool-authority"
+    "interface/behavior/t13/generated-change-validation"
+    "interface/behavior/t13/generated-test-lineage"
+    "interface/behavior/t13/proposed-patch-artifact"
+    "interface/behavior/t2/explicit-repl-state"
+    "interface/behavior/t2/repl-normal-compilation"
+    "interface/behavior/t2/repl-runtime-audit"
+    "interface/behavior/t2/repl-semantic-queries"
+    "interface/behavior/t2/repl-transcript-replay"
+    "interface/behavior/t3/formatter-check-mode"
+    "interface/behavior/t3/formatter-config"
+    "interface/behavior/t3/formatter-report"
+    "interface/behavior/t3/formatter-write-policy"
+    "interface/behavior/t3/semantic-preserving-format"
+    "interface/behavior/t4/fact-based-lint"
+    "interface/behavior/t4/lint-baseline-policy"
+    "interface/behavior/t4/lint-structured-export"
+    "interface/behavior/t4/validated-lint-fix"
+    "interface/behavior/t5/checked-editor-edit"
+    "interface/behavior/t5/editor-fact-parity"
+    "interface/behavior/t5/editor-format-delegation"
+    "interface/behavior/t5/editor-redaction"
+    "interface/behavior/t5/editor-request-lifecycle"
+    "interface/behavior/t5/generated-editor-origin"
+    "interface/behavior/t6/artifact-bound-debugging"
+    "interface/behavior/t6/authorized-debug-inspection"
+    "interface/behavior/t6/debug-mutation-authority"
+    "interface/behavior/t6/debug-report"
+    "interface/behavior/t6/replay-safe-debug-stepping"
+    "interface/behavior/t7/documentation-products"
+    "interface/behavior/t7/documentation-redaction"
+    "interface/behavior/t7/fact-derived-documentation"
+    "interface/behavior/t7/runnable-doc-examples"
+    "interface/behavior/t8/deterministic-dev-update"
+    "interface/behavior/t8/dev-artifact-events"
+    "interface/behavior/t8/dev-protected-state"
+    "interface/behavior/t8/dev-release-separation"
+    "interface/behavior/t8/explicit-dev-session"
+    "interface/behavior/t9/registry-fact-view"
+    "interface/behavior/t9/registry-latent-view"
+    "interface/behavior/t9/registry-policy-search"
+    "interface/behavior/t9/registry-update-view"
+    "interface/behavior/t9/registry-view-privacy"],
+   :all-predecessor-records-exactly-conserved true,
+   :predicate-acceptance :excluded},
+  :PlatformProduct11
+  :count-and-source-conservation-only-semantic-acceptance-excluded,
+  :legacy-ACC13 :separate-review-slice-not-accepted},
+ :current-criterion-proof
+ {:path
+  "specs/requirement-reconciliation/all833-existing-c5-current-criterion-conservation.edn",
+  :sha256
+  "9e3a3b0f9c9d5d4a644088fd6089bb45a3859e316eccf5221598c09c59a8f7c0",
+  :witnesses 931},
+ :excluded-later-work
+ [:five-C-backend-clauses
+  :legacy-ACC13-source-scope
+  :finite386-facet-dispositions
+  :whole-facet-entailment
+  :final-whole-project-count
+  :implementation-execution],
+ :all833-decision-records :exactly-unchanged,
+ :implementation-credit :none,
+ :source-commit "611fc634c62910ca040ae47c66e62674c6678a6a",
+ :historical-witnesses
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn",
+  :sha256
+  "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+  :IDs 561,
+  :current-spans 4819,
+  :C-file-span-pins-reversed 2,
+  :prior-bindings-exact-after-pin-inversion true},
+ :all240-original-documents :byte-identical,
+ :registry-task-and-roadmap-joins
+ [{:path "specs/compiler-api-workflow/tasks.md",
+   :frozen-sha256
+   "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+   :current-sha256
+   "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/compiler-api.md",
+   :frozen-sha256
+   "5bff40e4acd8092429267f65aabef69bef5d49d89077bca8dbf5bc12c8520662",
+   :current-sha256
+   "5bff40e4acd8092429267f65aabef69bef5d49d89077bca8dbf5bc12c8520662",
+   :join :byte-identical}
+  {:path "specs/reader-workflow/tasks.md",
+   :frozen-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :current-sha256
+   "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/reader.md",
+   :frozen-sha256
+   "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4",
+   :current-sha256
+   "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4",
+   :join :byte-identical}
+  {:path "specs/syntax-workflow/tasks.md",
+   :frozen-sha256
+   "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+   :current-sha256
+   "c8d12e0bbb4968fb2646ab3ffb68bc017ff4ab553540652e6a7aebe049c3a9c6",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/syntax.md",
+   :frozen-sha256
+   "998ac5210f7fd85a70e84f63bcd925c9917dd9403a62dac31881a0f019fbd6fd",
+   :current-sha256
+   "998ac5210f7fd85a70e84f63bcd925c9917dd9403a62dac31881a0f019fbd6fd",
+   :join :byte-identical}
+  {:path "specs/expand-workflow/tasks.md",
+   :frozen-sha256
+   "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+   :current-sha256
+   "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/expand.md",
+   :frozen-sha256
+   "166cdcce991876b2053d062061d3bc75f2c749bb42d3dc6d0f90e9b16611a2a2",
+   :current-sha256
+   "166cdcce991876b2053d062061d3bc75f2c749bb42d3dc6d0f90e9b16611a2a2",
+   :join :byte-identical}
+  {:path "specs/resolve-workflow/tasks.md",
+   :frozen-sha256
+   "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+   :current-sha256
+   "fbf68fce297339e6fdc7825b1ef193618a665f9ab37ee80ceef5d17e65c21f63",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/resolve.md",
+   :frozen-sha256
+   "2b9dec8ffb9f8573bfa9e031cfd73c54ac86799d478e1c1a8188da0d95925935",
+   :current-sha256
+   "2b9dec8ffb9f8573bfa9e031cfd73c54ac86799d478e1c1a8188da0d95925935",
+   :join :byte-identical}
+  {:path "specs/core-workflow/tasks.md",
+   :frozen-sha256
+   "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+   :current-sha256
+   "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/core.md",
+   :frozen-sha256
+   "23c65eed5c3b8e2e384067e5eea9eb21b68015b18bb0f39f8636374802370209",
+   :current-sha256
+   "23c65eed5c3b8e2e384067e5eea9eb21b68015b18bb0f39f8636374802370209",
+   :join :byte-identical}
+  {:path "specs/types-workflow/tasks.md",
+   :frozen-sha256
+   "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+   :current-sha256
+   "ecbd280123a7e25ad03e732c3d75fa5c0816cbe3d5236fc9a3ab78cd7faf1738",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/types.md",
+   :frozen-sha256
+   "0fac194404a9dad8dcf9a1ab87a9e743e3fe8f8ec3416dffa1906fea72e2928a",
+   :current-sha256
+   "0fac194404a9dad8dcf9a1ab87a9e743e3fe8f8ec3416dffa1906fea72e2928a",
+   :join :byte-identical}
+  {:path "specs/effects-workflow/tasks.md",
+   :frozen-sha256
+   "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+   :current-sha256
+   "dc53e78241f3a62131680c84859be444aed03bba0fcee973e3da70b09833c8bc",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/effects.md",
+   :frozen-sha256
+   "a54396309fdfcfc7ba32ae271f7a778f9f994a9ce90517a11e2e4ef6d9a54d5e",
+   :current-sha256
+   "a54396309fdfcfc7ba32ae271f7a778f9f994a9ce90517a11e2e4ef6d9a54d5e",
+   :join :byte-identical}
+  {:path "specs/legality-workflow/tasks.md",
+   :frozen-sha256
+   "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+   :current-sha256
+   "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/legality.md",
+   :frozen-sha256
+   "9427faaa318f351e5ae59b97d6e2c20d6bcc63ac5a3e6551fe64027d6fa6e13c",
+   :current-sha256
+   "9427faaa318f351e5ae59b97d6e2c20d6bcc63ac5a3e6551fe64027d6fa6e13c",
+   :join :byte-identical}
+  {:path "specs/auth-workflow/tasks.md",
+   :frozen-sha256
+   "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+   :current-sha256
+   "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/auth.md",
+   :frozen-sha256
+   "6a235f9ef64eb5fce58e0d6d67853a8b2aaeb6c380f93281cc4ab5c7680863cb",
+   :current-sha256
+   "6a235f9ef64eb5fce58e0d6d67853a8b2aaeb6c380f93281cc4ab5c7680863cb",
+   :join :byte-identical}
+  {:path "specs/mir-workflow/tasks.md",
+   :frozen-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :current-sha256
+   "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/mir.md",
+   :frozen-sha256
+   "fa0bea52eb4c7e81b7d51a8ebf946b9f6170a1e3d3842c48640e09cd9d4d06ac",
+   :current-sha256
+   "fa0bea52eb4c7e81b7d51a8ebf946b9f6170a1e3d3842c48640e09cd9d4d06ac",
+   :join :byte-identical}
+  {:path "specs/opt-workflow/tasks.md",
+   :frozen-sha256
+   "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+   :current-sha256
+   "e381c4855699eb879e9a4c39bb3b969b37b06f54b20b89d1fec0fb1cc874bd1f",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/opt.md",
+   :frozen-sha256
+   "89f708015b4de159ae52ea22ffd67e7a8135724206a511689d068884306c3b07",
+   :current-sha256
+   "89f708015b4de159ae52ea22ffd67e7a8135724206a511689d068884306c3b07",
+   :join :byte-identical}
+  {:path "specs/lower-workflow/tasks.md",
+   :frozen-sha256
+   "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+   :current-sha256
+   "7d932eec485a606157c43c1761e640c775a93962e127d2cca557555c486d8074",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/lower.md",
+   :frozen-sha256
+   "abc98cd14a7cc303d3f6621958d9e6ac066d053ae3507daa245ab525c6fd5ec1",
+   :current-sha256
+   "abc98cd14a7cc303d3f6621958d9e6ac066d053ae3507daa245ab525c6fd5ec1",
+   :join :byte-identical}
+  {:path "specs/emit-workflow/tasks.md",
+   :frozen-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :current-sha256
+   "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/emit.md",
+   :frozen-sha256
+   "a66ae37d13573e2045bb2504d0ec5b2f51724cedd736011afa28a3022553ee00",
+   :current-sha256
+   "a66ae37d13573e2045bb2504d0ec5b2f51724cedd736011afa28a3022553ee00",
+   :join :byte-identical}
+  {:path "specs/backends-workflow/tasks.md",
+   :frozen-sha256
+   "2b47bf39c03297a4046f3c8692761048446ed79725bce0bb2def85fc863b06fa",
+   :current-sha256
+   "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+   :join :exact-inverse-of-five-later-C-clauses-and-boundary-separator}
+  {:path "docs/component-roadmaps/backends.md",
+   :frozen-sha256
+   "82e2b9a44152e22013126510eb1c525d841afb32bc59409458e1c35666bba49b",
+   :current-sha256
+   "09b23ffb0c64054e2c6fb0257473b1881947486638787ea33fec5aa06f2f94df",
+   :join :exact-inverse-of-five-later-C-clauses-and-boundary-separator}
+  {:path "specs/runtime-workflow/tasks.md",
+   :frozen-sha256
+   "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+   :current-sha256
+   "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/runtime.md",
+   :frozen-sha256
+   "925e6bc60ecbce533163c2f4928e9e45c588dd2cbb8694feae58cd82f69784a4",
+   :current-sha256
+   "925e6bc60ecbce533163c2f4928e9e45c588dd2cbb8694feae58cd82f69784a4",
+   :join :byte-identical}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :frozen-sha256
+   "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+   :current-sha256
+   "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/stdlib.md",
+   :frozen-sha256
+   "6eb43dec9967005687004334d954feb4f75c1ab0812aa05ac3b732c5aa739c37",
+   :current-sha256
+   "6eb43dec9967005687004334d954feb4f75c1ab0812aa05ac3b732c5aa739c37",
+   :join :byte-identical}
+  {:path "specs/build-workflow/tasks.md",
+   :frozen-sha256
+   "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+   :current-sha256
+   "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/build.md",
+   :frozen-sha256
+   "6012d6135329a13fcf4a51f47e6687c576bdf7b4cf96e64bfbbc2ba0c3f7e39b",
+   :current-sha256
+   "6012d6135329a13fcf4a51f47e6687c576bdf7b4cf96e64bfbbc2ba0c3f7e39b",
+   :join :byte-identical}
+  {:path "specs/cli-workflow/tasks.md",
+   :frozen-sha256
+   "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
+   :current-sha256
+   "83ee10e1ac8d7ed9f28259730bf433a3b8943bf1716ff7a03107ac26c127a47b",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/cli.md",
+   :frozen-sha256
+   "43205ea1cab67f88b54472338631cb0c6a9c1db36cf4437c5284f422a61d6437",
+   :current-sha256
+   "43205ea1cab67f88b54472338631cb0c6a9c1db36cf4437c5284f422a61d6437",
+   :join :byte-identical}
+  {:path "specs/tools-workflow/tasks.md",
+   :frozen-sha256
+   "77dd584e29543ddc7efa33fc4c29ca3a1829f038e02738e723a551e24edf8f5c",
+   :current-sha256
+   "77dd584e29543ddc7efa33fc4c29ca3a1829f038e02738e723a551e24edf8f5c",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/tools.md",
+   :frozen-sha256
+   "3fdd5d3e2656106dfc8e670966fc446ba3ee674933bbd8e87fc1acc43a8be834",
+   :current-sha256
+   "3fdd5d3e2656106dfc8e670966fc446ba3ee674933bbd8e87fc1acc43a8be834",
+   :join :byte-identical}
+  {:path "specs/diag-workflow/tasks.md",
+   :frozen-sha256
+   "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+   :current-sha256
+   "1924065923e1992554bfd3db754981548388b1b05135d4138b27bb1141a1d088",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/diag.md",
+   :frozen-sha256
+   "68cde53e7862196844a860c366229d9338f59e6fbcc2d626a79e70f98d89e3b5",
+   :current-sha256
+   "68cde53e7862196844a860c366229d9338f59e6fbcc2d626a79e70f98d89e3b5",
+   :join :byte-identical}
+  {:path "specs/domains-workflow/tasks.md",
+   :frozen-sha256
+   "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+   :current-sha256
+   "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/domains.md",
+   :frozen-sha256
+   "7ef5c26ed10bbcb5b90f922aa6f658bbd8d50fe4641c3cc6129da962d7490e78",
+   :current-sha256
+   "7ef5c26ed10bbcb5b90f922aa6f658bbd8d50fe4641c3cc6129da962d7490e78",
+   :join :byte-identical}
+  {:path "specs/platform-workflow/tasks.md",
+   :frozen-sha256
+   "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+   :current-sha256
+   "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/platform.md",
+   :frozen-sha256
+   "9d4efe1bb5348949dde850880154cf31d06dbc81cb4b659144e771efce2a54d5",
+   :current-sha256
+   "9d4efe1bb5348949dde850880154cf31d06dbc81cb4b659144e771efce2a54d5",
+   :join :byte-identical}
+  {:path "specs/release-workflow/tasks.md",
+   :frozen-sha256
+   "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+   :current-sha256
+   "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/release.md",
+   :frozen-sha256
+   "637ea73511199eee337dbfd281e1996eb8865a0269ec9930772e2da331f3bf8d",
+   :current-sha256
+   "637ea73511199eee337dbfd281e1996eb8865a0269ec9930772e2da331f3bf8d",
+   :join :byte-identical}
+  {:path "specs/evolution-workflow/tasks.md",
+   :frozen-sha256
+   "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+   :current-sha256
+   "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+   :join :byte-identical}
+  {:path "docs/component-roadmaps/evolution.md",
+   :frozen-sha256
+   "275724f1eae9fc83f2d00679759546efd2a3661211eee1f192daf3e55d661989",
+   :current-sha256
+   "275724f1eae9fc83f2d00679759546efd2a3661211eee1f192daf3e55d661989",
+   :join :byte-identical}],
+ :kind :granularity13-qualified-current-source-applicability,
+ :source-scope-qualification
+ "Partition/composition/check records retain their step-specific pending/not-applied history; the later exact task, decision and historical sources independently establish application. Original predicate acceptance is conserved, not extended to new envelopes or consumer implementation. Legacy context without a source commit is retained history and never independently authenticates itself.",
+ :reviewed-artifacts :nine-exact-current-hashes-verified,
+ :census
+ {:total 195,
+  :accepted 3,
+  :authority :provisional-scoped-source-records-only,
+  :final-project-denominator :not-accepted},
+ :canonical-adoption
+ :eligible-only-for-the-enumerated-frozen-source-repartition-and-conserved-current-routing}
