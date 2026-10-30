@@ -137,10 +137,10 @@
 
 (deftest namespace-contract-is-explicit-and-does-not-load-the-orchestrator
   (let [contract (:gravity/namespace-contract (meta #'syntax/build))]
-    (is (= #{'build 'verify 'reader-products-authentic?}
+    (is (= (set (keys (:public-api contract)))
            (set (keys (ns-publics 'gravity.syntax)))))
     (is (= 'gravity.syntax (:namespace contract)))
-    (is (= :stage0-syntax-construction-and-verification-pipeline (:contract-boundary contract)))
+    (is (= :stage0-syntax-construction-verification-and-pinned-plan-runtime (:contract-boundary contract)))
     (is (= ['clojure.core 'gravity.c3-syntax-verification]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
@@ -150,6 +150,8 @@
     (is (= (set (keys (build-operations))) (set (get-in contract [:operation-inputs :build]))))
     (is (= (set (keys (reader-operations)))
            (set (get-in contract [:operation-inputs :reader-products-authentic?]))))
+    (is (= (set (keys (private-operation 'syntax-stage-runtime-operations)))
+           (set (get-in contract [:operation-inputs :runtime]))))
     (is (false? (:injected-operations-are-proof-authority? contract)))
     (is (false? (:self-hosted? contract)))
     (is (false? (:release-authority? contract)))))

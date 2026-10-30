@@ -134,7 +134,10 @@ certificates. Existing authenticated consumers retain their own verification.
 
 The [syntax pipeline extraction](syntax-pipeline-evidence.md) additionally moves
 C3 construction and reader association verification into `gravity.syntax`.
-SH04 host adaptation and the other syntax helper boundaries remain open.
+The [syntax runtime extraction](syntax-runtime-evidence.md) moves pinned plan
+authentication, execution, result admission and digest resolution into the
+same namespace. SH04 reader/envelope and rich-object host adaptation and the
+other syntax helper boundaries remain open.
 `gravity.diagnostics` and the existing narrow helper namespaces remain partial
 extractions. Other destination interfaces in the table remain proposed;
 existing Gravity modules, hosted facades and tests retain their current status.
