@@ -62,7 +62,7 @@ owners until moved with their implementation.
 | Namespace | Governing contracts; intended boundary | Intended public API and artifact input -> output | Planned diagnostic ownership | Assigned tests: positive / negative |
 | --- | --- | --- | --- | --- |
 | `gravity.reader` | L1, C2; decoding, tokens, forms and source records | `read-source-artifact`, `verify`; bytes + encoding + explicit project/options -> source unit, tokens, forms, reader hashes | Planned: L1/C2 lexical, encoding, delimiter, extension and hash rules. Current assembly propagates owner decisions and owns no diagnostic rules. | `gravity.reader.artifact-test`: actual syntax artifact / malformed delimiter, namespace shape, identity drift |
-| `gravity.syntax` | C3; immutable syntax, spans, origins, hygiene | `build`, `verify`; reader seeds + namespace context -> syntax stream, origin graph, metadata ledger | C3 missing spans, identity, hygiene and origin joins | `gravity.syntax-test`: retained generated origin / forged syntax or reader association |
+| `gravity.syntax` | C3; immutable syntax, spans, origins, hygiene | Current pipeline: `build`, `verify`, `reader-products-authentic?`; source/reader products + explicit seed operations -> C3 syntax artifact and verification. Remaining adapters are open. | C3 missing spans, identity, hygiene and origin joins; catalog remains with the existing C3 diagnostics helper | `gravity.syntax.pipeline-test`: genuine paired products / malformed source, forged syntax, source revision and serialization |
 | `gravity.macro` | L4, L12, L16, C4; compile-time expansion | `expand`, `verify`; syntax + macro registry + build grants -> expanded syntax, trace, generated origins | C4 expansion, capture and build-authority violations | `gravity.macro-test`: hygienic expansion / undeclared build effect or illegal generated code |
 | `gravity.resolution` | L3, C5; bindings, imports, namespace graph | `resolve-names`, `verify`; expanded syntax + dependency exports -> resolved bindings and graph | C5 unresolved/ambiguous/private bindings and import rules | `gravity.resolution-test`: qualified binding / ambiguous or forged binding |
 | `gravity.checked-core` | L2, C6; core AST construction and source mapping | `lower`, `verify`; resolved syntax -> core AST, source map, lowering report | C6 malformed core forms, arities, missing resolution and mapping | `gravity.checked-core-test`: executable core / unsupported or malformed form |
@@ -132,8 +132,11 @@ reader. The direct API is seed composition, not a public authority boundary:
 caller-supplied operations are trusted implementation dependencies, not proof
 certificates. Existing authenticated consumers retain their own verification.
 
+The [syntax pipeline extraction](syntax-pipeline-evidence.md) additionally moves
+C3 construction and reader association verification into `gravity.syntax`.
+SH04 host adaptation and the other syntax helper boundaries remain open.
 `gravity.diagnostics` and the existing narrow helper namespaces remain partial
-extractions. All other destination interfaces in the table remain proposed;
+extractions. Other destination interfaces in the table remain proposed;
 existing Gravity modules, hosted facades and tests retain their current status.
 Follow-on slices should move the owning behavior and its real tests before
 adopting the proposed destination API. See the adjacent slice evidence record

@@ -30,10 +30,40 @@ Before extraction, a genuine selected-current reader invocation for source
 text `1` produced two syntax records, a passed syntax verifier, a complete
 capability report and artifact identity
 `sha256:c1e2b235f9efb1087cb1c8ddf2df2f53873853f0cd419b3034d466d11b643859`.
-The full product was captured before editing for an independent before/after
-comparison. A fresh JVM can load `gravity.syntax` without loading bootstrap.
-Focused construction, rejection, tamper, composition and registration checks
-will be recorded in this PR as the slice progresses.
+The full product was captured before editing and compared equal after the
+extraction, not merely by its id. A fresh JVM loads `gravity.syntax` without
+loading bootstrap. The direct stage tests construct genuine selected-current
+products for both source extensions, compare compatibility products, and
+recompute verification. They reject actual lexical and C3 shape fixtures and
+substituted syntax, reader revision, source hash, envelope ownership and
+serialization. Caller-supplied reader/candidate combinations stop before
+producer execution. Captured callable Vars retain late interposition.
+
+The old compatibility fixture reproduced four failures and one arity error
+when the three original bootstrap definitions were re-evaluated from base
+`ae0cd80165b2085e7ce362d0c7bfc5eeec79b2de` in a fresh JVM. Its arity assertions
+and interposed proof callback had not tracked the existing invocation-aware
+APIs. The fixture now describes those actual APIs. No production arity was
+removed. The stage verification wrapper preserves the existing nested
+operation context rather than rebuilding it on interposition reentry.
+
+Executed development checks:
+
+| Command | Result |
+| --- | --- |
+| `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --fail-fast` | 5 tests, 61 assertions; passed |
+| `clojure -J-Xmx2g -M:dev-test --namespace gravity.bootstrap-compatibility.c3-test --fail-fast` | 9 tests, 99 assertions; passed |
+| `clojure -J-Xmx512m -M:dev-test --namespace gravity.c3-syntax-verification-test --namespace gravity.c3-syntax-construction-test --namespace gravity.c3-artifact-identity-test` | 12 tests, 163 assertions; passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 18 tests, 762 assertions; passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | 6 tests, 11 assertions; passed |
+| `clojure -J-Xmx512m -M tools/ci/run_test.clj` | 11 tests, 101 assertions; passed with CI-pinned clj-kondo |
+
+The existing production-helper records join the new namespace to its actual
+bootstrap constructor, syntax owner and standalone tests. Primary component
+counts are unchanged. The CI syntax regression command uses the same 2 GiB
+host class as the genuine construction tests; its process watchdog is a host
+safeguard, not a compiler admission allowance.
 
 ## Remaining work and nonclaims
 

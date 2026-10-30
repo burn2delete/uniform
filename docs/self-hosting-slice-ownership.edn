@@ -102,7 +102,11 @@
   "bootstrap/clojure/src/gravity/reader.clj"
   {:namespace gravity.reader :owner :sh-reader :slice "SH-03"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj"
-   :test-path "bootstrap/clojure/test/gravity/reader/artifact_test.clj"}}
+   :test-path "bootstrap/clojure/test/gravity/reader/artifact_test.clj"}
+  "bootstrap/clojure/src/gravity/syntax.clj"
+  {:namespace gravity.syntax :owner :sh-syntax :slice "SH-04"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -234,6 +238,7 @@
   "bootstrap/clojure/src/gravity/source_span.clj" :sh-reader
   "bootstrap/clojure/src/gravity/source_unit.clj" :sh-reader
   "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/syntax.clj" :sh-syntax
   "bootstrap/clojure/src/gravity/syntax_origin.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj" :master-coordinator
@@ -316,7 +321,10 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/reader/artifact_test.clj"
+ {"bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"
+  {:namespace gravity.syntax.pipeline-test
+   :slice "SH-04" :owner :sh-syntax}
+  "bootstrap/clojure/test/gravity/reader/artifact_test.clj"
   {:namespace gravity.reader.artifact-test
    :slice "SH-03" :owner :sh-reader}
   "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
